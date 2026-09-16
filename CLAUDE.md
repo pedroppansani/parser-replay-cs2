@@ -36,12 +36,14 @@ pronto não serve aqui.
 ```
 parsing/      wrapper do awpy.Demo
 metrics/      geometry, basic_metrics, awp_metrics, crosshair, map_angles,
-              positioning, grenades, map_areas, site_roles, player_roles
+              positioning, grenades, map_areas, site_roles, player_roles,
+              clutch, archetypes (+ archetype_reference.json)
 clustering/   playstyle (PCA + KMeans), global_model.json e cluster_names.json
 dashboard/    app Streamlit + theme + web/
-scripts/      process_demo (CLI), fit_global_clusters, show_derived_angles e
-              show_map_areas (calibração), build_site
-tests/        59 testes
+scripts/      process_demo (CLI), fit_global_clusters, fit_archetype_reference,
+              show_derived_angles e show_map_areas (calibração), narrative,
+              build_site
+tests/        101 testes
 data/raw/     .dem originais (gitignored)
 data/interim/ tabelas brutas em parquet (gitignored, ticks tem 1M+ linhas)
 data/processed/ métricas calculadas (versionadas — é o que o dashboard usa)
@@ -137,6 +139,38 @@ testada e estava errada.
     Registro: com piso em segundos, o rótulo "Abre o round" nunca foi atribuído a
     ninguém em 90 jogador-partidas.
 
+15. **Carrega piano é PRODUTO de esforço por benefício, não `esforço −
+    recompensa`.** A subtração está errada por construção: quem tem recompensa
+    baixa vence a diferença, e recompensa baixa é quase sempre jogar mal — a
+    fórmula elegia o pior jogador e colava nele um rótulo que significa outra
+    coisa. E o papel tem **três formas**, não uma: entrar e morrer abrindo espaço
+    (T), segurar bomb sozinho (CT), e ficar com a arma pior para o companheiro
+    comprar (economia). Não reduza a uma fórmula de entry: dá para ser carrega
+    piano a partida inteira sem nunca ter sido o primeiro a morrer.
+
+16. **A escala dos papéis é ajustada no conjunto das partidas, não dentro da
+    partida.** `metrics/archetype_reference.json`, mesmo padrão do
+    `global_model.json`. Normalizar dentro da partida faz alguém ficar em 1,0
+    mesmo quando ninguém se destacou, e o card de destaque mostraria um jogador
+    mediano como retrato da partida. Reajuste com
+    `scripts/fit_archetype_reference.py` sempre que processar demo nova ou mexer
+    num componente.
+
+17. **Empate no primeiro contato não é abertura de ninguém.** Quando uma granada
+    pega vários do time no MESMO tick, todos empatam em primeiro lugar. Medido:
+    24 de 374 lados-round nas 9 partidas, um deles com quatro jogadores em
+    10,359375s. Contar os quatro como quem abriu o round inflava o entry do time
+    inteiro. O empate sai do numerador nos dois módulos que usam a métrica
+    (`archetypes` e `player_roles`), com teste de regressão.
+
+18. **As frases dos cards são geradas em Python, não em JavaScript.** Ficam em
+    `scripts/narrative.py` e chegam prontas ao template. O motivo é testabilidade:
+    a regra "campo que não existe some da frase" vira teste. Antes disso as três
+    frases eram texto fixo escrito para a match_01, e todas as páginas
+    renderizavam o placar e os nicks daquela partida. **Papel sem sustentação
+    devolve string vazia**, não frase com zeros — "AWP na mão em 0 rounds"
+    descreve a ausência do papel como se fosse o papel.
+
 14. **Spawn não é área de jogo e fica fora da partição do mapa.** O CTSpawn da
     Ancient cai geometricamente do lado do A; contá-lo fazia todo CT "ir pro A"
     em todo round e zerava a métrica de não-rotação para times inteiros. Pelo
@@ -160,9 +194,19 @@ Não "resolva" nenhum destes automaticamente; pergunte.
 - Limiares: janela de trade (5s), peek/hold (120u / 250u), janela de contato
   (1s), tolerância de pré-fire (25°), permanência mínima para contar rotação
   (15% do round).
-- Pisos de função (`TRAIT_SPECS` em `metrics/player_roles.py`). Revisados sobre
-  as 9 partidas. Os de suporte, âncora de tempo e fragger não filtram nada hoje
-  e foram mantidos de propósito — ver a nota no topo do módulo.
+- Limiares dos papéis (`metrics/archetypes.py`): distância máxima para uma morte
+  de companheiro contar como "do seu lado" (900u), assinatura de repick (250u de
+  percurso, razão 3x), mínimo de tentativas de clutch (3), mínimo de rounds com
+  AWP (4), compra abaixo da média do time (-400), fração do time de rifle (60%),
+  e o quanto um papel crítico precisa se destacar para virar card (0,85).
+- Pisos de função (`TRAIT_SPECS` em `metrics/player_roles.py`). Sensibilidade
+  medida: lurker (0,40) é estável (±10% muda 1 rótulo), âncora (0,80) é sensível
+  só para cima (+10% perde 28% dos rótulos) e **entry (0,32) é sensível dos dois
+  lados**. Depois da correção do empate no primeiro contato, 0,32 ficou ACIMA do
+  p90 da métrica e só 5 jogadores recebem o rótulo. Recomendação registrada:
+  ancorar o piso ao acaso (com 5 jogadores, 1/5 = 0,20) em vez de a um número
+  absoluto — 1,5x o acaso = 0,30 dá 10 de 25 times-partida com entry definido. É
+  decisão do Pedro.
 
 ## Limitações conhecidas
 
