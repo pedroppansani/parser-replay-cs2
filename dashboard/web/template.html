@@ -1993,15 +1993,13 @@
   document.getElementById("decisive").innerHTML =
     "<div class='stamp'><div class='k'>Round decisivo</div><div class='n'>" + dr.round + "</div>" +
     "<div class='s'>placar " + dr.score_a + "–" + dr.score_b + " · Time " + dr.winner_team + "</div></div>" +
-    "<div class='story'><p class='t'>Empate em 9–9. O Time A cai para dois jogadores contra quatro, " +
-    "_AmadeuS mata os quatro no retake e Z_o_R_o desarma com a última kill ainda no ar — " +
-    "a liderança que sai desse round não volta mais.</p>" +
+    // As frases vêm prontas de scripts/narrative.py. Antes eram texto fixo escrito
+    // para a match_01, e TODA partida renderizava o placar e os nicks daquela.
+    "<div class='story'><p class='t'>" + D.narrative.decisive + "</p>" +
     "<div class='tags'>" + dr.reasons.map(function (r, i) {
       return "<span class='tag" + (i === 0 ? " hot" : "") + "'>" + r + "</span>";
     }).join("") + "</div>" +
-    "<p class='lead tight' style='margin-top:14px'>Critério: virada de placar não devolvida (peso maior), " +
-    "desvantagem numérica superada, multikill, clutch e proximidade no placar. O round 5 vem em " +
-    "segundo, com o 1v4 de donk666.</p></div>";
+    "<p class='lead tight' style='margin-top:14px'>" + D.narrative.criterion + "</p></div>";
 
   function ring(pct, color) {
     var r = 26, c = 2 * Math.PI * r;
@@ -2020,15 +2018,19 @@
     }).join("") + "</div>";
   }
 
-  var mvp = D.players.slice().sort(function (a, b) { return b.mvp_index - a.mvp_index; })[0];
+  // Card da esquerda: quem levou o time nas costas. A escolha e a frase vêm do
+  // Python (metrics/archetypes.py + scripts/narrative.py); aqui só se desenha.
+  var carry = D.carry;
+  var mvp = D.players.filter(function (p) { return p.steamid === carry.steamid; })[0]
+            || D.players.slice().sort(function (a, b) { return b.mvp_index - a.mvp_index; })[0];
   var maxAdr = Math.max.apply(null, D.players.map(function (p) { return p.adr; }));
   var maxOpen = Math.max.apply(null, D.players.map(function (p) { return p.opening_kills; }));
 
   document.getElementById("fig-mvp").innerHTML =
-    "<div class='hd'><div><div class='role'>MVP da partida</div><div class='nm'>" + mvp.name + "</div>" +
-    "<div class='sub'>Time " + mvp.team + " · índice de impacto</div></div>" + ring(mvp.mvp_index, C.ct) + "</div>" +
-    "<p>Lidera dano e consistência ao mesmo tempo, e fechou o round 5 sozinho contra quatro. " +
-    "<b>Não é estatística inflada</b>: o esforço aparece tanto no placar quanto no trabalho sujo.</p>" +
+    "<div class='hd'><div><div class='role'>Carry da partida</div><div class='nm'>" + carry.name + "</div>" +
+    "<div class='sub'>Time " + carry.team + " · fatia do dano e das kills do time</div></div>" +
+    ring(carry.index, C.ct) + "</div>" +
+    "<p>" + D.narrative.carry + "</p>" +
     meters([
       { k: "ADR", v: br(mvp.adr), pct: mvp.adr / maxAdr, c: C.ct },
       { k: "KAST", v: fmt(mvp.kast_pct, 0) + "%", pct: mvp.kast_pct / 100, c: C.ct },
@@ -2036,21 +2038,32 @@
       { k: "Clutches", v: mvp.clutches, pct: mvp.clutches ? 1 : 0, c: C.ink2 }
     ]);
 
-  var piano = D.players.slice().sort(function (a, b) { return b.piano_index - a.piano_index; })[0];
-  document.getElementById("fig-piano").innerHTML =
-    "<div class='hd'><div><div class='role'>Carrega piano</div><div class='nm'>" + piano.name + "</div>" +
-    "<div class='sub'>Time " + piano.team + " · esforço menos recompensa</div></div>" +
-    ring(piano.effort_index, C.aqua) + "</div>" +
-    "<p>Toma o primeiro contato em <b>" + br(piano.median_first_contact_s) + "s</b> — o mais cedo da " +
-    "partida —, gasta utility, vive entrando em briga e sobrevive a apenas <b>" +
-    Math.round(piano.survival_rate * 100) + "%</b> dos rounds. Abre espaço para os outros e termina " +
-    "com o pior KAST em quadra.</p>" +
-    meters([
-      { k: "Esforço", v: br(piano.effort_index, 2), pct: piano.effort_index, c: C.aqua },
-      { k: "Recompensa", v: br(piano.reward_index, 2), pct: piano.reward_index, c: C.dim },
-      { k: "1º contato", v: br(piano.median_first_contact_s) + "s", pct: 1 - Math.min(1, piano.median_first_contact_s / 20), c: C.ink2 },
-      { k: "Sobrevida", v: Math.round(piano.survival_rate * 100) + "%", pct: piano.survival_rate, c: C.ink2 }
-    ]);
+  // Card da direita: NÃO é um slot fixo do carrega piano. Mostra quem
+  // exemplificou algum papel com mais força comparado ao que é normal naquele
+  // papel no conjunto das partidas -- pode ser o AWPer, o camper, o repick.
+  // O critério está em metrics/archetypes.py (pick_highlight).
+  var hl = D.highlight;
+  if (!hl) {
+    document.getElementById("fig-piano").innerHTML =
+      "<div class='hd'><div><div class='role'>Destaque de papel</div>" +
+      "<div class='nm'>sem destaque</div>" +
+      "<div class='sub'>ninguém se afastou do normal o bastante</div></div></div>" +
+      "<p class='lead tight'>Nenhum jogador desta partida exemplificou um papel com força " +
+      "suficiente para virar destaque. Preferimos dizer isso a eleger um jogador mediano.</p>";
+  } else {
+    var barras = D.archetypes.filter(function (a) { return a.steamid === hl.steamid; })[0] || {};
+    document.getElementById("fig-piano").innerHTML =
+      "<div class='hd'><div><div class='role'>" + hl.label + "</div><div class='nm'>" + hl.name + "</div>" +
+      "<div class='sub'>Time " + hl.team + " · " + hl.meaning + "</div></div>" +
+      ring(hl.index, C.aqua) + "</div>" +
+      "<p>" + D.narrative.highlight + "</p>" +
+      meters([
+        { k: "Carrega piano", v: br(barras.idx_carrega_piano, 2), pct: barras.idx_carrega_piano, c: C.aqua },
+        { k: "Camper", v: br(barras.idx_camper, 2), pct: barras.idx_camper, c: C.ink2 },
+        { k: "Repick", v: br(barras.idx_repick, 2), pct: barras.idx_repick, c: C.ink2 },
+        { k: "AWPer", v: br(barras.idx_awper, 2), pct: barras.idx_awper, c: C.ink2 }
+      ]);
+  }
 
   /* ================= PLACAR ================= */
 
