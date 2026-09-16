@@ -39,14 +39,16 @@ justamente porque a versão ingênua contradizia o que acontece na prática.
 parsing/      wrapper do awpy.Demo (parse + persistência em parquet)
 metrics/      geometry, basic_metrics, awp_metrics, crosshair, map_angles,
               positioning, grenades, player_roles
-clustering/   playstyle (PCA + KMeans) e cluster_names.json
+clustering/   playstyle (PCA + KMeans), global_model.json e cluster_names.json
 dashboard/    app Streamlit, tokens visuais e web/ (painel de portfólio)
-scripts/      CLI de processamento, calibração de ângulos e build da página web
-tests/        43 testes (dados sintéticos + validação contra a demo real)
+scripts/      CLI de processamento, ajuste do clustering global, calibração de
+              ângulos e build da página web
+tests/        49 testes (dados sintéticos + validação contra as demos reais)
 demos/        .dem baixados do FACEIT (gitignored)
 data/raw/     .dem originais (gitignored)
 data/interim/ tabelas brutas em parquet (gitignored — ticks passa de 1M de linhas)
 data/processed/ métricas calculadas (vai pro repositório e alimenta o dashboard)
+data/global_clusters/ clustering ajustado no conjunto das 9 partidas
 ```
 
 ---
@@ -150,16 +152,37 @@ PCA + KMeans sobre 12 features de comportamento (não de resultado) por
 execução e âncora num round de save, e agregar por partida esconde exatamente
 isso.
 
-Resultado na partida de teste (4 clusters, 220 player-rounds):
+### Um modelo só para todas as partidas
+
+O KMeans numera os grupos de forma arbitrária. Enquanto ele era treinado partida
+a partida, o "cluster 3" de uma não tinha relação com o "cluster 3" da outra — e
+como `cluster_names.json` é um arquivo único aplicado a todas, um nome dado
+olhando uma partida apareceria colado num grupo de comportamento diferente nas
+demais. Não é hipótese: nas 9 partidas, o grupo de dano alto era o cluster 3 em
+match_01, o 2 em match_02 e o 0 em match_04.
+
+Agora o modelo é ajustado **uma vez** sobre as 9 partidas juntas
+(`scripts/fit_global_clusters.py`) e só aplicado a cada uma. O cluster N quer
+dizer a mesma coisa em todo lugar, que é a condição para nomear. O modelo é
+salvo como JSON (medianas de preenchimento, parâmetros de padronização,
+componentes do PCA e centróides) em vez de pickle: são vetores de números, e
+vale mais poder ler o diff do que depender da versão do scikit-learn.
+
+Há teste travando a propriedade — o mesmo (jogador, round) cai no mesmo cluster
+processado sozinho ou junto — e um teste de **controle** mostrando que o modo
+antigo não a tinha. Mesma lógica do controle da convenção de pitch: se os dois
+passarem, o principal parou de medir.
+
+Resultado no conjunto (4 clusters, 1.870 player-rounds de 9 partidas):
 
 | Cluster | Rounds | Perfil observado |
 |---|---|---|
-| 0 | 94 | Dano baixo, morre cedo, perto do time, contato aos ~8,8s |
-| 1 | 64 | Longe do time (919u), contato tardio (~16s), sobrevive 44% |
-| 2 | 41 | Dano alto (186), 2,1 kills, 0,85 trades, sobrevive 56% |
-| 3 | 21 | Utility damage alto (41,8), contato mais cedo (~6,2s) |
+| 0 | 546 | Longe do time (992u), contato tardio (39,4s), sobrevive 37%, dano baixo |
+| 1 | 432 | Dano alto (181), 1,95 kills, 0,48 trades, sobrevive 60% |
+| 2 | 125 | Morre quase sempre (8% sobrevive), mais tempo entrando em briga (0,25) e o pior crosshair score (51 contra ~71 dos outros) |
+| 3 | 767 | Perto do time (453u), contato mais cedo (21,2s), dano baixo, morre 92% |
 
-Os dois eixos do PCA explicam 41% da variação: PCA1 é dominado por impacto
+Os dois eixos do PCA explicam 40% da variação: PCA1 é dominado por impacto
 (dano, kills, trades), PCA2 por separação do time e sobrevivência.
 
 **O KMeans agrupa, mas não nomeia.** "Lurker", "entry fragger", "suporte de
@@ -169,11 +192,19 @@ representativos que o dashboard lista, e fica registrada em
 `clustering/cluster_names.json`. Enquanto não estiverem nomeados, o dashboard
 mostra "Cluster 0, 1, 2..." e avisa que falta nomear, em vez de inventar rótulo.
 
-**Limitação honesta:** a silhueta ficou em 0,205 (k=2) e 0,175 (k=4) — estrutura
-fraca. Com 220 player-rounds de uma única partida isso é esperado; a separação
-deve melhorar com mais demos processadas. O k=4 foi escolhido por dar grupos mais
-interpretáveis que o k=2, mesmo com silhueta um pouco pior — decisão de
-interpretação, registrada aqui pra não parecer que o número escolheu sozinho.
+**Limitação honesta, e uma previsão que não se confirmou:** a silhueta no
+conjunto é 0,168 (k=4) e 0,189 (k=2) — estrutura fraca. A versão anterior deste
+README dizia que a separação "deve melhorar com mais demos processadas". Não
+melhorou: 1.870 player-rounds de 9 partidas dão praticamente a mesma silhueta que
+220 de uma. Isso muda a leitura do resultado — a estrutura fraca não era falta de
+amostra, é o que os dados têm a dizer. Estilo de jogo num round é um contínuo,
+não um conjunto de caixas separadas, e o KMeans está cortando um espaço denso.
+Os grupos continuam úteis como descrição (os perfis acima são distintos e
+aparecem nas 9 partidas), mas não como classificação com fronteira nítida.
+
+O k=4 foi escolhido por dar grupos mais interpretáveis que o k=2, mesmo com
+silhueta um pouco pior — decisão de interpretação, registrada aqui pra não
+parecer que o número escolheu sozinho.
 
 ---
 
@@ -233,20 +264,46 @@ saída. A comparação é interna porque função é divisão de trabalho dentro
 "é quem mais joga AWP no time" descreve um papel; "joga mais AWP que a média dos
 10" só descreve a partida.
 
-Resultado na partida de teste:
+Resultado em match_01:
 
 | Time A | | Time B | |
 |---|---|---|---|
-| Z_o_R_o | AWPer (AWP em 32% dos rounds) | s-chilla | Abre o round (contato aos 5,4s) |
-| donk666 | Principal fragger (126 de ADR) | HLEB | Segura atrás (contato aos 14,1s) |
+| Z_o_R_o | AWPer (AWP em 32% dos rounds) | HLEB | Âncora de bomb (não rotacionou em 92% dos rounds de CT) |
+| donk666 | Lurker (fora da área do time em 56% dos rounds de T) | s-chilla | Principal fragger (107 de ADR) |
 | t1ltedbot | Suporte de utility (74s de cegueira) | 9amaterasu9 | Suporte de utility (48s) |
-| _AmadeuS | *sem função dominante* | xhx | Joga afastado (702u do time) |
-| rol1ng- | *sem função dominante* | KREEDZ666 | *sem função dominante* |
+| _AmadeuS | *sem função dominante* | KREEDZ666 | Lurker (44% dos rounds de T) |
+| rol1ng- | *sem função dominante* | xhx | *sem função dominante* |
 
 **Não existe cota de um de cada função por time.** O time B não teve AWPer acima
 do piso e três jogadores ficaram sem função dominante. Isso é resultado, não
 lacuna: distribuir rótulos até preencher cinco vagas seria inventar função pra
 caber num molde.
+
+### Três funções que estavam medindo a coisa errada
+
+As definições vieram do Pedro, e cada uma derrubou a métrica que estava no lugar.
+
+**Entry é ação, não relógio.** Quem dá o primeiro contato é o entry mesmo que
+isso aconteça faltando 20s pro round acabar. A métrica antiga era a mediana de
+segundos até o contato do jogador, com piso em 8s — e o rótulo nunca foi
+atribuído a ninguém em 90 jogador-partidas, porque o jogador mais rápido de um
+time tem mediana entre 10,7s e 21,3s. Pior que o piso errado era o que ele media:
+tempo até o contato depende do mapa, do lado e do ritmo do adversário, ou seja,
+mede o quão rápida foi a PARTIDA. Agora é a fração de rounds em que o jogador foi
+o primeiro do time a encostar no adversário — comparativa por construção. A
+correlação com a métrica antiga é de −0,48: não é a mesma coisa com outra roupa.
+
+**Âncora é ficar no bombsite, não chegar tarde na briga.** Âncora é o CT que fica
+dentro do B mesmo com os T indicando A — o que define é não rotacionar. A métrica
+antiga era contato tardio, que um CT que roda duas vezes e chega atrasado também
+produz.
+
+**Lurker é área, não distância.** O T que está infiltrando o meio ou o B enquanto
+o time executa o A. A métrica antiga era distância média do time, que não
+distingue: dois CTs parados em bombsites opostos estão à mesma distância um do
+outro que um lurker do resto do time, e nenhum dos dois é lurker.
+
+As duas últimas exigiram particionar o mapa em áreas macro — ver abaixo.
 
 **IGL não aparece.** Quem chama o time não deixa rastro no demo — não há áudio, e
 liderança não tem assinatura estatística. Seria chute com cara de métrica.
@@ -254,6 +311,37 @@ liderança não tem assinatura estatística. Seria chute com cara de métrica.
 E o rótulo por jogador não substitui o clustering: a mesma aba mostra, embaixo, a
 **mistura de clusters** de cada jogador round a round. Ninguém joga o mesmo round
 22 vezes, e é essa troca que o rótulo fixo não consegue mostrar.
+
+### Partição do mapa em A / Mid / B
+
+"Ficou no mesmo bombsite" e "jogou outra área que o time" precisam de uma noção
+de área que o demo não dá: os callouts (`place`) são finos demais — "PalaceAlley"
+e "Stairs" são o mesmo lado do mapa. A partição é derivada, não escrita à mão:
+
+1. O centróide 3D de cada bombsite vem dos **plants do próprio demo**.
+2. O centróide de cada callout vem das posições dos jogadores vivos.
+3. Cada callout vai pro site mais próximo. **Mid não é desenhado**: é o que sobra
+   quando o callout fica a distâncias parecidas dos dois (dentro de 10%).
+
+Dois detalhes que só apareceram nos dados reais, ambos com teste de regressão:
+
+- **Spawn não é área de jogo.** O CTSpawn da Ancient cai geometricamente do lado
+  do A (razão 0,38). Contá-lo fazia todo CT "ir pro A" em todo round, e a métrica
+  de não-rotação zerava para times inteiros — inclusive para quem ficou 12 de 12
+  rounds dentro do B.
+- **Passar não é rotacionar.** O caminho até o próprio bombsite cruza corredores
+  que caem do lado do site vizinho. Medindo as visitas reais à área oposta, o
+  quartil de baixo fica em 15,6% do round: são as passagens. Só acima disso conta
+  como rotação.
+
+**Mapa de dois andares quebra a regra 3.** Em de_nuke os dois sites ficam quase na
+mesma vertical, e sem correção o mapa inteiro vira "Mid" — inclusive o próprio
+BombsiteB. A correção usa a mesma informação que o radar oficial usa pra desenhar
+dois andares (`vertical_sections`): quando o mapa tem andares, a diferença de
+altura pesa 5× mais na distância. Ainda assim a Nuke é a derivação mais
+discutível das nove partidas, e é por isso que existe `MANUAL_PLACE_AREAS`:
+`py -3.12 -m scripts.show_map_areas` imprime a tabela de cada mapa com a razão
+que decidiu cada callout, pra eu discordar olhando o número.
 
 ---
 
@@ -343,10 +431,19 @@ escondê-los:
    (120u / 250u), janela de contato (1s), tolerância de pré-fire (25°), flash
    efetiva (1,0s). Todos são constantes nomeadas no topo dos módulos.
 4. **Revisar os pisos de função** — `TRAIT_SPECS` em `metrics/player_roles.py`.
-   Saíram da distribuição de uma única partida, então são o número mais frágil do
-   projeto hoje. Há `MANUAL_ROLES` pro meu julgamento sobrepor o limiar, e o
-   painel marca o rótulo como manual quando isso acontece.
-5. **Validação round a round** — a aba "Detalhe por round" existe pra isso.
+   Revisados sobre as 9 partidas (90 jogador-partidas, 18 times-partida). Pisos
+   atuais: entry 0,32 de `first_contact_share` (o acaso daria 0,20 a cada um dos
+   cinco), âncora 0,80 de rounds sem rotacionar, lurker 0,40 de rounds fora da
+   área do time. Os de suporte, fragger e AWP não filtram nada hoje (os líderes
+   de time passam em 18/18) e ficaram como estavam: eles existem pra barrar
+   rótulo quando o líder não é destacado, e esse caso ainda não apareceu —
+   apertá-los seria calibrar no ruído de 18 amostras. Há `MANUAL_ROLES` pro meu
+   julgamento sobrepor o limiar, e o painel marca o rótulo como manual quando
+   isso acontece.
+5. **Revisar a partição A/Mid/B dos mapas** — `MANUAL_PLACE_AREAS` em
+   `metrics/map_areas.py`, com `py -3.12 -m scripts.show_map_areas`. A Nuke é a
+   que mais precisa.
+6. **Validação round a round** — a aba "Detalhe por round" existe pra isso.
 
 **Nota sobre a validação feita até aqui:** as demos usadas são partidas
 profissionais do donk, não partidas minhas, então a validação foi por
@@ -414,10 +511,10 @@ dashboard público, e processar uma demo nova é um passo de CLI local.
 
 ## Próximos passos
 
-- [ ] Nomear os clusters e calibrar ângulos/limiares (ver seção acima)
-- [ ] Revisar os pisos das funções de jogador com mais partidas — hoje saíram da
-      distribuição de uma só, e são o tipo de número que muda com o volume
-- [ ] Processar mais demos — a estrutura dos clusters e os ângulos derivados
-      melhoram com volume; hoje tudo vem de uma partida só
+- [x] Processar mais demos — 9 partidas, 1.870 player-rounds
+- [x] Revisar os pisos das funções de jogador com mais partidas
+- [x] Ajustar o clustering no conjunto, pré-requisito pra nomear os clusters
+- [ ] Nomear os clusters (`clustering/cluster_names.json`) e calibrar os ângulos
+      de entrada — ver "O que ainda depende de julgamento humano"
 - [ ] Deploy do dashboard público com os dados pré-processados
 - [ ] GIF no README mostrando o CLI processando uma demo nova
