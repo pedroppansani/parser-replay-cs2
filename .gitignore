@@ -1,0 +1,17 @@
+# Demos originais (.dem) -- pesadas (30-200MB+), baixadas do FACEIT (expiram em 30
+# dias), nunca devem ir pro git.
+data/raw/
+demos/
+
+# Tabelas brutas do awpy (rounds/kills/damages/ticks em parquet) -- ticks sozinho
+# passa de 1 milhão de linhas por partida. Só as métricas já calculadas em
+# data/processed/ vão pro repositório (são leves e é o que o dashboard usa).
+data/interim/
+
+__pycache__/
+*.pyc
+.pytest_cache/
+.streamlit/
+
+.venv/
+venv/

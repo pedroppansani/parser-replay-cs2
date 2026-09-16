@@ -1,0 +1,47 @@
+"""
+Injeta o payload da partida no template e gera a página final, autocontida.
+
+Uso:
+    python -m scripts.build_web_page match_01
+"""
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+TEMPLATE = PROJECT_ROOT / "dashboard" / "web" / "template.html"
+
+
+def build(match_id: str) -> Path:
+    base = PROJECT_ROOT / "data" / "processed" / match_id
+    payload = (base / "web_payload.json").read_text(encoding="utf-8")
+    replay = (base / "replay.json").read_text(encoding="utf-8")
+    breakdown_path = base / "breakdown.json"
+    breakdown = breakdown_path.read_text(encoding="utf-8") if breakdown_path.exists() else "[]"
+    html = (
+        TEMPLATE.read_text(encoding="utf-8")
+        .replace("/*__DATA__*/", payload)
+        .replace("/*__REPLAY__*/", replay)
+        .replace("/*__BREAKDOWN__*/", breakdown)
+    )
+
+    radar_meta = PROJECT_ROOT / "assets" / "radars"
+    import json as _json
+    meta_path = radar_meta / (_json.loads((base / "match_meta.json").read_text(encoding="utf-8"))["map_name"] + ".json")
+    html = html.replace("/*__RADAR__*/", meta_path.read_text(encoding="utf-8") + " ||" if meta_path.exists() else "")
+    out = PROJECT_ROOT / "dashboard" / "web" / f"{match_id}.html"
+    out.write_text(html, encoding="utf-8")
+    return out
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Gera a página web autocontida da partida.")
+    parser.add_argument("match_id", type=str)
+    args = parser.parse_args()
+    out = build(args.match_id)
+    print(f"{out}  ({out.stat().st_size / 1024:.0f} KB)")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,1496 @@
+<title>Ancient Round a Round</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
+
+<style>
+  /* Painel claro, único tema — escolha deliberada, então tudo é pintado
+     explicitamente e não há bloco de tema escuro. Neutros com viés frio:
+     um cinza puro leria como não-escolhido. */
+  :root {
+    --paper: #eef1f5;
+    --paper-2: #e7ebf1;
+    --card: #ffffff;
+    --ink: #0f1620;
+    --ink-2: #4c5a6b;
+    --dim: #7d8a99;
+    --line: #dde3eb;
+    --line-2: #eaeef3;
+
+    --ct: #2a78d6;
+    --t: #eb6834;
+    --aqua: #1baf7a;
+    --ct-soft: rgba(42, 120, 214, 0.1);
+    --t-soft: rgba(235, 104, 52, 0.1);
+
+    --display: "Bricolage Grotesque", Georgia, sans-serif;
+    --body: "Figtree", system-ui, -apple-system, sans-serif;
+    --mono: "DM Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+    --shadow-1: 0 1px 2px rgba(15, 22, 32, 0.05), 0 1px 1px rgba(15, 22, 32, 0.03);
+    --shadow-2: 0 4px 16px rgba(15, 22, 32, 0.07), 0 1px 3px rgba(15, 22, 32, 0.04);
+    --r: 10px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    background:
+      radial-gradient(70% 45% at 12% 0%, rgba(42, 120, 214, 0.07), transparent 62%),
+      radial-gradient(55% 38% at 92% 8%, rgba(235, 104, 52, 0.055), transparent 60%),
+      linear-gradient(180deg, #f4f6f9 0%, var(--paper) 42%, var(--paper-2) 100%);
+    background-attachment: fixed;
+  }
+
+  .shell { max-width: 1200px; margin: 0 auto; padding-inline: 22px; padding-block: 0 72px; }
+
+  /* ---------- Cabeçalho ---------- */
+
+  .top { padding-block: 44px 6px; }
+
+  .crumbs {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    color: var(--dim);
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .crumbs em { font-style: normal; color: var(--line); }
+
+  .lockup {
+    margin-top: 18px;
+    display: flex;
+    align-items: flex-end;
+    gap: 26px;
+    flex-wrap: wrap;
+  }
+  .lockup h1 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(34px, 5.2vw, 54px);
+    line-height: 1.02;
+    letter-spacing: -0.025em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .scorebox {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    box-shadow: var(--shadow-1);
+    padding: 12px 18px;
+  }
+  .scorebox .s {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 30px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .scorebox .s.win { color: var(--ink); }
+  .scorebox .s.lose { color: var(--dim); }
+  .scorebox .vs { color: var(--line); font-size: 18px; }
+  .scorebox .tm { font-size: 11px; color: var(--dim); font-family: var(--mono); letter-spacing: 0.08em; }
+
+  .teams {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    gap: 12px;
+  }
+  .teamcard {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    padding: 13px 16px;
+    box-shadow: var(--shadow-1);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .teamcard b {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+  }
+  .teamcard .nicks { font-family: var(--mono); font-size: 11.5px; color: var(--dim); }
+  .teamcard.won { border-color: rgba(42,120,214,0.4); background: linear-gradient(180deg, var(--ct-soft), var(--card) 60%); }
+
+  /* ---------- Abas ---------- */
+
+  .tabs {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 10;
+    margin-top: 26px;
+    display: flex;
+    gap: 3px;
+    overflow-x: auto;
+    padding-block: 10px;
+    background: linear-gradient(180deg, var(--paper) 62%, rgba(238,241,245,0.82));
+    backdrop-filter: blur(6px);
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tabs button {
+    appearance: none;
+    border: 1px solid transparent;
+    background: none;
+    color: var(--ink-2);
+    font-family: var(--body);
+    font-weight: 500;
+    font-size: 13.5px;
+    padding: 8px 15px;
+    border-radius: 99px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+  }
+  .tabs button:hover { background: var(--card); }
+  .tabs button[aria-selected="true"] {
+    background: var(--ink);
+    color: #fff;
+  }
+  .tabs button:focus-visible { outline: 2px solid var(--ct); outline-offset: 2px; }
+
+  /* ---------- Blocos ---------- */
+
+  .panel { padding-top: 26px; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  h2.sec {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(22px, 3vw, 30px);
+    letter-spacing: -0.022em;
+    margin: 5px 0 6px;
+    line-height: 1.12;
+    text-wrap: balance;
+  }
+  .lead { color: var(--ink-2); font-size: 14px; max-width: 68ch; margin: 0; }
+  .lead.tight { font-size: 13px; color: var(--dim); }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    box-shadow: var(--shadow-1);
+  }
+
+  /* ---------- Replay ---------- */
+
+  .roundstrip { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 18px; }
+  .rchip {
+    appearance: none;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    width: 38px;
+    height: 34px;
+    border-radius: 7px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink-2);
+    position: relative;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+  }
+  .rchip::after {
+    content: "";
+    position: absolute;
+    left: 7px; right: 7px; bottom: 5px;
+    height: 2.5px;
+    border-radius: 2px;
+  }
+  .rchip[data-w="A"]::after { background: var(--ct); }
+  .rchip[data-w="B"]::after { background: var(--t); }
+  .rchip:hover { transform: translateY(-1px); box-shadow: var(--shadow-1); }
+  .rchip[aria-pressed="true"] {
+    border-color: var(--ink);
+    box-shadow: 0 0 0 1px var(--ink);
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .rchip.key { border-color: rgba(235,104,52,0.55); }
+  .rchip:focus-visible { outline: 2px solid var(--ct); outline-offset: 2px; }
+
+  /* Visualizador: dois painéis de time ladeando o mapa, como num software de
+     análise de demo. No estreito, o mapa vem primeiro e os times descem
+     lado a lado embaixo dele. */
+  .stage {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: 210px minmax(0, 1fr) 210px;
+    gap: 14px;
+    align-items: start;
+  }
+  @media (max-width: 1000px) {
+    .stage { grid-template-columns: 1fr 1fr; }
+    .board { grid-column: 1 / -1; order: -1; }
+  }
+  @media (max-width: 560px) { .stage { grid-template-columns: 1fr; } }
+
+  .board { padding: 0 0 14px; overflow: hidden; }
+  .board canvas { display: block; width: 100%; max-width: 520px; height: auto; margin: 6px auto 0; border-radius: 8px; background: #161d26; }
+
+  .squad { padding: 12px; }
+  .squad h4 {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin: 2px 4px 10px;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .squad.ct h4 { color: var(--ct); }
+  .squad.t h4 { color: var(--t); }
+  .squad h4 b { font-family: var(--mono); font-weight: 500; color: var(--dim); }
+
+  .plr {
+    padding: 8px;
+    border-radius: 8px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 3px 8px;
+    transition: opacity 0.2s ease, background 0.2s ease;
+  }
+  .plr + .plr { margin-top: 2px; }
+  .plr.out { opacity: 0.38; }
+  .plr.out .nm { text-decoration: line-through; }
+  .plr .nm { font-weight: 600; font-size: 13px; letter-spacing: -0.01em; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .plr .hpn { font-family: var(--mono); font-size: 11.5px; color: var(--dim); font-variant-numeric: tabular-nums; }
+  .plr .hpbar { grid-column: 1 / -1; height: 4px; border-radius: 99px; background: var(--paper-2); overflow: hidden; }
+  .plr .hpbar > i { display: block; height: 100%; border-radius: 99px; transition: width 0.18s linear; }
+  .plr .wp { grid-column: 1 / -1; font-family: var(--mono); font-size: 10.5px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .maplegend {
+    display: flex;
+    gap: 13px;
+    flex-wrap: wrap;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--dim);
+    margin-top: 10px;
+    padding-inline: 12px;
+  }
+  .maplegend span { display: inline-flex; align-items: center; gap: 5px; }
+  .sw { width: 9px; height: 9px; border-radius: 99px; display: inline-block; }
+  .sw.ct { background: var(--ct); }
+  .sw.t { background: var(--t); }
+  .sw.smoke { background: #b6c2d0; }
+  .sw.fire { background: rgba(235,104,52,0.5); }
+  .sw.he { background: #d1495b; }
+  .sw.flash { background: #e8b53a; }
+  .sw.kill { background: none; box-shadow: inset 0 0 0 1.5px var(--dim); border-radius: 1px; }
+  .sw.bomb { background: var(--t); border-radius: 2px; }
+
+  .marks { position: absolute; inset: 0 0 auto; height: 8px; top: -9px; pointer-events: none; }
+  .marks i {
+    position: absolute;
+    top: 0;
+    width: 2px;
+    height: 8px;
+    border-radius: 1px;
+    transform: translateX(-1px);
+  }
+  .marks i.ct { background: var(--ct); }
+  .marks i.t { background: var(--t); }
+  .marks i.bomb { background: var(--ink); height: 10px; top: -2px; width: 2.5px; }
+
+  .autopsy { margin-top: 14px; padding: 0 0 6px; }
+  .autopsy .ah {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line-2);
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: baseline;
+    flex-wrap: wrap;
+  }
+  .autopsy .ah h3 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: -0.015em;
+    margin: 0;
+  }
+  .autopsy .ah .tags { gap: 5px; }
+  .autopsy .why { padding: 12px 16px 4px; font-size: 13px; color: var(--ink-2); margin: 0; max-width: 72ch; }
+  .autopsy .mlist { padding: 6px 8px 8px; display: flex; flex-direction: column; gap: 2px; }
+  .moment {
+    display: grid;
+    grid-template-columns: 52px 22px 1fr;
+    gap: 10px;
+    align-items: baseline;
+    width: 100%;
+    text-align: left;
+    border: 0;
+    background: none;
+    padding: 9px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: var(--body);
+    font-size: 13px;
+    color: var(--ink);
+    transition: background 0.15s ease;
+  }
+  .moment:hover { background: var(--paper); }
+  .moment:focus-visible { outline: 2px solid var(--ct); outline-offset: -2px; }
+  .moment .mt { font-family: var(--mono); font-size: 11.5px; color: var(--dim); font-variant-numeric: tabular-nums; }
+  .moment .ic { font-size: 13px; line-height: 1.2; }
+  .moment .mx b { font-weight: 600; }
+  .moment .mx small { display: block; font-family: var(--mono); font-size: 10.5px; color: var(--dim); margin-top: 1px; }
+  .autopsy .caveat {
+    margin: 8px 16px 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--paper);
+    font-size: 12px;
+    color: var(--dim);
+    line-height: 1.6;
+  }
+
+  .feed { margin-top: 14px; }
+  .feed h3 {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin: 0;
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--line-2);
+  }
+  .feed .log { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 2px; padding: 8px; max-height: none; }
+
+  .transport {
+    margin-top: 16px;
+    padding-inline: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .play {
+    appearance: none;
+    cursor: pointer;
+    width: 40px; height: 40px;
+    border-radius: 99px;
+    border: 0;
+    background: var(--ink);
+    color: #fff;
+    font-size: 15px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    transition: transform 0.12s ease, background 0.16s ease;
+  }
+  .play:hover { transform: scale(1.05); }
+  .play:focus-visible { outline: 2px solid var(--ct); outline-offset: 2px; }
+
+  .scrub { flex: 1 1 180px; min-width: 140px; position: relative; }
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--ct);
+    cursor: pointer;
+  }
+  .clock {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-2);
+    min-width: 92px;
+    text-align: right;
+  }
+  .speed {
+    appearance: none;
+    cursor: pointer;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink-2);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 7px 11px;
+    border-radius: 7px;
+  }
+  .speed:hover { border-color: var(--dim); }
+
+  .alive { display: flex; gap: 14px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+  .alivegroup { display: flex; align-items: center; gap: 6px; }
+  .alivegroup .lbl { font-family: var(--mono); font-size: 11px; color: var(--dim); letter-spacing: 0.06em; }
+  .pip { width: 9px; height: 9px; border-radius: 99px; display: inline-block; transition: opacity 0.2s ease; }
+  .pip.ct { background: var(--ct); }
+  .pip.t { background: var(--t); }
+  .pip.dead { opacity: 0.22; }
+
+  .log { padding: 4px; max-height: 560px; overflow-y: auto; }
+  .log h3 {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin: 12px 12px 8px;
+  }
+  .ev {
+    display: grid;
+    grid-template-columns: 46px 1fr;
+    gap: 10px;
+    align-items: baseline;
+    padding: 8px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    opacity: 0.38;
+    transition: opacity 0.2s ease, background 0.16s ease;
+    border: 0;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-family: var(--body);
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .ev:hover { background: var(--paper); }
+  .ev.past { opacity: 1; }
+  .ev.now { opacity: 1; background: var(--paper); box-shadow: inset 2px 0 0 var(--ink); }
+  .ev .tm { font-family: var(--mono); font-size: 11.5px; color: var(--dim); font-variant-numeric: tabular-nums; }
+  .ev .who b { font-weight: 600; }
+  .ev .wpn { font-family: var(--mono); font-size: 10.5px; color: var(--dim); }
+  .ev.bomb .who { color: var(--t); font-weight: 600; }
+  .ev.defuse .who { color: var(--aqua); font-weight: 600; }
+
+  .roundhead {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: baseline;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line-2);
+    flex-wrap: wrap;
+  }
+  .roundhead .big { font-family: var(--display); font-weight: 700; font-size: 20px; letter-spacing: -0.02em; }
+  .roundhead .res { font-family: var(--mono); font-size: 11.5px; color: var(--dim); }
+
+  /* ---------- Insights ---------- */
+
+  .decisive {
+    margin-top: 18px;
+    border-radius: var(--r);
+    border: 1px solid var(--line);
+    background: linear-gradient(120deg, rgba(235,104,52,0.07), var(--card) 42%);
+    box-shadow: var(--shadow-2);
+    display: grid;
+    grid-template-columns: 148px minmax(0, 1fr);
+    overflow: hidden;
+  }
+  @media (max-width: 720px) { .decisive { grid-template-columns: 1fr; } }
+  .decisive .stamp {
+    padding: 22px 18px;
+    border-right: 1px solid var(--line-2);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: rgba(255,255,255,0.5);
+  }
+  .decisive .stamp .k { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--t); }
+  .decisive .stamp .n {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(52px, 9vw, 74px);
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    margin-top: 4px;
+  }
+  .decisive .stamp .s { font-family: var(--mono); font-size: 11.5px; color: var(--dim); margin-top: 8px; }
+  .decisive .story { padding: 22px; }
+  .decisive .story p.t {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: clamp(17px, 2.2vw, 21px);
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+    margin: 0 0 14px;
+    text-wrap: balance;
+  }
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 4px 9px;
+    border-radius: 99px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink-2);
+  }
+  .tag.hot { color: var(--t); border-color: rgba(235,104,52,0.4); background: var(--t-soft); }
+
+  .pair { margin-top: 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 14px; }
+  .fig { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  .fig .hd { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .fig .role { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; }
+  .fig.mvp .role { color: var(--ct); }
+  .fig.piano .role { color: var(--aqua); }
+  .fig .nm { font-family: var(--display); font-weight: 700; font-size: 27px; letter-spacing: -0.02em; margin: 5px 0 0; }
+  .fig .sub { font-family: var(--mono); font-size: 11px; color: var(--dim); margin-top: 3px; }
+  .fig p { margin: 0; font-size: 13.5px; color: var(--ink-2); }
+  .fig p b { color: var(--ink); font-weight: 600; }
+
+  .rows { display: flex; flex-direction: column; gap: 8px; }
+  .row { display: grid; grid-template-columns: 88px 1fr 48px; gap: 10px; align-items: center; }
+  .row .k { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--dim); }
+  .row .v { font-family: var(--mono); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+  .meter { height: 6px; background: var(--paper-2); border-radius: 99px; overflow: hidden; }
+  .meter > i { display: block; height: 100%; border-radius: 99px; }
+
+  /* ---------- Gráficos e listas ---------- */
+
+  .plot { margin-top: 16px; padding: 18px 16px 12px; }
+  .plot svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; font-family: var(--mono); font-size: 11px; color: var(--dim); margin-top: 12px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 9px; height: 9px; border-radius: 2px; }
+
+  .plist { margin-top: 16px; overflow: hidden; }
+  .prow {
+    display: grid;
+    grid-template-columns: minmax(110px, 1.1fr) 58px 54px minmax(110px, 1.5fr) 62px;
+    gap: 14px;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line-2);
+  }
+  .prow:last-child { border-bottom: 0; }
+  .prow.hd { background: var(--paper); font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); }
+  .prow .nk { font-family: var(--display); font-weight: 600; font-size: 16px; letter-spacing: -0.01em; }
+  .prow .nk small { display: block; font-family: var(--mono); font-size: 10px; font-weight: 400; color: var(--dim); }
+  .prow .n { font-family: var(--mono); font-size: 13.5px; font-variant-numeric: tabular-nums; }
+  .prow .n.q { color: var(--ink-2); font-size: 12.5px; }
+  .prow .sp svg { display: block; width: 100%; height: 28px; }
+  @media (max-width: 700px) {
+    .prow { grid-template-columns: 1fr 54px 52px; grid-template-areas: "nk adr kast" "sp sp sp"; row-gap: 8px; }
+    .prow .sp { grid-area: sp; }
+    .prow .hide { display: none; }
+  }
+
+  .facets { margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 235px), 1fr)); gap: 12px; }
+  .facet { padding: 15px; }
+  .facet h4 { font-family: var(--display); font-weight: 700; font-size: 16px; margin: 0; letter-spacing: -0.015em; }
+  .facet .mt { font-family: var(--mono); font-size: 10.5px; color: var(--dim); margin-top: 2px; }
+  .facet ul { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+  .facet li { font-family: var(--mono); font-size: 11px; color: var(--ink-2); display: flex; justify-content: space-between; gap: 8px; }
+  .facet li span { color: var(--dim); }
+
+  .callout {
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-radius: var(--r);
+    border: 1px solid rgba(235,104,52,0.32);
+    background: var(--t-soft);
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+  .callout b { color: var(--ink); font-weight: 600; }
+
+  .foot {
+    margin-top: 44px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    font-size: 12.5px;
+    color: var(--dim);
+    line-height: 1.75;
+  }
+  .foot b { color: var(--ink-2); font-weight: 600; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+</style>
+
+<div class="shell">
+
+  <header class="top">
+    <div class="crumbs">
+      <span id="c-map">de_ancient</span><em>/</em>
+      <span id="c-rounds">22 rounds</span><em>/</em>
+      <span>FACEIT</span><em>/</em>
+      <span>parser próprio · awpy + demoparser2</span>
+    </div>
+
+    <div class="lockup">
+      <h1>Uma partida,<br>round a round</h1>
+      <div class="scorebox">
+        <div>
+          <div class="tm">TIME A</div>
+          <div class="s win" id="sa">13</div>
+        </div>
+        <div class="vs">—</div>
+        <div>
+          <div class="tm">TIME B</div>
+          <div class="s lose" id="sb">9</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="teams">
+      <div class="teamcard won" id="tc-a"></div>
+      <div class="teamcard" id="tc-b"></div>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Seções">
+    <button role="tab" aria-selected="true" data-tab="replay">Replay</button>
+    <button role="tab" aria-selected="false" data-tab="insights">Insights</button>
+    <button role="tab" aria-selected="false" data-tab="rounds">Placar</button>
+    <button role="tab" aria-selected="false" data-tab="jogadores">Jogadores</button>
+    <button role="tab" aria-selected="false" data-tab="estilos">Estilos</button>
+  </nav>
+
+  <!-- REPLAY -->
+  <section class="panel" data-panel="replay">
+    <div class="eyebrow">Reconstrução do round</div>
+    <h2 class="sec">O que aconteceu no mapa</h2>
+    <p class="lead">
+      Posições reais a 4 quadros por segundo, com kills, plant e defuse no lugar em que
+      aconteceram. Escolha um round — a barra colorida em cada botão indica quem venceu.
+      O contorno do mapa não foi desenhado: ele é a soma das posições da partida inteira.
+    </p>
+
+    <div class="roundstrip" id="strip" role="group" aria-label="Escolher round"></div>
+
+    <div class="stage">
+      <aside class="card squad" id="squad-ct" aria-label="Contra-terroristas"></aside>
+
+      <div class="card board">
+        <div class="roundhead">
+          <div class="big" id="rh-round">Round 1</div>
+          <div class="res" id="rh-res"></div>
+        </div>
+
+        <canvas id="map" width="820" height="950" role="img" aria-label="Mapa do round"></canvas>
+
+        <div class="transport">
+          <button class="play" id="play" aria-label="Reproduzir">▶</button>
+          <div class="scrub">
+            <div class="marks" id="marks" aria-hidden="true"></div>
+            <input type="range" id="scrub" min="0" max="100" value="0" step="1" aria-label="Linha do tempo do round">
+          </div>
+          <div class="clock" id="clock">0,0s</div>
+          <button class="speed" id="speed">1×</button>
+        </div>
+
+        <div class="maplegend">
+          <span><i class="sw ct"></i>CT</span>
+          <span><i class="sw t"></i>T</span>
+          <span><i class="sw smoke"></i>Smoke</span>
+          <span><i class="sw fire"></i>Molotov</span>
+          <span><i class="sw he"></i>HE</span>
+          <span><i class="sw flash"></i>Flash</span>
+          <span><i class="sw kill"></i>kill</span>
+          <span><i class="sw bomb"></i>C4</span>
+        </div>
+      </div>
+
+      <aside class="card squad" id="squad-t" aria-label="Terroristas"></aside>
+    </div>
+
+    <div class="card feed">
+      <h3>Linha do tempo do round</h3>
+      <div class="log" id="log"></div>
+    </div>
+
+    <div class="card autopsy" id="autopsy"></div>
+  </section>
+
+  <!-- INSIGHTS -->
+  <section class="panel" data-panel="insights" hidden>
+    <div class="eyebrow">Leitura da partida</div>
+    <h2 class="sec">O que decidiu o jogo</h2>
+    <p class="lead">
+      Três perguntas que não têm definição oficial no CS. Cada uma tem fórmula explícita e
+      mostra os componentes — dá para discordar do peso, não do fato.
+    </p>
+
+    <article class="decisive" id="decisive"></article>
+
+    <div class="pair">
+      <article class="card fig mvp" id="fig-mvp"></article>
+      <article class="card fig piano" id="fig-piano"></article>
+    </div>
+  </section>
+
+  <!-- PLACAR -->
+  <section class="panel" data-panel="rounds" hidden>
+    <div class="eyebrow">Vantagem round a round</div>
+    <h2 class="sec">A virada em dois atos</h2>
+    <p class="lead">
+      A linha é a diferença de rounds a favor do Time A. Abaixo de zero, o Time B estava na
+      frente.
+    </p>
+    <div class="card plot">
+      <svg id="swing" viewBox="0 0 900 290" role="img" aria-label="Diferença de rounds ao longo da partida"></svg>
+      <div class="legend">
+        <span><i style="background:var(--ct)"></i> Time A na frente</span>
+        <span><i style="background:var(--dim)"></i> Time B na frente</span>
+        <span><i style="background:var(--t)"></i> round decisivo</span>
+        <span><i style="background:var(--dim);width:6px;height:6px"></i> bomba plantada</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- JOGADORES -->
+  <section class="panel" data-panel="jogadores" hidden>
+    <div class="eyebrow">Dez jogadores, 22 rounds</div>
+    <h2 class="sec">Desempenho individual</h2>
+    <p class="lead">
+      A faixa de cada jogador é o dano round a round; as barras cheias marcam os rounds em
+      que ele entregou KAST.
+    </p>
+    <div class="card plist" id="players"></div>
+  </section>
+
+  <!-- ESTILOS -->
+  <section class="panel" data-panel="estilos" hidden>
+    <div class="eyebrow">Agrupamento não supervisionado</div>
+    <h2 class="sec">Quatro jeitos de jogar um round</h2>
+    <p class="lead">
+      PCA + KMeans sobre 12 features de comportamento por jogador/round — não por jogador,
+      porque o mesmo atleta é entry num round e âncora no seguinte.
+    </p>
+    <div class="facets" id="facets"></div>
+    <div class="callout" id="naming"></div>
+  </section>
+
+  <footer class="foot" id="foot"></footer>
+</div>
+
+<script id="payload" type="application/json">/*__DATA__*/</script>
+<script id="replay" type="application/json">/*__REPLAY__*/</script>
+<script id="breakdown" type="application/json">/*__BREAKDOWN__*/</script>
+<script>window.__RADAR__ = /*__RADAR__*/null;</script>
+<script>
+(function () {
+  "use strict";
+
+  var D = JSON.parse(document.getElementById("payload").textContent);
+  var R = JSON.parse(document.getElementById("replay").textContent);
+  var BD = {};
+  (JSON.parse(document.getElementById("breakdown").textContent) || []).forEach(function (b) { BD[b.round] = b; });
+  var C = { ct: "#2a78d6", t: "#eb6834", aqua: "#1baf7a", ink: "#0f1620",
+            ink2: "#4c5a6b", dim: "#7d8a99", line: "#dde3eb", paper: "#eef1f5" };
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function fmt(v, d) { return (v == null || isNaN(v)) ? "—" : Number(v).toFixed(d == null ? 1 : d); }
+  function br(v, d) { return fmt(v, d).replace(".", ","); }
+  function svgEl(tag, a) {
+    var n = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (var k in a) n.setAttribute(k, a[k]);
+    return n;
+  }
+
+  /* ---------------- Cabeçalho ---------------- */
+
+  var M = D.match;
+  document.getElementById("c-map").textContent = M.map;
+  document.getElementById("c-rounds").textContent = M.rounds + " rounds";
+  document.getElementById("sa").textContent = M.score_a;
+  document.getElementById("sb").textContent = M.score_b;
+  var aWins = M.score_a > M.score_b;
+  document.getElementById("sa").className = "s " + (aWins ? "win" : "lose");
+  document.getElementById("sb").className = "s " + (aWins ? "lose" : "win");
+  document.getElementById("tc-a").innerHTML =
+    "<b>Time A</b><span class='nicks'>" + M.rosters.A.join(" · ") + "</span>";
+  document.getElementById("tc-b").innerHTML =
+    "<b>Time B</b><span class='nicks'>" + M.rosters.B.join(" · ") + "</span>";
+  if (!aWins) {
+    document.getElementById("tc-a").classList.remove("won");
+    document.getElementById("tc-b").classList.add("won");
+  }
+
+  /* ================= REPLAY ================= */
+
+  var cv = document.getElementById("map");
+  var ctx = cv.getContext("2d");
+
+  // Radar oficial do mapa. A correspondência entre coordenada de jogo e pixel
+  // não vem com a imagem — ela foi calibrada ajustando a nuvem de posições da
+  // partida contra a área caminhável do radar (ver scripts/prepare_radar.py).
+  var RAD = window.__RADAR__ || null;
+  cv.width = RAD ? RAD.width : 860;
+  cv.height = RAD ? RAD.height : 860;
+
+  function mx(x) { return (x - RAD.origin_x) * RAD.scale_px_per_unit; }
+  function my(y) { return (RAD.origin_y - y) * RAD.scale_px_per_unit; }
+
+  var plate = document.createElement("canvas");
+  plate.width = cv.width; plate.height = cv.height;
+  var plateReady = false;
+  (function loadRadar() {
+    var p = plate.getContext("2d");
+    p.fillStyle = "#161d26";
+    p.fillRect(0, 0, plate.width, plate.height);
+    if (!RAD) { plateReady = true; return; }
+    var im = new Image();
+    im.onload = function () {
+      p.drawImage(im, 0, 0, plate.width, plate.height);
+      plateReady = true;
+      draw();
+    };
+    im.src = RAD.image;
+  })();
+
+  var NADE_COLOR = { smoke: "#9fb0c2", molotov: "#eb6834", he: "#d1495b", flash: "#e8b53a", decoy: "#7d8a99" };
+
+  var rounds = R.rounds;
+  var cur = rounds[0];
+  var frame = 0;
+  var pos = 0;
+  var playing = false;
+  var speed = 1;
+  var lastT = 0;
+
+  var strip = document.getElementById("strip");
+  rounds.forEach(function (r) {
+    var b = document.createElement("button");
+    b.className = "rchip" + (r.round === D.decisive_round.round ? " key" : "");
+    b.textContent = r.round;
+    b.dataset.w = r.winner_team;
+    b.setAttribute("aria-pressed", String(r === cur));
+    b.title = "Round " + r.round + " — Time " + r.winner_team;
+    b.addEventListener("click", function () { selectRound(r); });
+    strip.appendChild(b);
+  });
+
+  var REASON = {
+    t_killed: "todos os T eliminados",
+    ct_killed: "todos os CT eliminados",
+    bomb_defused: "bomba desarmada",
+    bomb_exploded: "bomba explodiu",
+    target_bombed: "bomba explodiu"
+  };
+
+  function selectRound(r) {
+    cur = r;
+    frame = 0;
+    pos = 0;
+    setPlaying(false);
+    Array.prototype.forEach.call(strip.children, function (b, i) {
+      b.setAttribute("aria-pressed", String(rounds[i] === r));
+    });
+    document.getElementById("scrub").max = r.frames - 1;
+    document.getElementById("scrub").value = 0;
+    document.getElementById("rh-round").textContent = "Round " + r.round;
+    document.getElementById("rh-res").textContent =
+      "Time " + r.winner_team + " · " + (REASON[r.reason] || r.reason) + " · " + br(r.seconds) + "s";
+    buildLog();
+    buildMarks();
+    buildSquads();
+    buildAutopsy();
+    draw();
+  }
+
+  // Marcadores de evento sobre a barra de tempo: dá pra ver onde estão as
+  // kills antes de arrastar, como num software de análise de demo.
+  function buildMarks() {
+    var host = document.getElementById("marks");
+    host.innerHTML = cur.events.map(function (e) {
+      var cls = e.type === "kill" ? (e.side === "ct" ? "ct" : "t") : "bomb";
+      return "<i class='" + cls + "' style='left:" + (100 * e.f / (cur.frames - 1)) + "%'></i>";
+    }).join("");
+  }
+
+  var MOMENT_ICON = {
+    abertura_perdida: "◆",
+    morte_isolada: "◇",
+    virada_numerica: "▲",
+    sem_utility: "○",
+    sem_plant: "○",
+    pos_plant: "▲"
+  };
+
+  function buildAutopsy() {
+    var host = document.getElementById("autopsy");
+    var b = BD[cur.round];
+    if (!b) { host.innerHTML = ""; return; }
+
+    var tags = b.tags.map(function (t) { return "<span class='tag'>" + t + "</span>"; }).join("");
+    var moments = b.moments.map(function (m, i) {
+      var extra = "";
+      var title = "";
+      if (m.kind === "morte_isolada") {
+        extra = "<small>morreu para " + m.by + "</small>";
+        // a distância exata fica no title: vira evidência auditável sem poluir
+        // a leitura com unidades do motor do jogo
+        title = " title='companheiro mais próximo a " + m.distance + " unidades'";
+      } else if (m.kind === "abertura_perdida") {
+        extra = "<small>morreu para " + m.by + (m.traded ? " · trocado" : " · sem troca") + "</small>";
+      } else if (m.kind === "virada_numerica") {
+        extra = "<small>" + m.by + " matou " + m.victim + "</small>";
+      }
+      var who = m.who ? "<b>" + m.who + "</b> " : "";
+      return "<button class='moment' data-i='" + i + "'" + title + ">" +
+        "<span class='mt'>" + br(m.t) + "s</span>" +
+        "<span class='ic'>" + (MOMENT_ICON[m.kind] || "•") + "</span>" +
+        "<span class='mx'>" + who + m.text + extra + "</span></button>";
+    }).join("");
+
+    host.innerHTML =
+      "<div class='ah'><h3>Por que o Time " + b.loser_team + " perdeu este round</h3>" +
+      "<div class='tags'>" + tags + "</div></div>" +
+      (b.eco ? "<p class='why'>Round de economia (equipamento médio de " + b.equip_value +
+        "): perder aqui é esperado, e o que vale olhar é quanto dano o time conseguiu tirar.</p>" : "") +
+      "<div class='mlist'>" + (moments || "<p class='why'>Nada fora do padrão: o round foi perdido no confronto direto, sem erro estrutural detectável.</p>") + "</div>" +
+      "<p class='caveat'>São padrões observáveis que costumam custar rounds — morrer sem cobertura, " +
+      "ficar em desvantagem que não se recupera, não usar utility. <b>Não é um veredito sobre a decisão " +
+      "tomada</b>: por que o jogador estava ali depende do call e do que o adversário mostrou, e isso o " +
+      "demo não registra. Clique num momento para assistir.</p>";
+
+    Array.prototype.forEach.call(host.querySelectorAll(".moment"), function (btn) {
+      btn.addEventListener("click", function () {
+        var m = b.moments[Number(btn.dataset.i)];
+        var f = Math.max(0, Math.min(cur.frames - 1, Math.round(m.t * R.sample_hz)));
+        pos = f;
+        document.getElementById("scrub").value = f;
+        setPlaying(false);
+        draw();
+        document.querySelector(".board").scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    });
+  }
+
+  function buildSquads() {
+    [["ct", "squad-ct"], ["t", "squad-t"]].forEach(function (pair) {
+      var side = pair[0];
+      var host = document.getElementById(pair[1]);
+      host.className = "card squad " + side;
+      var mine = cur.players.filter(function (p) { return p.side === side; });
+      var team = mine.length ? mine[0].team : "?";
+      host.innerHTML = "<h4>" + (side === "ct" ? "CT" : "T") + " <b>time " + team + "</b></h4>" +
+        mine.map(function (p, i) {
+          return "<div class='plr' data-side='" + side + "' data-i='" + i + "'>" +
+            "<div class='nm'>" + p.name + "</div><div class='hpn'>100</div>" +
+            "<div class='hpbar'><i style='width:100%;background:" + (side === "ct" ? C.ct : C.t) + "'></i></div>" +
+            "<div class='wp'>—</div></div>";
+        }).join("");
+    });
+  }
+
+  function updateSquads() {
+    ["ct", "t"].forEach(function (side) {
+      var host = document.getElementById(side === "ct" ? "squad-ct" : "squad-t");
+      var mine = cur.players.filter(function (p) { return p.side === side; });
+      Array.prototype.forEach.call(host.querySelectorAll(".plr"), function (row, i) {
+        var p = mine[i];
+        if (!p) return;
+        var hp = p.alive[frame] ? p.hp[frame] : 0;
+        row.classList.toggle("out", !p.alive[frame]);
+        row.querySelector(".hpn").textContent = hp;
+        row.querySelector(".hpbar > i").style.width = Math.max(0, hp) + "%";
+        var w = p.w[frame];
+        row.querySelector(".wp").textContent = w >= 0 ? (cur.weapons[w] || "—") : "—";
+      });
+    });
+  }
+
+  function buildLog() {
+    var log = document.getElementById("log");
+    log.innerHTML = "";
+    cur.events.forEach(function (e, i) {
+      var b = document.createElement("button");
+      b.className = "ev" + (e.type === "plant" || e.type === "explode" ? " bomb" : "") +
+        (e.type === "defuse" ? " defuse" : "");
+      b.dataset.i = i;
+      var text;
+      if (e.type === "kill") {
+        text = "<span class='who'><b>" + e.attacker + "</b> matou " + e.victim + "</span> " +
+          "<span class='wpn'>" + (e.weapon || "").replace(/_/g, " ") + (e.headshot ? " · hs" : "") + "</span>";
+      } else if (e.type === "plant") {
+        text = "<span class='who'>" + (e.player || "T") + " plantou</span> <span class='wpn'>" +
+          (e.site || "").replace("Bombsite", "bomb ") + "</span>";
+      } else if (e.type === "defuse") {
+        text = "<span class='who'>" + (e.player || "CT") + " desarmou</span>";
+      } else {
+        text = "<span class='who'>a bomba explodiu</span>";
+      }
+      b.innerHTML = "<span class='tm'>" + br(e.t) + "s</span><span>" + text + "</span>";
+      b.addEventListener("click", function () {
+        frame = e.f;
+        document.getElementById("scrub").value = frame;
+        setPlaying(false);
+        draw();
+      });
+      log.appendChild(b);
+    });
+  }
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function mmss(sec) {
+    var m = Math.floor(sec / 60), r = Math.floor(sec % 60);
+    return m + ":" + (r < 10 ? "0" : "") + r;
+  }
+
+  function draw() {
+    var i0 = Math.floor(pos);
+    var i1 = Math.min(cur.frames - 1, i0 + 1);
+    var tt = pos - i0;
+    frame = i0;
+
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    ctx.drawImage(plate, 0, 0);
+
+    // Smoke e Molotov ocupam área, então são desenhados como zona e não como
+    // ponto. O raio segue o raio real de efeito no jogo, convertido pela mesma
+    // escala do radar.
+    var SMOKE_R = 144 * RAD.scale_px_per_unit;
+    var FIRE_R = 120 * RAD.scale_px_per_unit;
+
+    cur.smokes.forEach(function (z) {
+      if (frame < z.f0 || frame > z.f1) return;
+      var g = ctx.createRadialGradient(mx(z.x), my(z.y), 0, mx(z.x), my(z.y), SMOKE_R);
+      g.addColorStop(0, "rgba(214,223,233,0.78)");
+      g.addColorStop(0.7, "rgba(190,203,217,0.5)");
+      g.addColorStop(1, "rgba(190,203,217,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(mx(z.x), my(z.y), SMOKE_R, 0, Math.PI * 2); ctx.fill();
+    });
+    cur.fires.forEach(function (z) {
+      if (frame < z.f0 || frame > z.f1) return;
+      var g = ctx.createRadialGradient(mx(z.x), my(z.y), 0, mx(z.x), my(z.y), FIRE_R);
+      g.addColorStop(0, "rgba(235,104,52,0.62)");
+      g.addColorStop(1, "rgba(235,104,52,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(mx(z.x), my(z.y), FIRE_R, 0, Math.PI * 2); ctx.fill();
+    });
+
+    // Granadas em voo. O rastro é curto e some atrás da granada (segmentos com
+    // alfa decrescente em vez de uma linha só): uma linha inteira e opaca
+    // riscava o mapa e competia com o rastro dos jogadores.
+    cur.nades.forEach(function (n) {
+      var k = frame - n.f0;
+      if (k < 0 || k >= n.x.length) return;
+      var col = NADE_COLOR[n.k] || C.dim;
+      var TAIL = 5;
+
+      for (var i = Math.max(1, k - TAIL); i <= k; i++) {
+        var a = (i - Math.max(0, k - TAIL)) / TAIL;
+        ctx.globalAlpha = 0.1 + a * 0.35;
+        ctx.strokeStyle = col;
+        ctx.lineWidth = 0.8 + a * 1.4;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(mx(n.x[i - 1]), my(n.y[i - 1]));
+        ctx.lineTo(mx(n.x[i]), my(n.y[i]));
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+
+      var gx = mx(n.x[k]), gy = my(n.y[k]);
+
+      // no último quadro de voo, um anel curto marca onde ela caiu
+      if (k === n.x.length - 1) {
+        ctx.globalAlpha = 0.5;
+        ctx.strokeStyle = col;
+        ctx.lineWidth = 1.4;
+        ctx.beginPath(); ctx.arc(gx, gy, 9, 0, Math.PI * 2); ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.fillStyle = col;
+      ctx.beginPath(); ctx.arc(gx, gy, 3.4, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,0.9)";
+      ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.arc(gx, gy, 3.4, 0, Math.PI * 2); ctx.stroke();
+    });
+
+    // rastro percorrido até aqui
+    cur.players.forEach(function (p) {
+      var color = p.side === "ct" ? C.ct : C.t;
+      ctx.strokeStyle = color;
+      ctx.globalAlpha = 0.22;
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      var started = false;
+      for (var i = Math.max(0, frame - 60); i <= frame; i++) {
+        if (!p.alive[i]) break;
+        var X = mx(p.x[i]), Y = my(p.y[i]);
+        if (!started) { ctx.moveTo(X, Y); started = true; } else { ctx.lineTo(X, Y); }
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    });
+
+    // eventos já ocorridos
+    cur.events.forEach(function (e) {
+      if (e.f > frame) return;
+      var age = frame - e.f;
+      if (e.type === "kill") {
+        var a = Math.max(0.45, 1 - age / 90);
+        ctx.globalAlpha = a;
+        ctx.strokeStyle = e.side === "ct" ? C.ct : C.t;
+        ctx.lineWidth = 2.6;
+        ctx.lineCap = "round";
+        var X = mx(e.x), Y = my(e.y), s = 6.5;
+        ctx.beginPath();
+        ctx.moveTo(X - s, Y - s); ctx.lineTo(X + s, Y + s);
+        ctx.moveTo(X + s, Y - s); ctx.lineTo(X - s, Y + s);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      } else if (e.type === "plant" && e.x != null) {
+        ctx.fillStyle = C.t;
+        ctx.globalAlpha = 0.9;
+        ctx.beginPath();
+        ctx.rect(mx(e.x) - 5, my(e.y) - 5, 10, 10);
+        ctx.fill();
+        ctx.globalAlpha = 0.25;
+        ctx.beginPath();
+        ctx.arc(mx(e.x), my(e.y), 12 + (age % 24), 0, Math.PI * 2);
+        ctx.strokeStyle = C.t; ctx.lineWidth = 1.5; ctx.stroke();
+        ctx.globalAlpha = 1;
+      } else if (e.type === "defuse" && e.x != null) {
+        ctx.fillStyle = C.aqua;
+        ctx.beginPath();
+        ctx.arc(mx(e.x), my(e.y), 6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    });
+
+    // jogadores — posição interpolada entre os quadros amostrados, senão o
+    // movimento fica em saltos de 250ms
+    cur.players.forEach(function (p) {
+      var alive = p.alive[i0];
+      var canLerp = alive && p.alive[i1];
+      var X = canLerp ? lerp(mx(p.x[i0]), mx(p.x[i1]), tt) : mx(p.x[i0]);
+      var Y = canLerp ? lerp(my(p.y[i0]), my(p.y[i1]), tt) : my(p.y[i0]);
+      var color = p.side === "ct" ? C.ct : C.t;
+
+      if (!alive) {
+        ctx.globalAlpha = 0.5;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(X - 3.5, Y - 3.5); ctx.lineTo(X + 3.5, Y + 3.5);
+        ctx.moveTo(X + 3.5, Y - 3.5); ctx.lineTo(X - 3.5, Y + 3.5);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        return;
+      }
+
+      ctx.save();
+      ctx.shadowColor = "rgba(8,12,18,0.55)";
+      ctx.shadowBlur = 6;
+      ctx.shadowOffsetY = 1;
+      ctx.fillStyle = "#fff";
+      ctx.beginPath(); ctx.arc(X, Y, 8.2, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.arc(X, Y, 6, 0, Math.PI * 2); ctx.fill();
+
+      // anel de vida: encolhe conforme o jogador toma dano
+      var hp = Math.max(0, Math.min(100, p.hp[i0])) / 100;
+      if (hp < 1) {
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 2.4;
+        ctx.beginPath();
+        ctx.arc(X, Y, 10.4, -Math.PI / 2, -Math.PI / 2 + hp * Math.PI * 2);
+        ctx.stroke();
+      }
+
+      ctx.font = "500 12px 'DM Mono', ui-monospace, monospace";
+      ctx.textAlign = "center";
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "rgba(14,20,27,0.85)";
+      ctx.strokeText(p.name.slice(0, 9), X, Y - 14);
+      ctx.fillStyle = "#eef2f7";
+      ctx.fillText(p.name.slice(0, 9), X, Y - 14);
+    });
+
+    // estado da interface
+    var el = pos / R.sample_hz, tot = (cur.frames - 1) / R.sample_hz;
+    document.getElementById("clock").textContent = mmss(el) + " / " + mmss(tot);
+    var evs = document.querySelectorAll(".ev");
+    var lastPast = -1;
+    cur.events.forEach(function (e, i) { if (e.f <= frame) lastPast = i; });
+    Array.prototype.forEach.call(evs, function (b, i) {
+      b.classList.toggle("past", i <= lastPast);
+      b.classList.toggle("now", i === lastPast);
+    });
+
+    updateSquads();
+  }
+
+  function setPlaying(v) {
+    playing = v;
+    document.getElementById("play").textContent = v ? "❚❚" : "▶";
+    document.getElementById("play").setAttribute("aria-label", v ? "Pausar" : "Reproduzir");
+    if (v) { lastT = performance.now(); requestAnimationFrame(tick); }
+  }
+
+  // Avança em tempo contínuo e redesenha a cada quadro da tela: o replay foi
+  // amostrado a 4 Hz, mas a interpolação em `draw` faz o movimento sair liso.
+  function tick(now) {
+    if (!playing) return;
+    var dt = Math.min(0.1, (now - lastT) / 1000);
+    lastT = now;
+    pos = Math.min(cur.frames - 1, pos + dt * R.sample_hz * speed);
+    document.getElementById("scrub").value = Math.floor(pos);
+    draw();
+    if (pos >= cur.frames - 1) { setPlaying(false); return; }
+    requestAnimationFrame(tick);
+  }
+
+  document.getElementById("play").addEventListener("click", function () {
+    if (pos >= cur.frames - 1) { pos = 0; document.getElementById("scrub").value = 0; }
+    setPlaying(!playing);
+  });
+  document.getElementById("scrub").addEventListener("input", function (e) {
+    pos = Number(e.target.value);
+    setPlaying(false);
+    draw();
+  });
+  document.getElementById("speed").addEventListener("click", function () {
+    speed = speed === 1 ? 2 : speed === 2 ? 4 : 1;
+    this.textContent = speed + "×";
+  });
+
+  selectRound(rounds.find(function (r) { return r.round === D.decisive_round.round; }) || rounds[0]);
+
+  /* ================= INSIGHTS ================= */
+
+  var dr = D.decisive_round;
+  document.getElementById("decisive").innerHTML =
+    "<div class='stamp'><div class='k'>Round decisivo</div><div class='n'>" + dr.round + "</div>" +
+    "<div class='s'>placar " + dr.score_a + "–" + dr.score_b + " · Time " + dr.winner_team + "</div></div>" +
+    "<div class='story'><p class='t'>Empate em 9–9. O Time A cai para dois jogadores contra quatro, " +
+    "_AmadeuS mata os quatro no retake e Z_o_R_o desarma com a última kill ainda no ar — " +
+    "a liderança que sai desse round não volta mais.</p>" +
+    "<div class='tags'>" + dr.reasons.map(function (r, i) {
+      return "<span class='tag" + (i === 0 ? " hot" : "") + "'>" + r + "</span>";
+    }).join("") + "</div>" +
+    "<p class='lead tight' style='margin-top:14px'>Critério: virada de placar não devolvida (peso maior), " +
+    "desvantagem numérica superada, multikill, clutch e proximidade no placar. O round 5 vem em " +
+    "segundo, com o 1v4 de donk666.</p></div>";
+
+  function ring(pct, color) {
+    var r = 26, c = 2 * Math.PI * r;
+    return "<svg width='68' height='68' viewBox='0 0 68 68' aria-hidden='true'>" +
+      "<circle cx='34' cy='34' r='" + r + "' fill='none' stroke='#e7ebf1' stroke-width='5'></circle>" +
+      "<circle cx='34' cy='34' r='" + r + "' fill='none' stroke='" + color + "' stroke-width='5' " +
+      "stroke-linecap='round' stroke-dasharray='" + (c * pct) + " " + c + "' transform='rotate(-90 34 34)'></circle>" +
+      "<text x='34' y='39' text-anchor='middle' fill='" + C.ink + "' font-family=\"DM Mono, monospace\" " +
+      "font-size='15' font-weight='500'>" + Math.round(pct * 100) + "</text></svg>";
+  }
+  function meters(rows) {
+    return "<div class='rows'>" + rows.map(function (r) {
+      return "<div class='row'><div class='k'>" + r.k + "</div>" +
+        "<div class='meter'><i style='width:" + Math.max(3, Math.min(100, r.pct * 100)) + "%;background:" + r.c + "'></i></div>" +
+        "<div class='v'>" + r.v + "</div></div>";
+    }).join("") + "</div>";
+  }
+
+  var mvp = D.players.slice().sort(function (a, b) { return b.mvp_index - a.mvp_index; })[0];
+  var maxAdr = Math.max.apply(null, D.players.map(function (p) { return p.adr; }));
+  var maxOpen = Math.max.apply(null, D.players.map(function (p) { return p.opening_kills; }));
+
+  document.getElementById("fig-mvp").innerHTML =
+    "<div class='hd'><div><div class='role'>MVP da partida</div><div class='nm'>" + mvp.name + "</div>" +
+    "<div class='sub'>Time " + mvp.team + " · índice de impacto</div></div>" + ring(mvp.mvp_index, C.ct) + "</div>" +
+    "<p>Lidera dano e consistência ao mesmo tempo, e fechou o round 5 sozinho contra quatro. " +
+    "<b>Não é estatística inflada</b>: o esforço aparece tanto no placar quanto no trabalho sujo.</p>" +
+    meters([
+      { k: "ADR", v: br(mvp.adr), pct: mvp.adr / maxAdr, c: C.ct },
+      { k: "KAST", v: fmt(mvp.kast_pct, 0) + "%", pct: mvp.kast_pct / 100, c: C.ct },
+      { k: "Aberturas", v: mvp.opening_kills, pct: maxOpen ? mvp.opening_kills / maxOpen : 0, c: C.ink2 },
+      { k: "Clutches", v: mvp.clutches, pct: mvp.clutches ? 1 : 0, c: C.ink2 }
+    ]);
+
+  var piano = D.players.slice().sort(function (a, b) { return b.piano_index - a.piano_index; })[0];
+  document.getElementById("fig-piano").innerHTML =
+    "<div class='hd'><div><div class='role'>Carrega piano</div><div class='nm'>" + piano.name + "</div>" +
+    "<div class='sub'>Time " + piano.team + " · esforço menos recompensa</div></div>" +
+    ring(piano.effort_index, C.aqua) + "</div>" +
+    "<p>Toma o primeiro contato em <b>" + br(piano.median_first_contact_s) + "s</b> — o mais cedo da " +
+    "partida —, gasta utility, vive entrando em briga e sobrevive a apenas <b>" +
+    Math.round(piano.survival_rate * 100) + "%</b> dos rounds. Abre espaço para os outros e termina " +
+    "com o pior KAST em quadra.</p>" +
+    meters([
+      { k: "Esforço", v: br(piano.effort_index, 2), pct: piano.effort_index, c: C.aqua },
+      { k: "Recompensa", v: br(piano.reward_index, 2), pct: piano.reward_index, c: C.dim },
+      { k: "1º contato", v: br(piano.median_first_contact_s) + "s", pct: 1 - Math.min(1, piano.median_first_contact_s / 20), c: C.ink2 },
+      { k: "Sobrevida", v: Math.round(piano.survival_rate * 100) + "%", pct: piano.survival_rate, c: C.ink2 }
+    ]);
+
+  /* ================= PLACAR ================= */
+
+  (function swing() {
+    var svg = document.getElementById("swing");
+    var W = 900, H = 290, pL = 32, pR = 12, pT = 16, pB = 44;
+    var prog = D.progression;
+    var diffs = prog.map(function (p) { return p.score_a - p.score_b; });
+    var mx2 = Math.max(4, Math.max.apply(null, diffs.map(Math.abs)));
+    var X = function (i) { return pL + (i / (prog.length - 1)) * (W - pL - pR); };
+    var Y = function (v) { return pT + (1 - (v + mx2) / (2 * mx2)) * (H - pT - pB); };
+    var z = Y(0);
+
+    svg.appendChild(svgEl("rect", { x: pL, y: pT, width: W - pL - pR, height: z - pT, fill: "rgba(42,120,214,0.045)" }));
+    svg.appendChild(svgEl("rect", { x: pL, y: z, width: W - pL - pR, height: (H - pB) - z, fill: "rgba(125,138,153,0.05)" }));
+
+    for (var g = -mx2; g <= mx2; g += 2) {
+      svg.appendChild(svgEl("line", { x1: pL, x2: W - pR, y1: Y(g), y2: Y(g),
+        stroke: g === 0 ? "#cfd7e1" : "#e7ebf1", "stroke-width": g === 0 ? 1.4 : 1 }));
+      var lb = svgEl("text", { x: pL - 8, y: Y(g) + 4, "text-anchor": "end", fill: C.dim,
+        "font-family": "DM Mono, monospace", "font-size": 10.5 });
+      lb.textContent = (g > 0 ? "+" : "") + g;
+      svg.appendChild(lb);
+    }
+
+    var area = "M " + X(0) + " " + z;
+    diffs.forEach(function (v, i) { area += " L " + X(i) + " " + Y(v); });
+    area += " L " + X(diffs.length - 1) + " " + z + " Z";
+    svg.appendChild(svgEl("path", { d: area, fill: "rgba(42,120,214,0.11)" }));
+    svg.appendChild(svgEl("path", {
+      d: diffs.map(function (v, i) { return (i ? "L" : "M") + " " + X(i) + " " + Y(v); }).join(" "),
+      fill: "none", stroke: C.ct, "stroke-width": 2.2, "stroke-linejoin": "round", "stroke-linecap": "round"
+    }));
+
+    prog.forEach(function (p, i) {
+      var dec = p.round === D.decisive_round.round;
+      svg.appendChild(svgEl("circle", { cx: X(i), cy: Y(diffs[i]), r: dec ? 5.5 : 3.2,
+        fill: dec ? C.t : (diffs[i] >= 0 ? C.ct : C.dim), stroke: "#fff", "stroke-width": dec ? 2.5 : 1.5 }));
+      if (p.round % 2 === 1 || dec) {
+        var t = svgEl("text", { x: X(i), y: H - pB + 17, "text-anchor": "middle",
+          fill: dec ? C.t : C.dim, "font-family": "DM Mono, monospace", "font-size": 10.5 });
+        t.textContent = p.round;
+        svg.appendChild(t);
+      }
+      if (p.bomb_planted) {
+        svg.appendChild(svgEl("rect", { x: X(i) - 2.5, y: H - pB + 25, width: 5, height: 5, fill: C.dim, opacity: 0.55 }));
+      }
+    });
+
+    var hx = X(M.halftime - 1);
+    svg.appendChild(svgEl("line", { x1: hx, x2: hx, y1: pT, y2: H - pB, stroke: "#cfd7e1",
+      "stroke-width": 1, "stroke-dasharray": "3 4" }));
+    var ht = svgEl("text", { x: hx + 6, y: pT + 11, fill: C.dim, "font-family": "DM Mono, monospace", "font-size": 10 });
+    ht.textContent = "intervalo";
+    svg.appendChild(ht);
+  })();
+
+  /* ================= JOGADORES ================= */
+
+  (function players() {
+    var wrap = document.getElementById("players");
+    var hd = document.createElement("div");
+    hd.className = "prow hd";
+    hd.innerHTML = "<div>Jogador</div><div>ADR</div><div>KAST</div><div>Dano round a round</div><div class='hide'>Mira</div>";
+    wrap.appendChild(hd);
+
+    var ch = {}; D.crosshair.forEach(function (c) { ch[c.name] = c; });
+    var maxD = 0;
+    Object.keys(D.damage_by_player).forEach(function (k) {
+      D.damage_by_player[k].forEach(function (v) { if (v > maxD) maxD = v; });
+    });
+
+    D.players.slice().sort(function (a, b) { return b.adr - a.adr; }).forEach(function (p) {
+      var dmg = D.damage_by_player[p.name] || [], kast = D.kast_by_player[p.name] || [];
+      var w = 240, h = 28, bw = w / dmg.length, sp = "<svg viewBox='0 0 " + w + " " + h + "' preserveAspectRatio='none'>";
+      dmg.forEach(function (v, i) {
+        var bh = Math.max(1.5, (v / maxD) * (h - 4));
+        sp += "<rect x='" + (i * bw + 0.7) + "' y='" + (h - bh) + "' width='" + (bw - 1.4) +
+          "' height='" + bh + "' fill='" + (kast[i] === 1 ? C.ct : "#c9d3de") + "' rx='1'></rect>";
+      });
+      sp += "</svg>";
+
+      var row = document.createElement("div");
+      row.className = "prow";
+      row.innerHTML = "<div class='nk'>" + p.name + "<small>time " + p.team + "</small></div>" +
+        "<div class='n'>" + br(p.adr) + "</div><div class='n q'>" + fmt(p.kast_pct, 0) + "%</div>" +
+        "<div class='sp'>" + sp + "</div>" +
+        "<div class='n q hide'>" + fmt((ch[p.name] || {}).crosshair_score, 0) + "</div>";
+      wrap.appendChild(row);
+    });
+  })();
+
+  /* ================= ESTILOS ================= */
+
+  (function facets() {
+    var wrap = document.getElementById("facets");
+    var pts = D.clusters;
+    var xs = pts.map(function (p) { return p.pca_1; }), ys = pts.map(function (p) { return p.pca_2; });
+    var nx = Math.min.apply(null, xs), Mx = Math.max.apply(null, xs);
+    var ny = Math.min.apply(null, ys), My = Math.max.apply(null, ys);
+
+    D.cluster_profiles.slice().sort(function (a, b) { return a.cluster - b.cluster; }).forEach(function (pr) {
+      var W = 230, H = 140, pd = 11;
+      var px = function (v) { return pd + ((v - nx) / (Mx - nx)) * (W - pd * 2); };
+      var py = function (v) { return H - pd - ((v - ny) / (My - ny)) * (H - pd * 2); };
+      var dots = pts.map(function (p) {
+        var on = p.cluster === pr.cluster;
+        return "<circle cx='" + px(p.pca_1).toFixed(1) + "' cy='" + py(p.pca_2).toFixed(1) +
+          "' r='" + (on ? 3.4 : 1.9) + "' fill='" + (on ? C.ct : "#d3dbe4") +
+          (on ? "' stroke='#fff' stroke-width='1'" : "'") + "></circle>";
+      }).join("");
+
+      var card = document.createElement("div");
+      card.className = "card facet";
+      card.innerHTML = "<h4>Cluster " + pr.cluster + "</h4><div class='mt'>" + pr.n_rounds +
+        " rounds · " + Math.round(100 * pr.n_rounds / pts.length) + "% da amostra</div>" +
+        "<svg viewBox='0 0 " + W + " " + H + "' style='width:100%;height:auto;margin-top:10px'>" + dots + "</svg>" +
+        "<ul><li><span>dano</span>" + fmt(pr.damage, 0) + "</li>" +
+        "<li><span>1º contato</span>" + br(pr.time_of_first_contact_s) + "s</li>" +
+        "<li><span>distância do time</span>" + fmt(pr.avg_distance_from_team, 0) + "u</li>" +
+        "<li><span>sobrevida</span>" + Math.round(pr.survived * 100) + "%</li>" +
+        "<li><span>utility</span>" + fmt(pr.utility_damage, 0) + "</li></ul>";
+      wrap.appendChild(card);
+    });
+
+    document.getElementById("naming").innerHTML =
+      "<b>Os clusters ainda não têm nome — e isso é proposital.</b> O KMeans encontra o " +
+      "agrupamento, mas “entry fragger”, “lurker” e “suporte de utility” são leituras de jogo que o " +
+      "algoritmo não tem como fazer. A nomeação fica com quem entende do jogo; rótulo automático " +
+      "daria ao número uma autoridade que ele não tem.";
+  })();
+
+  document.getElementById("foot").innerHTML =
+    "<b>Metodologia.</b> Parsing com awpy sobre demoparser2, métricas próprias em Polars. A convenção " +
+    "de ângulos do CS2 foi validada contra os dados, não assumida: no tick de cada kill a mira do " +
+    "atacante fica a 1,76° da vítima na convenção adotada, contra 6,52° na invertida.<br>" +
+    "<b>Limites.</b> Uma única partida (220 jogador-rounds); a silhueta do clustering fica em 0,205, " +
+    "estrutura fraca. Os índices de MVP e carrega piano são fórmulas declaradas, não padrões da indústria.";
+
+  /* ================= ABAS ================= */
+
+  var tabs = document.querySelectorAll(".tabs button");
+  Array.prototype.forEach.call(tabs, function (b) {
+    b.addEventListener("click", function () {
+      Array.prototype.forEach.call(tabs, function (o) { o.setAttribute("aria-selected", String(o === b)); });
+      Array.prototype.forEach.call(document.querySelectorAll("[data-panel]"), function (p) {
+        p.hidden = p.dataset.panel !== b.dataset.tab;
+      });
+      if (b.dataset.tab === "replay") draw();
+    });
+  });
+})();
+</script>
