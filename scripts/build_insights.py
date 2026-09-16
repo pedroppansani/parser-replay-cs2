@@ -14,6 +14,19 @@ import json
 from pathlib import Path
 
 import polars as pl
+from metrics.archetypes import (
+    PAPEIS,
+    compute_for_match,
+    evidencia,
+    load_reference,
+    pick_highlight,
+)
+from metrics.positioning import position_samples
+from scripts.narrative import (
+    criterio_e_vice,
+    historia_papel,
+    historia_round_decisivo,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
@@ -253,12 +266,10 @@ def build_player_indices(
     MVP — impacto que decide rounds:
         ADR, KAST, kills de abertura e clutches. Pesos declarados abaixo.
 
-    CARREGA PIANO — o trabalho que não aparece na súmula:
-        quem toma o primeiro contato cedo, gasta utility, passa o round entrando
-        em briga e morre fazendo isso, SEM a contrapartida em estatística. O
-        índice cresce com o esforço e é penalizado pela recompensa — por isso
-        um jogador que faz tudo isso E ainda lidera o ADR não é carrega piano,
-        é só o melhor jogador em campo.
+    Os papéis nomeados (carrega piano, carry, camper, repick, AWPer...) NÃO
+    estão aqui: vivem em metrics/archetypes.py, com escala ajustada no conjunto
+    das partidas. Esta função ficou só com o índice de MVP, que alimenta o anel
+    do card.
     """
     adr = basic["adr_summary"].select(["steamid", "name", "adr"])
     kast = basic["kast_summary"].select(["steamid", "kast_pct"])
@@ -309,20 +320,13 @@ def build_player_indices(
         ).alias("mvp_index")
     )
 
-    # --- Carrega piano: esforço ingrato menos recompensa estatística ---
-    effort = (
-        0.30 * _norm(df, "median_first_contact_s", invert=True)  # toma contato cedo
-        + 0.25 * _norm(df, "utility_damage_per_round")  # gasta utility
-        + 0.25 * _norm(df, "frac_entering_fight")  # vive entrando em briga
-        + 0.20 * _norm(df, "survival_rate", invert=True)  # e morre fazendo isso
-    )
-    reward = 0.5 * _norm(df, "adr") + 0.5 * _norm(df, "kast_pct")
-    df = df.with_columns(
-        effort.alias("effort_index"),
-        reward.alias("reward_index"),
-        (effort - reward).alias("piano_index"),
-    )
-
+    # O índice de "carrega piano" que existia aqui era `esforço − recompensa`, e
+    # estava errado por construção: quem tem recompensa baixa vence a subtração,
+    # e recompensa baixa é, quase sempre, jogar mal. A fórmula elegia o pior
+    # jogador e colava nele um rótulo que significa outra coisa. O papel agora
+    # vive em metrics/archetypes.py, onde é um PRODUTO de esforço por benefício
+    # ao time, e tem três formas (entrada de T, solo hold de CT, sacrifício de
+    # economia) em vez de uma fórmula de entry.
     return df.sort("mvp_index", descending=True)
 
 
@@ -363,6 +367,41 @@ def build(match_id: str) -> Path:
     decisive = pick_decisive_round(progression, situations)
     players = build_player_indices(basic, crosshair, position, features, situations, team_of)
 
+    # --- Papeis nomeados (metrics/archetypes.py) ---
+    tabelas = {
+        "ticks": ticks,
+        "kills": kills,
+        "rounds": rounds,
+        "damages": pl.read_parquet(interim / "damages.parquet"),
+    }
+    saidas = {
+        "cluster_features": features,
+        "grenades_per_round": pl.read_parquet(processed / "grenades_per_round.parquet"),
+        "awp_summary": pl.read_parquet(processed / "awp_summary.parquet"),
+    }
+    areas_path = processed / "player_round_areas.parquet"
+    areas = pl.read_parquet(areas_path) if areas_path.exists() else pl.DataFrame()
+    positions = position_samples(ticks, rounds)
+    vencedor_por_round = {
+        int(r["round_num"]): ("A" if r["winner"] == side_of_team("A", int(r["round_num"])) else "B")
+        for r in rounds.iter_rows(named=True)
+    }
+
+    referencia = load_reference()
+    papeis_round, papeis = compute_for_match(
+        tabelas, saidas, positions, areas, team_of, vencedor_por_round, reference=referencia
+    )
+    # Convenção do projeto: o round a round é persistido junto do agregado, porque
+    # é nele que a validação manual acontece. Um índice de papel plausível pode
+    # esconder lógica errada em rounds específicos.
+    papeis_round.write_parquet(processed / "archetypes_per_round.parquet")
+    papeis.write_parquet(processed / "archetypes_summary.parquet")
+
+    # Card da esquerda: quem levou o time nas costas. Card da direita: quem
+    # exemplificou COM MAIS FORCA algum dos outros papeis -- nao um slot fixo.
+    carry = papeis.sort("idx_carry", descending=True).row(0, named=True)
+    destaque = pick_highlight(papeis, excluir_steamid=carry["steamid"])
+
     meta = json.loads((processed / "match_meta.json").read_text(encoding="utf-8"))
     final = progression[-1]
 
@@ -380,6 +419,37 @@ def build(match_id: str) -> Path:
         "point_of_no_return": decisive["point_of_no_return"],
         "rounds_scored": decisive["all_rounds"],
         "players": players.to_dicts(),
+        "archetypes": papeis.to_dicts(),
+        "reference_fitted": referencia is not None,
+        "carry": {
+            "steamid": carry["steamid"],
+            "name": carry["name"],
+            "team": carry["team"],
+            "index": carry["idx_carry"],
+            "evidence": evidencia("carry", carry),
+        },
+        "highlight": destaque,
+        # As frases dos cards saem daqui prontas. O template so imprime -- ver o
+        # cabecalho de scripts/narrative.py sobre por que elas nao sao montadas
+        # em JavaScript.
+        "narrative": {
+            "decisive": historia_round_decisivo(
+                decisive["decisive"], decisive["point_of_no_return"]
+            ),
+            "criterion": criterio_e_vice(decisive["all_rounds"], decisive["decisive"]),
+            "carry": historia_papel(
+                PAPEIS["carry"][0], carry["name"],
+                evidencia("carry", carry), PAPEIS["carry"][1],
+            ),
+            "highlight": (
+                historia_papel(
+                    destaque["label"], destaque["name"],
+                    destaque["evidence"], destaque["meaning"],
+                )
+                if destaque
+                else None
+            ),
+        },
     }
 
     out = processed / "insights.json"
