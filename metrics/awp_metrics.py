@@ -21,18 +21,24 @@ eu (Pedro) faço revisando, não o que o código decide.
 Todos os limiares abaixo são constantes justamente pra eu poder recalibrar
 depois de comparar com demos que eu conheço.
 
-NOTA DE QUALIDADE DE DADO (achado ao validar contra a demo real):
-A flag `is_scoped` do demo NÃO é totalmente confiável. Medindo a velocidade tick
-a tick dos jogadores com AWP na mão nessa partida, 40% dos ticks marcados como
-"scopado" aparecem com velocidade acima de 150 u/s -- fisicamente impossível,
-porque AWP scopada anda a ~58 u/s (a mediana medida no estado scopado) contra
-~208 u/s sem scope. A explicação provável é que a propriedade só é retransmitida
-quando muda e fica "presa" no último valor entre atualizações.
-Consequência de design: a classificação peek/hold é baseada em POSIÇÃO medida
-(deslocamento real entre ticks), que é confiável, e não na flag de scope. A
-`scoped_fraction` fica no output como sinal secundário/informativo, e a
-`slow_fraction` (derivada de posição) é a versão confiável de "estava parado
-esperando".
+CORREÇÃO REGISTRADA (leia antes de confiar em versões antigas deste arquivo):
+Uma versão anterior deste módulo afirmava que a flag `is_scoped` do demo era
+não confiável, alegando que 40% dos ticks "scopados" mostravam velocidade acima
+de 150 u/s -- impossível para AWP scopada. Aquilo estava ERRADO, e o erro era
+meu: o projeto assumia 128 ticks por segundo e o demo é 64, então toda
+velocidade calculada saía com o dobro do valor real.
+
+Com o tickrate correto, medido nesta partida:
+    AWP sem scope   mediana 104 u/s, p90 200 u/s  (máximo real da arma: ~200)
+    AWP scopada     mediana  29 u/s, p90 100 u/s  (só 9,7% passam de 100)
+Ou seja, a flag é coerente com a física do jogo e o "achado" não existia. Fica
+registrado aqui porque um número que ninguém questiona vira fato: a lição é que
+uma anomalia física grande é, quase sempre, erro de calibração do observador
+antes de ser defeito do dado.
+
+A classificação peek/hold continua baseada em POSIÇÃO medida, que é o sinal mais
+direto de deslocamento; `scoped_fraction` fica no output como informação
+complementar, agora sem ressalva.
 """
 from __future__ import annotations
 
@@ -62,10 +68,10 @@ PEEK_MIN_DISPLACEMENT = 250.0
 ENGAGEMENT_RESOLUTION_SECONDS = 2.0
 
 # Velocidade (u/s) abaixo da qual considero que o jogador estava efetivamente
-# parado/esperando, e não se deslocando. 100 u/s fica acima da velocidade medida
-# de AWP scopada (~58 u/s de mediana) e bem abaixo da corrida com AWP (~200 u/s),
-# então separa os dois estados com folga nos dois lados.
-SLOW_SPEED_THRESHOLD = 100.0
+# parado/esperando. Recalibrado depois da correção de tickrate: com 64 tick, a
+# AWP scopada tem mediana de 29 u/s e a sem scope 104 u/s, então 70 separa os
+# dois estados com folga dos dois lados.
+SLOW_SPEED_THRESHOLD = 70.0
 
 AWP_WEAPON_TICKS = "AWP"  # nome na coluna active_weapon_name dos ticks
 AWP_WEAPON_SHOTS = "weapon_awp"  # nome na coluna weapon da tabela de tiros
@@ -95,7 +101,7 @@ def awp_rounds(ticks: pl.DataFrame) -> pl.DataFrame:
 def first_awp_engagements(
     shots: pl.DataFrame,
     rounds: pl.DataFrame,
-    tickrate: int = 128,
+    tickrate: int = 64,
 ) -> pl.DataFrame:
     """Primeiro tiro de AWP de cada jogador em cada round, com o tempo desde o
     fim do freeze time (ou seja, desde que o round "abriu" de verdade).
@@ -130,7 +136,7 @@ def classify_engagement_style(
     engagements: pl.DataFrame,
     ticks: pl.DataFrame,
     window_seconds: float = PRE_ENGAGEMENT_WINDOW_SECONDS,
-    tickrate: int = 128,
+    tickrate: int = 64,
 ) -> pl.DataFrame:
     """Classifica cada primeira briga de AWP como hold / peek / intermediário.
 
@@ -144,8 +150,8 @@ def classify_engagement_style(
         "ficou parado" (as duas baixas).
       - fração do tempo em velocidade baixa (`slow_fraction`): derivada de
         posição, é a versão confiável de "estava parado esperando a briga vir".
-      - fração do tempo scopado: informativo apenas -- ver NOTA DE QUALIDADE DE
-        DADO no topo do módulo, a flag de scope do demo é pouco confiável.
+      - fração do tempo scopado: informação complementar (ver a correção
+        registrada no topo do módulo).
 
     O resultado fica em colunas separadas (não só o rótulo final) pra eu poder
     auditar POR QUE cada briga foi classificada daquele jeito.
@@ -228,7 +234,7 @@ def resolve_engagement_outcomes(
     engagements: pl.DataFrame,
     kills: pl.DataFrame,
     resolution_seconds: float = ENGAGEMENT_RESOLUTION_SECONDS,
-    tickrate: int = 128,
+    tickrate: int = 64,
 ) -> pl.DataFrame:
     """Diz se o AWPer ganhou ou perdeu a primeira briga dele no round.
 
@@ -316,7 +322,7 @@ def opening_kills_with_awp(kills: pl.DataFrame) -> pl.DataFrame:
 
 
 def calculate_awp_metrics(
-    tables: dict[str, pl.DataFrame], tickrate: int = 128
+    tables: dict[str, pl.DataFrame], tickrate: int = 64
 ) -> tuple[pl.DataFrame, pl.DataFrame]:
     """Junta tudo: uma linha por (round, AWPer) com a briga daquele round, e um
     resumo agregado por jogador.

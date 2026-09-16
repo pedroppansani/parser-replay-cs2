@@ -15,9 +15,36 @@ from pathlib import Path
 
 import polars as pl
 
-from metrics.player_roles import HALFTIME_ROUND, resolve_teams
-
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+# Rounds por metade (MR12: troca de lado depois do round 12).
+HALFTIME_ROUND = 12
+
+
+# ---------------------------------------------------------------------------
+# Times reais (o lado troca no intervalo; o time, não)
+# ---------------------------------------------------------------------------
+
+def resolve_teams(ticks: pl.DataFrame) -> tuple[dict[int, str], dict[str, list[str]]]:
+    """Mapeia cada jogador ao time real, usando os lados do primeiro round.
+
+    Sem isso, um placar por lado ("ct 13 x t 9") mistura os dois times, porque
+    quem era CT no primeiro tempo é T no segundo.
+    """
+    first = (
+        ticks.filter(pl.col("round_num") == 1)
+        .sort("tick")
+        .group_by("steamid")
+        .agg(pl.col("name").first(), pl.col("side").first())
+    )
+    team_of_player: dict[int, str] = {}
+    rosters: dict[str, list[str]] = {"A": [], "B": []}
+    for row in first.iter_rows(named=True):
+        # Time A = quem começou de T; Time B = quem começou de CT.
+        team = "A" if row["side"] == "t" else "B"
+        team_of_player[row["steamid"]] = team
+        rosters[team].append(row["name"])
+    return team_of_player, rosters
 
 
 def side_of_team(team: str, round_num: int) -> str:

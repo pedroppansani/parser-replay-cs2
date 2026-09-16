@@ -23,6 +23,9 @@ pronto não serve aqui.
 
 - **Python 3.11 a 3.13.** O awpy 2.0.2 NÃO suporta 3.14. A máquina tem as duas
   versões; use `py -3.12` no Windows.
+- **O demo é 64 tick, não 128.** Nunca assuma; `metrics/timing.py` detecta pelo
+  timer da bomba (40s fixos no CS2) e confere pela velocidade máxima dos
+  jogadores (~250 u/s). Todo cálculo de tempo depende disso.
 - Demos ficam em `data/raw/` (gitignored). São arquivos de 200MB+ que expiram no
   FACEIT em 30 dias.
 - Parsing leva ~14s por partida. Use `--from-interim` para reaproveitar um parse
@@ -32,16 +35,11 @@ pronto não serve aqui.
 
 ```
 parsing/      wrapper do awpy.Demo
-metrics/      geometry, basic_metrics, awp_metrics, crosshair, map_angles,
-              positioning, grenades, player_roles
+metrics/      geometry, basic_metrics, awp_metrics, crosshair, map_angles, positioning
 clustering/   playstyle (PCA + KMeans) + cluster_names.json
-dashboard/    app Streamlit + theme + web/ (template do painel de portfólio)
-docs/         site publicado no GitHub Pages (gerado por build_site.py)
-assets/radars/ radares + calibração oficiais, extraídos do CS2 local
-scripts/      process_demo, process_all_demos, extract_radars, build_site,
-              build_insights, build_breakdown, export_replay, export_web_payload
-tests/        43 testes
-demos/        .dem baixados do FACEIT (gitignored)
+dashboard/    app Streamlit + theme
+scripts/      process_demo (CLI) e show_derived_angles (calibração)
+tests/        29 testes
 data/raw/     .dem originais (gitignored)
 data/interim/ tabelas brutas em parquet (gitignored, ticks tem 1M+ linhas)
 data/processed/ métricas calculadas (versionadas — é o que o dashboard usa)
@@ -67,12 +65,11 @@ testada e estava errada.
    Jiggle peek (sair e voltar) é jogar um ângulo, não avançar espaço. Há teste
    travando isso (`test_jiggle_peek_counts_as_hold_not_peek`).
 
-2. **A flag `is_scoped` do demo é não confiável e está fora da classificação.**
-   40% dos ticks marcados como scopado mostram velocidade acima de 150 u/s,
-   impossível com AWP scopada (mediana medida: 58 u/s scopado vs 208 u/s sem
-   scope). A propriedade parece ficar presa no último valor entre atualizações.
-   A classificação usa posição medida; `scoped_fraction` fica só como sinal
-   informativo. **Não reintroduza a flag como critério.**
+2. **A classificação peek/hold usa posição medida, não a flag `is_scoped`.**
+   Posição é o sinal mais direto de deslocamento. (Registro: uma versão anterior
+   afirmava que `is_scoped` era não confiável — aquilo era consequência do bug de
+   tickrate, não defeito do dado. Com 64 tick as velocidades batem com a física
+   do jogo: 29 u/s scopado, 104 u/s sem scope.)
 
 3. **Tiro de AWP que erra mas não custa a vida é `no_trade`, não derrota.**
    Fica fora do denominador da conversão. Com AWP, muito tiro é de informação ou
@@ -113,50 +110,6 @@ testada e estava errada.
     passa nos critérios junto das três primeiras no modo escuro. Não troque por
     4 cores num gráfico só.
 
-11. **Só entidade `*Projectile` conta como granada arremessada.** A tabela
-    `grenades` do awpy mistura o projétil em voo (`CFlashbangProjectile`) com a
-    granada parada no inventário (`CFlashbang`), que tem uma amostra por tick do
-    round inteiro na posição de quem a carrega. Contar as duas inflava os
-    arremessos em ~2,5x (965 entidades contra 388 arremessos reais) e dava
-    "primeira utility do round" sempre negativa. A contagem de projéteis bate
-    exatamente com os eventos de detonação do demo, e há teste parametrizado
-    travando isso contra a demo real. **Não volte a aceitar as classes sem
-    sufixo Projectile.**
-
-12. **Utility é medida por EFEITO, não por dano.** Dano é a parte menos
-    importante da utility: a flash que cega dois defensores por 2s não aparece em
-    número de dano nenhum, e é ela que abre o round. A métrica principal é tempo
-    de cegueira imposto a inimigos, vindo do evento `player_blind` (que o awpy
-    não parseia por padrão — ver `EXTRA_EVENTS` em `parsing/parser.py`).
-
-13. **Team flash e self flash não são descontados do número de inimigos
-    cegados.** São erros diferentes com custos diferentes; um saldo único
-    apagaria os dois. Ficam em colunas próprias, e há teste travando.
-
-14. **Função de jogador exige liderar o próprio time E passar de um piso
-    absoluto.** Sem o piso, quem menos evita a AWP num time que não usa AWP
-    viraria "AWPer". Sem a comparação interna, "joga mais utility que a média dos
-    10" descreveria a partida, não um papel. Consequência aceita de propósito:
-    **não existe cota de um de cada função por time** — na partida de teste um
-    time não teve AWPer nenhum e dois jogadores ficaram sem função dominante.
-    Não "conserte" isso distribuindo rótulos até preencher cinco vagas.
-
-15. **IGL não é deduzido.** Quem chama o time não deixa rastro no demo (não há
-    áudio, e liderança não tem assinatura estatística). Rotular alguém de IGL
-    seria chute com cara de métrica.
-
-16. **Radar e calibração vêm da instalação local do CS2, não de download.**
-    `scripts/extract_radars.py` lê `pak01_dir.vpk` e usa o `pos_x/pos_y/scale`
-    do overview oficial da Valve — conversão exata, no lugar do encaixe
-    heurístico do `prepare_radar.py` (que fica como alternativa pra quem não tem
-    o jogo instalado). Não troque por radar baixado: vem recortado e obriga a
-    recalibrar no olho.
-
-17. **Andar de jogador sai do `verticalsections` do overview, não de limiar
-    inventado.** Na Nuke o corte oficial é Z = -495, e é ele que separa o A do
-    B num mapa 2D. Confere com o mapa real: abaixo do corte caem exatamente
-    BombsiteB, Vents, Tunnels, Secret, Observation, Decon e Ramp.
-
 ## Pontos de calibração — pertencem ao Pedro, não ao código
 
 Não "resolva" nenhum destes automaticamente; pergunte.
@@ -166,14 +119,7 @@ Não "resolva" nenhum destes automaticamente; pergunte.
   Rode `python -m scripts.show_derived_angles <match_id>` para ver os derivados.
   Os com `n_kills` baixo (4-5) são os que mais precisam de julgamento humano.
 - Limiares: janela de trade (5s), peek/hold (120u / 250u), janela de contato
-  (1s), tolerância de pré-fire (25°), flash efetiva (1,0s) e folga de flash
-  assist (0,5s) em `metrics/grenades.py`.
-- Pisos das funções de jogador (`TRAIT_SPECS` em `metrics/player_roles.py`):
-  AWP 25% dos rounds, entry 8s até o contato, suporte 20s de cegueira, lurk 600u,
-  âncora 10s, trade 35%, fragger 85 de ADR. Saíram da distribuição de UMA
-  partida — revisar com mais demos.
-- Override manual de função: `MANUAL_ROLES` em `metrics/player_roles.py` (o
-  painel marca o rótulo como manual quando vem daí).
+  (1s), tolerância de pré-fire (25°).
 
 ## Limitações conhecidas
 
@@ -193,32 +139,10 @@ Não "resolva" nenhum destes automaticamente; pergunte.
 ## Como validar mudanças
 
 ```bash
-py -3.12 -m pytest tests/ -v          # 43 testes
-py -3.12 -m scripts.process_demo <caminho.dem> --match-id match_01 --from-interim
+py -3.12 -m pytest tests/ -v          # 29 testes
+py -3.12 -m scripts.process_demo data/raw/match_01.dem --match-id match_01 --from-interim
 py -3.12 -m streamlit run dashboard/app.py
 ```
 
-O painel web de portfólio é uma cadeia, nessa ordem — mexer numa métrica sem
-refazer a cadeia deixa a página mostrando número velho:
-
-```bash
-py -3.12 -m scripts.build_insights match_01      # insights.json
-py -3.12 -m scripts.build_breakdown match_01     # breakdown.json (autópsia do round)
-py -3.12 -m scripts.export_replay match_01       # replay.json (trajetórias, pops, blinds, andar, callouts)
-py -3.12 -m scripts.export_web_payload match_01  # web_payload.json
-py -3.12 -m scripts.build_site                   # docs/ (site publicado, todas as partidas)
-```
-
-`scripts/process_all_demos.py` roda a cadeia inteira para toda demo da pasta
-`demos/` — é o caminho normal. Os radares são extraídos uma vez só, com
-`scripts/extract_radars.py`, e não dependem de rede.
-
-O site publicado fica em `docs/` e é servido pelo GitHub Pages em
-https://pedroppansani.github.io/parser-replay-cs2/ (repositório público — Pages
-não funciona em repositório privado no plano gratuito).
-
 Ao mexer numa métrica, confira o efeito na tabela round a round, não só no
 agregado — número agregado plausível pode esconder lógica errada.
-
-O demo de origem do `match_01` é o de_ancient de 22 rounds em `demos/`
-(`1-0007ce25-…`); os outros oito arquivos de lá são de outros mapas.

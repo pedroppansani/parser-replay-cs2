@@ -24,7 +24,7 @@ from __future__ import annotations
 import numpy as np
 import polars as pl
 
-TICKRATE = 128
+TICKRATE = 64  # medido, não assumido — ver metrics/timing.py
 
 # Janela para considerar uma morte "trocada" — mesma do resto do projeto.
 TRADE_WINDOW_SECONDS = 5.0
