@@ -43,7 +43,7 @@ clustering/   playstyle (PCA + KMeans), global_model.json e cluster_names.json
 dashboard/    app Streamlit, tokens visuais e web/ (painel de portfólio)
 scripts/      CLI de processamento, ajuste do clustering global, calibração de
               ângulos e build da página web
-tests/        49 testes (dados sintéticos + validação contra as demos reais)
+tests/        101 testes (dados sintéticos + validação contra as demos reais)
 demos/        .dem baixados do FACEIT (gitignored)
 data/raw/     .dem originais (gitignored)
 data/interim/ tabelas brutas em parquet (gitignored — ticks passa de 1M de linhas)
@@ -279,6 +279,42 @@ do piso e três jogadores ficaram sem função dominante. Isso é resultado, nã
 lacuna: distribuir rótulos até preencher cinco vagas seria inventar função pra
 caber num molde.
 
+### Papéis nomeados: carrega piano, carry, camper, repick, AWPer...
+
+Oito papéis, cada um com índice próprio e evidência. **Não são exclusivos**: um
+AWPer pode ser carry, um âncora pode ser camper.
+
+O índice de "carrega piano" que existia antes era `esforço − recompensa`, e
+estava errado por construção: quem tem recompensa baixa vence a subtração, e
+recompensa baixa é quase sempre jogar mal. A fórmula elegia o pior jogador da
+partida e colava nele um rótulo que significa o oposto. Agora é um **produto** —
+esforço vezes benefício ao time — e o papel tem **três formas**:
+
+| Forma | Como aparece no dado |
+|---|---|
+| T | é o primeiro do time a encostar no adversário, morre, e o time converte (ou troca a morte dele) |
+| CT | segura um bombsite sem companheiro na área, morre, e o time ganha o round |
+| Economia | fica sistematicamente abaixo da média de equipamento do time, ou de SMG enquanto o time está de rifle |
+
+Um jogador pode ser carrega piano a partida inteira sem nunca ter sido o primeiro
+a morrer numa execução — por isso as três formas somam antes de virar índice.
+
+**Escala.** Cada componente vira percentil contra a distribuição do conjunto das
+9 partidas (`metrics/archetype_reference.json`, mesmo padrão do modelo global de
+clustering). Normalizar dentro da partida faria alguém ficar em 1,0 mesmo numa
+partida em que ninguém se destacou.
+
+**O que o dado sustenta bem e o que não sustenta:** carrega piano, carry,
+"carregado" e AWPer são fortes; camper, repick e o baiter são médios; **rei do
+NT é fraco** — são 182 situações de último vivo em 187 rounds, ~2 por jogador por
+partida, e por isso o papel só aparece acima de um mínimo explícito de
+tentativas. Preferi dizer isso a produzir um número com n=1.
+
+Sobre o `parse_item_drops` do demoparser2, que pareceria o caminho óbvio para
+detectar drop de arma: **é a API errada** — devolve os drops de *skin* da Steam
+(`paint_index`, `paint_seed`, `paint_wear`), não troca de arma entre jogadores.
+O caminho viável é o evento `item_pickup`, ainda não incorporado.
+
 ### Três funções que estavam medindo a coisa errada
 
 As definições vieram do Pedro, e cada uma derrubou a métrica que estava no lugar.
@@ -501,6 +537,28 @@ python -m scripts.build_web_page sua_partida    # -> dashboard/web/sua_partida.h
 
 Opcional, pro overlay do radar do mapa nos heatmaps: `awpy get maps` (baixa os
 assets de mapa; precisa de rede liberada para `awpycs.com`).
+
+## Os textos dos cards são gerados, não escritos
+
+As três frases da aba Insights eram texto fixo escrito para a primeira partida —
+toda página renderizava "Empate em 9–9... _AmadeuS mata os quatro no retake", com
+o placar e os nicks de outra partida. É o tipo de erro que não quebra nada e mente
+em todas as páginas.
+
+Agora saem de `scripts/narrative.py`, em Python e não em JavaScript, porque assim
+a regra vira teste: **campo que não existe some da frase**. Round decisivo que foi
+o round 1 não ganha "Empate em 0-0"; AWPer sem pick de abertura não ganha "0 picks
+de abertura"; papel sem sustentação nenhuma devolve string vazia em vez de "AWP na
+mão em 0 rounds". Uma varredura das 720 frases possíveis (8 papéis × 90
+jogador-partidas) fecha em zero defeito.
+
+O card da direita **não é um slot fixo**. Ele mostra quem exemplificou algum papel
+com mais força comparado ao que é normal naquele papel — como o índice já é
+percentil contra o conjunto, 0,9 em camper e 0,9 em AWPer querem dizer a mesma
+coisa e competem na mesma escala. Nas 9 partidas ele escolheu quatro papéis
+diferentes: carrega piano (4), AWPer (3), camper (1) e repick (1). "Foi mal" não é
+destaque: papéis críticos só entram quando são extremos, e mesmo aí o texto
+descreve o comportamento medido, nunca julga quem jogou.
 
 ## Estratégia de hospedagem
 
