@@ -70,12 +70,13 @@ INFERNO_TICKS = int(7.03125 * TICKRATE)
 # Relógio do jogo. No CS2 o round dura 1:55 e o cronômetro só começa a correr
 # quando o freeze time acaba — que é exatamente onde o replay começa (`t0` é o
 # `freeze_end`). Por isso o quadro 0 vale 1:55, sem offset a aplicar: o freeze
-# (medido nesta partida em 20,0s, de `start` a `freeze_end`) fica de fora do
-# replay inteiro.
+# (medido em 20,0s, de `start` a `freeze_end`) fica de fora do replay inteiro.
 #
-# Ressalva: nenhum round desta partida terminou por tempo esgotado, então não há
-# âncora no dado provando o início em 115s — isso é constante do jogo, não
-# medição. O freeze, esse sim, foi medido.
+# MEDIDO, não assumido: os rounds que terminaram em `time_ran_out` (match_02 r19
+# e match_04 r4) medem exatamente 115,00s de `freeze_end` até o fim. Isso prova
+# as duas coisas de uma vez — a duração do round E o ponto onde o cronômetro
+# começa. De quebra é uma terceira confirmação independente do tickrate: a 128
+# esse intervalo daria 57,5s, que não corresponde a nenhuma configuração do CS2.
 ROUND_SECONDS = 115.0
 # mp_c4timer: 40s fixos no CS2. É a mesma constante que metrics/timing.py usa
 # como âncora pra detectar o tickrate.
