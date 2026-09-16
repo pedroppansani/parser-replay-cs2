@@ -214,14 +214,7 @@ def cluster_playstyles(
         *[pl.Series(f"pca_{i + 1}", coords[:, i]) for i in range(n_components)],
     )
 
-    profiles = (
-        assignments.group_by("cluster")
-        .agg(
-            pl.len().alias("n_rounds"),
-            *[pl.col(c).mean().alias(c) for c in cols],
-        )
-        .sort("cluster")
-    )
+    profiles = _profile_clusters(assignments, cols)
 
     meta = {
         "explained_variance_ratio": [float(v) for v in pca.explained_variance_ratio_],
@@ -252,9 +245,13 @@ def representative_rounds(assignments: pl.DataFrame, per_cluster: int = 5) -> pl
         .sort(["cluster", "distance_to_center"])
         .group_by("cluster")
         .head(per_cluster)
+        # match_id só existe quando os exemplos saem do conjunto de várias
+        # partidas. Sem ele, "round 5" no relatório global não diz de qual
+        # partida -- e o exemplo perde a utilidade de poder ser assistido.
         .select(
-            ["cluster", "round_num", "name", "side", "damage", "kills", "avg_distance_from_team",
-             "time_of_first_contact_s", "survived", "distance_to_center"]
+            [c for c in ["cluster", "match_id", "round_num", "name", "side", "damage", "kills",
+                         "avg_distance_from_team", "time_of_first_contact_s", "survived",
+                         "distance_to_center"] if c in assignments.columns or c == "distance_to_center"]
         )
         .sort(["cluster", "distance_to_center"])
     )
@@ -278,3 +275,144 @@ def save_cluster_names_template(profiles: pl.DataFrame, path: Path = CLUSTER_NAM
     template = {str(c): existing.get(str(c), "") for c in profiles["cluster"].to_list()}
     path.write_text(json.dumps(template, indent=2, ensure_ascii=False), encoding="utf-8")
     return path
+
+
+# ---------------------------------------------------------------------------
+# Modelo global: um único KMeans para todas as partidas
+# ---------------------------------------------------------------------------
+#
+# Por que isso existe: até aqui o KMeans era treinado por partida, e o rótulo
+# numérico que ele devolve é ARBITRÁRIO -- o "cluster 3" de uma partida não tem
+# relação com o "cluster 3" da outra. Com uma partida só isso era inofensivo.
+# Com nove, e um `cluster_names.json` único que o dashboard aplica a todas,
+# passa a ser errado: o nome dado olhando o perfil de uma partida apareceria
+# colado num grupo de comportamento diferente na seguinte. Foi medido: o grupo
+# de dano alto é o cluster 3 em match_01, o 2 em match_02 e o 0 em match_04.
+#
+# A correção é treinar UMA vez no conjunto das partidas e só aplicar o modelo
+# em cada uma. Aí o cluster 0 quer dizer a mesma coisa em todo lugar e nomear
+# passa a fazer sentido. A unidade de análise continua sendo (jogador, round) --
+# o que muda é onde o modelo é ajustado, não o que ele agrupa.
+#
+# O modelo é salvo como JSON, não pickle: é um punhado de vetores de números e
+# vale mais poder ler o diff e não depender da versão do scikit-learn instalada
+# do que economizar linhas.
+GLOBAL_MODEL_FILE = Path(__file__).resolve().parent / "global_model.json"
+GLOBAL_MODEL_VERSION = 1
+
+
+def _profile_clusters(assignments: pl.DataFrame, cols: list[str]) -> pl.DataFrame:
+    """Média de cada feature por cluster, em unidades ORIGINAIS.
+
+    É esta tabela que se olha pra nomear um cluster -- por isso em unidade de
+    jogo (dano, unidades de distância, segundos) e não em z-score.
+    """
+    return (
+        assignments.group_by("cluster")
+        .agg(pl.len().alias("n_rounds"), *[pl.col(c).mean().alias(c) for c in cols])
+        .sort("cluster")
+    )
+
+
+def fit_global_model(
+    features: pl.DataFrame,
+    n_clusters: int = DEFAULT_N_CLUSTERS,
+    n_components: int = 2,
+    random_state: int = RANDOM_STATE,
+) -> dict:
+    """Ajusta scaler + PCA + KMeans no conjunto de TODAS as partidas.
+
+    Devolve um dicionário serializável com tudo que é preciso pra reaplicar o
+    mesmo modelo depois: as medianas de preenchimento, os parâmetros de
+    padronização, os componentes do PCA e os centróides. As medianas entram no
+    modelo porque preencher nulo com a mediana DA PARTIDA faria o mesmo round
+    cair em cluster diferente dependendo de com quem ele foi processado.
+    """
+    cols = [c for c in FEATURE_COLUMNS if c in features.columns]
+    mat = features.select(cols).with_columns([pl.col(c).cast(pl.Float64) for c in cols])
+    medians = {c: float(mat[c].median() or 0.0) for c in cols}
+
+    arr = _fill_and_matrix(mat, cols, medians)
+    scaler = StandardScaler().fit(arr)
+    x = scaler.transform(arr)
+
+    pca = PCA(n_components=n_components, random_state=random_state).fit(x)
+    kmeans = KMeans(n_clusters=n_clusters, random_state=random_state, n_init=10).fit(x)
+
+    return {
+        "version": GLOBAL_MODEL_VERSION,
+        "n_clusters": n_clusters,
+        "feature_columns": cols,
+        "fill_medians": medians,
+        "scaler_mean": scaler.mean_.tolist(),
+        "scaler_scale": scaler.scale_.tolist(),
+        "pca_mean": pca.mean_.tolist(),
+        "pca_components": pca.components_.tolist(),
+        "explained_variance_ratio": pca.explained_variance_ratio_.tolist(),
+        "cluster_centers": kmeans.cluster_centers_.tolist(),
+        "n_player_rounds": int(features.height),
+        "silhouette": float(silhouette_score(x, kmeans.labels_)),
+    }
+
+
+def _fill_and_matrix(mat: pl.DataFrame, cols: list[str], medians: dict[str, float]) -> np.ndarray:
+    """Preenche nulo/NaN com medianas DADAS (não recalculadas) e vira matriz."""
+    filled = mat.with_columns(
+        [pl.col(c).fill_null(medians[c]).fill_nan(medians[c]) for c in cols]
+    )
+    return np.nan_to_num(filled.to_numpy(), nan=0.0)
+
+
+def assign_with_model(features: pl.DataFrame, model: dict) -> pl.DataFrame:
+    """Aplica um modelo global já ajustado: devolve as features com cluster e PCA.
+
+    Cluster = centróide mais próximo no espaço padronizado, que é exatamente o
+    que o `KMeans.predict` faz -- reimplementado em numpy pra não precisar
+    reconstruir o objeto do sklearn a partir do JSON.
+    """
+    cols = model["feature_columns"]
+    faltando = [c for c in cols if c not in features.columns]
+    if faltando:
+        raise ValueError(
+            f"Features ausentes para aplicar o modelo global: {faltando}. "
+            "Reprocesse a partida ou reajuste o modelo."
+        )
+
+    mat = features.select(cols).with_columns([pl.col(c).cast(pl.Float64) for c in cols])
+    arr = _fill_and_matrix(mat, cols, model["fill_medians"])
+
+    x = (arr - np.asarray(model["scaler_mean"])) / np.asarray(model["scaler_scale"])
+    coords = (x - np.asarray(model["pca_mean"])) @ np.asarray(model["pca_components"]).T
+
+    centers = np.asarray(model["cluster_centers"])
+    # distância de cada ponto a cada centróide, sem materializar o tensor 3D
+    dists = ((x**2).sum(axis=1)[:, None] - 2 * x @ centers.T + (centers**2).sum(axis=1)[None, :])
+    labels = dists.argmin(axis=1)
+
+    return features.with_columns(
+        pl.Series("cluster", labels.astype(np.int32)),
+        *[pl.Series(f"pca_{i + 1}", coords[:, i]) for i in range(coords.shape[1])],
+    )
+
+
+def save_global_model(model: dict, path: Path = GLOBAL_MODEL_FILE) -> Path:
+    path.write_text(json.dumps(model, indent=2, ensure_ascii=False), encoding="utf-8")
+    return path
+
+
+def load_global_model(path: Path = GLOBAL_MODEL_FILE) -> dict | None:
+    """Modelo global salvo, ou None se ainda não foi ajustado.
+
+    None é caso legítimo: numa checagem do repo recém-clonado, ou na primeira
+    partida processada, ainda não existe conjunto pra ajustar. Quem chama cai
+    no clustering por partida e avisa.
+    """
+    if not path.exists():
+        return None
+    try:
+        model = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+    if model.get("version") != GLOBAL_MODEL_VERSION:
+        return None
+    return model
