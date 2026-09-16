@@ -245,7 +245,7 @@ def add_contact_window_flag(
     shots: pl.DataFrame,
     damages: pl.DataFrame,
     window_seconds: float = CONTACT_WINDOW_SECONDS,
-    tickrate: int = 128,
+    tickrate: int = 64,
 ) -> pl.DataFrame:
     """Marca as amostras que estão na janela que antecede um contato do jogador.
 

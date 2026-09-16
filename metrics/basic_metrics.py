@@ -153,7 +153,7 @@ def calculate_utility_damage(damages: pl.DataFrame, roster: pl.DataFrame) -> tup
 def identify_trade_kills(
     kills: pl.DataFrame,
     trade_window_seconds: float = DEFAULT_TRADE_WINDOW_SECONDS,
-    tickrate: int = 128,
+    tickrate: int = 64,
 ) -> pl.DataFrame:
     """Marca quais kills são "trade kills": o attacker matou quem, pouco antes,
     tinha acabado de matar um companheiro de time do attacker.
@@ -200,7 +200,7 @@ def calculate_trade_kills(
     kills: pl.DataFrame,
     roster: pl.DataFrame,
     trade_window_seconds: float = DEFAULT_TRADE_WINDOW_SECONDS,
-    tickrate: int = 128,
+    tickrate: int = 64,
 ) -> tuple[pl.DataFrame, pl.DataFrame]:
     """Quantas kills de cada jogador foram trade kills, por round e agregado."""
     kills_flagged = identify_trade_kills(kills, trade_window_seconds, tickrate)
@@ -243,7 +243,7 @@ def calculate_kast(
     ticks: pl.DataFrame,
     roster: pl.DataFrame,
     trade_window_seconds: float = DEFAULT_TRADE_WINDOW_SECONDS,
-    tickrate: int = 128,
+    tickrate: int = 64,
 ) -> tuple[pl.DataFrame, pl.DataFrame]:
     """KAST% = % de rounds em que o jogador teve pelo menos um: Kill, Assist,
     Survived (sobreviveu o round) ou foi Traded (a morte dele foi vingada por um

@@ -95,7 +95,7 @@ def setup_snapshot(
     ticks: pl.DataFrame,
     rounds: pl.DataFrame,
     seconds_after_freeze: float = SETUP_SECONDS_AFTER_FREEZE,
-    tickrate: int = 128,
+    tickrate: int = 64,
 ) -> pl.DataFrame:
     """Onde cada jogador estava no momento de "setup" de cada round.
 
