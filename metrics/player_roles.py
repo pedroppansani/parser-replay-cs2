@@ -254,8 +254,18 @@ def build_signals(
         .with_columns(
             pl.col("time_of_first_contact_s").rank("min").over(["round_num", "team"]).alias("rk")
         )
+        # Empate no primeiro lugar não é abertura de ninguém: acontece quando
+        # uma granada pega vários do time no mesmo tick, e marcar todos infla o
+        # entry do time inteiro. Medido: 24 de 374 lados-round nas 9 partidas.
+        .with_columns(
+            pl.col("rk").eq(1).sum().over(["round_num", "team"]).alias("empatados")
+        )
         .group_by("steamid")
-        .agg((pl.col("rk") == 1).mean().alias("first_contact_share"))
+        .agg(
+            ((pl.col("rk") == 1) & (pl.col("empatados") == 1))
+            .mean()
+            .alias("first_contact_share")
+        )
     )
 
     trades = outputs["trade_kills_summary"].select(["steamid", "total_kills", "total_trade_kills"])
