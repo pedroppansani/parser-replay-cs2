@@ -136,6 +136,20 @@
   .rtip .rs { font-family: var(--mono); font-size: 11px; color: #a9b6c4; margin-top: 5px; }
   .rtip .rgo { font-family: var(--mono); font-size: 10px; color: #7fb3f0; margin-top: 7px; }
 
+  /* ---- escolha de andar (mapas de dois níveis) ---- */
+  .levelpick { display: inline-flex; align-items: center; gap: 4px; }
+  .levelpick b {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--dim); font-weight: 500; margin-right: 2px;
+  }
+  .levelpick button {
+    font-family: var(--mono); font-size: 10.5px; color: var(--ink-2);
+    background: var(--paper-2); border: 1px solid transparent; border-radius: 6px;
+    padding: 3px 7px; cursor: pointer;
+  }
+  .levelpick button:hover { border-color: var(--dim); }
+  .levelpick button.on { background: var(--ct); color: #fff; }
+
   .lockup {
     margin-top: 18px;
     display: flex;
@@ -357,6 +371,12 @@
   .plr .wp { grid-column: 1 / -1; font-family: var(--mono); font-size: 10.5px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .plr.blind { background: rgba(232, 181, 58, 0.13); }
   .plr.blind .wp { color: #a07a12; font-weight: 600; }
+  .plr .loc {
+    grid-column: 1 / -1; font-family: var(--mono); font-size: 10px;
+    color: var(--ct); letter-spacing: 0.03em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .squad.t .plr .loc { color: var(--t); }
 
   .maplegend {
     display: flex;
@@ -1001,22 +1021,56 @@
   function mx(x) { return (x - RAD.origin_x) * RAD.scale_px_per_unit; }
   function my(y) { return (RAD.origin_y - y) * RAD.scale_px_per_unit; }
 
-  var plate = document.createElement("canvas");
-  plate.width = cv.width; plate.height = cv.height;
+  // Um fundo por andar do mapa. Na Nuke o A fica em cima do B, e a Valve
+  // distribui um radar separado pro nível de baixo justamente porque, num mapa
+  // 2D, os dois sites se sobrepõem. As faixas de altura vêm do overview oficial
+  // (ver scripts/extract_radars.py).
+  var LEVELS = (R.levels && R.levels.length) ? R.levels : [{ name: "default" }];
+  var plates = [];
   var plateReady = false;
-  (function loadRadar() {
-    var p = plate.getContext("2d");
-    p.fillStyle = "#161d26";
-    p.fillRect(0, 0, plate.width, plate.height);
-    if (!RAD.image) { plateReady = true; return; }
-    var im = new Image();
-    im.onload = function () {
-      p.drawImage(im, 0, 0, plate.width, plate.height);
-      plateReady = true;
-      draw();
-    };
-    im.src = RAD.image;
+
+  (function loadRadars() {
+    var pending = 0;
+    LEVELS.forEach(function (lv, i) {
+      var c = document.createElement("canvas");
+      c.width = cv.width; c.height = cv.height;
+      var p = c.getContext("2d");
+      p.fillStyle = "#161d26";
+      p.fillRect(0, 0, c.width, c.height);
+      plates[i] = c;
+
+      var src = lv.name === "default" ? RAD.image : (RAD.layers || {})[lv.name];
+      if (!src) return;
+      pending++;
+      var im = new Image();
+      im.onload = function () {
+        p.drawImage(im, 0, 0, c.width, c.height);
+        if (--pending === 0) { plateReady = true; draw(); }
+      };
+      im.src = src;
+    });
+    if (pending === 0) plateReady = true;
   })();
+
+  // Andar mostrado: segue onde está a maioria dos vivos, e o usuário pode
+  // travar num andar específico.
+  var levelLock = null;
+
+  function activeLevel(f) {
+    if (levelLock !== null) return levelLock;
+    if (LEVELS.length < 2) return 0;
+    var count = [];
+    cur.players.forEach(function (p) {
+      if (!p.alive[f] || !p.lv) return;
+      var l = p.lv[f];
+      count[l] = (count[l] || 0) + 1;
+    });
+    var best = 0;
+    for (var i = 1; i < LEVELS.length; i++) {
+      if ((count[i] || 0) > (count[best] || 0)) best = i;
+    }
+    return best;
+  }
 
   if (RAD.synthetic) {
     var leg = document.querySelector(".maplegend");
@@ -1025,6 +1079,35 @@
       warn.style.cssText = "color:var(--dim);font-style:italic";
       warn.textContent = "sem radar calibrado para este mapa — posições em coordenadas de jogo";
       leg.appendChild(warn);
+    }
+  }
+
+  // Controle de andar: só aparece em mapa que tem mais de um (Nuke, Vertigo,
+  // Train). "Auto" segue a maioria dos vivos, que é como o observador do jogo
+  // se comporta; travar serve pra acompanhar o que acontece no outro andar.
+  if (LEVELS.length > 1) {
+    var lg = document.querySelector(".maplegend");
+    if (lg) {
+      var box = document.createElement("span");
+      box.className = "levelpick";
+      var opts = [["auto", "auto"]].concat(LEVELS.map(function (lv, i) {
+        return [String(i), lv.name === "default" ? "superior" : "inferior"];
+      }));
+      box.innerHTML = "<b>andar</b>" + opts.map(function (o) {
+        return "<button type='button' data-lv='" + o[0] + "'" +
+          (o[0] === "auto" ? " class='on'" : "") + ">" + o[1] + "</button>";
+      }).join("");
+      lg.appendChild(box);
+
+      box.addEventListener("click", function (e) {
+        var b = e.target.closest("button");
+        if (!b) return;
+        levelLock = b.dataset.lv === "auto" ? null : Number(b.dataset.lv);
+        Array.prototype.forEach.call(box.querySelectorAll("button"), function (o) {
+          o.classList.toggle("on", o === b);
+        });
+        draw();
+      });
     }
   }
 
@@ -1191,7 +1274,7 @@
           return "<div class='plr' data-side='" + side + "' data-i='" + i + "'>" +
             "<div class='nm'>" + p.name + "</div><div class='hpn'>100</div>" +
             "<div class='hpbar'><i style='width:100%;background:" + (side === "ct" ? C.ct : C.t) + "'></i></div>" +
-            "<div class='wp'>—</div></div>";
+            "<div class='wp'>—</div><div class='loc'></div></div>";
         }).join("");
     });
   }
@@ -1213,6 +1296,20 @@
         row.querySelector(".wp").textContent = bl > 0
           ? "cego · " + br(bl) + "s"
           : (w >= 0 ? (cur.weapons[w] || "—") : "—");
+
+        // Área do mapa (callout) e, em mapa de dois andares, qual deles. Vem do
+        // próprio demo (`last_place_name`), com o nome que o jogo usa.
+        var where = row.querySelector(".loc");
+        if (where) {
+          if (!p.alive[frame]) {
+            where.textContent = "";
+          } else {
+            var pi = p.p ? p.p[frame] : -1;
+            var nome = pi >= 0 ? (cur.places[pi] || "") : "";
+            var lvl = p.lv ? LEVELS[p.lv[frame]] : null;
+            where.textContent = nome + (lvl && lvl.name !== "default" ? " · inferior" : "");
+          }
+        }
       });
     });
   }
@@ -1296,8 +1393,9 @@
     var tt = pos - i0;
     frame = i0;
 
+    var lvNow = activeLevel(i0);
     ctx.clearRect(0, 0, cv.width, cv.height);
-    ctx.drawImage(plate, 0, 0);
+    ctx.drawImage(plates[lvNow] || plates[0], 0, 0);
 
     // Smoke e Molotov ocupam área, então são desenhados como zona e não como
     // ponto. O raio segue o raio real de efeito no jogo, convertido pela mesma
@@ -1476,6 +1574,24 @@
         ctx.moveTo(X - 3.5, Y - 3.5); ctx.lineTo(X + 3.5, Y + 3.5);
         ctx.moveTo(X + 3.5, Y - 3.5); ctx.lineTo(X - 3.5, Y + 3.5);
         ctx.stroke();
+        ctx.globalAlpha = 1;
+        return;
+      }
+
+      // Jogador em outro andar. Sem essa distinção, na Nuke um CT no B e um T
+      // no A aparecem colados no mesmo ponto do mapa 2D, como se estivessem se
+      // olhando — quando na verdade há uma laje entre os dois.
+      var pLv = p.lv ? p.lv[i0] : 0;
+      if (pLv !== lvNow) {
+        ctx.globalAlpha = 0.5;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(X, Y, 5.5, 0, Math.PI * 2); ctx.stroke();
+        // seta indicando se está acima ou abaixo do andar mostrado
+        ctx.fillStyle = color;
+        ctx.font = "700 9px 'DM Mono', ui-monospace, monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(pLv > lvNow ? "▼" : "▲", X, Y + 3);
         ctx.globalAlpha = 1;
         return;
       }

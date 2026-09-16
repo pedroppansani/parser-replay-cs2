@@ -1,5 +1,8 @@
 # 01 — Parser de Replay CS2 com Dashboard de Estatísticas
 
+**[→ Ver a demonstração ao vivo](https://pedroppansani.github.io/parser-replay-cs2/)** — 9 partidas
+profissionais, replay round a round no mapa, e o perfil de cada jogador.
+
 Projeto 1 de 5 do portfólio. Ferramenta que lê replays (.dem) do CS2, extrai
 estatísticas e gera dashboards — com foco em métricas que descrevem **como** o
 jogo foi jogado em nível competitivo, não só quem fez mais kill.
@@ -254,6 +257,65 @@ E o rótulo por jogador não substitui o clustering: a mesma aba mostra, embaixo
 
 ---
 
+## Radares oficiais e mapas de dois andares
+
+O painel precisa de duas coisas para desenhar o mapa: a imagem do radar e a
+tabela que converte coordenada de jogo em pixel. O CDN do awpy responde 404, e
+radar baixado de fórum vem recortado ou redimensionado — o que obriga a calibrar
+por tentativa e erro.
+
+Mas quem tem o CS2 instalado já tem as duas coisas em disco, oficiais, dentro do
+`pak01_dir.vpk`:
+
+```
+panorama/images/overheadmaps/<mapa>_radar_psd.vtex_c   imagem (BGRA, mips em LZ4)
+resource/overviews/<mapa>.txt                          pos_x, pos_y, scale
+```
+
+`scripts/extract_radars.py` lê os dois, descobre sozinho todos os mapas do jogo
+e grava `assets/radars/<mapa>.json`. Usar a calibração da Valve troca "o encaixe
+que melhor sobrepôs a nuvem de posições" por conversão exata. Conferência contra
+as posições reais dos jogadores:
+
+| Mapa | Posições dentro da imagem | Sobre área desenhada |
+|---|---|---|
+| Ancient | 100% | 95,3% |
+| Mirage | 100% | 97,6% |
+| Anubis | 100% | 95,7% |
+| Nuke | 100% | 99,5% |
+
+### Nuke: A em cima de B
+
+Mapa 2D não distingue andar, e na Nuke os dois bombsites se sobrepõem — dois
+jogadores em andares diferentes apareciam colados no mesmo ponto, como se
+estivessem se olhando, com uma laje entre eles.
+
+O overview da Valve resolve isso de forma explícita:
+
+```
+"verticalsections"
+{
+    "default" { "AltitudeMax" "10000"  "AltitudeMin" "-495" }
+    "lower"   { "AltitudeMax" "-495"   "AltitudeMin" "-10000" }
+}
+```
+
+O replay passa a marcar o andar de cada jogador por essa altura, o fundo troca
+para o radar do andar onde está a maioria dos vivos (como faz o observador do
+jogo), e quem está no outro andar aparece como anel vazado com seta ▲/▼. Há
+também um controle para travar o andar e acompanhar o que acontece embaixo.
+
+O corte bate com o mapa real: no nível inferior caem exatamente BombsiteB,
+Vents, Tunnels, Secret, Observation, Decon e Ramp.
+
+### Onde cada jogador está
+
+O demo carrega `last_place_name` por tick — o nome de callout que o próprio jogo
+usa. A lista lateral do replay mostra isso quadro a quadro: "Heaven", "Ramp",
+"Squeaky", "Tunnels". Em mapa de dois andares vem com o nível junto.
+
+---
+
 ## Dashboard
 
 Streamlit + Plotly, lendo só os parquet leves de `data/processed/` (nunca o .dem).
@@ -316,15 +378,27 @@ python -m scripts.show_derived_angles sua_partida
 # testes
 python -m pytest tests/ -v
 
+# radares oficiais, extraídos da instalação local do CS2 (uma vez só)
+python -m scripts.extract_radars
+
+# processar todas as demos da pasta demos/ de uma vez
+python -m scripts.process_all_demos
+
 # dashboard de trabalho
 streamlit run dashboard/app.py
 
-# página web autocontida (portfólio) — nessa ordem
+# site de demonstração com todas as partidas processadas
+python -m scripts.build_site                    # -> docs/index.html
+
+# ou a página de uma partida só, arquivo único, nessa ordem
 python -m scripts.build_insights sua_partida
+python -m scripts.build_breakdown sua_partida
 python -m scripts.export_replay sua_partida
 python -m scripts.export_web_payload sua_partida
 python -m scripts.build_web_page sua_partida    # -> dashboard/web/sua_partida.html
 ```
+
+**Demonstração ao vivo:** https://pedroppansani.github.io/parser-replay-cs2/
 
 **Requer Python 3.11 a 3.13** (o awpy 2.0.2 ainda não suporta 3.14).
 

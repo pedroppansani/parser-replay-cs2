@@ -44,6 +44,44 @@ INFERNO_TICKS = int(7.03125 * TICKRATE)
 POP_DAMAGE_TICKS = int(0.5 * TICKRATE)
 
 
+def map_levels(map_name: str) -> list[dict]:
+    """Andares do mapa, na ordem em que o radar os empilha.
+
+    Vem do `verticalsections` do próprio overview da Valve (extraído por
+    scripts/extract_radars.py). Mapas de um andar só devolvem um nível, e aí o
+    replay nem grava a coluna.
+
+    Isso existe por causa da Nuke: A fica em cima de B, então num mapa 2D os
+    dois sites se sobrepõem. Sem separar por altura, dois jogadores em andares
+    diferentes aparecem colados no mesmo ponto.
+    """
+    meta_path = PROJECT_ROOT / "assets" / "radars" / f"{map_name}.json"
+    if not meta_path.exists():
+        return [{"name": "default", "min": -1e9, "max": 1e9}]
+
+    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    sections = meta.get("vertical_sections")
+    if not sections:
+        return [{"name": "default", "min": -1e9, "max": 1e9}]
+
+    # "default" primeiro (é a imagem principal do radar), depois os demais de
+    # cima para baixo
+    ordered = sorted(
+        ({"name": k, "min": v["min"], "max": v["max"]} for k, v in sections.items()),
+        key=lambda s: (s["name"] != "default", -s["max"]),
+    )
+    return ordered
+
+
+def level_of(z: float | None, levels: list[dict]) -> int:
+    if z is None or len(levels) == 1:
+        return 0
+    for i, lv in enumerate(levels):
+        if lv["min"] <= z < lv["max"]:
+            return i
+    return 0
+
+
 def team_of_side(side: str, round_num: int) -> str:
     """Time real a partir do lado e do round (os lados trocam no intervalo)."""
     first_half = round_num <= HALFTIME_ROUND
@@ -55,6 +93,9 @@ def team_of_side(side: str, round_num: int) -> str:
 def build(match_id: str) -> Path:
     processed = PROJECT_ROOT / "data" / "processed" / match_id
     interim = PROJECT_ROOT / "data" / "interim" / match_id
+
+    map_name = json.loads((processed / "match_meta.json").read_text(encoding="utf-8"))["map_name"]
+    levels = map_levels(map_name)
 
     rounds = pl.read_parquet(processed / "rounds.parquet")
     ticks = pl.read_parquet(interim / "ticks.parquet")
@@ -97,21 +138,24 @@ def build(match_id: str) -> Path:
         rt = ticks.filter(
             (pl.col("round_num") == rn) & (pl.col("tick") >= t0) & (pl.col("tick") <= t1)
         ).select(
-            ["tick", "steamid", "name", "side", "X", "Y", "is_alive", "health", "active_weapon_name"]
+            ["tick", "steamid", "name", "side", "X", "Y", "Z", "is_alive", "health",
+             "active_weapon_name", "place"]
         )
 
-        # Armas viram índices num dicionário do round: repetir a string em cada
-        # frame de cada jogador multiplicaria o tamanho do arquivo à toa.
+        # Armas e áreas viram índices num dicionário do round: repetir a string
+        # em cada frame de cada jogador multiplicaria o tamanho do arquivo à toa.
         weapon_names: list[str] = []
         weapon_idx: dict[str, int] = {}
+        place_names: list[str] = []
+        place_idx: dict[str, int] = {}
 
-        def wid(w: str | None) -> int:
-            if not w:
+        def interned(value: str | None, names: list[str], idx: dict[str, int]) -> int:
+            if not value:
                 return -1
-            if w not in weapon_idx:
-                weapon_idx[w] = len(weapon_names)
-                weapon_names.append(w)
-            return weapon_idx[w]
+            if value not in idx:
+                idx[value] = len(names)
+                names.append(value)
+            return idx[value]
 
         players = []
         for (sid,), g in rt.group_by(["steamid"], maintain_order=True):
@@ -119,11 +163,13 @@ def build(match_id: str) -> Path:
             gt = g["tick"].to_list()
             gx = g["X"].to_list()
             gy = g["Y"].to_list()
+            gz = g["Z"].to_list()
             ga = g["is_alive"].to_list()
             gh = g["health"].to_list()
             gw = g["active_weapon_name"].to_list()
+            gp = g["place"].to_list()
 
-            xs, ys, alive, hp, wp = [], [], [], [], []
+            xs, ys, alive, hp, wp, pl_, lv = [], [], [], [], [], [], []
             j = 0
             for f in frames:
                 # avança até a amostra mais próxima sem passar do frame
@@ -133,21 +179,27 @@ def build(match_id: str) -> Path:
                 ys.append(int(round(gy[j])))
                 alive.append(1 if ga[j] else 0)
                 hp.append(int(gh[j]) if gh[j] is not None else 0)
-                wp.append(wid(gw[j]))
+                wp.append(interned(gw[j], weapon_names, weapon_idx))
+                pl_.append(interned(gp[j], place_names, place_idx))
+                lv.append(level_of(gz[j], levels))
 
             side = g["side"][0]
-            players.append(
-                {
-                    "name": g["name"][0],
-                    "side": side,
-                    "team": team_of_side(side, rn),
-                    "x": xs,
-                    "y": ys,
-                    "alive": alive,
-                    "hp": hp,
-                    "w": wp,
-                }
-            )
+            player = {
+                "name": g["name"][0],
+                "side": side,
+                "team": team_of_side(side, rn),
+                "x": xs,
+                "y": ys,
+                "alive": alive,
+                "hp": hp,
+                "w": wp,
+                "p": pl_,
+            }
+            # `lv` só existe em mapa de mais de um andar: em Mirage todo mundo
+            # está sempre no nível 0 e o array seria peso morto no arquivo.
+            if len(levels) > 1:
+                player["lv"] = lv
+            players.append(player)
 
         def frame_of(tick: int) -> int:
             return max(0, min(len(frames) - 1, (int(tick) - t0) // SAMPLE_EVERY))
@@ -358,6 +410,7 @@ def build(match_id: str) -> Path:
                 "seconds": round((t1 - t0) / TICKRATE, 1),
                 "decided_f": max(0, min(len(frames) - 1, (t_decided - t0) // SAMPLE_EVERY)),
                 "weapons": weapon_names,
+                "places": place_names,
                 "players": players,
                 "events": sorted(events, key=lambda e: e["f"]),
                 "nades": nades,
@@ -378,6 +431,8 @@ def build(match_id: str) -> Path:
     payload = {
         "bounds": bounds,
         "sample_hz": TICKRATE / SAMPLE_EVERY,
+        "map": map_name,
+        "levels": levels,
         # o painel usa o mesmo limiar das métricas pra decidir quais flashes
         # entram na linha do tempo, em vez de ter um número próprio que
         # silenciosamente diverge do que as tabelas contam

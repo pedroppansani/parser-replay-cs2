@@ -13,6 +13,15 @@ data/interim/
 # as duas cópias no git seria ~900KB duplicados por partida.
 dashboard/web/match_*.html
 
+# PNGs dos radares: o painel lê a imagem embutida no .json ao lado, então o PNG
+# solto é só pra conferir a olho. Versionar os dois dobraria o peso à toa.
+assets/radars/*.png
+
+# Radares baixados à mão, insumo do prepare_radar.py para os mapas que não estão
+# na instalação do CS2 (Boulder, Debris, Fachwerk, Shelter). São imagens de
+# terceiros e só servem depois que existir uma demo naquele mapa pra calibrar.
+CS2 Radares/
+
 __pycache__/
 *.pyc
 .pytest_cache/
