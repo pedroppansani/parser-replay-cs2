@@ -5,8 +5,8 @@
   "source_dem": "C:\\Users\\User\\Desktop\\Projetos Claude\\01 - Parser de Replay CS2\\demos\\1-22abf937-659e-4363-9933-cc2a2ae99370-1-1.dem\\1-22abf937-659e-4363-9933-cc2a2ae99370-1-1.dem",
   "pca": {
     "explained_variance_ratio": [
-      0.21876152105245467,
-      0.19753716560984028
+      0.20533303902712036,
+      0.1931490201543818
     ],
     "feature_columns": [
       "damage",
@@ -22,36 +22,8 @@
       "time_of_first_contact_s",
       "survived"
     ],
-    "component_loadings": {
-      "pca_1": {
-        "damage": 0.3177671079398738,
-        "utility_damage": 0.04446862073855351,
-        "kills": 0.36388013492614285,
-        "trade_kills": 0.16725698508805362,
-        "avg_distance_from_team": 0.3272850650061328,
-        "max_distance_from_team": 0.4351877614773533,
-        "distinct_places": 0.41865914194357107,
-        "crosshair_score": -0.10270056471502721,
-        "height_score": 0.05946626177581881,
-        "frac_entering_fight": -0.25454793733068903,
-        "time_of_first_contact_s": 0.26776693931737516,
-        "survived": 0.3380919225666015
-      },
-      "pca_2": {
-        "damage": 0.4697668169164066,
-        "utility_damage": 0.2975181331840093,
-        "kills": 0.46077904136567543,
-        "trade_kills": 0.3311529287153189,
-        "avg_distance_from_team": -0.22343718113615632,
-        "max_distance_from_team": -0.21439922557502072,
-        "distinct_places": -0.12063417900618326,
-        "crosshair_score": 0.08982394074594946,
-        "height_score": -0.07259123709322572,
-        "frac_entering_fight": 0.3659679798225399,
-        "time_of_first_contact_s": -0.3249655016978595,
-        "survived": 0.07420064975186924
-      }
-    },
-    "n_clusters": 4
+    "n_clusters": 4,
+    "fitted_on": "global",
+    "n_player_rounds_global": 1870
   }
 }

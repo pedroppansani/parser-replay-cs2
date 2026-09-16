@@ -5,8 +5,8 @@
   "source_dem": "demos\\1-0007ce25-1e02-40fa-9eb0-1bba64c71b12-1-1.dem\\1-0007ce25-1e02-40fa-9eb0-1bba64c71b12-1-1.dem",
   "pca": {
     "explained_variance_ratio": [
-      0.21490683961377302,
-      0.1980862561414128
+      0.20533303902712036,
+      0.1931490201543818
     ],
     "feature_columns": [
       "damage",
@@ -22,36 +22,8 @@
       "time_of_first_contact_s",
       "survived"
     ],
-    "component_loadings": {
-      "pca_1": {
-        "damage": 0.5560202744970785,
-        "utility_damage": 0.1936402978613858,
-        "kills": 0.5547540482817028,
-        "trade_kills": 0.42345311000080166,
-        "avg_distance_from_team": -0.18374967375974105,
-        "max_distance_from_team": -0.12545903988984108,
-        "distinct_places": 0.16332838226303678,
-        "crosshair_score": 0.07073191665751517,
-        "height_score": 0.008933489699807434,
-        "frac_entering_fight": 0.18883052945221646,
-        "time_of_first_contact_s": -0.141844480122332,
-        "survived": 0.17099879684332725
-      },
-      "pca_2": {
-        "damage": 0.13342451631795738,
-        "utility_damage": -0.012222216976119638,
-        "kills": 0.17040484319465593,
-        "trade_kills": 0.02251494137095228,
-        "avg_distance_from_team": 0.5081693730649848,
-        "max_distance_from_team": 0.5518411607108529,
-        "distinct_places": 0.04069815934923661,
-        "crosshair_score": 0.24382041803503388,
-        "height_score": 0.10608258753443149,
-        "frac_entering_fight": -0.3357237648212771,
-        "time_of_first_contact_s": 0.2643748917386262,
-        "survived": 0.3671188130042335
-      }
-    },
-    "n_clusters": 4
+    "n_clusters": 4,
+    "fitted_on": "global",
+    "n_player_rounds_global": 1870
   }
 }

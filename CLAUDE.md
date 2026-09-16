@@ -35,14 +35,17 @@ pronto não serve aqui.
 
 ```
 parsing/      wrapper do awpy.Demo
-metrics/      geometry, basic_metrics, awp_metrics, crosshair, map_angles, positioning
-clustering/   playstyle (PCA + KMeans) + cluster_names.json
-dashboard/    app Streamlit + theme
-scripts/      process_demo (CLI) e show_derived_angles (calibração)
-tests/        29 testes
+metrics/      geometry, basic_metrics, awp_metrics, crosshair, map_angles,
+              positioning, grenades, map_areas, site_roles, player_roles
+clustering/   playstyle (PCA + KMeans), global_model.json e cluster_names.json
+dashboard/    app Streamlit + theme + web/
+scripts/      process_demo (CLI), fit_global_clusters, show_derived_angles e
+              show_map_areas (calibração), build_site
+tests/        59 testes
 data/raw/     .dem originais (gitignored)
 data/interim/ tabelas brutas em parquet (gitignored, ticks tem 1M+ linhas)
 data/processed/ métricas calculadas (versionadas — é o que o dashboard usa)
+data/global_clusters/ clustering ajustado no conjunto das partidas
 ```
 
 ## Convenções do código
@@ -110,22 +113,67 @@ testada e estava errada.
     passa nos critérios junto das três primeiras no modo escuro. Não troque por
     4 cores num gráfico só.
 
+11. **O KMeans é ajustado UMA vez no conjunto das partidas, não por partida.**
+    O rótulo numérico do KMeans é arbitrário: treinando por partida, o "cluster
+    3" de uma não tem relação com o da outra — e `cluster_names.json` é um
+    arquivo único aplicado a todas. Medido nas 9 partidas: o grupo de dano alto
+    era o cluster 3 em match_01, o 2 em match_02 e o 0 em match_04. O modelo vive
+    em `clustering/global_model.json` (JSON, não pickle) e é ajustado por
+    `scripts/fit_global_clusters.py`. Há teste travando a propriedade e um teste
+    de controle mostrando que o modo antigo não a tinha.
+
+12. **Âncora e lurk são medidos por ÁREA do mapa, não por distância nem por
+    tempo.** Definição de jogo do Pedro: âncora é o CT que fica no mesmo bombsite
+    mesmo quando os T indicam o outro lado; lurker é o T que joga outra área
+    enquanto o time executa. As versões antigas (contato tardio e distância média
+    do time) mediam outra coisa — dois CTs em bombsites opostos estão à mesma
+    distância um do outro que um lurker do time. `metrics/map_areas.py` particiona
+    o mapa em A/Mid/B a partir dos plants do próprio demo.
+
+13. **Entry é AÇÃO, não relógio.** Quem dá o primeiro contato é entry mesmo que
+    o round já esteja em 20s restantes. Por isso a métrica é a fração de rounds
+    em que o jogador foi o primeiro do time a encostar no adversário, e não a
+    mediana de segundos até o contato — essa media o quão rápida foi a partida.
+    Registro: com piso em segundos, o rótulo "Abre o round" nunca foi atribuído a
+    ninguém em 90 jogador-partidas.
+
+14. **Spawn não é área de jogo e fica fora da partição do mapa.** O CTSpawn da
+    Ancient cai geometricamente do lado do A; contá-lo fazia todo CT "ir pro A"
+    em todo round e zerava a métrica de não-rotação para times inteiros. Pelo
+    mesmo motivo, passar rapidamente pela área do outro site não conta como
+    rotação (`MIN_OTHER_SITE_SHARE`): os corredores de ligação caem de um dos
+    lados. Ambos têm teste de regressão.
+
 ## Pontos de calibração — pertencem ao Pedro, não ao código
 
 Não "resolva" nenhum destes automaticamente; pergunte.
 
-- Nomear os clusters (`clustering/cluster_names.json`).
+- Nomear os clusters (`clustering/cluster_names.json`). Rode
+  `py -3.12 -m scripts.fit_global_clusters --dry-run` para ver o perfil de cada
+  um e os rounds representativos.
+- Revisar a partição A/Mid/B dos mapas (`MANUAL_PLACE_AREAS` em
+  `metrics/map_areas.py`). Rode `py -3.12 -m scripts.show_map_areas`. A Nuke é a
+  mais frágil: os dois sites ficam empilhados na vertical.
 - Ângulos de entrada manuais (`MANUAL_ENTRY_ANGLES` em `metrics/map_angles.py`).
   Rode `python -m scripts.show_derived_angles <match_id>` para ver os derivados.
   Os com `n_kills` baixo (4-5) são os que mais precisam de julgamento humano.
 - Limiares: janela de trade (5s), peek/hold (120u / 250u), janela de contato
-  (1s), tolerância de pré-fire (25°).
+  (1s), tolerância de pré-fire (25°), permanência mínima para contar rotação
+  (15% do round).
+- Pisos de função (`TRAIT_SPECS` em `metrics/player_roles.py`). Revisados sobre
+  as 9 partidas. Os de suporte, âncora de tempo e fragger não filtram nada hoje
+  e foram mantidos de propósito — ver a nota no topo do módulo.
 
 ## Limitações conhecidas
 
-- Tudo veio de **uma única partida** até agora. Silhueta do clustering em 0,205
-  (estrutura fraca) — esperado com 220 player-rounds. Processar mais demos
-  melhora clusters e ângulos derivados.
+- São **9 partidas** (1.870 player-rounds). A silhueta do clustering é 0,168
+  (k=4) no conjunto — estrutura fraca, e ela **não melhorou com volume**: 1.870
+  player-rounds dão praticamente a mesma silhueta que 220. A previsão registrada
+  antes (de que melhoraria com mais demos) não se confirmou, e isso muda a
+  leitura: estilo de jogo num round é um contínuo, não caixas separadas. Os
+  grupos servem como descrição, não como classificação de fronteira nítida.
+- 8 das 9 partidas são de 4 mapas (5 Mirage, 2 Ancient, 1 Anubis, 1 Nuke). A
+  partição de áreas da Nuke é a menos confiável e nunca foi revisada à mão.
 - As demos disponíveis são partidas profissionais do donk, não do Pedro. A
   validação feita foi por consistência (ele lidera ADR e KAST, como esperado) e
   ordem de grandeza, não por memória round a round.
@@ -139,7 +187,7 @@ Não "resolva" nenhum destes automaticamente; pergunte.
 ## Como validar mudanças
 
 ```bash
-py -3.12 -m pytest tests/ -v          # 29 testes
+py -3.12 -m pytest tests/ -v          # 59 testes
 py -3.12 -m scripts.process_demo data/raw/match_01.dem --match-id match_01 --from-interim
 py -3.12 -m streamlit run dashboard/app.py
 ```
