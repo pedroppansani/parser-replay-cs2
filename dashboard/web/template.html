@@ -65,6 +65,77 @@
   }
   .crumbs em { font-style: normal; color: var(--line); }
 
+  /* Troca de partida. Fica escondida no build de arquivo único (sem lista de
+     partidas injetada), que é autocontido por definição. */
+  .demobar {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin-top: 14px; padding: 9px 12px;
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--r);
+    box-shadow: var(--shadow-1);
+  }
+  .demobar[hidden] { display: none; }
+  .demobar label {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--dim);
+  }
+  .demobar select {
+    font-family: var(--mono); font-size: 12.5px; color: var(--ink);
+    padding: 6px 9px; border: 1px solid var(--line); border-radius: 7px;
+    background: var(--paper); cursor: pointer; max-width: 100%;
+  }
+  .demobar select:hover { border-color: var(--dim); }
+  .demobar .sep { flex: 1; }
+  .demobar a, .demobar button {
+    font-family: var(--mono); font-size: 11.5px; color: var(--ct);
+    background: none; border: 0; padding: 6px 8px; border-radius: 7px;
+    cursor: pointer; text-decoration: none;
+  }
+  .demobar a:hover, .demobar button:hover { background: var(--ct-soft); }
+
+  .howto {
+    margin-top: 10px; padding: 14px 16px; border-radius: var(--r);
+    background: var(--card); border: 1px solid var(--line);
+    font-size: 13px; color: var(--ink-2); line-height: 1.55;
+  }
+  .howto[hidden] { display: none; }
+  .howto b { color: var(--ink); font-weight: 600; }
+  .howto pre {
+    margin: 9px 0 0; padding: 11px 12px; overflow-x: auto;
+    background: var(--ink); color: #e6edf5; border-radius: 8px;
+    font-family: var(--mono); font-size: 11.5px; line-height: 1.7;
+  }
+  .howto .why { margin: 10px 0 0; font-size: 12px; color: var(--dim); }
+
+  /* ---- bolinhas do gráfico de vantagem ---- */
+  .plot { position: relative; }
+  .swingdot { cursor: pointer; transition: r 0.12s ease, fill 0.12s ease; }
+  .swinghit { cursor: pointer; fill: transparent; }
+  .swinghit:focus { outline: none; }
+  .swinghit:focus-visible + .swingdot, .swingdot.hot { fill: var(--ct); }
+
+  .rtip {
+    position: absolute; z-index: 5; pointer-events: none;
+    min-width: 190px; max-width: 280px;
+    padding: 10px 12px; border-radius: 9px;
+    background: var(--ink); color: #eef2f7;
+    box-shadow: 0 8px 26px rgba(15, 22, 32, 0.22);
+    transform: translate(-50%, -100%);
+    opacity: 0; transition: opacity 0.12s ease;
+  }
+  .rtip[hidden] { display: none; }
+  .rtip.on { opacity: 1; }
+  .rtip::after {
+    content: ""; position: absolute; left: 50%; bottom: -5px; margin-left: -5px;
+    border: 5px solid transparent; border-top-color: var(--ink); border-bottom: 0;
+  }
+  .rtip .rh {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: #8d9bab; display: flex; justify-content: space-between; gap: 8px;
+  }
+  .rtip .rt { font-size: 13.5px; line-height: 1.4; margin-top: 5px; font-weight: 600; }
+  .rtip .rs { font-family: var(--mono); font-size: 11px; color: #a9b6c4; margin-top: 5px; }
+  .rtip .rgo { font-family: var(--mono); font-size: 10px; color: #7fb3f0; margin-top: 7px; }
+
   .lockup {
     margin-top: 18px;
     display: flex;
@@ -284,6 +355,8 @@
   .plr .hpbar { grid-column: 1 / -1; height: 4px; border-radius: 99px; background: var(--paper-2); overflow: hidden; }
   .plr .hpbar > i { display: block; height: 100%; border-radius: 99px; transition: width 0.18s linear; }
   .plr .wp { grid-column: 1 / -1; font-family: var(--mono); font-size: 10.5px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .plr.blind { background: rgba(232, 181, 58, 0.13); }
+  .plr.blind .wp { color: #a07a12; font-weight: 600; }
 
   .maplegend {
     display: flex;
@@ -481,6 +554,11 @@
   .ev .wpn { font-family: var(--mono); font-size: 10.5px; color: var(--dim); }
   .ev.bomb .who { color: var(--t); font-weight: 600; }
   .ev.defuse .who { color: var(--aqua); font-weight: 600; }
+  /* utility fica visualmente um degrau abaixo de kill e bomba: é contexto que
+     explica a briga, não o desfecho dela */
+  .ev.util .who { color: var(--ink-2); }
+  .ev.util.flash { box-shadow: inset 2px 0 0 #e8b53a; }
+  .ev.util.he { box-shadow: inset 2px 0 0 #d1495b; }
 
   .roundhead {
     display: flex;
@@ -603,6 +681,40 @@
   .facet li { font-family: var(--mono); font-size: 11px; color: var(--ink-2); display: flex; justify-content: space-between; gap: 8px; }
   .facet li span { color: var(--dim); }
 
+  /* ---- funções por jogador (aba Estilos) ---- */
+  .eyebrow.tier2 { margin-top: 46px; padding-top: 30px; border-top: 1px solid var(--line); }
+
+  .rosters { margin-top: 18px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr)); gap: 16px; }
+  .roster > h3 {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--dim); margin: 0 0 8px; display: flex; align-items: baseline; gap: 8px;
+  }
+  .roster > h3 b { font-family: var(--display); font-size: 17px; letter-spacing: -0.015em; color: var(--ink); }
+
+  .pc { padding: 13px 14px; }
+  .pc + .pc { margin-top: 8px; }
+  .pc .top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .pc .who { font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
+  .pc .role {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 3px 7px; border-radius: 99px; background: var(--ct-soft); color: var(--ct); font-weight: 500;
+    white-space: nowrap;
+  }
+  .pc .role.none { background: var(--paper-2); color: var(--dim); }
+  .pc .role.manual { background: rgba(27, 175, 122, 0.12); color: var(--aqua); }
+  .pc .ev { font-size: 12.5px; color: var(--ink-2); margin-top: 5px; }
+  .pc .chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+  .pc .chip {
+    font-family: var(--mono); font-size: 10px; color: var(--ink-2);
+    background: var(--paper); border-radius: 5px; padding: 3px 6px;
+  }
+  .pc .nums { display: grid; grid-template-columns: repeat(auto-fit, minmax(62px, 1fr)); gap: 6px; margin-top: 10px; }
+  .pc .nums div { font-family: var(--mono); font-size: 12px; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .pc .nums span { display: block; font-size: 9.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--dim); }
+  .pc .mix { display: flex; height: 5px; border-radius: 99px; overflow: hidden; margin-top: 10px; background: var(--paper-2); }
+  .pc .mix i { display: block; height: 100%; }
+  .pc .mixlab { font-family: var(--mono); font-size: 9.5px; color: var(--dim); margin-top: 4px; }
+
   .callout {
     margin-top: 16px;
     padding: 14px 16px;
@@ -638,6 +750,15 @@
       <span>FACEIT</span><em>/</em>
       <span>parser próprio · awpy + demoparser2</span>
     </div>
+
+    <div class="demobar" id="demobar" hidden>
+      <label for="demosel">Partida</label>
+      <select id="demosel" aria-label="Trocar de partida"></select>
+      <span class="sep"></span>
+      <button type="button" id="addbtn" aria-expanded="false" aria-controls="howto">+ adicionar demo</button>
+      <a href="index.html">ver todas</a>
+    </div>
+    <div class="howto" id="howto" hidden></div>
 
     <div class="lockup">
       <h1>Uma partida,<br>round a round</h1>
@@ -746,8 +867,9 @@
     <div class="eyebrow">Vantagem round a round</div>
     <h2 class="sec">A virada em dois atos</h2>
     <p class="lead">
-      A linha é a diferença de rounds a favor do Time A. Abaixo de zero, o Time B estava na
-      frente.
+      A linha é a diferença de rounds a favor do Time A. Abaixo de zero, o Time B estava na frente.
+      <b>Passe o mouse por um round</b> para ver o que mais pesou nele, e clique para assistir esse
+      round no mapa.
     </p>
     <div class="card plot">
       <svg id="swing" viewBox="0 0 900 290" role="img" aria-label="Diferença de rounds ao longo da partida"></svg>
@@ -773,11 +895,23 @@
 
   <!-- ESTILOS -->
   <section class="panel" data-panel="estilos" hidden>
-    <div class="eyebrow">Agrupamento não supervisionado</div>
+    <div class="eyebrow">Função medida, não atribuída</div>
+    <h2 class="sec">O que cada um faz em quadra</h2>
+    <p class="lead">
+      A função de cada jogador sai de um limiar sobre uma métrica em que ele lidera o próprio time,
+      e o número que sustenta o rótulo aparece embaixo dele. <b>Não existe cota de um AWPer e um
+      entry por time</b>: quem não passa do piso fica sem função dominante, e um dos times aqui não
+      teve AWPer nenhum. Isso é resultado, não lacuna.
+    </p>
+    <div class="rosters" id="roles"></div>
+    <div class="callout" id="rolenote"></div>
+
+    <div class="eyebrow tier2">Agrupamento não supervisionado</div>
     <h2 class="sec">Quatro jeitos de jogar um round</h2>
     <p class="lead">
-      PCA + KMeans sobre 12 features de comportamento por jogador/round — não por jogador,
-      porque o mesmo atleta é entry num round e âncora no seguinte.
+      A tabela acima é por jogador; esta é por <b>jogador/round</b>. PCA + KMeans sobre 12 features
+      de comportamento, porque o mesmo atleta é entry num round e âncora no seguinte — e é essa
+      troca que o rótulo fixo não consegue mostrar.
     </p>
     <div class="facets" id="facets"></div>
     <div class="callout" id="naming"></div>
@@ -790,6 +924,7 @@
 <script id="replay" type="application/json">/*__REPLAY__*/</script>
 <script id="breakdown" type="application/json">/*__BREAKDOWN__*/</script>
 <script>window.__RADAR__ = /*__RADAR__*/null;</script>
+<script>window.__SITE__ = /*__SITE__*/null;</script>
 <script>
 (function () {
   "use strict";
@@ -837,9 +972,31 @@
   // Radar oficial do mapa. A correspondência entre coordenada de jogo e pixel
   // não vem com a imagem — ela foi calibrada ajustando a nuvem de posições da
   // partida contra a área caminhável do radar (ver scripts/prepare_radar.py).
-  var RAD = window.__RADAR__ || null;
-  cv.width = RAD ? RAD.width : 860;
-  cv.height = RAD ? RAD.height : 860;
+  //
+  // Nem todo mapa tem radar calibrado (os assets do awpy exigem rede liberada, e
+  // o CDN nem sempre responde). Sem ele, a projeção é derivada dos próprios
+  // limites da partida: o mapa fica sem imagem de fundo, mas posição, trajetória
+  // e evento continuam corretos entre si — que é o que o replay precisa mostrar.
+  // A alternativa seria a aba inteira quebrar em mapa sem asset.
+  function fitBounds(b) {
+    var W = 820, H = 950, pad = 40;
+    var dx = Math.max(1, b.maxX - b.minX), dy = Math.max(1, b.maxY - b.minY);
+    var scale = Math.min((W - pad * 2) / dx, (H - pad * 2) / dy);
+    return {
+      width: W,
+      height: H,
+      scale_px_per_unit: scale,
+      // centraliza a nuvem de posições na área útil do canvas
+      origin_x: b.minX - ((W - dx * scale) / 2) / scale,
+      origin_y: b.maxY + ((H - dy * scale) / 2) / scale,
+      image: null,
+      synthetic: true
+    };
+  }
+
+  var RAD = window.__RADAR__ || fitBounds(R.bounds);
+  cv.width = RAD.width;
+  cv.height = RAD.height;
 
   function mx(x) { return (x - RAD.origin_x) * RAD.scale_px_per_unit; }
   function my(y) { return (RAD.origin_y - y) * RAD.scale_px_per_unit; }
@@ -851,7 +1008,7 @@
     var p = plate.getContext("2d");
     p.fillStyle = "#161d26";
     p.fillRect(0, 0, plate.width, plate.height);
-    if (!RAD) { plateReady = true; return; }
+    if (!RAD.image) { plateReady = true; return; }
     var im = new Image();
     im.onload = function () {
       p.drawImage(im, 0, 0, plate.width, plate.height);
@@ -861,7 +1018,20 @@
     im.src = RAD.image;
   })();
 
+  if (RAD.synthetic) {
+    var leg = document.querySelector(".maplegend");
+    if (leg) {
+      var warn = document.createElement("span");
+      warn.style.cssText = "color:var(--dim);font-style:italic";
+      warn.textContent = "sem radar calibrado para este mapa — posições em coordenadas de jogo";
+      leg.appendChild(warn);
+    }
+  }
+
   var NADE_COLOR = { smoke: "#9fb0c2", molotov: "#eb6834", he: "#d1495b", flash: "#e8b53a", decoy: "#7d8a99" };
+
+  // Quadros que a marca de detonação leva pra abrir e sumir (4 Hz -> 1,5s).
+  var POP_FRAMES = 6;
 
   var rounds = R.rounds;
   var cur = rounds[0];
@@ -891,10 +1061,39 @@
     target_bombed: "bomba explodiu"
   };
 
+  // Janelas de cegueira do round indexadas por jogador. O mapa precisa
+  // responder "esse jogador está cego AGORA?" a cada quadro, e varrer a lista
+  // inteira 10 vezes por quadro seria desperdício.
+  var blindIndex = {};
+  var logItems = [];
+
+  function indexBlinds(r) {
+    blindIndex = {};
+    (r.blinds || []).forEach(function (b) {
+      (blindIndex[b.n] = blindIndex[b.n] || []).push(b);
+    });
+  }
+
+  // Segundos de cegueira restantes do jogador no quadro atual (0 = enxergando).
+  function blindLeft(name, f) {
+    var list = blindIndex[name];
+    if (!list) return 0;
+    var worst = 0;
+    for (var i = 0; i < list.length; i++) {
+      var b = list[i];
+      if (f >= b.f0 && f <= b.f1) {
+        var left = (b.f1 - f) / R.sample_hz;
+        if (left > worst) worst = left;
+      }
+    }
+    return worst;
+  }
+
   function selectRound(r) {
     cur = r;
     frame = 0;
     pos = 0;
+    indexBlinds(r);
     setPlaying(false);
     Array.prototype.forEach.call(strip.children, function (b, i) {
       b.setAttribute("aria-pressed", String(rounds[i] === r));
@@ -1009,34 +1208,74 @@
         row.querySelector(".hpn").textContent = hp;
         row.querySelector(".hpbar > i").style.width = Math.max(0, hp) + "%";
         var w = p.w[frame];
-        row.querySelector(".wp").textContent = w >= 0 ? (cur.weapons[w] || "—") : "—";
+        var bl = p.alive[frame] ? blindLeft(p.name, frame) : 0;
+        row.classList.toggle("blind", bl > 0);
+        row.querySelector(".wp").textContent = bl > 0
+          ? "cego · " + br(bl) + "s"
+          : (w >= 0 ? (cur.weapons[w] || "—") : "—");
       });
     });
+  }
+
+  // Linha do tempo = kills e bomba (sempre) + a utility que teve efeito. Flash
+  // que não cegou inimigo e HE que não tirou dano ficam de fora: numa partida
+  // profissional são ~9 granadas por round, e listar todas afogaria justamente
+  // os eventos que decidiram o round. Elas continuam visíveis no mapa.
+  function buildLogItems() {
+    var items = cur.events.map(function (e) { return { e: e, f: e.f, t: e.t }; });
+
+    (cur.pops || []).forEach(function (p) {
+      if (p.k === "flash") {
+        var hit = (p.hit || []).filter(function (v) { return v.e && v.s >= R.effective_blind_s; });
+        if (hit.length) items.push({ pop: p, hit: hit, f: p.f, t: p.t });
+      } else if (p.dmg > 0) {
+        items.push({ pop: p, f: p.f, t: p.t });
+      }
+    });
+
+    return items.sort(function (a, b) { return a.f - b.f; });
+  }
+
+  function logText(it) {
+    if (it.pop) {
+      if (it.pop.k === "flash") {
+        var longest = it.hit.reduce(function (m, v) { return v.s > m ? v.s : m; }, 0);
+        var who = it.hit.map(function (v) { return v.n; }).join(", ");
+        return "<span class='who'><b>" + it.pop.by + "</b> cegou " + who + "</span> " +
+          "<span class='wpn'>flash · " + br(longest) + "s</span>";
+      }
+      return "<span class='who'><b>" + it.pop.by + "</b> acertou HE</span> " +
+        "<span class='wpn'>" + it.pop.dmg + " de dano</span>";
+    }
+    var e = it.e;
+    if (e.type === "kill") {
+      return "<span class='who'><b>" + e.attacker + "</b> matou " + e.victim + "</span> " +
+        "<span class='wpn'>" + (e.weapon || "").replace(/_/g, " ") + (e.headshot ? " · hs" : "") + "</span>";
+    }
+    if (e.type === "plant") {
+      return "<span class='who'>" + (e.player || "T") + " plantou</span> <span class='wpn'>" +
+        (e.site || "").replace("Bombsite", "bomb ") + "</span>";
+    }
+    if (e.type === "defuse") return "<span class='who'>" + (e.player || "CT") + " desarmou</span>";
+    return "<span class='who'>a bomba explodiu</span>";
   }
 
   function buildLog() {
     var log = document.getElementById("log");
     log.innerHTML = "";
-    cur.events.forEach(function (e, i) {
+    logItems = buildLogItems();
+    logItems.forEach(function (it, i) {
+      var e = it.e;
       var b = document.createElement("button");
-      b.className = "ev" + (e.type === "plant" || e.type === "explode" ? " bomb" : "") +
-        (e.type === "defuse" ? " defuse" : "");
+      b.className = "ev" +
+        (e && (e.type === "plant" || e.type === "explode") ? " bomb" : "") +
+        (e && e.type === "defuse" ? " defuse" : "") +
+        (it.pop ? " util " + it.pop.k : "");
       b.dataset.i = i;
-      var text;
-      if (e.type === "kill") {
-        text = "<span class='who'><b>" + e.attacker + "</b> matou " + e.victim + "</span> " +
-          "<span class='wpn'>" + (e.weapon || "").replace(/_/g, " ") + (e.headshot ? " · hs" : "") + "</span>";
-      } else if (e.type === "plant") {
-        text = "<span class='who'>" + (e.player || "T") + " plantou</span> <span class='wpn'>" +
-          (e.site || "").replace("Bombsite", "bomb ") + "</span>";
-      } else if (e.type === "defuse") {
-        text = "<span class='who'>" + (e.player || "CT") + " desarmou</span>";
-      } else {
-        text = "<span class='who'>a bomba explodiu</span>";
-      }
-      b.innerHTML = "<span class='tm'>" + br(e.t) + "s</span><span>" + text + "</span>";
+      b.innerHTML = "<span class='tm'>" + br(it.t) + "s</span><span>" + logText(it) + "</span>";
       b.addEventListener("click", function () {
-        frame = e.f;
+        pos = it.f;
+        frame = it.f;
         document.getElementById("scrub").value = frame;
         setPlaying(false);
         draw();
@@ -1124,6 +1363,50 @@
       ctx.beginPath(); ctx.arc(gx, gy, 3.4, 0, Math.PI * 2); ctx.stroke();
     });
 
+    // Detonação de flash e HE. Diferente de smoke e fogo, elas não ocupam área:
+    // acontecem num instante, e o que importa é o efeito. O anel abre e some em
+    // ~1,5s. Uma flash que não cegou inimigo nenhum aparece apagada e sem
+    // rótulo — a granada existiu, o efeito não, e o mapa mostra a diferença.
+    (cur.pops || []).forEach(function (p) {
+      var age = frame - p.f;
+      if (age < 0 || age > POP_FRAMES) return;
+      var k = age / POP_FRAMES;
+      var X = mx(p.x), Y = my(p.y);
+      var flash = p.k === "flash";
+      var col = flash ? NADE_COLOR.flash : NADE_COLOR.he;
+
+      var blinded = flash
+        ? (p.hit || []).filter(function (v) { return v.e && v.s >= R.effective_blind_s; })
+        : [];
+      var strong = flash ? blinded.length > 0 : p.dmg > 0;
+
+      ctx.globalAlpha = (1 - k) * (strong ? 0.85 : 0.35);
+      ctx.strokeStyle = col;
+      ctx.lineWidth = strong ? 2.6 : 1.2;
+      ctx.beginPath();
+      ctx.arc(X, Y, 6 + k * 30, 0, Math.PI * 2);
+      ctx.stroke();
+
+      if (strong) {
+        ctx.globalAlpha = (1 - k) * 0.5;
+        ctx.fillStyle = col;
+        ctx.beginPath(); ctx.arc(X, Y, 5, 0, Math.PI * 2); ctx.fill();
+
+        var tag = flash
+          ? blinded.length + (blinded.length > 1 ? " cegos" : " cego")
+          : p.dmg + " dano";
+        ctx.globalAlpha = 1 - k;
+        ctx.font = "500 11px 'DM Mono', ui-monospace, monospace";
+        ctx.textAlign = "center";
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "rgba(14,20,27,0.85)";
+        ctx.strokeText(tag, X, Y - 16);
+        ctx.fillStyle = col;
+        ctx.fillText(tag, X, Y - 16);
+      }
+      ctx.globalAlpha = 1;
+    });
+
     // rastro percorrido até aqui
     cur.players.forEach(function (p) {
       var color = p.side === "ct" ? C.ct : C.t;
@@ -1208,6 +1491,20 @@
       ctx.fillStyle = color;
       ctx.beginPath(); ctx.arc(X, Y, 6, 0, Math.PI * 2); ctx.fill();
 
+      // Cegueira: é o estado que explica por que um jogador parou de mirar, ou
+      // andou pra frente sem reagir. Sem marcar isso no mapa, a sequência mais
+      // comum do CS (flash entra, time entra atrás) fica sem causa visível.
+      var bl = blindLeft(p.name, i0);
+      if (bl > 0) {
+        ctx.strokeStyle = NADE_COLOR.flash;
+        ctx.globalAlpha = 0.9;
+        ctx.lineWidth = 2.2;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath(); ctx.arc(X, Y, 12.5, 0, Math.PI * 2); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.globalAlpha = 1;
+      }
+
       // anel de vida: encolhe conforme o jogador toma dano
       var hp = Math.max(0, Math.min(100, p.hp[i0])) / 100;
       if (hp < 1) {
@@ -1232,7 +1529,7 @@
     document.getElementById("clock").textContent = mmss(el) + " / " + mmss(tot);
     var evs = document.querySelectorAll(".ev");
     var lastPast = -1;
-    cur.events.forEach(function (e, i) { if (e.f <= frame) lastPast = i; });
+    logItems.forEach(function (it, i) { if (it.f <= frame) lastPast = i; });
     Array.prototype.forEach.call(evs, function (b, i) {
       b.classList.toggle("past", i <= lastPast);
       b.classList.toggle("now", i === lastPast);
@@ -1344,6 +1641,28 @@
 
   /* ================= PLACAR ================= */
 
+  // O "maior acontecimento" do round, em ordem de quanto explica o resultado.
+  // Clutch e multikill vêm primeiro porque são o round inteiro decidido por uma
+  // pessoa; virada numérica vem depois porque é coletiva; abertura fica por
+  // último porque acontece em todo round — só é a manchete quando não houve
+  // nada mais forte.
+  function roundHeadline(info, p) {
+    if (info.clutch_player) {
+      return info.clutch_player + " fechou 1v" + info.clutch_against;
+    }
+    if (info.multikill_player && info.multikill_count >= 3) {
+      return info.multikill_player + " fez " + info.multikill_count + " kills no round";
+    }
+    if (info.worst_deficit_overcome >= 2) {
+      return "Time " + p.winner_team + " virou de " + info.worst_deficit_overcome +
+        " jogadores atrás";
+    }
+    if (info.opening) {
+      return info.opening.player + " abriu o round matando " + info.opening.victim;
+    }
+    return "Round decidido no confronto direto";
+  }
+
   (function swing() {
     var svg = document.getElementById("swing");
     var W = 900, H = 290, pL = 32, pR = 12, pT = 16, pB = 44;
@@ -1375,10 +1694,77 @@
       fill: "none", stroke: C.ct, "stroke-width": 2.2, "stroke-linejoin": "round", "stroke-linecap": "round"
     }));
 
+    // Cada round vira um alvo clicável. O círculo visível é pequeno demais pra
+    // mirar com o mouse (e muito menos no toque), então por cima dele vai um
+    // alvo transparente de raio 11 — é ele que recebe hover, clique e foco.
+    var tip = document.createElement("div");
+    tip.className = "rtip";
+    tip.hidden = true;
+    svg.parentNode.appendChild(tip);
+
+    var scored = {};
+    (D.rounds_scored || []).forEach(function (r) { scored[r.round] = r; });
+
+    function showTip(i, p, dot) {
+      var box = svg.getBoundingClientRect();
+      var k = box.width / W;  // o SVG é responsivo: converte coordenada do viewBox em pixel
+      var info = scored[p.round] || p;
+
+      tip.innerHTML =
+        "<div class='rh'><span>Round " + p.round + "</span><span>Time " + p.winner_team + " venceu</span></div>" +
+        "<div class='rt'>" + roundHeadline(info, p) + "</div>" +
+        "<div class='rs'>" + p.score_a + "–" + p.score_b + " · " + (REASON[p.reason] || p.reason) +
+        (p.bomb_planted ? " · bomba plantada" : "") + "</div>" +
+        "<div class='rgo'>clique para assistir este round</div>";
+
+      tip.hidden = false;
+      tip.style.left = (X(i) * k) + "px";
+      tip.style.top = (Y(diffs[i]) * k - 12) + "px";
+      tip.classList.add("on");
+      dot.classList.add("hot");
+      dot.setAttribute("r", 6);
+    }
+
+    function hideTip(dot, dec) {
+      tip.classList.remove("on");
+      tip.hidden = true;
+      dot.classList.remove("hot");
+      dot.setAttribute("r", dec ? 5.5 : 3.2);
+    }
+
+    function goToRound(roundNum) {
+      var target = null;
+      for (var j = 0; j < rounds.length; j++) {
+        if (rounds[j].round === roundNum) { target = rounds[j]; break; }
+      }
+      if (!target) return;
+      selectTab("replay");
+      selectRound(target);
+      document.querySelector(".board").scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
+    }
+
     prog.forEach(function (p, i) {
       var dec = p.round === D.decisive_round.round;
-      svg.appendChild(svgEl("circle", { cx: X(i), cy: Y(diffs[i]), r: dec ? 5.5 : 3.2,
-        fill: dec ? C.t : (diffs[i] >= 0 ? C.ct : C.dim), stroke: "#fff", "stroke-width": dec ? 2.5 : 1.5 }));
+      var dot = svgEl("circle", { cx: X(i), cy: Y(diffs[i]), r: dec ? 5.5 : 3.2,
+        fill: dec ? C.t : (diffs[i] >= 0 ? C.ct : C.dim), stroke: "#fff", "stroke-width": dec ? 2.5 : 1.5,
+        "class": "swingdot" });
+      svg.appendChild(dot);
+
+      // aria-label em vez de <title>: o <title> do SVG viraria um tooltip nativo
+      // do navegador por cima do balão, dizendo menos e atrapalhando a leitura.
+      var hit = svgEl("circle", { cx: X(i), cy: Y(diffs[i]), r: 11, "class": "swinghit",
+        tabindex: 0, role: "button", "aria-label": "Round " + p.round + ": assistir" });
+
+      hit.addEventListener("mouseenter", function () { showTip(i, p, dot); });
+      hit.addEventListener("mouseleave", function () { hideTip(dot, dec); });
+      hit.addEventListener("focus", function () { showTip(i, p, dot); });
+      hit.addEventListener("blur", function () { hideTip(dot, dec); });
+      hit.addEventListener("click", function () { goToRound(p.round); });
+      hit.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); goToRound(p.round); }
+      });
+      svg.appendChild(hit);
+
       if (p.round % 2 === 1 || dec) {
         var t = svgEl("text", { x: X(i), y: H - pB + 17, "text-anchor": "middle",
           fill: dec ? C.t : C.dim, "font-family": "DM Mono, monospace", "font-size": 10.5 });
@@ -1433,7 +1819,95 @@
     });
   })();
 
-  /* ================= ESTILOS ================= */
+  /* ================= ESTILOS: FUNÇÃO POR JOGADOR ================= */
+
+  (function roles() {
+    var host = document.getElementById("roles");
+    if (!host || !D.roles) return;
+
+    // Características qualificadas por jogador, indexadas pra montar os chips.
+    var byPlayer = {};
+    (D.traits || []).forEach(function (t) { (byPlayer[t.name] = byPlayer[t.name] || []).push(t); });
+
+    // Mistura de clusters do jogador: em quantos rounds ele caiu em cada grupo.
+    // É o contraponto honesto ao rótulo fixo — mostra que ninguém joga o mesmo
+    // round 22 vezes.
+    var mixOf = {};
+    var clusterIds = [];
+    (D.clusters || []).forEach(function (c) {
+      (mixOf[c.name] = mixOf[c.name] || {})[c.cluster] = (mixOf[c.name][c.cluster] || 0) + 1;
+      if (clusterIds.indexOf(c.cluster) < 0) clusterIds.push(c.cluster);
+    });
+    clusterIds.sort(function (a, b) { return a - b; });
+    var MIXC = [C.ct, C.t, C.aqua, "#b9c3cf"];
+
+    ["A", "B"].forEach(function (team) {
+      var mine = D.roles.filter(function (p) { return p.team === team; });
+      if (!mine.length) return;
+
+      var col = document.createElement("div");
+      col.className = "roster";
+      var named = mine.filter(function (p) { return p.role; }).length;
+      col.innerHTML = "<h3><b>Time " + team + "</b> " + named + " de " + mine.length +
+        " com função dominante</h3>";
+
+      mine.sort(function (a, b) { return b.adr - a.adr; }).forEach(function (p) {
+        var card = document.createElement("div");
+        card.className = "card pc";
+
+        var roleCls = p.role ? (p.role_is_manual ? "role manual" : "role") : "role none";
+        var roleTxt = p.role || "sem função dominante";
+
+        var chips = (byPlayer[p.name] || [])
+          .sort(function (a, b) { return a.priority - b.priority; })
+          .slice(1)  // a primeira já é o título do cartão
+          .map(function (t) { return "<span class='chip'>" + t.evidence + "</span>"; })
+          .join("");
+
+        var ev = p.role_evidence
+          ? "<div class='ev'>" + p.role_evidence + "</div>"
+          : "<div class='ev'>Não lidera o time em nenhuma das métricas de função acima do piso — " +
+            "joga distribuído.</div>";
+
+        var mix = mixOf[p.name] || {};
+        var totalMix = clusterIds.reduce(function (s, c) { return s + (mix[c] || 0); }, 0);
+        var bars = clusterIds.map(function (c, i) {
+          var n = mix[c] || 0;
+          if (!n) return "";
+          return "<i style='width:" + (100 * n / totalMix) + "%;background:" + MIXC[i % MIXC.length] + "'></i>";
+        }).join("");
+
+        card.innerHTML =
+          "<div class='top'><div class='who'>" + p.name + "</div>" +
+          "<div class='" + roleCls + "'>" + roleTxt + "</div></div>" +
+          ev +
+          (chips ? "<div class='chips'>" + chips + "</div>" : "") +
+          "<div class='nums'>" +
+          "<div>" + br(p.adr) + "<span>ADR</span></div>" +
+          "<div>" + fmt(p.kast_pct, 0) + "%<span>KAST</span></div>" +
+          "<div>" + br(p.median_first_contact_s) + "s<span>1º contato</span></div>" +
+          "<div>" + fmt(p.enemy_blind_seconds, 0) + "s<span>cegou</span></div>" +
+          "<div>" + fmt(p.avg_distance_from_team, 0) + "u<span>dist. time</span></div>" +
+          "<div>" + Math.round(p.trade_share * 100) + "%<span>trade</span></div>" +
+          "</div>" +
+          (totalMix ? "<div class='mix'>" + bars + "</div><div class='mixlab'>mistura de clusters em " +
+            totalMix + " rounds</div>" : "");
+
+        col.appendChild(card);
+      });
+
+      host.appendChild(col);
+    });
+
+    document.getElementById("rolenote").innerHTML =
+      "<b>Como ler.</b> O rótulo exige duas coisas: liderar o próprio time naquela métrica e passar " +
+      "de um piso absoluto — sem o piso, o jogador que menos evita a AWP num time que não usa AWP " +
+      "viraria “AWPer”. Os pisos vieram da distribuição real desta partida e são ponto de " +
+      "calibração, não constante universal. <b>IGL não aparece aqui de propósito</b>: quem chama o " +
+      "time não deixa rastro no demo, e deduzir isso seria chute com cara de métrica.";
+  })();
+
+  /* ================= ESTILOS: CLUSTERS ================= */
 
   (function facets() {
     var wrap = document.getElementById("facets");
@@ -1480,17 +1954,70 @@
     "<b>Limites.</b> Uma única partida (220 jogador-rounds); a silhueta do clustering fica em 0,205, " +
     "estrutura fraca. Os índices de MVP e carrega piano são fórmulas declaradas, não padrões da indústria.";
 
+  /* ================= TROCA DE PARTIDA ================= */
+
+  // Só aparece no site multi-partida. O build de arquivo único não injeta
+  // __SITE__, e aí a barra fica escondida — a página continua sendo um HTML
+  // solto que funciona sem servidor nenhum, que é o ponto dela.
+  (function demobar() {
+    var SITE = window.__SITE__;
+    if (!SITE || !SITE.matches || !SITE.matches.length) return;
+
+    var bar = document.getElementById("demobar");
+    var sel = document.getElementById("demosel");
+    bar.hidden = false;
+
+    SITE.matches.forEach(function (m) {
+      var o = document.createElement("option");
+      o.value = m.file;
+      o.textContent = m.label;
+      if (m.id === SITE.current) o.selected = true;
+      sel.appendChild(o);
+    });
+
+    sel.addEventListener("change", function () {
+      if (sel.value) window.location.href = sel.value;
+    });
+
+    var btn = document.getElementById("addbtn");
+    var box = document.getElementById("howto");
+    box.innerHTML =
+      "<b>Como adicionar uma demo nova.</b> O parsing não roda no navegador: um .dem tem 200-300MB " +
+      "e o parser é nativo (Rust, via awpy). Então a demo é processada localmente e o que vai pro " +
+      "site é só o resultado — alguns KB de métricas por partida." +
+      "<pre>git clone " + (SITE.repo || "&lt;este repositório&gt;") + "\n" +
+      "pip install -r requirements.txt\n\n" +
+      "# jogue o .dem em demos/ e rode:\n" +
+      "python -m scripts.process_all_demos\n" +
+      "python -m scripts.build_site</pre>" +
+      "<p class='why'>A partida nova entra sozinha neste seletor. É a mesma razão de o site ser " +
+      "estático: processar .dem a cada acesso derrubaria qualquer hospedagem gratuita.</p>";
+
+    btn.addEventListener("click", function () {
+      var open = box.hidden;
+      box.hidden = !open;
+      btn.setAttribute("aria-expanded", String(open));
+    });
+  })();
+
   /* ================= ABAS ================= */
 
   var tabs = document.querySelectorAll(".tabs button");
-  Array.prototype.forEach.call(tabs, function (b) {
-    b.addEventListener("click", function () {
-      Array.prototype.forEach.call(tabs, function (o) { o.setAttribute("aria-selected", String(o === b)); });
-      Array.prototype.forEach.call(document.querySelectorAll("[data-panel]"), function (p) {
-        p.hidden = p.dataset.panel !== b.dataset.tab;
-      });
-      if (b.dataset.tab === "replay") draw();
+
+  // Nomeada (e não só um listener) porque o gráfico de vantagem também troca de
+  // aba: clicar num round leva pro replay daquele round.
+  function selectTab(name) {
+    Array.prototype.forEach.call(tabs, function (o) {
+      o.setAttribute("aria-selected", String(o.dataset.tab === name));
     });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-panel]"), function (p) {
+      p.hidden = p.dataset.panel !== name;
+    });
+    if (name === "replay") draw();
+  }
+
+  Array.prototype.forEach.call(tabs, function (b) {
+    b.addEventListener("click", function () { selectTab(b.dataset.tab); });
   });
 })();
 </script>

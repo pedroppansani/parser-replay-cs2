@@ -129,6 +129,7 @@ tabs = st.tabs(
     [
         "Visão geral",
         "AWP",
+        "Utility",
         "Crosshair",
         "Posicionamento",
         "Estilos de jogo",
@@ -237,8 +238,73 @@ with tabs[1]:
             "nota no topo de metrics/awp_metrics.py."
         )
 
-# --- Crosshair (Fase 2) ----------------------------------------------------
+# --- Utility (Fase 4) ------------------------------------------------------
 with tabs[2]:
+    st.subheader("Utility")
+    st.caption(
+        "Dano é a parte menos importante da utility. A flash que cega dois defensores por 2s não "
+        "aparece em número de dano nenhum, e é ela que abre o round — por isso a tabela é liderada "
+        "pelo tempo de cegueira imposto, não pelo dano."
+    )
+
+    gren = data.get("grenades_summary")
+    if gren is None:
+        st.info("Métricas de utility não disponíveis nessa partida (reprocesse a demo).")
+    else:
+        bar_chart(
+            gren.select(["name", "enemy_blind_seconds"]).sort("enemy_blind_seconds", descending=True),
+            "name",
+            "enemy_blind_seconds",
+            "Segundos de cegueira impostos a inimigos",
+        )
+        show_table(
+            gren.select(
+                [
+                    "name",
+                    "flash_thrown",
+                    "enemies_flashed",
+                    "enemy_blind_seconds",
+                    "blind_seconds_per_flash",
+                    "flash_assists",
+                    "flash_kills",
+                    "teammates_flashed",
+                    "team_blind_seconds",
+                    "self_blind_seconds",
+                ]
+            ).sort("enemy_blind_seconds", descending=True)
+        )
+        st.markdown(
+            "**Como ler:** `enemies_flashed` só conta cegueira acima do limiar efetivo — abaixo "
+            "dele o inimigo perde o HUD, não a briga —, mas `enemy_blind_seconds` soma o tempo "
+            "todo, então nada fica escondido. `team_blind_seconds` **não é descontado** do número "
+            "de inimigos: cegar o próprio entry e se autocegar são erros diferentes, e somá-los num "
+            "saldo único apagaria os dois."
+        )
+
+        st.divider()
+        left3, right3 = st.columns(2)
+        with left3:
+            st.markdown("**Arremessos por tipo** (só projéteis — granada na mão não conta)")
+            show_table(
+                gren.select(
+                    ["name", "nades_per_round", "flash_thrown", "smoke_thrown",
+                     "molotov_thrown", "he_thrown", "decoy_thrown"]
+                ).sort("nades_per_round", descending=True)
+            )
+        with right3:
+            st.markdown("**Dano de granada, separado por tipo**")
+            st.caption(
+                "HE é dano de execução e de chip; molotov é negação de espaço que às vezes cobra "
+                "dano de quem insiste. Somados viram um número que não descreve nenhum dos dois."
+            )
+            show_table(
+                gren.select(["name", "he_damage", "fire_damage", "utility_damage",
+                             "median_first_utility_s"]).sort("utility_damage", descending=True)
+            )
+
+
+# --- Crosshair (Fase 2) ----------------------------------------------------
+with tabs[3]:
     st.subheader("Crosshair placement")
     st.caption(
         "O score combina altura da mira (linha da cabeça) com direção. A direção só é "
@@ -280,7 +346,7 @@ with tabs[2]:
         )
 
 # --- Posicionamento (Fase 2) ----------------------------------------------
-with tabs[3]:
+with tabs[4]:
     st.subheader("Posicionamento")
 
     heat = data.get("heatmap_bins")
@@ -348,9 +414,54 @@ with tabs[3]:
                 .head(10)
             )
 
-# --- Clusters (Fase 3) -----------------------------------------------------
-with tabs[4]:
+# --- Estilos: função por jogador (Fase 4) + clusters (Fase 3) --------------
+with tabs[5]:
+    roles = data.get("player_roles")
+    traits = data.get("player_traits")
+
+    if roles is not None:
+        st.subheader("Função de cada jogador")
+        st.caption(
+            "O rótulo exige liderar o próprio time na métrica E passar de um piso absoluto — sem o "
+            "piso, quem menos evita a AWP num time que não usa AWP viraria 'AWPer'. Não há cota de "
+            "um de cada função por time: quem não passa fica sem função dominante. IGL não aparece "
+            "porque quem chama o time não deixa rastro no demo."
+        )
+
+        for team in sorted(roles["team"].unique().to_list()):
+            mine = roles.filter(pl.col("team") == team).sort("adr", descending=True)
+            named = mine.filter(pl.col("role").is_not_null()).height
+            st.markdown(f"**Time {team}** — {named} de {mine.height} com função dominante")
+            for row in mine.iter_rows(named=True):
+                label = row["role"] or "sem função dominante"
+                manual = " *(manual)*" if row["role_is_manual"] else ""
+                evidence = row["role_evidence"] or "não lidera o time em nenhuma métrica acima do piso"
+                extra = ""
+                if traits is not None:
+                    others = (
+                        traits.filter(pl.col("steamid") == row["steamid"])
+                        .sort("priority")["evidence"]
+                        .to_list()[1:]
+                    )
+                    if others:
+                        extra = " · " + " · ".join(others)
+                st.markdown(f"- **{row['name']}** — {label}{manual}: {evidence}{extra}")
+
+            show_table(
+                mine.select(
+                    ["name", "role", "adr", "kast_pct", "median_first_contact_s",
+                     "first_contact_share", "avg_distance_from_team", "trade_share",
+                     "awp_share", "enemy_blind_seconds", "survival_rate"]
+                )
+            )
+
+        st.divider()
+
     st.subheader("Clustering de estilos de jogo")
+    st.caption(
+        "A seção acima é por jogador; esta é por (jogador, round) — é o que mostra o mesmo atleta "
+        "sendo entry num round e âncora no seguinte."
+    )
 
     assignments = data.get("cluster_assignments")
     profiles = data.get("cluster_profiles")
@@ -471,7 +582,7 @@ with tabs[4]:
             show_table(data["cluster_silhouettes"])
 
 # --- Detalhe por round -----------------------------------------------------
-with tabs[5]:
+with tabs[6]:
     st.subheader("Detalhe round a round — para validação manual")
     st.caption(
         "Escolhe jogador e métrica pra ver o valor calculado round a round e comparar "
@@ -486,6 +597,7 @@ with tabs[5]:
         "KAST (flags por round)": "kast_per_round",
         "Trade kills (por round)": "trade_kills_per_round",
         "Utility damage (por round)": "utility_damage_per_round",
+        "Utility completa (por round)": "grenades_per_round",
         "AWP (briga do round)": "awp_per_round",
         "Crosshair (por round)": "crosshair_per_round",
         "Posicionamento (por round)": "position_profile",

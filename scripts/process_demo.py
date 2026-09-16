@@ -30,8 +30,10 @@ from clustering.playstyle import (
     save_cluster_names_template,
 )
 from metrics.awp_metrics import calculate_awp_metrics
-from metrics.basic_metrics import compute_all_basic_metrics
+from metrics.basic_metrics import compute_all_basic_metrics, roster_per_round
 from metrics.crosshair import calculate_crosshair_metrics
+from metrics.grenades import compute_grenade_metrics
+from metrics.player_roles import build_player_roles
 from metrics.positioning import calculate_positioning_metrics
 from parsing.parser import ALL_TABLES, load_interim, parse_demo, save_interim
 
@@ -69,7 +71,11 @@ def process(
     print("[3/6] Fase 1 -- métricas básicas (ADR, KAST, trades, utility) ...")
     outputs.update(compute_all_basic_metrics(tables))
 
-    print("[4/6] Fase 2 -- AWP, crosshair placement e posicionamento ...")
+    print("[4/6] Fase 2 -- AWP, crosshair placement, posicionamento e utility ...")
+    gren_round, gren_summary = compute_grenade_metrics(tables, roster_per_round(tables["ticks"]))
+    outputs["grenades_per_round"] = gren_round
+    outputs["grenades_summary"] = gren_summary
+
     awp_round, awp_summary = calculate_awp_metrics(tables)
     outputs["awp_per_round"] = awp_round
     outputs["awp_summary"] = awp_summary
@@ -100,6 +106,10 @@ def process(
     outputs["cluster_profiles"] = profiles
     outputs["cluster_examples"] = representative_rounds(assignments)
     save_cluster_names_template(profiles)
+
+    roles, traits = build_player_roles(outputs, features, tables["ticks"])
+    outputs["player_roles"] = roles
+    outputs["player_traits"] = traits
 
     print("[6/6] Salvando métricas processadas ...")
     for name, df in outputs.items():

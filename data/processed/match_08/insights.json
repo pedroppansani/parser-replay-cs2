@@ -1,0 +1,1022 @@
+{
+  "match": {
+    "map": "de_mirage",
+    "rounds": 24,
+    "score_a": 11,
+    "score_b": 13,
+    "rosters": {
+      "A": [
+        "-EsD",
+        "KENNY-_",
+        "gwizdakk",
+        "Ahuniwip",
+        "PoisonLilies"
+      ],
+      "B": [
+        "Pelle-",
+        "endru-",
+        "donk666",
+        "certa1n",
+        "lilpeepfan-"
+      ]
+    },
+    "halftime": 12
+  },
+  "progression": [
+    {
+      "round": 1,
+      "winner_team": "B",
+      "reason": "bomb_defused",
+      "score_a": 0,
+      "score_b": 1,
+      "bomb_planted": true
+    },
+    {
+      "round": 2,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 1,
+      "score_b": 1,
+      "bomb_planted": true
+    },
+    {
+      "round": 3,
+      "winner_team": "A",
+      "reason": "bomb_exploded",
+      "score_a": 2,
+      "score_b": 1,
+      "bomb_planted": true
+    },
+    {
+      "round": 4,
+      "winner_team": "A",
+      "reason": "bomb_exploded",
+      "score_a": 3,
+      "score_b": 1,
+      "bomb_planted": true
+    },
+    {
+      "round": 5,
+      "winner_team": "B",
+      "reason": "t_killed",
+      "score_a": 3,
+      "score_b": 2,
+      "bomb_planted": false
+    },
+    {
+      "round": 6,
+      "winner_team": "B",
+      "reason": "t_killed",
+      "score_a": 3,
+      "score_b": 3,
+      "bomb_planted": false
+    },
+    {
+      "round": 7,
+      "winner_team": "B",
+      "reason": "t_killed",
+      "score_a": 3,
+      "score_b": 4,
+      "bomb_planted": false
+    },
+    {
+      "round": 8,
+      "winner_team": "B",
+      "reason": "t_killed",
+      "score_a": 3,
+      "score_b": 5,
+      "bomb_planted": false
+    },
+    {
+      "round": 9,
+      "winner_team": "B",
+      "reason": "t_killed",
+      "score_a": 3,
+      "score_b": 6,
+      "bomb_planted": false
+    },
+    {
+      "round": 10,
+      "winner_team": "B",
+      "reason": "t_killed",
+      "score_a": 3,
+      "score_b": 7,
+      "bomb_planted": false
+    },
+    {
+      "round": 11,
+      "winner_team": "B",
+      "reason": "t_killed",
+      "score_a": 3,
+      "score_b": 8,
+      "bomb_planted": false
+    },
+    {
+      "round": 12,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 4,
+      "score_b": 8,
+      "bomb_planted": true
+    },
+    {
+      "round": 13,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 4,
+      "score_b": 9,
+      "bomb_planted": true
+    },
+    {
+      "round": 14,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 4,
+      "score_b": 10,
+      "bomb_planted": false
+    },
+    {
+      "round": 15,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 4,
+      "score_b": 11,
+      "bomb_planted": false
+    },
+    {
+      "round": 16,
+      "winner_team": "A",
+      "reason": "t_killed",
+      "score_a": 5,
+      "score_b": 11,
+      "bomb_planted": false
+    },
+    {
+      "round": 17,
+      "winner_team": "A",
+      "reason": "t_killed",
+      "score_a": 6,
+      "score_b": 11,
+      "bomb_planted": false
+    },
+    {
+      "round": 18,
+      "winner_team": "A",
+      "reason": "t_killed",
+      "score_a": 7,
+      "score_b": 11,
+      "bomb_planted": false
+    },
+    {
+      "round": 19,
+      "winner_team": "A",
+      "reason": "t_killed",
+      "score_a": 8,
+      "score_b": 11,
+      "bomb_planted": false
+    },
+    {
+      "round": 20,
+      "winner_team": "A",
+      "reason": "t_killed",
+      "score_a": 9,
+      "score_b": 11,
+      "bomb_planted": false
+    },
+    {
+      "round": 21,
+      "winner_team": "A",
+      "reason": "bomb_defused",
+      "score_a": 10,
+      "score_b": 11,
+      "bomb_planted": true
+    },
+    {
+      "round": 22,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 10,
+      "score_b": 12,
+      "bomb_planted": true
+    },
+    {
+      "round": 23,
+      "winner_team": "A",
+      "reason": "bomb_defused",
+      "score_a": 11,
+      "score_b": 12,
+      "bomb_planted": true
+    },
+    {
+      "round": 24,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 11,
+      "score_b": 13,
+      "bomb_planted": true
+    }
+  ],
+  "decisive_round": {
+    "round": 1,
+    "winner_team": "B",
+    "reason": "bomb_defused",
+    "score_a": 0,
+    "score_b": 1,
+    "bomb_planted": true,
+    "worst_deficit_overcome": 1,
+    "clutch_player": "donk666",
+    "clutch_against": 2,
+    "opening": {
+      "player": "PoisonLilies",
+      "team": "A",
+      "victim": "PoisonLilies",
+      "weapon": "world"
+    },
+    "multikill_player": "donk666",
+    "multikill_count": 4,
+    "importance": 67.0,
+    "reasons": [
+      "clutch de donk666 em 1v2",
+      "4K de donk666",
+      "jogo empatado ou a um round de diferença",
+      "decidido no desarme"
+    ]
+  },
+  "point_of_no_return": 7,
+  "rounds_scored": [
+    {
+      "round": 1,
+      "winner_team": "B",
+      "reason": "bomb_defused",
+      "score_a": 0,
+      "score_b": 1,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 1,
+      "clutch_player": "donk666",
+      "clutch_against": 2,
+      "opening": {
+        "player": "PoisonLilies",
+        "team": "A",
+        "victim": "PoisonLilies",
+        "weapon": "world"
+      },
+      "multikill_player": "donk666",
+      "multikill_count": 4,
+      "importance": 67.0,
+      "reasons": [
+        "clutch de donk666 em 1v2",
+        "4K de donk666",
+        "jogo empatado ou a um round de diferença",
+        "decidido no desarme"
+      ]
+    },
+    {
+      "round": 2,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 1,
+      "score_b": 1,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "KENNY-_",
+        "team": "A",
+        "victim": "lilpeepfan-",
+        "weapon": "deagle"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 15.0,
+      "reasons": [
+        "jogo empatado ou a um round de diferença"
+      ]
+    },
+    {
+      "round": 3,
+      "winner_team": "A",
+      "reason": "bomb_exploded",
+      "score_a": 2,
+      "score_b": 1,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "Ahuniwip",
+        "team": "A",
+        "victim": "donk666",
+        "weapon": "ak47"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 21.0,
+      "reasons": [
+        "jogo empatado ou a um round de diferença",
+        "decidido na explosão"
+      ]
+    },
+    {
+      "round": 4,
+      "winner_team": "A",
+      "reason": "bomb_exploded",
+      "score_a": 3,
+      "score_b": 1,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "gwizdakk",
+        "team": "A",
+        "victim": "lilpeepfan-",
+        "weapon": "ak47"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 21.0,
+      "reasons": [
+        "jogo empatado ou a um round de diferença",
+        "decidido na explosão"
+      ]
+    },
+    {
+      "round": 5,
+      "winner_team": "B",
+      "reason": "t_killed",
+      "score_a": 3,
+      "score_b": 2,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "lilpeepfan-",
+        "team": "B",
+        "victim": "-EsD",
+        "weapon": "m4a1_silencer"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 0.0,
+      "reasons": []
+    },
+    {
+      "round": 6,
+      "winner_team": "B",
+      "reason": "t_killed",
+      "score_a": 3,
+      "score_b": 3,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 2,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "KENNY-_",
+        "team": "A",
+        "victim": "Pelle-",
+        "weapon": "ak47"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 39.0,
+      "reasons": [
+        "virou com 2 jogadores a menos",
+        "jogo empatado ou a um round de diferença"
+      ]
+    },
+    {
+      "round": 7,
+      "winner_team": "B",
+      "reason": "t_killed",
+      "score_a": 3,
+      "score_b": 4,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "donk666",
+        "team": "B",
+        "victim": "gwizdakk",
+        "weapon": "ak47"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 55.0,
+      "reasons": [
+        "assumiu a liderança que não devolveu mais",
+        "jogo empatado ou a um round de diferença"
+      ]
+    },
+    {
+      "round": 8,
+      "winner_team": "B",
+      "reason": "t_killed",
+      "score_a": 3,
+      "score_b": 5,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 1,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "-EsD",
+        "team": "A",
+        "victim": "Pelle-",
+        "weapon": "ak47"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 15.0,
+      "reasons": [
+        "jogo empatado ou a um round de diferença"
+      ]
+    },
+    {
+      "round": 9,
+      "winner_team": "B",
+      "reason": "t_killed",
+      "score_a": 3,
+      "score_b": 6,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "Pelle-",
+        "team": "B",
+        "victim": "PoisonLilies",
+        "weapon": "m4a1_silencer"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 0.0,
+      "reasons": []
+    },
+    {
+      "round": 10,
+      "winner_team": "B",
+      "reason": "t_killed",
+      "score_a": 3,
+      "score_b": 7,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "donk666",
+        "team": "B",
+        "victim": "PoisonLilies",
+        "weapon": "ak47"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 0.0,
+      "reasons": []
+    },
+    {
+      "round": 11,
+      "winner_team": "B",
+      "reason": "t_killed",
+      "score_a": 3,
+      "score_b": 8,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "lilpeepfan-",
+        "team": "B",
+        "victim": "Ahuniwip",
+        "weapon": "awp"
+      },
+      "multikill_player": "donk666",
+      "multikill_count": 4,
+      "importance": 24.0,
+      "reasons": [
+        "4K de donk666"
+      ]
+    },
+    {
+      "round": 12,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 4,
+      "score_b": 8,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "gwizdakk",
+        "team": "A",
+        "victim": "Pelle-",
+        "weapon": "ak47"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 0.0,
+      "reasons": []
+    },
+    {
+      "round": 13,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 4,
+      "score_b": 9,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 2,
+      "clutch_player": "lilpeepfan-",
+      "clutch_against": 3,
+      "opening": {
+        "player": "endru-",
+        "team": "B",
+        "victim": "-EsD",
+        "weapon": "glock"
+      },
+      "multikill_player": "lilpeepfan-",
+      "multikill_count": 3,
+      "importance": 62.0,
+      "reasons": [
+        "virou com 2 jogadores a menos",
+        "clutch de lilpeepfan- em 1v3",
+        "3K de lilpeepfan-"
+      ]
+    },
+    {
+      "round": 14,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 4,
+      "score_b": 10,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 1,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "lilpeepfan-",
+        "team": "B",
+        "victim": "KENNY-_",
+        "weapon": "ak47"
+      },
+      "multikill_player": "lilpeepfan-",
+      "multikill_count": 3,
+      "importance": 18.0,
+      "reasons": [
+        "3K de lilpeepfan-"
+      ]
+    },
+    {
+      "round": 15,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 4,
+      "score_b": 11,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 1,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "Ahuniwip",
+        "team": "A",
+        "victim": "Pelle-",
+        "weapon": "famas"
+      },
+      "multikill_player": "lilpeepfan-",
+      "multikill_count": 3,
+      "importance": 18.0,
+      "reasons": [
+        "3K de lilpeepfan-"
+      ]
+    },
+    {
+      "round": 16,
+      "winner_team": "A",
+      "reason": "t_killed",
+      "score_a": 5,
+      "score_b": 11,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "-EsD",
+        "team": "A",
+        "victim": "donk666",
+        "weapon": "mp9"
+      },
+      "multikill_player": "-EsD",
+      "multikill_count": 3,
+      "importance": 18.0,
+      "reasons": [
+        "3K de -EsD"
+      ]
+    },
+    {
+      "round": 17,
+      "winner_team": "A",
+      "reason": "t_killed",
+      "score_a": 6,
+      "score_b": 11,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "gwizdakk",
+        "team": "A",
+        "victim": "Pelle-",
+        "weapon": "ak47"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 0.0,
+      "reasons": []
+    },
+    {
+      "round": 18,
+      "winner_team": "A",
+      "reason": "t_killed",
+      "score_a": 7,
+      "score_b": 11,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "gwizdakk",
+        "team": "A",
+        "victim": "endru-",
+        "weapon": "m4a1_silencer"
+      },
+      "multikill_player": "Ahuniwip",
+      "multikill_count": 3,
+      "importance": 18.0,
+      "reasons": [
+        "3K de Ahuniwip"
+      ]
+    },
+    {
+      "round": 19,
+      "winner_team": "A",
+      "reason": "t_killed",
+      "score_a": 8,
+      "score_b": 11,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "KENNY-_",
+        "team": "A",
+        "victim": "Pelle-",
+        "weapon": "m4a1_silencer"
+      },
+      "multikill_player": "KENNY-_",
+      "multikill_count": 4,
+      "importance": 24.0,
+      "reasons": [
+        "4K de KENNY-_"
+      ]
+    },
+    {
+      "round": 20,
+      "winner_team": "A",
+      "reason": "t_killed",
+      "score_a": 9,
+      "score_b": 11,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "PoisonLilies",
+        "team": "A",
+        "victim": "Pelle-",
+        "weapon": "awp"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 0.0,
+      "reasons": []
+    },
+    {
+      "round": 21,
+      "winner_team": "A",
+      "reason": "bomb_defused",
+      "score_a": 10,
+      "score_b": 11,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "PoisonLilies",
+        "team": "A",
+        "victim": "Pelle-",
+        "weapon": "awp"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 8.0,
+      "reasons": [
+        "decidido no desarme"
+      ]
+    },
+    {
+      "round": 22,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 10,
+      "score_b": 12,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 1,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "Ahuniwip",
+        "team": "A",
+        "victim": "donk666",
+        "weapon": "m4a1"
+      },
+      "multikill_player": "Pelle-",
+      "multikill_count": 3,
+      "importance": 33.0,
+      "reasons": [
+        "3K de Pelle-",
+        "jogo empatado ou a um round de diferença"
+      ]
+    },
+    {
+      "round": 23,
+      "winner_team": "A",
+      "reason": "bomb_defused",
+      "score_a": 11,
+      "score_b": 12,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 1,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "donk666",
+        "team": "B",
+        "victim": "-EsD",
+        "weapon": "ak47"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 8.0,
+      "reasons": [
+        "decidido no desarme"
+      ]
+    },
+    {
+      "round": 24,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 11,
+      "score_b": 13,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 1,
+      "clutch_player": "Pelle-",
+      "clutch_against": 2,
+      "opening": {
+        "player": "Pelle-",
+        "team": "B",
+        "victim": "Ahuniwip",
+        "weapon": "ak47"
+      },
+      "multikill_player": "Pelle-",
+      "multikill_count": 4,
+      "importance": 59.0,
+      "reasons": [
+        "clutch de Pelle- em 1v2",
+        "4K de Pelle-",
+        "jogo empatado ou a um round de diferença"
+      ]
+    }
+  ],
+  "players": [
+    {
+      "steamid": 76561198855383911,
+      "name": "gwizdakk",
+      "adr": 97.91666666666667,
+      "kast_pct": 75.0,
+      "total_utility_damage": 310,
+      "utility_damage_per_round": 12.916666666666666,
+      "total_kills": 20,
+      "total_trade_kills": 2,
+      "median_first_contact_s": 11.27734375,
+      "survival_rate": 0.25,
+      "crosshair_score": 66.70452570539223,
+      "frac_entering_fight": 0.23731563347315907,
+      "avg_distance_from_team": 640.248779296875,
+      "opening_kills": 4,
+      "clutches": 0,
+      "team": "A",
+      "mvp_index": 0.8399999999999999,
+      "effort_index": 0.717518050769704,
+      "reward_index": 0.8999999999999999,
+      "piano_index": -0.18248194923029593
+    },
+    {
+      "steamid": 76561199063238565,
+      "name": "lilpeepfan-",
+      "adr": 96.0,
+      "kast_pct": 66.66666666666667,
+      "total_utility_damage": 81,
+      "utility_damage_per_round": 3.375,
+      "total_kills": 24,
+      "total_trade_kills": 5,
+      "median_first_contact_s": 12.60546875,
+      "survival_rate": 0.2916666666666667,
+      "crosshair_score": 71.00949113745622,
+      "frac_entering_fight": 0.2080589579685536,
+      "avg_distance_from_team": 646.7150268554688,
+      "opening_kills": 3,
+      "clutches": 1,
+      "team": "B",
+      "mvp_index": 0.7503837953091684,
+      "effort_index": 0.3618276306731303,
+      "reward_index": 0.6754797441364605,
+      "piano_index": -0.3136521134633302
+    },
+    {
+      "steamid": 76561198386265483,
+      "name": "donk666",
+      "adr": 93.08333333333333,
+      "kast_pct": 62.5,
+      "total_utility_damage": 37,
+      "utility_damage_per_round": 1.5416666666666667,
+      "total_kills": 23,
+      "total_trade_kills": 6,
+      "median_first_contact_s": 10.84765625,
+      "survival_rate": 0.2916666666666667,
+      "crosshair_score": 67.95473158056107,
+      "frac_entering_fight": 0.28081925015251913,
+      "avg_distance_from_team": 478.51409912109375,
+      "opening_kills": 3,
+      "clutches": 1,
+      "team": "B",
+      "mvp_index": 0.6605330490405116,
+      "effort_index": 0.5286957981905084,
+      "reward_index": 0.5381663113006395,
+      "piano_index": -0.00947051311013114
+    },
+    {
+      "steamid": 76561198296417934,
+      "name": "Ahuniwip",
+      "adr": 93.41666666666667,
+      "kast_pct": 62.5,
+      "total_utility_damage": 99,
+      "utility_damage_per_round": 4.125,
+      "total_kills": 15,
+      "total_trade_kills": 4,
+      "median_first_contact_s": 10.59375,
+      "survival_rate": 0.16666666666666666,
+      "crosshair_score": 73.85645476522458,
+      "frac_entering_fight": 0.3189468709087248,
+      "avg_distance_from_team": 647.9132690429688,
+      "opening_kills": 3,
+      "clutches": 0,
+      "team": "A",
+      "mvp_index": 0.5639445628997868,
+      "effort_index": 0.7958439588998605,
+      "reward_index": 0.5424307036247334,
+      "piano_index": 0.25341325527512704
+    },
+    {
+      "steamid": 76561198283113678,
+      "name": "endru-",
+      "adr": 74.875,
+      "kast_pct": 79.16666666666667,
+      "total_utility_damage": 33,
+      "utility_damage_per_round": 1.375,
+      "total_kills": 14,
+      "total_trade_kills": 4,
+      "median_first_contact_s": 15.35546875,
+      "survival_rate": 0.25,
+      "crosshair_score": 69.69620268741411,
+      "frac_entering_fight": 0.2676147395981093,
+      "avg_distance_from_team": 793.2351684570312,
+      "opening_kills": 1,
+      "clutches": 0,
+      "team": "B",
+      "mvp_index": 0.514179104477612,
+      "effort_index": 0.2888535991507374,
+      "reward_index": 0.7052238805970149,
+      "piano_index": -0.4163702814462775
+    },
+    {
+      "steamid": 76561199142961371,
+      "name": "PoisonLilies",
+      "adr": 73.58333333333333,
+      "kast_pct": 70.83333333333333,
+      "total_utility_damage": 241,
+      "utility_damage_per_round": 10.041666666666666,
+      "total_kills": 23,
+      "total_trade_kills": 6,
+      "median_first_contact_s": 14.0234375,
+      "survival_rate": 0.25,
+      "crosshair_score": 67.36824879092596,
+      "frac_entering_fight": 0.1553854514076611,
+      "avg_distance_from_team": 747.1975708007812,
+      "opening_kills": 3,
+      "clutches": 0,
+      "team": "A",
+      "mvp_index": 0.4809594882729209,
+      "effort_index": 0.387049952062376,
+      "reward_index": 0.488699360341151,
+      "piano_index": -0.101649408278775
+    },
+    {
+      "steamid": 76561198255704740,
+      "name": "KENNY-_",
+      "adr": 72.41666666666667,
+      "kast_pct": 70.83333333333333,
+      "total_utility_damage": 222,
+      "utility_damage_per_round": 9.25,
+      "total_kills": 19,
+      "total_trade_kills": 2,
+      "median_first_contact_s": 14.18359375,
+      "survival_rate": 0.3333333333333333,
+      "crosshair_score": 66.59985334829386,
+      "frac_entering_fight": 0.14499356005604827,
+      "avg_distance_from_team": 810.0491943359375,
+      "opening_kills": 3,
+      "clutches": 0,
+      "team": "A",
+      "mvp_index": 0.4690191897654583,
+      "effort_index": 0.24798035156091425,
+      "reward_index": 0.47377398720682284,
+      "piano_index": -0.2257936356459086
+    },
+    {
+      "steamid": 76561198417751247,
+      "name": "Pelle-",
+      "adr": 74.75,
+      "kast_pct": 62.5,
+      "total_utility_damage": 4,
+      "utility_damage_per_round": 0.16666666666666666,
+      "total_kills": 15,
+      "total_trade_kills": 4,
+      "median_first_contact_s": 10.32421875,
+      "survival_rate": 0.20833333333333334,
+      "crosshair_score": 70.51905873981033,
+      "frac_entering_fight": 0.330602354540895,
+      "avg_distance_from_team": 513.7135009765625,
+      "opening_kills": 2,
+      "clutches": 1,
+      "team": "B",
+      "mvp_index": 0.42289978678038376,
+      "effort_index": 0.7000000000000001,
+      "reward_index": 0.30362473347547964,
+      "piano_index": 0.39637526652452043
+    },
+    {
+      "steamid": 76561198320172450,
+      "name": "-EsD",
+      "adr": 64.875,
+      "kast_pct": 70.83333333333333,
+      "total_utility_damage": 65,
+      "utility_damage_per_round": 2.7083333333333335,
+      "total_kills": 13,
+      "total_trade_kills": 3,
+      "median_first_contact_s": 14.61328125,
+      "survival_rate": 0.3333333333333333,
+      "crosshair_score": 72.36282496915437,
+      "frac_entering_fight": 0.18192905933467565,
+      "avg_distance_from_team": 1007.9403686523438,
+      "opening_kills": 2,
+      "clutches": 0,
+      "team": "A",
+      "mvp_index": 0.34183368869936015,
+      "effort_index": 0.14384038308530553,
+      "reward_index": 0.37729211087420017,
+      "piano_index": -0.23345172778889464
+    },
+    {
+      "steamid": 76561199840256820,
+      "name": "certa1n",
+      "adr": 58.833333333333336,
+      "kast_pct": 58.333333333333336,
+      "total_utility_damage": 138,
+      "utility_damage_per_round": 5.75,
+      "total_kills": 13,
+      "total_trade_kills": 1,
+      "median_first_contact_s": 12.75,
+      "survival_rate": 0.20833333333333334,
+      "crosshair_score": 75.34609474107785,
+      "frac_entering_fight": 0.21775138034909713,
+      "avg_distance_from_team": 838.8223266601562,
+      "opening_kills": 0,
+      "clutches": 0,
+      "team": "B",
+      "mvp_index": 0.0,
+      "effort_index": 0.5128331529428711,
+      "reward_index": 0.0,
+      "piano_index": 0.5128331529428711
+    }
+  ]
+}

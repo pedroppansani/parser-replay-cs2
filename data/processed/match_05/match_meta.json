@@ -1,0 +1,57 @@
+{
+  "match_id": "match_05",
+  "map_name": "de_nuke",
+  "n_rounds": 17,
+  "source_dem": "C:\\Users\\User\\Desktop\\Projetos Claude\\01 - Parser de Replay CS2\\demos\\1-764e1ec7-1f00-4168-9eed-9741ee3a00e6-1-1.dem\\1-764e1ec7-1f00-4168-9eed-9741ee3a00e6-1-1.dem",
+  "pca": {
+    "explained_variance_ratio": [
+      0.2572540676930508,
+      0.19618613177146169
+    ],
+    "feature_columns": [
+      "damage",
+      "utility_damage",
+      "kills",
+      "trade_kills",
+      "avg_distance_from_team",
+      "max_distance_from_team",
+      "distinct_places",
+      "crosshair_score",
+      "height_score",
+      "frac_entering_fight",
+      "time_of_first_contact_s",
+      "survived"
+    ],
+    "component_loadings": {
+      "pca_1": {
+        "damage": 0.3234424893955126,
+        "utility_damage": -0.03577129432834192,
+        "kills": 0.3384103086279309,
+        "trade_kills": 0.18937409689892953,
+        "avg_distance_from_team": 0.37329189996540346,
+        "max_distance_from_team": 0.4163787298809031,
+        "distinct_places": 0.22694029709521102,
+        "crosshair_score": 0.2722632291658964,
+        "height_score": 0.2862848061083837,
+        "frac_entering_fight": -0.2839125807312664,
+        "time_of_first_contact_s": 0.25229764920869063,
+        "survived": 0.2813442443218282
+      },
+      "pca_2": {
+        "damage": 0.4737345260238336,
+        "utility_damage": 0.23972256125227331,
+        "kills": 0.479372114026207,
+        "trade_kills": 0.35956665406764127,
+        "avg_distance_from_team": -0.26216191172157727,
+        "max_distance_from_team": -0.25605514556173714,
+        "distinct_places": 0.025974705185921862,
+        "crosshair_score": -0.11263542016052994,
+        "height_score": -0.1714135886106885,
+        "frac_entering_fight": 0.29777343633097897,
+        "time_of_first_contact_s": -0.24755406969908722,
+        "survived": 0.1789796250318672
+      }
+    },
+    "n_clusters": 4
+  }
+}

@@ -67,6 +67,16 @@ def build(match_id: str) -> Path:
     setup_dev = rd("setup_deviation")
     standard_setup = rd("standard_setup")
 
+    roles = rd("player_roles").select(
+        ["name", "team", "role", "role_evidence", "role_is_manual", "adr", "kast_pct",
+         "median_first_contact_s", "first_contact_share", "survival_rate",
+         "avg_distance_from_team", "trade_share", "awp_share", "flash_thrown",
+         "enemies_flashed", "enemy_blind_seconds", "team_blind_seconds", "flash_assists",
+         "smoke_thrown", "utility_damage", "nades_per_round"]
+    )
+    traits = rd("player_traits").select(["name", "team", "trait", "label", "evidence", "priority"])
+    grenades = rd("grenades_summary")
+
     payload = {
         **insights,
         "heatmap": heat.to_dicts(),
@@ -79,6 +89,9 @@ def build(match_id: str) -> Path:
         "awp_rounds": awp_rounds.to_dicts(),
         "setup_deviation": setup_dev.to_dicts(),
         "standard_setup": standard_setup.to_dicts(),
+        "roles": roles.to_dicts(),
+        "traits": traits.to_dicts(),
+        "grenades": grenades.to_dicts(),
     }
 
     out = processed / "web_payload.json"

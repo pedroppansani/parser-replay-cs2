@@ -1,0 +1,870 @@
+{
+  "match": {
+    "map": "de_mirage",
+    "rounds": 19,
+    "score_a": 13,
+    "score_b": 6,
+    "rosters": {
+      "A": [
+        "EbuDerdaa",
+        "Krabeni",
+        "donk666",
+        "v1w",
+        "stormy"
+      ],
+      "B": [
+        "xKacpersky",
+        "Oller-",
+        "s-chilla",
+        "e-girlhuntr",
+        "Ajuyep"
+      ]
+    },
+    "halftime": 12
+  },
+  "progression": [
+    {
+      "round": 1,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 1,
+      "score_b": 0,
+      "bomb_planted": false
+    },
+    {
+      "round": 2,
+      "winner_team": "A",
+      "reason": "bomb_exploded",
+      "score_a": 2,
+      "score_b": 0,
+      "bomb_planted": true
+    },
+    {
+      "round": 3,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 3,
+      "score_b": 0,
+      "bomb_planted": false
+    },
+    {
+      "round": 4,
+      "winner_team": "B",
+      "reason": "t_killed",
+      "score_a": 3,
+      "score_b": 1,
+      "bomb_planted": false
+    },
+    {
+      "round": 5,
+      "winner_team": "B",
+      "reason": "t_killed",
+      "score_a": 3,
+      "score_b": 2,
+      "bomb_planted": false
+    },
+    {
+      "round": 6,
+      "winner_team": "B",
+      "reason": "bomb_defused",
+      "score_a": 3,
+      "score_b": 3,
+      "bomb_planted": true
+    },
+    {
+      "round": 7,
+      "winner_team": "A",
+      "reason": "bomb_exploded",
+      "score_a": 4,
+      "score_b": 3,
+      "bomb_planted": true
+    },
+    {
+      "round": 8,
+      "winner_team": "A",
+      "reason": "bomb_exploded",
+      "score_a": 5,
+      "score_b": 3,
+      "bomb_planted": true
+    },
+    {
+      "round": 9,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 6,
+      "score_b": 3,
+      "bomb_planted": false
+    },
+    {
+      "round": 10,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 7,
+      "score_b": 3,
+      "bomb_planted": false
+    },
+    {
+      "round": 11,
+      "winner_team": "A",
+      "reason": "bomb_exploded",
+      "score_a": 8,
+      "score_b": 3,
+      "bomb_planted": true
+    },
+    {
+      "round": 12,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 9,
+      "score_b": 3,
+      "bomb_planted": false
+    },
+    {
+      "round": 13,
+      "winner_team": "A",
+      "reason": "t_killed",
+      "score_a": 10,
+      "score_b": 3,
+      "bomb_planted": false
+    },
+    {
+      "round": 14,
+      "winner_team": "A",
+      "reason": "t_killed",
+      "score_a": 11,
+      "score_b": 3,
+      "bomb_planted": false
+    },
+    {
+      "round": 15,
+      "winner_team": "B",
+      "reason": "bomb_exploded",
+      "score_a": 11,
+      "score_b": 4,
+      "bomb_planted": true
+    },
+    {
+      "round": 16,
+      "winner_team": "A",
+      "reason": "bomb_defused",
+      "score_a": 12,
+      "score_b": 4,
+      "bomb_planted": true
+    },
+    {
+      "round": 17,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 12,
+      "score_b": 5,
+      "bomb_planted": false
+    },
+    {
+      "round": 18,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 12,
+      "score_b": 6,
+      "bomb_planted": true
+    },
+    {
+      "round": 19,
+      "winner_team": "A",
+      "reason": "t_killed",
+      "score_a": 13,
+      "score_b": 6,
+      "bomb_planted": false
+    }
+  ],
+  "decisive_round": {
+    "round": 7,
+    "winner_team": "A",
+    "reason": "bomb_exploded",
+    "score_a": 4,
+    "score_b": 3,
+    "bomb_planted": true,
+    "worst_deficit_overcome": 1,
+    "clutch_player": "v1w",
+    "clutch_against": 2,
+    "opening": {
+      "player": "xKacpersky",
+      "team": "B",
+      "victim": "stormy",
+      "weapon": "ak47"
+    },
+    "multikill_player": null,
+    "multikill_count": 0,
+    "importance": 81.0,
+    "reasons": [
+      "assumiu a liderança que não devolveu mais",
+      "clutch de v1w em 1v2",
+      "jogo empatado ou a um round de diferença",
+      "decidido na explosão"
+    ]
+  },
+  "point_of_no_return": 7,
+  "rounds_scored": [
+    {
+      "round": 1,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 1,
+      "score_b": 0,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "Krabeni",
+        "team": "A",
+        "victim": "xKacpersky",
+        "weapon": "glock"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 15.0,
+      "reasons": [
+        "jogo empatado ou a um round de diferença"
+      ]
+    },
+    {
+      "round": 2,
+      "winner_team": "A",
+      "reason": "bomb_exploded",
+      "score_a": 2,
+      "score_b": 0,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 1,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "xKacpersky",
+        "team": "B",
+        "victim": "v1w",
+        "weapon": "mp9"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 21.0,
+      "reasons": [
+        "jogo empatado ou a um round de diferença",
+        "decidido na explosão"
+      ]
+    },
+    {
+      "round": 3,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 3,
+      "score_b": 0,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 2,
+      "clutch_player": "EbuDerdaa",
+      "clutch_against": 2,
+      "opening": {
+        "player": "Oller-",
+        "team": "B",
+        "victim": "stormy",
+        "weapon": "ak47"
+      },
+      "multikill_player": "EbuDerdaa",
+      "multikill_count": 3,
+      "importance": 62.0,
+      "reasons": [
+        "virou com 2 jogadores a menos",
+        "clutch de EbuDerdaa em 1v2",
+        "3K de EbuDerdaa"
+      ]
+    },
+    {
+      "round": 4,
+      "winner_team": "B",
+      "reason": "t_killed",
+      "score_a": 3,
+      "score_b": 1,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "s-chilla",
+        "team": "B",
+        "victim": "EbuDerdaa",
+        "weapon": "m4a1"
+      },
+      "multikill_player": "s-chilla",
+      "multikill_count": 3,
+      "importance": 18.0,
+      "reasons": [
+        "3K de s-chilla"
+      ]
+    },
+    {
+      "round": 5,
+      "winner_team": "B",
+      "reason": "t_killed",
+      "score_a": 3,
+      "score_b": 2,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "Ajuyep",
+        "team": "B",
+        "victim": "Krabeni",
+        "weapon": "awp"
+      },
+      "multikill_player": "s-chilla",
+      "multikill_count": 3,
+      "importance": 18.0,
+      "reasons": [
+        "3K de s-chilla"
+      ]
+    },
+    {
+      "round": 6,
+      "winner_team": "B",
+      "reason": "bomb_defused",
+      "score_a": 3,
+      "score_b": 3,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 2,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "Krabeni",
+        "team": "A",
+        "victim": "e-girlhuntr",
+        "weapon": "deagle"
+      },
+      "multikill_player": "xKacpersky",
+      "multikill_count": 3,
+      "importance": 65.0,
+      "reasons": [
+        "virou com 2 jogadores a menos",
+        "3K de xKacpersky",
+        "jogo empatado ou a um round de diferença",
+        "decidido no desarme"
+      ]
+    },
+    {
+      "round": 7,
+      "winner_team": "A",
+      "reason": "bomb_exploded",
+      "score_a": 4,
+      "score_b": 3,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 1,
+      "clutch_player": "v1w",
+      "clutch_against": 2,
+      "opening": {
+        "player": "xKacpersky",
+        "team": "B",
+        "victim": "stormy",
+        "weapon": "ak47"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 81.0,
+      "reasons": [
+        "assumiu a liderança que não devolveu mais",
+        "clutch de v1w em 1v2",
+        "jogo empatado ou a um round de diferença",
+        "decidido na explosão"
+      ]
+    },
+    {
+      "round": 8,
+      "winner_team": "A",
+      "reason": "bomb_exploded",
+      "score_a": 5,
+      "score_b": 3,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 1,
+      "clutch_player": "EbuDerdaa",
+      "clutch_against": 2,
+      "opening": {
+        "player": "v1w",
+        "team": "A",
+        "victim": "Oller-",
+        "weapon": "ak47"
+      },
+      "multikill_player": "s-chilla",
+      "multikill_count": 3,
+      "importance": 59.0,
+      "reasons": [
+        "clutch de EbuDerdaa em 1v2",
+        "3K de s-chilla",
+        "jogo empatado ou a um round de diferença",
+        "decidido na explosão"
+      ]
+    },
+    {
+      "round": 9,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 6,
+      "score_b": 3,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "stormy",
+        "team": "A",
+        "victim": "xKacpersky",
+        "weapon": "ak47"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 0.0,
+      "reasons": []
+    },
+    {
+      "round": 10,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 7,
+      "score_b": 3,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "Krabeni",
+        "team": "A",
+        "victim": "e-girlhuntr",
+        "weapon": "ak47"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 0.0,
+      "reasons": []
+    },
+    {
+      "round": 11,
+      "winner_team": "A",
+      "reason": "bomb_exploded",
+      "score_a": 8,
+      "score_b": 3,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 1,
+      "clutch_player": "v1w",
+      "clutch_against": 2,
+      "opening": {
+        "player": "Krabeni",
+        "team": "A",
+        "victim": "s-chilla",
+        "weapon": "ak47"
+      },
+      "multikill_player": "Ajuyep",
+      "multikill_count": 3,
+      "importance": 44.0,
+      "reasons": [
+        "clutch de v1w em 1v2",
+        "3K de Ajuyep",
+        "decidido na explosão"
+      ]
+    },
+    {
+      "round": 12,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 9,
+      "score_b": 3,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "Krabeni",
+        "team": "A",
+        "victim": "Ajuyep",
+        "weapon": "ak47"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 0.0,
+      "reasons": []
+    },
+    {
+      "round": 13,
+      "winner_team": "A",
+      "reason": "t_killed",
+      "score_a": 10,
+      "score_b": 3,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "Krabeni",
+        "team": "A",
+        "victim": "Ajuyep",
+        "weapon": "usp_silencer"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 0.0,
+      "reasons": []
+    },
+    {
+      "round": 14,
+      "winner_team": "A",
+      "reason": "t_killed",
+      "score_a": 11,
+      "score_b": 3,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "Krabeni",
+        "team": "A",
+        "victim": "s-chilla",
+        "weapon": "m4a1_silencer"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 0.0,
+      "reasons": []
+    },
+    {
+      "round": 15,
+      "winner_team": "B",
+      "reason": "bomb_exploded",
+      "score_a": 11,
+      "score_b": 4,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "Oller-",
+        "team": "B",
+        "victim": "v1w",
+        "weapon": "ak47"
+      },
+      "multikill_player": "Oller-",
+      "multikill_count": 3,
+      "importance": 24.0,
+      "reasons": [
+        "3K de Oller-",
+        "decidido na explosão"
+      ]
+    },
+    {
+      "round": 16,
+      "winner_team": "A",
+      "reason": "bomb_defused",
+      "score_a": 12,
+      "score_b": 4,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 1,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "v1w",
+        "team": "A",
+        "victim": "xKacpersky",
+        "weapon": "awp"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 8.0,
+      "reasons": [
+        "decidido no desarme"
+      ]
+    },
+    {
+      "round": 17,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 12,
+      "score_b": 5,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 2,
+      "clutch_player": "e-girlhuntr",
+      "clutch_against": 3,
+      "opening": {
+        "player": "Krabeni",
+        "team": "A",
+        "victim": "Ajuyep",
+        "weapon": "m4a1_silencer"
+      },
+      "multikill_player": "e-girlhuntr",
+      "multikill_count": 3,
+      "importance": 62.0,
+      "reasons": [
+        "virou com 2 jogadores a menos",
+        "clutch de e-girlhuntr em 1v3",
+        "3K de e-girlhuntr"
+      ]
+    },
+    {
+      "round": 18,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 12,
+      "score_b": 6,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "xKacpersky",
+        "team": "B",
+        "victim": "v1w",
+        "weapon": "tec9"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 0.0,
+      "reasons": []
+    },
+    {
+      "round": 19,
+      "winner_team": "A",
+      "reason": "t_killed",
+      "score_a": 13,
+      "score_b": 6,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "EbuDerdaa",
+        "team": "A",
+        "victim": "xKacpersky",
+        "weapon": "deagle"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 0.0,
+      "reasons": []
+    }
+  ],
+  "players": [
+    {
+      "steamid": 76561198862233341,
+      "name": "v1w",
+      "adr": 124.10526315789474,
+      "kast_pct": 89.47368421052632,
+      "total_utility_damage": 68,
+      "utility_damage_per_round": 3.5789473684210527,
+      "total_kills": 19,
+      "total_trade_kills": 5,
+      "median_first_contact_s": 9.7265625,
+      "survival_rate": 0.2631578947368421,
+      "crosshair_score": 70.99959259765214,
+      "frac_entering_fight": 0.26221926512373683,
+      "avg_distance_from_team": 452.450439453125,
+      "opening_kills": 2,
+      "clutches": 2,
+      "team": "A",
+      "mvp_index": 0.85,
+      "effort_index": 0.5293230135328141,
+      "reward_index": 1.0,
+      "piano_index": -0.4706769864671859
+    },
+    {
+      "steamid": 76561198991278425,
+      "name": "Krabeni",
+      "adr": 99.0,
+      "kast_pct": 78.94736842105263,
+      "total_utility_damage": 45,
+      "utility_damage_per_round": 2.3684210526315788,
+      "total_kills": 18,
+      "total_trade_kills": 1,
+      "median_first_contact_s": 9.6484375,
+      "survival_rate": 0.3157894736842105,
+      "crosshair_score": 66.41976860885367,
+      "frac_entering_fight": 0.39291386047895005,
+      "avg_distance_from_team": 628.3407592773438,
+      "opening_kills": 8,
+      "clutches": 0,
+      "team": "A",
+      "mvp_index": 0.7090121580547113,
+      "effort_index": 0.6046152991527307,
+      "reward_index": 0.7300151975683891,
+      "piano_index": -0.12539989841565835
+    },
+    {
+      "steamid": 76561198386265483,
+      "name": "donk666",
+      "adr": 92.10526315789474,
+      "kast_pct": 89.47368421052632,
+      "total_utility_damage": 67,
+      "utility_damage_per_round": 3.526315789473684,
+      "total_kills": 17,
+      "total_trade_kills": 8,
+      "median_first_contact_s": 8.96875,
+      "survival_rate": 0.3157894736842105,
+      "crosshair_score": 70.53965778520323,
+      "frac_entering_fight": 0.2730658627076414,
+      "avg_distance_from_team": 621.2490844726562,
+      "opening_kills": 0,
+      "clutches": 0,
+      "team": "A",
+      "mvp_index": 0.5521580547112462,
+      "effort_index": 0.5459844292334124,
+      "reward_index": 0.8151975683890578,
+      "piano_index": -0.2692131391556454
+    },
+    {
+      "steamid": 76561199440218013,
+      "name": "EbuDerdaa",
+      "adr": 80.36842105263158,
+      "kast_pct": 68.42105263157895,
+      "total_utility_damage": 28,
+      "utility_damage_per_round": 1.4736842105263157,
+      "total_kills": 18,
+      "total_trade_kills": 5,
+      "median_first_contact_s": 10.640625,
+      "survival_rate": 0.42105263157894735,
+      "crosshair_score": 69.58906194593449,
+      "frac_entering_fight": 0.18846742403632102,
+      "avg_distance_from_team": 729.0029907226562,
+      "opening_kills": 1,
+      "clutches": 2,
+      "team": "A",
+      "mvp_index": 0.47293313069908816,
+      "effort_index": 0.22013425327310698,
+      "reward_index": 0.4974164133738601,
+      "piano_index": -0.27728216010075313
+    },
+    {
+      "steamid": 76561198296417934,
+      "name": "Ajuyep",
+      "adr": 89.47368421052632,
+      "kast_pct": 68.42105263157895,
+      "total_utility_damage": 108,
+      "utility_damage_per_round": 5.684210526315789,
+      "total_kills": 13,
+      "total_trade_kills": 7,
+      "median_first_contact_s": 7.3828125,
+      "survival_rate": 0.05263157894736842,
+      "crosshair_score": 64.34617503730169,
+      "frac_entering_fight": 0.3653074650193235,
+      "avg_distance_from_team": 528.0099487304688,
+      "opening_kills": 1,
+      "clutches": 0,
+      "team": "B",
+      "mvp_index": 0.415,
+      "effort_index": 0.9673599980386425,
+      "reward_index": 0.5499999999999999,
+      "piano_index": 0.41735999803864254
+    },
+    {
+      "steamid": 76561198021636327,
+      "name": "Oller-",
+      "adr": 81.0,
+      "kast_pct": 68.42105263157895,
+      "total_utility_damage": 14,
+      "utility_damage_per_round": 0.7368421052631579,
+      "total_kills": 14,
+      "total_trade_kills": 4,
+      "median_first_contact_s": 11.4296875,
+      "survival_rate": 0.2631578947368421,
+      "crosshair_score": 66.53635346282485,
+      "frac_entering_fight": 0.1814678295296428,
+      "avg_distance_from_team": 848.663330078125,
+      "opening_kills": 2,
+      "clutches": 0,
+      "team": "B",
+      "mvp_index": 0.40085106382978725,
+      "effort_index": 0.22835309006946258,
+      "reward_index": 0.5010638297872341,
+      "piano_index": -0.2727107397177715
+    },
+    {
+      "steamid": 76561198964042711,
+      "name": "s-chilla",
+      "adr": 84.15789473684211,
+      "kast_pct": 68.42105263157895,
+      "total_utility_damage": 19,
+      "utility_damage_per_round": 1.0,
+      "total_kills": 15,
+      "total_trade_kills": 4,
+      "median_first_contact_s": 8.6875,
+      "survival_rate": 0.3157894736842105,
+      "crosshair_score": 61.429884596987094,
+      "frac_entering_fight": 0.35186345808888736,
+      "avg_distance_from_team": 863.1636962890625,
+      "opening_kills": 1,
+      "clutches": 0,
+      "team": "B",
+      "mvp_index": 0.3904407294832827,
+      "effort_index": 0.5388452467798215,
+      "reward_index": 0.5193009118541033,
+      "piano_index": 0.019544334925718165
+    },
+    {
+      "steamid": 76561198362964332,
+      "name": "xKacpersky",
+      "adr": 70.89473684210526,
+      "kast_pct": 57.89473684210526,
+      "total_utility_damage": 2,
+      "utility_damage_per_round": 0.10526315789473684,
+      "total_kills": 13,
+      "total_trade_kills": 2,
+      "median_first_contact_s": 10.59375,
+      "survival_rate": 0.15789473684210525,
+      "crosshair_score": 67.92117897192455,
+      "frac_entering_fight": 0.3037263816276086,
+      "avg_distance_from_team": 602.6776733398438,
+      "opening_kills": 3,
+      "clutches": 0,
+      "team": "B",
+      "mvp_index": 0.3041641337386018,
+      "effort_index": 0.440095855230793,
+      "reward_index": 0.3177051671732522,
+      "piano_index": 0.12239068805754078
+    },
+    {
+      "steamid": 76561198852320837,
+      "name": "e-girlhuntr",
+      "adr": 64.05263157894737,
+      "kast_pct": 47.36842105263158,
+      "total_utility_damage": 30,
+      "utility_damage_per_round": 1.5789473684210527,
+      "total_kills": 9,
+      "total_trade_kills": 2,
+      "median_first_contact_s": 12.8359375,
+      "survival_rate": 0.10526315789473684,
+      "crosshair_score": 65.22640654946161,
+      "frac_entering_fight": 0.32914964181866413,
+      "avg_distance_from_team": 642.9129638671875,
+      "opening_kills": 0,
+      "clutches": 1,
+      "team": "B",
+      "mvp_index": 0.1725531914893617,
+      "effort_index": 0.461896441306316,
+      "reward_index": 0.15319148936170213,
+      "piano_index": 0.3087049519446139
+    },
+    {
+      "steamid": 76561198100765140,
+      "name": "stormy",
+      "adr": 37.526315789473685,
+      "kast_pct": 52.63157894736842,
+      "total_utility_damage": 35,
+      "utility_damage_per_round": 1.8421052631578947,
+      "total_kills": 5,
+      "total_trade_kills": 0,
+      "median_first_contact_s": 13.921875,
+      "survival_rate": 0.3157894736842105,
+      "crosshair_score": 71.42596842991888,
+      "frac_entering_fight": 0.2112893207270555,
+      "avg_distance_from_team": 709.889892578125,
+      "opening_kills": 1,
+      "clutches": 0,
+      "team": "A",
+      "mvp_index": 0.06249999999999996,
+      "effort_index": 0.17023203255210426,
+      "reward_index": 0.06249999999999993,
+      "piano_index": 0.10773203255210433
+    }
+  ]
+}

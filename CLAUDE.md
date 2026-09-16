@@ -32,11 +32,13 @@ pronto não serve aqui.
 
 ```
 parsing/      wrapper do awpy.Demo
-metrics/      geometry, basic_metrics, awp_metrics, crosshair, map_angles, positioning
+metrics/      geometry, basic_metrics, awp_metrics, crosshair, map_angles,
+              positioning, grenades, player_roles
 clustering/   playstyle (PCA + KMeans) + cluster_names.json
-dashboard/    app Streamlit + theme
+dashboard/    app Streamlit + theme + web/ (painel autocontido de portfólio)
 scripts/      process_demo (CLI) e show_derived_angles (calibração)
-tests/        29 testes
+tests/        43 testes
+demos/        .dem baixados do FACEIT (gitignored)
 data/raw/     .dem originais (gitignored)
 data/interim/ tabelas brutas em parquet (gitignored, ticks tem 1M+ linhas)
 data/processed/ métricas calculadas (versionadas — é o que o dashboard usa)
@@ -108,6 +110,38 @@ testada e estava errada.
     passa nos critérios junto das três primeiras no modo escuro. Não troque por
     4 cores num gráfico só.
 
+11. **Só entidade `*Projectile` conta como granada arremessada.** A tabela
+    `grenades` do awpy mistura o projétil em voo (`CFlashbangProjectile`) com a
+    granada parada no inventário (`CFlashbang`), que tem uma amostra por tick do
+    round inteiro na posição de quem a carrega. Contar as duas inflava os
+    arremessos em ~2,5x (965 entidades contra 388 arremessos reais) e dava
+    "primeira utility do round" sempre negativa. A contagem de projéteis bate
+    exatamente com os eventos de detonação do demo, e há teste parametrizado
+    travando isso contra a demo real. **Não volte a aceitar as classes sem
+    sufixo Projectile.**
+
+12. **Utility é medida por EFEITO, não por dano.** Dano é a parte menos
+    importante da utility: a flash que cega dois defensores por 2s não aparece em
+    número de dano nenhum, e é ela que abre o round. A métrica principal é tempo
+    de cegueira imposto a inimigos, vindo do evento `player_blind` (que o awpy
+    não parseia por padrão — ver `EXTRA_EVENTS` em `parsing/parser.py`).
+
+13. **Team flash e self flash não são descontados do número de inimigos
+    cegados.** São erros diferentes com custos diferentes; um saldo único
+    apagaria os dois. Ficam em colunas próprias, e há teste travando.
+
+14. **Função de jogador exige liderar o próprio time E passar de um piso
+    absoluto.** Sem o piso, quem menos evita a AWP num time que não usa AWP
+    viraria "AWPer". Sem a comparação interna, "joga mais utility que a média dos
+    10" descreveria a partida, não um papel. Consequência aceita de propósito:
+    **não existe cota de um de cada função por time** — na partida de teste um
+    time não teve AWPer nenhum e dois jogadores ficaram sem função dominante.
+    Não "conserte" isso distribuindo rótulos até preencher cinco vagas.
+
+15. **IGL não é deduzido.** Quem chama o time não deixa rastro no demo (não há
+    áudio, e liderança não tem assinatura estatística). Rotular alguém de IGL
+    seria chute com cara de métrica.
+
 ## Pontos de calibração — pertencem ao Pedro, não ao código
 
 Não "resolva" nenhum destes automaticamente; pergunte.
@@ -117,7 +151,14 @@ Não "resolva" nenhum destes automaticamente; pergunte.
   Rode `python -m scripts.show_derived_angles <match_id>` para ver os derivados.
   Os com `n_kills` baixo (4-5) são os que mais precisam de julgamento humano.
 - Limiares: janela de trade (5s), peek/hold (120u / 250u), janela de contato
-  (1s), tolerância de pré-fire (25°).
+  (1s), tolerância de pré-fire (25°), flash efetiva (1,0s) e folga de flash
+  assist (0,5s) em `metrics/grenades.py`.
+- Pisos das funções de jogador (`TRAIT_SPECS` em `metrics/player_roles.py`):
+  AWP 25% dos rounds, entry 8s até o contato, suporte 20s de cegueira, lurk 600u,
+  âncora 10s, trade 35%, fragger 85 de ADR. Saíram da distribuição de UMA
+  partida — revisar com mais demos.
+- Override manual de função: `MANUAL_ROLES` em `metrics/player_roles.py` (o
+  painel marca o rótulo como manual quando vem daí).
 
 ## Limitações conhecidas
 
@@ -137,10 +178,23 @@ Não "resolva" nenhum destes automaticamente; pergunte.
 ## Como validar mudanças
 
 ```bash
-py -3.12 -m pytest tests/ -v          # 29 testes
-py -3.12 -m scripts.process_demo data/raw/match_01.dem --match-id match_01 --from-interim
+py -3.12 -m pytest tests/ -v          # 43 testes
+py -3.12 -m scripts.process_demo <caminho.dem> --match-id match_01 --from-interim
 py -3.12 -m streamlit run dashboard/app.py
+```
+
+O painel web de portfólio é uma cadeia de quatro passos, nessa ordem — mexer numa
+métrica sem refazer a cadeia deixa a página mostrando número velho:
+
+```bash
+py -3.12 -m scripts.build_insights match_01      # insights.json
+py -3.12 -m scripts.export_replay match_01       # replay.json (trajetórias, pops, blinds)
+py -3.12 -m scripts.export_web_payload match_01  # web_payload.json
+py -3.12 -m scripts.build_web_page match_01      # dashboard/web/match_01.html
 ```
 
 Ao mexer numa métrica, confira o efeito na tabela round a round, não só no
 agregado — número agregado plausível pode esconder lógica errada.
+
+O demo de origem do `match_01` é o de_ancient de 22 rounds em `demos/`
+(`1-0007ce25-…`); os outros oito arquivos de lá são de outros mapas.

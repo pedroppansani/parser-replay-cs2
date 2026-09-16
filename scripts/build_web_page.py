@@ -7,13 +7,20 @@ Uso:
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE = PROJECT_ROOT / "dashboard" / "web" / "template.html"
 
 
-def build(match_id: str) -> Path:
+def build_html(match_id: str, site: dict | None = None) -> str:
+    """Devolve o HTML final da partida, com os dados já embutidos.
+
+    `site` é a lista de partidas do site multi-demo (ver scripts/build_site.py).
+    Sem ele, a barra de troca de partida fica escondida e o arquivo é um HTML
+    solto que funciona offline — que é o modo original da página.
+    """
     base = PROJECT_ROOT / "data" / "processed" / match_id
     payload = (base / "web_payload.json").read_text(encoding="utf-8")
     replay = (base / "replay.json").read_text(encoding="utf-8")
@@ -26,12 +33,20 @@ def build(match_id: str) -> Path:
         .replace("/*__BREAKDOWN__*/", breakdown)
     )
 
-    radar_meta = PROJECT_ROOT / "assets" / "radars"
-    import json as _json
-    meta_path = radar_meta / (_json.loads((base / "match_meta.json").read_text(encoding="utf-8"))["map_name"] + ".json")
-    html = html.replace("/*__RADAR__*/", meta_path.read_text(encoding="utf-8") + " ||" if meta_path.exists() else "")
+    map_name = json.loads((base / "match_meta.json").read_text(encoding="utf-8"))["map_name"]
+    radar_path = PROJECT_ROOT / "assets" / "radars" / f"{map_name}.json"
+    # o `||` mantém o `null` do template como fallback quando o mapa não tem radar
+    html = html.replace(
+        "/*__RADAR__*/",
+        radar_path.read_text(encoding="utf-8") + " ||" if radar_path.exists() else "",
+    )
+    html = html.replace("/*__SITE__*/", json.dumps(site, ensure_ascii=False) + " ||" if site else "")
+    return html
+
+
+def build(match_id: str) -> Path:
     out = PROJECT_ROOT / "dashboard" / "web" / f"{match_id}.html"
-    out.write_text(html, encoding="utf-8")
+    out.write_text(build_html(match_id), encoding="utf-8")
     return out
 
 

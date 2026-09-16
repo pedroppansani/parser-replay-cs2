@@ -8,6 +8,11 @@ demos/
 # data/processed/ vão pro repositório (são leves e é o que o dashboard usa).
 data/interim/
 
+# Páginas de partida geradas por build_web_page.py (arquivo único, pra abrir
+# local). O que é publicado é o site em docs/, gerado por build_site.py -- manter
+# as duas cópias no git seria ~900KB duplicados por partida.
+dashboard/web/match_*.html
+
 __pycache__/
 *.pyc
 .pytest_cache/

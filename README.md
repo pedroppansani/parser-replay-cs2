@@ -4,11 +4,13 @@ Projeto 1 de 5 do portfólio. Ferramenta que lê replays (.dem) do CS2, extrai
 estatísticas e gera dashboards — com foco em métricas que descrevem **como** o
 jogo foi jogado em nível competitivo, não só quem fez mais kill.
 
-**Status: Fases 1, 2 e 3 implementadas.** Pipeline de parsing, métricas básicas,
+**Status: Fases 1 a 4 implementadas.** Pipeline de parsing, métricas básicas,
 métricas autorais (AWP, crosshair placement, posicionamento), clustering de
-estilos de jogo e dashboard, testados end-to-end numa partida real.
-Pendente: calibração manual dos parâmetros de jogo e nomeação dos clusters (ver
-"O que ainda depende de julgamento humano").
+estilos de jogo, métricas de utility por efeito, função de jogador e dois
+painéis (Streamlit para trabalho, página web autocontida para portfólio),
+testados end-to-end numa partida real. Pendente: calibração manual dos
+parâmetros de jogo e nomeação dos clusters (ver "O que ainda depende de
+julgamento humano").
 
 ## Por que esse projeto
 
@@ -22,19 +24,23 @@ justamente porque a versão ingênua contradizia o que acontece na prática.
 ## Arquitetura
 
 ```
-.dem → awpy.Demo.parse() → tabelas brutas (rounds, kills, damages, shots, ticks)
-     → metrics/  (Fase 1 e 2)  → métricas por jogador/round
-     → clustering/ (Fase 3)    → PCA + KMeans sobre essas métricas
+.dem → awpy.Demo.parse() → tabelas brutas (rounds, kills, damages, shots,
+                           grenades, player_blind, detonações, ticks)
+     → metrics/  (Fases 1, 2 e 4) → métricas por jogador/round
+     → clustering/ (Fase 3)       → PCA + KMeans sobre essas métricas
      → parquet em data/processed/ → dashboard (Streamlit + Plotly)
+                                  → página web autocontida (sem servidor)
 ```
 
 ```
 parsing/      wrapper do awpy.Demo (parse + persistência em parquet)
-metrics/      geometry, basic_metrics, awp_metrics, crosshair, map_angles, positioning
+metrics/      geometry, basic_metrics, awp_metrics, crosshair, map_angles,
+              positioning, grenades, player_roles
 clustering/   playstyle (PCA + KMeans) e cluster_names.json
-dashboard/    app Streamlit e tokens visuais
-scripts/      CLI de processamento e ferramenta de calibração de ângulos
-tests/        29 testes (dados sintéticos + validação contra a demo real)
+dashboard/    app Streamlit, tokens visuais e web/ (painel de portfólio)
+scripts/      CLI de processamento, calibração de ângulos e build da página web
+tests/        43 testes (dados sintéticos + validação contra a demo real)
+demos/        .dem baixados do FACEIT (gitignored)
 data/raw/     .dem originais (gitignored)
 data/interim/ tabelas brutas em parquet (gitignored — ticks passa de 1M de linhas)
 data/processed/ métricas calculadas (vai pro repositório e alimenta o dashboard)
@@ -168,6 +174,86 @@ interpretação, registrada aqui pra não parecer que o número escolheu sozinho
 
 ---
 
+## Fase 4 — utility e função de jogador
+
+### Utility medida por efeito, não por dano
+
+A Fase 1 media utility como dano de granada. Isso descreve mal o que utility faz
+em nível competitivo: a flash que cega dois defensores por 2s não aparece em
+número de dano nenhum, e é ela que abre o round. Molotov que tira alguém de um
+ângulo costuma causar 0 de dano — o efeito é o espaço.
+
+A métrica principal passou a ser **tempo de cegueira imposto a inimigos**, vinda
+do evento `player_blind`, que o awpy não parseia por padrão. É o único lugar do
+demo que diz quem ficou cego, por quanto tempo e por culpa de quem.
+
+| | flashes | inimigos cegados | cegueira imposta | flash assists | cegueira no próprio time |
+|---|---|---|---|---|---|
+| t1ltedbot | 18 | 20 | **74,2s** | 4 | 5,9s |
+| 9amaterasu9 | 8 | 13 | 48,3s | 6 | 2,5s |
+| donk666 | 9 | 2 | 8,0s | 2 | **25,0s** |
+
+O jogador que lidera ADR na partida (donk666, 126) é o que mais cegou o próprio
+time e quase não cegou adversário — o oposto do perfil de quem joga a utility. É
+exatamente o tipo de coisa que a soma "utility damage" escondia.
+
+Decisões registradas no código:
+
+- **Flash abaixo de 1,0s não conta como inimigo cegado.** O adversário perde o
+  HUD, não a briga. O tempo cru continua somado à parte, então nada fica
+  escondido — o limiar filtra a contagem, não o dado.
+- **Team flash e self flash não são descontados.** São erros diferentes com
+  custos diferentes; um saldo único apagaria os dois.
+- **Flash assist exige a vítima ainda cega pela minha flash** quando morreu, na
+  janela daquele evento específico — não "morreu perto da minha flash". E matar
+  você mesmo um inimigo que você cegou é kill, não assist: as duas ficam em
+  colunas separadas.
+
+### Um bug que dois dados independentes pegaram
+
+A tabela `grenades` do awpy mistura duas entidades de nome quase igual:
+`CFlashbangProjectile` é a flash arremessada; `CFlashbang` é a flash **parada no
+inventário**, com uma amostra por tick do round inteiro na posição de quem a
+carrega. Tratar as duas como arremesso dava 965 granadas onde havia 388, e
+"primeira utility do round" sempre negativa — antes do fim do freeze time, o que
+é impossível.
+
+A correção é validada por duas fontes independentes do demo: a contagem de
+projéteis na trajetória tem que bater com os eventos de detonação. Bate exato —
+88 flashes, 102 HE, 96 smokes — e roda como teste parametrizado.
+
+### Função de cada jogador
+
+Rótulo de função sai de um limiar explícito sobre uma métrica em que o jogador
+**lidera o próprio time**, e a evidência numérica anda junto do rótulo em toda
+saída. A comparação é interna porque função é divisão de trabalho dentro do time:
+"é quem mais joga AWP no time" descreve um papel; "joga mais AWP que a média dos
+10" só descreve a partida.
+
+Resultado na partida de teste:
+
+| Time A | | Time B | |
+|---|---|---|---|
+| Z_o_R_o | AWPer (AWP em 32% dos rounds) | s-chilla | Abre o round (contato aos 5,4s) |
+| donk666 | Principal fragger (126 de ADR) | HLEB | Segura atrás (contato aos 14,1s) |
+| t1ltedbot | Suporte de utility (74s de cegueira) | 9amaterasu9 | Suporte de utility (48s) |
+| _AmadeuS | *sem função dominante* | xhx | Joga afastado (702u do time) |
+| rol1ng- | *sem função dominante* | KREEDZ666 | *sem função dominante* |
+
+**Não existe cota de um de cada função por time.** O time B não teve AWPer acima
+do piso e três jogadores ficaram sem função dominante. Isso é resultado, não
+lacuna: distribuir rótulos até preencher cinco vagas seria inventar função pra
+caber num molde.
+
+**IGL não aparece.** Quem chama o time não deixa rastro no demo — não há áudio, e
+liderança não tem assinatura estatística. Seria chute com cara de métrica.
+
+E o rótulo por jogador não substitui o clustering: a mesma aba mostra, embaixo, a
+**mistura de clusters** de cada jogador round a round. Ninguém joga o mesmo round
+22 vezes, e é essa troca que o rótulo fixo não consegue mostrar.
+
+---
+
 ## Dashboard
 
 Streamlit + Plotly, lendo só os parquet leves de `data/processed/` (nunca o .dem).
@@ -192,9 +278,13 @@ escondê-los:
    comparar com o conhecimento de mapa e preencher `MANUAL_ENTRY_ANGLES`. Ângulos
    com `n_kills` baixo (4-5) são os que mais precisam disso.
 3. **Revisar os limiares** — janela de trade (5s), limiares de peek/hold
-   (120u / 250u), janela de contato (1s), tolerância de pré-fire (25°). Todos são
-   constantes nomeadas no topo dos módulos.
-4. **Validação round a round** — a aba "Detalhe por round" existe pra isso.
+   (120u / 250u), janela de contato (1s), tolerância de pré-fire (25°), flash
+   efetiva (1,0s). Todos são constantes nomeadas no topo dos módulos.
+4. **Revisar os pisos de função** — `TRAIT_SPECS` em `metrics/player_roles.py`.
+   Saíram da distribuição de uma única partida, então são o número mais frágil do
+   projeto hoje. Há `MANUAL_ROLES` pro meu julgamento sobrepor o limiar, e o
+   painel marca o rótulo como manual quando isso acontece.
+5. **Validação round a round** — a aba "Detalhe por round" existe pra isso.
 
 **Nota sobre a validação feita até aqui:** as demos usadas são partidas
 profissionais do donk, não partidas minhas, então a validação foi por
@@ -226,8 +316,14 @@ python -m scripts.show_derived_angles sua_partida
 # testes
 python -m pytest tests/ -v
 
-# dashboard
+# dashboard de trabalho
 streamlit run dashboard/app.py
+
+# página web autocontida (portfólio) — nessa ordem
+python -m scripts.build_insights sua_partida
+python -m scripts.export_replay sua_partida
+python -m scripts.export_web_payload sua_partida
+python -m scripts.build_web_page sua_partida    # -> dashboard/web/sua_partida.html
 ```
 
 **Requer Python 3.11 a 3.13** (o awpy 2.0.2 ainda não suporta 3.14).
@@ -245,6 +341,8 @@ dashboard público, e processar uma demo nova é um passo de CLI local.
 ## Próximos passos
 
 - [ ] Nomear os clusters e calibrar ângulos/limiares (ver seção acima)
+- [ ] Revisar os pisos das funções de jogador com mais partidas — hoje saíram da
+      distribuição de uma só, e são o tipo de número que muda com o volume
 - [ ] Processar mais demos — a estrutura dos clusters e os ângulos derivados
       melhoram com volume; hoje tudo vem de uma partida só
 - [ ] Deploy do dashboard público com os dados pré-processados
