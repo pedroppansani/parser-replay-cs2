@@ -6,3 +6,10 @@ streamlit==1.64.0
 plotly==7.1.0
 pytest==9.1.1
 pillow==12.2.0
+
+# Extração dos radares oficiais da instalação local do CS2 (scripts/extract_radars.py):
+# vpk lê os arquivos do jogo, lz4 descomprime as texturas e texture2ddecoder
+# cobre os mapas antigos, que ainda estão em DXT em vez de BGRA.
+vpk==1.4.0
+lz4==4.4.5
+texture2ddecoder==1.0.6

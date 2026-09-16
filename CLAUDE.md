@@ -35,8 +35,11 @@ parsing/      wrapper do awpy.Demo
 metrics/      geometry, basic_metrics, awp_metrics, crosshair, map_angles,
               positioning, grenades, player_roles
 clustering/   playstyle (PCA + KMeans) + cluster_names.json
-dashboard/    app Streamlit + theme + web/ (painel autocontido de portfólio)
-scripts/      process_demo (CLI) e show_derived_angles (calibração)
+dashboard/    app Streamlit + theme + web/ (template do painel de portfólio)
+docs/         site publicado no GitHub Pages (gerado por build_site.py)
+assets/radars/ radares + calibração oficiais, extraídos do CS2 local
+scripts/      process_demo, process_all_demos, extract_radars, build_site,
+              build_insights, build_breakdown, export_replay, export_web_payload
 tests/        43 testes
 demos/        .dem baixados do FACEIT (gitignored)
 data/raw/     .dem originais (gitignored)
@@ -142,6 +145,18 @@ testada e estava errada.
     áudio, e liderança não tem assinatura estatística). Rotular alguém de IGL
     seria chute com cara de métrica.
 
+16. **Radar e calibração vêm da instalação local do CS2, não de download.**
+    `scripts/extract_radars.py` lê `pak01_dir.vpk` e usa o `pos_x/pos_y/scale`
+    do overview oficial da Valve — conversão exata, no lugar do encaixe
+    heurístico do `prepare_radar.py` (que fica como alternativa pra quem não tem
+    o jogo instalado). Não troque por radar baixado: vem recortado e obriga a
+    recalibrar no olho.
+
+17. **Andar de jogador sai do `verticalsections` do overview, não de limiar
+    inventado.** Na Nuke o corte oficial é Z = -495, e é ele que separa o A do
+    B num mapa 2D. Confere com o mapa real: abaixo do corte caem exatamente
+    BombsiteB, Vents, Tunnels, Secret, Observation, Decon e Ramp.
+
 ## Pontos de calibração — pertencem ao Pedro, não ao código
 
 Não "resolva" nenhum destes automaticamente; pergunte.
@@ -183,15 +198,24 @@ py -3.12 -m scripts.process_demo <caminho.dem> --match-id match_01 --from-interi
 py -3.12 -m streamlit run dashboard/app.py
 ```
 
-O painel web de portfólio é uma cadeia de quatro passos, nessa ordem — mexer numa
-métrica sem refazer a cadeia deixa a página mostrando número velho:
+O painel web de portfólio é uma cadeia, nessa ordem — mexer numa métrica sem
+refazer a cadeia deixa a página mostrando número velho:
 
 ```bash
 py -3.12 -m scripts.build_insights match_01      # insights.json
-py -3.12 -m scripts.export_replay match_01       # replay.json (trajetórias, pops, blinds)
+py -3.12 -m scripts.build_breakdown match_01     # breakdown.json (autópsia do round)
+py -3.12 -m scripts.export_replay match_01       # replay.json (trajetórias, pops, blinds, andar, callouts)
 py -3.12 -m scripts.export_web_payload match_01  # web_payload.json
-py -3.12 -m scripts.build_web_page match_01      # dashboard/web/match_01.html
+py -3.12 -m scripts.build_site                   # docs/ (site publicado, todas as partidas)
 ```
+
+`scripts/process_all_demos.py` roda a cadeia inteira para toda demo da pasta
+`demos/` — é o caminho normal. Os radares são extraídos uma vez só, com
+`scripts/extract_radars.py`, e não dependem de rede.
+
+O site publicado fica em `docs/` e é servido pelo GitHub Pages em
+https://pedroppansani.github.io/parser-replay-cs2/ (repositório público — Pages
+não funciona em repositório privado no plano gratuito).
 
 Ao mexer numa métrica, confira o efeito na tabela round a round, não só no
 agregado — número agregado plausível pode esconder lógica errada.
