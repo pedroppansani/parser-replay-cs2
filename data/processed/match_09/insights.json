@@ -1,0 +1,1028 @@
+{
+  "match": {
+    "map": "de_mirage",
+    "rounds": 24,
+    "score_a": 11,
+    "score_b": 13,
+    "rosters": {
+      "A": [
+        "lemight",
+        "wh1temink",
+        "d3bab",
+        "newnickname7",
+        "ELVENIMOUS"
+      ],
+      "B": [
+        "R0Kk-_",
+        "Magnojezzz",
+        "tezeuts-",
+        "donk666",
+        "zzeraj"
+      ]
+    },
+    "halftime": 12
+  },
+  "progression": [
+    {
+      "round": 1,
+      "winner_team": "B",
+      "reason": "bomb_defused",
+      "score_a": 0,
+      "score_b": 1,
+      "bomb_planted": true
+    },
+    {
+      "round": 2,
+      "winner_team": "B",
+      "reason": "t_killed",
+      "score_a": 0,
+      "score_b": 2,
+      "bomb_planted": false
+    },
+    {
+      "round": 3,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 1,
+      "score_b": 2,
+      "bomb_planted": true
+    },
+    {
+      "round": 4,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 2,
+      "score_b": 2,
+      "bomb_planted": false
+    },
+    {
+      "round": 5,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 3,
+      "score_b": 2,
+      "bomb_planted": true
+    },
+    {
+      "round": 6,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 4,
+      "score_b": 2,
+      "bomb_planted": true
+    },
+    {
+      "round": 7,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 5,
+      "score_b": 2,
+      "bomb_planted": true
+    },
+    {
+      "round": 8,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 6,
+      "score_b": 2,
+      "bomb_planted": false
+    },
+    {
+      "round": 9,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 7,
+      "score_b": 2,
+      "bomb_planted": false
+    },
+    {
+      "round": 10,
+      "winner_team": "B",
+      "reason": "bomb_defused",
+      "score_a": 7,
+      "score_b": 3,
+      "bomb_planted": true
+    },
+    {
+      "round": 11,
+      "winner_team": "B",
+      "reason": "t_killed",
+      "score_a": 7,
+      "score_b": 4,
+      "bomb_planted": false
+    },
+    {
+      "round": 12,
+      "winner_team": "B",
+      "reason": "t_killed",
+      "score_a": 7,
+      "score_b": 5,
+      "bomb_planted": false
+    },
+    {
+      "round": 13,
+      "winner_team": "A",
+      "reason": "t_killed",
+      "score_a": 8,
+      "score_b": 5,
+      "bomb_planted": false
+    },
+    {
+      "round": 14,
+      "winner_team": "A",
+      "reason": "t_killed",
+      "score_a": 9,
+      "score_b": 5,
+      "bomb_planted": false
+    },
+    {
+      "round": 15,
+      "winner_team": "A",
+      "reason": "t_killed",
+      "score_a": 10,
+      "score_b": 5,
+      "bomb_planted": false
+    },
+    {
+      "round": 16,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 10,
+      "score_b": 6,
+      "bomb_planted": false
+    },
+    {
+      "round": 17,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 10,
+      "score_b": 7,
+      "bomb_planted": true
+    },
+    {
+      "round": 18,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 10,
+      "score_b": 8,
+      "bomb_planted": true
+    },
+    {
+      "round": 19,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 10,
+      "score_b": 9,
+      "bomb_planted": true
+    },
+    {
+      "round": 20,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 10,
+      "score_b": 10,
+      "bomb_planted": true
+    },
+    {
+      "round": 21,
+      "winner_team": "B",
+      "reason": "bomb_exploded",
+      "score_a": 10,
+      "score_b": 11,
+      "bomb_planted": true
+    },
+    {
+      "round": 22,
+      "winner_team": "A",
+      "reason": "t_killed",
+      "score_a": 11,
+      "score_b": 11,
+      "bomb_planted": false
+    },
+    {
+      "round": 23,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 11,
+      "score_b": 12,
+      "bomb_planted": false
+    },
+    {
+      "round": 24,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 11,
+      "score_b": 13,
+      "bomb_planted": false
+    }
+  ],
+  "decisive_round": {
+    "round": 23,
+    "winner_team": "B",
+    "reason": "ct_killed",
+    "score_a": 11,
+    "score_b": 12,
+    "bomb_planted": false,
+    "worst_deficit_overcome": 2,
+    "clutch_player": "Magnojezzz",
+    "clutch_against": 3,
+    "opening": {
+      "player": "Magnojezzz",
+      "team": "B",
+      "victim": "ELVENIMOUS",
+      "weapon": "ak47"
+    },
+    "multikill_player": "Magnojezzz",
+    "multikill_count": 5,
+    "importance": 129.0,
+    "reasons": [
+      "assumiu a liderança que não devolveu mais",
+      "virou com 2 jogadores a menos",
+      "clutch de Magnojezzz em 1v3",
+      "5K de Magnojezzz",
+      "jogo empatado ou a um round de diferença"
+    ]
+  },
+  "point_of_no_return": 23,
+  "rounds_scored": [
+    {
+      "round": 1,
+      "winner_team": "B",
+      "reason": "bomb_defused",
+      "score_a": 0,
+      "score_b": 1,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 1,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "newnickname7",
+        "team": "A",
+        "victim": "tezeuts-",
+        "weapon": "glock"
+      },
+      "multikill_player": "Magnojezzz",
+      "multikill_count": 4,
+      "importance": 47.0,
+      "reasons": [
+        "4K de Magnojezzz",
+        "jogo empatado ou a um round de diferença",
+        "decidido no desarme"
+      ]
+    },
+    {
+      "round": 2,
+      "winner_team": "B",
+      "reason": "t_killed",
+      "score_a": 0,
+      "score_b": 2,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "Magnojezzz",
+        "team": "B",
+        "victim": "d3bab",
+        "weapon": "awp"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 15.0,
+      "reasons": [
+        "jogo empatado ou a um round de diferença"
+      ]
+    },
+    {
+      "round": 3,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 1,
+      "score_b": 2,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 3,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "R0Kk-_",
+        "team": "B",
+        "victim": "lemight",
+        "weapon": "m4a1_silencer"
+      },
+      "multikill_player": "wh1temink",
+      "multikill_count": 3,
+      "importance": 54.0,
+      "reasons": [
+        "virou com 3 jogadores a menos",
+        "3K de wh1temink"
+      ]
+    },
+    {
+      "round": 4,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 2,
+      "score_b": 2,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "d3bab",
+        "team": "A",
+        "victim": "tezeuts-",
+        "weapon": "galilar"
+      },
+      "multikill_player": "wh1temink",
+      "multikill_count": 3,
+      "importance": 33.0,
+      "reasons": [
+        "3K de wh1temink",
+        "jogo empatado ou a um round de diferença"
+      ]
+    },
+    {
+      "round": 5,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 3,
+      "score_b": 2,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "newnickname7",
+        "team": "A",
+        "victim": "R0Kk-_",
+        "weapon": "ak47"
+      },
+      "multikill_player": "newnickname7",
+      "multikill_count": 3,
+      "importance": 33.0,
+      "reasons": [
+        "3K de newnickname7",
+        "jogo empatado ou a um round de diferença"
+      ]
+    },
+    {
+      "round": 6,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 4,
+      "score_b": 2,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 1,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "Magnojezzz",
+        "team": "B",
+        "victim": "lemight",
+        "weapon": "m4a1"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 15.0,
+      "reasons": [
+        "jogo empatado ou a um round de diferença"
+      ]
+    },
+    {
+      "round": 7,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 5,
+      "score_b": 2,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 1,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "wh1temink",
+        "team": "A",
+        "victim": "tezeuts-",
+        "weapon": "ak47"
+      },
+      "multikill_player": "lemight",
+      "multikill_count": 3,
+      "importance": 18.0,
+      "reasons": [
+        "3K de lemight"
+      ]
+    },
+    {
+      "round": 8,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 6,
+      "score_b": 2,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 2,
+      "clutch_player": "lemight",
+      "clutch_against": 2,
+      "opening": {
+        "player": "tezeuts-",
+        "team": "B",
+        "victim": "d3bab",
+        "weapon": "m4a1_silencer"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 44.0,
+      "reasons": [
+        "virou com 2 jogadores a menos",
+        "clutch de lemight em 1v2"
+      ]
+    },
+    {
+      "round": 9,
+      "winner_team": "A",
+      "reason": "ct_killed",
+      "score_a": 7,
+      "score_b": 2,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 1,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "lemight",
+        "team": "A",
+        "victim": "lemight",
+        "weapon": "world"
+      },
+      "multikill_player": "ELVENIMOUS",
+      "multikill_count": 3,
+      "importance": 18.0,
+      "reasons": [
+        "3K de ELVENIMOUS"
+      ]
+    },
+    {
+      "round": 10,
+      "winner_team": "B",
+      "reason": "bomb_defused",
+      "score_a": 7,
+      "score_b": 3,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 1,
+      "clutch_player": "Magnojezzz",
+      "clutch_against": 2,
+      "opening": {
+        "player": "donk666",
+        "team": "B",
+        "victim": "lemight",
+        "weapon": "m4a1_silencer"
+      },
+      "multikill_player": "wh1temink",
+      "multikill_count": 3,
+      "importance": 46.0,
+      "reasons": [
+        "clutch de Magnojezzz em 1v2",
+        "3K de wh1temink",
+        "decidido no desarme"
+      ]
+    },
+    {
+      "round": 11,
+      "winner_team": "B",
+      "reason": "t_killed",
+      "score_a": 7,
+      "score_b": 4,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "Magnojezzz",
+        "team": "B",
+        "victim": "lemight",
+        "weapon": "awp"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 0.0,
+      "reasons": []
+    },
+    {
+      "round": 12,
+      "winner_team": "B",
+      "reason": "t_killed",
+      "score_a": 7,
+      "score_b": 5,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "donk666",
+        "team": "B",
+        "victim": "newnickname7",
+        "weapon": "m4a1_silencer"
+      },
+      "multikill_player": "donk666",
+      "multikill_count": 3,
+      "importance": 18.0,
+      "reasons": [
+        "3K de donk666"
+      ]
+    },
+    {
+      "round": 13,
+      "winner_team": "A",
+      "reason": "t_killed",
+      "score_a": 8,
+      "score_b": 5,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "newnickname7",
+        "team": "A",
+        "victim": "Magnojezzz",
+        "weapon": "usp_silencer"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 0.0,
+      "reasons": []
+    },
+    {
+      "round": 14,
+      "winner_team": "A",
+      "reason": "t_killed",
+      "score_a": 9,
+      "score_b": 5,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "newnickname7",
+        "team": "A",
+        "victim": "zzeraj",
+        "weapon": "m4a1_silencer"
+      },
+      "multikill_player": "newnickname7",
+      "multikill_count": 4,
+      "importance": 24.0,
+      "reasons": [
+        "4K de newnickname7"
+      ]
+    },
+    {
+      "round": 15,
+      "winner_team": "A",
+      "reason": "t_killed",
+      "score_a": 10,
+      "score_b": 5,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "wh1temink",
+        "team": "A",
+        "victim": "R0Kk-_",
+        "weapon": "m4a1_silencer"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 0.0,
+      "reasons": []
+    },
+    {
+      "round": 16,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 10,
+      "score_b": 6,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "donk666",
+        "team": "B",
+        "victim": "newnickname7",
+        "weapon": "ak47"
+      },
+      "multikill_player": "donk666",
+      "multikill_count": 3,
+      "importance": 18.0,
+      "reasons": [
+        "3K de donk666"
+      ]
+    },
+    {
+      "round": 17,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 10,
+      "score_b": 7,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 1,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "lemight",
+        "team": "A",
+        "victim": "R0Kk-_",
+        "weapon": "m4a1_silencer"
+      },
+      "multikill_player": "Magnojezzz",
+      "multikill_count": 3,
+      "importance": 18.0,
+      "reasons": [
+        "3K de Magnojezzz"
+      ]
+    },
+    {
+      "round": 18,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 10,
+      "score_b": 8,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "zzeraj",
+        "team": "B",
+        "victim": "ELVENIMOUS",
+        "weapon": "awp"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 0.0,
+      "reasons": []
+    },
+    {
+      "round": 19,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 10,
+      "score_b": 9,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 1,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "ELVENIMOUS",
+        "team": "A",
+        "victim": "Magnojezzz",
+        "weapon": "m4a1_silencer"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 0.0,
+      "reasons": []
+    },
+    {
+      "round": 20,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 10,
+      "score_b": 10,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "donk666",
+        "team": "B",
+        "victim": "newnickname7",
+        "weapon": "ak47"
+      },
+      "multikill_player": "donk666",
+      "multikill_count": 3,
+      "importance": 33.0,
+      "reasons": [
+        "3K de donk666",
+        "jogo empatado ou a um round de diferença"
+      ]
+    },
+    {
+      "round": 21,
+      "winner_team": "B",
+      "reason": "bomb_exploded",
+      "score_a": 10,
+      "score_b": 11,
+      "bomb_planted": true,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "tezeuts-",
+        "team": "B",
+        "victim": "lemight",
+        "weapon": "ak47"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 21.0,
+      "reasons": [
+        "jogo empatado ou a um round de diferença",
+        "decidido na explosão"
+      ]
+    },
+    {
+      "round": 22,
+      "winner_team": "A",
+      "reason": "t_killed",
+      "score_a": 11,
+      "score_b": 11,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 1,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "Magnojezzz",
+        "team": "B",
+        "victim": "lemight",
+        "weapon": "ak47"
+      },
+      "multikill_player": null,
+      "multikill_count": 0,
+      "importance": 15.0,
+      "reasons": [
+        "jogo empatado ou a um round de diferença"
+      ]
+    },
+    {
+      "round": 23,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 11,
+      "score_b": 12,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 2,
+      "clutch_player": "Magnojezzz",
+      "clutch_against": 3,
+      "opening": {
+        "player": "Magnojezzz",
+        "team": "B",
+        "victim": "ELVENIMOUS",
+        "weapon": "ak47"
+      },
+      "multikill_player": "Magnojezzz",
+      "multikill_count": 5,
+      "importance": 129.0,
+      "reasons": [
+        "assumiu a liderança que não devolveu mais",
+        "virou com 2 jogadores a menos",
+        "clutch de Magnojezzz em 1v3",
+        "5K de Magnojezzz",
+        "jogo empatado ou a um round de diferença"
+      ]
+    },
+    {
+      "round": 24,
+      "winner_team": "B",
+      "reason": "ct_killed",
+      "score_a": 11,
+      "score_b": 13,
+      "bomb_planted": false,
+      "worst_deficit_overcome": 0,
+      "clutch_player": null,
+      "clutch_against": 0,
+      "opening": {
+        "player": "zzeraj",
+        "team": "B",
+        "victim": "ELVENIMOUS",
+        "weapon": "awp"
+      },
+      "multikill_player": "Magnojezzz",
+      "multikill_count": 3,
+      "importance": 33.0,
+      "reasons": [
+        "3K de Magnojezzz",
+        "jogo empatado ou a um round de diferença"
+      ]
+    }
+  ],
+  "players": [
+    {
+      "steamid": 76561198372023214,
+      "name": "Magnojezzz",
+      "adr": 109.70833333333333,
+      "kast_pct": 66.66666666666667,
+      "total_utility_damage": 175,
+      "utility_damage_per_round": 7.291666666666667,
+      "total_kills": 27,
+      "total_trade_kills": 3,
+      "median_first_contact_s": 10.6328125,
+      "survival_rate": 0.4166666666666667,
+      "crosshair_score": 71.09801184885887,
+      "frac_entering_fight": 0.32815528300616637,
+      "avg_distance_from_team": 521.6797485351562,
+      "opening_kills": 5,
+      "clutches": 2,
+      "team": "B",
+      "mvp_index": 0.8714285714285716,
+      "effort_index": 0.5969880637853204,
+      "reward_index": 0.7857142857142858,
+      "piano_index": -0.18872622192896538
+    },
+    {
+      "steamid": 76561199186002918,
+      "name": "R0Kk-_",
+      "adr": 86.375,
+      "kast_pct": 79.16666666666667,
+      "total_utility_damage": 119,
+      "utility_damage_per_round": 4.958333333333333,
+      "total_kills": 18,
+      "total_trade_kills": 7,
+      "median_first_contact_s": 12.03125,
+      "survival_rate": 0.3333333333333333,
+      "crosshair_score": 64.44852640932213,
+      "frac_entering_fight": 0.28995285785014735,
+      "avg_distance_from_team": 579.2567138671875,
+      "opening_kills": 1,
+      "clutches": 0,
+      "team": "B",
+      "mvp_index": 0.5709677419354839,
+      "effort_index": 0.4608407739698205,
+      "reward_index": 0.8387096774193549,
+      "piano_index": -0.3778689034495344
+    },
+    {
+      "steamid": 76561198851406744,
+      "name": "wh1temink",
+      "adr": 98.33333333333333,
+      "kast_pct": 66.66666666666667,
+      "total_utility_damage": 6,
+      "utility_damage_per_round": 0.25,
+      "total_kills": 22,
+      "total_trade_kills": 12,
+      "median_first_contact_s": 12.68359375,
+      "survival_rate": 0.25,
+      "crosshair_score": 74.53566915743038,
+      "frac_entering_fight": 0.2571110215355264,
+      "avg_distance_from_team": 624.026123046875,
+      "opening_kills": 2,
+      "clutches": 0,
+      "team": "A",
+      "mvp_index": 0.55852534562212,
+      "effort_index": 0.34345762012591174,
+      "reward_index": 0.7070852534562213,
+      "piano_index": -0.36362763333030956
+    },
+    {
+      "steamid": 76561198386265483,
+      "name": "donk666",
+      "adr": 94.54166666666667,
+      "kast_pct": 58.333333333333336,
+      "total_utility_damage": 128,
+      "utility_damage_per_round": 5.333333333333333,
+      "total_kills": 23,
+      "total_trade_kills": 4,
+      "median_first_contact_s": 11.359375,
+      "survival_rate": 0.20833333333333334,
+      "crosshair_score": 67.1512556676463,
+      "frac_entering_fight": 0.2566906881536493,
+      "avg_distance_from_team": 554.9791259765625,
+      "opening_kills": 4,
+      "clutches": 0,
+      "team": "B",
+      "mvp_index": 0.5518433179723503,
+      "effort_index": 0.5765241690350018,
+      "reward_index": 0.5380184331797235,
+      "piano_index": 0.03850573585527828
+    },
+    {
+      "steamid": 76561199687771533,
+      "name": "newnickname7",
+      "adr": 73.16666666666667,
+      "kast_pct": 62.5,
+      "total_utility_damage": 317,
+      "utility_damage_per_round": 13.208333333333334,
+      "total_kills": 18,
+      "total_trade_kills": 3,
+      "median_first_contact_s": 10.73046875,
+      "survival_rate": 0.2916666666666667,
+      "crosshair_score": 65.7780062705543,
+      "frac_entering_fight": 0.231748107843375,
+      "avg_distance_from_team": 733.8663940429688,
+      "opening_kills": 4,
+      "clutches": 0,
+      "team": "A",
+      "mvp_index": 0.4764976958525346,
+      "effort_index": 0.677776787018307,
+      "reward_index": 0.46169354838709675,
+      "piano_index": 0.21608323863121026
+    },
+    {
+      "steamid": 76561199874768081,
+      "name": "lemight",
+      "adr": 76.33333333333333,
+      "kast_pct": 62.5,
+      "total_utility_damage": 196,
+      "utility_damage_per_round": 8.166666666666666,
+      "total_kills": 15,
+      "total_trade_kills": 4,
+      "median_first_contact_s": 13.1171875,
+      "survival_rate": 0.16666666666666666,
+      "crosshair_score": 64.52177225000993,
+      "frac_entering_fight": 0.17334505251868912,
+      "avg_distance_from_team": 757.4981079101562,
+      "opening_kills": 2,
+      "clutches": 1,
+      "team": "A",
+      "mvp_index": 0.4440092165898617,
+      "effort_index": 0.42006667370184847,
+      "reward_index": 0.4835829493087557,
+      "piano_index": -0.06351627560690726
+    },
+    {
+      "steamid": 76561199103743323,
+      "name": "zzeraj",
+      "adr": 57.333333333333336,
+      "kast_pct": 66.66666666666667,
+      "total_utility_damage": 63,
+      "utility_damage_per_round": 2.625,
+      "total_kills": 13,
+      "total_trade_kills": 3,
+      "median_first_contact_s": 11.23046875,
+      "survival_rate": 0.4166666666666667,
+      "crosshair_score": 67.37218614178603,
+      "frac_entering_fight": 0.1564087747447873,
+      "avg_distance_from_team": 780.8334350585938,
+      "opening_kills": 2,
+      "clutches": 0,
+      "team": "B",
+      "mvp_index": 0.33179723502304154,
+      "effort_index": 0.2366780082218869,
+      "reward_index": 0.42367511520737333,
+      "piano_index": -0.18699710698548644
+    },
+    {
+      "steamid": 76561199033325969,
+      "name": "d3bab",
+      "adr": 58.625,
+      "kast_pct": 66.66666666666667,
+      "total_utility_damage": 164,
+      "utility_damage_per_round": 6.833333333333333,
+      "total_kills": 12,
+      "total_trade_kills": 4,
+      "median_first_contact_s": 13.484375,
+      "survival_rate": 0.3333333333333333,
+      "crosshair_score": 69.73738301339476,
+      "frac_entering_fight": 0.22347205634739553,
+      "avg_distance_from_team": 732.6175537109375,
+      "opening_kills": 1,
+      "clutches": 0,
+      "team": "A",
+      "mvp_index": 0.28894009216589867,
+      "effort_index": 0.2980891687032119,
+      "reward_index": 0.43260368663594473,
+      "piano_index": -0.13451451793273284
+    },
+    {
+      "steamid": 76561198863893381,
+      "name": "ELVENIMOUS",
+      "adr": 69.79166666666667,
+      "kast_pct": 50.0,
+      "total_utility_damage": 74,
+      "utility_damage_per_round": 3.0833333333333335,
+      "total_kills": 15,
+      "total_trade_kills": 4,
+      "median_first_contact_s": 9.59765625,
+      "survival_rate": 0.3333333333333333,
+      "crosshair_score": 69.51040232823077,
+      "frac_entering_fight": 0.14346864986585325,
+      "avg_distance_from_team": 649.0400390625,
+      "opening_kills": 1,
+      "clutches": 0,
+      "team": "A",
+      "mvp_index": 0.17926267281105995,
+      "effort_index": 0.42132904608788857,
+      "reward_index": 0.22407834101382493,
+      "piano_index": 0.19725070507406364
+    },
+    {
+      "steamid": 76561198099150850,
+      "name": "tezeuts-",
+      "adr": 37.375,
+      "kast_pct": 50.0,
+      "total_utility_damage": 71,
+      "utility_damage_per_round": 2.9583333333333335,
+      "total_kills": 7,
+      "total_trade_kills": 0,
+      "median_first_contact_s": 11.0625,
+      "survival_rate": 0.20833333333333334,
+      "crosshair_score": 68.80402088228497,
+      "frac_entering_fight": 0.3350241003870315,
+      "avg_distance_from_team": 745.0897827148438,
+      "opening_kills": 2,
+      "clutches": 0,
+      "team": "B",
+      "mvp_index": 0.05,
+      "effort_index": 0.6558521438920217,
+      "reward_index": 0.0,
+      "piano_index": 0.6558521438920217
+    }
+  ]
+}

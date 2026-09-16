@@ -20,29 +20,13 @@ from pathlib import Path
 
 import polars as pl
 
+from metrics.grenades import EFFECTIVE_BLIND_SECONDS, PROJECTILE_KIND
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 SAMPLE_EVERY = 32  # ticks
 TICKRATE = 128
 HALFTIME_ROUND = 12
-
-# Durações padrão quando o demo não registra o fim da entidade (acontece quando
-# o round acaba antes de a fumaça/fogo expirar). Valores do próprio awpy.
-# Classes de entidade do demo -> categoria legível. As duas formas (projétil
-# em voo e entidade depositada) apontam para a mesma categoria.
-GRENADE_KIND = {
-    "CHEGrenadeProjectile": "he",
-    "CHEGrenade": "he",
-    "CFlashbangProjectile": "flash",
-    "CFlashbang": "flash",
-    "CSmokeGrenadeProjectile": "smoke",
-    "CSmokeGrenade": "smoke",
-    "CMolotovProjectile": "molotov",
-    "CMolotovGrenade": "molotov",
-    "CIncendiaryGrenade": "molotov",
-    "CDecoyProjectile": "decoy",
-    "CDecoyGrenade": "decoy",
-}
 
 # Quanto o replay continua depois de a vitória ser decidida, pra a última morte
 # e o desarme caberem na linha do tempo.
@@ -53,6 +37,11 @@ RESET_MARGIN_TICKS = int(1.5 * TICKRATE)
 
 SMOKE_TICKS = int(20.0 * TICKRATE)
 INFERNO_TICKS = int(7.03125 * TICKRATE)
+
+# Folga pra casar o dano de HE com a detonação que o causou. O demo registra o
+# player_hurt no mesmo tick na maioria das vezes, mas vítimas processadas no
+# tick seguinte aparecem alguns ticks depois.
+POP_DAMAGE_TICKS = int(0.5 * TICKRATE)
 
 
 def team_of_side(side: str, round_num: int) -> str:
@@ -70,10 +59,18 @@ def build(match_id: str) -> Path:
     rounds = pl.read_parquet(processed / "rounds.parquet")
     ticks = pl.read_parquet(interim / "ticks.parquet")
     kills = pl.read_parquet(interim / "kills.parquet")
-    bomb = pl.read_parquet(interim / "bomb.parquet") if (interim / "bomb.parquet").exists() else None
-    smokes = pl.read_parquet(interim / "smokes.parquet") if (interim / "smokes.parquet").exists() else None
-    infernos = pl.read_parquet(interim / "infernos.parquet") if (interim / "infernos.parquet").exists() else None
-    grenades = pl.read_parquet(interim / "grenades.parquet") if (interim / "grenades.parquet").exists() else None
+    def opt(name: str) -> pl.DataFrame | None:
+        path = interim / f"{name}.parquet"
+        return pl.read_parquet(path) if path.exists() else None
+
+    bomb = opt("bomb")
+    smokes = opt("smokes")
+    infernos = opt("infernos")
+    grenades = opt("grenades")
+    damages = opt("damages")
+    blinds_all = opt("player_blind")
+    flash_det = opt("flashbang_detonate")
+    he_det = opt("hegrenade_detonate")
 
     out_rounds = []
 
@@ -224,19 +221,23 @@ def build(match_id: str) -> Path:
         # Granadas: só o VOO de cada projétil. Depois que ela para, o que
         # importa já é o efeito (a zona de smoke/fogo), não a caixinha parada no
         # chão — desenhar as duas coisas polui o mapa sem informar nada.
+        #
+        # O filtro por PROJECTILE_KIND é o que separa granada arremessada de
+        # granada carregada no inventário: sem ele, a entidade que acompanha o
+        # jogador entrava aqui e virava um ponto colorido colado nele o round
+        # inteiro (ver nota em metrics/grenades.PROJECTILE_KIND).
         nades = []
         if grenades is not None:
             gr = grenades.filter(
                 (pl.col("round_num") == rn)
                 & (pl.col("tick") >= t0)
                 & (pl.col("tick") <= t1)
+                & pl.col("grenade_type").is_in(list(PROJECTILE_KIND))
                 & pl.col("X").is_not_null()
                 & pl.col("Y").is_not_null()
             ).sort("tick")
             for (eid,), g in gr.group_by(["entity_id"], maintain_order=True):
-                kind = GRENADE_KIND.get(g["grenade_type"][0])
-                if kind is None:
-                    continue
+                kind = PROJECTILE_KIND[g["grenade_type"][0]]
                 gt = g["tick"].to_list()
                 gx = g["X"].to_list()
                 gy = g["Y"].to_list()
@@ -266,6 +267,87 @@ def build(match_id: str) -> Path:
                 if len(xs) >= 2:
                     nades.append({"k": kind, "by": g["thrower"][0], "f0": f0, "x": xs, "y": ys})
 
+        # Detonações de flash e HE. Ao contrário de smoke e fogo, elas acontecem
+        # num instante e não têm zona — o que importa é o efeito: quem ficou cego
+        # e por quanto tempo, quanto dano a HE tirou. Sem isso o mapa mostra a
+        # granada voando e depois nada, que é justamente a parte que decide a
+        # briga.
+        pops = []
+        blinds = []
+
+        if flash_det is not None and blinds_all is not None:
+            round_blinds = blinds_all.filter(pl.col("round_num") == rn)
+            for d in flash_det.filter(
+                (pl.col("round_num") == rn) & (pl.col("tick") >= t0) & (pl.col("tick") <= t1)
+            ).sort("tick").iter_rows(named=True):
+                hit = round_blinds.filter(pl.col("entityid") == d["entityid"]).sort(
+                    "blind_duration", descending=True
+                )
+                victims = []
+                for b in hit.iter_rows(named=True):
+                    dur = float(b["blind_duration"])
+                    victims.append(
+                        {
+                            "n": b["user_name"],
+                            "s": round(dur, 1),
+                            # inimigo do arremessador: é o que torna a flash boa
+                            "e": int(b["attacker_side"] != b["user_side"]),
+                        }
+                    )
+                    start_f = frame_of(b["tick"])
+                    blinds.append(
+                        {
+                            "n": b["user_name"],
+                            "f0": start_f,
+                            "f1": frame_of(int(b["tick"]) + int(dur * TICKRATE)),
+                            "s": round(dur, 1),
+                        }
+                    )
+                pops.append(
+                    {
+                        "k": "flash",
+                        "f": frame_of(d["tick"]),
+                        "t": round((int(d["tick"]) - t0) / TICKRATE, 1),
+                        "x": int(round(d["x"])),
+                        "y": int(round(d["y"])),
+                        "by": d["user_name"],
+                        "side": d["user_side"],
+                        "hit": victims,
+                    }
+                )
+
+        if he_det is not None:
+            he_dmg = (
+                damages.filter((pl.col("round_num") == rn) & (pl.col("weapon") == "hegrenade"))
+                if damages is not None
+                else None
+            )
+            for d in he_det.filter(
+                (pl.col("round_num") == rn) & (pl.col("tick") >= t0) & (pl.col("tick") <= t1)
+            ).sort("tick").iter_rows(named=True):
+                dmg = 0
+                if he_dmg is not None:
+                    # o dano é registrado no mesmo tick da detonação ou pouco
+                    # depois; a folga cobre as vítimas processadas no tick seguinte
+                    near = he_dmg.filter(
+                        (pl.col("attacker_steamid") == d["user_steamid"])
+                        & (pl.col("tick") >= d["tick"])
+                        & (pl.col("tick") <= d["tick"] + POP_DAMAGE_TICKS)
+                    )
+                    dmg = int(near["dmg_health_real"].sum() or 0)
+                pops.append(
+                    {
+                        "k": "he",
+                        "f": frame_of(d["tick"]),
+                        "t": round((int(d["tick"]) - t0) / TICKRATE, 1),
+                        "x": int(round(d["x"])),
+                        "y": int(round(d["y"])),
+                        "by": d["user_name"],
+                        "side": d["user_side"],
+                        "dmg": dmg,
+                    }
+                )
+
         out_rounds.append(
             {
                 "round": rn,
@@ -279,6 +361,8 @@ def build(match_id: str) -> Path:
                 "players": players,
                 "events": sorted(events, key=lambda e: e["f"]),
                 "nades": nades,
+                "pops": sorted(pops, key=lambda p: p["f"]),
+                "blinds": blinds,
                 "smokes": zones(smokes, SMOKE_TICKS),
                 "fires": zones(infernos, INFERNO_TICKS),
             }
@@ -291,7 +375,15 @@ def build(match_id: str) -> Path:
         "maxY": int(ticks["Y"].max()),
     }
 
-    payload = {"bounds": bounds, "sample_hz": TICKRATE / SAMPLE_EVERY, "rounds": out_rounds}
+    payload = {
+        "bounds": bounds,
+        "sample_hz": TICKRATE / SAMPLE_EVERY,
+        # o painel usa o mesmo limiar das métricas pra decidir quais flashes
+        # entram na linha do tempo, em vez de ter um número próprio que
+        # silenciosamente diverge do que as tabelas contam
+        "effective_blind_s": EFFECTIVE_BLIND_SECONDS,
+        "rounds": out_rounds,
+    }
     out = processed / "replay.json"
     out.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     return out
