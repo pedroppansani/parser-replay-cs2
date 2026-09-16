@@ -23,19 +23,35 @@ from pathlib import Path
 import polars as pl
 
 from clustering.playstyle import (
+    _profile_clusters,
+    assign_with_model,
     build_feature_matrix,
     cluster_playstyles,
     evaluate_cluster_counts,
+    load_global_model,
     representative_rounds,
     save_cluster_names_template,
 )
 from metrics.awp_metrics import calculate_awp_metrics
 from metrics.basic_metrics import compute_all_basic_metrics, roster_per_round
 from metrics.crosshair import calculate_crosshair_metrics
+from metrics.map_areas import area_lookup, derive_place_areas
 from metrics.grenades import compute_grenade_metrics
 from metrics.player_roles import build_player_roles
 from metrics.positioning import calculate_positioning_metrics
-from parsing.parser import ALL_TABLES, load_interim, parse_demo, save_interim
+from metrics.site_roles import (
+    anchor_metrics,
+    lurk_metrics,
+    player_round_area_shares,
+    player_round_areas,
+)
+from parsing.parser import (
+    ALL_TABLES,
+    grenade_event_tables,
+    load_interim,
+    parse_demo,
+    save_interim,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
@@ -65,6 +81,19 @@ def process(
         print("[2/6] Salvando tabelas brutas (data/interim/, não vai pro git) ...")
         save_interim(demo, interim_dir, match_id)
         tables = {name: getattr(demo, name) for name in ALL_TABLES}
+        # save_interim grava mais tabelas do que ALL_TABLES, e load_interim as lê
+        # de volta. Sem repeti-las aqui, parsear do zero entrega MENOS dado que
+        # `--from-interim` e as métricas que dependem delas degradam em silêncio:
+        # `bomb` é a origem dos centróides de bombsite em metrics/map_areas.py,
+        # e sem ela a partição A/Mid/B cai no fallback.
+        for name in ("bomb", "smokes", "infernos"):
+            tables[name] = getattr(demo, name)
+        # Os eventos de granada não são atributos do Demo (vêm do dict de eventos
+        # crus), então não entram pelo getattr acima. Sem esta linha, parsear do
+        # zero produz métricas de flash zeradas enquanto `--from-interim`
+        # produz as certas — e a diferença passa despercebida porque zero é um
+        # número plausível.
+        tables.update(grenade_event_tables(demo))
 
     outputs: dict[str, pl.DataFrame] = {}
 
@@ -92,6 +121,27 @@ def process(
     outputs["position_profile"] = pos["position_profile"]
     outputs["heatmap_bins"] = pos["heatmap_bins"]
 
+    # Áreas macro do mapa (A / Mid / B) e as funções que dependem DELAS, não de
+    # distância: âncora é quem fica no mesmo site mesmo com a leitura apontando
+    # pro outro, lurker é o T que joga área diferente da do time. Ver
+    # metrics/site_roles.py.
+    place_areas = derive_place_areas(pos["positions"], tables.get("bomb"), map_name)
+    outputs["place_areas"] = place_areas
+    area_shares = player_round_area_shares(pos["positions"], area_lookup(place_areas))
+    outputs["player_round_area_shares"] = area_shares
+    outputs["player_round_areas"] = player_round_areas(area_shares)
+    if place_areas.height == 0:
+        print(
+            f"      AVISO: não foi possível localizar os dois bombsites em {map_name}."
+            " Âncora e lurk ficam sem métrica nesta partida."
+        )
+    anchor_round, anchor_sum = anchor_metrics(area_shares)
+    outputs["anchor_per_round"] = anchor_round
+    outputs["anchor_summary"] = anchor_sum
+    lurk_round, lurk_sum = lurk_metrics(area_shares)
+    outputs["lurk_per_round"] = lurk_round
+    outputs["lurk_summary"] = lurk_sum
+
     print("[5/6] Fase 3 -- clustering de estilos de jogo (PCA + KMeans) ...")
     features = build_feature_matrix(
         outputs, ch_round, pos["position_profile"], tables["damages"], tables["rounds"]
@@ -101,7 +151,36 @@ def process(
     silhouettes = evaluate_cluster_counts(features)
     outputs["cluster_silhouettes"] = silhouettes
 
-    assignments, profiles, meta = cluster_playstyles(features, n_clusters=n_clusters)
+    # Se já existe um modelo ajustado no conjunto das partidas, ele manda: o
+    # rótulo numérico do KMeans é arbitrário, então treinar de novo só nesta
+    # partida faria o "cluster 2" daqui não ser o "cluster 2" das outras -- e
+    # `cluster_names.json` é um arquivo só, aplicado a todas. Ver
+    # scripts/fit_global_clusters.py.
+    global_model = load_global_model()
+    if global_model is not None:
+        assignments = assign_with_model(features, global_model)
+        profiles = _profile_clusters(assignments, global_model["feature_columns"])
+        meta = {
+            "explained_variance_ratio": global_model["explained_variance_ratio"],
+            "feature_columns": global_model["feature_columns"],
+            "n_clusters": global_model["n_clusters"],
+            "fitted_on": "global",
+            "n_player_rounds_global": global_model["n_player_rounds"],
+        }
+        print(
+            f"      modelo global ({global_model['n_player_rounds']} player-rounds,"
+            f" k={global_model['n_clusters']}). Rode scripts.fit_global_clusters"
+            " para reajustar incluindo esta partida."
+        )
+    else:
+        assignments, profiles, meta = cluster_playstyles(features, n_clusters=n_clusters)
+        meta["fitted_on"] = "match"
+        print(
+            "      AVISO: sem modelo global (clustering/global_model.json). Os"
+            " clusters desta partida foram treinados só nela e os números NÃO"
+            " correspondem aos das outras. Rode scripts.fit_global_clusters."
+        )
+
     outputs["cluster_assignments"] = assignments
     outputs["cluster_profiles"] = profiles
     outputs["cluster_examples"] = representative_rounds(assignments)
