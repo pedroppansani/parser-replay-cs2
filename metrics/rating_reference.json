@@ -1,0 +1,43 @@
+{
+  "medias": {
+    "kills": 0.7438873945527249,
+    "dano": 80.66666811247353,
+    "sobrevivencia": 0.27925958811665735,
+    "kast": 0.6624006118484963,
+    "multikills": 0.23711329017039193,
+    "round_swing": -0.04333735021270547
+  },
+  "desvios": {
+    "kills": 0.2645596120866846,
+    "dano": 23.664571914130715,
+    "sobrevivencia": 0.11882355197803798,
+    "kast": 0.1228275772983456,
+    "multikills": 0.1655347969478771,
+    "round_swing": 0.030852500716062364
+  },
+  "dispersao_alvo": 0.35564470378713114,
+  "n_partidas": 9,
+  "n_jogador_partidas": 90,
+  "modelo_de_round": {
+    "amostras": 2692,
+    "treinou": true,
+    "brier": 0.12945122288070643,
+    "auc": 0.8971726252900565,
+    "coeficientes": {
+      "dif_vivos": 1.0941,
+      "dif_equip_milhares": 0.0651,
+      "bomba_a_favor": 0.7103,
+      "eh_ct": -0.791
+    },
+    "intercepto": 0.3951124030981408
+  },
+  "pesos_usados": {
+    "kills": 0.28,
+    "dano": 0.18,
+    "sobrevivencia": 0.14,
+    "kast": 0.16,
+    "multikills": 0.09,
+    "round_swing": 0.15
+  },
+  "aviso": "Medias de escala do conjunto. Os PESOS ainda sao provisorios: os oficiais da HLTV sao fechados e os daqui so podem ser estimados por regressao contra ratings publicados (--fit-pesos)."
+}
