@@ -151,4 +151,51 @@ def load_interim(interim_dir: Path | str, match_id: str) -> dict[str, pl.DataFra
         path = match_dir / f"{name}.parquet"
         if path.exists():
             tables[name] = pl.read_parquet(path)
+
+    # Limpeza obrigatória: mortes do tempo parado não pertencem a round nenhum.
+    # Fica aqui para que TODO consumidor de --from-interim receba o dado limpo
+    # sem precisar lembrar de filtrar (ver kills_do_round_jogado).
+    tables["kills"] = kills_do_round_jogado(tables["kills"], tables["rounds"])
     return tables
+
+
+# ---------------------------------------------------------------------------
+# Limpeza: eventos que caem fora do round jogado
+# ---------------------------------------------------------------------------
+#
+# O demo registra mortes no intervalo entre o `start` do round e o fim do freeze
+# time. Não são warmup (o `is_warmup_period` já terminou antes do primeiro
+# `start`): são jogadores se matando ou caindo do mapa no tempo parado, o que
+# acontece bastante no período pré-partida do FACEIT -- em match_08 o freeze do
+# round 1 dura 93 segundos, contra 20 dos demais.
+#
+# Elas não pertencem a round nenhum, e deixá-las entrar produziu dois sintomas
+# ao mesmo tempo: timestamp negativo no timeline (-69,0s, contado a partir do
+# fim do freeze) e jogador ganhando +1 kill por se matar, porque a linha traz
+# `attacker_steamid == victim_steamid`.
+#
+# Medido nas 9 partidas: 11 mortes antes do freeze_end, 4 delas com vítima igual
+# ao atacante.
+#
+# A cauda DEPOIS do fim do round fica: dá pra morrer nos segundos seguintes ao
+# round ser decidido, e essas mortes são do round certo.
+
+def kills_do_round_jogado(kills: pl.DataFrame, rounds: pl.DataFrame) -> pl.DataFrame:
+    """Descarta as mortes anteriores ao fim do freeze time do próprio round.
+
+    Este é o filtro que todo consumidor de `kills` deve aplicar. Está aqui, no
+    módulo de parsing, porque é limpeza de dado bruto e não decisão de métrica --
+    nenhuma métrica do projeto quer contar uma morte do tempo parado.
+    """
+    if kills.height == 0 or "round_num" not in kills.columns:
+        return kills
+
+    limites = rounds.select(
+        pl.col("round_num").cast(kills.schema["round_num"]),
+        pl.col("freeze_end"),
+    )
+    return (
+        kills.join(limites, on="round_num", how="left")
+        .filter(pl.col("freeze_end").is_null() | (pl.col("tick") >= pl.col("freeze_end")))
+        .drop("freeze_end")
+    )

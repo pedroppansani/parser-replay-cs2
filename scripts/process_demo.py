@@ -47,6 +47,7 @@ from metrics.site_roles import (
 )
 from parsing.parser import (
     ALL_TABLES,
+    kills_do_round_jogado,
     grenade_event_tables,
     load_interim,
     parse_demo,
@@ -94,6 +95,9 @@ def process(
         # produz as certas — e a diferença passa despercebida porque zero é um
         # número plausível.
         tables.update(grenade_event_tables(demo))
+        # Mesmo filtro que o load_interim aplica: sem ele, parsear do zero conta
+        # mortes do tempo parado e dá +1 kill a quem se matou no pré-round.
+        tables["kills"] = kills_do_round_jogado(tables["kills"], tables["rounds"])
 
     outputs: dict[str, pl.DataFrame] = {}
 

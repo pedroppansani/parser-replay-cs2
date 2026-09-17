@@ -14,6 +14,8 @@ import json
 from pathlib import Path
 
 import polars as pl
+
+from parsing.parser import kills_do_round_jogado
 from metrics.archetypes import (
     PAPEIS,
     compute_for_match,
@@ -340,6 +342,8 @@ def build(match_id: str) -> Path:
 
     rounds = pl.read_parquet(processed / "rounds.parquet")
     kills = pl.read_parquet(interim / "kills.parquet")
+    # mortes do tempo parado não pertencem a round nenhum (ver parsing.parser)
+    kills = kills_do_round_jogado(kills, rounds)
     ticks = pl.read_parquet(interim / "ticks.parquet")
 
     basic = {

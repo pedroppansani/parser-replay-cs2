@@ -20,6 +20,8 @@ from pathlib import Path
 
 import polars as pl
 
+from parsing.parser import kills_do_round_jogado
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 SAMPLE_EVERY = 16  # ticks (4 quadros por segundo a 64 tick)
@@ -98,6 +100,8 @@ def build(match_id: str) -> Path:
     rounds = pl.read_parquet(processed / "rounds.parquet")
     ticks = pl.read_parquet(interim / "ticks.parquet")
     kills = pl.read_parquet(interim / "kills.parquet")
+    # mortes do tempo parado não pertencem a round nenhum (ver parsing.parser)
+    kills = kills_do_round_jogado(kills, rounds)
     def opt(name: str) -> pl.DataFrame | None:
         path = interim / f"{name}.parquet"
         return pl.read_parquet(path) if path.exists() else None
@@ -392,6 +396,14 @@ def build(match_id: str) -> Path:
                 "winner_side": r["winner"],
                 "reason": r["reason"],
                 "frames": len(frames),
+                # Os ticks de início e fim da janela exportada. Vão para o
+                # payload porque o TICK é o dado primário de um evento: para
+                # navegar até ele, a página precisa converter tick→quadro, e sem
+                # t0 ela só podia derivar o quadro do tempo em segundos já
+                # arredondado -- que foi exatamente o caminho que escondeu um
+                # tempo negativo atrás de um clamp em zero.
+                "t0": int(t0),
+                "t1": int(t1),
                 "seconds": round((t1 - t0) / TICKRATE, 1),
                 "decided_f": max(0, min(len(frames) - 1, (t_decided - t0) // SAMPLE_EVERY)),
                 "weapons": weapon_names,
@@ -419,6 +431,7 @@ def build(match_id: str) -> Path:
     payload = {
         "bounds": bounds,
         "sample_hz": TICKRATE / SAMPLE_EVERY,
+        "sample_every": SAMPLE_EVERY,
         "tickrate": TICKRATE,
         "clock": {
             "round_seconds": ROUND_SECONDS,
