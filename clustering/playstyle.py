@@ -51,10 +51,6 @@ RANDOM_STATE = 42  # fixo pra o clustering ser reprodutível entre execuções
 # bem. Por isso entram coisas como distância do time e tempo até o contato, e
 # fica de fora, por exemplo, "ganhou o round".
 FEATURE_COLUMNS = [
-    "damage",  # dano no round (Fase 1)
-    "utility_damage",  # dano de granada (Fase 1)
-    "kills",  # kills no round (Fase 1)
-    "trade_kills",  # kills de trade (Fase 1)
     "avg_distance_from_team",  # posicionamento: joga junto ou separado (Fase 2)
     "max_distance_from_team",
     "distinct_places",  # rotaciona muito ou ancora (Fase 2)
@@ -62,7 +58,28 @@ FEATURE_COLUMNS = [
     "height_score",
     "frac_entering_fight",  # quanto do round foi passado entrando em briga (Fase 2)
     "time_of_first_contact_s",  # entra cedo ou espera (derivada abaixo)
-    "survived",  # sobreviveu o round (Fase 1, como 0/1)
+]
+
+# Estas cinco features SAIRAM da lista, e a saida foi o conserto do modulo:
+#
+#   damage, kills, trade_kills, utility_damage, survived
+#
+# Todas sao RESULTADO, nao comportamento. Com elas dentro, o KMeans agrupava os
+# rounds por como eles terminaram -- os quatro grupos eram "round produtivo",
+# "round longe e sobreviveu", "round que morreu entrando" e "round que morreu sem
+# fazer nada". Isso contradizia o proposito declarado logo acima ("agrupar COMO o
+# jogador jogou o round, nao se ele se deu bem") e, pior, nao acrescentava nada:
+# a tabela de ADR ja diz como o round terminou.
+#
+# Medido no conjunto das 9 partidas (1.870 player-rounds), tirando as cinco:
+#   silhueta k=4: 0,168 -> 0,216      silhueta k=3: 0,159 -> 0,236
+#   variancia nos 2 eixos do grafico: 40% -> 56%
+#
+# E os grupos passaram a ler como estilo: joga separado e parado / entra sem a
+# mira pronta / roda o mapa evitando briga / joga junto e rapido. So ai nomear
+# passou a fazer sentido.
+FEATURES_DE_RESULTADO_REMOVIDAS = [
+    "damage", "kills", "trade_kills", "utility_damage", "survived",
 ]
 
 
@@ -416,3 +433,74 @@ def load_global_model(path: Path = GLOBAL_MODEL_FILE) -> dict | None:
     if model.get("version") != GLOBAL_MODEL_VERSION:
         return None
     return model
+
+
+# ---------------------------------------------------------------------------
+# Descrição legível de cada grupo
+# ---------------------------------------------------------------------------
+#
+# Isto NÃO é nomear o cluster, e a diferença importa. Nomear é dizer "esse é o
+# lurker" -- leitura de jogo, que continua sendo do Pedro via cluster_names.json
+# (decisão 8 do CLAUDE.md). O que este bloco faz é RESTATAR A MEDIÇÃO em
+# português: "longe do time, encosta tarde" é o que os números dizem, não uma
+# interpretação deles.
+#
+# Existe porque "Cluster 0" não significa nada para quem abre a página, e um
+# gráfico de pontos com eixos de PCA significa menos ainda. Enquanto o painel
+# mostrava isso, a aba inteira era decorativa.
+#
+# A descrição é derivada, não escrita à mão, pra continuar verdadeira quando o
+# modelo for reajustado: compara cada grupo com a média dos grupos e conta as
+# duas features em que ele mais se afasta.
+FRASES_FEATURE = {
+    "avg_distance_from_team": ("longe do time", "colado no time"),
+    "max_distance_from_team": ("chega a se afastar muito", "nunca se afasta"),
+    "distinct_places": ("passa por muitas regiões", "fica em poucas regiões"),
+    "crosshair_score": ("mira bem posicionada", "mira atrasada"),
+    "height_score": ("joga por cima", "joga por baixo"),
+    "frac_entering_fight": ("vive entrando em briga", "quase não entra em briga"),
+    "time_of_first_contact_s": ("encosta no adversário tarde", "encosta no adversário cedo"),
+}
+
+# Quantas características entram na descrição. Duas descrevem sem virar lista;
+# com uma só, dois grupos parecidos ficariam com o mesmo texto.
+N_CARACTERISTICAS = 2
+
+
+def describe_clusters(profiles: pl.DataFrame) -> pl.DataFrame:
+    """Uma frase por grupo, dizendo no que ele se afasta mais da média.
+
+    Devolve `cluster`, `titulo` (a característica mais forte) e `descricao` (as
+    duas mais fortes), além de `destaques` com o detalhe numérico de cada uma --
+    o número anda junto pra dar pra discordar da frase olhando a medida.
+    """
+    cols = [c for c in FRASES_FEATURE if c in profiles.columns]
+    if profiles.height == 0 or not cols:
+        return pl.DataFrame(
+            schema={"cluster": pl.Int32, "titulo": pl.String, "descricao": pl.String}
+        )
+
+    media = {c: float(profiles[c].mean()) for c in cols}
+    desvio = {c: float(profiles[c].std() or 0.0) for c in cols}
+
+    linhas = []
+    for row in profiles.iter_rows(named=True):
+        pontuadas = []
+        for c in cols:
+            if desvio[c] == 0:
+                continue
+            z = (float(row[c]) - media[c]) / desvio[c]
+            alto, baixo = FRASES_FEATURE[c]
+            pontuadas.append((abs(z), alto if z > 0 else baixo, c, float(row[c])))
+        pontuadas.sort(reverse=True)
+        escolhidas = pontuadas[:N_CARACTERISTICAS]
+
+        linhas.append(
+            {
+                "cluster": int(row["cluster"]),
+                "titulo": escolhidas[0][1] if escolhidas else "sem característica marcante",
+                "descricao": ", ".join(p[1] for p in escolhidas),
+                "n_rounds": int(row.get("n_rounds") or 0),
+            }
+        )
+    return pl.DataFrame(linhas).sort("cluster")

@@ -5,22 +5,17 @@
   "source_dem": "C:\\Users\\User\\Desktop\\Projetos Claude\\01 - Parser de Replay CS2\\demos\\1-a2985358-eb2a-4b11-b891-534de044e54e-1-1.dem\\1-a2985358-eb2a-4b11-b891-534de044e54e-1-1.dem",
   "pca": {
     "explained_variance_ratio": [
-      0.20533303902712036,
-      0.1931490201543818
+      0.3177372062661366,
+      0.23892554537865607
     ],
     "feature_columns": [
-      "damage",
-      "utility_damage",
-      "kills",
-      "trade_kills",
       "avg_distance_from_team",
       "max_distance_from_team",
       "distinct_places",
       "crosshair_score",
       "height_score",
       "frac_entering_fight",
-      "time_of_first_contact_s",
-      "survived"
+      "time_of_first_contact_s"
     ],
     "n_clusters": 4,
     "fitted_on": "global",

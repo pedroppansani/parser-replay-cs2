@@ -719,6 +719,14 @@
   .facet li { font-family: var(--mono); font-size: 11px; color: var(--ink-2); display: flex; justify-content: space-between; gap: 8px; }
   .facet li span { color: var(--dim); }
 
+  /* ---- jeitos de jogar: legenda, descricao e barra grande ---- */
+  .facet h4 .dot { display:inline-block; width:10px; height:10px; border-radius:50%;
+                   margin-right:7px; vertical-align:middle; }
+  .facetdesc { margin:8px 0 10px; color:var(--dim); font-size:13px; line-height:1.45; }
+  h3.sub { font-size:17px; margin:26px 0 4px; letter-spacing:-.01em; }
+  .mixcard .mix.big { height:14px; border-radius:7px; margin-top:10px; }
+  .mixcard .mixlab { margin-top:7px; }
+
   /* ---- funções por jogador (aba Estilos) ---- */
   .eyebrow.tier2 { margin-top: 46px; padding-top: 30px; border-top: 1px solid var(--line); }
 
@@ -950,14 +958,22 @@
     <div class="rosters" id="roles"></div>
     <div class="callout" id="rolenote"></div>
 
-    <div class="eyebrow tier2">Agrupamento não supervisionado</div>
+    <div class="eyebrow tier2">Round a round</div>
     <h2 class="sec">Quatro jeitos de jogar um round</h2>
     <p class="lead">
-      A tabela acima é por jogador; esta é por <b>jogador/round</b>. PCA + KMeans sobre 12 features
-      de comportamento, porque o mesmo atleta é entry num round e âncora no seguinte — e é essa
-      troca que o rótulo fixo não consegue mostrar.
+      A tabela acima dá um rótulo por jogador. Mas ninguém joga os 22 rounds do mesmo jeito: o
+      mesmo atleta entra primeiro num round e segura posição no seguinte. Aqui <b>cada round de
+      cada jogador</b> foi classificado num de quatro jeitos de jogar, medidos por onde ele fica,
+      quanto anda e quando encosta no adversário — nada de resultado, só comportamento.
     </p>
     <div class="facets" id="facets"></div>
+    <h3 class="sub">Quanto cada jogador varia</h3>
+    <p class="lead tight">
+      A barra de cada jogador é a fatia dos rounds dele em cada jeito de jogar. Barra de uma cor
+      só é quem repete o mesmo round a partida inteira; barra repartida é quem muda de função
+      conforme o round pede.
+    </p>
+    <div class="rosters" id="mixroster"></div>
     <div class="callout" id="naming"></div>
   </section>
 
@@ -2335,50 +2351,117 @@
 
   /* ================= ESTILOS: CLUSTERS ================= */
 
-  (function facets() {
+  (function jeitosDeJogar() {
     var wrap = document.getElementById("facets");
-    var pts = D.clusters;
-    var xs = pts.map(function (p) { return p.pca_1; }), ys = pts.map(function (p) { return p.pca_2; });
-    var nx = Math.min.apply(null, xs), Mx = Math.max.apply(null, xs);
-    var ny = Math.min.apply(null, ys), My = Math.max.apply(null, ys);
+    var pts = D.clusters || [];
+    var desc = {};
+    (D.cluster_descriptions || []).forEach(function (d) { desc[d.cluster] = d; });
 
-    D.cluster_profiles.slice().sort(function (a, b) { return a.cluster - b.cluster; }).forEach(function (pr) {
-      var W = 230, H = 140, pd = 11;
-      var px = function (v) { return pd + ((v - nx) / (Mx - nx)) * (W - pd * 2); };
-      var py = function (v) { return H - pd - ((v - ny) / (My - ny)) * (H - pd * 2); };
-      var dots = pts.map(function (p) {
-        var on = p.cluster === pr.cluster;
-        return "<circle cx='" + px(p.pca_1).toFixed(1) + "' cy='" + py(p.pca_2).toFixed(1) +
-          "' r='" + (on ? 3.4 : 1.9) + "' fill='" + (on ? C.ct : "#d3dbe4") +
-          (on ? "' stroke='#fff' stroke-width='1'" : "'") + "></circle>";
-      }).join("");
+    // Nome dado pelo Pedro, se houver; senão a descrição derivada da medição.
+    // O que NUNCA aparece é "Cluster 0": número de algoritmo não diz nada a quem
+    // abre a página.
+    function nomeDoGrupo(c) {
+      var dado = (D.cluster_names || {})[String(c)];
+      if (dado) return dado;
+      return desc[c] ? desc[c].titulo : "grupo " + c;
+    }
 
-      var card = document.createElement("div");
-      card.className = "card facet";
-      card.innerHTML = "<h4>Cluster " + pr.cluster + "</h4><div class='mt'>" + pr.n_rounds +
-        " rounds · " + Math.round(100 * pr.n_rounds / pts.length) + "% da amostra</div>" +
-        "<svg viewBox='0 0 " + W + " " + H + "' style='width:100%;height:auto;margin-top:10px'>" + dots + "</svg>" +
-        "<ul><li><span>dano</span>" + fmt(pr.damage, 0) + "</li>" +
-        "<li><span>1º contato</span>" + br(pr.time_of_first_contact_s) + "s</li>" +
-        "<li><span>distância do time</span>" + fmt(pr.avg_distance_from_team, 0) + "u</li>" +
-        "<li><span>sobrevida</span>" + Math.round(pr.survived * 100) + "%</li>" +
-        "<li><span>utility</span>" + fmt(pr.utility_damage, 0) + "</li></ul>";
-      wrap.appendChild(card);
+    var ids = (D.cluster_profiles || []).map(function (p) { return p.cluster; }).sort(
+      function (a, b) { return a - b; });
+    var CORES = [C.ct, C.t, C.aqua, "#b9c3cf"];
+    var corDe = {};
+    ids.forEach(function (c, i) { corDe[c] = CORES[i % CORES.length]; });
+
+    // --- os quatro jeitos, um card cada ---
+    (D.cluster_profiles || []).slice().sort(function (a, b) { return a.cluster - b.cluster; })
+      .forEach(function (pr) {
+        var d = desc[pr.cluster] || {};
+        var card = document.createElement("div");
+        card.className = "card facet";
+        card.innerHTML =
+          "<h4><span class='dot' style='background:" + corDe[pr.cluster] + "'></span>" +
+          nomeDoGrupo(pr.cluster) + "</h4>" +
+          "<div class='mt'>" + pr.n_rounds + " rounds · " +
+          Math.round(100 * pr.n_rounds / (pts.length || 1)) + "% desta partida</div>" +
+          "<p class='facetdesc'>" + (d.descricao || "") + "</p>" +
+          "<ul>" +
+          "<li><span>distância do time</span>" + fmt(pr.avg_distance_from_team, 0) + "u</li>" +
+          "<li><span>regiões no round</span>" + br(pr.distinct_places, 1) + "</li>" +
+          "<li><span>1º contato</span>" + br(pr.time_of_first_contact_s) + "s</li>" +
+          "<li><span>entrando em briga</span>" + Math.round(pr.frac_entering_fight * 100) + "%</li>" +
+          "</ul>";
+        wrap.appendChild(card);
+      });
+
+    // --- mistura de cada jogador, por time ---
+    var mix = {}, tot = {}, timeDe = {};
+    pts.forEach(function (p) {
+      (mix[p.name] = mix[p.name] || {})[p.cluster] = (mix[p.name][p.cluster] || 0) + 1;
+      tot[p.name] = (tot[p.name] || 0) + 1;
+    });
+    (D.roles || []).forEach(function (r) { timeDe[r.name] = r.team; });
+
+    var host = document.getElementById("mixroster");
+    ["A", "B"].forEach(function (team) {
+      var col = document.createElement("div");
+      col.className = "roster";
+      col.innerHTML = "<h3>Time " + team + "</h3>";
+
+      Object.keys(mix)
+        .filter(function (n) { return timeDe[n] === team; })
+        .sort(function (a, b) { return maiorFatia(b) - maiorFatia(a); })
+        .forEach(function (nome) {
+          var barras = ids.map(function (c) {
+            var n = mix[nome][c] || 0;
+            if (!n) return "";
+            return "<i title='" + nomeDoGrupo(c) + ": " + n + " rounds' style='width:" +
+              (100 * n / tot[nome]) + "%;background:" + corDe[c] + "'></i>";
+          }).join("");
+
+          var pct = Math.round(100 * maiorFatia(nome));
+          var leitura = pct >= 70
+            ? "jogou " + pct + "% dos rounds do mesmo jeito"
+            : (pct <= 45 ? "se divide entre os quatro jeitos"
+                         : "alterna, com " + pct + "% num jeito só");
+
+          var card = document.createElement("div");
+          card.className = "card mixcard";
+          card.innerHTML =
+            "<div class='top'><div class='who'>" + nome + "</div></div>" +
+            "<div class='mix big'>" + barras + "</div>" +
+            "<div class='mixlab'>" + leitura + " · " + tot[nome] + " rounds</div>";
+          col.appendChild(card);
+        });
+
+      host.appendChild(col);
     });
 
-    document.getElementById("naming").innerHTML =
-      "<b>Os clusters ainda não têm nome — e isso é proposital.</b> O KMeans encontra o " +
-      "agrupamento, mas “entry fragger”, “lurker” e “suporte de utility” são leituras de jogo que o " +
-      "algoritmo não tem como fazer. A nomeação fica com quem entende do jogo; rótulo automático " +
-      "daria ao número uma autoridade que ele não tem.";
+    function maiorFatia(nome) {
+      var m = mix[nome] || {}, t = tot[nome] || 1, maior = 0;
+      ids.forEach(function (c) { if ((m[c] || 0) > maior) maior = m[c] || 0; });
+      return maior / t;
+    }
+
+    var semNome = ids.filter(function (c) { return !(D.cluster_names || {})[String(c)]; });
+    document.getElementById("naming").innerHTML = semNome.length
+      ? "<b>Como estes quatro grupos apareceram.</b> Ninguém os desenhou: o algoritmo separou os " +
+        "1.870 rounds de todas as partidas por semelhança de comportamento, e o texto de cada " +
+        "card apenas traduz em que esse grupo se afasta mais dos outros. Os apelidos de jogo — " +
+        "“lurker”, “âncora”, “entry” — continuam fora daqui de propósito: essa leitura é de quem " +
+        "joga, não do algoritmo."
+      : "<b>Os nomes dos grupos foram dados por quem entende do jogo</b>, olhando o perfil medido " +
+        "de cada um. O algoritmo agrupa; a leitura de jogo é humana.";
   })();
 
   document.getElementById("foot").innerHTML =
     "<b>Metodologia.</b> Parsing com awpy sobre demoparser2, métricas próprias em Polars. A convenção " +
     "de ângulos do CS2 foi validada contra os dados, não assumida: no tick de cada kill a mira do " +
     "atacante fica a 1,76° da vítima na convenção adotada, contra 6,52° na invertida.<br>" +
-    "<b>Limites.</b> Uma única partida (220 jogador-rounds); a silhueta do clustering fica em 0,205, " +
-    "estrutura fraca. Os índices de MVP e carrega piano são fórmulas declaradas, não padrões da indústria.";
+    "<b>Limites.</b> Nove partidas (1.870 jogador-rounds), todas de nível profissional e não do " +
+    "autor. Os quatro jeitos de jogar têm separação fraca: os grupos existem e são distintos na " +
+    "média, mas a fronteira entre eles não é nítida — e isso não melhorou ao processar mais " +
+    "partidas, o que sugere que estilo de jogo é um contínuo e não um conjunto de caixas. Os " +
+    "índices de papel são fórmulas declaradas aqui, não padrões da indústria.";
 
   /* ================= TROCA DE PARTIDA ================= */
 
