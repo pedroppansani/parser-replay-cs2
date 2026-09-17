@@ -39,13 +39,13 @@ metrics/      geometry, basic_metrics, awp_metrics, crosshair, map_angles,
               positioning, grenades, map_areas, site_roles, player_roles,
               clutch, archetypes (+ archetype_reference.json), player_profile,
               structural_roles, formatting, win_probability, round_spectacle,
-              match_highlights, grenade_throws
+              match_highlights, grenade_throws, rating (+ rating_reference.json)
 clustering/   playstyle (PCA + KMeans), global_model.json e cluster_names.json
 dashboard/    app Streamlit + theme + web/
 scripts/      process_demo (CLI), fit_global_clusters, fit_archetype_reference,
               build_player_profiles, show_derived_angles e show_map_areas
               (calibração), narrative, build_site
-tests/        275 testes (8 pulados por dependerem do dado)
+tests/        291 testes (8 pulados por dependerem do dado)
 data/raw/     .dem originais (gitignored)
 data/interim/ tabelas brutas em parquet (gitignored, ticks tem 1M+ linhas)
 data/processed/ métricas calculadas (versionadas — é o que o dashboard usa)
@@ -477,6 +477,52 @@ testada e estava errada.
     módulo não pode afirmar que um lineup é exato -- um lineup errado é pior que
     nenhum, porque o cara treina errado.
 
+22. **O rating é uma REIMPLEMENTAÇÃO da metodologia do Rating 3.0, não o
+    Rating 3.0 da HLTV.** A HLTV publicou a metodologia; os coeficientes e os
+    pesos de cada sub-rating são **fechados**. Então este número não é o oficial
+    e não pode ser apresentado como se fosse -- em nenhum lugar da interface, do
+    código ou do README. O rótulo obrigatório vem no próprio resumo do módulo, e
+    há teste que falha se ele deixar de dizer isso.
+
+    O que É honesto afirmar: os seis sub-ratings seguem a metodologia publicada,
+    o ajuste de economia usa a única reta que passa pelos dois pontos que a HLTV
+    divulgou (rifle x rifle 48% -> 1,10; pistola inicial 75% -> 0,54), e os pesos
+    do agregado são provisórios até serem estimados por regressão contra ratings
+    oficiais.
+
+22a. **O Round Swing usa MODELO PARAMÉTRICO, não contagem por estado.** O espaço
+    de estados (vivos x vivos x bomba x equipamento x lado) tem centenas de
+    combinações e o corpus tem ~200 rounds por partida: frequência empírica por
+    estado daria "100% de vitória" a partir de dois casos. Uma regressão
+    logística com quatro entradas generaliza e nunca devolve certeza absoluta.
+    Medido nas 9 partidas: AUC 0,897 e Brier 0,129 sobre 2.692 amostras.
+
+    **A qualidade do Round Swing depende do tamanho do corpus e melhora a cada
+    demo processada.** O desempenho é reportado no resumo de propósito, para não
+    virar fé.
+
+    Registro de um bug de modelagem: cada evento gera DUAS linhas, uma por lado,
+    com rótulos opostos. Com a bomba entrando como flag `plantada` (1 nas duas),
+    ela ficava perfeitamente não-informativa por construção e o coeficiente saiu
+    em -0,0001. Bomba plantada é vantagem de quem plantou, então ela entra COM
+    SINAL: +1 para o TR, -1 para o CT. Com o sinal, o coeficiente é +0,71.
+
+22b. **O Round Swing é normalizado por desvio, não por razão.** A regra da HLTV
+    de que round perdido não gera swing positivo corta os positivos de quem
+    perdeu e deixa os débitos inteiros, então a média do corpus é NEGATIVA
+    (-0,043). Dividir pela média inverteria o sinal de todo mundo -- foi o que
+    aconteceu na primeira versão. Ele é centrado em 1,00 e escalado pelo desvio,
+    com a dispersão-alvo saindo da mediana do desvio relativo dos outros cinco
+    sub-ratings, não de um número escolhido.
+
+22c. **As 9 demos do corpus NÃO servem para calibrar contra a HLTV.** São
+    partidas de FACEIT -- arquivos identificados por UUID de FACEIT, elencos que
+    são pugs (donk com companheiros diferentes a cada partida), não line-ups
+    profissionais. **A HLTV não publica rating para partidas de FACEIT.** A
+    calibração exige demos de partidas oficiais cobertas por ela, e o mínimo
+    estatístico está em `scripts/fit_rating.py`: 7 de treino + 3 de teste, com a
+    divisão feita por PARTIDA e nunca por jogador.
+
 ## Pontos de calibração — pertencem ao Pedro, não ao código
 
 Não "resolva" nenhum destes automaticamente; pergunte.
@@ -493,6 +539,11 @@ Não "resolva" nenhum destes automaticamente; pergunte.
 - Limiares: janela de trade (5s), peek/hold (120u / 250u), janela de contato
   (1s), tolerância de pré-fire (25°), permanência mínima para contar rotação
   (15% do round).
+- Ratings oficiais da HLTV em `data/reference/hltv_ratings.json`, e demos de
+  partidas oficiais para preenchê-lo. Sem isso os pesos do rating continuam
+  provisórios.
+- Pesos dos seis sub-ratings (`PESOS_PROVISORIOS` em `metrics/rating.py`) e os
+  da divisão de crédito do Round Swing (`CREDITO_KILL` e companhia).
 - Rótulos dos três grupos de força de arremesso (201 / 440 / 674 u/s): confirmar
   se A/B/C são curto/médio/longo. Rode o diagnóstico de `metrics/grenade_throws`.
 - Limiares do card de destaque (`metrics/match_highlights.py`): piso de evidência
@@ -559,7 +610,7 @@ Não "resolva" nenhum destes automaticamente; pergunte.
 ## Como validar mudanças
 
 ```bash
-py -3.12 -m pytest tests/ -v          # 275 testes
+py -3.12 -m pytest tests/ -v          # 291 testes
 py -3.12 -m scripts.process_demo data/raw/match_01.dem --match-id match_01 --from-interim
 py -3.12 -m streamlit run dashboard/app.py
 ```

@@ -1,0 +1,168 @@
+{
+  "_leia_isto": "Preencha o rating oficial publicado de cada jogador. Deixe null o que nao tiver. Partidas de FACEIT NAO tem rating na HLTV -- so partidas oficiais cobertas por ela servem para a calibracao.",
+  "_fonte_da_metodologia": "https://www.hltv.org/news/41283/introducing-rating-30",
+  "partidas": {
+    "match_01": {
+      "mapa": "de_ancient",
+      "placar": "13-9",
+      "hltv_match_id": null,
+      "evento": null,
+      "jogadores": {
+        "rol1ng-": null,
+        "donk666": null,
+        "Z_o_R_o": null,
+        "_AmadeuS": null,
+        "t1ltedbot": null,
+        "HLEB": null,
+        "xhx": null,
+        "9amaterasu9": null,
+        "s-chilla": null,
+        "KREEDZ666": null
+      }
+    },
+    "match_02": {
+      "mapa": "de_mirage",
+      "placar": "13-9",
+      "hltv_match_id": null,
+      "evento": null,
+      "jogadores": {
+        "donk666": null,
+        "-olik": null,
+        "OG_Pablo_": null,
+        "Eleyes": null,
+        "lilpeepfan-": null,
+        "Dyshbert": null,
+        "Krimbo": null,
+        "S3NSEYZjE": null,
+        "-h4wkkk": null,
+        "bezimienny": null
+      }
+    },
+    "match_03": {
+      "mapa": "de_anubis",
+      "placar": "13-7",
+      "hltv_match_id": null,
+      "evento": null,
+      "jogadores": {
+        "ArmaHan": null,
+        "lilpeepfan-": null,
+        "donk666": null,
+        "hally-": null,
+        "publicimage": null,
+        "zecco": null,
+        "PAiN-M-": null,
+        "dyrod": null,
+        "Unihi": null,
+        "rajkeza": null
+      }
+    },
+    "match_04": {
+      "mapa": "de_ancient",
+      "placar": "13-8",
+      "hltv_match_id": null,
+      "evento": null,
+      "jogadores": {
+        "Matthew369": null,
+        "somehxw": null,
+        "nedorufe": null,
+        "L1nkero": null,
+        "donk666": null,
+        "D0KT0R3N": null,
+        "pxd11": null,
+        "MolO11": null,
+        "borzSE": null,
+        "shiFu-": null
+      }
+    },
+    "match_05": {
+      "mapa": "de_nuke",
+      "placar": "4-13",
+      "hltv_match_id": null,
+      "evento": null,
+      "jogadores": {
+        "chiefkeef19": null,
+        "f0pa": null,
+        "Olajida": null,
+        "gwizdakk": null,
+        "Dafra1D": null,
+        "donk666": null,
+        "dorfen": null,
+        "lilpeepfan-": null,
+        "PR--": null,
+        "PerdYYY": null
+      }
+    },
+    "match_06": {
+      "mapa": "de_mirage",
+      "placar": "13-5",
+      "hltv_match_id": null,
+      "evento": null,
+      "jogadores": {
+        "Etaliqe": null,
+        "llorente": null,
+        "adamS": null,
+        "pradablade": null,
+        "xKacpersky": null,
+        "Alperen": null,
+        "-_-siNNer": null,
+        "donk666": null,
+        "regele": null,
+        "ar1sFLXR": null
+      }
+    },
+    "match_07": {
+      "mapa": "de_mirage",
+      "placar": "13-6",
+      "hltv_match_id": null,
+      "evento": null,
+      "jogadores": {
+        "v1w": null,
+        "EbuDerdaa": null,
+        "stormy": null,
+        "Krabeni": null,
+        "donk666": null,
+        "e-girlhuntr": null,
+        "xKacpersky": null,
+        "s-chilla": null,
+        "Ajuyep": null,
+        "Oller-": null
+      }
+    },
+    "match_08": {
+      "mapa": "de_mirage",
+      "placar": "11-13",
+      "hltv_match_id": null,
+      "evento": null,
+      "jogadores": {
+        "gwizdakk": null,
+        "KENNY-_": null,
+        "-EsD": null,
+        "PoisonLilies": null,
+        "Ahuniwip": null,
+        "certa1n": null,
+        "endru-": null,
+        "Pelle-": null,
+        "donk666": null,
+        "lilpeepfan-": null
+      }
+    },
+    "match_09": {
+      "mapa": "de_mirage",
+      "placar": "11-13",
+      "hltv_match_id": null,
+      "evento": null,
+      "jogadores": {
+        "d3bab": null,
+        "lemight": null,
+        "newnickname7": null,
+        "ELVENIMOUS": null,
+        "wh1temink": null,
+        "zzeraj": null,
+        "tezeuts-": null,
+        "Magnojezzz": null,
+        "donk666": null,
+        "R0Kk-_": null
+      }
+    }
+  }
+}
