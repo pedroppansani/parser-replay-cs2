@@ -17,6 +17,7 @@ from pathlib import Path
 import polars as pl
 
 from clustering.playstyle import describe_clusters, load_cluster_names
+from metrics.structural_roles import FUNCOES
 from scripts.narrative import descreve_jogador
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -112,6 +113,14 @@ def build(match_id: str) -> Path:
 
     perfil = rd("player_profile")
 
+    # Função estrutural por lado. Vai junto do perfil comportamental de
+    # propósito: são duas leituras independentes do mesmo jogador -- o que ele
+    # FAZ no round (aqui) e COMO ele faz (o perfil). Ver metrics/structural_roles.py.
+    funcoes = rd("structural_roles_summary").select(
+        ["steamid", "name", "side", "funcao", "rounds_na_funcao", "rounds_no_lado",
+         "concentracao", "amostra_fraca"]
+    )
+
     def com_descricao(linhas: list[dict]) -> list[dict]:
         """Anexa a leitura em português de cada perfil.
 
@@ -143,6 +152,8 @@ def build(match_id: str) -> Path:
         # do perfil desta partida porque a interface precisa deixar claro sobre
         # quantas partidas e quantos rounds cada taxa foi montada -- 40% em 22
         # rounds e 40% em 180 não são a mesma afirmação.
+        "structural_roles": funcoes.to_dicts(),
+        "structural_role_labels": {k: v[0] for k, v in FUNCOES.items()},
         "player_profile_summary": com_descricao(
             _perfil_acumulado(perfil["steamid"].to_list())
         ),

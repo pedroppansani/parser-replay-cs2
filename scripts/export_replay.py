@@ -42,13 +42,10 @@ HALFTIME_ROUND = 12
 # como se estivesse no ar. O filtro explícito torna a contagem correta por
 # construção, e ela bate exatamente com os eventos de detonação do demo
 # (88 flash, 102 HE, 96 smoke).
-GRENADE_KIND = {
-    "CHEGrenadeProjectile": "he",
-    "CFlashbangProjectile": "flash",
-    "CSmokeGrenadeProjectile": "smoke",
-    "CMolotovProjectile": "molotov",
-    "CDecoyProjectile": "decoy",
-}
+# A definição canônica vive em metrics/grenade_throws.py, que é quem mais
+# depende dela (a ficha de execução de cada arremesso). Duas cópias do mesmo
+# mapa é como uma delas fica para trás quando o awpy renomear uma classe.
+from metrics.grenade_throws import GRENADE_KIND  # noqa: E402
 
 # Folga pra casar o dano de HE com a detonação que o causou: o player_hurt cai
 # no mesmo tick na maioria das vezes, mas vítimas processadas no tick seguinte
@@ -192,8 +189,31 @@ def build(match_id: str) -> Path:
                 }
             )
 
-        def frame_of(tick: int) -> int:
-            return max(0, min(len(frames) - 1, (int(tick) - t0) // SAMPLE_EVERY))
+        def frame_of(tick: int) -> float:
+            """Quadro FRACIONÁRIO do evento.
+
+            Era divisão inteira, e isso jogava o evento no último quadro ANTES
+            do tick dele -- até 15 ticks, 0,23s a 64 tick. Como o timeline da
+            autópsia usa o tick exato, os dois relógios discordavam: medido nos
+            641 momentos das 9 partidas, o timeline ficava de 0 a 0,25s à frente
+            do replay, com mediana de 0,15s.
+
+            O quadro fracionário não custa nada aqui porque o player já roda em
+            posição contínua (`pos`) e interpola entre quadros -- quem compara
+            com o quadro inteiro é que estava jogando fora a precisão.
+            """
+            bruto = (int(tick) - t0) / SAMPLE_EVERY
+            return round(max(0.0, min(float(len(frames) - 1), bruto)), 3)
+
+        def frame_index_of(tick: int) -> int:
+            """Quadro INTEIRO, para indexar os arrays por quadro.
+
+            A trajetória de granada é uma lista com um ponto por quadro, então o
+            ponto de partida dela é índice de array e não instante. Separado de
+            `frame_of` de propósito: misturar os dois foi o que fez o evento
+            perder precisão para caber num índice.
+            """
+            return int(frame_of(tick))
 
         events = []
         for k in kills.filter(pl.col("round_num") == rn).sort("tick").iter_rows(named=True):
@@ -283,7 +303,7 @@ def build(match_id: str) -> Path:
 
                 xs, ys = [], []
                 j = 0
-                f0 = frame_of(gt[0])
+                f0 = frame_index_of(gt[0])
                 still = 0
                 for f in range(f0, len(frames)):
                     target = frames[f]
@@ -405,7 +425,7 @@ def build(match_id: str) -> Path:
                 "t0": int(t0),
                 "t1": int(t1),
                 "seconds": round((t1 - t0) / TICKRATE, 1),
-                "decided_f": max(0, min(len(frames) - 1, (t_decided - t0) // SAMPLE_EVERY)),
+                "decided_f": frame_of(t_decided),
                 "weapons": weapon_names,
                 "players": players,
                 "events": sorted(events, key=lambda e: e["f"]),

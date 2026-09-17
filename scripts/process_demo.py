@@ -37,7 +37,8 @@ from metrics.basic_metrics import compute_all_basic_metrics, roster_per_round
 from metrics.crosshair import calculate_crosshair_metrics
 from metrics.map_areas import area_lookup, derive_place_areas
 from metrics.grenades import compute_grenade_metrics
-from metrics.player_roles import build_player_roles
+from metrics.player_roles import build_player_roles, resolve_teams
+from metrics.structural_roles import structural_roles
 from metrics.positioning import calculate_positioning_metrics
 from metrics.site_roles import (
     anchor_metrics,
@@ -189,6 +190,17 @@ def process(
     outputs["cluster_profiles"] = profiles
     outputs["cluster_examples"] = representative_rounds(assignments)
     save_cluster_names_template(profiles)
+
+    # --- Funções ESTRUTURAIS (metrics/structural_roles.py) ---
+    # Qual é o trabalho do jogador no round, por lado. É leitura independente do
+    # perfil comportamental (metrics/archetypes.py): um âncora pode ser carrega
+    # piano ou baiter, e as duas coisas são verdade ao mesmo tempo.
+    team_of_sr, _ = resolve_teams(tables["ticks"])
+    funcoes_round, funcoes_resumo = structural_roles(
+        tables, team_of_sr, map_name, match_id=match_id
+    )
+    outputs["structural_roles"] = funcoes_round
+    outputs["structural_roles_summary"] = funcoes_resumo
 
     roles, traits = build_player_roles(outputs, features, tables["ticks"])
     outputs["player_roles"] = roles

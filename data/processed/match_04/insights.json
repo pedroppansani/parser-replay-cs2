@@ -6,21 +6,22 @@
     "score_b": 8,
     "rosters": {
       "A": [
-        "L1nkero",
         "Matthew369",
-        "donk666",
+        "somehxw",
         "nedorufe",
-        "somehxw"
+        "L1nkero",
+        "donk666"
       ],
       "B": [
+        "D0KT0R3N",
         "pxd11",
         "MolO11",
-        "D0KT0R3N",
         "borzSE",
         "shiFu-"
       ]
     },
-    "halftime": 12
+    "halftime": 12,
+    "formato": "MR12"
   },
   "progression": [
     {
@@ -192,33 +193,548 @@
       "bomb_planted": false
     }
   ],
-  "decisive_round": {
+  "decisive_round": null,
+  "win_probability": {
+    "curve": [
+      {
+        "round": 1,
+        "winner_team": "A",
+        "score_a": 1,
+        "score_b": 0,
+        "wp_a_antes": 0.5,
+        "wp_a_depois": 0.5805901288986206,
+        "wpa_a": 0.0805901288986206,
+        "wpa_b": -0.0805901288986206,
+        "wpa_abs": 0.0805901288986206,
+        "wp_vencedor_antes": 0.5,
+        "wp_vencedor_depois": 0.5805901288986206,
+        "wp_perdedor_antes": 0.5,
+        "wp_perdedor_depois": 0.4194098711013794
+      },
+      {
+        "round": 2,
+        "winner_team": "A",
+        "score_a": 2,
+        "score_b": 0,
+        "wp_a_antes": 0.5805901288986206,
+        "wp_a_depois": 0.6611802577972412,
+        "wpa_a": 0.0805901288986206,
+        "wpa_b": -0.0805901288986206,
+        "wpa_abs": 0.0805901288986206,
+        "wp_vencedor_antes": 0.5805901288986206,
+        "wp_vencedor_depois": 0.6611802577972412,
+        "wp_perdedor_antes": 0.4194098711013794,
+        "wp_perdedor_depois": 0.3388197422027588
+      },
+      {
+        "round": 3,
+        "winner_team": "B",
+        "score_a": 2,
+        "score_b": 1,
+        "wp_a_antes": 0.6611802577972412,
+        "wp_a_depois": 0.5840940475463867,
+        "wpa_a": -0.07708621025085449,
+        "wpa_b": 0.07708621025085449,
+        "wpa_abs": 0.07708621025085449,
+        "wp_vencedor_antes": 0.3388197422027588,
+        "wp_vencedor_depois": 0.4159059524536133,
+        "wp_perdedor_antes": 0.6611802577972412,
+        "wp_perdedor_depois": 0.5840940475463867
+      },
+      {
+        "round": 4,
+        "winner_team": "B",
+        "score_a": 2,
+        "score_b": 2,
+        "wp_a_antes": 0.5840940475463867,
+        "wp_a_depois": 0.5,
+        "wpa_a": -0.08409404754638672,
+        "wpa_b": 0.08409404754638672,
+        "wpa_abs": 0.08409404754638672,
+        "wp_vencedor_antes": 0.4159059524536133,
+        "wp_vencedor_depois": 0.5,
+        "wp_perdedor_antes": 0.5840940475463867,
+        "wp_perdedor_depois": 0.5
+      },
+      {
+        "round": 5,
+        "winner_team": "B",
+        "score_a": 2,
+        "score_b": 3,
+        "wp_a_antes": 0.5,
+        "wp_a_depois": 0.41190147399902344,
+        "wpa_a": -0.08809852600097656,
+        "wpa_b": 0.08809852600097656,
+        "wpa_abs": 0.08809852600097656,
+        "wp_vencedor_antes": 0.5,
+        "wp_vencedor_depois": 0.5880985260009766,
+        "wp_perdedor_antes": 0.5,
+        "wp_perdedor_depois": 0.41190147399902344
+      },
+      {
+        "round": 6,
+        "winner_team": "A",
+        "score_a": 3,
+        "score_b": 3,
+        "wp_a_antes": 0.41190147399902344,
+        "wp_a_depois": 0.5,
+        "wpa_a": 0.08809852600097656,
+        "wpa_b": -0.08809852600097656,
+        "wpa_abs": 0.08809852600097656,
+        "wp_vencedor_antes": 0.41190147399902344,
+        "wp_vencedor_depois": 0.5,
+        "wp_perdedor_antes": 0.5880985260009766,
+        "wp_perdedor_depois": 0.5
+      },
+      {
+        "round": 7,
+        "winner_team": "A",
+        "score_a": 4,
+        "score_b": 3,
+        "wp_a_antes": 0.5,
+        "wp_a_depois": 0.5927352905273438,
+        "wpa_a": 0.09273529052734375,
+        "wpa_b": -0.09273529052734375,
+        "wpa_abs": 0.09273529052734375,
+        "wp_vencedor_antes": 0.5,
+        "wp_vencedor_depois": 0.5927352905273438,
+        "wp_perdedor_antes": 0.5,
+        "wp_perdedor_depois": 0.40726470947265625
+      },
+      {
+        "round": 8,
+        "winner_team": "A",
+        "score_a": 5,
+        "score_b": 3,
+        "wp_a_antes": 0.5927352905273438,
+        "wp_a_depois": 0.6854705810546875,
+        "wpa_a": 0.09273529052734375,
+        "wpa_b": -0.09273529052734375,
+        "wpa_abs": 0.09273529052734375,
+        "wp_vencedor_antes": 0.5927352905273438,
+        "wp_vencedor_depois": 0.6854705810546875,
+        "wp_perdedor_antes": 0.40726470947265625,
+        "wp_perdedor_depois": 0.3145294189453125
+      },
+      {
+        "round": 9,
+        "winner_team": "A",
+        "score_a": 6,
+        "score_b": 3,
+        "wp_a_antes": 0.6854705810546875,
+        "wp_a_depois": 0.7727508544921875,
+        "wpa_a": 0.0872802734375,
+        "wpa_b": -0.0872802734375,
+        "wpa_abs": 0.0872802734375,
+        "wp_vencedor_antes": 0.6854705810546875,
+        "wp_vencedor_depois": 0.7727508544921875,
+        "wp_perdedor_antes": 0.3145294189453125,
+        "wp_perdedor_depois": 0.2272491455078125
+      },
+      {
+        "round": 10,
+        "winner_team": "B",
+        "score_a": 6,
+        "score_b": 4,
+        "wp_a_antes": 0.7727508544921875,
+        "wp_a_depois": 0.696380615234375,
+        "wpa_a": -0.0763702392578125,
+        "wpa_b": 0.0763702392578125,
+        "wpa_abs": 0.0763702392578125,
+        "wp_vencedor_antes": 0.2272491455078125,
+        "wp_vencedor_depois": 0.303619384765625,
+        "wp_perdedor_antes": 0.7727508544921875,
+        "wp_perdedor_depois": 0.696380615234375
+      },
+      {
+        "round": 11,
+        "winner_team": "A",
+        "score_a": 7,
+        "score_b": 4,
+        "wp_a_antes": 0.696380615234375,
+        "wp_a_depois": 0.78802490234375,
+        "wpa_a": 0.091644287109375,
+        "wpa_b": -0.091644287109375,
+        "wpa_abs": 0.091644287109375,
+        "wp_vencedor_antes": 0.696380615234375,
+        "wp_vencedor_depois": 0.78802490234375,
+        "wp_perdedor_antes": 0.303619384765625,
+        "wp_perdedor_depois": 0.21197509765625
+      },
+      {
+        "round": 12,
+        "winner_team": "A",
+        "score_a": 8,
+        "score_b": 4,
+        "wp_a_antes": 0.78802490234375,
+        "wp_a_depois": 0.8665771484375,
+        "wpa_a": 0.07855224609375,
+        "wpa_b": -0.07855224609375,
+        "wpa_abs": 0.07855224609375,
+        "wp_vencedor_antes": 0.78802490234375,
+        "wp_vencedor_depois": 0.8665771484375,
+        "wp_perdedor_antes": 0.21197509765625,
+        "wp_perdedor_depois": 0.1334228515625
+      },
+      {
+        "round": 13,
+        "winner_team": "B",
+        "score_a": 8,
+        "score_b": 5,
+        "wp_a_antes": 0.8665771484375,
+        "wp_a_depois": 0.80615234375,
+        "wpa_a": -0.0604248046875,
+        "wpa_b": 0.0604248046875,
+        "wpa_abs": 0.0604248046875,
+        "wp_vencedor_antes": 0.1334228515625,
+        "wp_vencedor_depois": 0.19384765625,
+        "wp_perdedor_antes": 0.8665771484375,
+        "wp_perdedor_depois": 0.80615234375
+      },
+      {
+        "round": 14,
+        "winner_team": "A",
+        "score_a": 9,
+        "score_b": 5,
+        "wp_a_antes": 0.80615234375,
+        "wp_a_depois": 0.88671875,
+        "wpa_a": 0.08056640625,
+        "wpa_b": -0.08056640625,
+        "wpa_abs": 0.08056640625,
+        "wp_vencedor_antes": 0.80615234375,
+        "wp_vencedor_depois": 0.88671875,
+        "wp_perdedor_antes": 0.19384765625,
+        "wp_perdedor_depois": 0.11328125
+      },
+      {
+        "round": 15,
+        "winner_team": "A",
+        "score_a": 10,
+        "score_b": 5,
+        "wp_a_antes": 0.88671875,
+        "wp_a_depois": 0.9453125,
+        "wpa_a": 0.05859375,
+        "wpa_b": -0.05859375,
+        "wpa_abs": 0.05859375,
+        "wp_vencedor_antes": 0.88671875,
+        "wp_vencedor_depois": 0.9453125,
+        "wp_perdedor_antes": 0.11328125,
+        "wp_perdedor_depois": 0.0546875
+      },
+      {
+        "round": 16,
+        "winner_team": "A",
+        "score_a": 11,
+        "score_b": 5,
+        "wp_a_antes": 0.9453125,
+        "wp_a_depois": 0.98046875,
+        "wpa_a": 0.03515625,
+        "wpa_b": -0.03515625,
+        "wpa_abs": 0.03515625,
+        "wp_vencedor_antes": 0.9453125,
+        "wp_vencedor_depois": 0.98046875,
+        "wp_perdedor_antes": 0.0546875,
+        "wp_perdedor_depois": 0.01953125
+      },
+      {
+        "round": 17,
+        "winner_team": "B",
+        "score_a": 11,
+        "score_b": 6,
+        "wp_a_antes": 0.98046875,
+        "wp_a_depois": 0.96484375,
+        "wpa_a": -0.015625,
+        "wpa_b": 0.015625,
+        "wpa_abs": 0.015625,
+        "wp_vencedor_antes": 0.01953125,
+        "wp_vencedor_depois": 0.03515625,
+        "wp_perdedor_antes": 0.98046875,
+        "wp_perdedor_depois": 0.96484375
+      },
+      {
+        "round": 18,
+        "winner_team": "B",
+        "score_a": 11,
+        "score_b": 7,
+        "wp_a_antes": 0.96484375,
+        "wp_a_depois": 0.9375,
+        "wpa_a": -0.02734375,
+        "wpa_b": 0.02734375,
+        "wpa_abs": 0.02734375,
+        "wp_vencedor_antes": 0.03515625,
+        "wp_vencedor_depois": 0.0625,
+        "wp_perdedor_antes": 0.96484375,
+        "wp_perdedor_depois": 0.9375
+      },
+      {
+        "round": 19,
+        "winner_team": "A",
+        "score_a": 12,
+        "score_b": 7,
+        "wp_a_antes": 0.9375,
+        "wp_a_depois": 0.984375,
+        "wpa_a": 0.046875,
+        "wpa_b": -0.046875,
+        "wpa_abs": 0.046875,
+        "wp_vencedor_antes": 0.9375,
+        "wp_vencedor_depois": 0.984375,
+        "wp_perdedor_antes": 0.0625,
+        "wp_perdedor_depois": 0.015625
+      },
+      {
+        "round": 20,
+        "winner_team": "B",
+        "score_a": 12,
+        "score_b": 8,
+        "wp_a_antes": 0.984375,
+        "wp_a_depois": 0.96875,
+        "wpa_a": -0.015625,
+        "wpa_b": 0.015625,
+        "wpa_abs": 0.015625,
+        "wp_vencedor_antes": 0.015625,
+        "wp_vencedor_depois": 0.03125,
+        "wp_perdedor_antes": 0.984375,
+        "wp_perdedor_depois": 0.96875
+      },
+      {
+        "round": 21,
+        "winner_team": "A",
+        "score_a": 13,
+        "score_b": 8,
+        "wp_a_antes": 0.96875,
+        "wp_a_depois": 1.0,
+        "wpa_a": 0.03125,
+        "wpa_b": -0.03125,
+        "wpa_abs": 0.03125,
+        "wp_vencedor_antes": 0.96875,
+        "wp_vencedor_depois": 1.0,
+        "wp_perdedor_antes": 0.03125,
+        "wp_perdedor_depois": 0.0
+      }
+    ],
+    "top": [
+      {
+        "round": 7,
+        "winner_team": "A",
+        "score_a": 4,
+        "score_b": 3,
+        "wp_a_antes": 0.5,
+        "wp_a_depois": 0.5927352905273438,
+        "wpa_a": 0.09273529052734375,
+        "wpa_b": -0.09273529052734375,
+        "wpa_abs": 0.09273529052734375,
+        "wp_vencedor_antes": 0.5,
+        "wp_vencedor_depois": 0.5927352905273438,
+        "wp_perdedor_antes": 0.5,
+        "wp_perdedor_depois": 0.40726470947265625
+      },
+      {
+        "round": 8,
+        "winner_team": "A",
+        "score_a": 5,
+        "score_b": 3,
+        "wp_a_antes": 0.5927352905273438,
+        "wp_a_depois": 0.6854705810546875,
+        "wpa_a": 0.09273529052734375,
+        "wpa_b": -0.09273529052734375,
+        "wpa_abs": 0.09273529052734375,
+        "wp_vencedor_antes": 0.5927352905273438,
+        "wp_vencedor_depois": 0.6854705810546875,
+        "wp_perdedor_antes": 0.40726470947265625,
+        "wp_perdedor_depois": 0.3145294189453125
+      },
+      {
+        "round": 11,
+        "winner_team": "A",
+        "score_a": 7,
+        "score_b": 4,
+        "wp_a_antes": 0.696380615234375,
+        "wp_a_depois": 0.78802490234375,
+        "wpa_a": 0.091644287109375,
+        "wpa_b": -0.091644287109375,
+        "wpa_abs": 0.091644287109375,
+        "wp_vencedor_antes": 0.696380615234375,
+        "wp_vencedor_depois": 0.78802490234375,
+        "wp_perdedor_antes": 0.303619384765625,
+        "wp_perdedor_depois": 0.21197509765625
+      }
+    ],
+    "empate_no_topo": false,
+    "maior_wpa": 0.09273529052734375,
+    "minimo_exigido": 0.12088519334793091
+  },
+  "spectacle_round": {
     "round": 14,
-    "winner_team": "A",
-    "reason": "bomb_defused",
-    "score_a": 9,
-    "score_b": 5,
-    "bomb_planted": true,
-    "worst_deficit_overcome": 2,
-    "clutch_player": "donk666",
-    "clutch_against": 3,
-    "opening": {
-      "player": "nedorufe",
-      "team": "A",
-      "victim": "shiFu-",
-      "weapon": "deagle"
-    },
-    "multikill_player": "donk666",
-    "multikill_count": 4,
-    "importance": 76.0,
-    "reasons": [
-      "virou com 2 jogadores a menos",
-      "clutch de donk666 em 1v3",
-      "4K de donk666",
-      "decidido no desarme"
+    "pontos": 91.0,
+    "componentes": [
+      {
+        "componente": "clutch",
+        "pontos": 37.0,
+        "texto": "clutch de donk666 em 1v3"
+      },
+      {
+        "componente": "multikill",
+        "pontos": 16.0,
+        "texto": "4K de donk666"
+      },
+      {
+        "componente": "desvantagem",
+        "pontos": 18.0,
+        "texto": "virou com 2 jogadores a menos"
+      },
+      {
+        "componente": "defuse_no_limite",
+        "pontos": 20.0,
+        "texto": "desarme com 1,6s no relógio da bomba"
+      }
+    ],
+    "winner_team": "A"
+  },
+  "mvp_card": {
+    "steamid": 76561198386265483,
+    "name": "donk666",
+    "team": "A",
+    "funcao": "Coringa",
+    "indice": 0.9571428571428572,
+    "vice_nome": "Matthew369",
+    "vice_indice": 0.4567377201112141,
+    "componentes": [
+      {
+        "chave": "adr",
+        "rotulo": "ADR",
+        "unidade": "de dano por round",
+        "sintagma": "de ADR",
+        "peso": 0.4,
+        "valor": 148.0952380952381,
+        "texto": "148,1",
+        "melhor_dos_outros": 93.28571428571429,
+        "melhor_dos_outros_texto": "93,3",
+        "melhor_dos_outros_nome": "pxd11",
+        "lidera": true
+      },
+      {
+        "chave": "kast_pct",
+        "rotulo": "KAST",
+        "unidade": "% dos rounds com contribuição",
+        "sintagma": "de KAST",
+        "peso": 0.3,
+        "valor": 76.19047619047619,
+        "texto": "76%",
+        "melhor_dos_outros": 80.95238095238095,
+        "melhor_dos_outros_texto": "81%",
+        "melhor_dos_outros_nome": "Matthew369",
+        "lidera": false
+      },
+      {
+        "chave": "opening_kills",
+        "rotulo": "Aberturas",
+        "unidade": "rounds em que abriu o placar",
+        "sintagma": "aberturas de round",
+        "peso": 0.2,
+        "valor": 5.0,
+        "texto": "5",
+        "melhor_dos_outros": 3.0,
+        "melhor_dos_outros_texto": "3",
+        "melhor_dos_outros_nome": "somehxw",
+        "lidera": true
+      },
+      {
+        "chave": "clutches",
+        "rotulo": "Clutches",
+        "unidade": "rounds fechados sozinho",
+        "sintagma": "clutch fechado",
+        "peso": 0.1,
+        "valor": 1.0,
+        "texto": "1",
+        "melhor_dos_outros": 1.0,
+        "melhor_dos_outros_texto": "1",
+        "melhor_dos_outros_nome": "pxd11",
+        "lidera": false
+      }
     ]
   },
-  "point_of_no_return": 7,
+  "highlight_card": {
+    "funcao": "carrega_piano",
+    "label": "Carrega piano",
+    "meaning": "assume o custo e o time colhe",
+    "steamid": 76561198058045464,
+    "name": "MolO11",
+    "team": "B",
+    "index": 0.94,
+    "negativo": false,
+    "evidencia": {
+      "metrica": "de rounds assumindo o custo",
+      "valor": "43%",
+      "referencia": "19%",
+      "referencia_nome": null,
+      "referencia_rotulo": "mediana dos outros"
+    },
+    "amostra_fraca": false,
+    "equivalente": {
+      "name": "D0KT0R3N",
+      "label": "Carrega piano",
+      "index": 0.93
+    }
+  },
+  "highlight_candidates": [
+    {
+      "funcao": "carrega_piano",
+      "steamid": 76561198058045464,
+      "name": "MolO11",
+      "pontuacao": 0.94,
+      "negativo": false
+    },
+    {
+      "funcao": "carrega_piano",
+      "steamid": 76561197983650267,
+      "name": "D0KT0R3N",
+      "pontuacao": 0.93,
+      "negativo": false
+    },
+    {
+      "funcao": "carrega_piano",
+      "steamid": 76561198341307379,
+      "name": "L1nkero",
+      "pontuacao": 0.81,
+      "negativo": false
+    },
+    {
+      "funcao": "estrutural_coringa",
+      "steamid": 76561199173334700,
+      "name": "borzSE",
+      "pontuacao": 0.7777777777777778,
+      "negativo": false
+    },
+    {
+      "funcao": "estrutural_coringa",
+      "steamid": 76561198386265483,
+      "name": "donk666",
+      "pontuacao": 0.7777777777777778,
+      "negativo": false
+    },
+    {
+      "funcao": "estrutural_coringa",
+      "steamid": 76561198811351371,
+      "name": "shiFu-",
+      "pontuacao": 0.7777777777777778,
+      "negativo": false
+    },
+    {
+      "funcao": "repick",
+      "steamid": 76561199115403725,
+      "name": "somehxw",
+      "pontuacao": 0.75,
+      "negativo": false
+    },
+    {
+      "funcao": "mochila",
+      "steamid": 76561199009212418,
+      "name": "nedorufe",
+      "pontuacao": 0.74655,
+      "negativo": true
+    }
+  ],
+  "economy_decisive": null,
   "rounds_scored": [
     {
       "round": 1,
@@ -237,12 +753,7 @@
         "weapon": "glock"
       },
       "multikill_player": "Matthew369",
-      "multikill_count": 3,
-      "importance": 33.0,
-      "reasons": [
-        "3K de Matthew369",
-        "jogo empatado ou a um round de diferença"
-      ]
+      "multikill_count": 3
     },
     {
       "round": 2,
@@ -261,11 +772,7 @@
         "weapon": "mac10"
       },
       "multikill_player": null,
-      "multikill_count": 0,
-      "importance": 15.0,
-      "reasons": [
-        "jogo empatado ou a um round de diferença"
-      ]
+      "multikill_count": 0
     },
     {
       "round": 3,
@@ -284,9 +791,7 @@
         "weapon": "m4a1_silencer"
       },
       "multikill_player": null,
-      "multikill_count": 0,
-      "importance": 0.0,
-      "reasons": []
+      "multikill_count": 0
     },
     {
       "round": 4,
@@ -305,12 +810,7 @@
         "weapon": "m4a1_silencer"
       },
       "multikill_player": "pxd11",
-      "multikill_count": 3,
-      "importance": 33.0,
-      "reasons": [
-        "3K de pxd11",
-        "jogo empatado ou a um round de diferença"
-      ]
+      "multikill_count": 3
     },
     {
       "round": 5,
@@ -329,11 +829,7 @@
         "weapon": "ak47"
       },
       "multikill_player": null,
-      "multikill_count": 0,
-      "importance": 15.0,
-      "reasons": [
-        "jogo empatado ou a um round de diferença"
-      ]
+      "multikill_count": 0
     },
     {
       "round": 6,
@@ -352,12 +848,7 @@
         "weapon": "deagle"
       },
       "multikill_player": "somehxw",
-      "multikill_count": 3,
-      "importance": 33.0,
-      "reasons": [
-        "3K de somehxw",
-        "jogo empatado ou a um round de diferença"
-      ]
+      "multikill_count": 3
     },
     {
       "round": 7,
@@ -376,13 +867,7 @@
         "weapon": "ak47"
       },
       "multikill_player": "donk666",
-      "multikill_count": 3,
-      "importance": 73.0,
-      "reasons": [
-        "assumiu a liderança que não devolveu mais",
-        "3K de donk666",
-        "jogo empatado ou a um round de diferença"
-      ]
+      "multikill_count": 3
     },
     {
       "round": 8,
@@ -401,11 +886,7 @@
         "weapon": "ak47"
       },
       "multikill_player": null,
-      "multikill_count": 0,
-      "importance": 15.0,
-      "reasons": [
-        "jogo empatado ou a um round de diferença"
-      ]
+      "multikill_count": 0
     },
     {
       "round": 9,
@@ -424,9 +905,7 @@
         "weapon": "ak47"
       },
       "multikill_player": null,
-      "multikill_count": 0,
-      "importance": 0.0,
-      "reasons": []
+      "multikill_count": 0
     },
     {
       "round": 10,
@@ -445,13 +924,7 @@
         "weapon": "ak47"
       },
       "multikill_player": "pxd11",
-      "multikill_count": 3,
-      "importance": 62.0,
-      "reasons": [
-        "virou com 2 jogadores a menos",
-        "clutch de pxd11 em 1v3",
-        "3K de pxd11"
-      ]
+      "multikill_count": 3
     },
     {
       "round": 11,
@@ -470,9 +943,7 @@
         "weapon": "ak47"
       },
       "multikill_player": null,
-      "multikill_count": 0,
-      "importance": 0.0,
-      "reasons": []
+      "multikill_count": 0
     },
     {
       "round": 12,
@@ -491,12 +962,7 @@
         "weapon": "mp9"
       },
       "multikill_player": "donk666",
-      "multikill_count": 3,
-      "importance": 42.0,
-      "reasons": [
-        "virou com 2 jogadores a menos",
-        "3K de donk666"
-      ]
+      "multikill_count": 3
     },
     {
       "round": 13,
@@ -515,11 +981,7 @@
         "weapon": "usp_silencer"
       },
       "multikill_player": "pxd11",
-      "multikill_count": 4,
-      "importance": 24.0,
-      "reasons": [
-        "4K de pxd11"
-      ]
+      "multikill_count": 4
     },
     {
       "round": 14,
@@ -538,14 +1000,7 @@
         "weapon": "deagle"
       },
       "multikill_player": "donk666",
-      "multikill_count": 4,
-      "importance": 76.0,
-      "reasons": [
-        "virou com 2 jogadores a menos",
-        "clutch de donk666 em 1v3",
-        "4K de donk666",
-        "decidido no desarme"
-      ]
+      "multikill_count": 4
     },
     {
       "round": 15,
@@ -564,11 +1019,7 @@
         "weapon": "galilar"
       },
       "multikill_player": "donk666",
-      "multikill_count": 3,
-      "importance": 18.0,
-      "reasons": [
-        "3K de donk666"
-      ]
+      "multikill_count": 3
     },
     {
       "round": 16,
@@ -587,11 +1038,7 @@
         "weapon": "m4a1_silencer"
       },
       "multikill_player": "donk666",
-      "multikill_count": 4,
-      "importance": 24.0,
-      "reasons": [
-        "4K de donk666"
-      ]
+      "multikill_count": 4
     },
     {
       "round": 17,
@@ -610,11 +1057,7 @@
         "weapon": "m4a1_silencer"
       },
       "multikill_player": "borzSE",
-      "multikill_count": 3,
-      "importance": 18.0,
-      "reasons": [
-        "3K de borzSE"
-      ]
+      "multikill_count": 3
     },
     {
       "round": 18,
@@ -633,11 +1076,7 @@
         "weapon": "ak47"
       },
       "multikill_player": null,
-      "multikill_count": 0,
-      "importance": 6.0,
-      "reasons": [
-        "decidido na explosão"
-      ]
+      "multikill_count": 0
     },
     {
       "round": 19,
@@ -656,9 +1095,7 @@
         "weapon": "m4a1_silencer"
       },
       "multikill_player": null,
-      "multikill_count": 0,
-      "importance": 0.0,
-      "reasons": []
+      "multikill_count": 0
     },
     {
       "round": 20,
@@ -677,11 +1114,7 @@
         "weapon": "ak47"
       },
       "multikill_player": "borzSE",
-      "multikill_count": 3,
-      "importance": 18.0,
-      "reasons": [
-        "3K de borzSE"
-      ]
+      "multikill_count": 3
     },
     {
       "round": 21,
@@ -700,9 +1133,7 @@
         "weapon": "mp9"
       },
       "multikill_player": null,
-      "multikill_count": 0,
-      "importance": 0.0,
-      "reasons": []
+      "multikill_count": 0
     }
   ],
   "players": [
@@ -899,41 +1330,41 @@
   ],
   "archetypes": [
     {
-      "steamid": 76561198341307379,
-      "name": "L1nkero",
+      "steamid": 76561199009212418,
+      "name": "nedorufe",
       "team": "A",
       "rounds_played": 21,
-      "first_contact_share": 0.23809523809523808,
-      "util_per_round": 2.9754587582179477,
-      "frac_entering_fight": 0.2032931687410981,
+      "first_contact_share": 0.09523809523809523,
+      "util_per_round": 2.5288565016928173,
+      "frac_entering_fight": 0.1287136872896381,
       "survival_rate": 0.47619047619047616,
-      "traded_death_share": 0.0,
-      "total_damage": 1256,
-      "total_kills": 13,
+      "traded_death_share": 0.09090909090909091,
+      "total_damage": 1091,
+      "total_kills": 9,
       "multikill_rounds": 0,
-      "distinct_places_mean": 6.285714285714286,
-      "path_per_round": 6275.21875,
-      "piano_t_rounds": 2,
-      "piano_ct_rounds": 1,
-      "piano_eco_rounds": 1,
-      "eco_sacrifice_rounds": 3,
+      "distinct_places_mean": 6.428571428571429,
+      "path_per_round": 5945.72900390625,
+      "piano_t_rounds": 0,
+      "piano_ct_rounds": 0,
+      "piano_eco_rounds": 4,
+      "eco_sacrifice_rounds": 5,
       "team_damage": 8511,
       "team_kills": 83,
       "t_rounds": 12,
       "ct_rounds": 9,
-      "damage_share": 0.14757372811655506,
-      "kill_share": 0.1566265060240964,
+      "damage_share": 0.12818705205028785,
+      "kill_share": 0.10843373493975904,
       "death_rate": 0.5238095238095238,
-      "piano_t_share": 0.16666666666666666,
-      "piano_ct_share": 0.1111111111111111,
-      "piano_eco_share": 0.047619047619047616,
-      "engagements": 38,
+      "piano_t_share": 0.0,
+      "piano_ct_share": 0.0,
+      "piano_eco_share": 0.19047619047619047,
+      "engagements": 34,
       "repick_share": 0.0,
-      "bait_opportunities": 17,
-      "bait_no_trade_share": 0.9411764705882353,
-      "bait_return_per_opp": 0.7647058823529411,
-      "bait_untraded_per_round": 0.7619047619047619,
-      "clutch_attempts": 1,
+      "bait_opportunities": 10,
+      "bait_no_trade_share": 0.8,
+      "bait_return_per_opp": 0.9,
+      "bait_untraded_per_round": 0.38095238095238093,
+      "clutch_attempts": 0,
       "clutch_wins": 0,
       "clutch_damage_per_attempt": 0.0,
       "clutch_conversion": 0.0,
@@ -941,71 +1372,16 @@
       "awp_conversion": 0.0,
       "awp_opening_picks": 0,
       "awp_round_share": 0.0,
-      "piano_total_share": 0.3253968253968254,
-      "effort_pct": 0.45499999999999996,
-      "impact_pct": 0.185,
-      "idx_carrega_piano": 0.81,
-      "idx_carry": 0.40499999999999997,
-      "idx_mochila": 0.444175,
-      "idx_camper": 0.011699999999999997,
+      "piano_total_share": 0.19047619047619047,
+      "effort_pct": 0.21000000000000002,
+      "impact_pct": 0.055,
+      "idx_carrega_piano": 0.48,
+      "idx_carry": 0.33999999999999997,
+      "idx_mochila": 0.74655,
+      "idx_camper": 0.015199999999999988,
       "idx_repick": 0.12,
-      "idx_baiter": 0.7347,
+      "idx_baiter": 0.1395,
       "idx_rei_do_nt": 0.0,
-      "idx_awper": 0.0
-    },
-    {
-      "steamid": 76561199115403725,
-      "name": "somehxw",
-      "team": "A",
-      "rounds_played": 21,
-      "first_contact_share": 0.09523809523809523,
-      "util_per_round": 2.316485141004835,
-      "frac_entering_fight": 0.19382834519498815,
-      "survival_rate": 0.3333333333333333,
-      "traded_death_share": 0.2857142857142857,
-      "total_damage": 1688,
-      "total_kills": 16,
-      "multikill_rounds": 1,
-      "distinct_places_mean": 5.9523809523809526,
-      "path_per_round": 5955.52099609375,
-      "piano_t_rounds": 1,
-      "piano_ct_rounds": 0,
-      "piano_eco_rounds": 2,
-      "eco_sacrifice_rounds": 3,
-      "team_damage": 8511,
-      "team_kills": 83,
-      "t_rounds": 12,
-      "ct_rounds": 9,
-      "damage_share": 0.1983315709082364,
-      "kill_share": 0.1927710843373494,
-      "death_rate": 0.6666666666666667,
-      "piano_t_share": 0.08333333333333333,
-      "piano_ct_share": 0.0,
-      "piano_eco_share": 0.09523809523809523,
-      "engagements": 64,
-      "repick_share": 0.09375,
-      "bait_opportunities": 16,
-      "bait_no_trade_share": 0.875,
-      "bait_return_per_opp": 1.0,
-      "bait_untraded_per_round": 0.6666666666666666,
-      "clutch_attempts": 3,
-      "clutch_wins": 0,
-      "clutch_damage_per_attempt": 83.66666666666667,
-      "clutch_conversion": 0.0,
-      "awp_rounds": 0,
-      "awp_conversion": 0.0,
-      "awp_opening_picks": 0,
-      "awp_round_share": 0.0,
-      "piano_total_share": 0.17857142857142855,
-      "effort_pct": 0.3625,
-      "impact_pct": 0.5,
-      "idx_carrega_piano": 0.47,
-      "idx_carry": 0.645,
-      "idx_mochila": 0.31875,
-      "idx_camper": 0.034,
-      "idx_repick": 0.75,
-      "idx_baiter": 0.5254,
-      "idx_rei_do_nt": 0.6688000000000001,
       "idx_awper": 0.0
     },
     {
@@ -1064,6 +1440,116 @@
       "idx_awper": 0.0
     },
     {
+      "steamid": 76561198341307379,
+      "name": "L1nkero",
+      "team": "A",
+      "rounds_played": 21,
+      "first_contact_share": 0.23809523809523808,
+      "util_per_round": 2.9754587582179477,
+      "frac_entering_fight": 0.2032931687410981,
+      "survival_rate": 0.47619047619047616,
+      "traded_death_share": 0.0,
+      "total_damage": 1256,
+      "total_kills": 13,
+      "multikill_rounds": 0,
+      "distinct_places_mean": 6.285714285714286,
+      "path_per_round": 6275.21875,
+      "piano_t_rounds": 2,
+      "piano_ct_rounds": 1,
+      "piano_eco_rounds": 1,
+      "eco_sacrifice_rounds": 3,
+      "team_damage": 8511,
+      "team_kills": 83,
+      "t_rounds": 12,
+      "ct_rounds": 9,
+      "damage_share": 0.14757372811655506,
+      "kill_share": 0.1566265060240964,
+      "death_rate": 0.5238095238095238,
+      "piano_t_share": 0.16666666666666666,
+      "piano_ct_share": 0.1111111111111111,
+      "piano_eco_share": 0.047619047619047616,
+      "engagements": 38,
+      "repick_share": 0.0,
+      "bait_opportunities": 17,
+      "bait_no_trade_share": 0.9411764705882353,
+      "bait_return_per_opp": 0.7647058823529411,
+      "bait_untraded_per_round": 0.7619047619047619,
+      "clutch_attempts": 1,
+      "clutch_wins": 0,
+      "clutch_damage_per_attempt": 0.0,
+      "clutch_conversion": 0.0,
+      "awp_rounds": 0,
+      "awp_conversion": 0.0,
+      "awp_opening_picks": 0,
+      "awp_round_share": 0.0,
+      "piano_total_share": 0.3253968253968254,
+      "effort_pct": 0.45499999999999996,
+      "impact_pct": 0.185,
+      "idx_carrega_piano": 0.81,
+      "idx_carry": 0.40499999999999997,
+      "idx_mochila": 0.444175,
+      "idx_camper": 0.011699999999999997,
+      "idx_repick": 0.12,
+      "idx_baiter": 0.7347,
+      "idx_rei_do_nt": 0.0,
+      "idx_awper": 0.0
+    },
+    {
+      "steamid": 76561198212638205,
+      "name": "Matthew369",
+      "team": "A",
+      "rounds_played": 21,
+      "first_contact_share": 0.23809523809523808,
+      "util_per_round": 9.745519953114647,
+      "frac_entering_fight": 0.22678960374751958,
+      "survival_rate": 0.38095238095238093,
+      "traded_death_share": 0.38461538461538464,
+      "total_damage": 1366,
+      "total_kills": 11,
+      "multikill_rounds": 1,
+      "distinct_places_mean": 6.333333333333333,
+      "path_per_round": 6018.8173828125,
+      "piano_t_rounds": 1,
+      "piano_ct_rounds": 0,
+      "piano_eco_rounds": 1,
+      "eco_sacrifice_rounds": 2,
+      "team_damage": 8511,
+      "team_kills": 83,
+      "t_rounds": 12,
+      "ct_rounds": 9,
+      "damage_share": 0.16049817882739983,
+      "kill_share": 0.13253012048192772,
+      "death_rate": 0.6190476190476191,
+      "piano_t_share": 0.08333333333333333,
+      "piano_ct_share": 0.0,
+      "piano_eco_share": 0.047619047619047616,
+      "engagements": 40,
+      "repick_share": 0.05,
+      "bait_opportunities": 13,
+      "bait_no_trade_share": 0.7692307692307693,
+      "bait_return_per_opp": 0.8461538461538461,
+      "bait_untraded_per_round": 0.47619047619047616,
+      "clutch_attempts": 1,
+      "clutch_wins": 0,
+      "clutch_damage_per_attempt": 147.0,
+      "clutch_conversion": 0.0,
+      "awp_rounds": 1,
+      "awp_conversion": 0.0,
+      "awp_opening_picks": 0,
+      "awp_round_share": 0.047619047619047616,
+      "piano_total_share": 0.13095238095238093,
+      "effort_pct": 0.6625,
+      "impact_pct": 0.175,
+      "idx_carrega_piano": 0.3,
+      "idx_carry": 0.4825,
+      "idx_mochila": 0.2784375,
+      "idx_camper": 0.018000000000000002,
+      "idx_repick": 0.46,
+      "idx_baiter": 0.24599999999999997,
+      "idx_rei_do_nt": 0.0,
+      "idx_awper": 0.0
+    },
+    {
       "steamid": 76561198386265483,
       "name": "donk666",
       "team": "A",
@@ -1116,116 +1602,6 @@
       "idx_repick": 0.48,
       "idx_baiter": 0.058199999999999995,
       "idx_rei_do_nt": 0.0,
-      "idx_awper": 0.0
-    },
-    {
-      "steamid": 76561199009212418,
-      "name": "nedorufe",
-      "team": "A",
-      "rounds_played": 21,
-      "first_contact_share": 0.09523809523809523,
-      "util_per_round": 2.5288565016928173,
-      "frac_entering_fight": 0.1287136872896381,
-      "survival_rate": 0.47619047619047616,
-      "traded_death_share": 0.09090909090909091,
-      "total_damage": 1091,
-      "total_kills": 9,
-      "multikill_rounds": 0,
-      "distinct_places_mean": 6.428571428571429,
-      "path_per_round": 5945.72900390625,
-      "piano_t_rounds": 0,
-      "piano_ct_rounds": 0,
-      "piano_eco_rounds": 4,
-      "eco_sacrifice_rounds": 5,
-      "team_damage": 8511,
-      "team_kills": 83,
-      "t_rounds": 12,
-      "ct_rounds": 9,
-      "damage_share": 0.12818705205028785,
-      "kill_share": 0.10843373493975904,
-      "death_rate": 0.5238095238095238,
-      "piano_t_share": 0.0,
-      "piano_ct_share": 0.0,
-      "piano_eco_share": 0.19047619047619047,
-      "engagements": 34,
-      "repick_share": 0.0,
-      "bait_opportunities": 10,
-      "bait_no_trade_share": 0.8,
-      "bait_return_per_opp": 0.9,
-      "bait_untraded_per_round": 0.38095238095238093,
-      "clutch_attempts": 0,
-      "clutch_wins": 0,
-      "clutch_damage_per_attempt": 0.0,
-      "clutch_conversion": 0.0,
-      "awp_rounds": 0,
-      "awp_conversion": 0.0,
-      "awp_opening_picks": 0,
-      "awp_round_share": 0.0,
-      "piano_total_share": 0.19047619047619047,
-      "effort_pct": 0.21000000000000002,
-      "impact_pct": 0.055,
-      "idx_carrega_piano": 0.48,
-      "idx_carry": 0.33999999999999997,
-      "idx_mochila": 0.74655,
-      "idx_camper": 0.015199999999999988,
-      "idx_repick": 0.12,
-      "idx_baiter": 0.1395,
-      "idx_rei_do_nt": 0.0,
-      "idx_awper": 0.0
-    },
-    {
-      "steamid": 76561198449624359,
-      "name": "pxd11",
-      "team": "B",
-      "rounds_played": 21,
-      "first_contact_share": 0.09523809523809523,
-      "util_per_round": 4.114287910007295,
-      "frac_entering_fight": 0.17675140940807704,
-      "survival_rate": 0.2857142857142857,
-      "traded_death_share": 0.26666666666666666,
-      "total_damage": 1959,
-      "total_kills": 19,
-      "multikill_rounds": 3,
-      "distinct_places_mean": 5.714285714285714,
-      "path_per_round": 5397.36962890625,
-      "piano_t_rounds": 0,
-      "piano_ct_rounds": 0,
-      "piano_eco_rounds": 1,
-      "eco_sacrifice_rounds": 4,
-      "team_damage": 7154,
-      "team_kills": 59,
-      "t_rounds": 9,
-      "ct_rounds": 12,
-      "damage_share": 0.2738328207995527,
-      "kill_share": 0.3220338983050847,
-      "death_rate": 0.7142857142857143,
-      "piano_t_share": 0.0,
-      "piano_ct_share": 0.0,
-      "piano_eco_share": 0.047619047619047616,
-      "engagements": 84,
-      "repick_share": 0.03571428571428571,
-      "bait_opportunities": 15,
-      "bait_no_trade_share": 0.8,
-      "bait_return_per_opp": 1.2666666666666666,
-      "bait_untraded_per_round": 0.5714285714285714,
-      "clutch_attempts": 3,
-      "clutch_wins": 1,
-      "clutch_damage_per_attempt": 63.0,
-      "clutch_conversion": 0.3333333333333333,
-      "awp_rounds": 2,
-      "awp_conversion": 0.0,
-      "awp_opening_picks": 0,
-      "awp_round_share": 0.09523809523809523,
-      "piano_total_share": 0.047619047619047616,
-      "effort_pct": 0.4475,
-      "impact_pct": 0.9299999999999999,
-      "idx_carrega_piano": 0.08,
-      "idx_carry": 0.95,
-      "idx_mochila": 0.038675000000000036,
-      "idx_camper": 0.12600000000000003,
-      "idx_repick": 0.29,
-      "idx_baiter": 0.2652,
-      "idx_rei_do_nt": 0.3754666666666667,
       "idx_awper": 0.0
     },
     {
@@ -1339,6 +1715,61 @@
       "idx_awper": 0.0
     },
     {
+      "steamid": 76561198449624359,
+      "name": "pxd11",
+      "team": "B",
+      "rounds_played": 21,
+      "first_contact_share": 0.09523809523809523,
+      "util_per_round": 4.114287910007295,
+      "frac_entering_fight": 0.17675140940807704,
+      "survival_rate": 0.2857142857142857,
+      "traded_death_share": 0.26666666666666666,
+      "total_damage": 1959,
+      "total_kills": 19,
+      "multikill_rounds": 3,
+      "distinct_places_mean": 5.714285714285714,
+      "path_per_round": 5397.36962890625,
+      "piano_t_rounds": 0,
+      "piano_ct_rounds": 0,
+      "piano_eco_rounds": 1,
+      "eco_sacrifice_rounds": 4,
+      "team_damage": 7154,
+      "team_kills": 59,
+      "t_rounds": 9,
+      "ct_rounds": 12,
+      "damage_share": 0.2738328207995527,
+      "kill_share": 0.3220338983050847,
+      "death_rate": 0.7142857142857143,
+      "piano_t_share": 0.0,
+      "piano_ct_share": 0.0,
+      "piano_eco_share": 0.047619047619047616,
+      "engagements": 84,
+      "repick_share": 0.03571428571428571,
+      "bait_opportunities": 15,
+      "bait_no_trade_share": 0.8,
+      "bait_return_per_opp": 1.2666666666666666,
+      "bait_untraded_per_round": 0.5714285714285714,
+      "clutch_attempts": 3,
+      "clutch_wins": 1,
+      "clutch_damage_per_attempt": 63.0,
+      "clutch_conversion": 0.3333333333333333,
+      "awp_rounds": 2,
+      "awp_conversion": 0.0,
+      "awp_opening_picks": 0,
+      "awp_round_share": 0.09523809523809523,
+      "piano_total_share": 0.047619047619047616,
+      "effort_pct": 0.4475,
+      "impact_pct": 0.9299999999999999,
+      "idx_carrega_piano": 0.08,
+      "idx_carry": 0.95,
+      "idx_mochila": 0.038675000000000036,
+      "idx_camper": 0.12600000000000003,
+      "idx_repick": 0.29,
+      "idx_baiter": 0.2652,
+      "idx_rei_do_nt": 0.3754666666666667,
+      "idx_awper": 0.0
+    },
+    {
       "steamid": 76561198058045464,
       "name": "MolO11",
       "team": "B",
@@ -1394,58 +1825,58 @@
       "idx_awper": 0.0
     },
     {
-      "steamid": 76561198212638205,
-      "name": "Matthew369",
+      "steamid": 76561199115403725,
+      "name": "somehxw",
       "team": "A",
       "rounds_played": 21,
-      "first_contact_share": 0.23809523809523808,
-      "util_per_round": 9.745519953114647,
-      "frac_entering_fight": 0.22678960374751958,
-      "survival_rate": 0.38095238095238093,
-      "traded_death_share": 0.38461538461538464,
-      "total_damage": 1366,
-      "total_kills": 11,
+      "first_contact_share": 0.09523809523809523,
+      "util_per_round": 2.316485141004835,
+      "frac_entering_fight": 0.19382834519498815,
+      "survival_rate": 0.3333333333333333,
+      "traded_death_share": 0.2857142857142857,
+      "total_damage": 1688,
+      "total_kills": 16,
       "multikill_rounds": 1,
-      "distinct_places_mean": 6.333333333333333,
-      "path_per_round": 6018.8173828125,
+      "distinct_places_mean": 5.9523809523809526,
+      "path_per_round": 5955.52099609375,
       "piano_t_rounds": 1,
       "piano_ct_rounds": 0,
-      "piano_eco_rounds": 1,
-      "eco_sacrifice_rounds": 2,
+      "piano_eco_rounds": 2,
+      "eco_sacrifice_rounds": 3,
       "team_damage": 8511,
       "team_kills": 83,
       "t_rounds": 12,
       "ct_rounds": 9,
-      "damage_share": 0.16049817882739983,
-      "kill_share": 0.13253012048192772,
-      "death_rate": 0.6190476190476191,
+      "damage_share": 0.1983315709082364,
+      "kill_share": 0.1927710843373494,
+      "death_rate": 0.6666666666666667,
       "piano_t_share": 0.08333333333333333,
       "piano_ct_share": 0.0,
-      "piano_eco_share": 0.047619047619047616,
-      "engagements": 40,
-      "repick_share": 0.05,
-      "bait_opportunities": 13,
-      "bait_no_trade_share": 0.7692307692307693,
-      "bait_return_per_opp": 0.8461538461538461,
-      "bait_untraded_per_round": 0.47619047619047616,
-      "clutch_attempts": 1,
+      "piano_eco_share": 0.09523809523809523,
+      "engagements": 64,
+      "repick_share": 0.09375,
+      "bait_opportunities": 16,
+      "bait_no_trade_share": 0.875,
+      "bait_return_per_opp": 1.0,
+      "bait_untraded_per_round": 0.6666666666666666,
+      "clutch_attempts": 3,
       "clutch_wins": 0,
-      "clutch_damage_per_attempt": 147.0,
+      "clutch_damage_per_attempt": 83.66666666666667,
       "clutch_conversion": 0.0,
-      "awp_rounds": 1,
+      "awp_rounds": 0,
       "awp_conversion": 0.0,
       "awp_opening_picks": 0,
-      "awp_round_share": 0.047619047619047616,
-      "piano_total_share": 0.13095238095238093,
-      "effort_pct": 0.6625,
-      "impact_pct": 0.175,
-      "idx_carrega_piano": 0.3,
-      "idx_carry": 0.4825,
-      "idx_mochila": 0.2784375,
-      "idx_camper": 0.018000000000000002,
-      "idx_repick": 0.46,
-      "idx_baiter": 0.24599999999999997,
-      "idx_rei_do_nt": 0.0,
+      "awp_round_share": 0.0,
+      "piano_total_share": 0.17857142857142855,
+      "effort_pct": 0.3625,
+      "impact_pct": 0.5,
+      "idx_carrega_piano": 0.47,
+      "idx_carry": 0.645,
+      "idx_mochila": 0.31875,
+      "idx_camper": 0.034,
+      "idx_repick": 0.75,
+      "idx_baiter": 0.5254,
+      "idx_rei_do_nt": 0.6688000000000001,
       "idx_awper": 0.0
     }
   ],
@@ -3140,8 +3571,12 @@
     "evidence": "jogou 8 rounds com menos equipamento que o time, 6% das mortes dele foram trocadas"
   },
   "narrative": {
-    "decisive": "Time A na frente por 8-5, donk666 fechou o 1v3 e o round terminou no desarme.",
-    "criterion": "Critério: virada de placar não devolvida (peso maior), desvantagem numérica superada, multikill, clutch e proximidade no placar. O round 7 vem em segundo, com os 3 kills de donk666.",
+    "decisive": "Partida sem round decisivo: a diferença se construiu ao longo do jogo, e o placar terminou em 13-8. O round de maior peso moveu 9% da chance de vitória, abaixo dos 12% que o modelo exige para chamar um round de decisivo.",
+    "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário.",
+    "mvp_card": "donk666 foi o MVP com 148,1 de ADR contra 93,3 de pxd11 e 5 aberturas de round contra 3 de somehxw, jogando de coringa.",
+    "highlight_card": "MolO11: 43% de rounds assumindo o custo, contra 19% de mediana dos outros. D0KT0R3N pontuou praticamente o mesmo como carrega piano: houve mais de um destaque equivalente nesta partida.",
+    "spectacle": "Round 14: clutch de donk666 em 1v3, 4K de donk666, virou com 2 jogadores a menos e desarme com 1,6s no relógio da bomba. Não foi o round decisivo porque esta partida não teve um -- a diferença se construiu ao longo do jogo.",
+    "economy": null,
     "carry": "donk666 é o retrato do papel nesta partida: leva o time nas costas. 37% do dano do time, 5 rounds de multikill, 1 clutch fechado.",
     "highlight": "MolO11 é o retrato do papel nesta partida: assume o custo e o time colhe. Jogou 8 rounds com menos equipamento que o time, 6% das mortes dele foram trocadas."
   }

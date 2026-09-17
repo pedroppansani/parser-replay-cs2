@@ -7,20 +7,21 @@
     "rosters": {
       "A": [
         "Etaliqe",
-        "pradablade",
+        "llorente",
         "adamS",
-        "xKacpersky",
-        "llorente"
+        "pradablade",
+        "xKacpersky"
       ],
       "B": [
-        "-_-siNNer",
-        "ar1sFLXR",
-        "regele",
         "Alperen",
-        "donk666"
+        "-_-siNNer",
+        "donk666",
+        "regele",
+        "ar1sFLXR"
       ]
     },
-    "halftime": 12
+    "halftime": 12,
+    "formato": "MR12"
   },
   "progression": [
     {
@@ -168,32 +169,489 @@
       "bomb_planted": false
     }
   ],
-  "decisive_round": {
-    "round": 1,
-    "winner_team": "A",
-    "reason": "ct_killed",
-    "score_a": 1,
-    "score_b": 0,
-    "bomb_planted": true,
-    "worst_deficit_overcome": 1,
-    "clutch_player": null,
-    "clutch_against": 0,
-    "opening": {
-      "player": "-_-siNNer",
-      "team": "B",
-      "victim": "Etaliqe",
-      "weapon": "usp_silencer"
-    },
-    "multikill_player": "adamS",
-    "multikill_count": 4,
-    "importance": 79.0,
-    "reasons": [
-      "assumiu a liderança que não devolveu mais",
-      "4K de adamS",
-      "jogo empatado ou a um round de diferença"
+  "decisive_round": null,
+  "win_probability": {
+    "curve": [
+      {
+        "round": 1,
+        "winner_team": "A",
+        "score_a": 1,
+        "score_b": 0,
+        "wp_a_antes": 0.5,
+        "wp_a_depois": 0.5805901288986206,
+        "wpa_a": 0.0805901288986206,
+        "wpa_b": -0.0805901288986206,
+        "wpa_abs": 0.0805901288986206,
+        "wp_vencedor_antes": 0.5,
+        "wp_vencedor_depois": 0.5805901288986206,
+        "wp_perdedor_antes": 0.5,
+        "wp_perdedor_depois": 0.4194098711013794
+      },
+      {
+        "round": 2,
+        "winner_team": "A",
+        "score_a": 2,
+        "score_b": 0,
+        "wp_a_antes": 0.5805901288986206,
+        "wp_a_depois": 0.6611802577972412,
+        "wpa_a": 0.0805901288986206,
+        "wpa_b": -0.0805901288986206,
+        "wpa_abs": 0.0805901288986206,
+        "wp_vencedor_antes": 0.5805901288986206,
+        "wp_vencedor_depois": 0.6611802577972412,
+        "wp_perdedor_antes": 0.4194098711013794,
+        "wp_perdedor_depois": 0.3388197422027588
+      },
+      {
+        "round": 3,
+        "winner_team": "B",
+        "score_a": 2,
+        "score_b": 1,
+        "wp_a_antes": 0.6611802577972412,
+        "wp_a_depois": 0.5840940475463867,
+        "wpa_a": -0.07708621025085449,
+        "wpa_b": 0.07708621025085449,
+        "wpa_abs": 0.07708621025085449,
+        "wp_vencedor_antes": 0.3388197422027588,
+        "wp_vencedor_depois": 0.4159059524536133,
+        "wp_perdedor_antes": 0.6611802577972412,
+        "wp_perdedor_depois": 0.5840940475463867
+      },
+      {
+        "round": 4,
+        "winner_team": "A",
+        "score_a": 3,
+        "score_b": 1,
+        "wp_a_antes": 0.5840940475463867,
+        "wp_a_depois": 0.6681880950927734,
+        "wpa_a": 0.08409404754638672,
+        "wpa_b": -0.08409404754638672,
+        "wpa_abs": 0.08409404754638672,
+        "wp_vencedor_antes": 0.5840940475463867,
+        "wp_vencedor_depois": 0.6681880950927734,
+        "wp_perdedor_antes": 0.4159059524536133,
+        "wp_perdedor_depois": 0.33181190490722656
+      },
+      {
+        "round": 5,
+        "winner_team": "A",
+        "score_a": 4,
+        "score_b": 1,
+        "wp_a_antes": 0.6681880950927734,
+        "wp_a_depois": 0.7482776641845703,
+        "wpa_a": 0.08008956909179688,
+        "wpa_b": -0.08008956909179688,
+        "wpa_abs": 0.08008956909179688,
+        "wp_vencedor_antes": 0.6681880950927734,
+        "wp_vencedor_depois": 0.7482776641845703,
+        "wp_perdedor_antes": 0.33181190490722656,
+        "wp_perdedor_depois": 0.2517223358154297
+      },
+      {
+        "round": 6,
+        "winner_team": "A",
+        "score_a": 5,
+        "score_b": 1,
+        "wp_a_antes": 0.7482776641845703,
+        "wp_a_depois": 0.8203582763671875,
+        "wpa_a": 0.07208061218261719,
+        "wpa_b": -0.07208061218261719,
+        "wpa_abs": 0.07208061218261719,
+        "wp_vencedor_antes": 0.7482776641845703,
+        "wp_vencedor_depois": 0.8203582763671875,
+        "wp_perdedor_antes": 0.2517223358154297,
+        "wp_perdedor_depois": 0.1796417236328125
+      },
+      {
+        "round": 7,
+        "winner_team": "B",
+        "score_a": 5,
+        "score_b": 2,
+        "wp_a_antes": 0.8203582763671875,
+        "wp_a_depois": 0.7596588134765625,
+        "wpa_a": -0.060699462890625,
+        "wpa_b": 0.060699462890625,
+        "wpa_abs": 0.060699462890625,
+        "wp_vencedor_antes": 0.1796417236328125,
+        "wp_vencedor_depois": 0.2403411865234375,
+        "wp_perdedor_antes": 0.8203582763671875,
+        "wp_perdedor_depois": 0.7596588134765625
+      },
+      {
+        "round": 8,
+        "winner_team": "A",
+        "score_a": 6,
+        "score_b": 2,
+        "wp_a_antes": 0.7596588134765625,
+        "wp_a_depois": 0.8338470458984375,
+        "wpa_a": 0.074188232421875,
+        "wpa_b": -0.074188232421875,
+        "wpa_abs": 0.074188232421875,
+        "wp_vencedor_antes": 0.7596588134765625,
+        "wp_vencedor_depois": 0.8338470458984375,
+        "wp_perdedor_antes": 0.2403411865234375,
+        "wp_perdedor_depois": 0.1661529541015625
+      },
+      {
+        "round": 9,
+        "winner_team": "B",
+        "score_a": 6,
+        "score_b": 3,
+        "wp_a_antes": 0.8338470458984375,
+        "wp_a_depois": 0.7727508544921875,
+        "wpa_a": -0.06109619140625,
+        "wpa_b": 0.06109619140625,
+        "wpa_abs": 0.06109619140625,
+        "wp_vencedor_antes": 0.1661529541015625,
+        "wp_vencedor_depois": 0.2272491455078125,
+        "wp_perdedor_antes": 0.8338470458984375,
+        "wp_perdedor_depois": 0.7727508544921875
+      },
+      {
+        "round": 10,
+        "winner_team": "A",
+        "score_a": 7,
+        "score_b": 3,
+        "wp_a_antes": 0.7727508544921875,
+        "wp_a_depois": 0.84912109375,
+        "wpa_a": 0.0763702392578125,
+        "wpa_b": -0.0763702392578125,
+        "wpa_abs": 0.0763702392578125,
+        "wp_vencedor_antes": 0.7727508544921875,
+        "wp_vencedor_depois": 0.84912109375,
+        "wp_perdedor_antes": 0.2272491455078125,
+        "wp_perdedor_depois": 0.15087890625
+      },
+      {
+        "round": 11,
+        "winner_team": "A",
+        "score_a": 8,
+        "score_b": 3,
+        "wp_a_antes": 0.84912109375,
+        "wp_a_depois": 0.91021728515625,
+        "wpa_a": 0.06109619140625,
+        "wpa_b": -0.06109619140625,
+        "wpa_abs": 0.06109619140625,
+        "wp_vencedor_antes": 0.84912109375,
+        "wp_vencedor_depois": 0.91021728515625,
+        "wp_perdedor_antes": 0.15087890625,
+        "wp_perdedor_depois": 0.08978271484375
+      },
+      {
+        "round": 12,
+        "winner_team": "B",
+        "score_a": 8,
+        "score_b": 4,
+        "wp_a_antes": 0.91021728515625,
+        "wp_a_depois": 0.8665771484375,
+        "wpa_a": -0.04364013671875,
+        "wpa_b": 0.04364013671875,
+        "wpa_abs": 0.04364013671875,
+        "wp_vencedor_antes": 0.08978271484375,
+        "wp_vencedor_depois": 0.1334228515625,
+        "wp_perdedor_antes": 0.91021728515625,
+        "wp_perdedor_depois": 0.8665771484375
+      },
+      {
+        "round": 13,
+        "winner_team": "A",
+        "score_a": 9,
+        "score_b": 4,
+        "wp_a_antes": 0.8665771484375,
+        "wp_a_depois": 0.927001953125,
+        "wpa_a": 0.0604248046875,
+        "wpa_b": -0.0604248046875,
+        "wpa_abs": 0.0604248046875,
+        "wp_vencedor_antes": 0.8665771484375,
+        "wp_vencedor_depois": 0.927001953125,
+        "wp_perdedor_antes": 0.1334228515625,
+        "wp_perdedor_depois": 0.072998046875
+      },
+      {
+        "round": 14,
+        "winner_team": "A",
+        "score_a": 10,
+        "score_b": 4,
+        "wp_a_antes": 0.927001953125,
+        "wp_a_depois": 0.96728515625,
+        "wpa_a": 0.040283203125,
+        "wpa_b": -0.040283203125,
+        "wpa_abs": 0.040283203125,
+        "wp_vencedor_antes": 0.927001953125,
+        "wp_vencedor_depois": 0.96728515625,
+        "wp_perdedor_antes": 0.072998046875,
+        "wp_perdedor_depois": 0.03271484375
+      },
+      {
+        "round": 15,
+        "winner_team": "B",
+        "score_a": 10,
+        "score_b": 5,
+        "wp_a_antes": 0.96728515625,
+        "wp_a_depois": 0.9453125,
+        "wpa_a": -0.02197265625,
+        "wpa_b": 0.02197265625,
+        "wpa_abs": 0.02197265625,
+        "wp_vencedor_antes": 0.03271484375,
+        "wp_vencedor_depois": 0.0546875,
+        "wp_perdedor_antes": 0.96728515625,
+        "wp_perdedor_depois": 0.9453125
+      },
+      {
+        "round": 16,
+        "winner_team": "A",
+        "score_a": 11,
+        "score_b": 5,
+        "wp_a_antes": 0.9453125,
+        "wp_a_depois": 0.98046875,
+        "wpa_a": 0.03515625,
+        "wpa_b": -0.03515625,
+        "wpa_abs": 0.03515625,
+        "wp_vencedor_antes": 0.9453125,
+        "wp_vencedor_depois": 0.98046875,
+        "wp_perdedor_antes": 0.0546875,
+        "wp_perdedor_depois": 0.01953125
+      },
+      {
+        "round": 17,
+        "winner_team": "A",
+        "score_a": 12,
+        "score_b": 5,
+        "wp_a_antes": 0.98046875,
+        "wp_a_depois": 0.99609375,
+        "wpa_a": 0.015625,
+        "wpa_b": -0.015625,
+        "wpa_abs": 0.015625,
+        "wp_vencedor_antes": 0.98046875,
+        "wp_vencedor_depois": 0.99609375,
+        "wp_perdedor_antes": 0.01953125,
+        "wp_perdedor_depois": 0.00390625
+      },
+      {
+        "round": 18,
+        "winner_team": "A",
+        "score_a": 13,
+        "score_b": 5,
+        "wp_a_antes": 0.99609375,
+        "wp_a_depois": 1.0,
+        "wpa_a": 0.00390625,
+        "wpa_b": -0.00390625,
+        "wpa_abs": 0.00390625,
+        "wp_vencedor_antes": 0.99609375,
+        "wp_vencedor_depois": 1.0,
+        "wp_perdedor_antes": 0.00390625,
+        "wp_perdedor_depois": 0.0
+      }
+    ],
+    "top": [
+      {
+        "round": 4,
+        "winner_team": "A",
+        "score_a": 3,
+        "score_b": 1,
+        "wp_a_antes": 0.5840940475463867,
+        "wp_a_depois": 0.6681880950927734,
+        "wpa_a": 0.08409404754638672,
+        "wpa_b": -0.08409404754638672,
+        "wpa_abs": 0.08409404754638672,
+        "wp_vencedor_antes": 0.5840940475463867,
+        "wp_vencedor_depois": 0.6681880950927734,
+        "wp_perdedor_antes": 0.4159059524536133,
+        "wp_perdedor_depois": 0.33181190490722656
+      },
+      {
+        "round": 1,
+        "winner_team": "A",
+        "score_a": 1,
+        "score_b": 0,
+        "wp_a_antes": 0.5,
+        "wp_a_depois": 0.5805901288986206,
+        "wpa_a": 0.0805901288986206,
+        "wpa_b": -0.0805901288986206,
+        "wpa_abs": 0.0805901288986206,
+        "wp_vencedor_antes": 0.5,
+        "wp_vencedor_depois": 0.5805901288986206,
+        "wp_perdedor_antes": 0.5,
+        "wp_perdedor_depois": 0.4194098711013794
+      },
+      {
+        "round": 2,
+        "winner_team": "A",
+        "score_a": 2,
+        "score_b": 0,
+        "wp_a_antes": 0.5805901288986206,
+        "wp_a_depois": 0.6611802577972412,
+        "wpa_a": 0.0805901288986206,
+        "wpa_b": -0.0805901288986206,
+        "wpa_abs": 0.0805901288986206,
+        "wp_vencedor_antes": 0.5805901288986206,
+        "wp_vencedor_depois": 0.6611802577972412,
+        "wp_perdedor_antes": 0.4194098711013794,
+        "wp_perdedor_depois": 0.3388197422027588
+      }
+    ],
+    "empate_no_topo": false,
+    "maior_wpa": 0.08409404754638672,
+    "minimo_exigido": 0.12088519334793091
+  },
+  "spectacle_round": {
+    "round": 10,
+    "pontos": 35.0,
+    "componentes": [
+      {
+        "componente": "multikill",
+        "pontos": 8.0,
+        "texto": "3K de pradablade"
+      },
+      {
+        "componente": "desvantagem",
+        "pontos": 27.0,
+        "texto": "virou com 3 jogadores a menos"
+      }
+    ],
+    "winner_team": "A"
+  },
+  "mvp_card": {
+    "steamid": 76561198386265483,
+    "name": "donk666",
+    "team": "B",
+    "funcao": "Coringa",
+    "indice": 0.9000000000000001,
+    "vice_nome": "xKacpersky",
+    "vice_indice": 0.7727386150966937,
+    "componentes": [
+      {
+        "chave": "adr",
+        "rotulo": "ADR",
+        "unidade": "de dano por round",
+        "sintagma": "de ADR",
+        "peso": 0.4,
+        "valor": 124.66666666666667,
+        "texto": "124,7",
+        "melhor_dos_outros": 96.33333333333333,
+        "melhor_dos_outros_texto": "96,3",
+        "melhor_dos_outros_nome": "xKacpersky",
+        "lidera": true
+      },
+      {
+        "chave": "kast_pct",
+        "rotulo": "KAST",
+        "unidade": "% dos rounds com contribuição",
+        "sintagma": "de KAST",
+        "peso": 0.3,
+        "valor": 77.77777777777777,
+        "texto": "78%",
+        "melhor_dos_outros": 83.33333333333333,
+        "melhor_dos_outros_texto": "83%",
+        "melhor_dos_outros_nome": "adamS",
+        "lidera": false
+      },
+      {
+        "chave": "opening_kills",
+        "rotulo": "Aberturas",
+        "unidade": "rounds em que abriu o placar",
+        "sintagma": "aberturas de round",
+        "peso": 0.2,
+        "valor": 4.0,
+        "texto": "4",
+        "melhor_dos_outros": 4.0,
+        "melhor_dos_outros_texto": "4",
+        "melhor_dos_outros_nome": "xKacpersky",
+        "lidera": false
+      },
+      {
+        "chave": "clutches",
+        "rotulo": "Clutches",
+        "unidade": "rounds fechados sozinho",
+        "sintagma": "clutches fechados",
+        "peso": 0.1,
+        "valor": 0.0,
+        "texto": "0",
+        "melhor_dos_outros": 0.0,
+        "melhor_dos_outros_texto": "0",
+        "melhor_dos_outros_nome": "xKacpersky",
+        "lidera": false
+      }
     ]
   },
-  "point_of_no_return": 1,
+  "highlight_card": {
+    "funcao": "camper",
+    "label": "Camper",
+    "meaning": "poucas regiões por round, quase não se desloca",
+    "steamid": 76561199071912329,
+    "name": "ar1sFLXR",
+    "team": "B",
+    "index": 0.98,
+    "negativo": false,
+    "evidencia": {
+      "metrica": "regiões por round",
+      "valor": "3,7",
+      "referencia": "4,7",
+      "referencia_nome": null,
+      "referencia_rotulo": "mediana dos outros"
+    },
+    "amostra_fraca": false,
+    "equivalente": null
+  },
+  "highlight_candidates": [
+    {
+      "funcao": "camper",
+      "steamid": 76561199071912329,
+      "name": "ar1sFLXR",
+      "pontuacao": 0.98,
+      "negativo": false
+    },
+    {
+      "funcao": "carrega_piano",
+      "steamid": 76561198296417934,
+      "name": "Etaliqe",
+      "pontuacao": 0.91,
+      "negativo": false
+    },
+    {
+      "funcao": "carrega_piano",
+      "steamid": 76561198061660686,
+      "name": "llorente",
+      "pontuacao": 0.91,
+      "negativo": false
+    },
+    {
+      "funcao": "repick",
+      "steamid": 76561198386265483,
+      "name": "donk666",
+      "pontuacao": 0.91,
+      "negativo": false
+    },
+    {
+      "funcao": "repick",
+      "steamid": 76561198286472688,
+      "name": "-_-siNNer",
+      "pontuacao": 0.89,
+      "negativo": false
+    },
+    {
+      "funcao": "awper",
+      "steamid": 76561199071912329,
+      "name": "ar1sFLXR",
+      "pontuacao": 0.8415,
+      "negativo": false
+    },
+    {
+      "funcao": "camper",
+      "steamid": 76561198286472688,
+      "name": "-_-siNNer",
+      "pontuacao": 0.8217,
+      "negativo": false
+    },
+    {
+      "funcao": "camper",
+      "steamid": 76561198386265483,
+      "name": "donk666",
+      "pontuacao": 0.8190000000000001,
+      "negativo": false
+    }
+  ],
+  "economy_decisive": null,
   "rounds_scored": [
     {
       "round": 1,
@@ -212,13 +670,7 @@
         "weapon": "usp_silencer"
       },
       "multikill_player": "adamS",
-      "multikill_count": 4,
-      "importance": 79.0,
-      "reasons": [
-        "assumiu a liderança que não devolveu mais",
-        "4K de adamS",
-        "jogo empatado ou a um round de diferença"
-      ]
+      "multikill_count": 4
     },
     {
       "round": 2,
@@ -237,12 +689,7 @@
         "weapon": "ak47"
       },
       "multikill_player": "pradablade",
-      "multikill_count": 3,
-      "importance": 33.0,
-      "reasons": [
-        "3K de pradablade",
-        "jogo empatado ou a um round de diferença"
-      ]
+      "multikill_count": 3
     },
     {
       "round": 3,
@@ -261,12 +708,7 @@
         "weapon": "m4a1_silencer"
       },
       "multikill_player": "regele",
-      "multikill_count": 3,
-      "importance": 26.0,
-      "reasons": [
-        "3K de regele",
-        "decidido no desarme"
-      ]
+      "multikill_count": 3
     },
     {
       "round": 4,
@@ -285,12 +727,7 @@
         "weapon": "ak47"
       },
       "multikill_player": null,
-      "multikill_count": 0,
-      "importance": 39.0,
-      "reasons": [
-        "virou com 2 jogadores a menos",
-        "jogo empatado ou a um round de diferença"
-      ]
+      "multikill_count": 0
     },
     {
       "round": 5,
@@ -309,11 +746,7 @@
         "weapon": "ak47"
       },
       "multikill_player": "pradablade",
-      "multikill_count": 3,
-      "importance": 18.0,
-      "reasons": [
-        "3K de pradablade"
-      ]
+      "multikill_count": 3
     },
     {
       "round": 6,
@@ -332,9 +765,7 @@
         "weapon": "galilar"
       },
       "multikill_player": null,
-      "multikill_count": 0,
-      "importance": 0.0,
-      "reasons": []
+      "multikill_count": 0
     },
     {
       "round": 7,
@@ -353,11 +784,7 @@
         "weapon": "m4a1_silencer"
       },
       "multikill_player": "donk666",
-      "multikill_count": 3,
-      "importance": 18.0,
-      "reasons": [
-        "3K de donk666"
-      ]
+      "multikill_count": 3
     },
     {
       "round": 8,
@@ -376,12 +803,7 @@
         "weapon": "ak47"
       },
       "multikill_player": "donk666",
-      "multikill_count": 3,
-      "importance": 42.0,
-      "reasons": [
-        "virou com 2 jogadores a menos",
-        "3K de donk666"
-      ]
+      "multikill_count": 3
     },
     {
       "round": 9,
@@ -400,11 +822,7 @@
         "weapon": "m4a1_silencer"
       },
       "multikill_player": "xKacpersky",
-      "multikill_count": 3,
-      "importance": 18.0,
-      "reasons": [
-        "3K de xKacpersky"
-      ]
+      "multikill_count": 3
     },
     {
       "round": 10,
@@ -423,12 +841,7 @@
         "weapon": "ak47"
       },
       "multikill_player": "pradablade",
-      "multikill_count": 3,
-      "importance": 54.0,
-      "reasons": [
-        "virou com 3 jogadores a menos",
-        "3K de pradablade"
-      ]
+      "multikill_count": 3
     },
     {
       "round": 11,
@@ -447,9 +860,7 @@
         "weapon": "ak47"
       },
       "multikill_player": null,
-      "multikill_count": 0,
-      "importance": 0.0,
-      "reasons": []
+      "multikill_count": 0
     },
     {
       "round": 12,
@@ -468,11 +879,7 @@
         "weapon": "m4a1_silencer"
       },
       "multikill_player": "donk666",
-      "multikill_count": 4,
-      "importance": 24.0,
-      "reasons": [
-        "4K de donk666"
-      ]
+      "multikill_count": 4
     },
     {
       "round": 13,
@@ -491,11 +898,7 @@
         "weapon": "elite"
       },
       "multikill_player": "xKacpersky",
-      "multikill_count": 3,
-      "importance": 18.0,
-      "reasons": [
-        "3K de xKacpersky"
-      ]
+      "multikill_count": 3
     },
     {
       "round": 14,
@@ -514,9 +917,7 @@
         "weapon": "mp7"
       },
       "multikill_player": null,
-      "multikill_count": 0,
-      "importance": 0.0,
-      "reasons": []
+      "multikill_count": 0
     },
     {
       "round": 15,
@@ -535,11 +936,7 @@
         "weapon": "m4a1"
       },
       "multikill_player": null,
-      "multikill_count": 0,
-      "importance": 6.0,
-      "reasons": [
-        "decidido na explosão"
-      ]
+      "multikill_count": 0
     },
     {
       "round": 16,
@@ -558,9 +955,7 @@
         "weapon": "m4a1_silencer"
       },
       "multikill_player": null,
-      "multikill_count": 0,
-      "importance": 0.0,
-      "reasons": []
+      "multikill_count": 0
     },
     {
       "round": 17,
@@ -579,11 +974,7 @@
         "weapon": "awp"
       },
       "multikill_player": "Etaliqe",
-      "multikill_count": 3,
-      "importance": 18.0,
-      "reasons": [
-        "3K de Etaliqe"
-      ]
+      "multikill_count": 3
     },
     {
       "round": 18,
@@ -602,9 +993,7 @@
         "weapon": "m4a1_silencer"
       },
       "multikill_player": null,
-      "multikill_count": 0,
-      "importance": 0.0,
-      "reasons": []
+      "multikill_count": 0
     }
   ],
   "players": [
@@ -911,21 +1300,21 @@
       "idx_awper": 0.8415
     },
     {
-      "steamid": 76561199016172051,
-      "name": "pradablade",
+      "steamid": 76561198296417934,
+      "name": "Etaliqe",
       "team": "A",
       "rounds_played": 18,
-      "first_contact_share": 0.16666666666666666,
-      "util_per_round": 5.067628403504689,
-      "frac_entering_fight": 0.1936914980648369,
-      "survival_rate": 0.6111111111111112,
-      "traded_death_share": 0.14285714285714285,
-      "total_damage": 1575,
-      "total_kills": 18,
-      "multikill_rounds": 3,
-      "distinct_places_mean": 5.277777777777778,
-      "path_per_round": 5187.78564453125,
-      "piano_t_rounds": 0,
+      "first_contact_share": 0.2222222222222222,
+      "util_per_round": 3.516738494237264,
+      "frac_entering_fight": 0.29590636072545756,
+      "survival_rate": 0.3888888888888889,
+      "traded_death_share": 0.18181818181818182,
+      "total_damage": 1683,
+      "total_kills": 17,
+      "multikill_rounds": 2,
+      "distinct_places_mean": 4.611111111111111,
+      "path_per_round": 4790.40625,
+      "piano_t_rounds": 2,
       "piano_ct_rounds": 0,
       "piano_eco_rounds": 4,
       "eco_sacrifice_rounds": 4,
@@ -933,35 +1322,90 @@
       "team_kills": 79,
       "t_rounds": 12,
       "ct_rounds": 6,
-      "damage_share": 0.19665376451492073,
-      "kill_share": 0.22784810126582278,
-      "death_rate": 0.38888888888888884,
-      "piano_t_share": 0.0,
+      "damage_share": 0.21013859408165814,
+      "kill_share": 0.21518987341772153,
+      "death_rate": 0.6111111111111112,
+      "piano_t_share": 0.16666666666666666,
       "piano_ct_share": 0.0,
       "piano_eco_share": 0.2222222222222222,
-      "engagements": 51,
-      "repick_share": 0.0,
-      "bait_opportunities": 13,
-      "bait_no_trade_share": 0.9230769230769231,
-      "bait_return_per_opp": 1.3846153846153846,
-      "bait_untraded_per_round": 0.6666666666666666,
+      "engagements": 56,
+      "repick_share": 0.05357142857142857,
+      "bait_opportunities": 12,
+      "bait_no_trade_share": 0.75,
+      "bait_return_per_opp": 1.4166666666666667,
+      "bait_untraded_per_round": 0.5,
       "clutch_attempts": 1,
       "clutch_wins": 0,
-      "clutch_damage_per_attempt": 99.0,
+      "clutch_damage_per_attempt": 0.0,
       "clutch_conversion": 0.0,
-      "awp_rounds": 0,
+      "awp_rounds": 6,
+      "awp_conversion": 0.0,
+      "awp_opening_picks": 1,
+      "awp_round_share": 0.3333333333333333,
+      "piano_total_share": 0.38888888888888884,
+      "effort_pct": 0.5575,
+      "impact_pct": 0.63,
+      "idx_carrega_piano": 0.91,
+      "idx_carry": 0.74,
+      "idx_mochila": 0.163725,
+      "idx_camper": 0.6545,
+      "idx_repick": 0.51,
+      "idx_baiter": 0.36519999999999997,
+      "idx_rei_do_nt": 0.0,
+      "idx_awper": 0.8037
+    },
+    {
+      "steamid": 76561198061660686,
+      "name": "llorente",
+      "team": "A",
+      "rounds_played": 18,
+      "first_contact_share": 0.2777777777777778,
+      "util_per_round": 1.5833462725083034,
+      "frac_entering_fight": 0.23454068069283768,
+      "survival_rate": 0.3333333333333333,
+      "traded_death_share": 0.25,
+      "total_damage": 1312,
+      "total_kills": 9,
+      "multikill_rounds": 0,
+      "distinct_places_mean": 5.0,
+      "path_per_round": 4242.1865234375,
+      "piano_t_rounds": 2,
+      "piano_ct_rounds": 0,
+      "piano_eco_rounds": 4,
+      "eco_sacrifice_rounds": 7,
+      "team_damage": 8009,
+      "team_kills": 79,
+      "t_rounds": 12,
+      "ct_rounds": 6,
+      "damage_share": 0.1638157073292546,
+      "kill_share": 0.11392405063291139,
+      "death_rate": 0.6666666666666667,
+      "piano_t_share": 0.16666666666666666,
+      "piano_ct_share": 0.0,
+      "piano_eco_share": 0.2222222222222222,
+      "engagements": 39,
+      "repick_share": 0.10256410256410256,
+      "bait_opportunities": 13,
+      "bait_no_trade_share": 0.8461538461538461,
+      "bait_return_per_opp": 0.6923076923076923,
+      "bait_untraded_per_round": 0.6111111111111112,
+      "clutch_attempts": 0,
+      "clutch_wins": 0,
+      "clutch_damage_per_attempt": 0.0,
+      "clutch_conversion": 0.0,
+      "awp_rounds": 2,
       "awp_conversion": 0.0,
       "awp_opening_picks": 0,
-      "awp_round_share": 0.0,
-      "piano_total_share": 0.2222222222222222,
-      "effort_pct": 0.425,
-      "impact_pct": 0.63,
-      "idx_carrega_piano": 0.58,
-      "idx_carry": 0.7625,
-      "idx_mochila": 0.21275,
-      "idx_camper": 0.2862,
-      "idx_repick": 0.12,
-      "idx_baiter": 0.71,
+      "awp_round_share": 0.1111111111111111,
+      "piano_total_share": 0.38888888888888884,
+      "effort_pct": 0.55,
+      "impact_pct": 0.16,
+      "idx_carrega_piano": 0.91,
+      "idx_carry": 0.39249999999999996,
+      "idx_mochila": 0.37799999999999995,
+      "idx_camper": 0.6016,
+      "idx_repick": 0.79,
+      "idx_baiter": 0.42919999999999997,
       "idx_rei_do_nt": 0.0,
       "idx_awper": 0.0
     },
@@ -1076,131 +1520,21 @@
       "idx_awper": 0.0
     },
     {
-      "steamid": 76561198363161241,
-      "name": "Alperen",
-      "team": "B",
-      "rounds_played": 18,
-      "first_contact_share": 0.3333333333333333,
-      "util_per_round": 7.734341180986828,
-      "frac_entering_fight": 0.20532361959141096,
-      "survival_rate": 0.05555555555555555,
-      "traded_death_share": 0.11764705882352941,
-      "total_damage": 934,
-      "total_kills": 6,
-      "multikill_rounds": 0,
-      "distinct_places_mean": 4.055555555555555,
-      "path_per_round": 4881.884765625,
-      "piano_t_rounds": 1,
-      "piano_ct_rounds": 0,
-      "piano_eco_rounds": 1,
-      "eco_sacrifice_rounds": 3,
-      "team_damage": 5928,
-      "team_kills": 54,
-      "t_rounds": 6,
-      "ct_rounds": 12,
-      "damage_share": 0.15755735492577597,
-      "kill_share": 0.1111111111111111,
-      "death_rate": 0.9444444444444444,
-      "piano_t_share": 0.16666666666666666,
-      "piano_ct_share": 0.0,
-      "piano_eco_share": 0.05555555555555555,
-      "engagements": 37,
-      "repick_share": 0.02702702702702703,
-      "bait_opportunities": 10,
-      "bait_no_trade_share": 0.9,
-      "bait_return_per_opp": 0.6,
-      "bait_untraded_per_round": 0.5,
-      "clutch_attempts": 4,
-      "clutch_wins": 0,
-      "clutch_damage_per_attempt": 52.5,
-      "clutch_conversion": 0.0,
-      "awp_rounds": 0,
-      "awp_conversion": 0.0,
-      "awp_opening_picks": 0,
-      "awp_round_share": 0.0,
-      "piano_total_share": 0.2222222222222222,
-      "effort_pct": 0.875,
-      "impact_pct": 0.125,
-      "idx_carrega_piano": 0.58,
-      "idx_carry": 0.375,
-      "idx_mochila": 0.109375,
-      "idx_camper": 0.6958,
-      "idx_repick": 0.26,
-      "idx_baiter": 0.0044,
-      "idx_rei_do_nt": 0.528,
-      "idx_awper": 0.0
-    },
-    {
-      "steamid": 76561198061660686,
-      "name": "llorente",
+      "steamid": 76561199016172051,
+      "name": "pradablade",
       "team": "A",
       "rounds_played": 18,
-      "first_contact_share": 0.2777777777777778,
-      "util_per_round": 1.5833462725083034,
-      "frac_entering_fight": 0.23454068069283768,
-      "survival_rate": 0.3333333333333333,
-      "traded_death_share": 0.25,
-      "total_damage": 1312,
-      "total_kills": 9,
-      "multikill_rounds": 0,
-      "distinct_places_mean": 5.0,
-      "path_per_round": 4242.1865234375,
-      "piano_t_rounds": 2,
-      "piano_ct_rounds": 0,
-      "piano_eco_rounds": 4,
-      "eco_sacrifice_rounds": 7,
-      "team_damage": 8009,
-      "team_kills": 79,
-      "t_rounds": 12,
-      "ct_rounds": 6,
-      "damage_share": 0.1638157073292546,
-      "kill_share": 0.11392405063291139,
-      "death_rate": 0.6666666666666667,
-      "piano_t_share": 0.16666666666666666,
-      "piano_ct_share": 0.0,
-      "piano_eco_share": 0.2222222222222222,
-      "engagements": 39,
-      "repick_share": 0.10256410256410256,
-      "bait_opportunities": 13,
-      "bait_no_trade_share": 0.8461538461538461,
-      "bait_return_per_opp": 0.6923076923076923,
-      "bait_untraded_per_round": 0.6111111111111112,
-      "clutch_attempts": 0,
-      "clutch_wins": 0,
-      "clutch_damage_per_attempt": 0.0,
-      "clutch_conversion": 0.0,
-      "awp_rounds": 2,
-      "awp_conversion": 0.0,
-      "awp_opening_picks": 0,
-      "awp_round_share": 0.1111111111111111,
-      "piano_total_share": 0.38888888888888884,
-      "effort_pct": 0.55,
-      "impact_pct": 0.16,
-      "idx_carrega_piano": 0.91,
-      "idx_carry": 0.39249999999999996,
-      "idx_mochila": 0.37799999999999995,
-      "idx_camper": 0.6016,
-      "idx_repick": 0.79,
-      "idx_baiter": 0.42919999999999997,
-      "idx_rei_do_nt": 0.0,
-      "idx_awper": 0.0
-    },
-    {
-      "steamid": 76561198296417934,
-      "name": "Etaliqe",
-      "team": "A",
-      "rounds_played": 18,
-      "first_contact_share": 0.2222222222222222,
-      "util_per_round": 3.516738494237264,
-      "frac_entering_fight": 0.29590636072545756,
-      "survival_rate": 0.3888888888888889,
-      "traded_death_share": 0.18181818181818182,
-      "total_damage": 1683,
-      "total_kills": 17,
-      "multikill_rounds": 2,
-      "distinct_places_mean": 4.611111111111111,
-      "path_per_round": 4790.40625,
-      "piano_t_rounds": 2,
+      "first_contact_share": 0.16666666666666666,
+      "util_per_round": 5.067628403504689,
+      "frac_entering_fight": 0.1936914980648369,
+      "survival_rate": 0.6111111111111112,
+      "traded_death_share": 0.14285714285714285,
+      "total_damage": 1575,
+      "total_kills": 18,
+      "multikill_rounds": 3,
+      "distinct_places_mean": 5.277777777777778,
+      "path_per_round": 5187.78564453125,
+      "piano_t_rounds": 0,
       "piano_ct_rounds": 0,
       "piano_eco_rounds": 4,
       "eco_sacrifice_rounds": 4,
@@ -1208,37 +1542,37 @@
       "team_kills": 79,
       "t_rounds": 12,
       "ct_rounds": 6,
-      "damage_share": 0.21013859408165814,
-      "kill_share": 0.21518987341772153,
-      "death_rate": 0.6111111111111112,
-      "piano_t_share": 0.16666666666666666,
+      "damage_share": 0.19665376451492073,
+      "kill_share": 0.22784810126582278,
+      "death_rate": 0.38888888888888884,
+      "piano_t_share": 0.0,
       "piano_ct_share": 0.0,
       "piano_eco_share": 0.2222222222222222,
-      "engagements": 56,
-      "repick_share": 0.05357142857142857,
-      "bait_opportunities": 12,
-      "bait_no_trade_share": 0.75,
-      "bait_return_per_opp": 1.4166666666666667,
-      "bait_untraded_per_round": 0.5,
+      "engagements": 51,
+      "repick_share": 0.0,
+      "bait_opportunities": 13,
+      "bait_no_trade_share": 0.9230769230769231,
+      "bait_return_per_opp": 1.3846153846153846,
+      "bait_untraded_per_round": 0.6666666666666666,
       "clutch_attempts": 1,
       "clutch_wins": 0,
-      "clutch_damage_per_attempt": 0.0,
+      "clutch_damage_per_attempt": 99.0,
       "clutch_conversion": 0.0,
-      "awp_rounds": 6,
+      "awp_rounds": 0,
       "awp_conversion": 0.0,
-      "awp_opening_picks": 1,
-      "awp_round_share": 0.3333333333333333,
-      "piano_total_share": 0.38888888888888884,
-      "effort_pct": 0.5575,
+      "awp_opening_picks": 0,
+      "awp_round_share": 0.0,
+      "piano_total_share": 0.2222222222222222,
+      "effort_pct": 0.425,
       "impact_pct": 0.63,
-      "idx_carrega_piano": 0.91,
-      "idx_carry": 0.74,
-      "idx_mochila": 0.163725,
-      "idx_camper": 0.6545,
-      "idx_repick": 0.51,
-      "idx_baiter": 0.36519999999999997,
+      "idx_carrega_piano": 0.58,
+      "idx_carry": 0.7625,
+      "idx_mochila": 0.21275,
+      "idx_camper": 0.2862,
+      "idx_repick": 0.12,
+      "idx_baiter": 0.71,
       "idx_rei_do_nt": 0.0,
-      "idx_awper": 0.8037
+      "idx_awper": 0.0
     },
     {
       "steamid": 76561198386265483,
@@ -1293,6 +1627,61 @@
       "idx_repick": 0.91,
       "idx_baiter": 0.213,
       "idx_rei_do_nt": 0.6952,
+      "idx_awper": 0.0
+    },
+    {
+      "steamid": 76561198363161241,
+      "name": "Alperen",
+      "team": "B",
+      "rounds_played": 18,
+      "first_contact_share": 0.3333333333333333,
+      "util_per_round": 7.734341180986828,
+      "frac_entering_fight": 0.20532361959141096,
+      "survival_rate": 0.05555555555555555,
+      "traded_death_share": 0.11764705882352941,
+      "total_damage": 934,
+      "total_kills": 6,
+      "multikill_rounds": 0,
+      "distinct_places_mean": 4.055555555555555,
+      "path_per_round": 4881.884765625,
+      "piano_t_rounds": 1,
+      "piano_ct_rounds": 0,
+      "piano_eco_rounds": 1,
+      "eco_sacrifice_rounds": 3,
+      "team_damage": 5928,
+      "team_kills": 54,
+      "t_rounds": 6,
+      "ct_rounds": 12,
+      "damage_share": 0.15755735492577597,
+      "kill_share": 0.1111111111111111,
+      "death_rate": 0.9444444444444444,
+      "piano_t_share": 0.16666666666666666,
+      "piano_ct_share": 0.0,
+      "piano_eco_share": 0.05555555555555555,
+      "engagements": 37,
+      "repick_share": 0.02702702702702703,
+      "bait_opportunities": 10,
+      "bait_no_trade_share": 0.9,
+      "bait_return_per_opp": 0.6,
+      "bait_untraded_per_round": 0.5,
+      "clutch_attempts": 4,
+      "clutch_wins": 0,
+      "clutch_damage_per_attempt": 52.5,
+      "clutch_conversion": 0.0,
+      "awp_rounds": 0,
+      "awp_conversion": 0.0,
+      "awp_opening_picks": 0,
+      "awp_round_share": 0.0,
+      "piano_total_share": 0.2222222222222222,
+      "effort_pct": 0.875,
+      "impact_pct": 0.125,
+      "idx_carrega_piano": 0.58,
+      "idx_carry": 0.375,
+      "idx_mochila": 0.109375,
+      "idx_camper": 0.6958,
+      "idx_repick": 0.26,
+      "idx_baiter": 0.0044,
+      "idx_rei_do_nt": 0.528,
       "idx_awper": 0.0
     },
     {
@@ -1463,10 +1852,10 @@
       "grupo_dominante_n": 11,
       "grupo_dominante_d": 18,
       "grupo_concentracao": 0.6111111111111112,
-      "grupo_3_n": 11,
       "grupo_0_n": 1,
-      "grupo_2_n": 2,
+      "grupo_3_n": 11,
       "grupo_1_n": 4,
+      "grupo_2_n": 2,
       "pct_rounds_longe_do_time_ref": 0.4444444444444444,
       "pct_rounds_isolado_ref": 0.3888888888888889,
       "pct_rounds_ancorado_ref": 0.0,
@@ -1630,10 +2019,10 @@
       "grupo_dominante_n": 10,
       "grupo_dominante_d": 18,
       "grupo_concentracao": 0.5555555555555556,
-      "grupo_3_n": 4,
       "grupo_0_n": 10,
-      "grupo_2_n": 3,
+      "grupo_3_n": 4,
       "grupo_1_n": 1,
+      "grupo_2_n": 3,
       "pct_rounds_longe_do_time_ref": 0.3888888888888889,
       "pct_rounds_isolado_ref": 0.3888888888888889,
       "pct_rounds_ancorado_ref": 0.0,
@@ -1797,10 +2186,10 @@
       "grupo_dominante_n": 10,
       "grupo_dominante_d": 18,
       "grupo_concentracao": 0.5555555555555556,
-      "grupo_3_n": 10,
       "grupo_0_n": 4,
-      "grupo_2_n": 2,
+      "grupo_3_n": 10,
       "grupo_1_n": 2,
+      "grupo_2_n": 2,
       "pct_rounds_longe_do_time_ref": 0.4444444444444444,
       "pct_rounds_isolado_ref": 0.4444444444444444,
       "pct_rounds_ancorado_ref": 0.0,
@@ -1964,10 +2353,10 @@
       "grupo_dominante_n": 10,
       "grupo_dominante_d": 18,
       "grupo_concentracao": 0.5555555555555556,
-      "grupo_3_n": 10,
       "grupo_0_n": 2,
-      "grupo_2_n": 3,
+      "grupo_3_n": 10,
       "grupo_1_n": 3,
+      "grupo_2_n": 3,
       "pct_rounds_longe_do_time_ref": 0.4444444444444444,
       "pct_rounds_isolado_ref": 0.4444444444444444,
       "pct_rounds_ancorado_ref": 0.0,
@@ -2131,10 +2520,10 @@
       "grupo_dominante_n": 8,
       "grupo_dominante_d": 18,
       "grupo_concentracao": 0.4444444444444444,
-      "grupo_3_n": 8,
       "grupo_0_n": 7,
-      "grupo_2_n": 0,
+      "grupo_3_n": 8,
       "grupo_1_n": 3,
+      "grupo_2_n": 0,
       "pct_rounds_longe_do_time_ref": 0.3888888888888889,
       "pct_rounds_isolado_ref": 0.3888888888888889,
       "pct_rounds_ancorado_ref": 0.0,
@@ -2298,10 +2687,10 @@
       "grupo_dominante_n": 6,
       "grupo_dominante_d": 18,
       "grupo_concentracao": 0.3333333333333333,
-      "grupo_3_n": 6,
       "grupo_0_n": 6,
-      "grupo_2_n": 3,
+      "grupo_3_n": 6,
       "grupo_1_n": 3,
+      "grupo_2_n": 3,
       "pct_rounds_longe_do_time_ref": 0.3888888888888889,
       "pct_rounds_isolado_ref": 0.3888888888888889,
       "pct_rounds_ancorado_ref": 0.0,
@@ -2465,10 +2854,10 @@
       "grupo_dominante_n": 9,
       "grupo_dominante_d": 18,
       "grupo_concentracao": 0.5,
-      "grupo_3_n": 9,
       "grupo_0_n": 6,
-      "grupo_2_n": 3,
+      "grupo_3_n": 9,
       "grupo_1_n": 0,
+      "grupo_2_n": 3,
       "pct_rounds_longe_do_time_ref": 0.4444444444444444,
       "pct_rounds_isolado_ref": 0.4444444444444444,
       "pct_rounds_ancorado_ref": 0.0,
@@ -2632,10 +3021,10 @@
       "grupo_dominante_n": 9,
       "grupo_dominante_d": 18,
       "grupo_concentracao": 0.5,
-      "grupo_3_n": 9,
       "grupo_0_n": 5,
-      "grupo_2_n": 4,
+      "grupo_3_n": 9,
       "grupo_1_n": 0,
+      "grupo_2_n": 4,
       "pct_rounds_longe_do_time_ref": 0.3888888888888889,
       "pct_rounds_isolado_ref": 0.4444444444444444,
       "pct_rounds_ancorado_ref": 0.0,
@@ -2799,10 +3188,10 @@
       "grupo_dominante_n": 9,
       "grupo_dominante_d": 18,
       "grupo_concentracao": 0.5,
-      "grupo_3_n": 7,
       "grupo_0_n": 9,
-      "grupo_2_n": 2,
+      "grupo_3_n": 7,
       "grupo_1_n": 0,
+      "grupo_2_n": 2,
       "pct_rounds_longe_do_time_ref": 0.3888888888888889,
       "pct_rounds_isolado_ref": 0.3888888888888889,
       "pct_rounds_ancorado_ref": 0.0,
@@ -2966,10 +3355,10 @@
       "grupo_dominante_n": 11,
       "grupo_dominante_d": 18,
       "grupo_concentracao": 0.6111111111111112,
-      "grupo_3_n": 11,
       "grupo_0_n": 2,
-      "grupo_2_n": 3,
+      "grupo_3_n": 11,
       "grupo_1_n": 2,
+      "grupo_2_n": 3,
       "pct_rounds_longe_do_time_ref": 0.4444444444444444,
       "pct_rounds_isolado_ref": 0.4444444444444444,
       "pct_rounds_ancorado_ref": 0.0,
@@ -3042,8 +3431,12 @@
     "evidence": "3.7 regiões por round, 4149u percorridas"
   },
   "narrative": {
-    "decisive": "adamS fez 4 kills e o round terminou com os CTs eliminados. A liderança que sai daqui não é mais devolvida.",
-    "criterion": "Critério: virada de placar não devolvida (peso maior), desvantagem numérica superada, multikill, clutch e proximidade no placar. O round 10 vem em segundo, com os 3 kills de pradablade.",
+    "decisive": "Partida sem round decisivo: a diferença se construiu ao longo do jogo, e o placar terminou em 13-5. O round de maior peso moveu 8% da chance de vitória, abaixo dos 12% que o modelo exige para chamar um round de decisivo.",
+    "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário.",
+    "mvp_card": "donk666 foi o MVP com 124,7 de ADR contra 96,3 de xKacpersky, jogando de coringa.",
+    "highlight_card": "ar1sFLXR: 3,7 regiões por round, contra 4,7 de mediana dos outros.",
+    "spectacle": "Round 10: 3K de pradablade e virou com 3 jogadores a menos. Não foi o round decisivo porque esta partida não teve um -- a diferença se construiu ao longo do jogo.",
+    "economy": null,
     "carry": "donk666 é o retrato do papel nesta partida: leva o time nas costas. 38% do dano do time, 3 rounds de multikill.",
     "highlight": "ar1sFLXR é o retrato do papel nesta partida: poucas regiões por round, quase não se desloca. 3.7 regiões por round, 4149u percorridas."
   }

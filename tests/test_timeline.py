@@ -28,6 +28,11 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 PROCESSED = PROJECT_ROOT / "data" / "processed"
 
 PARTIDAS = sorted(d.name for d in PROCESSED.glob("match_*") if (d / "breakdown.json").exists())
+
+# Diferença tolerada entre o tempo do timeline e o do replay. 0,02s é folga de
+# arredondamento (o timeline guarda 2 casas, o quadro do replay 3); qualquer
+# coisa acima disso é os dois relógios medindo de jeitos diferentes.
+TOLERANCIA_RELOGIOS_S = 0.02
 precisa_de_dados = pytest.mark.skipif(not PARTIDAS, reason="nenhuma partida processada")
 
 
@@ -105,6 +110,36 @@ def test_exatamente_um_round_e_marcado_como_ultimo():
         ultimos = [x["round"] for x in b if x["ultimo_round"]]
         assert len(ultimos) == 1, f"{match_id}: {ultimos}"
         assert ultimos[0] == max(x["round"] for x in b)
+
+
+@precisa_de_dados
+@pytest.mark.parametrize("match_id", PARTIDAS)
+def test_tempo_do_timeline_bate_com_o_do_replay(match_id):
+    """REGRESSÃO: os dois relógios discordavam em até 0,25s.
+
+    A conversão tick→quadro no export do replay usava divisão INTEIRA, então o
+    evento era jogado no último quadro antes do tick dele. Como o timeline usa o
+    tick exato, o mesmo acontecimento aparecia em dois instantes diferentes —
+    mediana de 0,15s de diferença nos 641 momentos das 9 partidas.
+    """
+    replay = json.loads((PROCESSED / match_id / "replay.json").read_text(encoding="utf-8"))
+    por_round = {r["round"]: r for r in replay["rounds"]}
+    de_morte = ("abertura_perdida", "morte_isolada", "virada_numerica")
+
+    ruins = []
+    for b in _breakdown(match_id):
+        r = por_round.get(b["round"])
+        if r is None:
+            continue
+        for m in b["moments"]:
+            if m["kind"] not in de_morte:
+                continue
+            quadro = (m["tick"] - r["t0"]) / replay["sample_every"]
+            no_replay = quadro / replay["sample_hz"]
+            if abs(m["t"] - no_replay) > TOLERANCIA_RELOGIOS_S:
+                ruins.append((b["round"], m["kind"], m["t"], round(no_replay, 3)))
+
+    assert not ruins, f"{match_id}: timeline e replay discordam: {ruins}"
 
 
 # --- Filtro na origem --------------------------------------------------------

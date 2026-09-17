@@ -159,6 +159,16 @@ def derive_place_areas(
     centroids = place_centroids(positions)
     sites = site_centroids(bomb, positions)
 
+    if centroids.height == 0:
+        # Sem nenhuma amostra de posição não há o que particionar. Antes daqui o
+        # código seguia e estourava ao ordenar uma tabela sem colunas.
+        return pl.DataFrame(
+            schema={
+                "place": pl.String, "area": pl.String, "area_ratio": pl.Float64,
+                "n_samples": pl.UInt32, "source": pl.String,
+            }
+        )
+
     faltando = [s for s in ("BombsiteA", "BombsiteB") if s not in sites]
     if faltando:
         # Sem os dois sites não existe eixo A-B: devolver tudo como Mid seria

@@ -1,9 +1,20 @@
 """
-Insights da partida: round decisivo, MVP e "carrega piano".
+Insights da partida: round decisivo, round mais impressionante, MVP e
+"carrega piano".
 
-As três perguntas que este módulo responde não têm definição oficial no CS —
-então cada uma vem com uma fórmula explícita e com os componentes dela expostos
-no output. A ideia é que dê pra discordar do peso, não do fato.
+As duas primeiras perguntas eram UMA só e somavam pontos inventados num score
+único. Foram separadas, porque "que round mais mudou o resultado" e "que round
+foi mais impressionante de assistir" não são a mesma pergunta:
+
+- **decisivo** sai de `metrics/win_probability.py`, por variação da chance de
+  vencer a partida. Não tem peso nenhum -- ponto sem retorno, déficit e placar
+  apertado caem da matemática;
+- **impressionante** sai de `metrics/round_spectacle.py`, onde pesos relativos
+  são legítimos porque a pergunta é subjetiva, e ficam todos expostos no card.
+
+A economia entra como LEITURA ao lado do round decisivo, nunca como peso: um
+round perdido em eco era esperado, um round perdido com equipamento superior
+custou mais do que o placar mostra.
 
 Gera `data/processed/<match_id>/insights.json`, consumido pelo dashboard.
 """
@@ -26,10 +37,20 @@ from metrics.archetypes import (
 from metrics.clutch import clutch_situations
 from metrics.player_profile import player_profile
 from metrics.positioning import position_samples
+from metrics.match_highlights import match_highlights
+from metrics.round_spectacle import round_spectacle
+from metrics.structural_roles import FUNCOES
+from metrics.timing import detect_tickrate
+from metrics.win_probability import detecta_formato, win_probability
 from scripts.narrative import (
-    criterio_e_vice,
+    criterio_do_decisivo,
+    historia_destaque,
+    historia_mvp,
     historia_papel,
     historia_round_decisivo,
+    historia_round_impressionante,
+    historia_sem_round_decisivo,
+    leitura_economica,
 )
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -174,74 +195,48 @@ def round_situations(kills: pl.DataFrame, rounds: pl.DataFrame, team_of: dict[in
     return out
 
 
-def pick_decisive_round(progression: list[dict], situations: dict[int, dict]) -> dict:
-    """Elege o round mais importante da partida.
+def contexto_economico(
+    ticks: pl.DataFrame, rn: int, vencedor: str, tickrate: int
+) -> dict:
+    """Equipamento médio dos dois times no round, para LER o resultado.
 
-    Componentes, todos expostos no output pra poder discordar do peso:
+    Deliberadamente fora do score de decisividade: se o dinheiro entrasse na
+    conta que elege o round, a decisividade passaria a depender de quanto os
+    times tinham, e isso é outra pergunta. Aqui ele só explica o que o placar
+    não explica -- perder com equipamento superior custa mais que perder em eco.
 
-    1. VIRADA NO PLACAR (peso maior): o round que desempata ou vira o placar e
-       depois do qual o vencedor nunca mais perde a liderança. É o "ponto sem
-       volta" — e não depende de modelo de win probability (que está fora do
-       escopo do projeto justamente por precisar de um corpus grande).
-    2. DESVANTAGEM NUMÉRICA SUPERADA: ganhar 2v4 vale mais que ganhar 5v3.
-    3. CLUTCH: o round terminou com um jogador sozinho contra dois ou mais.
-    4. PLACAR APERTADO: rounds decididos com o jogo empatado ou a um round de
-       distância pesam mais que rounds de jogo já resolvido.
+    Amostra nos dois primeiros segundos de jogo, a mesma janela que
+    `metrics/round_breakdown.py` usa: depois disso o valor já reflete arma
+    trocada e compra do chão.
     """
-    final = progression[-1]
-    champion = "A" if final["score_a"] > final["score_b"] else "B"
+    perdedor = "B" if vencedor == "A" else "A"
+    inicio = ticks.filter(pl.col("round_num") == rn)["tick"].min()
+    if inicio is None:
+        return {"equip_vencedor": None, "equip_perdedor": None,
+                "perdedor_estava_melhor": False}
 
-    # a partir de qual round o campeão assume a liderança e nunca mais a perde
-    point_of_no_return = None
-    for i, p in enumerate(progression):
-        lead = p["score_a"] - p["score_b"]
-        if champion == "B":
-            lead = -lead
-        if lead > 0 and all(
-            (q["score_a"] - q["score_b"] if champion == "A" else q["score_b"] - q["score_a"]) > 0
-            for q in progression[i:]
-        ):
-            point_of_no_return = p["round"]
-            break
-
-    scored = []
-    for p in progression:
-        rn = p["round"]
-        sit = situations.get(rn, {})
-        gap_before = abs(
-            (p["score_a"] - (1 if p["winner_team"] == "A" else 0))
-            - (p["score_b"] - (1 if p["winner_team"] == "B" else 0))
+    def medio(time: str) -> float | None:
+        lado = side_of_team(time, rn)
+        recorte = ticks.filter(
+            (pl.col("round_num") == rn)
+            & (pl.col("tick") <= inicio + 2 * tickrate)
+            & (pl.col("side") == lado)
         )
+        if recorte.height == 0:
+            return None
+        por_jogador = recorte.group_by("steamid").agg(
+            pl.col("current_equip_value").max().alias("v")
+        )
+        return float(por_jogador["v"].mean() or 0)
 
-        score = 0.0
-        reasons = []
-
-        if rn == point_of_no_return:
-            score += 40
-            reasons.append("assumiu a liderança que não devolveu mais")
-        if sit.get("worst_deficit_overcome", 0) >= 2:
-            score += 12 * sit["worst_deficit_overcome"]
-            reasons.append(f"virou com {sit['worst_deficit_overcome']} jogadores a menos")
-        if sit.get("clutch_player"):
-            score += 20
-            reasons.append(f"clutch de {sit['clutch_player']} em 1v{sit['clutch_against']}")
-        if sit.get("multikill_count", 0) >= 3:
-            score += 6 * sit["multikill_count"]
-            reasons.append(f"{sit['multikill_count']}K de {sit['multikill_player']}")
-        if gap_before <= 1:
-            score += 15
-            reasons.append("jogo empatado ou a um round de diferença")
-        if p["reason"] == "bomb_defused":
-            score += 8
-            reasons.append("decidido no desarme")
-        elif p["reason"] == "bomb_exploded":
-            score += 6
-            reasons.append("decidido na explosão")
-
-        scored.append({**p, **sit, "importance": score, "reasons": reasons})
-
-    best = max(scored, key=lambda x: x["importance"])
-    return {"decisive": best, "point_of_no_return": point_of_no_return, "all_rounds": scored}
+    ev, ep = medio(vencedor), medio(perdedor)
+    return {
+        "equip_vencedor": ev,
+        "equip_perdedor": ep,
+        # "igual ou superior": empatar em equipamento e perder também não tem
+        # desculpa de economia.
+        "perdedor_estava_melhor": ev is not None and ep is not None and ep >= ev,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -370,8 +365,29 @@ def build(match_id: str) -> Path:
     team_of, rosters = resolve_teams(ticks)
     progression = score_progression(rounds)
     situations = round_situations(kills, rounds, team_of)
-    decisive = pick_decisive_round(progression, situations)
     players = build_player_indices(basic, crosshair, position, features, situations, team_of)
+
+    # --- Round decisivo: variação da probabilidade de vitória --------------
+    # O formato sai da própria demo (a troca de lado), e não de um MR12 assumido.
+    tickrate = detect_tickrate(rounds, ticks)["tickrate"]
+    formato = detecta_formato(rounds, ticks)
+    if formato.intervalo != HALFTIME_ROUND:
+        # O resto do projeto ainda tem HALFTIME_ROUND fixo em 12 espalhado em
+        # sete módulos. Enquanto isso não for unificado, discordância entre o
+        # formato detectado e a constante é avisada em vez de ignorada -- o
+        # placar por TIME depende dela e sairia trocado em silêncio.
+        print(
+            f"  aviso: formato detectado {formato.nome} (intervalo no round "
+            f"{formato.intervalo}), mas HALFTIME_ROUND vale {HALFTIME_ROUND}"
+        )
+    curva, wp_resumo = win_probability(progression, formato)
+
+    # --- Round mais impressionante: pergunta separada, card separado -------
+    _, espetaculo = round_spectacle(
+        situations, rounds, kills, pl.read_parquet(interim / "bomb.parquet")
+        if (interim / "bomb.parquet").exists() else None,
+        team_of, tickrate,
+    )
 
     # --- Papeis nomeados (metrics/archetypes.py) ---
     tabelas = {
@@ -413,6 +429,22 @@ def build(match_id: str) -> Path:
     perfil.write_parquet(processed / "player_profile.parquet")
     perfil_rounds.write_parquet(processed / "player_profile_rounds.parquet")
 
+    # --- Os dois cards de jogador da aba de leitura -----------------------
+    # A seção tem estrutura fixa: round decisivo em cima, MVP à esquerda e o
+    # outro destaque à direita. Ver metrics/match_highlights.py.
+    funcao_por_steamid = {}
+    caminho_funcoes = processed / "structural_roles_summary.parquet"
+    estruturais = pl.read_parquet(caminho_funcoes) if caminho_funcoes.exists() else None
+    if estruturais is not None:
+        # a função exibida no card do MVP é a do lado em que ele jogou mais
+        melhor = estruturais.filter(pl.col("funcao").is_not_null()).sort(
+            "rounds_na_funcao", descending=True
+        )
+        for linha in melhor.iter_rows(named=True):
+            funcao_por_steamid.setdefault(
+                int(linha["steamid"]), FUNCOES[linha["funcao"]][0]
+            )
+
     referencia = load_reference()
     papeis_round, papeis = compute_for_match(
         tabelas, saidas, positions, areas, team_of, vencedor_por_round, reference=referencia
@@ -425,11 +457,38 @@ def build(match_id: str) -> Path:
 
     # Card da esquerda: quem levou o time nas costas. Card da direita: quem
     # exemplificou COM MAIS FORCA algum dos outros papeis -- nao um slot fixo.
+    time_vencedor = "A" if progression[-1]["score_a"] > progression[-1]["score_b"] else "B"
+    candidatos_destaque, cards = match_highlights(
+        players, papeis, estruturais, funcao_por_steamid, time_vencedor
+    )
+    mvp_card = cards["mvp"]
+    destaque_card = cards["destaque"]
+
+    # O sistema antigo de cards (carry + pick_highlight) continua alimentando o
+    # payload porque outras telas leem essas chaves; o que mudou é QUEM aparece
+    # nos dois cards da aba de leitura.
     carry = papeis.sort("idx_carry", descending=True).row(0, named=True)
     destaque = pick_highlight(papeis, excluir_steamid=carry["steamid"])
 
     meta = json.loads((processed / "match_meta.json").read_text(encoding="utf-8"))
     final = progression[-1]
+
+    # O tooltip do gráfico de placar lê daqui: progressão + o que aconteceu no
+    # round. Antes esta lista carregava junto o `importance` do esquema de
+    # pontos; ele saiu, e nada no site dependia dele além do próprio card.
+    rounds_scored = [{**p, **situations.get(p["round"], {})} for p in progression]
+
+    # O round decisivo é a linha da curva enriquecida com o que aconteceu nele.
+    # Pode ser None, e isso é RESULTADO: numa partida de placar largo nenhum
+    # round decidiu nada, e o card diz exatamente isso.
+    dec = wp_resumo["decisivo"]
+    decisive_round = None
+    economia = None
+    if dec is not None:
+        rn = int(dec["round"])
+        por_round = {p["round"]: p for p in progression}
+        decisive_round = {**por_round.get(rn, {}), **situations.get(rn, {}), **dec}
+        economia = contexto_economico(ticks, rn, dec["winner_team"], tickrate)
 
     payload = {
         "match": {
@@ -439,11 +498,26 @@ def build(match_id: str) -> Path:
             "score_b": final["score_b"],
             "rosters": rosters,
             "halftime": HALFTIME_ROUND,
+            "formato": formato.nome,
         },
         "progression": progression,
-        "decisive_round": decisive["decisive"],
-        "point_of_no_return": decisive["point_of_no_return"],
-        "rounds_scored": decisive["all_rounds"],
+        "decisive_round": decisive_round,
+        # A curva inteira: é ela que o gráfico de probabilidade de vitória desenha.
+        "win_probability": {
+            "curve": curva.to_dicts(),
+            "top": wp_resumo["top"],
+            "empate_no_topo": wp_resumo["empate_no_topo"],
+            "maior_wpa": wp_resumo["maior_wpa"],
+            "minimo_exigido": wp_resumo["minimo_exigido"],
+        },
+        "spectacle_round": espetaculo["impressionante"],
+        "mvp_card": mvp_card,
+        "highlight_card": destaque_card,
+        # a tabela de candidatos vai junto para dar pra auditar por que um
+        # destaque venceu o outro -- mesma razão de o decisivo expor os 3 maiores
+        "highlight_candidates": candidatos_destaque.head(8).to_dicts(),
+        "economy_decisive": economia,
+        "rounds_scored": rounds_scored,
         "players": players.to_dicts(),
         "archetypes": papeis.to_dicts(),
         "player_profile": perfil.to_dicts(),
@@ -460,10 +534,27 @@ def build(match_id: str) -> Path:
         # cabecalho de scripts/narrative.py sobre por que elas nao sao montadas
         # em JavaScript.
         "narrative": {
-            "decisive": historia_round_decisivo(
-                decisive["decisive"], decisive["point_of_no_return"]
+            "decisive": (
+                historia_round_decisivo(decisive_round, dec)
+                if dec is not None
+                else historia_sem_round_decisivo(
+                    wp_resumo, (final["score_a"], final["score_b"])
+                )
             ),
-            "criterion": criterio_e_vice(decisive["all_rounds"], decisive["decisive"]),
+            "criterion": criterio_do_decisivo(wp_resumo),
+            "mvp_card": historia_mvp(mvp_card),
+            "highlight_card": historia_destaque(destaque_card),
+            "spectacle": historia_round_impressionante(
+                espetaculo, dec["round"] if dec else None
+            ),
+            "economy": (
+                leitura_economica(
+                    economia["equip_vencedor"], economia["equip_perdedor"],
+                    economia["perdedor_estava_melhor"],
+                )
+                if economia
+                else None
+            ),
             "carry": historia_papel(
                 PAPEIS["carry"][0], carry["name"],
                 evidencia("carry", carry), PAPEIS["carry"][1],
