@@ -38,12 +38,19 @@ justamente porque a versão ingênua contradizia o que acontece na prática.
 ```
 parsing/      wrapper do awpy.Demo (parse + persistência em parquet)
 metrics/      geometry, basic_metrics, awp_metrics, crosshair, map_angles,
-              positioning, grenades, player_roles
+              positioning, grenades, map_areas, site_roles, clutch, formatting,
+              archetypes      — papéis comportamentais (como ele joga)
+              structural_roles — função no round (o que ele faz), por lado
+              player_profile   — frequência de cada comportamento, por jogador
+              win_probability  — chance de vencer a partida, round a round
+              round_spectacle  — o round mais impressionante
+              match_highlights — MVP e o outro destaque da partida
+              grenade_throws   — ficha de execução de cada arremesso
 clustering/   playstyle (PCA + KMeans), global_model.json e cluster_names.json
 dashboard/    app Streamlit, tokens visuais e web/ (painel de portfólio)
 scripts/      CLI de processamento, ajuste do clustering global, calibração de
-              ângulos e build da página web
-tests/        101 testes (dados sintéticos + validação contra as demos reais)
+              ângulos, narrativa dos cards e build da página web
+tests/        275 testes (dados sintéticos + validação contra as demos reais)
 demos/        .dem baixados do FACEIT (gitignored)
 data/raw/     .dem originais (gitignored)
 data/interim/ tabelas brutas em parquet (gitignored — ticks passa de 1M de linhas)
@@ -591,6 +598,69 @@ deve rodar num free tier a cada acesso. Por isso: o parsing roda localmente, só
 os parquet de `data/processed/` (leves) vão pro repositório e alimentam o
 dashboard público, e processar uma demo nova é um passo de CLI local.
 
+## Fase 5 — leitura da partida
+
+### O round decisivo não sai de uma soma de pontos
+
+A primeira versão somava pesos inventados: ponto sem retorno 40, clutch 20,
+defuse 8. Não havia resposta para "por que clutch vale 20 e defuse vale 8" — era
+chute disfarçado de métrica.
+
+Hoje o round decisivo sai de **variação da probabilidade de vitória**
+(`metrics/win_probability.py`): programação dinâmica sobre os estados de placar
+até o fim da partida. Três componentes que antes tinham peso caem da matemática:
+
+| estado | ganhar 1 round move |
+|---|---|
+| 0-0 | +8,1% |
+| 11-11 | +25,0% |
+| 3-11 | +0,5% |
+| 12-3 | +0,1% |
+
+A probabilidade de ganhar um round isolado é **neutra (0,5) de propósito**:
+alavancagem é propriedade do estado do placar, não de qual time é melhor. Usar a
+taxa observada na própria partida seria circular — o time que venceu teve taxa
+alta justamente porque venceu.
+
+**Partida sem round decisivo é resultado, não lacuna.** O piso sai do formato
+(1,5× o round mais barato possível) e separa o corpus como deveria: as 5
+partidas de placar largo ficam sem round decisivo, as 4 apertadas ficam com um.
+
+### Decisivo e impressionante são perguntas diferentes
+
+Um clutch de 1v3 num placar de 3-13 é lindo e não decidiu nada; um round banal
+ganho em 11-11 decidiu muito. Somar os dois num score só produz resposta que não
+serve para nenhuma das duas. Nas 9 partidas os dois rounds **divergem em 8 e
+coincidem em 1**.
+
+### Função estrutural, separada da comportamental
+
+Duas camadas que nunca se misturam: o que ele **faz** no round (âncora, coringa,
+rotativo, entry, trader, lurker, suporte, AWPer) e **como** ele faz (carrega
+piano, baiter, camper, repick). Um âncora pode ser carrega piano ou baiter, e as
+duas coisas são verdade.
+
+A função é atribuída por (jogador, round) e a da partida é a dominante naquele
+lado, **sempre exibida com a concentração** — "âncora em 9 de 12 rounds de CT",
+porque quem ancora em 9 e rotaciona em 3 não é "âncora e ponto".
+
+### Ficha de execução de granada
+
+O `weapon_fire` marca o clique; a granada sai da mão depois, e é o ângulo da
+**soltura** que importa. O tick é derivado por ancoragem geométrica, não por
+atraso fixo de animação: varre-se a janela entre o clique e o primeiro sample do
+projétil e vence o tick cuja geometria melhor reproduz o ponto observado.
+
+Medido em **3.020 arremessos**: resíduo mediano de 0,51 unidade, 99,9%
+convergindo, e o atraso da animação sai em 7 ticks (109 ms) em vez de chutado.
+
+Dois achados que só apareceram porque a altura dos olhos é **medida** e não
+chutada: ela dá 64,17u, o que **valida** as 64 unidades que o projeto já supunha,
+e revelou um deslocamento vertical de +3,2u no ponto de nascimento da granada —
+idêntico em pé e agachado — que ninguém tinha modelado.
+
+---
+
 ## Próximos passos
 
 - [x] Processar mais demos — 9 partidas, 1.870 player-rounds
@@ -600,3 +670,7 @@ dashboard público, e processar uma demo nova é um passo de CLI local.
       de entrada — ver "O que ainda depende de julgamento humano"
 - [ ] Deploy do dashboard público com os dados pré-processados
 - [ ] GIF no README mostrando o CLI processando uma demo nova
+- [ ] **Capturas de tela do dashboard neste README** — é o que faz alguém parar
+      para olhar, e hoje o arquivo não tem nenhuma
+- [ ] Validação prática dos comandos de console dos lineups dentro do jogo
+- [ ] Confirmar os rótulos dos três grupos de força de arremesso
