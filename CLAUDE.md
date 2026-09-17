@@ -43,7 +43,7 @@ dashboard/    app Streamlit + theme + web/
 scripts/      process_demo (CLI), fit_global_clusters, fit_archetype_reference,
               build_player_profiles, show_derived_angles e show_map_areas
               (calibração), narrative, build_site
-tests/        124 testes
+tests/        175 testes
 data/raw/     .dem originais (gitignored)
 data/interim/ tabelas brutas em parquet (gitignored, ticks tem 1M+ linhas)
 data/processed/ métricas calculadas (versionadas — é o que o dashboard usa)
@@ -159,6 +159,41 @@ testada e estava errada.
    visível das páginas, e as 220 atribuições round a round que iam no payload de
    cada página sem ninguém ler.
 
+8a. **A origem do tempo do timeline é o FIM DO FREEZE TIME (`freeze_end`).**
+   Declarada em `metrics/round_breakdown.py` e exibida como relógio (`1:09`), não
+   como segundos crus com sinal — número sem referência não se audita. Com essa
+   origem, **tempo negativo é impossível**: o módulo levanta erro em vez de
+   renderizar. Evento depois do fim do round é legítimo (dá pra morrer nos
+   segundos seguintes) e sai marcado como pós-round, com tempo positivo.
+
+8b. **Mortes dentro do freeze time não pertencem a round nenhum.** O demo
+   registra mortes entre o `start` e o `freeze_end` — não é warmup (o
+   `is_warmup_period` acaba antes do primeiro `start`), é gente se matando no
+   tempo parado do pré-partida, e em match_08 o freeze do round 1 dura 93s contra
+   20s dos demais. Medido: 11 mortes assim nas 9 partidas, 4 com
+   `attacker_steamid == victim_steamid`. Elas produziam DOIS sintomas de uma vez:
+   timestamp negativo no timeline e jogador ganhando +1 kill por se matar. O
+   filtro é `parsing.kills_do_round_jogado` e precisa ser aplicado em **todo**
+   ponto de entrada de kills — `load_interim`, o parse do zero e os scripts que
+   leem o parquet direto. A cauda depois do fim do round fica.
+
+8c. **Sem atacante, o texto nunca usa o nome de alguém.** Morte por queda, bomba
+   ou dano de zona vem com `attacker_steamid` nulo, e o demo às vezes preenche o
+   atacante com a própria vítima. O código diz o que aconteceu ("morreu para a
+   bomba") em vez de cair num fallback que nomeia a vítima como matador. Há teste
+   varrendo todas as partidas para `attacker_steamid == victim_steamid`.
+
+8d. **Navegação do replay usa o TICK, não o tempo em segundos.** O tick é o dado
+   primário; segundos são apresentação. Derivar a navegação do tempo permitiu que
+   um `Math.max(0, ...)` no caminho do clique mascarasse o timestamp negativo — a
+   interface ficava plausível e o dado continuava errado. Se o tick cair fora da
+   janela exportada do replay, a entrada não é clicável e o motivo vai no
+   `title`: melhor não navegar que navegar para o lugar errado em silêncio.
+
+8e. **Dinheiro é formatado por `metrics.formatting.format_money`.** `3.750$`, com
+   separador brasileiro e símbolo depois. Um lugar só para decidir isso; espalhar
+   f-string com `$` garante que a próxima tela escreva de outro jeito.
+
 9. **Convenção de ângulos do CS2: pitch positivo = olhar para BAIXO.** Validada
    empiricamente (erro mediano de 1,76° no tick da kill, contra 6,52° na
    convenção invertida). O teste roda a convenção invertida como controle — se
@@ -248,6 +283,12 @@ Não "resolva" nenhum destes automaticamente; pergunte.
 - Limiares: janela de trade (5s), peek/hold (120u / 250u), janela de contato
   (1s), tolerância de pré-fire (25°), permanência mínima para contar rotação
   (15% do round).
+- Limiares da autópsia de round (`metrics/round_breakdown.py`): equipamento médio
+  que caracteriza economia (2000$), diferença de equipamento que torna a economia
+  explicativa (1500$) e a cauda pós-round (8s). Registro da medição: dos 56
+  rounds abaixo do limiar de eco nas 9 partidas, **18 são round de pistola com os
+  dois times igualmente pobres** — ali a economia não explica a derrota, e o
+  texto passou a dizer isso em vez de tratar os dois casos igual.
 - Limiares dos papéis (`metrics/archetypes.py`): distância máxima para uma morte
   de companheiro contar como "do seu lado" (900u), assinatura de repick (250u de
   percurso, razão 3x), mínimo de tentativas de clutch (3), mínimo de rounds com
@@ -285,7 +326,7 @@ Não "resolva" nenhum destes automaticamente; pergunte.
 ## Como validar mudanças
 
 ```bash
-py -3.12 -m pytest tests/ -v          # 124 testes
+py -3.12 -m pytest tests/ -v          # 175 testes
 py -3.12 -m scripts.process_demo data/raw/match_01.dem --match-id match_01 --from-interim
 py -3.12 -m streamlit run dashboard/app.py
 ```
