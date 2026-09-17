@@ -167,3 +167,158 @@ def historia_papel(label: str, nome: str, evidencia_texto: str, significado: str
         # um fragmento; aqui ela abre frase
         pedacos.append(evidencia_texto[0].upper() + evidencia_texto[1:])
     return ". ".join(pedacos).replace("..", ".") + "."
+
+
+# ---------------------------------------------------------------------------
+# Como o jogador joga, em português
+# ---------------------------------------------------------------------------
+#
+# A tabela de taxas responde "quanto", mas obriga o leitor a comparar 17 linhas
+# com 17 medianas para descobrir o que aquele jogador tem de diferente. Este
+# bloco faz essa comparação e diz o resultado.
+#
+# Nada aqui é interpretação de função: "joga longe do time em 64% dos rounds
+# contra 37% dos outros" é releitura da medição. Apelido de papel continua
+# vindo de metrics/archetypes.py, que tem definição de jogo por trás.
+#
+# Cada frase tem versão para taxa ALTA e para taxa BAIXA. Só entram as duas
+# direções que fazem sentido de jogo: "quase nunca pega a AWP" descreve alguém,
+# mas "quase nunca fica por último" não descreve ninguém -- é consequência do
+# round, não escolha do jogador. Onde a direção baixa não diz nada, ela é None.
+# (frase para taxa ALTA, frase para taxa BAIXA, unidade do denominador).
+#
+# A unidade importa porque nem toda taxa é sobre rounds: "mata de AWP em 2 de 13
+# kills" e "converte quando sobra em 2 de 5 vezes" têm denominadores próprios, e
+# dizer "em 2 rounds" neles seria falso.
+FRASES_PERFIL = {
+    "pct_rounds_longe_do_time": ("joga longe do time", "joga colado no time", "rounds"),
+    "pct_rounds_isolado": ("fica sozinho no mapa", None, "rounds"),
+    "pct_rounds_ancorado": ("ancora num lugar só", "não para quieto", "rounds"),
+    "pct_rounds_rotacionando": ("roda o mapa", None, "rounds"),
+    "pct_rounds_com_awp": ("puxa a AWP", None, "rounds"),
+    "pct_kills_de_awp": ("mata de AWP", None, "kills"),
+    "pct_rounds_abertura_awp": ("abre o round de AWP", None, "rounds"),
+    "pct_rounds_smg_ou_pistola_com_time_de_rifle": (
+        "fica com a arma pior que a do time", None, "rounds"
+    ),
+    "pct_rounds_contato_cedo": ("encosta cedo no adversário", "demora a encostar", "rounds"),
+    "pct_rounds_contato_tarde": ("chega ao contato depois do time", None, "rounds"),
+    "pct_rounds_primeiro_contato_do_time": ("é quem abre o round pro time", None, "rounds"),
+    # "sai vivo" e não "sai vivo dos rounds": a contagem já vem logo depois, e
+    # "sai vivo dos rounds em 10 rounds" repete a palavra na mesma frase.
+    "pct_rounds_sobreviveu": ("sai vivo", "morre", "rounds"),
+    "pct_mortes_trocadas": ("morre trocado pelo time", "morre sem o time trocar", "mortes"),
+    "pct_rounds_trade_kill": ("troca a morte do companheiro", None, "rounds"),
+    "pct_rounds_em_clutch": ("sobra por último", None, "rounds"),
+    "taxa_conversao_clutch": (
+        "fecha o round sozinho", "não fecha o round sozinho", "vezes"
+    ),
+    "pct_rounds_lurk": ("faz lurk", None, "rounds"),
+}
+
+# Singular de cada unidade, para "em 1 round" não sair "em 1 rounds".
+SINGULAR = {"rounds": "round", "kills": "kill", "mortes": "morte", "vezes": "vez"}
+
+# O quanto a taxa precisa se afastar da mediana dos outros para virar
+# característica. 15 pontos é o mesmo limiar que o painel usa para destacar a
+# linha -- abaixo disso, com 20 rounds, a diferença cabe em três rounds.
+MARGEM_CARACTERISTICA = 0.15
+
+# Quantas características entram no resumo. Quatro descrevem um jogador; a lista
+# inteira vira a própria tabela de novo, que é o que este bloco existe pra evitar.
+MAX_CARACTERISTICAS = 4
+
+
+def descreve_jogador(perfil: dict) -> dict:
+    """Como o jogador joga: o que ele tem de diferente dos outros.
+
+    Devolve `titulo` (a característica mais forte), `resumo` (uma frase com as
+    principais) e `caracteristicas` (a lista, cada uma com o bruto e a mediana
+    dos outros, pra dar pra discordar da frase olhando o número).
+
+    Regras, as mesmas do resto da narrativa do projeto:
+    - característica sem denominador suficiente não entra (amostra fraca não
+      vira afirmação);
+    - jogador sem nada fora da curva devolve lista vazia e um resumo que diz
+      isso, em vez de inventar um traço.
+    """
+    achados = []
+
+    for chave, (alto, baixo, unidade) in FRASES_PERFIL.items():
+        taxa, ref = perfil.get(chave), perfil.get(f"{chave}_ref")
+        n, d = perfil.get(f"{chave}_n"), perfil.get(f"{chave}_d")
+        if taxa is None or ref is None or not d:
+            continue
+        if perfil.get(f"{chave}_fraco"):
+            continue
+
+        diferenca = taxa - ref
+        if abs(diferenca) < MARGEM_CARACTERISTICA:
+            continue
+        frase = alto if diferenca > 0 else baixo
+        if frase is None:
+            continue
+
+        # Característica invertida conta o COMPLEMENTO. "joga colado no time" sai
+        # da taxa de LONGE estar baixa, então o número que sustenta a frase é
+        # `d - n`, não `n`. Mostrar o `n` ali seria exibir a contagem do
+        # comportamento oposto ao que a frase afirma.
+        acima = diferenca > 0
+        n_frase = int(n) if acima else int(d) - int(n)
+        ref_frase = float(ref) if acima else 1.0 - float(ref)
+
+        achados.append(
+            {
+                "chave": chave,
+                "texto": frase,
+                "taxa": n_frase / int(d),
+                "ref": ref_frase,
+                "n": n_frase,
+                "d": int(d),
+                "unidade": unidade if n_frase != 1 else SINGULAR.get(unidade, unidade),
+                "acima": acima,
+                "distancia": abs(diferenca),
+            }
+        )
+
+    achados.sort(key=lambda a: a["distancia"], reverse=True)
+    achados = achados[:MAX_CARACTERISTICAS]
+
+    nome = perfil.get("name", "o jogador")
+    rounds = perfil.get("rounds_jogados") or 0
+    partidas = perfil.get("partidas") or 1
+    base = f"{rounds} rounds em {partidas} partida" + ("s" if partidas > 1 else "")
+
+    if not achados:
+        return {
+            "titulo": "sem traço fora da curva",
+            "resumo": (
+                f"{nome} não se afasta da mediana do time em nenhum dos comportamentos "
+                f"medidos ({base}). Isso é resultado, não falta de dado: jogador "
+                f"distribuído existe."
+            ),
+            "caracteristicas": [],
+        }
+
+    # Cada característica leva a própria contagem: "faz lurk em 6 rounds" diz
+    # mais que "faz lurk", e sem isso o leitor tem que descer até os chips pra
+    # saber se são 6 de 18 ou 17 de 18.
+    # Quando a unidade é "rounds", o total já foi dito na abertura da frase e
+    # repetir vira ruído. Nas outras (kills, mortes, vezes que ficou por último)
+    # o denominador é outro e precisa aparecer: "em 5 mortes" não diz de quantas.
+    textos = [
+        f"{a['texto']} em {a['n']} {a['unidade']}"
+        if a["chave"].startswith("pct_rounds_")
+        else f"{a['texto']} em {a['n']} de {a['d']} {a['unidade']}"
+        for a in achados
+    ]
+    if len(textos) == 1:
+        lista = textos[0]
+    else:
+        lista = ", ".join(textos[:-1]) + " e " + textos[-1]
+
+    return {
+        "titulo": achados[0]["texto"],
+        "resumo": f"Em {base}, {nome} {lista}.",
+        "caracteristicas": achados,
+    }
