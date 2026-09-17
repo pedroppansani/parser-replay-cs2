@@ -37,17 +37,18 @@ pronto não serve aqui.
 parsing/      wrapper do awpy.Demo
 metrics/      geometry, basic_metrics, awp_metrics, crosshair, map_angles,
               positioning, grenades, map_areas, site_roles, player_roles,
-              clutch, archetypes (+ archetype_reference.json)
+              clutch, archetypes (+ archetype_reference.json), player_profile
 clustering/   playstyle (PCA + KMeans), global_model.json e cluster_names.json
 dashboard/    app Streamlit + theme + web/
 scripts/      process_demo (CLI), fit_global_clusters, fit_archetype_reference,
-              show_derived_angles e show_map_areas (calibração), narrative,
-              build_site
-tests/        101 testes
+              build_player_profiles, show_derived_angles e show_map_areas
+              (calibração), narrative, build_site
+tests/        124 testes
 data/raw/     .dem originais (gitignored)
 data/interim/ tabelas brutas em parquet (gitignored, ticks tem 1M+ linhas)
 data/processed/ métricas calculadas (versionadas — é o que o dashboard usa)
 data/global_clusters/ clustering ajustado no conjunto das partidas
+data/player_profiles/ perfil por jogador acumulado em todas as partidas
 ```
 
 ## Convenções do código
@@ -102,6 +103,33 @@ testada e estava errada.
    que se quer medir. Confirmado nos dados: todo jogador visita 3 ou 4 dos 4
    grupos numa única partida.
 
+7a. **O perfil por jogador é a leitura principal dos dados comportamentais; o
+   agrupamento existe para DESCOBRIR os grupos, não para descrever pessoas.**
+   As médias de um grupo ("distância média do time 1.100u", "8 regiões") não
+   pertencem a jogador nenhum: os rounds de um mesmo jogador se espalham por
+   todos os grupos. Quem responde sobre uma pessoa é `metrics/player_profile.py`,
+   com a frequência de cada comportamento nos rounds DELE ("puxa AWP em 40% dos
+   rounds"). Ao adicionar uma leitura sobre jogador, ela vai no perfil — não em
+   mais uma média de cluster.
+
+   Três contratos do perfil, e nenhum é decoração:
+   - **taxa sempre com o bruto** (`_n` e `_d`): com 22 rounds, 41% e 50% são o
+     mesmo número, e só o percentual inventa precisão;
+   - **taxa sempre com referência** (`_ref`, mediana dos OUTROS jogadores,
+     leave-one-out): "60% longe do time" não diz se é muito ou pouco;
+   - **amostra pequena marcada** (`_fraco`): 1 de 1 não é 100%.
+
+   E lado importa: distância, ancoragem e contato cedo saem também em `_ct` e
+   `_t`, com a referência calculada dentro do lado.
+
+7c. **"Longe do time" precisa de piso absoluto, não só do corte na mediana.**
+   Corte na mediana marca metade dos rounds como "longe" por construção,
+   inclusive num time em que todo mundo joga colado — basta ser marginalmente
+   menos colado que os outros. Vale também `RAIO_COMPANHEIRO`: com um
+   companheiro dentro do raio de apoio, o jogador não está longe do time em
+   leitura nenhuma. Foi um teste sintético (jogador colado no time) que pegou
+   isso, e ele está travado.
+
 7b. **As features do clustering são só COMPORTAMENTO.** `damage`, `kills`,
    `trade_kills`, `utility_damage` e `survived` saíram da lista: são resultado, e
    com elas dentro o KMeans agrupava os rounds por como terminaram — o que a
@@ -115,16 +143,21 @@ testada e estava errada.
    "entry") é interpretação e cabe ao Pedro, via `clustering/cluster_names.json`.
    **Não gere rótulos automáticos.**
 
-   O que o painel mostra enquanto não há nome é uma DESCRIÇÃO derivada da
-   medição (`describe_clusters`): "longe do time, chega a se afastar muito" é
-   uma releitura dos números, não uma leitura de jogo. A distinção é a razão de
-   a função existir — antes disso o painel mostrava "Cluster 0" e um gráfico de
-   pontos com eixos de PCA, o que é verdadeiro e ilegível, e a aba inteira era
-   decorativa. A descrição sai do perfil GLOBAL, não do recorte da partida,
-   senão o mesmo grupo mudaria de texto de uma página para a outra.
+   O nome que aparece é uma DESCRIÇÃO derivada da medição (`describe_clusters`):
+   "longe do time, chega a se afastar muito" é releitura dos números, não
+   leitura de jogo. Ela sai do perfil GLOBAL, não do recorte da partida, senão o
+   mesmo grupo mudaria de texto de uma página para a outra.
 
-   O `cluster_names.json` também entra no payload do site: sem isso o arquivo só
-   teria efeito no dashboard local e a nomeação nunca chegaria à página.
+   O `cluster_names.json` entra no payload do site: sem isso o arquivo só teria
+   efeito no dashboard local e a nomeação nunca chegaria à página.
+
+   **O agrupamento não tem mais seção própria no site.** Ele existe como insumo:
+   o único lugar onde aparece é o "jeito de jogar mais frequente" da aba Perfil.
+   A seção que o desenhava foi removida porque descrevia GRUPOS DE ROUNDS — média
+   que não pertence a jogador nenhum — e o perfil por jogador responde a mesma
+   pergunta direto. Junto saiu a última ocorrência da palavra "cluster" no texto
+   visível das páginas, e as 220 atribuições round a round que iam no payload de
+   cada página sem ninguém ler.
 
 9. **Convenção de ângulos do CS2: pitch positivo = olhar para BAIXO.** Validada
    empiricamente (erro mediano de 1,76° no tick da kill, contra 6,52° na
@@ -252,7 +285,7 @@ Não "resolva" nenhum destes automaticamente; pergunte.
 ## Como validar mudanças
 
 ```bash
-py -3.12 -m pytest tests/ -v          # 59 testes
+py -3.12 -m pytest tests/ -v          # 124 testes
 py -3.12 -m scripts.process_demo data/raw/match_01.dem --match-id match_01 --from-interim
 py -3.12 -m streamlit run dashboard/app.py
 ```

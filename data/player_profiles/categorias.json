@@ -1,0 +1,30 @@
+{
+ "Posicionamento": [
+  "pct_rounds_longe_do_time",
+  "pct_rounds_isolado",
+  "pct_rounds_ancorado",
+  "pct_rounds_rotacionando"
+ ],
+ "Arma e abertura": [
+  "pct_rounds_com_awp",
+  "pct_kills_de_awp",
+  "pct_rounds_abertura_awp",
+  "pct_rounds_smg_ou_pistola_com_time_de_rifle"
+ ],
+ "Tempo e contato": [
+  "pct_rounds_contato_cedo",
+  "pct_rounds_contato_tarde",
+  "pct_rounds_primeiro_contato_do_time",
+  "tempo_mediano_ate_contato_s"
+ ],
+ "Resultado e trade": [
+  "pct_rounds_sobreviveu",
+  "pct_mortes_trocadas",
+  "pct_rounds_trade_kill",
+  "pct_rounds_em_clutch",
+  "taxa_conversao_clutch"
+ ],
+ "Lurk": [
+  "pct_rounds_lurk"
+ ]
+}
