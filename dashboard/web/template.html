@@ -692,7 +692,7 @@
   .plist { margin-top: 16px; overflow: hidden; }
   .prow {
     display: grid;
-    grid-template-columns: minmax(110px, 1.1fr) 58px 54px minmax(110px, 1.5fr) 62px;
+    grid-template-columns: minmax(0,1.4fr) 34px 34px 34px 58px 58px minmax(0,2.2fr) 54px;
     gap: 14px;
     align-items: center;
     padding: 12px 16px;
@@ -706,26 +706,74 @@
   .prow .n.q { color: var(--ink-2); font-size: 12.5px; }
   .prow .sp svg { display: block; width: 100%; height: 28px; }
   @media (max-width: 700px) {
-    .prow { grid-template-columns: 1fr 54px 52px; grid-template-areas: "nk adr kast" "sp sp sp"; row-gap: 8px; }
+    /* No celular as oito colunas não cabem lado a lado. K/A/M ficam na primeira
+       linha junto do nome, ADR e KAST na segunda, e o gráfico ocupa a terceira
+       inteira. Nenhum dos três é escondido: kills e mortes não são detalhe. */
+    .prow { grid-template-columns: 1fr 32px 32px 32px;
+            grid-template-areas: "nk k a m" "adr kast kast kast" "sp sp sp sp";
+            row-gap: 8px; column-gap: 8px; }
+    .prow > *:nth-child(1) { grid-area: nk; }
+    .prow > *:nth-child(2) { grid-area: k; }
+    .prow > *:nth-child(3) { grid-area: a; }
+    .prow > *:nth-child(4) { grid-area: m; }
+    .prow > *:nth-child(5) { grid-area: adr; }
+    .prow > *:nth-child(6) { grid-area: kast; }
     .prow .sp { grid-area: sp; }
     .prow .hide { display: none; }
   }
 
-  .facets { margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 235px), 1fr)); gap: 12px; }
-  .facet { padding: 15px; }
-  .facet h4 { font-family: var(--display); font-weight: 700; font-size: 16px; margin: 0; letter-spacing: -0.015em; }
-  .facet .mt { font-family: var(--mono); font-size: 10.5px; color: var(--dim); margin-top: 2px; }
-  .facet ul { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
-  .facet li { font-family: var(--mono); font-size: 11px; color: var(--ink-2); display: flex; justify-content: space-between; gap: 8px; }
-  .facet li span { color: var(--dim); }
+
+  /* ---- perfil do jogador ---- */
+  .pfbotoes { display:flex; flex-wrap:wrap; gap:8px; margin:20px 0 4px; }
+  .pfbotoes .timelab { font-family:var(--mono); font-size:10px; letter-spacing:.07em;
+                       text-transform:uppercase; color:var(--dim); align-self:center;
+                       margin-right:2px; }
+  .pfbotoes .timelab + button { margin-left:0; }
+  .pfbotoes button { font-family:var(--body); font-size:13.5px; padding:7px 13px;
+                     border:1px solid var(--line); border-radius:99px; cursor:pointer;
+                     background:var(--paper); color:var(--ink); transition:.12s; }
+  .pfbotoes button:hover { border-color:var(--ink2); }
+  .pfbotoes button[aria-pressed="true"] { background:var(--ink); color:var(--paper);
+                                          border-color:var(--ink); }
+  .pfleitura { margin:22px 0 4px; padding:18px 20px; border:1px solid var(--line);
+               border-radius:12px; background:var(--paper-2); }
+  .pfleitura h3 { margin:0 0 4px; font-size:20px; letter-spacing:-.015em; }
+  .pfleitura .quem { font-family:var(--mono); font-size:10.5px; letter-spacing:.07em;
+                     text-transform:uppercase; color:var(--dim); }
+  .pfleitura p { margin:10px 0 0; font-size:15px; line-height:1.55; }
+  .pftracos { display:flex; flex-wrap:wrap; gap:9px; margin-top:14px; }
+  .pftracos .traco { border:1px solid var(--line); border-radius:9px; padding:8px 11px;
+                     background:var(--paper); }
+  .pftracos .traco b { display:block; font-size:13px; font-weight:500; }
+  .pftracos .traco span { font-family:var(--mono); font-size:10.5px; color:var(--dim); }
+  .pftracos .traco.abaixo b { color:var(--t); }
+
+  .pfbar { display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end; margin:18px 0 6px; }
+  .pfbar label { font-family:var(--mono); font-size:10.5px; letter-spacing:.06em;
+                 text-transform:uppercase; color:var(--dim); display:flex; flex-direction:column; gap:5px; }
+  .pfbar select { font-family:var(--body); font-size:14px; padding:7px 10px; border:1px solid var(--line);
+                  border-radius:8px; background:var(--paper); color:var(--ink); min-width:172px; }
+  .pfhead { display:flex; gap:26px; flex-wrap:wrap; margin:14px 0 22px;
+            font-family:var(--mono); font-size:11.5px; color:var(--dim); }
+  .pfhead b { font-family:var(--display); font-size:16px; color:var(--ink); letter-spacing:-.01em; }
+  .pfcat { margin-top:26px; }
+  .pfcat > h3 { font-size:15px; margin:0 0 10px; letter-spacing:-.01em; }
+  table.pf { width:100%; border-collapse:collapse; font-size:13.5px; }
+  table.pf th { text-align:left; font-family:var(--mono); font-size:9.5px; letter-spacing:.07em;
+                text-transform:uppercase; color:var(--dim); font-weight:500; padding:0 8px 7px 0; }
+  table.pf td { padding:7px 8px 7px 0; border-top:1px solid var(--line); vertical-align:middle; }
+  table.pf td.num { font-family:var(--mono); white-space:nowrap; }
+  table.pf .bruto { color:var(--dim); font-size:11.5px; margin-left:5px; }
+  table.pf .refv { color:var(--dim); font-family:var(--mono); font-size:11.5px; }
+  table.pf tr.fora td.num b { color:var(--ct); }
+  table.pf .fraco { font-family:var(--mono); font-size:9.5px; letter-spacing:.05em;
+                    text-transform:uppercase; color:var(--t); margin-left:6px; }
+  .pfbarra { display:inline-block; vertical-align:middle; width:88px; height:6px;
+             border-radius:99px; background:var(--paper-2); overflow:hidden; margin-right:9px; }
+  .pfbarra i { display:block; height:100%; background:var(--ink2); }
+  .pfbarra i.destaque { background:var(--ct); }
 
   /* ---- jeitos de jogar: legenda, descricao e barra grande ---- */
-  .facet h4 .dot { display:inline-block; width:10px; height:10px; border-radius:50%;
-                   margin-right:7px; vertical-align:middle; }
-  .facetdesc { margin:8px 0 10px; color:var(--dim); font-size:13px; line-height:1.45; }
-  h3.sub { font-size:17px; margin:26px 0 4px; letter-spacing:-.01em; }
-  .mixcard .mix.big { height:14px; border-radius:7px; margin-top:10px; }
-  .mixcard .mixlab { margin-top:7px; }
 
   /* ---- funções por jogador (aba Estilos) ---- */
   .eyebrow.tier2 { margin-top: 46px; padding-top: 30px; border-top: 1px solid var(--line); }
@@ -757,9 +805,6 @@
   .pc .nums { display: grid; grid-template-columns: repeat(auto-fit, minmax(62px, 1fr)); gap: 6px; margin-top: 10px; }
   .pc .nums div { font-family: var(--mono); font-size: 12px; color: var(--ink); font-variant-numeric: tabular-nums; }
   .pc .nums span { display: block; font-size: 9.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--dim); }
-  .pc .mix { display: flex; height: 5px; border-radius: 99px; overflow: hidden; margin-top: 10px; background: var(--paper-2); }
-  .pc .mix i { display: block; height: 100%; }
-  .pc .mixlab { font-family: var(--mono); font-size: 9.5px; color: var(--dim); margin-top: 4px; }
 
   .callout {
     margin-top: 16px;
@@ -829,9 +874,10 @@
 
   <nav class="tabs" role="tablist" aria-label="Seções">
     <button role="tab" aria-selected="true" data-tab="replay">Replay</button>
-    <button role="tab" aria-selected="false" data-tab="insights">Insights</button>
+    <button role="tab" aria-selected="false" data-tab="insights">Resumo</button>
     <button role="tab" aria-selected="false" data-tab="rounds">Placar</button>
     <button role="tab" aria-selected="false" data-tab="jogadores">Jogadores</button>
+    <button role="tab" aria-selected="false" data-tab="perfil">Perfil</button>
     <button role="tab" aria-selected="false" data-tab="estilos">Estilos</button>
   </nav>
 
@@ -946,6 +992,33 @@
   </section>
 
   <!-- ESTILOS -->
+  <section class="panel" data-panel="perfil" hidden>
+    <div class="eyebrow">Frequência, não média</div>
+    <h2 class="sec">Perfil do jogador</h2>
+    <p class="lead">
+      A aba Estilos agrupa <b>rounds</b>: as médias de um grupo descrevem o grupo, não uma pessoa —
+      os rounds de um mesmo jogador se espalham por todos eles. Aqui o mesmo dado é olhado pelo
+      outro lado: <b>em que fração dos rounds dele</b> cada comportamento aconteceu. Toda taxa vem
+      com o bruto ao lado e com a mediana dos outros jogadores, porque 41% em 22 rounds e 50% em
+      22 rounds são, na prática, o mesmo número.
+    </p>
+
+    <div id="pf-botoes" class="pfbotoes"></div>
+    <div class="pfbar">
+      <label>Comparar com <select id="pf-b"></select></label>
+      <label>Base
+        <select id="pf-escopo">
+          <option value="match">só esta partida</option>
+          <option value="all">todas as partidas processadas</option>
+        </select>
+      </label>
+    </div>
+    <div id="pf-leitura" class="pfleitura"></div>
+    <div id="pf-head" class="pfhead"></div>
+    <div id="pf-tabela"></div>
+    <div class="callout" id="pf-nota"></div>
+  </section>
+
   <section class="panel" data-panel="estilos" hidden>
     <div class="eyebrow">Função medida, não atribuída</div>
     <h2 class="sec">O que cada um faz em quadra</h2>
@@ -957,24 +1030,6 @@
     </p>
     <div class="rosters" id="roles"></div>
     <div class="callout" id="rolenote"></div>
-
-    <div class="eyebrow tier2">Round a round</div>
-    <h2 class="sec">Quatro jeitos de jogar um round</h2>
-    <p class="lead">
-      A tabela acima dá um rótulo por jogador. Mas ninguém joga os 22 rounds do mesmo jeito: o
-      mesmo atleta entra primeiro num round e segura posição no seguinte. Aqui <b>cada round de
-      cada jogador</b> foi classificado num de quatro jeitos de jogar, medidos por onde ele fica,
-      quanto anda e quando encosta no adversário — nada de resultado, só comportamento.
-    </p>
-    <div class="facets" id="facets"></div>
-    <h3 class="sub">Quanto cada jogador varia</h3>
-    <p class="lead tight">
-      A barra de cada jogador é a fatia dos rounds dele em cada jeito de jogar. Barra de uma cor
-      só é quem repete o mesmo round a partida inteira; barra repartida é quem muda de função
-      conforme o round pede.
-    </p>
-    <div class="rosters" id="mixroster"></div>
-    <div class="callout" id="naming"></div>
   </section>
 
   <footer class="foot" id="foot"></footer>
@@ -1164,52 +1219,92 @@
   // consultar a legenda, e é o que sobrevive a daltonismo — cor sozinha não é.
   // Cada forma remete ao efeito: smoke é a área que ela vira, flash é o estouro,
   // HE é o fragmento, molotov é a gota que espalha fogo.
-  function nadeGlyph(ctx, kind, x, y, r, col) {
+  // `ang` gira o símbolo na direção do voo. Só é usado nos que têm frente
+  // (molotov e HE); estrela e nuvem não têm, e girá-las só criaria tremor.
+  function nadeGlyph(ctx, kind, x, y, r, col, ang) {
     ctx.save();
     ctx.translate(x, y);
+
+    // Contorno escuro por baixo do claro: o radar tem áreas claras E escuras, e
+    // um traço branco sozinho sumia sobre o concreto claro da Mirage.
+    ctx.shadowColor = "rgba(10,16,24,0.55)";
+    ctx.shadowBlur = 3;
     ctx.fillStyle = col;
-    ctx.strokeStyle = "rgba(255,255,255,0.92)";
-    ctx.lineWidth = 1.1;
-    ctx.beginPath();
+    ctx.strokeStyle = "rgba(255,255,255,0.95)";
+    ctx.lineWidth = 1.2;
+    ctx.lineJoin = "round";
 
     if (kind === "flash") {
-      // estrela de 4 pontas
+      // Estrela de quatro pontas com um núcleo claro: o estouro tem centro, e o
+      // núcleo é o que a distingue do serrilhado da HE quando as duas estão
+      // pequenas na tela.
+      ctx.beginPath();
       for (var i = 0; i < 8; i++) {
-        var ang = (Math.PI / 4) * i - Math.PI / 2;
-        var rad = i % 2 === 0 ? r * 1.45 : r * 0.46;
-        var px = Math.cos(ang) * rad, py = Math.sin(ang) * rad;
+        var a1 = (Math.PI / 4) * i - Math.PI / 2;
+        var rad = i % 2 === 0 ? r * 1.55 : r * 0.42;
+        var px = Math.cos(a1) * rad, py = Math.sin(a1) * rad;
         if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
       }
       ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.beginPath();
+      ctx.arc(0, 0, r * 0.3, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(255,255,255,0.95)";
+      ctx.fill();
     } else if (kind === "he") {
-      // círculo serrilhado
-      for (var j = 0; j < 12; j++) {
-        var a2 = (Math.PI / 6) * j - Math.PI / 2;
-        var r2 = j % 2 === 0 ? r * 1.15 : r * 0.74;
+      // Anel serrilhado, VAZADO. Cheio virava uma bolota no tamanho em que ela
+      // aparece; vazado lê como fragmento e deixa o mapa aparecer por dentro.
+      ctx.beginPath();
+      for (var j = 0; j < 14; j++) {
+        var a2 = (Math.PI / 7) * j - Math.PI / 2 + (ang || 0);
+        var r2 = j % 2 === 0 ? r * 1.2 : r * 0.72;
         var qx = Math.cos(a2) * r2, qy = Math.sin(a2) * r2;
         if (j === 0) ctx.moveTo(qx, qy); else ctx.lineTo(qx, qy);
       }
       ctx.closePath();
-    } else if (kind === "molotov") {
-      // gota, ponta pra cima
-      ctx.moveTo(0, -r * 1.4);
-      ctx.quadraticCurveTo(r, -r * 0.1, 0, r);
-      ctx.quadraticCurveTo(-r, -r * 0.1, 0, -r * 1.4);
-    } else if (kind === "decoy") {
-      // quadrado vazado — é o único que não faz nada, e lê como "oco"
-      ctx.rect(-r * 0.8, -r * 0.8, r * 1.6, r * 1.6);
+      ctx.lineWidth = 2;
       ctx.strokeStyle = col;
-      ctx.lineWidth = 1.6;
       ctx.stroke();
-      ctx.restore();
-      return;
+      ctx.shadowBlur = 0;
+      ctx.lineWidth = 0.9;
+      ctx.strokeStyle = "rgba(255,255,255,0.85)";
+      ctx.stroke();
+    } else if (kind === "molotov") {
+      // Gota com a ponta na direção do voo: é o único tipo em que a orientação
+      // diz alguma coisa, porque ele espalha fogo para onde caiu.
+      ctx.rotate((ang || 0) + Math.PI / 2);
+      ctx.beginPath();
+      ctx.moveTo(0, -r * 1.5);
+      ctx.quadraticCurveTo(r * 0.95, -r * 0.15, 0, r * 1.0);
+      ctx.quadraticCurveTo(-r * 0.95, -r * 0.15, 0, -r * 1.5);
+      ctx.fill();
+      ctx.stroke();
+    } else if (kind === "decoy") {
+      // Quadrado vazado com um ponto no meio: é o único que não faz nada, e o
+      // "oco com miolo" lê como imitação de granada.
+      ctx.beginPath();
+      ctx.rect(-r * 0.82, -r * 0.82, r * 1.64, r * 1.64);
+      ctx.lineWidth = 1.8;
+      ctx.strokeStyle = col;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.beginPath();
+      ctx.arc(0, 0, r * 0.26, 0, Math.PI * 2);
+      ctx.fillStyle = col;
+      ctx.fill();
     } else {
-      // smoke: círculo cheio, a mesma forma da zona que ela vira
-      ctx.arc(0, 0, r, 0, Math.PI * 2);
+      // Smoke: silhueta de nuvem, três arcos. O círculo de antes era a mesma
+      // forma do vulto do jogador, e num mapa cheio os dois se confundiam.
+      ctx.beginPath();
+      ctx.arc(-r * 0.52, r * 0.12, r * 0.62, 0, Math.PI * 2);
+      ctx.arc(r * 0.52, r * 0.12, r * 0.62, 0, Math.PI * 2);
+      ctx.arc(0, -r * 0.3, r * 0.78, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
     }
 
-    ctx.fill();
-    ctx.stroke();
     ctx.restore();
   }
 
@@ -1644,7 +1739,11 @@
     // alfa decrescente em vez de uma linha só): uma linha inteira e opaca
     // riscava o mapa e competia com o rastro dos jogadores.
     cur.nades.forEach(function (n) {
-      var k = frame - n.f0;
+      // Índice CONTÍNUO, não o quadro inteiro. O replay é amostrado a 4 Hz e os
+      // jogadores já eram interpolados; a granada não era, então ela andava aos
+      // saltos de 250ms enquanto todo o resto deslizava — e granada é justamente
+      // o objeto mais rápido da tela.
+      var k = pos - n.f0;
       var last = n.x.length - 1;
       if (k < 0) return;
 
@@ -1656,19 +1755,38 @@
       if (afterLanding > LANDING_HOLD) return;
 
       var ki = Math.min(k, last);
-      var gx = mx(n.x[ki]), gy = my(n.y[ki]);
+      var ka = Math.floor(ki), kb = Math.min(last, ka + 1), kt = ki - ka;
+      var gx = mx(lerp(n.x[ka], n.x[kb], kt));
+      var gy = my(lerp(n.y[ka], n.y[kb], kt));
+
+      // Direção do voo, em pixels de tela: é ela que orienta os símbolos que
+      // têm frente. Usa o trecho anterior quando a granada já parou, senão o
+      // glifo gira sozinho no último quadro.
+      var da = Math.max(0, ka - 1), db = Math.min(last, da + 1);
+      var ang = Math.atan2(my(n.y[db]) - my(n.y[da]), mx(n.x[db]) - mx(n.x[da]));
 
       // TRAJETÓRIA INTEIRA, esmaecendo na origem. O rastro curto de antes
       // mostrava "tem uma granada ali"; o traço inteiro responde DE ONDE ela
       // veio, que é metade da leitura de uma execução.
       ctx.lineCap = "round";
-      for (var i = 1; i <= ki; i++) {
+      for (var i = 1; i <= ka; i++) {
         ctx.globalAlpha = (0.10 + 0.32 * (i / Math.max(1, ki))) * (landed ? 0.5 : 1);
         ctx.strokeStyle = col;
         ctx.lineWidth = 0.7 + 1.2 * (i / Math.max(1, ki));
         ctx.beginPath();
         ctx.moveTo(mx(n.x[i - 1]), my(n.y[i - 1]));
         ctx.lineTo(mx(n.x[i]), my(n.y[i]));
+        ctx.stroke();
+      }
+      // o pedaço entre a última amostra e a posição atual, senão o rastro fica
+      // um quadro atrás da granada e ela parece descolada da própria trajetória
+      if (ka >= 1 && kt > 0 && ka < last) {
+        ctx.globalAlpha = 0.42 * (landed ? 0.5 : 1);
+        ctx.strokeStyle = col;
+        ctx.lineWidth = 1.9;
+        ctx.beginPath();
+        ctx.moveTo(mx(n.x[ka]), my(n.y[ka]));
+        ctx.lineTo(gx, gy);
         ctx.stroke();
       }
 
@@ -1682,15 +1800,24 @@
       if (landed) {
         // marca de onde caiu, sumindo devagar
         ctx.globalAlpha = 0.5 * (1 - afterLanding / LANDING_HOLD);
-        nadeGlyph(ctx, n.k, gx, gy, 5, col);
+        nadeGlyph(ctx, n.k, gx, gy, 5, col, ang);
         ctx.globalAlpha = 1;
         return;
       }
 
       // Em voo: o símbolo carrega o tipo. Cor sozinha não basta — a legenda
       // obrigava a desviar o olho do mapa, e quatro cores não sobrevivem a
-      // daltonismo (mesma razão do facetamento no scatter de clusters).
-      nadeGlyph(ctx, n.k, gx, gy, 5.5, col);
+      // daltonismo (a paleta foi validada para isso -- ver decisão 10 do CLAUDE.md).
+      //
+      // O halo existe porque o glifo dividia espaço com o rastro da própria
+      // granada e com o dos jogadores: sem ele, o objeto em voo se confundia
+      // com a linha que ele acabou de desenhar.
+      ctx.save();
+      ctx.globalAlpha = 0.22;
+      ctx.fillStyle = col;
+      ctx.beginPath(); ctx.arc(gx, gy, 9.5, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+      nadeGlyph(ctx, n.k, gx, gy, 5.5, col, ang);
     });
 
     // Detonação de flash e HE. Diferente de smoke e fogo, elas não ocupam área:
@@ -2232,10 +2359,14 @@
     var wrap = document.getElementById("players");
     var hd = document.createElement("div");
     hd.className = "prow hd";
-    hd.innerHTML = "<div>Jogador</div><div>ADR</div><div>KAST</div><div>Dano round a round</div><div class='hide'>Mira</div>";
+    hd.innerHTML = "<div>Jogador</div><div>K</div><div>A</div><div>M</div>" +
+      "<div>ADR</div><div>KAST</div><div>Dano round a round</div><div class='hide'>Mira</div>";
     wrap.appendChild(hd);
 
     var ch = {}; D.crosshair.forEach(function (c) { ch[c.name] = c; });
+    // kills/assists/mortes vêm do perfil: é lá que eles são contados, e contar
+    // de novo aqui criaria duas fontes para o mesmo número.
+    var kad = {}; (D.player_profile || []).forEach(function (r) { kad[r.name] = r; });
     var maxD = 0;
     Object.keys(D.damage_by_player).forEach(function (k) {
       D.damage_by_player[k].forEach(function (v) { if (v > maxD) maxD = v; });
@@ -2253,7 +2384,11 @@
 
       var row = document.createElement("div");
       row.className = "prow";
+      var kd = kad[p.name] || {};
       row.innerHTML = "<div class='nk'>" + p.name + "<small>time " + p.team + "</small></div>" +
+        "<div class='n'>" + (kd.kills_totais != null ? kd.kills_totais : "—") + "</div>" +
+        "<div class='n q'>" + (kd.assistencias != null ? kd.assistencias : "—") + "</div>" +
+        "<div class='n q'>" + (kd.mortes != null ? kd.mortes : "—") + "</div>" +
         "<div class='n'>" + br(p.adr) + "</div><div class='n q'>" + fmt(p.kast_pct, 0) + "%</div>" +
         "<div class='sp'>" + sp + "</div>" +
         "<div class='n q hide'>" + fmt((ch[p.name] || {}).crosshair_score, 0) + "</div>";
@@ -2270,18 +2405,6 @@
     // Características qualificadas por jogador, indexadas pra montar os chips.
     var byPlayer = {};
     (D.traits || []).forEach(function (t) { (byPlayer[t.name] = byPlayer[t.name] || []).push(t); });
-
-    // Mistura de clusters do jogador: em quantos rounds ele caiu em cada grupo.
-    // É o contraponto honesto ao rótulo fixo — mostra que ninguém joga o mesmo
-    // round 22 vezes.
-    var mixOf = {};
-    var clusterIds = [];
-    (D.clusters || []).forEach(function (c) {
-      (mixOf[c.name] = mixOf[c.name] || {})[c.cluster] = (mixOf[c.name][c.cluster] || 0) + 1;
-      if (clusterIds.indexOf(c.cluster) < 0) clusterIds.push(c.cluster);
-    });
-    clusterIds.sort(function (a, b) { return a - b; });
-    var MIXC = [C.ct, C.t, C.aqua, "#b9c3cf"];
 
     ["A", "B"].forEach(function (team) {
       var mine = D.roles.filter(function (p) { return p.team === team; });
@@ -2311,14 +2434,6 @@
           : "<div class='ev'>Não lidera o time em nenhuma das métricas de função acima do piso — " +
             "joga distribuído.</div>";
 
-        var mix = mixOf[p.name] || {};
-        var totalMix = clusterIds.reduce(function (s, c) { return s + (mix[c] || 0); }, 0);
-        var bars = clusterIds.map(function (c, i) {
-          var n = mix[c] || 0;
-          if (!n) return "";
-          return "<i style='width:" + (100 * n / totalMix) + "%;background:" + MIXC[i % MIXC.length] + "'></i>";
-        }).join("");
-
         card.innerHTML =
           "<div class='top'><div class='who'>" + p.name + "</div>" +
           "<div class='" + roleCls + "'>" + roleTxt + "</div></div>" +
@@ -2331,9 +2446,7 @@
           "<div>" + fmt(p.enemy_blind_seconds, 0) + "s<span>cegou</span></div>" +
           "<div>" + fmt(p.avg_distance_from_team, 0) + "u<span>dist. time</span></div>" +
           "<div>" + Math.round(p.trade_share * 100) + "%<span>trade</span></div>" +
-          "</div>" +
-          (totalMix ? "<div class='mix'>" + bars + "</div><div class='mixlab'>mistura de clusters em " +
-            totalMix + " rounds</div>" : "");
+          "</div>";
 
         col.appendChild(card);
       });
@@ -2349,108 +2462,216 @@
       "time não deixa rastro no demo, e deduzir isso seria chute com cara de métrica.";
   })();
 
-  /* ================= ESTILOS: CLUSTERS ================= */
+  /* ================= PERFIL DO JOGADOR ================= */
 
-  (function jeitosDeJogar() {
-    var wrap = document.getElementById("facets");
-    var pts = D.clusters || [];
-    var desc = {};
-    (D.cluster_descriptions || []).forEach(function (d) { desc[d.cluster] = d; });
+  (function perfil() {
+    var CAT = {
+      "Posicionamento": [
+        ["pct_rounds_longe_do_time", "Joga longe do time"],
+        ["pct_rounds_isolado", "Fica isolado"],
+        ["pct_rounds_ancorado", "Ancora num lugar só"],
+        ["pct_rounds_rotacionando", "Roda o mapa"]
+      ],
+      "Arma e abertura": [
+        ["pct_rounds_com_awp", "Pega a AWP"],
+        ["pct_kills_de_awp", "Kills que saíram de AWP"],
+        ["pct_rounds_abertura_awp", "Abre o round de AWP"],
+        ["pct_rounds_smg_ou_pistola_com_time_de_rifle", "Fica com a arma pior que o time"]
+      ],
+      "Tempo e contato": [
+        ["pct_rounds_contato_cedo", "Encosta cedo no adversário"],
+        ["pct_rounds_contato_tarde", "Encosta depois do time"],
+        ["pct_rounds_primeiro_contato_do_time", "É o primeiro do time a encostar"]
+      ],
+      "Resultado e trade": [
+        ["pct_rounds_sobreviveu", "Sobrevive ao round"],
+        ["pct_mortes_trocadas", "Mortes dele que o time trocou"],
+        ["pct_rounds_trade_kill", "Troca a morte do companheiro"],
+        ["pct_rounds_em_clutch", "Fica por último"],
+        ["taxa_conversao_clutch", "Converte quando fica por último"]
+      ],
+      "Lurk": [
+        ["pct_rounds_lurk", "Lurk: isolado, longe do time e encostando depois"]
+      ]
+    };
+    // Quanto o jogador precisa se afastar da mediana dos outros para o número
+    // ser destacado. Abaixo disso, destacar seria transformar ruido em achado.
+    var MARGEM_DESTAQUE = 0.15;
 
-    // Nome dado pelo Pedro, se houver; senão a descrição derivada da medição.
-    // O que NUNCA aparece é "Cluster 0": número de algoritmo não diz nada a quem
-    // abre a página.
-    function nomeDoGrupo(c) {
+    var daPartida = D.player_profile || [];
+    var acumulado = D.player_profile_summary || [];
+    if (!daPartida.length) return;
+
+    var botoes = document.getElementById("pf-botoes");
+    var selB = document.getElementById("pf-b");
+    var selE = document.getElementById("pf-escopo");
+    var escolhido = null;
+
+    function base() {
+      return selE.value === "all" && acumulado.length ? acumulado : daPartida;
+    }
+    function acha(nome) {
+      var b = base();
+      for (var i = 0; i < b.length; i++) if (b[i].name === nome) return b[i];
+      return null;
+    }
+
+    // Time de cada jogador, para os botões saírem agrupados por time em vez de
+    // numa fila alfabética de dez nomes.
+    var timeDoJogador = {};
+    (D.roles || []).forEach(function (r) { timeDoJogador[r.name] = r.team; });
+
+    function nomesDaBase() {
+      return base().map(function (p) { return p.name; });
+    }
+
+    function montaBotoes() {
+      var nomes = nomesDaBase();
+      var porTime = { "A": [], "B": [], "": [] };
+      nomes.forEach(function (n) { (porTime[timeDoJogador[n] || ""]).push(n); });
+
+      var html = "";
+      ["A", "B", ""].forEach(function (t) {
+        var lista = porTime[t].sort();
+        if (!lista.length) return;
+        if (t) html += "<span class='timelab'>Time " + t + "</span>";
+        html += lista.map(function (n) {
+          return "<button type='button' data-nome=\"" + n + "\" aria-pressed='" +
+            (n === escolhido) + "'>" + n + "</button>";
+        }).join("");
+      });
+      botoes.innerHTML = html;
+
+      Array.prototype.forEach.call(botoes.querySelectorAll("button"), function (b) {
+        b.addEventListener("click", function () {
+          escolhido = b.getAttribute("data-nome");
+          montaBotoes();
+          desenha();
+        });
+      });
+    }
+
+    function preencheSelects() {
+      var nomes = nomesDaBase().sort();
+      if (nomes.indexOf(escolhido) < 0) escolhido = nomes[0];
+      var atual = selB.value;
+      selB.innerHTML = "<option value=''>— ninguém —</option>" +
+        nomes.map(function (n) { return "<option>" + n + "</option>"; }).join("");
+      if (nomes.indexOf(atual) >= 0) selB.value = atual;
+    }
+
+    function pct(v) { return v === null || v === undefined ? "—" : Math.round(v * 100) + "%"; }
+
+    function celula(p, chave) {
+      var v = p[chave], n = p[chave + "_n"], d = p[chave + "_d"], ref = p[chave + "_ref"];
+      if (d === null || d === undefined || d === 0) {
+        return "<td class='num'>—<span class='bruto'>sem denominador</span></td>";
+      }
+      var fraco = p[chave + "_fraco"];
+      var fora = !fraco && v !== null && ref !== null && ref !== undefined &&
+                 Math.abs(v - ref) >= MARGEM_DESTAQUE;
+      var largura = v === null ? 0 : Math.max(2, Math.min(100, v * 100));
+      return "<td class='num'>" +
+        "<span class='pfbarra'><i class='" + (fora ? "destaque" : "") +
+        "' style='width:" + largura + "%'></i></span>" +
+        "<b>" + pct(v) + "</b>" +
+        "<span class='bruto'>" + n + " de " + d + "</span>" +
+        (fraco ? "<span class='fraco'>amostra fraca</span>" : "") +
+        "</td>";
+    }
+
+    function cabecalho(p) {
+      if (!p) return "";
+      var partidas = p.partidas || 1;
+      var grupo = p.grupo_dominante === null || p.grupo_dominante === undefined
+        ? "sem grupo dominante"
+        : (nomeDoGrupoPerfil(p.grupo_dominante) + " · " + p.grupo_dominante_n +
+           " de " + p.grupo_dominante_d + " rounds");
+      var kad = (p.kills_totais || 0) + " / " + (p.assistencias || 0) + " / " + (p.mortes || 0);
+      return "<div><b>" + p.name + "</b><br>" + p.rounds_jogados + " rounds em " +
+        partidas + (partidas > 1 ? " partidas" : " partida") + "</div>" +
+        "<div>kills / assists / mortes<br><b style='font-size:15px'>" + kad + "</b></div>" +
+        "<div>jeito de jogar mais frequente<br><b style='font-size:13px'>" + grupo + "</b></div>";
+    }
+
+    function nomeDoGrupoPerfil(c) {
       var dado = (D.cluster_names || {})[String(c)];
       if (dado) return dado;
-      return desc[c] ? desc[c].titulo : "grupo " + c;
+      var desc = (D.cluster_descriptions || []).filter(function (x) { return x.cluster === c; })[0];
+      return desc ? desc.titulo : "grupo " + c;
     }
 
-    var ids = (D.cluster_profiles || []).map(function (p) { return p.cluster; }).sort(
-      function (a, b) { return a - b; });
-    var CORES = [C.ct, C.t, C.aqua, "#b9c3cf"];
-    var corDe = {};
-    ids.forEach(function (c, i) { corDe[c] = CORES[i % CORES.length]; });
+    function leitura(p) {
+      if (!p || !p.descricao) return "";
+      var d = p.descricao;
+      var tracos = (d.caracteristicas || []).map(function (c) {
+        return "<div class='traco" + (c.acima ? "" : " abaixo") + "'>" +
+          "<b>" + c.texto + "</b>" +
+          "<span>" + Math.round(c.taxa * 100) + "% · " + c.n + " de " + c.d + " " +
+          (c.unidade || "rounds") +
+          " · mediana dos outros " + Math.round(c.ref * 100) + "%</span></div>";
+      }).join("");
+      return "<div class='quem'>Como " + p.name + " joga</div>" +
+        "<h3>" + d.titulo + "</h3>" +
+        "<p>" + d.resumo + "</p>" +
+        (tracos ? "<div class='pftracos'>" + tracos + "</div>" : "");
+    }
 
-    // --- os quatro jeitos, um card cada ---
-    (D.cluster_profiles || []).slice().sort(function (a, b) { return a.cluster - b.cluster; })
-      .forEach(function (pr) {
-        var d = desc[pr.cluster] || {};
-        var card = document.createElement("div");
-        card.className = "card facet";
-        card.innerHTML =
-          "<h4><span class='dot' style='background:" + corDe[pr.cluster] + "'></span>" +
-          nomeDoGrupo(pr.cluster) + "</h4>" +
-          "<div class='mt'>" + pr.n_rounds + " rounds · " +
-          Math.round(100 * pr.n_rounds / (pts.length || 1)) + "% desta partida</div>" +
-          "<p class='facetdesc'>" + (d.descricao || "") + "</p>" +
-          "<ul>" +
-          "<li><span>distância do time</span>" + fmt(pr.avg_distance_from_team, 0) + "u</li>" +
-          "<li><span>regiões no round</span>" + br(pr.distinct_places, 1) + "</li>" +
-          "<li><span>1º contato</span>" + br(pr.time_of_first_contact_s) + "s</li>" +
-          "<li><span>entrando em briga</span>" + Math.round(pr.frac_entering_fight * 100) + "%</li>" +
-          "</ul>";
-        wrap.appendChild(card);
+    function desenha() {
+      var a = acha(escolhido), b = selB.value ? acha(selB.value) : null;
+      document.getElementById("pf-leitura").innerHTML = leitura(a);
+      document.getElementById("pf-head").innerHTML = cabecalho(a) + cabecalho(b);
+
+      var html = "";
+      Object.keys(CAT).forEach(function (cat) {
+        var linhas = CAT[cat].map(function (par) {
+          var chave = par[0], rotulo = par[1];
+          if (!a || a[chave + "_d"] === undefined) return "";
+          var ref = a[chave + "_ref"];
+          var destaque = a[chave] !== null && ref !== null && ref !== undefined &&
+                         Math.abs(a[chave] - ref) >= MARGEM_DESTAQUE && !a[chave + "_fraco"];
+          return "<tr class='" + (destaque ? "fora" : "") + "'>" +
+            "<td>" + rotulo + "</td>" +
+            celula(a, chave) +
+            (b ? celula(b, chave) : "") +
+            "<td class='refv'>" + pct(ref) + "</td></tr>";
+        }).join("");
+
+        html += "<div class='pfcat'><h3>" + cat + "</h3><table class='pf'>" +
+          "<tr><th>Comportamento</th><th>" + (a ? a.name : "") + "</th>" +
+          (b ? "<th>" + b.name + "</th>" : "") +
+          "<th>mediana dos outros</th></tr>" + linhas + "</table></div>";
       });
 
-    // --- mistura de cada jogador, por time ---
-    var mix = {}, tot = {}, timeDe = {};
-    pts.forEach(function (p) {
-      (mix[p.name] = mix[p.name] || {})[p.cluster] = (mix[p.name][p.cluster] || 0) + 1;
-      tot[p.name] = (tot[p.name] || 0) + 1;
-    });
-    (D.roles || []).forEach(function (r) { timeDe[r.name] = r.team; });
-
-    var host = document.getElementById("mixroster");
-    ["A", "B"].forEach(function (team) {
-      var col = document.createElement("div");
-      col.className = "roster";
-      col.innerHTML = "<h3>Time " + team + "</h3>";
-
-      Object.keys(mix)
-        .filter(function (n) { return timeDe[n] === team; })
-        .sort(function (a, b) { return maiorFatia(b) - maiorFatia(a); })
-        .forEach(function (nome) {
-          var barras = ids.map(function (c) {
-            var n = mix[nome][c] || 0;
-            if (!n) return "";
-            return "<i title='" + nomeDoGrupo(c) + ": " + n + " rounds' style='width:" +
-              (100 * n / tot[nome]) + "%;background:" + corDe[c] + "'></i>";
-          }).join("");
-
-          var pct = Math.round(100 * maiorFatia(nome));
-          var leitura = pct >= 70
-            ? "jogou " + pct + "% dos rounds do mesmo jeito"
-            : (pct <= 45 ? "se divide entre os quatro jeitos"
-                         : "alterna, com " + pct + "% num jeito só");
-
-          var card = document.createElement("div");
-          card.className = "card mixcard";
-          card.innerHTML =
-            "<div class='top'><div class='who'>" + nome + "</div></div>" +
-            "<div class='mix big'>" + barras + "</div>" +
-            "<div class='mixlab'>" + leitura + " · " + tot[nome] + " rounds</div>";
-          col.appendChild(card);
-        });
-
-      host.appendChild(col);
-    });
-
-    function maiorFatia(nome) {
-      var m = mix[nome] || {}, t = tot[nome] || 1, maior = 0;
-      ids.forEach(function (c) { if ((m[c] || 0) > maior) maior = m[c] || 0; });
-      return maior / t;
+      // O tempo mediano não é taxa: entra como número solto, sem barra nem
+      // denominador, porque fração de rounds não se aplica a ele.
+      if (a && a.tempo_mediano_ate_contato_s !== null && a.tempo_mediano_ate_contato_s !== undefined) {
+        html += "<p class='lead tight' style='margin-top:18px'>Tempo mediano até o primeiro " +
+          "contato: <b>" + br(a.tempo_mediano_ate_contato_s) + "s</b>" +
+          (b && b.tempo_mediano_ate_contato_s != null
+            ? " · " + b.name + ": <b>" + br(b.tempo_mediano_ate_contato_s) + "s</b>" : "") +
+          ". É mediana e não média: dois rounds sem contato distorcem a média.</p>";
+      }
+      document.getElementById("pf-tabela").innerHTML = html;
     }
 
-    var semNome = ids.filter(function (c) { return !(D.cluster_names || {})[String(c)]; });
-    document.getElementById("naming").innerHTML = semNome.length
-      ? "<b>Como estes quatro grupos apareceram.</b> Ninguém os desenhou: o algoritmo separou os " +
-        "1.870 rounds de todas as partidas por semelhança de comportamento, e o texto de cada " +
-        "card apenas traduz em que esse grupo se afasta mais dos outros. Os apelidos de jogo — " +
-        "“lurker”, “âncora”, “entry” — continuam fora daqui de propósito: essa leitura é de quem " +
-        "joga, não do algoritmo."
-      : "<b>Os nomes dos grupos foram dados por quem entende do jogo</b>, olhando o perfil medido " +
-        "de cada um. O algoritmo agrupa; a leitura de jogo é humana.";
+    document.getElementById("pf-nota").innerHTML =
+      "<b>Como ler.</b> A porcentagem nunca aparece sozinha: ao lado dela está o bruto " +
+      "(<i>9 de 22</i>), e na última coluna a mediana dos outros jogadores do mesmo recorte — " +
+      "sem referência, “60% longe do time” não diz se é muito ou pouco. Só é destacado quem se " +
+      "afasta da mediana em mais de " + Math.round(MARGEM_DESTAQUE * 100) + " pontos. " +
+      "Onde o denominador é pequeno demais para sustentar uma taxa, a célula é marcada como " +
+      "<i>amostra fraca</i> e o que vale é o bruto: 1 de 1 não é 100%. " +
+      "O “jeito de jogar mais frequente” vem do agrupamento da aba Estilos, e a descrição dele " +
+      "é <b>automática</b> — uma releitura das médias do grupo, não um nome de função.";
+
+    preencheSelects();
+    montaBotoes();
+    selB.addEventListener("change", desenha);
+    selE.addEventListener("change", function () {
+      preencheSelects(); montaBotoes(); desenha();
+    });
+    desenha();
   })();
 
   document.getElementById("foot").innerHTML =

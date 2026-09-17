@@ -21,6 +21,8 @@ from metrics.archetypes import (
     load_reference,
     pick_highlight,
 )
+from metrics.clutch import clutch_situations
+from metrics.player_profile import player_profile
 from metrics.positioning import position_samples
 from scripts.narrative import (
     criterio_e_vice,
@@ -387,6 +389,26 @@ def build(match_id: str) -> Path:
         for r in rounds.iter_rows(named=True)
     }
 
+    # --- Perfil por jogador (metrics/player_profile.py) ---
+    # Este é o outro eixo do mesmo dado: o agrupamento diz que TIPOS de round
+    # existem, o perfil diz com que frequência cada jogador faz cada coisa. As
+    # médias de um grupo não pertencem a jogador nenhum -- os rounds de um mesmo
+    # jogador se espalham por todos os grupos.
+    clutch_round, _ = clutch_situations(kills, rounds, team_of, vencedor_por_round)
+    perfil, perfil_rounds = player_profile(
+        features,
+        positions,
+        ticks,
+        kills,
+        rounds,
+        areas,
+        clutch_round,
+        cluster_assignments=pl.read_parquet(processed / "cluster_assignments.parquet"),
+        match_id=match_id,
+    )
+    perfil.write_parquet(processed / "player_profile.parquet")
+    perfil_rounds.write_parquet(processed / "player_profile_rounds.parquet")
+
     referencia = load_reference()
     papeis_round, papeis = compute_for_match(
         tabelas, saidas, positions, areas, team_of, vencedor_por_round, reference=referencia
@@ -420,6 +442,7 @@ def build(match_id: str) -> Path:
         "rounds_scored": decisive["all_rounds"],
         "players": players.to_dicts(),
         "archetypes": papeis.to_dicts(),
+        "player_profile": perfil.to_dicts(),
         "reference_fitted": referencia is not None,
         "carry": {
             "steamid": carry["steamid"],

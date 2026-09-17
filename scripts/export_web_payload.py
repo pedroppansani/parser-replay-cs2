@@ -17,8 +17,26 @@ from pathlib import Path
 import polars as pl
 
 from clustering.playstyle import describe_clusters, load_cluster_names
+from scripts.narrative import descreve_jogador
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+
+def _perfil_acumulado(steamids: list[int]) -> list[dict]:
+    """Perfil somado de todas as partidas, só para quem jogou ESTA partida.
+
+    O recorte existe por peso: são 73 jogadores no conjunto e ~160 colunas por
+    jogador, e mandar todos em cada página somava 400KB de gente que aquela
+    página nunca mostra.
+
+    Ausente é caso legítimo: numa primeira partida processada o acumulado ainda
+    não existe, e a interface cai para o perfil da partida. Ver
+    scripts/build_player_profiles.py.
+    """
+    caminho = PROJECT_ROOT / "data" / "player_profiles" / "summary.parquet"
+    if not caminho.exists():
+        return []
+    return pl.read_parquet(caminho).filter(pl.col("steamid").is_in(steamids)).to_dicts()
 
 
 def build(match_id: str) -> Path:
@@ -92,18 +110,42 @@ def build(match_id: str) -> Path:
     traits = rd("player_traits").select(["name", "team", "trait", "label", "evidence", "priority"])
     grenades = rd("grenades_summary")
 
+    perfil = rd("player_profile")
+
+    def com_descricao(linhas: list[dict]) -> list[dict]:
+        """Anexa a leitura em português de cada perfil.
+
+        Gerada em Python e não no template pelo mesmo motivo das frases dos cards
+        (decisão 18 do CLAUDE.md): assim a regra "característica sem denominador
+        suficiente não vira afirmação" é testável.
+        """
+        for linha in linhas:
+            linha["descricao"] = descreve_jogador(linha)
+        return linhas
+
+    insights["player_profile"] = com_descricao(insights.get("player_profile", []))
+
     payload = {
         **insights,
         "heatmap": heat.to_dicts(),
         "damage_by_player": damage_by_player,
         "kast_by_player": kast_by_player,
-        "clusters": clusters.to_dicts(),
-        "cluster_profiles": cluster_profiles.to_dicts(),
+        # As atribuições round a round e os perfis de grupo saíram do payload
+        # junto com a seção que os desenhava: eram 220 linhas por página que
+        # ninguém mais lê. O que fica é a DESCRIÇÃO de cada grupo, que a aba
+        # Perfil usa para dizer o jeito de jogar mais frequente do jogador.
         "cluster_descriptions": cluster_descriptions.to_dicts(),
         # Os nomes que o Pedro deu aos grupos, se deu. Sem isto no payload, o
         # cluster_names.json nunca chegava à página e a nomeação não teria efeito
         # nenhum -- o arquivo existiria só para o dashboard local.
         "cluster_names": load_cluster_names(),
+        # Perfil acumulado do jogador em TODAS as partidas processadas. Vai junto
+        # do perfil desta partida porque a interface precisa deixar claro sobre
+        # quantas partidas e quantos rounds cada taxa foi montada -- 40% em 22
+        # rounds e 40% em 180 não são a mesma afirmação.
+        "player_profile_summary": com_descricao(
+            _perfil_acumulado(perfil["steamid"].to_list())
+        ),
         "crosshair": crosshair.to_dicts(),
         "awp": awp.to_dicts(),
         "awp_rounds": awp_rounds.to_dicts(),
