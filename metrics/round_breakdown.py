@@ -138,7 +138,11 @@ def _segundos(tick: int, t0: int, tickrate: int, contexto: str) -> float:
             "Isso não é arredondamento — o evento não pertence a este round. Rode "
             "`py -3.12 -m scripts.debug_timeline` e veja parsing.kills_do_round_jogado."
         )
-    return round(delta / tickrate, 1)
+    # Duas casas, não uma: o relógio do replay anda em posição contínua, e
+    # arredondar o timeline para o décimo deixava os dois com até 0,05s de
+    # diferença. A exibição continua em segundos inteiros; a precisão é para o
+    # dado bater com o replay.
+    return round(delta / tickrate, 2)
 
 
 def _quem_matou(kill: dict) -> tuple[str | None, str]:

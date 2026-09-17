@@ -49,3 +49,15 @@ def format_clock(segundos: float | int | None) -> str:
             "scripts/debug_timeline.py."
         )
     return f"{total // 60}:{total % 60:02d}"
+
+
+def format_pct(fracao: float | None) -> str:
+    """Probabilidade como percentual inteiro: `62%`.
+
+    Inteiro de propósito. O modelo de probabilidade de vitória supõe rounds
+    independentes e p = 0,5 por round (ver metrics/win_probability.py); escrever
+    "62,4%" daria à saída uma precisão que a suposição não sustenta.
+    """
+    if fracao is None:
+        return "—"
+    return f"{round(float(fracao) * 100)}%"

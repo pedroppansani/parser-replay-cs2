@@ -33,7 +33,7 @@ from metrics.archetypes import (
 )
 from scripts.narrative import (
     contexto_placar,
-    criterio_e_vice,
+    criterio_do_decisivo,
     historia_round_decisivo,
     manchete,
 )
@@ -409,6 +409,13 @@ def test_partida_sem_ninguem_marcante_nao_inventa_destaque():
 
 # --- Frases -----------------------------------------------------------------
 
+# A frase do round decisivo passou a receber a linha da curva de probabilidade
+# (metrics/win_probability), porque o número que ELEGE o round é o que a frase
+# tem que citar. `WP` é essa linha: um round que levou o vencedor de 50% a 66%.
+WP = {"wp_vencedor_antes": 0.50, "wp_vencedor_depois": 0.66,
+      "wpa_abs": 0.16, "round": 7}
+
+
 def test_frase_do_round_decisivo_some_com_o_que_nao_existe():
     """REGRESSÃO: a frase era fixa e citava nick e placar de outra partida."""
     magro = {
@@ -417,12 +424,24 @@ def test_frase_do_round_decisivo_some_com_o_que_nao_existe():
         "multikill_player": None, "multikill_count": 0,
         "worst_deficit_overcome": 0, "opening": None,
     }
-    frase = historia_round_decisivo(magro)
+    frase = historia_round_decisivo(magro, WP)
     assert "None" not in frase
     assert "0 kills" not in frase
     assert "1v0" not in frase
     assert frase.endswith(".")
-    assert "Empate em 3-3" in frase
+    assert "empate em 3-3" in frase
+
+
+def test_frase_do_round_decisivo_cita_os_dois_percentuais():
+    """O card não pode ter adjetivo sem número atrás: é a conta que elege o round."""
+    info = {
+        "round": 7, "winner_team": "A", "reason": "t_killed",
+        "score_a": 4, "score_b": 3, "clutch_player": None, "clutch_against": 0,
+        "multikill_player": None, "multikill_count": 0,
+        "worst_deficit_overcome": 0, "opening": None,
+    }
+    frase = historia_round_decisivo(info, WP)
+    assert "50%" in frase and "66%" in frase
 
 
 def test_frase_usa_o_clutch_quando_ele_existe():
@@ -432,18 +451,8 @@ def test_frase_usa_o_clutch_quando_ele_existe():
         "multikill_player": None, "multikill_count": 0,
         "worst_deficit_overcome": 0, "opening": None,
     }
-    frase = historia_round_decisivo(com_clutch)
-    assert "fulano fechou o 1v3" in frase
-
-
-def test_ponto_sem_volta_so_e_dito_no_round_certo():
-    info = {
-        "round": 7, "winner_team": "A", "reason": "t_killed", "score_a": 4, "score_b": 3,
-        "clutch_player": None, "clutch_against": 0, "multikill_player": None,
-        "multikill_count": 0, "worst_deficit_overcome": 0, "opening": None,
-    }
-    assert "não é mais devolvida" in historia_round_decisivo(info, ponto_sem_volta=7)
-    assert "não é mais devolvida" not in historia_round_decisivo(info, ponto_sem_volta=12)
+    frase = historia_round_decisivo(com_clutch, WP)
+    assert "o 1v3 de fulano" in frase
 
 
 def test_primeiro_round_nao_tem_contexto_de_placar():
@@ -451,9 +460,11 @@ def test_primeiro_round_nao_tem_contexto_de_placar():
 
 
 def test_criterio_sem_segundo_colocado_nao_cita_round_nenhum():
-    decisivo = {"round": 1, "importance": 10}
-    texto = criterio_e_vice([decisivo], decisivo)
-    assert "vem em segundo" not in texto
+    decisivo = {"round": 1, "wpa_abs": 0.25}
+    texto = criterio_do_decisivo(
+        {"decisivo": decisivo, "top": [decisivo], "empate_no_topo": False}
+    )
+    assert "Depois dele" not in texto
     assert texto.endswith(".")
 
 

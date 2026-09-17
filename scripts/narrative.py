@@ -18,6 +18,8 @@ verifica-se que a frase sai curta em vez de citar campo vazio.
 """
 from __future__ import annotations
 
+from metrics.formatting import format_money, format_pct
+
 # Como cada final de round é dito em português. O demo entrega códigos.
 MOTIVO = {
     "bomb_defused": "bomba desarmada",
@@ -54,6 +56,39 @@ def contexto_placar(info: dict) -> str | None:
         return f"Empate em {a}-{b}"
     lider = "A" if a > b else "B"
     return f"Time {lider} na frente por {max(a, b)}-{min(a, b)}"
+
+
+# Contração de "de" com artigo definido. Existe porque as frases são montadas
+# por pedaços: "a partir de" + "o Time B na frente" saía "a partir de o Time B".
+CONTRACOES_DE = {"o ": "do ", "a ": "da ", "os ": "dos ", "as ": "das "}
+
+
+def com_de(sintagma: str) -> str:
+    """"o Time B..." vira "do Time B..."; "um empate..." vira "de um empate..."."""
+    for artigo, contraido in CONTRACOES_DE.items():
+        if sintagma.startswith(artigo):
+            return contraido + sintagma[len(artigo):]
+    return "de " + sintagma
+
+
+def contexto_placar_sintagma(info: dict) -> str | None:
+    """O mesmo contexto de placar, mas para encaixar depois de "a partir de".
+
+    Existe porque `.lower()` na frase inteira transformava "Time B na frente" em
+    "time b na frente" -- nome de time não é texto corrido. Aqui o artigo vem
+    junto e a capitalização do nome fica intacta.
+    """
+    a, b = placar_antes(info)
+    if a == 0 and b == 0:
+        return None
+    if a == b:
+        return f"um empate em {a}-{b}"
+    lider = "A" if a > b else "B"
+    # Quando quem liderava é quem venceu o round, nomear o time de novo repete o
+    # sujeito da frase ("Levou o Time B ... a partir do Time B na frente").
+    if lider == info.get("winner_team"):
+        return f"a própria liderança por {max(a, b)}-{min(a, b)}"
+    return f"o Time {lider} na frente por {max(a, b)}-{min(a, b)}"
 
 
 def manchete(info: dict) -> str | None:
@@ -100,59 +135,223 @@ def manchete_sintagma(info: dict) -> str | None:
     return None
 
 
-def historia_round_decisivo(info: dict, ponto_sem_volta: int | None = None) -> str:
-    """A frase do card do round decisivo, montada só com o que a partida tem."""
-    pedacos: list[str] = []
+def historia_round_decisivo(info: dict, wp: dict) -> str:
+    """A frase do card do round decisivo, ancorada nos DOIS números.
 
-    contexto = contexto_placar(info)
+    A frase começa pelo que a conta diz -- de quanto para quanto foi a chance de
+    vitória -- porque é isso que responde "por que este round". O acontecimento
+    do round (clutch, multikill, virada) entra depois, como o COMO. Antes era o
+    contrário, e o card descrevia uma jogada bonita sem dizer o que ela mudou.
+
+    `wp` é a linha da curva daquele round (metrics/win_probability.curva_da_partida).
+    """
+    antes = format_pct(wp.get("wp_vencedor_antes"))
+    depois = format_pct(wp.get("wp_vencedor_depois"))
+    time = info.get("winner_team")
+
+    pedacos = [f"Levou o Time {time} de {antes} para {depois} de chance de vencer a partida"]
+
+    contexto = contexto_placar_sintagma(info)
     if contexto:
-        pedacos.append(contexto)
+        pedacos.append(f"a partir {com_de(contexto)}")
 
-    evento = manchete(info)
+    evento = manchete_sintagma(info)
     if evento:
-        pedacos.append(evento)
+        pedacos.append(f"com {evento}")
 
     motivo = MOTIVO_FRASE.get(info.get("reason", ""))
     if motivo:
         pedacos.append(f"e o round terminou {motivo}")
 
-    if not pedacos:
-        # Nem placar, nem evento, nem motivo reconhecido: o honesto é dizer só o
-        # que se sabe, que é qual round foi.
-        return f"Round {info['round']} — o de maior peso na partida."
-
     frase = ", ".join(pedacos[:-1])
     frase = f"{frase}, {pedacos[-1]}" if frase else pedacos[-1]
-    frase = frase.replace(", e o round", " e o round")
+    return frase.replace(", e o round", " e o round") + "."
 
-    if ponto_sem_volta is not None and info.get("round") == ponto_sem_volta:
-        frase += ". A liderança que sai daqui não é mais devolvida"
+
+def historia_sem_round_decisivo(resumo: dict, placar: tuple[int, int]) -> str:
+    """O caso em que NENHUM round decidiu a partida.
+
+    Não é um caso de borda a esconder: numa partida de placar largo a diferença
+    se construiu ao longo do jogo, e eleger um round à força inventa uma virada
+    que não houve. A frase diz isso com o número que sustenta a afirmação.
+    """
+    maior = resumo.get("maior_wpa")
+    minimo = resumo.get("minimo_exigido")
+    a, b = placar
+    frase = (
+        f"Partida sem round decisivo: a diferença se construiu ao longo do jogo, "
+        f"e o placar terminou em {max(a, b)}-{min(a, b)}"
+    )
+    if maior is not None and minimo is not None:
+        frase += (
+            f". O round de maior peso moveu {format_pct(maior)} da chance de vitória, "
+            f"abaixo dos {format_pct(minimo)} que o modelo exige para chamar um "
+            f"round de decisivo"
+        )
     return frase + "."
 
 
-def criterio_e_vice(rounds_scored: list[dict], decisivo: dict) -> str:
-    """Explica o critério e cita o segundo colocado, se houver um.
+def criterio_do_decisivo(resumo: dict) -> str:
+    """Explica o critério e cita os outros rounds de maior peso.
 
-    O segundo colocado existe pra mostrar que o "decisivo" saiu de uma ordenação,
-    não de uma escolha. Se a partida tem um round só, a menção simplesmente não
-    aparece.
+    Os outros existem para mostrar que o "decisivo" saiu de uma ordenação, não de
+    uma escolha -- e quando o primeiro e o segundo empatam, dizer isso é mais
+    honesto que fingir que a ordem foi óbvia.
     """
     base = (
-        "Critério: virada de placar não devolvida (peso maior), desvantagem "
-        "numérica superada, multikill, clutch e proximidade no placar"
+        "Critério: variação da probabilidade de vitória da partida, calculada "
+        "por programação dinâmica sobre os estados de placar. Sem peso arbitrário"
     )
-    outros = [
-        r for r in rounds_scored
-        if r.get("round") != decisivo.get("round") and r.get("importance") is not None
-    ]
+    top = resumo.get("top") or []
+    decisivo = resumo.get("decisivo")
+    if not decisivo or len(top) < 2:
+        return base + "."
+
+    outros = [t for t in top if t["round"] != decisivo["round"]]
     if not outros:
         return base + "."
 
-    vice = max(outros, key=lambda r: r["importance"])
-    evento = manchete_sintagma(vice)
-    if evento:
-        return f"{base}. O round {vice['round']} vem em segundo, com {evento}."
-    return f"{base}. O round {vice['round']} vem em segundo."
+    if resumo.get("empate_no_topo"):
+        vice = outros[0]
+        return (
+            f"{base}. O round {vice['round']} moveu praticamente o mesmo "
+            f"({format_pct(vice['wpa_abs'])} contra {format_pct(decisivo['wpa_abs'])}): "
+            f"houve mais de um round de peso equivalente, e a escolha entre eles "
+            f"não é do modelo."
+        )
+    citados = ", ".join(
+        f"round {t['round']} ({format_pct(t['wpa_abs'])})" for t in outros
+    )
+    return f"{base}. Depois dele vêm {citados}."
+
+
+def historia_round_impressionante(resumo: dict, round_decisivo: int | None) -> str | None:
+    """A frase do card do round mais impressionante.
+
+    Diz explicitamente se foi ou não o mesmo round decisivo. Quando não foi, essa
+    diferença é a informação boa do card: o round mais bonito da partida pode não
+    ter mudado nada, e vale dizer.
+    """
+    imp = resumo.get("impressionante")
+    if not imp:
+        return None
+
+    partes = [c["texto"] for c in imp.get("componentes", [])]
+    if not partes:
+        return None
+    corpo = partes[0] if len(partes) == 1 else ", ".join(partes[:-1]) + " e " + partes[-1]
+    frase = f"Round {imp['round']}: {corpo}"
+
+    if round_decisivo is None:
+        frase += (
+            ". Não foi o round decisivo porque esta partida não teve um -- a "
+            "diferença se construiu ao longo do jogo"
+        )
+    elif imp["round"] == round_decisivo:
+        frase += ". Foi também o round que mais moveu a partida"
+    else:
+        frase += (
+            f". Não foi o round decisivo -- quem mais moveu a partida foi o "
+            f"{round_decisivo}, e o round mais bonito daqui não mudou o resultado"
+        )
+    return frase + "."
+
+
+def leitura_economica(equip_vencedor, equip_perdedor, perdedor_estava_melhor: bool) -> str | None:
+    """Economia como LEITURA ao lado, nunca como peso no score.
+
+    Round perdido em eco era esperado e não custou nada de extraordinário; round
+    perdido com equipamento igual ou superior custou mais do que o placar mostra.
+    Isso é contexto para interpretar o round decisivo, e por isso não entra na
+    conta que o elege -- entrasse, e a decisividade passaria a depender de quanto
+    dinheiro os times tinham, que é outra pergunta.
+    """
+    if equip_vencedor is None and equip_perdedor is None:
+        return None
+
+    frase = (
+        f"Equipamento médio no round: {format_money(equip_vencedor)} de quem venceu "
+        f"contra {format_money(equip_perdedor)} de quem perdeu"
+    )
+    if perdedor_estava_melhor:
+        frase += (
+            ". Quem perdeu estava com o equipamento melhor, então a derrota não "
+            "tem desculpa de economia -- custou mais do que um round no placar"
+        )
+    return frase + "."
+
+
+def historia_mvp(mvp: dict) -> str:
+    """A frase do card do MVP, montada com os componentes que o elegeram.
+
+    A regra é a mesma do resto do módulo: só entra o que existe. O que muda aqui
+    é a COMPARAÇÃO -- um número sozinho ("94 de ADR") não deixa conferir nada,
+    então cada componente em que ele lidera vem com o melhor dos outros ao lado.
+    """
+    if not mvp:
+        return ""
+
+    lidera = [c for c in mvp.get("componentes", []) if c.get("lidera")]
+    partes = []
+    for c in lidera[:2]:
+        pedaco = f"{c['texto']} {c.get('sintagma') or c['rotulo']}"
+        if c.get("melhor_dos_outros_texto") and c.get("melhor_dos_outros_nome"):
+            pedaco += f" contra {c['melhor_dos_outros_texto']} de {c['melhor_dos_outros_nome']}"
+        partes.append(pedaco)
+
+    nome = mvp["name"]
+    if not partes:
+        # Ninguém lidera componente nenhum: ele venceu na soma, e dizer isso é
+        # mais honesto que escolher um número em que ele não foi o melhor.
+        return f"{nome} foi o MVP pela soma dos componentes, sem liderar nenhum deles isoladamente."
+
+    corpo = partes[0] if len(partes) == 1 else f"{partes[0]} e {partes[1]}"
+    frase = f"{nome} foi o MVP com {corpo}"
+
+    funcao = mvp.get("funcao")
+    if funcao:
+        frase += f", jogando de {funcao.lower()}"
+    return frase + "."
+
+
+def historia_destaque(destaque: dict) -> str:
+    """A frase do card da direita -- positiva ou negativa, sempre com número.
+
+    Tom do card negativo: FATO, não xingamento. "Terminou com 38 de ADR contra
+    71 do segundo pior, e o time venceu mesmo assim" é análise; adjetivo sem
+    número atrás não é. Por isso a evidência não é opcional aqui: sem número e
+    sem referência, a função devolve string vazia e o card não renderiza.
+    """
+    if not destaque:
+        return ""
+
+    ev = destaque.get("evidencia") or {}
+    nome = destaque["name"]
+    if destaque.get("negativo") and not ev.get("referencia"):
+        return ""
+
+    if ev.get("valor"):
+        # o rótulo da métrica já traz o "de" quando precisa dele -- ver
+        # `_evidencia_obrigatoria` em metrics/match_highlights.py
+        frase = f"{nome}: {ev['valor']} {ev['metrica']}"
+        if ev.get("referencia"):
+            quem = ev.get("referencia_nome") or ev.get("referencia_rotulo") or "os outros"
+            frase += f", contra {ev['referencia']} de {quem}"
+    else:
+        frase = f"{nome} — {destaque.get('meaning', '')}"
+
+    if destaque.get("amostra_fraca"):
+        frase += (
+            ". Nenhuma função da partida passou do piso de evidência, então este é "
+            "o mais próximo disso e não um destaque firme"
+        )
+    elif destaque.get("equivalente"):
+        eq = destaque["equivalente"]
+        frase += (
+            f". {eq['name']} pontuou praticamente o mesmo como {eq['label'].lower()}: "
+            f"houve mais de um destaque equivalente nesta partida"
+        )
+    return frase + "."
 
 
 def historia_papel(label: str, nome: str, evidencia_texto: str, significado: str) -> str:

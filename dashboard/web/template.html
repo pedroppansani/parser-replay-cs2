@@ -656,6 +656,69 @@
     margin: 0 0 14px;
     text-wrap: balance;
   }
+  /* A barra de probabilidade do card: de quanto para quanto foi a chance
+     de vitória. É o número que ELEGEU o round, então aparece do lado da frase
+     em vez de ficar só no texto. */
+  .wpbar { margin: 14px 0; }
+  .wpbar .row { display: flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 11.5px; color: var(--dim); }
+  .wpbar .track { flex: 1; height: 8px; border-radius: 99px; background: var(--paper); position: relative; overflow: hidden; }
+  .wpbar .track i { position: absolute; top: 0; bottom: 0; border-radius: 99px; }
+  .wpbar .track i.was { background: var(--dim); opacity: 0.35; }
+  .wpbar .track i.now { background: var(--t); }
+  .wpbar .cap { font-family: var(--mono); font-size: 10.5px; color: var(--dim); margin-top: 6px; letter-spacing: 0.02em; }
+
+  /* Card do round mais impressionante. Some do fluxo do card decisivo de
+     propósito: são duas perguntas, e empilhá-las sugeriria que uma explica a
+     outra. */
+  /* Os dois cards têm a MESMA altura e o mesmo peso visual: nenhum dos dois é
+     apêndice do outro. `align-items: stretch` é o que garante isso quando um
+     tem mais componentes que o outro. */
+  .cards-jogador { align-items: stretch; margin-top: 18px; }
+  .cards-jogador > .card { display: flex; flex-direction: column; }
+  .cards-jogador .comp-list { margin-top: auto; padding-top: 14px; }
+
+  /* Linha de componente: valor do jogador, barra e o melhor dos outros. É a
+     comparação que informa -- "94 de ADR" sozinho não deixa conferir nada. */
+  .cmp { display: grid; grid-template-columns: 82px 1fr auto; gap: 10px; align-items: center;
+         padding: 5px 0; }
+  .cmp .k { font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em;
+            text-transform: uppercase; color: var(--dim); }
+  .cmp .bar { height: 7px; border-radius: 99px; background: var(--paper); position: relative; }
+  .cmp .bar i { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 99px; }
+  .cmp .bar span.ref { position: absolute; top: -3px; bottom: -3px; width: 2px;
+                       background: var(--dim); opacity: .55; }
+  .cmp .v { font-family: var(--mono); font-size: 12px; color: var(--ink); white-space: nowrap; }
+  .cmp .v em { font-style: normal; color: var(--dim); font-size: 10.5px; }
+  .cmp.win .k { color: var(--ink-2); }
+
+  /* O card negativo se diferencia por RÓTULO e hierarquia, não por alarme: nada
+     de vermelho agressivo (decisão 10 -- a paleta é a validada). */
+  .card.destaque .tagneg {
+    display: inline-block; font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--t); border: 1px solid var(--line);
+    border-radius: 99px; padding: 2px 8px; margin-bottom: 6px;
+  }
+  .card.destaque .evid {
+    margin-top: 12px; padding: 11px 13px; border-radius: 10px; background: var(--paper);
+    font-family: var(--body); font-size: 13px; color: var(--ink-2); line-height: 1.5;
+  }
+  .card.destaque .evid b { font-family: var(--mono); font-size: 13px; color: var(--ink); }
+
+  .spectacle { margin-top: 14px; }
+  .spectacle .comps { display: flex; flex-direction: column; gap: 7px; margin-top: 12px; }
+  .spectacle .comp {
+    display: flex; align-items: baseline; gap: 10px;
+    font-family: var(--body); font-size: 13px; color: var(--ink-2);
+  }
+  .spectacle .comp b {
+    font-family: var(--mono); font-size: 10.5px; color: var(--t);
+    min-width: 34px; text-align: right;
+  }
+  .econ {
+    margin-top: 14px; padding: 12px 14px; border-radius: 10px;
+    background: var(--paper); font-family: var(--body); font-size: 13px;
+    color: var(--ink-2); line-height: 1.5;
+  }
   .tags { display: flex; gap: 6px; flex-wrap: wrap; }
   .tag {
     font-family: var(--mono);
@@ -761,6 +824,12 @@
   .pfhead { display:flex; gap:26px; flex-wrap:wrap; margin:14px 0 22px;
             font-family:var(--mono); font-size:11.5px; color:var(--dim); }
   .pfhead b { font-family:var(--display); font-size:16px; color:var(--ink); letter-spacing:-.01em; }
+  .fnlado { display:block; font-family:var(--body); font-size:12.5px; color:var(--ink-2); }
+  .fnlado i { font-family:var(--mono); font-style:normal; font-size:9.5px; letter-spacing:.07em;
+              color:var(--dim); display:inline-block; width:22px; }
+  .fnlado b { font-size:13px; color:var(--ink); }
+  .fnlado em { font-family:var(--mono); font-style:normal; font-size:9.5px;
+               text-transform:uppercase; color:var(--t); }
   .pfcat { margin-top:26px; }
   .pfcat > h3 { font-size:15px; margin:0 0 10px; letter-spacing:-.01em; }
   table.pf { width:100%; border-collapse:collapse; font-size:13.5px; }
@@ -953,16 +1022,24 @@
     <div class="eyebrow">Leitura da partida</div>
     <h2 class="sec">O que decidiu o jogo</h2>
     <p class="lead">
-      Três perguntas que não têm definição oficial no CS. Cada uma tem fórmula explícita e
-      mostra os componentes — dá para discordar do peso, não do fato.
+      <b>Round decisivo e round mais impressionante são perguntas diferentes</b>, e por isso são
+      dois cards. O decisivo sai de uma conta sem peso nenhum: o quanto o round mexeu na chance
+      de o time vencer a partida. O impressionante é subjetivo por natureza, então os pesos dele
+      ficam à mostra, componente por componente.
     </p>
 
     <article class="decisive" id="decisive"></article>
 
-    <div class="pair">
+    <!-- Estrutura FIXA em toda partida: decisivo em cima, MVP embaixo à
+         esquerda, outro destaque embaixo à direita. O gráfico de probabilidade
+         que ficava aqui mudou para a aba Placar: a mesma informação duas vezes
+         na mesma página só gasta espaço. -->
+    <div class="pair cards-jogador">
       <article class="card fig mvp" id="fig-mvp"></article>
-      <article class="card fig piano" id="fig-piano"></article>
+      <article class="card fig destaque" id="fig-destaque"></article>
     </div>
+
+    <article class="card fig spectacle" id="spectacle"></article>
   </section>
 
   <!-- PLACAR -->
@@ -982,6 +1059,19 @@
         <span><i style="background:var(--t)"></i> round decisivo</span>
         <span><i style="background:var(--dim);width:6px;height:6px"></i> bomba plantada</span>
       </div>
+    </div>
+
+    <h3 class="sec" style="font-size:20px;margin-top:30px">A chance de vitória, round a round</h3>
+    <p class="lead">
+      A mesma partida pela outra régua: não a diferença de rounds, mas o quanto cada round mexeu
+      na <b>chance de o time vencer a partida</b>. É a inclinação desta curva que elege o round
+      decisivo — e um platô perto de 50% até o fim conta uma história bem diferente de uma escada
+      subindo desde o começo.
+    </p>
+    <div class="card plot">
+      <svg id="wpchart" viewBox="0 0 900 260" role="img"
+           aria-label="Probabilidade de vitória ao longo da partida"></svg>
+      <div class="legend" id="wplegend"></div>
     </div>
   </section>
 
@@ -1028,10 +1118,11 @@
     <div class="eyebrow">Função medida, não atribuída</div>
     <h2 class="sec">O que cada um faz em quadra</h2>
     <p class="lead">
-      A função de cada jogador sai de um limiar sobre uma métrica em que ele lidera o próprio time,
-      e o número que sustenta o rótulo aparece embaixo dele. <b>Não existe cota de um AWPer e um
-      entry por time</b>: quem não passa do piso fica sem função dominante, e um dos times aqui não
-      teve AWPer nenhum. Isso é resultado, não lacuna.
+      A função é atribuída <b>round a round</b> e depois resumida no que ele mais fez em cada lado —
+      sempre com a conta ao lado (<i>âncora em 9 de 12 rounds de CT</i>), porque quem ancora em 9 e
+      rotaciona em 3 não é "âncora e ponto". CT e TR são calculados separados: são trabalhos
+      diferentes. Round sem função reconhecível fica <b>sem função definida</b>, que é resultado e
+      não lacuna. <b>IGL não aparece</b>: quem chama o time não deixa rastro no demo.
     </p>
     <div class="rosters" id="roles"></div>
     <div class="callout" id="rolenote"></div>
@@ -1321,10 +1412,13 @@
   var speed = 1;
   var lastT = 0;
 
+  // Round decisivo, ou null quando a partida não teve um.
+  var decRound = D.decisive_round ? D.decisive_round.round : null;
+
   var strip = document.getElementById("strip");
   rounds.forEach(function (r) {
     var b = document.createElement("button");
-    b.className = "rchip" + (r.round === D.decisive_round.round ? " key" : "");
+    b.className = "rchip" + (r.round === decRound ? " key" : "");
     b.textContent = r.round;
     b.dataset.w = r.winner_team;
     b.setAttribute("aria-pressed", String(r === cur));
@@ -1532,7 +1626,7 @@
         row.querySelector(".hpn").textContent = hp;
         row.querySelector(".hpbar > i").style.width = Math.max(0, hp) + "%";
         var w = p.w[frame];
-        var bl = p.alive[frame] ? blindLeft(p.name, frame) : 0;
+        var bl = p.alive[frame] ? blindLeft(p.name, pos) : 0;
         row.classList.toggle("blind", bl > 0);
         row.querySelector(".wp").textContent = bl > 0
           ? "cego · " + br(bl) + "s"
@@ -1755,7 +1849,7 @@
     var FIRE_R = 120 * RAD.scale_px_per_unit;
 
     cur.smokes.forEach(function (z) {
-      if (frame < z.f0 || frame > z.f1) return;
+      if (pos < z.f0 || pos > z.f1) return;
       var g = ctx.createRadialGradient(mx(z.x), my(z.y), 0, mx(z.x), my(z.y), SMOKE_R);
       g.addColorStop(0, "rgba(214,223,233,0.78)");
       g.addColorStop(0.7, "rgba(190,203,217,0.5)");
@@ -1764,7 +1858,7 @@
       ctx.beginPath(); ctx.arc(mx(z.x), my(z.y), SMOKE_R, 0, Math.PI * 2); ctx.fill();
     });
     cur.fires.forEach(function (z) {
-      if (frame < z.f0 || frame > z.f1) return;
+      if (pos < z.f0 || pos > z.f1) return;
       var g = ctx.createRadialGradient(mx(z.x), my(z.y), 0, mx(z.x), my(z.y), FIRE_R);
       g.addColorStop(0, "rgba(235,104,52,0.62)");
       g.addColorStop(1, "rgba(235,104,52,0)");
@@ -1873,7 +1967,7 @@
     // quanto dano a HE tirou. Detonação sem efeito aparece apagada e sem
     // rótulo — a granada existiu, o efeito não, e o mapa mostra a diferença.
     (cur.pops || []).forEach(function (p) {
-      var age = frame - p.f;
+      var age = pos - p.f;
       if (age < 0 || age > POP_TOTAL) return;
 
       var X = mx(p.x), Y = my(p.y);
@@ -1949,10 +2043,13 @@
       ctx.globalAlpha = 1;
     });
 
-    // eventos já ocorridos
+    // Eventos já ocorridos. A comparação é com `pos` (contínuo) e não com o
+    // quadro inteiro: o evento carrega quadro fracionário desde que o export
+    // deixou de truncar, e comparar com o inteiro devolveria o mesmo atraso de
+    // até 0,25s que o timeline denunciava.
     cur.events.forEach(function (e) {
-      if (e.f > frame) return;
-      var age = frame - e.f;
+      if (e.f > pos) return;
+      var age = pos - e.f;
       if (e.type === "kill") {
         var a = Math.max(0.45, 1 - age / 90);
         ctx.globalAlpha = a;
@@ -2165,21 +2262,58 @@
     setSpeed(SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length]);
   });
 
-  selectRound(rounds.find(function (r) { return r.round === D.decisive_round.round; }) || rounds[0]);
+  // Partida sem round decisivo abre no primeiro round. `decRound` é null nesse
+  // caso, e todo lugar que destaca "o" round tem que aguentar isso -- não é
+  // caso de borda, são 5 das 9 partidas do corpus.
+  selectRound(rounds.find(function (r) { return r.round === decRound; }) || rounds[0]);
 
   /* ================= INSIGHTS ================= */
 
+  function pct(v) { return Math.round(v * 100) + "%"; }
+
+  // --- Card do round decisivo -------------------------------------------
+  // As frases vêm prontas de scripts/narrative.py (decisão 18): o template só
+  // imprime. Inclusive a frase do caso "não houve round decisivo", que não é
+  // fallback nem erro -- é o resultado de uma partida de placar largo.
   var dr = D.decisive_round;
-  document.getElementById("decisive").innerHTML =
-    "<div class='stamp'><div class='k'>Round decisivo</div><div class='n'>" + dr.round + "</div>" +
-    "<div class='s'>placar " + dr.score_a + "–" + dr.score_b + " · Time " + dr.winner_team + "</div></div>" +
-    // As frases vêm prontas de scripts/narrative.py. Antes eram texto fixo escrito
-    // para a match_01, e TODA partida renderizava o placar e os nicks daquela.
-    "<div class='story'><p class='t'>" + D.narrative.decisive + "</p>" +
-    "<div class='tags'>" + dr.reasons.map(function (r, i) {
-      return "<span class='tag" + (i === 0 ? " hot" : "") + "'>" + r + "</span>";
-    }).join("") + "</div>" +
-    "<p class='lead tight' style='margin-top:14px'>" + D.narrative.criterion + "</p></div>";
+  var econ = D.narrative.economy ? "<div class='econ'>" + D.narrative.economy + "</div>" : "";
+  document.getElementById("decisive").innerHTML = dr
+    ? "<div class='stamp'><div class='k'>Round decisivo</div><div class='n'>" + dr.round + "</div>" +
+      "<div class='s'>placar " + dr.score_a + "–" + dr.score_b + " · Time " + dr.winner_team + "</div></div>" +
+      "<div class='story'><p class='t'>" + D.narrative.decisive + "</p>" +
+      barraWp(dr) + econ +
+      "<p class='lead tight' style='margin-top:14px'>" + D.narrative.criterion + "</p></div>"
+    : "<div class='stamp'><div class='k'>Round decisivo</div>" +
+      "<div class='n' style='font-size:44px'>—</div>" +
+      "<div class='s'>nenhum round passou do mínimo</div></div>" +
+      "<div class='story'><p class='t'>" + D.narrative.decisive + "</p>" +
+      "<p class='lead tight' style='margin-top:14px'>" + D.narrative.criterion + "</p></div>";
+
+  function barraWp(d) {
+    // Duas barras sobrepostas: a clara é onde o time estava, a laranja onde
+    // ficou. O salto entre as duas É a decisividade do round.
+    var a = d.wp_vencedor_antes, b = d.wp_vencedor_depois;
+    return "<div class='wpbar'><div class='row'><span>" + pct(a) + "</span>" +
+      "<span class='track'><i class='was' style='left:0;width:" + (a * 100) + "%'></i>" +
+      "<i class='now' style='left:0;width:" + (b * 100) + "%;opacity:.82'></i></span>" +
+      "<span>" + pct(b) + "</span></div>" +
+      "<div class='cap'>chance de o Time " + d.winner_team + " vencer a partida, antes e depois deste round</div></div>";
+  }
+
+  // --- Card do round mais impressionante --------------------------------
+  // Pergunta separada, card separado. Os componentes aparecem com a pontuação
+  // de cada um justamente para dar pra recalibrar olhando o caso concreto.
+  var sp = D.spectacle_round;
+  document.getElementById("spectacle").innerHTML = sp
+    ? "<div class='eyebrow'>Round mais impressionante</div>" +
+      "<h3 style='margin:6px 0 0'>Round " + sp.round + "</h3>" +
+      "<p style='margin-top:10px'>" + D.narrative.spectacle + "</p>" +
+      "<div class='comps'>" + sp.componentes.map(function (c) {
+        return "<div class='comp'><b>" + Math.round(c.pontos) + "</b><span>" + c.texto + "</span></div>";
+      }).join("") + "</div>"
+    : "<div class='eyebrow'>Round mais impressionante</div>" +
+      "<p style='margin-top:10px'>Nenhum round desta partida teve clutch, multikill, virada em " +
+      "desvantagem ou desarme no limite. Foi uma partida decidida no jogo padrão.</p>";
 
   function ring(pct, color) {
     var r = 26, c = 2 * Math.PI * r;
@@ -2190,59 +2324,68 @@
       "<text x='34' y='39' text-anchor='middle' fill='" + C.ink + "' font-family=\"DM Mono, monospace\" " +
       "font-size='15' font-weight='500'>" + Math.round(pct * 100) + "</text></svg>";
   }
-  function meters(rows) {
-    return "<div class='rows'>" + rows.map(function (r) {
-      return "<div class='row'><div class='k'>" + r.k + "</div>" +
-        "<div class='meter'><i style='width:" + Math.max(3, Math.min(100, r.pct * 100)) + "%;background:" + r.c + "'></i></div>" +
-        "<div class='v'>" + r.v + "</div></div>";
+  // --- Card da esquerda: MVP --------------------------------------------
+  // Os COMPONENTES aparecem, não só o índice: quem lê tem que ver se ele venceu
+  // por ADR, por abertura ou por clutch, e quanto foi acima do segundo. Escolha
+  // e frases vêm de metrics/match_highlights.py + scripts/narrative.py.
+  var mvpc = D.mvp_card;
+
+  function componentes(lista) {
+    return "<div class='comp-list'>" + lista.map(function (c) {
+      var teto = Math.max(c.valor || 0, c.melhor_dos_outros || 0) || 1;
+      var ref = (c.melhor_dos_outros || 0) / teto * 100;
+      return "<div class='cmp" + (c.lidera ? " win" : "") + "'>" +
+        "<div class='k'>" + c.rotulo + "</div>" +
+        "<div class='bar'><i style='width:" + Math.max(3, (c.valor || 0) / teto * 100) + "%;" +
+        "background:" + (c.lidera ? C.ct : C.dim) + "'></i>" +
+        "<span class='ref' style='left:" + ref + "%'></span></div>" +
+        "<div class='v'>" + c.texto +
+        (c.melhor_dos_outros_texto ? " <em>/ " + c.melhor_dos_outros_texto + "</em>" : "") +
+        "</div></div>";
     }).join("") + "</div>";
   }
 
-  // Card da esquerda: quem levou o time nas costas. A escolha e a frase vêm do
-  // Python (metrics/archetypes.py + scripts/narrative.py); aqui só se desenha.
-  var carry = D.carry;
-  var mvp = D.players.filter(function (p) { return p.steamid === carry.steamid; })[0]
-            || D.players.slice().sort(function (a, b) { return b.mvp_index - a.mvp_index; })[0];
-  var maxAdr = Math.max.apply(null, D.players.map(function (p) { return p.adr; }));
-  var maxOpen = Math.max.apply(null, D.players.map(function (p) { return p.opening_kills; }));
+  document.getElementById("fig-mvp").innerHTML = mvpc
+    ? "<div class='hd'><div><div class='role'>MVP da partida</div>" +
+      "<div class='nm'>" + mvpc.name + "</div>" +
+      "<div class='sub'>Time " + mvpc.team +
+      (mvpc.funcao ? " · " + mvpc.funcao : "") + "</div></div>" +
+      ring(mvpc.indice, C.ct) + "</div>" +
+      "<p>" + D.narrative.mvp_card + "</p>" +
+      componentes(mvpc.componentes)
+    : "<div class='hd'><div><div class='role'>MVP da partida</div>" +
+      "<div class='nm'>sem dados</div></div></div>";
 
-  document.getElementById("fig-mvp").innerHTML =
-    "<div class='hd'><div><div class='role'>Carry da partida</div><div class='nm'>" + carry.name + "</div>" +
-    "<div class='sub'>Time " + carry.team + " · fatia do dano e das kills do time</div></div>" +
-    ring(carry.index, C.ct) + "</div>" +
-    "<p>" + D.narrative.carry + "</p>" +
-    meters([
-      { k: "ADR", v: br(mvp.adr), pct: mvp.adr / maxAdr, c: C.ct },
-      { k: "KAST", v: fmt(mvp.kast_pct, 0) + "%", pct: mvp.kast_pct / 100, c: C.ct },
-      { k: "Aberturas", v: mvp.opening_kills, pct: maxOpen ? mvp.opening_kills / maxOpen : 0, c: C.ink2 },
-      { k: "Clutches", v: mvp.clutches, pct: mvp.clutches ? 1 : 0, c: C.ink2 }
-    ]);
-
-  // Card da direita: NÃO é um slot fixo do carrega piano. Mostra quem
-  // exemplificou algum papel com mais força comparado ao que é normal naquele
-  // papel no conjunto das partidas -- pode ser o AWPer, o camper, o repick.
-  // O critério está em metrics/archetypes.py (pick_highlight).
-  var hl = D.highlight;
-  if (!hl) {
-    document.getElementById("fig-piano").innerHTML =
-      "<div class='hd'><div><div class='role'>Destaque de papel</div>" +
-      "<div class='nm'>sem destaque</div>" +
-      "<div class='sub'>ninguém se afastou do normal o bastante</div></div></div>" +
-      "<p class='lead tight'>Nenhum jogador desta partida exemplificou um papel com força " +
-      "suficiente para virar destaque. Preferimos dizer isso a eleger um jogador mediano.</p>";
+  // --- Card da direita: o outro destaque ---------------------------------
+  // Pode ser positivo OU negativo, e nunca é o MVP. Todo card negativo mostra o
+  // número que o sustenta e a referência com que foi comparado -- sem os dois,
+  // metrics/match_highlights.py já descarta o candidato antes de chegar aqui.
+  var dst = D.highlight_card;
+  var alvo = document.getElementById("fig-destaque");
+  if (!dst) {
+    alvo.innerHTML =
+      "<div class='hd'><div><div class='role'>Outro destaque</div>" +
+      "<div class='nm'>sem destaque</div></div></div>" +
+      "<p class='lead tight'>Nenhuma função desta partida se afastou do normal o " +
+      "bastante para virar destaque. Preferimos dizer isso a eleger um jogador mediano.</p>";
   } else {
-    var barras = D.archetypes.filter(function (a) { return a.steamid === hl.steamid; })[0] || {};
-    document.getElementById("fig-piano").innerHTML =
-      "<div class='hd'><div><div class='role'>" + hl.label + "</div><div class='nm'>" + hl.name + "</div>" +
-      "<div class='sub'>Time " + hl.team + " · " + hl.meaning + "</div></div>" +
-      ring(hl.index, C.aqua) + "</div>" +
-      "<p>" + D.narrative.highlight + "</p>" +
-      meters([
-        { k: "Carrega piano", v: br(barras.idx_carrega_piano, 2), pct: barras.idx_carrega_piano, c: C.aqua },
-        { k: "Camper", v: br(barras.idx_camper, 2), pct: barras.idx_camper, c: C.ink2 },
-        { k: "Repick", v: br(barras.idx_repick, 2), pct: barras.idx_repick, c: C.ink2 },
-        { k: "AWPer", v: br(barras.idx_awper, 2), pct: barras.idx_awper, c: C.ink2 }
-      ]);
+    var ev = dst.evidencia || {};
+    var linhaEv = "";
+    if (ev.valor) {
+      linhaEv = "<div class='evid'><b>" + ev.valor + "</b> " + ev.metrica +
+        (ev.referencia
+          ? " · contra <b>" + ev.referencia + "</b> " +
+            (ev.referencia_nome ? "de " + ev.referencia_nome : (ev.referencia_rotulo || ""))
+          : "") + "</div>";
+    }
+    alvo.innerHTML =
+      "<div class='hd'><div>" +
+      (dst.negativo ? "<div class='tagneg'>destaque negativo</div>" : "") +
+      "<div class='role'>" + dst.label + "</div>" +
+      "<div class='nm'>" + dst.name + "</div>" +
+      "<div class='sub'>" + (dst.team ? "Time " + dst.team + " · " : "") + dst.meaning + "</div>" +
+      "</div>" + ring(dst.index, dst.negativo ? C.t : C.aqua) + "</div>" +
+      "<p>" + D.narrative.highlight_card + "</p>" + linhaEv;
   }
 
   /* ================= PLACAR ================= */
@@ -2268,6 +2411,104 @@
     }
     return "Round decidido no confronto direto";
   }
+
+  /* ---------- Probabilidade de vitória ao longo da partida ----------
+     É o gráfico que explica a partida inteira de relance: a curva sobe quando o
+     Time A aproxima a vitória e desce quando a afasta, e a INCLINAÇÃO em cada
+     ponto é exatamente o que elege o round decisivo. Um platô perto de 50% até
+     o round 20 conta uma história; uma escada subindo desde o round 3 conta
+     outra, e nenhuma das duas cabe numa frase.
+
+     Paleta: as três cores já validadas do projeto (decisão 10) -- azul para o
+     Time A, cinza para o B, laranja para o round decisivo. */
+  (function wpchart() {
+    var svg = document.getElementById("wpchart");
+    var curva = (D.win_probability || {}).curve || [];
+    if (!svg || !curva.length) return;
+
+    var W = 900, H = 260, pL = 42, pR = 14, pT = 16, pB = 42;
+    // O ponto 0 é o ANTES do primeiro round: toda partida começa em 50%, e sem
+    // ele a curva pareceria nascer já inclinada.
+    var pontos = [{ round: 0, wp: curva[0].wp_a_antes }].concat(
+      curva.map(function (c) { return { round: c.round, wp: c.wp_a_depois }; })
+    );
+    var X = function (i) { return pL + (i / (pontos.length - 1)) * (W - pL - pR); };
+    var Y = function (v) { return pT + (1 - v) * (H - pT - pB); };
+
+    // faixas de fundo: acima de 50% o A está favorito, abaixo o B
+    svg.appendChild(svgEl("rect", { x: pL, y: pT, width: W - pL - pR, height: Y(0.5) - pT,
+      fill: "rgba(42,120,214,0.05)" }));
+    svg.appendChild(svgEl("rect", { x: pL, y: Y(0.5), width: W - pL - pR, height: (H - pB) - Y(0.5),
+      fill: "rgba(125,138,153,0.05)" }));
+
+    [0, 0.25, 0.5, 0.75, 1].forEach(function (g) {
+      svg.appendChild(svgEl("line", { x1: pL, x2: W - pR, y1: Y(g), y2: Y(g),
+        stroke: g === 0.5 ? "#cfd7e1" : "#e7ebf1", "stroke-width": g === 0.5 ? 1.4 : 1 }));
+      var lb = svgEl("text", { x: pL - 8, y: Y(g) + 4, "text-anchor": "end", fill: C.dim,
+        "font-family": "DM Mono, monospace", "font-size": 10.5 });
+      lb.textContent = Math.round(g * 100) + "%";
+      svg.appendChild(lb);
+    });
+
+    var area = "M " + X(0) + " " + Y(0.5);
+    pontos.forEach(function (p2, i) { area += " L " + X(i) + " " + Y(p2.wp); });
+    area += " L " + X(pontos.length - 1) + " " + Y(0.5) + " Z";
+    svg.appendChild(svgEl("path", { d: area, fill: "rgba(42,120,214,0.10)" }));
+    svg.appendChild(svgEl("path", {
+      d: pontos.map(function (p2, i) { return (i ? "L" : "M") + " " + X(i) + " " + Y(p2.wp); }).join(" "),
+      fill: "none", stroke: C.ct, "stroke-width": 2.4,
+      "stroke-linejoin": "round", "stroke-linecap": "round"
+    }));
+
+    // O round decisivo marcado: uma linha vertical do 50% até o ponto, para a
+    // altura do salto ficar visível, e não só a posição dele.
+    if (decRound != null) {
+      var iDec = -1;
+      for (var k = 0; k < pontos.length; k++) { if (pontos[k].round === decRound) { iDec = k; break; } }
+      if (iDec > 0) {
+        svg.appendChild(svgEl("line", { x1: X(iDec - 1), x2: X(iDec),
+          y1: Y(pontos[iDec - 1].wp), y2: Y(pontos[iDec].wp),
+          stroke: C.t, "stroke-width": 4, "stroke-linecap": "round" }));
+        svg.appendChild(svgEl("circle", { cx: X(iDec), cy: Y(pontos[iDec].wp), r: 5.5,
+          fill: C.t, stroke: "#fff", "stroke-width": 2.5 }));
+        var rot = svgEl("text", { x: X(iDec), y: Y(pontos[iDec].wp) - 14, "text-anchor": "middle",
+          fill: C.t, "font-family": "DM Mono, monospace", "font-size": 10.5 });
+        rot.textContent = "round " + decRound;
+        svg.appendChild(rot);
+      }
+    }
+
+    pontos.forEach(function (p2, i) {
+      if (i === 0 || p2.round === decRound) return;
+      svg.appendChild(svgEl("circle", { cx: X(i), cy: Y(p2.wp), r: 2.6,
+        fill: C.ct, stroke: "#fff", "stroke-width": 1.2 }));
+      if (p2.round % 3 === 0) {
+        var t = svgEl("text", { x: X(i), y: H - pB + 17, "text-anchor": "middle", fill: C.dim,
+          "font-family": "DM Mono, monospace", "font-size": 10.5 });
+        t.textContent = p2.round;
+        svg.appendChild(t);
+      }
+    });
+
+    var hx = X(M.halftime);
+    svg.appendChild(svgEl("line", { x1: hx, x2: hx, y1: pT, y2: H - pB, stroke: "#cfd7e1",
+      "stroke-width": 1, "stroke-dasharray": "3 4" }));
+    var ht = svgEl("text", { x: hx + 6, y: pT + 11, fill: C.dim,
+      "font-family": "DM Mono, monospace", "font-size": 10 });
+    ht.textContent = "intervalo";
+    svg.appendChild(ht);
+
+    // A legenda explica o modelo em uma linha, porque um gráfico de
+    // probabilidade sem o pressuposto declarado convida a ler mais do que ele diz.
+    var leg = document.getElementById("wplegend");
+    if (leg) {
+      leg.innerHTML =
+        "<span><i style='background:var(--ct)'></i> chance do Time A</span>" +
+        (decRound != null ? "<span><i style='background:var(--t)'></i> round decisivo</span>" : "") +
+        "<span style='color:var(--dim)'>modelo neutro: cada round vale 50/50, " +
+        "e a alavancagem vem só do placar</span>";
+    }
+  })();
 
   (function swing() {
     var svg = document.getElementById("swing");
@@ -2350,7 +2591,7 @@
     }
 
     prog.forEach(function (p, i) {
-      var dec = p.round === D.decisive_round.round;
+      var dec = p.round === decRound;
       var dot = svgEl("circle", { cx: X(i), cy: Y(diffs[i]), r: dec ? 5.5 : 3.2,
         fill: dec ? C.t : (diffs[i] >= 0 ? C.ct : C.dim), stroke: "#fff", "stroke-width": dec ? 2.5 : 1.5,
         "class": "swingdot" });
@@ -2628,7 +2869,36 @@
       return "<div><b>" + p.name + "</b><br>" + p.rounds_jogados + " rounds em " +
         partidas + (partidas > 1 ? " partidas" : " partida") + "</div>" +
         "<div>kills / assists / mortes<br><b style='font-size:15px'>" + kad + "</b></div>" +
+        "<div>função no round<br>" + funcaoPorLado(p.name) + "</div>" +
         "<div>jeito de jogar mais frequente<br><b style='font-size:13px'>" + grupo + "</b></div>";
+    }
+
+    // Função ESTRUTURAL, por lado. É leitura diferente do perfil comportamental
+    // logo abaixo: uma diz o que ele FAZ no round, a outra COMO ele faz. Um
+    // âncora pode ser carrega piano ou baiter, e as duas coisas são verdade.
+    var FUNC_LABELS = D.structural_role_labels || {};
+    var funcPorJogador = {};
+    (D.structural_roles || []).forEach(function (r) {
+      (funcPorJogador[r.name] = funcPorJogador[r.name] || {})[r.side] = r;
+    });
+
+    function funcaoPorLado(nome) {
+      var f = funcPorJogador[nome];
+      if (!f) return "<b style='font-size:13px'>—</b>";
+      return ["ct", "t"].map(function (lado) {
+        var r = f[lado];
+        var rot = lado === "ct" ? "CT" : "TR";
+        if (!r || !r.funcao) {
+          return "<span class='fnlado'><i>" + rot + "</i> sem função definida</span>";
+        }
+        // A concentração anda SEMPRE junto: quem ancora em 9 de 12 rounds não é
+        // a mesma coisa que quem ancora em 12, e é essa nuance que se perde num
+        // rótulo seco.
+        var conc = r.rounds_na_funcao + " de " + r.rounds_no_lado;
+        var fraca = r.amostra_fraca ? " <em>amostra fraca</em>" : "";
+        return "<span class='fnlado'><i>" + rot + "</i><b>" +
+          (FUNC_LABELS[r.funcao] || r.funcao) + "</b> " + conc + fraca + "</span>";
+      }).join("");
     }
 
     function nomeDoGrupoPerfil(c) {

@@ -37,13 +37,15 @@ pronto não serve aqui.
 parsing/      wrapper do awpy.Demo
 metrics/      geometry, basic_metrics, awp_metrics, crosshair, map_angles,
               positioning, grenades, map_areas, site_roles, player_roles,
-              clutch, archetypes (+ archetype_reference.json), player_profile
+              clutch, archetypes (+ archetype_reference.json), player_profile,
+              structural_roles, formatting, win_probability, round_spectacle,
+              match_highlights, grenade_throws
 clustering/   playstyle (PCA + KMeans), global_model.json e cluster_names.json
 dashboard/    app Streamlit + theme + web/
 scripts/      process_demo (CLI), fit_global_clusters, fit_archetype_reference,
               build_player_profiles, show_derived_angles e show_map_areas
               (calibração), narrative, build_site
-tests/        175 testes
+tests/        275 testes (8 pulados por dependerem do dado)
 data/raw/     .dem originais (gitignored)
 data/interim/ tabelas brutas em parquet (gitignored, ticks tem 1M+ linhas)
 data/processed/ métricas calculadas (versionadas — é o que o dashboard usa)
@@ -138,6 +140,65 @@ testada e estava errada.
    grupos viraram estilo (fica parado longe / entra sem a mira pronta / roda o
    mapa / joga junto e rápido). **Não devolva features de resultado para a
    lista** — a lista removida está nomeada no módulo.
+
+7d. **Duas camadas de função, e elas NÃO se misturam.**
+   - **Estrutural** (`metrics/structural_roles.py`): qual é o trabalho dele no
+     round — AWPer, âncora, coringa, rotativo, entry, trader, lurker, suporte.
+     Depende do LADO e sai de posição e tempo.
+   - **Comportamental** (`metrics/archetypes.py`): como ele executa esse trabalho
+     — carrega piano, baiter, mochila, rei do NT, camper, repick.
+
+   Um âncora pode ser carrega piano ou baiter; um entry pode ser carry ou
+   mochila. São leituras independentes e **nunca colapsam num ranking único**.
+
+   A função é atribuída por (jogador, round), e a da partida é a DOMINANTE nos
+   rounds daquele lado, sempre exibida com a concentração ("âncora em 9 de 12
+   rounds de CT"). Round sem função reconhecível fica sem função definida — é
+   resultado, não lacuna. Isso **substituiu** o `player_roles.py`, que media a
+   mesma coisa por partida e sem separar lado.
+
+   Isto não conflita com a decisão 8: lá o KMeans descobre o grupo e por isso não
+   pode batizá-lo; aqui as funções são definidas a priori por critério de jogo
+   escrito antes de olhar o dado, e o código só mede quem se encaixa.
+
+7h. **O trader é definido POR RELAÇÃO ao entry, e a proximidade sozinha não
+   basta.** Ele é o segundo homem da entrada: entra junto com o entry para que a
+   morte do entry não saia de graça. A identificação é a distância até o entry no
+   instante em que o entry toma o primeiro contato (`RAIO_ATRAS_DO_ENTRY`, o
+   mesmo raio de apoio do resto do projeto); a troca efetiva é o RESULTADO, não a
+   identificação — trader que tentou e não conseguiu continua sendo o trader
+   daquele round, do mesmo jeito que um entry que perde a abertura continua
+   sendo entry.
+
+   Os pesos são escolhidos para que proximidade sozinha (0,40) fique ABAIXO do
+   piso (0,45): andar perto do entry acontece em qualquer execução de bomb, e sem
+   ser o segundo no contato nem trocar a morte, isso é o time junto e não um
+   trader. Junto disso, o peso de trade SAIU do suporte: com ele nos dois, as
+   duas funções disputavam o mesmo sinal e o resumo por lado passava a depender
+   de arredondamento. Medido: o trader aparece em 97 dos 935 rounds de TR e é a
+   função dominante em 14 dos 90 jogador-lados; a cobertura de TR subiu de 41%
+   para 47%.
+
+7e. **As três funções de CT saem de DUAS dimensões, não de regras soltas:**
+   dispersão da posição inicial entre rounds × distância do início ao primeiro
+   contato. Âncora = início consistente + briga onde começou; rotativo = início
+   consistente + briga longe dali; coringa = início inconsistente. Medido nas 9
+   partidas, a dispersão separa bem: 35–251u para quem tem posição fixa contra
+   546–631u para quem varia.
+
+7f. **A "posição inicial" é a de SETUP (10s depois do freeze), não a do tick em
+   que o freeze acaba.** No instante exato do freeze todos os CTs ainda estão no
+   spawn: usar aquele tick zera a dispersão de todo mundo, tira todos do
+   bombsite e manda 859 dos 935 rounds de CT para "rotativo" — a classificação
+   inteira colapsa numa função só. Foi um teste sintético que fez a troca
+   parecer certa; o dado real mostrou que não era.
+
+7g. **IGL nunca é atribuído automaticamente.** O áudio EXISTE no demo
+   (`parse_voice` devolve 124–162 mil pacotes por partida, nas 9), mas sem
+   transcrição só dá para medir TEMPO DE FALA — e tempo de fala não acha o
+   capitão: medido, o jogador com 32% de toda a voz de uma partida era o astro
+   do time, não quem chamava. O rótulo vem de `roles_manual.json`, preenchido à
+   mão, e há teste que falha se o código escrever nesse arquivo.
 
 8. **O KMeans não nomeia os grupos.** Apelido de jogo ("lurker", "âncora",
    "entry") é interpretação e cabe ao Pedro, via `clustering/cluster_names.json`.
@@ -267,6 +328,155 @@ testada e estava errada.
     rotação (`MIN_OTHER_SITE_SHARE`): os corredores de ligação caem de um dos
     lados. Ambos têm teste de regressão.
 
+19. **Round decisivo é medido por VARIAÇÃO DA PROBABILIDADE DE VITÓRIA, não
+    por soma de pontos.** O esquema antigo somava pesos inventados (ponto sem
+    retorno 40, déficit 12 por jogador, clutch 20, multikill 6x, placar apertado
+    15, defuse 8) e não havia resposta para "por que clutch vale 20 e defuse vale
+    8" — é exatamente o que a decisão 6 chama de chute disfarçado de métrica.
+
+    Agora sai de uma conta só (`metrics/win_probability.py`): programação
+    dinâmica sobre os estados de placar até o fim da partida, e o round decisivo
+    é o que mais moveu a chance de o time vencer. Três dos componentes antigos
+    caem de graça da matemática e **não devem ser reintroduzidos como peso**:
+    ponto sem retorno (um round que leva de 40% a 8% tem variação enorme por
+    construção), déficit (estado desequilibrado move pouco) e placar apertado
+    (11-11 é o pico natural da curva).
+
+    A probabilidade de ganhar um round isolado é **neutra (0,5)** de propósito:
+    alavancagem é propriedade do ESTADO DO PLACAR, não de qual time é melhor.
+    Usar a taxa observada na própria partida seria circular — o time que venceu
+    teve taxa alta justamente porque venceu. Há um ajuste por lado
+    (`PROB_ROUND_CT`) desligado por padrão, para quando houver corpus suficiente.
+
+19a. **Impressionante e decisivo são perguntas SEPARADAS, e por isso são dois
+    cards.** "Que round mais mudou o resultado" e "que round foi mais
+    impressionante de assistir" não são a mesma pergunta: um clutch de 1v3 em
+    3-13 é lindo e não decidiu nada; um round banal em 11-11 decidiu muito.
+    Somar os dois num score só produz resposta que não serve para nenhuma das
+    duas. O impressionante vive em `metrics/round_spectacle.py`, onde **pesos
+    relativos são legítimos** porque a pergunta é subjetiva — e ficam todos
+    expostos no card, componente por componente, para recalibrar olhando caso
+    concreto. Medido: nas 9 partidas os dois rounds coincidem em 1 e divergem em
+    8, e os dois casos estão testados.
+
+19b. **Partida sem round decisivo é RESULTADO, não lacuna.** Numa partida de
+    placar largo a diferença se construiu ao longo do jogo, e eleger um round à
+    força inventa uma virada que não houve — era o que a soma de pontos fazia,
+    porque sempre existe um máximo. O piso não é número solto: é 1,5x o round
+    mais barato possível daquele formato (`P(1,0) - P(0,0)`, 0,081 no MR12), o
+    mesmo fator com que o projeto ancora o piso de entry ao acaso. Medido: ficam
+    sem round decisivo exatamente as 5 partidas de placar largo (13-5, 13-6,
+    13-7, 13-8, 4-13) e ficam com as 4 apertadas (dois 13-9, dois 11-13). A
+    interface renderiza esse caso com frase própria, não com card vazio.
+
+19c. **O formato (MR12/MR15) sai da demo, pela TROCA DE LADO.** Não se assume
+    MR12. Pelo placar os dois são indistinguíveis num caso real: MR12 com
+    prorrogação termina em 16-14 exatamente como um MR15 sem prorrogação. A troca
+    de lado separa. Ressalva registrada: `HALFTIME_ROUND = 12` ainda está fixo em
+    sete módulos, e `build_insights` **avisa** quando o formato detectado
+    discorda dele em vez de seguir em silêncio — o placar por time depende disso.
+
+19d. **Economia é LEITURA ao lado do round decisivo, nunca peso no score.** Se o
+    dinheiro entrasse na conta que elege o round, a decisividade passaria a
+    depender de quanto os times tinham, e isso é outra pergunta. O card mostra o
+    equipamento médio dos dois lados (`format_money`) e, quando quem perdeu
+    estava com equipamento igual ou superior, diz isso — é a informação mais útil
+    do card, porque aí a derrota não tem desculpa de economia.
+
+20. **A aba de leitura tem estrutura FIXA de três blocos:** round decisivo em
+    cima, MVP embaixo à esquerda, outro destaque embaixo à direita. Estrutura
+    fixa é o que torna duas partidas comparáveis de relance -- se o layout
+    mudasse conforme o que a partida teve, cada página ensinaria a ser lida de
+    novo. O gráfico de probabilidade de vitória saiu daqui e vive só na aba
+    Placar: a mesma informação duas vezes na mesma página só gasta espaço.
+
+    O card do MVP mostra os COMPONENTES e não só o índice, cada um com o melhor
+    valor entre os outros jogadores ao lado ("126,1 de ADR contra 107,3 de
+    s-chilla"). Índice agregado sozinho não deixa conferir nada.
+
+20a. **O segundo card admite destaque NEGATIVO**, e o tom é fato com número.
+    "Terminou com 38 de ADR contra 71 do segundo pior, e o time venceu mesmo
+    assim" é análise; adjetivo sem número atrás é xingamento. Card negativo sem
+    número E sem referência **não renderiza** -- o candidato é descartado e a vez
+    passa para o próximo. O negativo se diferencia por rótulo e hierarquia, não
+    por vermelho de alarme (decisão 10).
+
+20b. **Bottom frag exige distância destacada, não a última posição.** Alguém
+    sempre é o último; isso é aritmética, não observação. Ele só vira card se
+    estiver a `MIN_DISPERSOES_BOTTOM_FRAG` (1,5) abaixo do PENÚLTIMO, medido em
+    desvios absolutos medianos dos outros. MAD e não desvio padrão: o próprio
+    afundamento inflaria o desvio padrão e viraria parte da "dispersão normal".
+    Pela mesma lógica, **mochila exige vitória do time** -- número ruim em time
+    que perdeu é jogador ruim, não alguém carregado.
+
+20d. **No empate do topo, vence o destaque NEGATIVO.** O percentil satura:
+    vários candidatos batem em 0,99-1,00 e a pontuação perde resolução
+    justamente no topo. Medido: o match_03 tinha um bottom frag em 1,00 empatado
+    com um repick em 1,00, e vencia quem tivesse sido inserido antes na lista --
+    acidente, não critério. O desempate é explícito e prefere o negativo, porque
+    o card da esquerda já é um destaque positivo: um segundo positivo repete o
+    tipo de informação, um negativo acrescenta. **Isso não afrouxa trava
+    nenhuma** -- o negativo continua tendo que passar pela distância do bottom
+    frag, pela vitória da mochila e pela evidência com número.
+
+    Registro de um diagnóstico errado meu: antes de olhar os candidatos, a
+    recomendação foi afrouxar `MIN_DISPERSOES_BOTTOM_FRAG` para fazer o card
+    negativo aparecer. Era errado -- os negativos já competiam e já venciam
+    empates; o defeito estava na ordenação.
+
+20c. **Comparabilidade entre funções: cada pontuação significa "o quanto isto
+    está acima do normal".** Papéis comportamentais já vêm como percentil contra
+    o conjunto das partidas (decisão 16, que é mais forte que padronizar dentro
+    da partida). Funções estruturais usam a concentração **ponderada pela fração
+    de companheiros que ela supera** -- a concentração crua não serve, porque
+    "coringa em 12 de 12 rounds" dá 1,0 e é o caso COMUM: medido, isso elegia o
+    card da direita em 6 das 9 partidas e afogava carrega piano e AWPer
+    legítimos. Ponderada, quando todos são igualmente fixos a pontuação vai a
+    zero, que é a resposta certa.
+
+21. **O tick de soltura de uma granada é derivado por ANCORAGEM GEOMÉTRICA, não
+    por atraso fixo de animação.** O `weapon_fire` marca o clique; a granada sai
+    da mão depois, e é o ângulo da soltura que importa. Varre-se a janela entre
+    o clique e o primeiro sample do projétil e vence o tick cuja geometria
+    (olhos + deslocamento na direção da mira) melhor reproduz o ponto observado.
+
+    A separação que faz isso funcionar: o deslocamento da mão age no plano
+    HORIZONTAL e a altura dos olhos age só na VERTICAL. O ajuste horizontal
+    determina o tick e o deslocamento sem nenhum parâmetro livre por arremesso,
+    e a altura cai depois como MEDIÇÃO. É isso que mantém o resíduo honesto como
+    medida de confiança.
+
+    Medido em 3.020 arremessos: resíduo mediano 0,51u, 99,9% abaixo do limiar, e
+    o atraso da animação sai em 7 ticks (109 ms) em vez de chutado. A altura dos
+    olhos derivada dá **64,17u**, o que VALIDA as 64 unidades que o projeto já
+    supunha -- e revelou um deslocamento vertical de +3,2u no ponto de
+    nascimento da granada, igual em pé e agachado, que ninguém tinha modelado.
+
+    Quando o jogador está parado e a mira quieta, o resíduo é plano na janela e o
+    tick fica indeterminado. É inofensivo (a mira varia 0,29° na mediana) mas o
+    empate é desfeito pelo tick mais próximo do projétil -- sem isso, 312 dos
+    3.020 saíam com soltura ANTES do clique.
+
+21a. **A força do arremesso é inferida da velocidade RELATIVA ao jogador.** Sem
+    descontar a velocidade de quem arremessou, todo run-throw curto vira
+    arremesso longo. O desconto é vetorial (projetar o módulo na direção da
+    granada superestima quem corria de lado) e usa `FATOR_HERANCA = 1,25`,
+    medido: a inclinação de (v_relativa ~ v_jogador) cruza zero em 1,250 e o IQR
+    do grupo dominante é mínimo no mesmo ponto. Dois critérios independentes
+    coincidindo num 1,25 redondo dizem que é constante do jogo. Efeito: parado x
+    correndo saiu de 674 x 727 u/s para 672,0 x 672,7.
+
+    Os três grupos saem por moda (decisão 5, nada de bin fixo): 201, 440 e 674
+    u/s. **Os rótulos curto/médio/longo são do Pedro** -- o código mostra
+    "força A/B/C" com a velocidade ao lado até ele confirmar, mesmo princípio da
+    decisão 8.
+
+21b. **A reprodução por console depende de validação prática do Pedro, não do
+    código.** Origem do `setpos`, sinal do `setang` e pré-requisitos de servidor
+    só se confirmam rodando no jogo. Enquanto não houver essa conferência, o
+    módulo não pode afirmar que um lineup é exato -- um lineup errado é pior que
+    nenhum, porque o cara treina errado.
+
 ## Pontos de calibração — pertencem ao Pedro, não ao código
 
 Não "resolva" nenhum destes automaticamente; pergunte.
@@ -283,6 +493,19 @@ Não "resolva" nenhum destes automaticamente; pergunte.
 - Limiares: janela de trade (5s), peek/hold (120u / 250u), janela de contato
   (1s), tolerância de pré-fire (25°), permanência mínima para contar rotação
   (15% do round).
+- Rótulos dos três grupos de força de arremesso (201 / 440 / 674 u/s): confirmar
+  se A/B/C são curto/médio/longo. Rode o diagnóstico de `metrics/grenade_throws`.
+- Limiares do card de destaque (`metrics/match_highlights.py`): piso de evidência
+  (0,70), limiar de empate (0,05) e as dispersões do bottom frag (1,5 a 3,0).
+- Limiares do round decisivo e do impressionante: o fator do piso de
+  decisividade (`FATOR_MINIMO_DECISIVO`, 1,5), a distância que declara empate no
+  topo (`LIMIAR_EMPATE_WPA`, 0,02) e **todos os pesos de
+  `metrics/round_spectacle.py`** — clutch (26 + 11 por inimigo extra), multikill
+  (8 por kill acima de 2), desvantagem (9 por jogador), desarme no limite (20) e
+  abertura limpa (12). Os pesos do espetáculo são subjetivos por natureza; o card
+  mostra quanto cada componente deu em cada round justamente para recalibrar
+  olhando caso concreto. Frequência medida nas 9 partidas: multikill 85x,
+  abertura limpa 48x, desvantagem 23x, clutch 19x, desarme no limite 1x.
 - Limiares da autópsia de round (`metrics/round_breakdown.py`): equipamento médio
   que caracteriza economia (2000$), diferença de equipamento que torna a economia
   explicativa (1500$) e a cauda pós-round (8s). Registro da medição: dos 56
@@ -322,11 +545,21 @@ Não "resolva" nenhum destes automaticamente; pergunte.
   erro. É julgamento do Pedro.
 - Overlay do radar do mapa nos heatmaps depende de `awpy get maps` (download dos
   assets). Sem isso o heatmap funciona em coordenadas de jogo.
+- O modelo de probabilidade de vitória supõe **independência entre rounds**, e
+  momentum e economia violam isso: depois de perder um round o time perde também
+  a compra do seguinte, e a chance real do próximo round não é mais 0,5. Modelar
+  economia exigiria um estado (placar, dinheiro, armas) grande demais para 9
+  partidas. Fica registrado como simplificação, não como descuido.
+- **Prorrogação é 50/50 a partir do empate** (12-12 no MR12). O OT tem formato
+  próprio — MR3, e um novo empate leva a outro OT — e modelar isso exigiria uma
+  segunda cadeia de estados com critério de parada arbitrário para a sequência de
+  prorrogações. Nenhuma das 9 partidas do corpus foi para OT, então a
+  simplificação nunca foi exercitada em dado real.
 
 ## Como validar mudanças
 
 ```bash
-py -3.12 -m pytest tests/ -v          # 175 testes
+py -3.12 -m pytest tests/ -v          # 275 testes
 py -3.12 -m scripts.process_demo data/raw/match_01.dem --match-id match_01 --from-interim
 py -3.12 -m streamlit run dashboard/app.py
 ```
