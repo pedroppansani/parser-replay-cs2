@@ -12,7 +12,10 @@ from pathlib import Path
 
 import polars as pl
 
+from parsing.parser import kills_do_round_jogado
+
 from metrics.round_breakdown import build_breakdowns
+from metrics.timing import detect_tickrate
 from scripts.build_insights import resolve_teams, side_of_team
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -24,11 +27,17 @@ def build(match_id: str) -> Path:
 
     rounds = pl.read_parquet(processed / "rounds.parquet")
     kills = pl.read_parquet(interim / "kills.parquet")
+    # mortes do tempo parado não pertencem a round nenhum (ver parsing.parser)
+    kills = kills_do_round_jogado(kills, rounds)
     ticks = pl.read_parquet(interim / "ticks.parquet")
     grenades = pl.read_parquet(interim / "grenades.parquet") if (interim / "grenades.parquet").exists() else None
 
     team_of, _ = resolve_teams(ticks)
-    breakdowns = build_breakdowns(rounds, kills, ticks, grenades, team_of, side_of_team)
+    # Tickrate detectado, nunca assumido: todo tempo do timeline depende dele.
+    tickrate = int(detect_tickrate(rounds, ticks)["tickrate"])
+    breakdowns = build_breakdowns(
+        rounds, kills, ticks, grenades, team_of, side_of_team, tickrate
+    )
 
     out = processed / "breakdown.json"
     out.write_text(json.dumps(breakdowns, ensure_ascii=False, separators=(",", ":"), default=str), encoding="utf-8")

@@ -18,13 +18,24 @@ adversário mostrou — informação que não está no demo. O que sai daqui é
 
 Por isso cada momento vem com tick e posição: dá pra clicar e assistir no
 replay em vez de confiar no rótulo.
+
+ORIGEM DO TEMPO — declarada aqui porque a interface mostra segundos e um número
+sem referência não se audita: **t = 0 é o FIM DO FREEZE TIME** (`freeze_end`),
+que é quando o round começa a ser jogado. Não é o `start` do round (que inclui o
+tempo parado) nem o `official_end` do anterior.
+
+Consequência: tempo negativo é IMPOSSÍVEL por construção. Se aparecer, é evento
+que não pertence ao round, e o módulo levanta erro em vez de renderizar o
+número estranho. Um evento pode legitimamente cair DEPOIS do fim do round (ainda
+dá pra morrer nos segundos seguintes) — esse sai marcado como pós-round, com
+tempo positivo contado do mesmo zero.
 """
 from __future__ import annotations
 
 import numpy as np
 import polars as pl
 
-TICKRATE = 64  # medido, não assumido — ver metrics/timing.py
+from metrics.formatting import format_money
 
 # Janela para considerar uma morte "trocada" — mesma do resto do projeto.
 TRADE_WINDOW_SECONDS = 5.0
@@ -34,9 +45,26 @@ TRADE_WINDOW_SECONDS = 5.0
 # 3 segundos de corrida, o tempo típico de uma troca acontecer.
 ISOLATION_DISTANCE = 600.0
 
-# Abaixo deste valor de equipamento, o round é de economia: perder não indica
-# erro de execução, e a autópsia diz isso em vez de apontar culpados.
+# Abaixo deste valor de equipamento médio, o round é de economia: perder não
+# indica erro de execução, e a autópsia diz isso em vez de apontar culpados.
+#
+# 2000$ é o ponto em que o time não tem rifle para todo mundo: um AK custa 2700 e
+# um M4 3100, então uma média abaixo de 2000 significa que parte do time entrou
+# de pistola ou SMG. Acima disso a derrota já é comparável à do adversário.
 ECO_EQUIP_VALUE = 2000
+
+# Diferença de equipamento a partir da qual vale dizer que um lado entrou muito
+# pior que o outro. 1500$ é a distância entre uma pistola com colete e um rifle:
+# abaixo disso os dois times brigam com armas comparáveis.
+DIFERENCA_EQUIP_RELEVANTE = 1500
+
+# Round em que os lados trocam (MR12). O último round de cada metade tem a mesma
+# pegadinha de fronteira do último da partida e por isso é marcado.
+HALFTIME_ROUND = 12
+
+# Quanto tempo depois do fim do round um evento ainda conta como do round. O
+# replay já estende a janela pela mesma razão (TAIL_TICKS em export_replay).
+CAUDA_POS_ROUND_S = 8.0
 
 
 def distance_phrase(dist: float) -> str:
@@ -100,6 +128,40 @@ def _nearest_teammate_distance(
     return float(np.min(np.sqrt(dx**2 + dy**2)))
 
 
+def _segundos(tick: int, t0: int, tickrate: int, contexto: str) -> float:
+    """Segundos desde o fim do freeze time. Negativo é erro, não caso a tratar."""
+    delta = int(tick) - t0
+    if delta < 0:
+        raise ValueError(
+            f"{contexto}: evento no tick {tick} é anterior ao fim do freeze time "
+            f"({t0}), {delta / tickrate:.1f}s antes do round começar a ser jogado. "
+            "Isso não é arredondamento — o evento não pertence a este round. Rode "
+            "`py -3.12 -m scripts.debug_timeline` e veja parsing.kills_do_round_jogado."
+        )
+    return round(delta / tickrate, 1)
+
+
+def _quem_matou(kill: dict) -> tuple[str | None, str]:
+    """Nome de quem matou e a frase da causa.
+
+    Morte sem atacante (queda, bomba, dano de zona) vem com `attacker_steamid`
+    nulo, e o demo às vezes preenche o atacante com a PRÓPRIA VÍTIMA. Nos dois
+    casos o nome não pode aparecer como matador: "morreu para si mesmo" descreve
+    um bug, não um round. Sem atacante, o texto diz o que de fato aconteceu.
+    """
+    atacante = kill.get("attacker_steamid")
+    vitima = kill.get("victim_steamid")
+    arma = (kill.get("weapon") or "").lower()
+
+    if atacante is None or atacante == vitima:
+        if arma in ("planted_c4", "c4"):
+            return None, "morreu para a bomba"
+        if arma in ("world", ""):
+            return None, "morreu para o mapa — queda ou dano de zona"
+        return None, "morreu sem atacante registrado"
+    return kill.get("attacker_name"), "morreu para " + str(kill.get("attacker_name"))
+
+
 def analyze_round(
     round_row: dict,
     kills: pl.DataFrame,
@@ -107,10 +169,13 @@ def analyze_round(
     grenades: pl.DataFrame | None,
     team_of: dict[int, str],
     side_of_team,
+    tickrate: int = 64,
+    ultimo_round: int | None = None,
 ) -> dict:
     """Monta a autópsia de um round para o time que perdeu."""
     rn = int(round_row["round_num"])
     t0 = int(round_row["freeze_end"])
+    TICKRATE = tickrate  # nome curto, usado nas contas abaixo
     winner = "A" if round_row["winner"] == side_of_team("A", rn) else "B"
     loser = "B" if winner == "A" else "A"
 
@@ -127,14 +192,30 @@ def analyze_round(
 
     # --- contexto econômico: round de eco não é erro de execução ---
     loser_side = side_of_team(loser, rn)
-    setup = ticks.filter(
-        (pl.col("round_num") == rn) & (pl.col("tick") <= t0 + 2 * TICKRATE) & (pl.col("side") == loser_side)
-    )
-    equip = None
-    if setup.height:
-        per_player = setup.group_by("steamid").agg(pl.col("current_equip_value").max().alias("v"))
-        equip = float(per_player["v"].mean() or 0)
+    winner_side = "ct" if loser_side == "t" else "t"
+
+    def equip_medio(lado: str) -> float | None:
+        recorte = ticks.filter(
+            (pl.col("round_num") == rn)
+            & (pl.col("tick") <= t0 + 2 * TICKRATE)
+            & (pl.col("side") == lado)
+        )
+        if recorte.height == 0:
+            return None
+        por_jogador = recorte.group_by("steamid").agg(
+            pl.col("current_equip_value").max().alias("v")
+        )
+        return float(por_jogador["v"].mean() or 0)
+
+    # Os DOIS lados, porque "960$" sozinho não diz nada: 960 contra 1.200 é um
+    # round parelho de pistola; 960 contra 4.500 é outra história, e antes disso
+    # o texto tratava os dois igual.
+    equip = equip_medio(loser_side)
+    equip_winner = equip_medio(winner_side)
     is_eco = equip is not None and equip < ECO_EQUIP_VALUE
+    diferenca = (
+        None if equip is None or equip_winner is None else round(equip_winner - equip)
+    )
     if is_eco:
         tags.append("round de economia")
 
@@ -152,10 +233,11 @@ def analyze_round(
             moments.append(
                 {
                     "tick": int(first["tick"]),
-                    "t": round((int(first["tick"]) - t0) / TICKRATE, 1),
+                    "t": _segundos(first["tick"], t0, TICKRATE, f"round {rn}, abertura"),
                     "kind": "abertura_perdida",
                     "who": first["victim_name"],
-                    "by": first["attacker_name"],
+                    "by": _quem_matou(first)[0],
+                    "causa": _quem_matou(first)[1],
                     "traded": bool(traded),
                     "x": int(round(first["victim_X"])) if first["victim_X"] is not None else None,
                     "y": int(round(first["victim_Y"])) if first["victim_Y"] is not None else None,
@@ -184,10 +266,11 @@ def analyze_round(
             moments.append(
                 {
                     "tick": int(k["tick"]),
-                    "t": round((int(k["tick"]) - t0) / TICKRATE, 1),
+                    "t": _segundos(k["tick"], t0, TICKRATE, f"round {rn}, morte isolada"),
                     "kind": "morte_isolada",
                     "who": k["victim_name"],
-                    "by": k["attacker_name"],
+                    "by": _quem_matou(k)[0],
+                    "causa": _quem_matou(k)[1],
                     "distance": round(dist),
                     "x": int(round(k["victim_X"])) if k["victim_X"] is not None else None,
                     "y": int(round(k["victim_Y"])) if k["victim_Y"] is not None else None,
@@ -227,10 +310,11 @@ def analyze_round(
             moments.append(
                 {
                     "tick": int(k["tick"]),
-                    "t": round((int(k["tick"]) - t0) / TICKRATE, 1),
+                    "t": _segundos(k["tick"], t0, TICKRATE, f"round {rn}, virada numérica"),
                     "kind": "virada_numerica",
                     "who": who,
-                    "by": k["attacker_name"],
+                    "by": _quem_matou(k)[0],
+                    "causa": _quem_matou(k)[1],
                     "victim": k["victim_name"],
                     "survivors": survivors,
                     "score": score,
@@ -280,6 +364,45 @@ def analyze_round(
 
     moments.sort(key=lambda m: m["tick"])
 
+    # Pós-round: o tempo continua contado do mesmo zero e continua positivo. O
+    # que muda é a leitura — "morreu aos 1:42, depois do round decidido" não é a
+    # mesma coisa que morrer durante a disputa.
+    fim = int(round_row["end"])
+    for m in moments:
+        m["pos_round"] = bool(m["tick"] > fim)
+
+    # O último round da partida e o último de cada metade têm fronteira
+    # diferente dos demais (o da partida costuma vir sem `official_end`, porque a
+    # partida acaba junto). Fica explícito na saída para aparecer na leitura.
+    eh_ultimo = ultimo_round is not None and rn == int(ultimo_round)
+    eh_fim_de_metade = rn == HALFTIME_ROUND
+
+    # O texto muda com a DIFERENÇA, não só com o valor absoluto. Medido nas 9
+    # partidas: dos 56 rounds abaixo do limiar de eco, 18 são round de pistola em
+    # que os dois times entraram igualmente pobres — ali "perder é esperado" não
+    # se sustenta, porque o adversário tinha o mesmo. Antes os dois casos saíam
+    # com a mesma frase.
+    contexto_eco = None
+    if is_eco:
+        contexto_eco = (
+            "Round de economia: o time entrou com " + format_money(equip)
+            + " de equipamento médio"
+        )
+        if equip_winner is None:
+            contexto_eco += ". O que vale olhar é quanto dano o time conseguiu tirar."
+        elif diferenca is not None and diferenca >= DIFERENCA_EQUIP_RELEVANTE:
+            contexto_eco += (
+                " contra " + format_money(equip_winner) + " do adversário, "
+                + format_money(diferenca) + " de diferença. Perder aqui é esperado, e o "
+                "que vale olhar é quanto dano o time conseguiu tirar."
+            )
+        else:
+            contexto_eco += (
+                " contra " + format_money(equip_winner) + " do adversário. Os dois "
+                "entraram com equipamento parecido, então a economia não explica a "
+                "derrota — o round foi decidido no confronto."
+            )
+
     return {
         "round": rn,
         "loser_team": loser,
@@ -287,7 +410,14 @@ def analyze_round(
         "winner_team": winner,
         "eco": bool(is_eco),
         "equip_value": round(equip) if equip is not None else None,
+        "equip_value_winner": round(equip_winner) if equip_winner is not None else None,
+        "equip_diff": diferenca,
+        "eco_text": contexto_eco,
         "untraded_deaths": untraded,
+        "ultimo_round": eh_ultimo,
+        "fim_de_metade": eh_fim_de_metade,
+        "freeze_end": t0,
+        "end": fim,
         "tags": tags,
         "moments": moments,
     }
@@ -300,9 +430,11 @@ def build_breakdowns(
     grenades: pl.DataFrame | None,
     team_of: dict[int, str],
     side_of_team,
+    tickrate: int = 64,
 ) -> list[dict]:
     """Autópsia de todos os rounds da partida."""
+    ultimo = int(rounds["round_num"].max())
     return [
-        analyze_round(r, kills, ticks, grenades, team_of, side_of_team)
+        analyze_round(r, kills, ticks, grenades, team_of, side_of_team, tickrate, ultimo)
         for r in rounds.iter_rows(named=True)
     ]
