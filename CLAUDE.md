@@ -99,11 +99,32 @@ testada e estava errada.
 
 7. **Clustering é por (jogador, round), não por jogador.** O mesmo jogador é
    entry num round e âncora em outro; agregar por partida esconde exatamente o
-   que se quer medir.
+   que se quer medir. Confirmado nos dados: todo jogador visita 3 ou 4 dos 4
+   grupos numa única partida.
 
-8. **O KMeans não nomeia os clusters.** A nomeação é interpretação de jogo e
-   cabe ao Pedro, via `clustering/cluster_names.json`. Enquanto vazio, o
-   dashboard mostra "Cluster 0, 1..." e avisa. **Não gere rótulos automáticos.**
+7b. **As features do clustering são só COMPORTAMENTO.** `damage`, `kills`,
+   `trade_kills`, `utility_damage` e `survived` saíram da lista: são resultado, e
+   com elas dentro o KMeans agrupava os rounds por como terminaram — o que a
+   tabela de ADR já diz. Tirando as cinco, a silhueta foi de 0,168 para 0,216
+   (k=4) e os dois eixos do gráfico passaram a explicar 56% em vez de 40%. Os
+   grupos viraram estilo (fica parado longe / entra sem a mira pronta / roda o
+   mapa / joga junto e rápido). **Não devolva features de resultado para a
+   lista** — a lista removida está nomeada no módulo.
+
+8. **O KMeans não nomeia os grupos.** Apelido de jogo ("lurker", "âncora",
+   "entry") é interpretação e cabe ao Pedro, via `clustering/cluster_names.json`.
+   **Não gere rótulos automáticos.**
+
+   O que o painel mostra enquanto não há nome é uma DESCRIÇÃO derivada da
+   medição (`describe_clusters`): "longe do time, chega a se afastar muito" é
+   uma releitura dos números, não uma leitura de jogo. A distinção é a razão de
+   a função existir — antes disso o painel mostrava "Cluster 0" e um gráfico de
+   pontos com eixos de PCA, o que é verdadeiro e ilegível, e a aba inteira era
+   decorativa. A descrição sai do perfil GLOBAL, não do recorte da partida,
+   senão o mesmo grupo mudaria de texto de uma página para a outra.
+
+   O `cluster_names.json` também entra no payload do site: sem isso o arquivo só
+   teria efeito no dashboard local e a nomeação nunca chegaria à página.
 
 9. **Convenção de ângulos do CS2: pitch positivo = olhar para BAIXO.** Validada
    empiricamente (erro mediano de 1,76° no tick da kill, contra 6,52° na

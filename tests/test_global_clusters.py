@@ -19,8 +19,10 @@ import pytest
 
 from clustering.playstyle import (
     FEATURE_COLUMNS,
+    FEATURES_DE_RESULTADO_REMOVIDAS,
     assign_with_model,
     cluster_playstyles,
+    describe_clusters,
     fit_global_model,
     representative_rounds,
 )
@@ -176,3 +178,49 @@ def test_exemplos_trazem_match_id_quando_vem_do_conjunto(pool):
     # e continua funcionando para uma partida só, onde a coluna não existe
     uma = assignments.filter(pl.col("match_id") == "match_a").drop("match_id")
     assert "match_id" not in representative_rounds(uma).columns
+
+
+# --- Descrição legível dos grupos -------------------------------------------
+
+def test_features_de_resultado_ficam_fora_do_agrupamento():
+    """REGRESSÃO: com dano, kills e sobrevivência dentro, o agrupamento separava
+    os rounds por COMO TERMINARAM, não por como foram jogados -- e isso a tabela
+    de ADR já diz. Medido no conjunto: tirá-las levou a silhueta de 0,168 para
+    0,216 e a variação explicada pelos dois eixos de 40% para 56%.
+    """
+    assert not set(FEATURE_COLUMNS) & set(FEATURES_DE_RESULTADO_REMOVIDAS)
+    for proibida in ("damage", "kills", "survived", "trade_kills", "utility_damage"):
+        assert proibida not in FEATURE_COLUMNS
+
+
+def test_descricao_diz_no_que_o_grupo_se_afasta():
+    """A frase é uma releitura da medição, não um apelido de jogo."""
+    # Três grupos, e só a distância varia: com dois grupos todo z-score é ±1 e o
+    # desempate entre features viraria ordem de dicionário, não medição.
+    perfis = pl.DataFrame(
+        {
+            "cluster": [0, 1, 2],
+            "n_rounds": [100, 100, 100],
+            "avg_distance_from_team": [1200.0, 400.0, 800.0],
+            "max_distance_from_team": [1800.0, 700.0, 1250.0],
+            "distinct_places": [5.0, 5.0, 5.0],
+            "crosshair_score": [70.0, 70.0, 70.0],
+            "height_score": [0.9, 0.9, 0.9],
+            "frac_entering_fight": [0.1, 0.1, 0.1],
+            "time_of_first_contact_s": [25.0, 25.0, 25.0],
+        }
+    )
+    d = describe_clusters(perfis)
+    por_cluster = dict(zip(d["cluster"].to_list(), d["descricao"].to_list()))
+
+    assert "longe do time" in por_cluster[0]
+    assert "colado no time" in por_cluster[1]
+    # e nenhum apelido de jogo aparece: isso é leitura humana, não do algoritmo
+    for texto in por_cluster.values():
+        for apelido in ("lurker", "entry", "âncora", "suporte", "AWPer"):
+            assert apelido.lower() not in texto.lower()
+
+
+def test_descricao_de_tabela_vazia_nao_estoura():
+    vazio = pl.DataFrame(schema={"cluster": pl.Int32, "n_rounds": pl.UInt32})
+    assert describe_clusters(vazio).height == 0

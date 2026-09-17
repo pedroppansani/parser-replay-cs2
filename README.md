@@ -173,17 +173,41 @@ processado sozinho ou junto — e um teste de **controle** mostrando que o modo
 antigo não a tinha. Mesma lógica do controle da convenção de pitch: se os dois
 passarem, o principal parou de medir.
 
+### O clustering estava agrupando RESULTADO, não estilo
+
+Os quatro grupos que saíam eram "round produtivo", "round longe e sobreviveu",
+"round que morreu entrando" e "round que morreu sem fazer nada". Isso é uma
+taxonomia de como o round TERMINOU — coisa que a tabela de ADR já diz. E
+contradizia o propósito declarado do próprio módulo: agrupar *como* o jogador
+jogou o round, não se ele se deu bem.
+
+A causa estava na lista de features: `damage`, `kills`, `trade_kills`,
+`utility_damage` e `survived` são resultado, não comportamento. Tirando as cinco:
+
+| | com resultado | só comportamento |
+|---|---|---|
+| silhueta (k=4) | 0,168 | **0,216** |
+| variação nos 2 eixos do gráfico | 40% | **56%** |
+
 Resultado no conjunto (4 clusters, 1.870 player-rounds de 9 partidas):
 
 | Cluster | Rounds | Perfil observado |
 |---|---|---|
-| 0 | 546 | Longe do time (992u), contato tardio (39,4s), sobrevive 37%, dano baixo |
-| 1 | 432 | Dano alto (181), 1,95 kills, 0,48 trades, sobrevive 60% |
-| 2 | 125 | Morre quase sempre (8% sobrevive), mais tempo entrando em briga (0,25) e o pior crosshair score (51 contra ~71 dos outros) |
-| 3 | 767 | Perto do time (453u), contato mais cedo (21,2s), dano baixo, morre 92% |
+| 0 | 474 | Longe do time (1090u), poucas regiões (4,5), contato aos 29s, quase não entra em briga |
+| 1 | 117 | Pior crosshair (51 contra ~72 dos outros) e mais tempo entrando em briga (0,25) |
+| 2 | 438 | Mais regiões distintas (7,8), contato mais tarde (43,5s), evita a briga |
+| 3 | 841 | Mais perto do time (439u), contato mais cedo (18,8s), entra muito |
 
-Os dois eixos do PCA explicam 40% da variação: PCA1 é dominado por impacto
-(dano, kills, trades), PCA2 por separação do time e sobrevivência.
+São quatro estilos, não quatro resultados — e por isso nomeáveis. O k=4 foi
+mantido sobre o k=3 (silhueta 0,236) porque o k=3 funde os clusters 0 e 2, e a
+diferença entre *ficar parado longe* e *rodar o mapa* é uma distinção de jogo
+real: âncora e lurker não são a mesma coisa.
+
+**O que o painel mostra que o rótulo fixo não mostra:** a mistura de clusters do
+jogador round a round. Em match_01, s-chilla jogou 95% dos rounds no mesmo
+estilo; o AWPer Z_o_R_o se espalha por quatro (36/41/18/5). Todo jogador visita
+3 ou 4 dos grupos numa partida — ninguém *é* um cluster, e é justamente isso que
+um rótulo por jogador esconde.
 
 **O KMeans agrupa, mas não nomeia.** "Lurker", "entry fragger", "suporte de
 utility" são interpretações de jogo que o algoritmo não tem como fazer — a

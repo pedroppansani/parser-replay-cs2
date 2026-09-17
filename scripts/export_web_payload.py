@@ -16,6 +16,8 @@ from pathlib import Path
 
 import polars as pl
 
+from clustering.playstyle import describe_clusters, load_cluster_names
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
@@ -54,6 +56,19 @@ def build(match_id: str) -> Path:
         pl.col("damage").cast(pl.Int32),
     )
     cluster_profiles = rd("cluster_profiles")
+    # Descrição em português de cada grupo. Sem ela o painel mostrava "Cluster 0"
+    # e um gráfico de pontos com eixos de PCA -- verdadeiro e ilegível.
+    #
+    # Sai do perfil GLOBAL, não do perfil desta partida: o modelo é um só para as
+    # nove (ver decisão 11 do CLAUDE.md), então o grupo 3 tem que significar a
+    # mesma coisa em todas as páginas. Descrever pelo recorte da partida fazia o
+    # mesmo grupo mudar de descrição de uma página para a outra.
+    perfil_global = PROJECT_ROOT / "data" / "global_clusters" / "cluster_profiles.parquet"
+    cluster_descriptions = (
+        describe_clusters(pl.read_parquet(perfil_global))
+        if perfil_global.exists()
+        else describe_clusters(cluster_profiles)
+    )
 
     crosshair = rd("crosshair_summary").select(
         ["name", "crosshair_score", "height_score", "direction_score",
@@ -84,6 +99,11 @@ def build(match_id: str) -> Path:
         "kast_by_player": kast_by_player,
         "clusters": clusters.to_dicts(),
         "cluster_profiles": cluster_profiles.to_dicts(),
+        "cluster_descriptions": cluster_descriptions.to_dicts(),
+        # Os nomes que o Pedro deu aos grupos, se deu. Sem isto no payload, o
+        # cluster_names.json nunca chegava à página e a nomeação não teria efeito
+        # nenhum -- o arquivo existiria só para o dashboard local.
+        "cluster_names": load_cluster_names(),
         "crosshair": crosshair.to_dicts(),
         "awp": awp.to_dicts(),
         "awp_rounds": awp_rounds.to_dicts(),
