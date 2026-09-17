@@ -463,6 +463,11 @@
   .moment .ic { font-size: 13px; line-height: 1.2; }
   .moment .mx b { font-weight: 600; }
   .moment .mx small { display: block; font-family: var(--mono); font-size: 10.5px; color: var(--dim); margin-top: 1px; }
+  .autopsy .ah h3 .borda { font-family: var(--mono); font-size: 10px; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--dim); border: 1px solid var(--line);
+    border-radius: 99px; padding: 2px 8px; margin-left: 8px; vertical-align: middle; }
+  .autopsy .moment.inerte { opacity: .55; cursor: default; }
+  .autopsy .moment .mt em { font-style: normal; color: var(--t); }
   .autopsy .caveat {
     margin: 8px 16px 12px;
     padding: 10px 12px;
@@ -1354,8 +1359,20 @@
   // o que interessa numa revisão é a aproximação que levou até ali.
   var PREROLL_SECONDS = 3;
 
+  // Converte o tick do evento no quadro do replay. O tick é o dado primário; o
+  // tempo em segundos é só apresentação, e derivar a navegação dele foi o que
+  // permitiu um clamp em zero mascarar um timestamp negativo.
+  function frameDoTick(tick) {
+    if (cur.t0 === undefined || !R.sample_every) return null;
+    if (tick < cur.t0 || tick > cur.t1) return null;   // fora da janela exportada
+    return (tick - cur.t0) / R.sample_every;
+  }
+
   function seekToEvent(f) {
-    var start = Math.max(0, Math.min(cur.frames - 1, f - PREROLL_SECONDS * R.sample_hz));
+    // O preroll pode encostar no começo do round: aí ele encurta, e o replay
+    // ainda começa no quadro 0. Isso NÃO é clamp de erro — o quadro de destino
+    // já foi validado em frameDoTick, que devolve null quando o tick cai fora.
+    var start = Math.min(cur.frames - 1, Math.max(0, f - PREROLL_SECONDS * R.sample_hz));
     pos = start;
     frame = Math.floor(start);
     document.getElementById("scrub").value = frame;
@@ -1427,28 +1444,46 @@
     var moments = b.moments.map(function (m, i) {
       var extra = "";
       var title = "";
+      // `causa` já vem pronta do Python e cobre o caso sem atacante (queda,
+      // bomba): nunca cai no nome da vítima como matador.
+      var causa = m.causa || (m.by ? "morreu para " + m.by : "");
       if (m.kind === "morte_isolada") {
-        extra = "<small>morreu para " + m.by + "</small>";
-        // a distância exata fica no title: vira evidência auditável sem poluir
-        // a leitura com unidades do motor do jogo
+        extra = "<small>" + causa + "</small>";
         title = " title='companheiro mais próximo a " + m.distance + " unidades'";
       } else if (m.kind === "abertura_perdida") {
-        extra = "<small>morreu para " + m.by + (m.traded ? " · trocado" : " · sem troca") + "</small>";
+        extra = "<small>" + causa + (m.traded ? " · trocado" : " · sem troca") + "</small>";
       } else if (m.kind === "virada_numerica") {
-        extra = "<small>" + m.by + " matou " + m.victim + "</small>";
+        extra = "<small>" + (m.by ? m.by + " matou " + m.victim : causa) + "</small>";
       }
+
+      // Tempo decorrido desde o fim do freeze time, no relógio. Segundos crus
+      // com sinal não diziam de onde o tempo era contado.
+      var quando = mmss(m.t) + (m.pos_round ? " <em>após o fim do round</em>" : "");
+
+      var alvo = frameDoTick(m.tick);
+      var podeClicar = alvo !== null;
+      if (!podeClicar) {
+        title = " title='tick " + m.tick + " fora da janela exportada do replay — " +
+          "melhor não navegar do que navegar para o lugar errado'";
+      }
+
       var who = m.who ? "<b>" + m.who + "</b> " : "";
-      return "<button class='moment' data-i='" + i + "'" + title + ">" +
-        "<span class='mt'>" + br(m.t) + "s</span>" +
+      return "<button class='moment" + (podeClicar ? "" : " inerte") + "' data-i='" + i + "'" +
+        (podeClicar ? "" : " disabled") + title + ">" +
+        "<span class='mt'>" + quando + "</span>" +
         "<span class='ic'>" + (MOMENT_ICON[m.kind] || "•") + "</span>" +
         "<span class='mx'>" + who + m.text + extra + "</span></button>";
     }).join("");
 
     host.innerHTML =
-      "<div class='ah'><h3>Por que o Time " + b.loser_team + " perdeu este round</h3>" +
+      "<div class='ah'><h3>Por que o Time " + b.loser_team + " perdeu este round" +
+      (b.ultimo_round ? " <span class='borda'>último round da partida</span>"
+        : (b.fim_de_metade ? " <span class='borda'>último round da primeira metade</span>" : "")) +
+      "</h3>" +
       "<div class='tags'>" + tags + "</div></div>" +
-      (b.eco ? "<p class='why'>Round de economia (equipamento médio de " + b.equip_value +
-        "): perder aqui é esperado, e o que vale olhar é quanto dano o time conseguiu tirar.</p>" : "") +
+      // o texto de economia vem pronto do Python, com os dois lados e o dinheiro
+      // formatado num único helper (ver metrics/formatting.format_money)
+      (b.eco_text ? "<p class='why'>" + b.eco_text + "</p>" : "") +
       "<div class='mlist'>" + (moments || "<p class='why'>Nada fora do padrão: o round foi perdido no confronto direto, sem erro estrutural detectável.</p>") + "</div>" +
       "<p class='caveat'>São padrões observáveis que costumam custar rounds — morrer sem cobertura, " +
       "ficar em desvantagem que não se recupera, não usar utility. <b>Não é um veredito sobre a decisão " +
@@ -1458,7 +1493,9 @@
     Array.prototype.forEach.call(host.querySelectorAll(".moment"), function (btn) {
       btn.addEventListener("click", function () {
         var m = b.moments[Number(btn.dataset.i)];
-        seekToEvent(Math.round(m.t * R.sample_hz));
+        var alvo = frameDoTick(m.tick);
+        if (alvo === null) return;
+        seekToEvent(alvo);
         document.querySelector(".board").scrollIntoView({
           behavior: reduced ? "auto" : "smooth", block: "center"
         });
