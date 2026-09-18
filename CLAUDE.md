@@ -233,7 +233,12 @@ testada e estava errada.
    tempo parado do pré-partida, e em match_08 o freeze do round 1 dura 93s contra
    20s dos demais. Medido: 11 mortes assim nas 9 partidas, 4 com
    `attacker_steamid == victim_steamid`. Elas produziam DOIS sintomas de uma vez:
-   timestamp negativo no timeline e jogador ganhando +1 kill por se matar. O
+   timestamp negativo no timeline e jogador ganhando +1 kill por se matar.
+   Exceção decidida pelo Pedro: depois do fim do round que FECHA A METADE (há
+   troca de lado em seguida) a morte não conta -- o jogo já foi para o
+   intervalo. Caso real: a bomba matou donk (match_24) e ropz (match_26) depois
+   do fim do round 12; a HLTV não conta essas mortes e conta as da cauda dos
+   outros rounds (6 de 6 conferidos). O
    filtro é `parsing.kills_do_round_jogado` e precisa ser aplicado em **todo**
    ponto de entrada de kills — `load_interim`, o parse do zero e os scripts que
    leem o parquet direto. A cauda depois do fim do round fica.
@@ -581,10 +586,6 @@ Não "resolva" nenhum destes automaticamente; pergunte.
   da divisão de crédito do Round Swing (`CREDITO_KILL` e companhia).
   `py -3.12 -m scripts.fit_rating --fit-pesos` mostra os pesos ajustados ao
   lado dos atuais, com erro fora da amostra.
-- Morte pela bomba DEPOIS do fim do round que fecha a metade (round 12): a HLTV
-  não conta (donk em match_24, ropz em match_26), e este projeto conta
-  (decisão 8b). Nos outros rounds a HLTV conta (6 de 6 casos conferidos). São
-  2 casos: mudar a contagem é decisão do Pedro.
 - Rótulos dos três grupos de força de arremesso (201 / 440 / 674 u/s): confirmar
   se A/B/C são curto/médio/longo. Rode o diagnóstico de `metrics/grenade_throws`.
 - Limiares do card de destaque (`metrics/match_highlights.py`): piso de evidência

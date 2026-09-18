@@ -174,6 +174,45 @@ def test_filtro_mantem_a_morte_depois_do_fim_do_round():
     assert kills_do_round_jogado(kills, rounds).height == 1
 
 
+def _rounds_regulamentares(n=24):
+    return pl.DataFrame({
+        "round_num": list(range(1, n + 1)),
+        "freeze_end": [r * 1000 for r in range(1, n + 1)],
+        "end": [r * 1000 + 800 for r in range(1, n + 1)],
+    }).with_columns(pl.col("round_num").cast(pl.UInt32))
+
+
+def test_filtro_descarta_morte_depois_do_fim_do_round_do_intervalo():
+    """Depois do round 12 o jogo vai para o intervalo: a bomba que explode ali
+    não mata dentro de round nenhum. Caso real: donk em match_24 e ropz em
+    match_26; a HLTV não conta essas mortes (decisão do Pedro: não contar)."""
+    kills = _kills([
+        {"round_num": 12, "tick": 12700, "attacker_steamid": 1, "victim_steamid": 2},   # dentro
+        {"round_num": 12, "tick": 12900, "attacker_steamid": None, "victim_steamid": 3},  # pós-fim
+        {"round_num": 11, "tick": 11900, "attacker_steamid": None, "victim_steamid": 4},  # pós-fim, sem intervalo
+    ])
+    limpo = kills_do_round_jogado(kills, _rounds_regulamentares())
+    assert sorted(limpo["victim_steamid"].to_list()) == [2, 4]
+
+
+def test_ultimo_round_da_partida_mantem_a_cauda():
+    """O último round não é intervalo: não há troca de lado depois dele."""
+    kills = _kills([{"round_num": 12, "tick": 12900, "attacker_steamid": None, "victim_steamid": 3}])
+    assert kills_do_round_jogado(kills, _rounds_regulamentares(12)).height == 1
+
+
+def test_morte_do_intervalo_nao_existe_mais_nas_partidas_reais():
+    """As duas mortes reais depois do round 12 somem, e o K-D bate com a HLTV."""
+    from pathlib import Path
+    for mid, quem, mortes_hltv in (("match_24", "donk", 11), ("match_26", "ropz", 11)):
+        interim = Path("data/interim") / mid
+        if not (interim / "kills.parquet").exists():
+            pytest.skip("interim ausente")
+        rounds = pl.read_parquet(Path("data/processed") / mid / "rounds.parquet")
+        k = kills_do_round_jogado(pl.read_parquet(interim / "kills.parquet"), rounds)
+        assert k.filter(pl.col("victim_name") == quem).height == mortes_hltv
+
+
 # --- Casos sintéticos do timeline -------------------------------------------
 
 def _cenario(mortes: list[dict], round_row: dict) -> dict:
