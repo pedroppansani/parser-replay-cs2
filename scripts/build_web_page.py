@@ -26,11 +26,17 @@ def build_html(match_id: str, site: dict | None = None) -> str:
     replay = (base / "replay.json").read_text(encoding="utf-8")
     breakdown_path = base / "breakdown.json"
     breakdown = breakdown_path.read_text(encoding="utf-8") if breakdown_path.exists() else "[]"
+    # A camada de desenho vive em arquivo separado no repositorio (o template ja
+    # esta grande demais) e e injetada aqui, para a pagina continuar sendo um
+    # arquivo unico que abre offline.
+    annotations = (TEMPLATE.parent / "annotations.js").read_text(encoding="utf-8")
+
     html = (
         TEMPLATE.read_text(encoding="utf-8")
         .replace("/*__DATA__*/", payload)
         .replace("/*__REPLAY__*/", replay)
         .replace("/*__BREAKDOWN__*/", breakdown)
+        .replace("/*__ANNOTATIONS__*/", annotations)
     )
 
     map_name = json.loads((base / "match_meta.json").read_text(encoding="utf-8"))["map_name"]
