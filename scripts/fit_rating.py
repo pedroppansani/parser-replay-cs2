@@ -115,8 +115,13 @@ def componentes_do_corpus(ids: list[str], modelo: ModeloDeRound) -> pl.DataFrame
     for mid in ids:
         tabelas, team_of, vencedor, kast = carrega_partida(mid)
         _, resumo = rating(tabelas, team_of, vencedor, kast, 64, modelo=modelo)
+        # o rating sai por steamid; o rating oficial foi transcrito por nick, que é
+        # o que a HLTV mostra -- mesma fonte de nome do elenco (resolve_teams)
+        nick = dict(
+            tabelas["ticks"].group_by("steamid").agg(pl.col("name").last()).iter_rows()
+        )
         for j in resumo["jogadores"]:
-            linhas.append({**j, "match_id": mid})
+            linhas.append({**j, "name": nick.get(j["steamid"]), "match_id": mid})
     return pl.DataFrame(linhas, infer_schema_length=None)
 
 
@@ -288,10 +293,26 @@ def ajusta_pesos(ids: list[str]) -> dict:
       dos dois lados da divisão, o erro de teste fica otimista e não significa
       nada -- os dez jogadores de uma partida compartilham o mesmo adversário,
       o mesmo mapa e o mesmo placar;
-    - o erro reportado é o de TESTE;
+    - o erro reportado é o de TESTE, em validação deixa-uma-PARTIDA-fora: com 13
+      partidas, separar só as 3 últimas faz o erro depender de quais 3 são;
     - o modelo é linear com seis coeficientes. Com ~10 linhas por partida, o teto
-      razoável é esse: qualquer coisa mais complexa decora em vez de aprender.
+      razoável é esse: qualquer coisa mais complexa decora em vez de aprender;
+    - a regressão roda sobre os sub-ratings NORMALIZADOS (`norm_*`), que é a
+      escala em que os pesos são aplicados em `metrics/rating.py`. Nas unidades
+      brutas o coeficiente não é peso: o Round Swing vive perto de zero e saía
+      com 5,3, e não dava para comparar com os pesos provisórios;
+    - os pesos são NÃO-NEGATIVOS. Kills, dano e multikills se correlacionam
+      0,74-0,89 entre si, e a regressão livre resolvia a colinearidade dando peso
+      NEGATIVO a kills (-0,14) -- "matar piora o rating" não é leitura de jogo, é
+      a regressão trocando um sinal por outro quase igual;
+    - o resultado vem sempre ao lado de duas referências, medidas do mesmo
+      jeito: os pesos atuais como estão, e os pesos atuais só reescalados
+      (a + b * rating). Se o ajuste completo não bate a reescala, o que está
+      errado é a escala, não os pesos.
     """
+    from scipy.optimize import nnls
+    from sklearn.linear_model import LinearRegression
+
     modelo = modelo_global(ids)
     comp = componentes_do_corpus(ids, modelo)
     dados = _linhas_com_alvo(comp)
@@ -309,31 +330,50 @@ def ajusta_pesos(ids: list[str]) -> dict:
             ),
         }
 
-    from sklearn.linear_model import LinearRegression
-
-    corte = len(partidas_com_alvo) - MIN_PARTIDAS_TESTE
-    treino_ids = set(partidas_com_alvo[:corte])
     nomes = list(PESOS_PROVISORIOS)
-    colunas = [f"sub_{n}" for n in nomes]
+    colunas = [f"norm_{n}" for n in nomes]
+    real = dados["rating_oficial"].to_numpy()
 
-    treino = dados.filter(pl.col("match_id").is_in(list(treino_ids)))
-    teste = dados.filter(~pl.col("match_id").is_in(list(treino_ids)))
+    def _nao_negativo(X, y):
+        # a coluna de uns é o intercepto, que também fica >= 0
+        w, _ = nnls(np.hstack([X, np.ones((len(X), 1))]), y)
+        return w
 
-    reg = LinearRegression().fit(
-        treino.select(colunas).to_numpy(), treino["rating_oficial"].to_numpy()
-    )
-    prev = reg.predict(teste.select(colunas).to_numpy())
-    real = teste["rating_oficial"].to_numpy()
+    def _reescala(X, y):
+        reg = LinearRegression().fit(X, y)
+        return np.append(reg.coef_, reg.intercept_)
 
+    def _deixa_uma_fora(ajusta, cols) -> dict:
+        prev = np.zeros(dados.height)
+        for mid in partidas_com_alvo:
+            teste = (dados["match_id"] == mid).to_numpy()
+            X = dados.select(cols).to_numpy()
+            w = ajusta(X[~teste], real[~teste])
+            prev[teste] = X[teste] @ w[:-1] + w[-1]
+        return _erro(prev)
+
+    def _erro(prev) -> dict:
+        return {
+            "erro_medio_absoluto": round(float(np.mean(np.abs(prev - real))), 3),
+            "correlacao": round(float(np.corrcoef(prev, real)[0, 1]), 3),
+        }
+
+    w = _nao_negativo(dados.select(colunas).to_numpy(), real)
     return {
         "ajustou": True,
-        "partidas_treino": sorted(treino_ids),
-        "partidas_teste": sorted(set(teste["match_id"].to_list())),
-        "coeficientes": dict(zip(nomes, reg.coef_.round(4).tolist())),
-        "intercepto": float(reg.intercept_),
-        "erro_medio_absoluto_teste": float(np.mean(np.abs(prev - real))),
-        "correlacao_teste": float(np.corrcoef(prev, real)[0, 1]) if len(real) > 1 else None,
-        "n_teste": int(len(real)),
+        "partidas": partidas_com_alvo,
+        "n_jogador_partidas": dados.height,
+        "validacao": "deixa uma partida fora",
+        "pesos_atuais": _erro(dados["rating"].to_numpy()),
+        "pesos_atuais_so_reescalados": _deixa_uma_fora(_reescala, ["rating"]),
+        "pesos_ajustados": _deixa_uma_fora(_nao_negativo, colunas),
+        # ajustados no conjunto inteiro; o erro acima é o de fora da amostra
+        "pesos": {n: round(float(v), 3) for n, v in zip(nomes, w[:-1])},
+        "intercepto": round(float(w[-1]), 3),
+        "dispersao": {
+            "desvio_do_rating_atual": round(float(dados["rating"].std()), 3),
+            "desvio_do_oficial": round(float(np.std(real, ddof=1)), 3),
+        },
     }
 
 
