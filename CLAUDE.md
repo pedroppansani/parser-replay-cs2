@@ -238,6 +238,16 @@ testada e estava errada.
    ponto de entrada de kills — `load_interim`, o parse do zero e os scripts que
    leem o parquet direto. A cauda depois do fim do round fica.
 
+8f. **Round de faca gravado na demo sai no parse, e os rounds são renumerados.**
+   Algumas demos profissionais trazem a faca que decide o lado como round 1. A
+   regra de lados (`metrics/sides.py`) supõe que o round 1 é o primeiro do
+   jogo, e depois da faca o vencedor escolhe o lado: Vitality x Spirit (Mirage)
+   saía 15-9 em 24 rounds, placar impossível; sem a faca, 13-10 e K-D idêntico
+   ao da HLTV. Critério: primeiro round com dano e nenhum dano de arma de fogo
+   (`parsing.remove_round_de_faca`, aplicado em `save_interim`). Há teste que
+   varre todas as partidas atrás de placar impossível -- ele pega esta classe
+   de bug (lado errado, round a mais) em qualquer demo nova.
+
 8c. **Sem atacante, o texto nunca usa o nome de alguém.** Morte por queda, bomba
    ou dano de zona vem com `attacker_steamid` nulo, e o demo às vezes preenche o
    atacante com a própria vítima. O código diz o que aconteceu ("morreu para a
@@ -569,6 +579,12 @@ Não "resolva" nenhum destes automaticamente; pergunte.
   provisórios.
 - Pesos dos seis sub-ratings (`PESOS_PROVISORIOS` em `metrics/rating.py`) e os
   da divisão de crédito do Round Swing (`CREDITO_KILL` e companhia).
+  `py -3.12 -m scripts.fit_rating --fit-pesos` mostra os pesos ajustados ao
+  lado dos atuais, com erro fora da amostra.
+- Morte pela bomba DEPOIS do fim do round que fecha a metade (round 12): a HLTV
+  não conta (donk em match_24, ropz em match_26), e este projeto conta
+  (decisão 8b). Nos outros rounds a HLTV conta (6 de 6 casos conferidos). São
+  2 casos: mudar a contagem é decisão do Pedro.
 - Rótulos dos três grupos de força de arremesso (201 / 440 / 674 u/s): confirmar
   se A/B/C são curto/médio/longo. Rode o diagnóstico de `metrics/grenade_throws`.
 - Limiares do card de destaque (`metrics/match_highlights.py`): piso de evidência

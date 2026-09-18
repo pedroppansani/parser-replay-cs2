@@ -46,14 +46,7 @@ from metrics.site_roles import (
     player_round_area_shares,
     player_round_areas,
 )
-from parsing.parser import (
-    ALL_TABLES,
-    kills_do_round_jogado,
-    grenade_event_tables,
-    load_interim,
-    parse_demo,
-    save_interim,
-)
+from parsing.parser import load_interim, parse_demo, save_interim
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
@@ -82,23 +75,13 @@ def process(
         print(f"      ok em {time.time() - t0:.1f}s -- mapa: {map_name}")
         print("[2/6] Salvando tabelas brutas (data/interim/, não vai pro git) ...")
         save_interim(demo, interim_dir, match_id)
-        tables = {name: getattr(demo, name) for name in ALL_TABLES}
-        # save_interim grava mais tabelas do que ALL_TABLES, e load_interim as lê
-        # de volta. Sem repeti-las aqui, parsear do zero entrega MENOS dado que
-        # `--from-interim` e as métricas que dependem delas degradam em silêncio:
-        # `bomb` é a origem dos centróides de bombsite em metrics/map_areas.py,
-        # e sem ela a partição A/Mid/B cai no fallback.
-        for name in ("bomb", "smokes", "infernos"):
-            tables[name] = getattr(demo, name)
-        # Os eventos de granada não são atributos do Demo (vêm do dict de eventos
-        # crus), então não entram pelo getattr acima. Sem esta linha, parsear do
-        # zero produz métricas de flash zeradas enquanto `--from-interim`
-        # produz as certas — e a diferença passa despercebida porque zero é um
-        # número plausível.
-        tables.update(grenade_event_tables(demo))
-        # Mesmo filtro que o load_interim aplica: sem ele, parsear do zero conta
-        # mortes do tempo parado e dá +1 kill a quem se matou no pré-round.
-        tables["kills"] = kills_do_round_jogado(tables["kills"], tables["rounds"])
+        # Parsear do zero lê de volta o que acabou de gravar, em vez de montar
+        # as tabelas a partir do objeto do awpy. Os dois caminhos já divergiram
+        # três vezes -- tabelas de bomba/granada faltando, mortes do freeze
+        # time, round de faca -- e cada vez a diferença passou despercebida
+        # porque o número errado era plausível. Com uma fonte só, a limpeza
+        # feita em save_interim/load_interim vale para os dois.
+        tables = load_interim(interim_dir, match_id)
 
     outputs: dict[str, pl.DataFrame] = {}
 

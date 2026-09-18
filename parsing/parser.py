@@ -124,6 +124,9 @@ def save_interim(demo: Demo, interim_dir: Path | str, match_id: str) -> dict[str
         "ticks": demo.ticks,
     }
     tables.update(grenade_event_tables(demo))
+    # O round de faca sai AQUI, antes de gravar: todo leitor do interim (as
+    # métricas, o replay, a calibração do rating) recebe a partida já sem ele.
+    tables, faca = remove_round_de_faca(tables)
 
     paths: dict[str, Path] = {}
     for name, df in tables.items():
@@ -131,11 +134,78 @@ def save_interim(demo: Demo, interim_dir: Path | str, match_id: str) -> dict[str
         df.write_parquet(p)
         paths[name] = p
 
+    header = dict(demo.header)
+    if faca:
+        header["round_de_faca_removido"] = True
     header_path = match_dir / "header.json"
-    header_path.write_text(json.dumps(demo.header, default=str, ensure_ascii=False, indent=2))
+    header_path.write_text(json.dumps(header, default=str, ensure_ascii=False, indent=2))
     paths["header"] = header_path
 
     return paths
+
+
+# ---------------------------------------------------------------------------
+# Round de faca
+# ---------------------------------------------------------------------------
+#
+# Em partida profissional o lado é decidido num round de faca antes do jogo, e
+# algumas demos gravam esse round. O awpy o entrega como round 1, e ele quebra
+# duas coisas de uma vez:
+#   - a regra de lados (metrics/sides.py) supõe que o round 1 é o primeiro da
+#     partida. Depois da faca o vencedor escolhe o lado, então os lados do
+#     round 1 NÃO são os do primeiro tempo: Vitality x Spirit (Mirage) saiu
+#     15-9 em 24 rounds, placar impossível -- o certo é 13-10;
+#   - as estatísticas: as kills de faca entram no K-D de quem não jogou round
+#     nenhum ainda.
+#
+# Critério: é o PRIMEIRO round, houve dano, e nenhum dano foi de arma de fogo.
+# Um round de pistola sempre tem dano de pistola; medido nas partidas do corpus,
+# o único round 1 sem dano de arma de fogo é o de faca, com 20 danos de faca.
+# Um round de faca sem dano nenhum não é detectado -- ele acaba por eliminação,
+# então não acontece na prática.
+
+_FACA = r"(?i)knife|bayonet"
+
+
+def round_de_faca(tables: dict[str, pl.DataFrame]) -> int | None:
+    """Número do round de faca, se a partida começa com um. Senão None."""
+    damages = tables.get("damages")
+    rounds = tables.get("rounds")
+    if damages is None or rounds is None or rounds.height == 0 or "weapon" not in damages.columns:
+        return None
+    primeiro = int(rounds["round_num"].min())
+    armas = damages.filter(pl.col("round_num") == primeiro)["weapon"].cast(pl.Utf8)
+    if armas.len() == 0 or not armas.str.contains(_FACA).all():
+        return None
+    return primeiro
+
+
+def remove_round_de_faca(tables: dict[str, pl.DataFrame]) -> tuple[dict[str, pl.DataFrame], bool]:
+    """Tira o round de faca de TODAS as tabelas e renumera os rounds seguintes.
+
+    Renumerar é o que importa: a regra de lados e a numeração que o usuário vê
+    ("round 1") têm que começar no primeiro round jogado de verdade.
+    """
+    faca = round_de_faca(tables)
+    if faca is None:
+        return tables, False
+    limpo = {}
+    for nome, df in tables.items():
+        if df is None or "round_num" not in df.columns:
+            limpo[nome] = df
+            continue
+        tipo = df.schema["round_num"]
+        limpo[nome] = (
+            df.filter(pl.col("round_num").is_null() | (pl.col("round_num") != faca))
+            .with_columns(
+                pl.when(pl.col("round_num") > faca)
+                .then(pl.col("round_num") - 1)
+                .otherwise(pl.col("round_num"))
+                .cast(tipo)
+                .alias("round_num")
+            )
+        )
+    return limpo, True
 
 
 # Colunas que guardam TICK em alguma tabela do interim. Na tabela de rounds as
