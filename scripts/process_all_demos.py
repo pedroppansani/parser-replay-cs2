@@ -16,6 +16,7 @@ Uso:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import time
 import traceback
@@ -50,17 +51,58 @@ def find_demos() -> list[Path]:
     return found
 
 
+# A identidade de uma demo é o CONTEÚDO, não o nome do arquivo. Uma cópia do
+# Windows ("... - Copia") tem o mesmo nome em outra pasta; uma demo renomeada tem
+# outro nome e o mesmo conteúdo. Pelo nome, as duas viravam partidas diferentes
+# -- foi assim que match_24 nasceu como réplica exata de match_23.
+#
+# Hashear 300MB inteiros a cada execução é desperdício: tamanho + começo + fim
+# já distingue qualquer par real de demos (o cabeçalho traz servidor e mapa, e o
+# final traz o placar). Colisão exigiria duas partidas diferentes com o mesmo
+# tamanho exato em bytes e os mesmos 8MB nas pontas.
+FINGERPRINT_EDGE_BYTES = 4 * 1024 * 1024
+
+
+def fingerprint(dem: Path) -> str:
+    size = dem.stat().st_size
+    h = hashlib.sha256(str(size).encode())
+    with dem.open("rb") as f:
+        h.update(f.read(FINGERPRINT_EDGE_BYTES))
+        if size > 2 * FINGERPRINT_EDGE_BYTES:
+            f.seek(-FINGERPRINT_EDGE_BYTES, 2)
+            h.update(f.read(FINGERPRINT_EDGE_BYTES))
+    return h.hexdigest()[:20]
+
+
 def already_processed() -> dict[str, str]:
-    """match_id -> nome do .dem de origem, pras partidas já processadas."""
+    """impressão digital da demo -> match_id, pras partidas já processadas.
+
+    Partidas antigas não têm a impressão gravada no meta; nesse caso ela é
+    calculada a partir do `source_dem`, se o arquivo ainda existir.
+    """
     out: dict[str, str] = {}
     if not PROCESSED_DIR.exists():
         return out
     for match_dir in sorted(PROCESSED_DIR.iterdir()):
         meta_path = match_dir / "match_meta.json"
-        if meta_path.exists():
-            meta = json.loads(meta_path.read_text(encoding="utf-8"))
-            out[match_dir.name] = Path(meta.get("source_dem", "")).name
+        if not meta_path.exists():
+            continue
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        fp = meta.get("source_fingerprint")
+        if not fp:
+            src = Path(meta.get("source_dem", ""))
+            if src.is_file():
+                fp = fingerprint(src)
+        if fp and fp not in out:
+            out[fp] = match_dir.name
     return out
+
+
+def record_fingerprint(match_id: str, fp: str) -> None:
+    meta_path = PROCESSED_DIR / match_id / "match_meta.json"
+    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    meta["source_fingerprint"] = fp
+    meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 def build_chain(match_id: str) -> None:
@@ -81,14 +123,21 @@ def main() -> None:
         print(f"Nenhuma demo encontrada em {DEMOS_DIR}")
         return
 
-    done = already_processed()
-    by_source = {v: k for k, v in done.items()}
-    next_index = len(done) + 1
+    by_fp = already_processed()
+    existing_ids = {p.name for p in PROCESSED_DIR.iterdir() if p.is_dir()} if PROCESSED_DIR.exists() else set()
+    next_index = len(existing_ids) + 1
 
-    print(f"{len(demos)} demo(s) em demos/ · {len(done)} já processada(s)\n")
+    print(f"{len(demos)} demo(s) em demos/ · {len(by_fp)} já processada(s)\n")
 
+    seen_this_run: set[str] = set()
     for dem in demos:
-        existing = by_source.get(dem.name)
+        fp = fingerprint(dem)
+        if fp in seen_this_run:
+            print(f"[duplicada] {dem.parent.name[:40]}... mesmo conteúdo de outra demo deste lote, pulando")
+            continue
+        seen_this_run.add(fp)
+
+        existing = by_fp.get(fp)
         if existing and not args.force:
             print(f"[pular] {dem.name[:20]}... já processada como {existing}")
             continue
@@ -101,6 +150,8 @@ def main() -> None:
         t0 = time.time()
         try:
             process(dem, match_id, from_interim=False)
+            record_fingerprint(match_id, fp)
+            by_fp[fp] = match_id
             build_chain(match_id)
             print(f"[{match_id}] ok em {time.time() - t0:.0f}s\n")
         except Exception:
