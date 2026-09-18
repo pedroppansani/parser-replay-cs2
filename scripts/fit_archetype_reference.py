@@ -33,7 +33,8 @@ from metrics.archetypes import (
     build_reference,
     compute_for_match,
 )
-from metrics.player_roles import HALFTIME_ROUND, resolve_teams
+from metrics.player_roles import resolve_teams
+from metrics.sides import side_of_team
 from metrics.positioning import position_samples
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -42,14 +43,6 @@ INTERIM_DIR = PROJECT_ROOT / "data" / "interim"
 
 # Tabelas de data/processed/ que os papéis consomem.
 SAIDAS = ("cluster_features", "grenades_per_round", "awp_summary", "player_round_areas")
-
-
-def side_of_team(team: str, round_num: int) -> str:
-    """Que lado o time joga num round (troca depois do intervalo)."""
-    primeiro_tempo = round_num <= HALFTIME_ROUND
-    if team == "A":
-        return "t" if primeiro_tempo else "ct"
-    return "ct" if primeiro_tempo else "t"
 
 
 def winner_team_by_round(rounds: pl.DataFrame) -> dict[int, str]:

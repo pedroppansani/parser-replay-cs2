@@ -39,6 +39,9 @@ from metrics.player_profile import player_profile
 from metrics.positioning import position_samples
 from metrics.match_highlights import match_highlights
 from metrics.round_spectacle import round_spectacle
+# side_of_team é reexportado daqui: build_breakdown e fit_rating importam deste
+# módulo. A regra em si (inclusive a prorrogação) vive em metrics/sides.py.
+from metrics.sides import REGULATION_HALF as HALFTIME_ROUND, side_of_team  # noqa: F401
 from metrics.structural_roles import FUNCOES
 from metrics.timing import detect_tickrate
 from metrics.win_probability import detecta_formato, win_probability
@@ -54,9 +57,6 @@ from scripts.narrative import (
 )
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-
-# Rounds por metade (MR12: troca de lado depois do round 12).
-HALFTIME_ROUND = 12
 
 
 # ---------------------------------------------------------------------------
@@ -83,14 +83,6 @@ def resolve_teams(ticks: pl.DataFrame) -> tuple[dict[int, str], dict[str, list[s
         team_of_player[row["steamid"]] = team
         rosters[team].append(row["name"])
     return team_of_player, rosters
-
-
-def side_of_team(team: str, round_num: int) -> str:
-    """Que lado o time joga num round (troca depois do round 12)."""
-    first_half = round_num <= HALFTIME_ROUND
-    if team == "A":
-        return "t" if first_half else "ct"
-    return "ct" if first_half else "t"
 
 
 def score_progression(rounds: pl.DataFrame) -> list[dict]:
