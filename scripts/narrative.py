@@ -302,8 +302,18 @@ def historia_mvp(mvp: dict) -> str:
     nome = mvp["name"]
     if not partes:
         # Ninguém lidera componente nenhum: ele venceu na soma, e dizer isso é
-        # mais honesto que escolher um número em que ele não foi o melhor.
-        return f"{nome} foi o MVP pela soma dos componentes, sem liderar nenhum deles isoladamente."
+        # mais honesto que escolher um número em que ele não foi o melhor. Os
+        # números vão junto (decisão 20): sem eles a frase era só o nome, e saía
+        # idêntica em toda partida em que o mesmo jogador vencesse assim.
+        numeros = [
+            f"{c['texto']} {c.get('sintagma') or c['rotulo']}"
+            for c in mvp.get("componentes", [])[:2]
+            if c.get("texto")
+        ]
+        frase = f"{nome} foi o MVP pela soma dos componentes, sem liderar nenhum deles isoladamente"
+        if numeros:
+            frase += ": " + " e ".join(numeros)
+        return frase + "."
 
     corpo = partes[0] if len(partes) == 1 else f"{partes[0]} e {partes[1]}"
     frase = f"{nome} foi o MVP com {corpo}"

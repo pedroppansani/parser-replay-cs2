@@ -25,9 +25,15 @@ INTERIM = ROOT / "data" / "interim"
 PROCESSED = ROOT / "data" / "processed"
 
 
-def test_prorrogacao_comeca_no_lado_do_segundo_tempo_e_troca_a_cada_3():
-    lados = "".join("T" if side_of_team("A", r) == "t" else "C" for r in range(1, 37))
-    assert lados == "T" * 12 + "C" * 12 + "CCC" + "TTT" + "CCC" + "TTT"
+def test_prorrogacao_troca_no_meio_e_nao_na_virada():
+    """Cada prorrogação começa no lado em que a anterior terminou.
+
+    Medido em match_31, match_32 e match_42 (prorrogação dupla). A versão
+    anterior deste teste esperava CCC TTT CCC TTT -- a suposição errada estava
+    escrita no teste também, e por isso ele passava.
+    """
+    lados = "".join("T" if side_of_team("A", r) == "t" else "C" for r in range(1, 43))
+    assert lados == "T" * 12 + "C" * 12 + "CCC" "TTT" + "TTT" "CCC" + "CCC" "TTT"
 
 
 def test_team_of_side_e_o_inverso_de_side_of_team():

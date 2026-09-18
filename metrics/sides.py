@@ -13,12 +13,21 @@ A REGRA, MEDIDA NAS DEMOS (não assumida), com o lado do time que começou de T:
     rounds  1-12   T
     rounds 13-24   CT        troca no intervalo
     rounds 25-27   CT        a prorrogação COMEÇA no lado do 2º tempo
-    rounds 28-30   T         e troca a cada 3 rounds
-    rounds 31-33   CT        (segunda prorrogação, e assim por diante)
+    rounds 28-30   T         e troca no meio dela
+    rounds 31-33   T         a 2ª prorrogação começa no lado em que a 1ª
+    rounds 34-36   CT        TERMINOU -- não há troca entre prorrogações
+    rounds 37-39   CT        (3ª: de novo sem troca na virada, e assim por diante)
 
-Observado em match_16 e match_20 (as duas prorrogações do corpus). O código
-antigo acertava 25-27 por coincidência — tratava tudo acima de 12 como segundo
-tempo — e errava a partir do 28. tests/test_sides.py confere a regra contra o
+Ou seja: nunca se troca de lado na virada de uma metade para a prorrogação
+seguinte, só no meio de cada prorrogação. Em blocos de 3 a partir do 25, o
+Time A fica CT, T, T, CT, CT, T, T, ...
+
+Medido em match_16 e match_20 (uma prorrogação) e em match_31, match_32 e
+match_42 (duas). Registro de um erro meu: a linha 31-33 desta tabela já
+estava aqui dizendo CT "e assim por diante", escrita quando o corpus só tinha
+prorrogação simples -- extrapolação, não medição. As três partidas com
+prorrogação dupla mostraram o contrário. O código antigo, antes deste módulo,
+acertava 25-27 por coincidência e errava a partir do 28. tests/test_sides.py confere a regra contra o
 lado real de cada jogador em TODAS as partidas processadas: se uma demo um dia
 fugir disso (outro formato de prorrogação), o teste falha em vez de o número
 sair errado em silêncio.
@@ -39,10 +48,11 @@ def _team_a_on_t(round_num: int) -> bool:
         return True
     if round_num <= 2 * REGULATION_HALF:
         return False
-    # Prorrogação: a primeira metade repete o lado do 2º tempo (CT para o A) e
-    # depois alterna a cada OT_HALF rounds.
-    metade_da_prorrogacao = (round_num - 2 * REGULATION_HALF - 1) // OT_HALF
-    return metade_da_prorrogacao % 2 == 1
+    # Prorrogação, em blocos de OT_HALF rounds: CT, T | T, CT | CT, T | ...
+    # A troca acontece só DENTRO de cada prorrogação; na virada de uma para a
+    # outra o lado se mantém. Por isso o padrão repete a cada 4 blocos.
+    bloco = (round_num - 2 * REGULATION_HALF - 1) // OT_HALF
+    return bloco % 4 in (1, 2)
 
 
 def side_of_team(team: str, round_num: int) -> str:
