@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
 
 import numpy as np
@@ -152,6 +153,49 @@ def ajusta_referencia(ids: list[str]) -> dict:
     return referencia
 
 
+# Demo de FACEIT vem com nome de UUID ("1-0007ce25-...dem"); demo profissional
+# vem com o slug do evento e do confronto. Demo dividida pelo GOTV (servidor
+# reiniciou no meio do mapa) termina em "-p1.dem", "-p2.dem".
+_FACEIT = re.compile(r"^\d-[0-9a-f]{8}-[0-9a-f]{4}-")
+_DIVIDIDA = re.compile(r"-p(\d+)\.dem$")
+_ARQUIVO_PRO = re.compile(r"^(?P<confronto>.+?-vs-.+?)-m(?P<mapa>\d+)-")
+
+
+def identifica_origem(source_dem: str) -> dict:
+    """Evento, confronto e se a partida serve para calibrar, a partir do caminho.
+
+    Serve para o preenchimento do rating oficial ser uma busca de segundos na
+    HLTV, e para marcar sozinho o que NÃO pode entrar na regressão:
+
+    - FACEIT: a HLTV não publica rating para pug;
+    - demo dividida: a HLTV avalia o mapa inteiro, e cada metade tem só parte das
+      estatísticas. Casar o rating do mapa com uma metade ensinaria o modelo
+      errado sem erro nenhum aparecer.
+    """
+    caminho = Path(source_dem.replace("\\", "/"))
+    arquivo, pasta = caminho.name, caminho.parent.name
+    vazio = {"evento": None, "confronto": None, "mapa_da_serie": None}
+
+    if _FACEIT.match(arquivo):
+        return {**vazio, "usar_na_calibracao": False,
+                "motivo": "FACEIT: a HLTV nao publica rating para esta partida"}
+
+    m = _ARQUIVO_PRO.match(arquivo)
+    confronto = m.group("confronto") if m else None
+    evento = None
+    if confronto and f"-{confronto}-" in f"-{pasta}":
+        evento = pasta[: pasta.find(confronto)].rstrip("-") or None
+    info = {"evento": evento, "confronto": confronto,
+            "mapa_da_serie": int(m.group("mapa")) if m else None}
+
+    parte = _DIVIDIDA.search(arquivo)
+    if parte:
+        return {**info, "usar_na_calibracao": False,
+                "motivo": (f"demo dividida (parte {parte.group(1)}): o rating oficial e do "
+                           "mapa inteiro, esta demo tem so uma parte dos rounds")}
+    return {**info, "usar_na_calibracao": True, "motivo": None}
+
+
 def esqueleto_hltv(ids: list[str]) -> Path:
     """Cria o arquivo para o Pedro preencher com os ratings oficiais.
 
@@ -175,13 +219,25 @@ def esqueleto_hltv(ids: list[str]) -> Path:
         for nome in rosters["A"] + rosters["B"]:
             jogadores.setdefault(nome, None)
 
+        origem = identifica_origem(meta.get("source_dem", ""))
+        usar, motivo = origem["usar_na_calibracao"], origem["motivo"]
+        # uma decisão manual já gravada no arquivo vale mais que a heurística
+        if "usar_na_calibracao" in antigo:
+            usar, motivo = antigo["usar_na_calibracao"], antigo.get("motivo", motivo)
+
         partidas[mid] = {
             "mapa": meta.get("map_name"),
             "placar": f"{insights['match']['score_a']}-{insights['match']['score_b']}",
-            # Estes dois campos identificam a partida na HLTV. Sem eles nao da
-            # para conferir de onde o numero veio.
+            # Estes campos identificam a partida na HLTV. Sem eles nao da para
+            # conferir de onde o numero veio.
             "hltv_match_id": antigo.get("hltv_match_id"),
-            "evento": antigo.get("evento"),
+            "evento": antigo.get("evento") or origem["evento"],
+            "confronto": antigo.get("confronto") or origem["confronto"],
+            "mapa_da_serie": antigo.get("mapa_da_serie") or origem["mapa_da_serie"],
+            "usar_na_calibracao": usar,
+            "motivo": motivo,
+            # de onde veio o hltv_match_id e se ele foi conferido pelo placar
+            "nota": antigo.get("nota"),
             "jogadores": jogadores,
         }
 
@@ -205,6 +261,12 @@ def _linhas_com_alvo(comp: pl.DataFrame) -> pl.DataFrame:
     dados = json.loads(HLTV_FILE.read_text(encoding="utf-8")).get("partidas", {})
     alvo = []
     for mid, info in dados.items():
+        # Trava explícita, não só "valor nulo": uma metade de demo dividida com o
+        # rating do MAPA INTEIRO preenchido por engano corromperia a regressão
+        # sem nenhum aviso -- o número parece válido, só não corresponde às
+        # estatísticas daquela metade.
+        if info.get("usar_na_calibracao") is False:
+            continue
         for nome, valor in (info.get("jogadores") or {}).items():
             if valor is not None:
                 alvo.append({"match_id": mid, "name": nome, "rating_oficial": float(valor)})

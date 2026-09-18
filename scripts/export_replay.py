@@ -20,13 +20,13 @@ from pathlib import Path
 
 import polars as pl
 
+from metrics.sides import team_of_side
 from parsing.parser import kills_do_round_jogado
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 SAMPLE_EVERY = 16  # ticks (4 quadros por segundo a 64 tick)
 TICKRATE = 64  # medido, não assumido — ver metrics/timing.py
-HALFTIME_ROUND = 12
 
 # Classes de entidade do demo -> categoria legível.
 #
@@ -112,14 +112,6 @@ def level_of(z: float | None, levels: list[dict]) -> int:
         if lv["min"] <= z < lv["max"]:
             return i
     return 0
-
-
-def team_of_side(side: str, round_num: int) -> str:
-    """Time real a partir do lado e do round (os lados trocam no intervalo)."""
-    first_half = round_num <= HALFTIME_ROUND
-    if side == "t":
-        return "A" if first_half else "B"
-    return "B" if first_half else "A"
 
 
 def build(match_id: str) -> Path:
