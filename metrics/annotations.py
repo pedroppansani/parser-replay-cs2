@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -53,15 +54,10 @@ FERRAMENTAS = ("caneta", "linha", "seta", "retangulo", "elipse", "texto")
 # Três espessuras. Mais que isso vira menu e ninguém usa.
 ESPESSURAS = (2, 4, 7)
 
-# Cores da paleta já validada do projeto (decisão 10 do CLAUDE.md), escolhidas
-# entre as que mantêm contraste sobre o radar claro. Não é uma paleta nova.
-CORES = {
-    "ct": "#2a78d6",
-    "t": "#eb6834",
-    "aqua": "#1baf7a",
-    "tinta": "#0f1620",
-    "papel": "#ffffff",
-}
+# A cor é LIVRE (o usuário escolhe qualquer uma no seletor), mas o formato não:
+# sempre "#rrggbb" minúsculo, que é o que a camada JS grava. Uma cor fora disso
+# num arquivo importado é sinal de arquivo corrompido ou escrito à mão.
+FORMATO_DA_COR = re.compile(r"^#[0-9a-f]{6}$")
 
 
 def impressao_da_calibracao(radar: dict) -> str:
@@ -156,11 +152,20 @@ def valida(doc: dict, radar: dict | None = None) -> list[str]:
                 "as anotações precisam ser reprojetadas"
             )
 
+    atual = impressao_da_calibracao(radar) if radar is not None else None
     for rn, tracos in (doc.get("rounds") or {}).items():
         for i, t in enumerate(tracos):
             onde = f"round {rn}, traço {i}"
             if t.get("ferramenta") not in FERRAMENTAS:
                 erros.append(f"{onde}: ferramenta '{t.get('ferramenta')}' desconhecida")
+            if "cor" in t and not FORMATO_DA_COR.match(str(t["cor"])):
+                erros.append(f"{onde}: cor {t['cor']!r} fora do formato #rrggbb")
+            # Cada traço carrega a calibração com que foi feito: um arquivo pode
+            # juntar traços de antes e depois de uma recalibração, e só o traço
+            # sabe de qual lado ele está.
+            if atual and t.get("calibracao") and t["calibracao"] != atual:
+                erros.append(f"{onde}: feito com a calibração {t['calibracao']}, "
+                             f"a atual é {atual} -- precisa ser reprojetado")
             pontos = t.get("pontos") or []
             if not pontos:
                 erros.append(f"{onde}: sem pontos")

@@ -13,3 +13,7 @@ pillow==12.2.0
 vpk==1.4.0
 lz4==4.4.5
 texture2ddecoder==1.0.6
+
+# Testes de navegador da camada de desenho (tests/test_annotations_browser.py).
+# Opcional: usa o Chrome já instalado; sem ele os testes são pulados.
+playwright==1.63.0

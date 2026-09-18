@@ -8,11 +8,12 @@ importa e está declarada em cada teste:
   `metrics/annotations.py` justamente para poder ser testada de verdade. É ela
   que decide se a seta aponta para o lugar certo, e é o único jeito de checar
   isso sem um navegador;
-- o **comportamento de interface** (camada inativa não intercepta clique, evento
-  de ponteiro em vez de mouse, pausa ao começar o traço) é JavaScript e este
-  projeto não tem runtime de JS nos testes. Aqui ele é verificado pela presença
-  da construção correta no arquivo. É mais fraco que um teste de navegador, e
-  está marcado como estrutural para ninguém confundir as duas coisas.
+- o **comportamento de interface** é testado DE VERDADE, num navegador, em
+  `test_annotations_browser.py` (mapa visível, redimensionar, tela cheia,
+  persistência, seletor de cor). Os testes marcados como estruturais aqui são a
+  rede de segurança que roda mesmo sem navegador instalado: verificam a
+  presença da construção certa no arquivo, o que é mais fraco, e por isso
+  estão marcados para ninguém confundir as duas coisas.
 """
 from __future__ import annotations
 
@@ -22,7 +23,6 @@ from pathlib import Path
 import pytest
 
 from metrics.annotations import (
-    CORES,
     ESPESSURAS,
     FERRAMENTAS,
     FORMATO,
@@ -36,6 +36,7 @@ from metrics.annotations import (
 )
 
 JS = Path("dashboard/web/annotations.js")
+CSS = Path("dashboard/web/annotations.css")
 TEMPLATE = Path("dashboard/web/template.html")
 
 RADAR = {
@@ -170,13 +171,34 @@ def test_o_documento_carrega_mapa_e_calibracao():
     assert doc["calibracao"] == impressao_da_calibracao(RADAR)
 
 
-def test_as_ferramentas_e_a_paleta_batem_com_a_camada_js():
+def test_a_cor_e_livre_mas_o_formato_nao():
+    """O seletor aceita qualquer cor; o arquivo guarda sempre #rrggbb."""
+    doc = documento_vazio("match_01", RADAR)
+    doc["rounds"]["1"] = [
+        {"ferramenta": "caneta", "pontos": [[0, 0]], "cor": "#12ab34"},
+        {"ferramenta": "caneta", "pontos": [[0, 0]], "cor": "verde"},
+    ]
+    problemas = valida(doc)
+    assert len(problemas) == 1 and "verde" in problemas[0]
+
+
+def test_a_calibracao_de_cada_traco_e_conferida():
+    """Um arquivo pode juntar traços de antes e depois de uma recalibração; o
+    documento inteiro com a calibração nova não pode esconder o traço velho."""
+    doc = documento_vazio("match_01", RADAR)
+    doc["rounds"]["2"] = [
+        {"ferramenta": "seta", "pontos": [[0, 0], [5, 5]], "calibracao": impressao_da_calibracao(RADAR)},
+        {"ferramenta": "seta", "pontos": [[0, 0], [5, 5]], "calibracao": "velha123"},
+    ]
+    problemas = valida(doc, RADAR)
+    assert len(problemas) == 1 and "traço 1" in problemas[0] and "reprojetado" in problemas[0]
+
+
+def test_as_ferramentas_batem_com_a_camada_js():
     """Se Python e JS divergirem, um arquivo exportado num não abre no outro."""
     js = JS.read_text(encoding="utf-8")
     for f in FERRAMENTAS:
         assert f'id: "{f}"' in js, f"ferramenta {f} não existe na camada JS"
-    for hexa in CORES.values():
-        assert hexa.lower() in js.lower(), f"cor {hexa} não está na camada JS"
     assert f"var ESPESSURAS = {list(ESPESSURAS)};".replace("'", '"') in js.replace("'", '"')
     assert f"var FORMATO = {FORMATO};" in js
 
@@ -189,9 +211,12 @@ def test_estrutural_a_camada_desligada_nao_intercepta_clique():
     Duas travas: o CSS já nasce com `pointer-events: none` (para um erro do JS
     falhar pro lado seguro) e o JS só liga quando o modo de desenho liga.
     """
-    css = TEMPLATE.read_text(encoding="utf-8")
-    bloco = css[css.index(".anot-camada {"):css.index(".anot-barra {")]
+    css = CSS.read_text(encoding="utf-8")
+    bloco = css[css.index(".board .anot-camada {"):css.index(".anot-barra {")]
     assert "pointer-events: none;" in bloco
+    # a regressão do mapa sumido: a camada herdava o fundo opaco dos canvas do
+    # painel. Ela nunca pode ter fundo.
+    assert "background: transparent !important;" in bloco
 
     js = JS.read_text(encoding="utf-8")
     assert 'camada.style.pointerEvents = S.ligado ? "auto" : "none";' in js
@@ -215,10 +240,18 @@ def test_estrutural_pausa_a_reproducao_ao_comecar_o_traco():
 
 
 def test_estrutural_respeita_a_densidade_de_pixels():
-    """Sem devicePixelRatio, o traço fino sai borrado em tela de alta resolução."""
+    """Sem devicePixelRatio, o traço fino sai borrado em tela de alta resolução.
+
+    O teste de verdade é `test_densidade_de_pixel_entra_na_resolucao` (navegador
+    com densidade 2). Aqui: a resolução sai da densidade DENTRO da função única
+    de redimensionamento, e a mudança de densidade é vigiada.
+    """
     js = JS.read_text(encoding="utf-8")
-    assert "devicePixelRatio" in js
-    assert js.count("devicePixelRatio") >= 3
+    inicio = js.index("function reprojetaTudo()")
+    corpo = js[inicio:js.index("function pedeReprojecao()")]
+    assert "devicePixelRatio" in corpo
+    assert "opts.redraw()" in corpo, "redimensionar sem redesenhar o mapa deixa o mapa em branco"
+    assert "function vigiaDensidade()" in js and "dppx" in js
 
 
 def test_estrutural_o_traco_em_andamento_vive_na_camada_de_rascunho():
@@ -255,10 +288,23 @@ def test_estrutural_trocar_de_round_avisa_a_camada():
 
 
 def test_estrutural_a_pagina_construida_leva_a_camada_junto():
-    """A página é um arquivo único que abre offline: o JS separado é injetado."""
-    construida = Path("docs/match_01.html")
-    if not construida.exists():
-        pytest.skip("site ainda não construído")
-    h = construida.read_text(encoding="utf-8")
+    """A página é um arquivo único que abre offline: JS, CSS e a impressão da
+    calibração do radar são injetados no build."""
+    from scripts.build_web_page import build_html
+
+    partidas = sorted(Path("data/processed").glob("match_*/web_payload.json"))
+    if not partidas:
+        pytest.skip("nenhuma partida processada")
+    h = build_html(partidas[0].parent.name)
     assert "window.MapAnnotations" in h
-    assert "/*__ANNOTATIONS__*/" not in h
+    assert ".board .anot-camada" in h
+    assert "/*__ANNOTATIONS__*/" not in h and "/*__ANNOTATIONS_CSS__*/" not in h
+    if "window.__RADAR__ = null" not in h:
+        assert '"calibracao":' in h
+
+
+def test_estrutural_a_camada_nao_tem_texto_nem_estilo_no_template():
+    """Tudo da camada vive nos arquivos dela, não no template."""
+    tpl = TEMPLATE.read_text(encoding="utf-8")
+    for resto in (".anot-", "tela-cheia", "Desenhar", "Tela cheia"):
+        assert resto not in tpl, f"'{resto}' ainda está no template"

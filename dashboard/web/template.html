@@ -344,81 +344,8 @@
 
   .board { padding: 0 0 14px; overflow: hidden; }
 
-  /* ---------- Camada de desenho, tela cheia e zoom ---------- */
-  .mapwrap { position: relative; width: 100%; max-width: 520px; margin: 6px auto 0; }
-  .mapwrap canvas { margin: 0 !important; max-width: none !important; }
-
-  /* Os dois canvas de anotacao ficam EXATAMENTE sobre o mapa. Separados dele de
-     proposito: desenhar nao pode forcar redesenho do mapa, e o mapa se movendo
-     nao pode forcar redesenho dos tracos. */
-  .anot-camada {
-    position: absolute; inset: 0; width: 100%; height: 100%;
-    border-radius: 8px;
-    /* Com o modo de desenho desligado a camada NAO intercepta clique: clicar
-       num jogador ou num icone de granada continua funcionando. O JS liga e
-       desliga isto; o padrao aqui garante que um erro dele falhe pro lado
-       seguro. */
-    pointer-events: none;
-    touch-action: none;
-  }
-  .anot-rascunho { pointer-events: none !important; }
-
-  .anot-barra {
-    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
-    padding: 8px 10px; border-bottom: 1px solid var(--line-2);
-  }
-  .anot-grupo { display: flex; gap: 4px; align-items: center; opacity: 0.45; pointer-events: none; }
-  .anot-barra.ativo .anot-grupo { opacity: 1; pointer-events: auto; }
-  .anot-b {
-    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.04em;
-    padding: 5px 9px; border-radius: 7px; border: 1px solid var(--line);
-    background: var(--card); color: var(--ink-2); cursor: pointer;
-  }
-  .anot-b:hover { border-color: var(--dim); }
-  .anot-b.on { background: var(--ink); color: #fff; border-color: var(--ink); }
-  .anot-b[disabled] { opacity: 0.35; cursor: default; }
-  .anot-b.principal { font-weight: 600; }
-  .anot-b.cor { width: 20px; height: 20px; padding: 0; border-radius: 50%; }
-  .anot-b.cor.on { outline: 2px solid var(--ink); outline-offset: 2px; }
-
-  /* Em tela cheia o mapa e o conteudo: ele cresce ate o limite da MENOR
-     dimensao e fica centralizado, com o excedente como espaco vazio. Nunca
-     esticado -- ja houve bug de proporcao neste projeto. */
-  .board.tela-cheia {
-    display: flex; flex-direction: column; justify-content: center;
-    background: #0f1620; border-radius: 0; padding: 0;
-  }
-  .board.tela-cheia .roundhead { color: #eef1f5; }
-  .board.tela-cheia .mapwrap {
-    max-width: none; flex: 1; min-height: 0;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .board.tela-cheia .mapwrap canvas {
-    width: auto; height: 100%; max-height: 100%;
-    /* a razao largura/altura fica travada na do radar */
-    aspect-ratio: var(--map-ar, 1);
-  }
-  /* Controles com recuo automatico: aparecem ao mover o ponteiro e somem
-     depois, pra nao tampar justamente o espaco que a tela cheia foi buscar. */
-  .board.tela-cheia .anot-barra,
-  .board.tela-cheia .transport,
-  .board.tela-cheia .roundhead {
-    position: absolute; left: 0; right: 0; z-index: 5;
-    background: rgba(15,22,32,0.86); border: 0;
-    opacity: 0; transition: opacity 0.18s ease; pointer-events: none;
-  }
-  .board.tela-cheia .anot-barra { top: 0; }
-  .board.tela-cheia .roundhead { top: 44px; }
-  .board.tela-cheia .transport { bottom: 0; }
-  .board.tela-cheia.mostra-controles .anot-barra,
-  .board.tela-cheia.mostra-controles .transport,
-  .board.tela-cheia.mostra-controles .roundhead { opacity: 1; pointer-events: auto; }
-  .board.tela-cheia.mostra-controles .anot-barra.ativo .anot-grupo { pointer-events: auto; }
-  @media (prefers-reduced-motion: reduce) {
-    .board.tela-cheia .anot-barra,
-    .board.tela-cheia .transport,
-    .board.tela-cheia .roundhead { transition: none; }
-  }
+  /* Camada de desenho, seletor de cor e tela cheia: dashboard/web/annotations.css */
+  /*__ANNOTATIONS_CSS__*/
   .board canvas { display: block; width: 100%; max-width: 520px; height: auto; margin: 6px auto 0; border-radius: 8px; background: #161d26; }
 
   .squad { padding: 12px; }
@@ -2370,11 +2297,14 @@
       // Identidade da PARTIDA. Cair no nome do mapa faria duas partidas na
       // mesma Mirage dividirem a mesma chave de anotacao.
       matchId: (M && M.match_id) || "partida",
-      // A impressao da calibracao acompanha o desenho: a correspondencia entre
-      // unidade de jogo e pixel foi AJUSTADA, nao e constante do jogo, e se ela
-      // mudar da pra saber que as anotacoes antigas precisam ser reprojetadas.
-      calibracao: [RAD.map || "sem-radar", RAD.scale_px_per_unit,
-                   RAD.origin_x, RAD.origin_y, RAD.width, RAD.height].join(":"),
+      mapa: RAD.map || (M && M.map) || null,
+      // A impressao da calibracao acompanha cada traco: a correspondencia entre
+      // unidade de jogo e pixel foi AJUSTADA, nao e constante do jogo. Ela vem
+      // pronta do build (metrics/annotations.impressao_da_calibracao), a mesma
+      // funcao que valida os arquivos exportados. Sem radar calibrado, a
+      // projecao sai dos limites da partida e a impressao diz isso.
+      calibracao: RAD.calibracao || ["sintetica", RAD.scale_px_per_unit,
+                   RAD.origin_x, RAD.origin_y].join(":"),
       pause: function () { setPlaying(false); },
       redraw: function () { draw(); },
       contexto: function () {
@@ -2386,8 +2316,6 @@
         };
       }
     });
-    document.getElementById("mapwrap").style.setProperty(
-      "--map-ar", (RAD.width / RAD.height).toFixed(4));
   })();
 
   selectRound(rounds.find(function (r) { return r.round === decRound; }) || rounds[0]);
