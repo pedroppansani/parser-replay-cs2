@@ -492,6 +492,10 @@ def build(match_id: str) -> Path:
 
     payload = {
         "match": {
+            # Identidade da PARTIDA, e nao do mapa. As anotacoes desenhadas sao
+            # guardadas por partida; sem isto, duas partidas na mesma Mirage
+            # dividiriam a mesma chave e o rabisco de uma apareceria na outra.
+            "match_id": match_id,
             "map": meta.get("map_name"),
             "rounds": len(progression),
             "score_a": final["score_a"],
