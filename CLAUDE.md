@@ -523,6 +523,31 @@ testada e estava errada.
     estatístico está em `scripts/fit_rating.py`: 7 de treino + 3 de teste, com a
     divisão feita por PARTIDA e nunca por jogador.
 
+23. **Anotação no mapa: coordenada de jogo, um único ponto de redimensionamento,
+    camada sempre transparente.** A camada vive em `dashboard/web/annotations.js`
+    e `annotations.css`, injetados no build; o template não tem texto nem estilo
+    dela (há teste).
+    - Traço é guardado em **unidade de jogo**, com mapa e impressão da
+      calibração do radar em CADA traço. A impressão sai de
+      `metrics.annotations.impressao_da_calibracao` no build, a mesma função que
+      valida o arquivo exportado.
+    - Atribuir `width`/`height` a um canvas APAGA o conteúdo. Todo
+      redimensionamento (carga, janela, tela cheia, densidade de pixel, aba que
+      aparece) passa por `reprojetaTudo()`, que redesenha o mapa E as anotações
+      a partir dos dados. Nunca redesenhe a partir do que está pintado.
+    - **Regressão registrada:** o mapa "sumiu" porque a regra geral
+      `.board canvas { background: #161d26 }` do template pegava as camadas de
+      anotação, que ficavam opacas por cima do mapa. O mapa estava desenhado o
+      tempo todo. Diagnóstico por captura de tela real, não por leitura do
+      canvas: é o pixel composto que a pessoa vê.
+    - Persistência: memória -> localStorage (chave por partida e round, com
+      atraso) -> exportar/importar JSON. A página abre como arquivo local ou no
+      GitHub Pages, e nenhum dos dois aceita escrita no servidor.
+    - Os testes de comportamento rodam num Chrome de verdade
+      (`tests/test_annotations_browser.py`, Playwright); sem navegador eles são
+      pulados, e os estruturais de `test_annotations.py` ficam como rede de
+      segurança.
+
 ## Pontos de calibração — pertencem ao Pedro, não ao código
 
 Não "resolva" nenhum destes automaticamente; pergunte.

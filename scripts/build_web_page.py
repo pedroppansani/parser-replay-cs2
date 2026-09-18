@@ -10,6 +10,8 @@ import argparse
 import json
 from pathlib import Path
 
+from metrics.annotations import impressao_da_calibracao
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE = PROJECT_ROOT / "dashboard" / "web" / "template.html"
 
@@ -30,6 +32,7 @@ def build_html(match_id: str, site: dict | None = None) -> str:
     # esta grande demais) e e injetada aqui, para a pagina continuar sendo um
     # arquivo unico que abre offline.
     annotations = (TEMPLATE.parent / "annotations.js").read_text(encoding="utf-8")
+    annotations_css = (TEMPLATE.parent / "annotations.css").read_text(encoding="utf-8")
 
     html = (
         TEMPLATE.read_text(encoding="utf-8")
@@ -37,15 +40,21 @@ def build_html(match_id: str, site: dict | None = None) -> str:
         .replace("/*__REPLAY__*/", replay)
         .replace("/*__BREAKDOWN__*/", breakdown)
         .replace("/*__ANNOTATIONS__*/", annotations)
+        .replace("/*__ANNOTATIONS_CSS__*/", annotations_css)
     )
 
     map_name = json.loads((base / "match_meta.json").read_text(encoding="utf-8"))["map_name"]
     radar_path = PROJECT_ROOT / "assets" / "radars" / f"{map_name}.json"
-    # o `||` mantém o `null` do template como fallback quando o mapa não tem radar
-    html = html.replace(
-        "/*__RADAR__*/",
-        radar_path.read_text(encoding="utf-8") + " ||" if radar_path.exists() else "",
-    )
+    radar_js = ""
+    if radar_path.exists():
+        radar = json.loads(radar_path.read_text(encoding="utf-8"))
+        # A impressão da calibração vai pronta para a página: é a mesma função que
+        # valida um arquivo de anotações exportado, então as duas pontas nunca
+        # discordam sobre qual calibração um traço usou.
+        radar["calibracao"] = impressao_da_calibracao(radar)
+        # o `||` mantém o `null` do template como fallback quando o mapa não tem radar
+        radar_js = json.dumps(radar, ensure_ascii=False) + " ||"
+    html = html.replace("/*__RADAR__*/", radar_js)
     html = html.replace("/*__SITE__*/", json.dumps(site, ensure_ascii=False) + " ||" if site else "")
     return html
 
