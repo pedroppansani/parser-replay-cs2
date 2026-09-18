@@ -1,0 +1,25 @@
+{
+  "match_id": "match_52",
+  "map_name": "de_mirage",
+  "n_rounds": 18,
+  "source_dem": "C:\\Users\\User\\Desktop\\Projetos Claude\\01 - Parser de Replay CS2\\demos\\starladder-budapest-major-2025-vitality-vs-the-mongolz-bo3-XQowskOqXoPqT1nlLULF7g\\vitality-vs-the-mongolz-m1-mirage.dem",
+  "pca": {
+    "explained_variance_ratio": [
+      0.3177372062661366,
+      0.23892554537865607
+    ],
+    "feature_columns": [
+      "avg_distance_from_team",
+      "max_distance_from_team",
+      "distinct_places",
+      "crosshair_score",
+      "height_score",
+      "frac_entering_fight",
+      "time_of_first_contact_s"
+    ],
+    "n_clusters": 4,
+    "fitted_on": "global",
+    "n_player_rounds_global": 1870
+  },
+  "source_fingerprint": "bb8f3b19032f0e60a6b6"
+}
