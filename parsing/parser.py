@@ -138,6 +138,64 @@ def save_interim(demo: Demo, interim_dir: Path | str, match_id: str) -> dict[str
     return paths
 
 
+# Colunas que guardam TICK em alguma tabela do interim. Na tabela de rounds as
+# fronteiras do round têm nome próprio; nas de fumaça/fogo, início e fim.
+_TICK_COLUMNS = {"tick", "start_tick", "end_tick", "start", "freeze_end", "end", "official_end", "bomb_plant"}
+
+
+def merge_interim(interim_dir: Path | str, part_ids: list[str], dest_id: str) -> Path:
+    """Funde as partes de uma demo dividida pelo GOTV num interim só.
+
+    Quando o servidor reinicia no meio do mapa, o GOTV grava duas demos
+    ("...-p1.dem", "...-p2.dem"). Cada uma recomeça a contagem de tick e de
+    round do zero, e processadas separadamente viram duas "partidas" com placar
+    falso -- o Overpass de FURIA x Vitality aparecia como 7-5 e 8-3 em vez de
+    13-10. Para a HLTV é um mapa só, e é contra o mapa inteiro que o rating é
+    calibrado.
+
+    Cada parte depois da primeira é deslocada para depois da anterior: tick
+    pelo maior tick já visto, round_num pelo maior round. `entity_id` não
+    precisa de deslocamento -- toda agregação por entidade também agrupa por
+    round, e os rounds não se repetem mais depois do deslocamento.
+
+    A continuidade (mesmos jogadores, lados trocados no intervalo) é conferida
+    por quem chama; aqui a ordem das partes é a ordem da lista.
+    """
+    interim_dir = Path(interim_dir)
+    dest = interim_dir / dest_id
+    dest.mkdir(parents=True, exist_ok=True)
+
+    nomes = sorted({p.stem for pid in part_ids for p in (interim_dir / pid).glob("*.parquet")})
+    fundido: dict[str, list[pl.DataFrame]] = {n: [] for n in nomes}
+    desloc_tick, desloc_round = 0, 0
+
+    for pid in part_ids:
+        partes = {n: pl.read_parquet(interim_dir / pid / f"{n}.parquet")
+                  for n in nomes if (interim_dir / pid / f"{n}.parquet").exists()}
+        maior_tick, maior_round = 0, 0
+        for nome, df in partes.items():
+            ajustes = []
+            for col in df.columns:
+                if col in _TICK_COLUMNS and df[col].dtype.is_numeric():
+                    ajustes.append((pl.col(col) + desloc_tick).cast(df[col].dtype).alias(col))
+                    maior_tick = max(maior_tick, int(df[col].max() or 0))
+            if "round_num" in df.columns:
+                ajustes.append((pl.col("round_num") + desloc_round).cast(df["round_num"].dtype).alias("round_num"))
+                maior_round = max(maior_round, int(df["round_num"].max() or 0))
+            fundido[nome].append(df.with_columns(ajustes) if ajustes else df)
+        desloc_tick += maior_tick + 1
+        desloc_round += maior_round
+
+    for nome, pedacos in fundido.items():
+        if pedacos:
+            pl.concat(pedacos, how="diagonal_relaxed").write_parquet(dest / f"{nome}.parquet")
+
+    header = json.loads((interim_dir / part_ids[0] / "header.json").read_text(encoding="utf-8"))
+    header["merged_from_parts"] = len(part_ids)
+    (dest / "header.json").write_text(json.dumps(header, ensure_ascii=False, indent=2), encoding="utf-8")
+    return dest
+
+
 def load_interim(interim_dir: Path | str, match_id: str) -> dict[str, pl.DataFrame]:
     """Recarrega as tabelas brutas salvas por save_interim, sem precisar do .dem de novo."""
     match_dir = Path(interim_dir) / match_id

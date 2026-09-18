@@ -1,8 +1,8 @@
 {
   "match_id": "match_12",
   "map_name": "de_overpass",
-  "n_rounds": 11,
-  "source_dem": "C:\\Users\\User\\Desktop\\Projetos Claude\\01 - Parser de Replay CS2\\demos\\iem-rio-2026-furia-vs-vitality-bo3--OutGDctKNBZKy28qkTgMB\\furia-vs-vitality-m1-overpass-p2.dem",
+  "n_rounds": 23,
+  "source_dem": "C:\\Users\\User\\Desktop\\Projetos Claude\\01 - Parser de Replay CS2\\demos\\iem-rio-2026-furia-vs-vitality-bo3--OutGDctKNBZKy28qkTgMB - Copia\\furia-vs-vitality-m1-overpass-p1.dem",
   "pca": {
     "explained_variance_ratio": [
       0.3177372062661366,
@@ -20,5 +20,14 @@
     "n_clusters": 4,
     "fitted_on": "global",
     "n_player_rounds_global": 1870
-  }
+  },
+  "source_fingerprint": "dfd61fce9971ffcf4005",
+  "source_parts": [
+    "C:\\Users\\User\\Desktop\\Projetos Claude\\01 - Parser de Replay CS2\\demos\\iem-rio-2026-furia-vs-vitality-bo3--OutGDctKNBZKy28qkTgMB - Copia\\furia-vs-vitality-m1-overpass-p1.dem",
+    "C:\\Users\\User\\Desktop\\Projetos Claude\\01 - Parser de Replay CS2\\demos\\iem-rio-2026-furia-vs-vitality-bo3--OutGDctKNBZKy28qkTgMB\\furia-vs-vitality-m1-overpass-p2.dem"
+  ],
+  "source_fingerprints": [
+    "90cbd70755e03b033be0",
+    "2452c3f21f651fd23bc2"
+  ]
 }

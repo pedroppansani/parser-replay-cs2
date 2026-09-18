@@ -221,6 +221,10 @@ def esqueleto_hltv(ids: list[str]) -> Path:
 
         origem = identifica_origem(meta.get("source_dem", ""))
         usar, motivo = origem["usar_na_calibracao"], origem["motivo"]
+        # demo dividida que já foi FUNDIDA (process_all_demos) é o mapa inteiro de
+        # novo: volta a servir para calibrar
+        if len(meta.get("source_parts") or []) > 1:
+            usar, motivo = True, None
         # uma decisão manual já gravada no arquivo vale mais que a heurística
         if "usar_na_calibracao" in antigo:
             usar, motivo = antigo["usar_na_calibracao"], antigo.get("motivo", motivo)

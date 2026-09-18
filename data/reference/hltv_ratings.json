@@ -11,6 +11,7 @@
       "mapa_da_serie": null,
       "usar_na_calibracao": false,
       "motivo": "FACEIT: a HLTV nao publica rating para esta partida",
+      "nota": null,
       "jogadores": {
         "rol1ng-": null,
         "donk666": null,
@@ -33,6 +34,7 @@
       "mapa_da_serie": null,
       "usar_na_calibracao": false,
       "motivo": "FACEIT: a HLTV nao publica rating para esta partida",
+      "nota": null,
       "jogadores": {
         "donk666": null,
         "-olik": null,
@@ -55,6 +57,7 @@
       "mapa_da_serie": null,
       "usar_na_calibracao": false,
       "motivo": "FACEIT: a HLTV nao publica rating para esta partida",
+      "nota": null,
       "jogadores": {
         "ArmaHan": null,
         "lilpeepfan-": null,
@@ -77,6 +80,7 @@
       "mapa_da_serie": null,
       "usar_na_calibracao": false,
       "motivo": "FACEIT: a HLTV nao publica rating para esta partida",
+      "nota": null,
       "jogadores": {
         "Matthew369": null,
         "somehxw": null,
@@ -99,6 +103,7 @@
       "mapa_da_serie": null,
       "usar_na_calibracao": false,
       "motivo": "FACEIT: a HLTV nao publica rating para esta partida",
+      "nota": null,
       "jogadores": {
         "chiefkeef19": null,
         "f0pa": null,
@@ -121,6 +126,7 @@
       "mapa_da_serie": null,
       "usar_na_calibracao": false,
       "motivo": "FACEIT: a HLTV nao publica rating para esta partida",
+      "nota": null,
       "jogadores": {
         "Etaliqe": null,
         "llorente": null,
@@ -143,6 +149,7 @@
       "mapa_da_serie": null,
       "usar_na_calibracao": false,
       "motivo": "FACEIT: a HLTV nao publica rating para esta partida",
+      "nota": null,
       "jogadores": {
         "v1w": null,
         "EbuDerdaa": null,
@@ -165,6 +172,7 @@
       "mapa_da_serie": null,
       "usar_na_calibracao": false,
       "motivo": "FACEIT: a HLTV nao publica rating para esta partida",
+      "nota": null,
       "jogadores": {
         "gwizdakk": null,
         "KENNY-_": null,
@@ -187,6 +195,7 @@
       "mapa_da_serie": null,
       "usar_na_calibracao": false,
       "motivo": "FACEIT: a HLTV nao publica rating para esta partida",
+      "nota": null,
       "jogadores": {
         "d3bab": null,
         "lemight": null,
@@ -209,6 +218,7 @@
       "mapa_da_serie": 1,
       "usar_na_calibracao": true,
       "motivo": null,
+      "nota": "ID conferido: placar de cada mapa na HLTV bate com a demo",
       "jogadores": {
         "magixx": null,
         "zont1x": null,
@@ -220,8 +230,7 @@
         "makazze": null,
         "w0nderful": null,
         "iM": null
-      },
-      "nota": "ID conferido: placar de cada mapa na HLTV bate com a demo"
+      }
     },
     "match_11": {
       "mapa": "de_anubis",
@@ -232,6 +241,7 @@
       "mapa_da_serie": 2,
       "usar_na_calibracao": true,
       "motivo": null,
+      "nota": "ID conferido: placar de cada mapa na HLTV bate com a demo",
       "jogadores": {
         "sh1ro": null,
         "zont1x": null,
@@ -243,54 +253,7 @@
         "Aleksib": null,
         "w0nderful": null,
         "iM": null
-      },
-      "nota": "ID conferido: placar de cada mapa na HLTV bate com a demo"
-    },
-    "match_12": {
-      "mapa": "de_overpass",
-      "placar": "3-8",
-      "hltv_match_id": 2393243,
-      "evento": "iem-rio-2026",
-      "confronto": "furia-vs-vitality",
-      "mapa_da_serie": 1,
-      "usar_na_calibracao": false,
-      "motivo": "demo dividida (parte 2): o rating oficial e do mapa inteiro, esta demo tem so uma parte dos rounds",
-      "jogadores": {
-        "FalleN": null,
-        "molodoy": null,
-        "YEKINDAR": null,
-        "yuurih": null,
-        "KSCERATO": null,
-        "apEX": null,
-        "ropz": null,
-        "mezii": null,
-        "ZywOo": null,
-        "flameZ": null
-      },
-      "nota": "metade de demo dividida; mesmo mapa de match_13"
-    },
-    "match_13": {
-      "mapa": "de_overpass",
-      "placar": "5-7",
-      "hltv_match_id": 2393243,
-      "evento": "iem-rio-2026",
-      "confronto": "furia-vs-vitality",
-      "mapa_da_serie": 1,
-      "usar_na_calibracao": false,
-      "motivo": "demo dividida (parte 1): o rating oficial e do mapa inteiro, esta demo tem so uma parte dos rounds",
-      "jogadores": {
-        "apEX": null,
-        "ropz": null,
-        "flameZ": null,
-        "ZywOo": null,
-        "mezii": null,
-        "molodoy": null,
-        "KSCERATO": null,
-        "yuurih": null,
-        "FalleN": null,
-        "YEKINDAR": null
-      },
-      "nota": "metade de demo dividida; mesmo mapa de match_12"
+      }
     },
     "match_14": {
       "mapa": "de_ancient",
@@ -301,6 +264,7 @@
       "mapa_da_serie": 2,
       "usar_na_calibracao": true,
       "motivo": null,
+      "nota": "ID conferido: mapa 2 da mesma serie do Overpass fundido (match_12)",
       "jogadores": {
         "molodoy": null,
         "YEKINDAR": null,
@@ -312,8 +276,7 @@
         "apEX": null,
         "ZywOo": null,
         "flameZ": null
-      },
-      "nota": "A CONFERIR: resumos da busca se contradizem sobre o veto desta semifinal"
+      }
     },
     "match_15": {
       "mapa": "de_mirage",
@@ -324,6 +287,7 @@
       "mapa_da_serie": 1,
       "usar_na_calibracao": true,
       "motivo": null,
+      "nota": "ID conferido: placar de cada mapa na HLTV bate com a demo",
       "jogadores": {
         "makazze": null,
         "iM": null,
@@ -335,8 +299,7 @@
         "KSCERATO": null,
         "YEKINDAR": null,
         "FalleN": null
-      },
-      "nota": "ID conferido: placar de cada mapa na HLTV bate com a demo"
+      }
     },
     "match_16": {
       "mapa": "de_nuke",
@@ -347,6 +310,7 @@
       "mapa_da_serie": 3,
       "usar_na_calibracao": true,
       "motivo": null,
+      "nota": "ID conferido: placar de cada mapa na HLTV bate com a demo",
       "jogadores": {
         "w0nderful": null,
         "makazze": null,
@@ -358,8 +322,7 @@
         "molodoy": null,
         "yuurih": null,
         "YEKINDAR": null
-      },
-      "nota": "ID conferido: placar de cada mapa na HLTV bate com a demo"
+      }
     },
     "match_17": {
       "mapa": "de_dust2",
@@ -370,6 +333,7 @@
       "mapa_da_serie": 2,
       "usar_na_calibracao": true,
       "motivo": null,
+      "nota": "ID conferido: placar de cada mapa na HLTV bate com a demo",
       "jogadores": {
         "KSCERATO": null,
         "FalleN": null,
@@ -381,8 +345,7 @@
         "iM": null,
         "Aleksib": null,
         "w0nderful": null
-      },
-      "nota": "ID conferido: placar de cada mapa na HLTV bate com a demo"
+      }
     },
     "match_18": {
       "mapa": "de_anubis",
@@ -393,6 +356,7 @@
       "mapa_da_serie": 3,
       "usar_na_calibracao": true,
       "motivo": null,
+      "nota": "ID conferido: placar de cada mapa na HLTV bate com a demo",
       "jogadores": {
         "KSCERATO": null,
         "YEKINDAR": null,
@@ -404,8 +368,7 @@
         "TeSeS": null,
         "kyousuke": null,
         "NiKo": null
-      },
-      "nota": "ID conferido: placar de cada mapa na HLTV bate com a demo"
+      }
     },
     "match_19": {
       "mapa": "de_inferno",
@@ -416,6 +379,7 @@
       "mapa_da_serie": 2,
       "usar_na_calibracao": true,
       "motivo": null,
+      "nota": "ID conferido: placar de cada mapa na HLTV bate com a demo",
       "jogadores": {
         "YEKINDAR": null,
         "FalleN": null,
@@ -427,18 +391,18 @@
         "kyousuke": null,
         "NiKo": null,
         "kyxsan": null
-      },
-      "nota": "ID conferido: placar de cada mapa na HLTV bate com a demo"
+      }
     },
     "match_20": {
       "mapa": "de_mirage",
-      "placar": "17-13",
+      "placar": "14-16",
       "hltv_match_id": 2389969,
       "evento": "pgl-cluj-napoca-2026",
       "confronto": "furia-vs-falcons",
       "mapa_da_serie": 1,
       "usar_na_calibracao": true,
       "motivo": null,
+      "nota": "ID conferido: HLTV 16-14; a demo so bate depois da correcao de lados na prorrogacao",
       "jogadores": {
         "kyousuke": null,
         "NiKo": null,
@@ -450,8 +414,7 @@
         "molodoy": null,
         "yuurih": null,
         "YEKINDAR": null
-      },
-      "nota": "ID conferido: HLTV 16-14; a demo so bate depois da correcao de lados na prorrogacao"
+      }
     },
     "match_21": {
       "mapa": "de_nuke",
@@ -462,6 +425,7 @@
       "mapa_da_serie": 1,
       "usar_na_calibracao": true,
       "motivo": null,
+      "nota": "ID nao encontrado; placar 13-8 confirmado pela noticia HLTV 45538. Evento: hltv.org/events/8057",
       "jogadores": {
         "kyxsan": null,
         "Wicadia": null,
@@ -473,8 +437,7 @@
         "b1t": null,
         "w0nderful": null,
         "makazze": null
-      },
-      "nota": "ID nao encontrado; placar 13-8 confirmado pela noticia HLTV 45538. Evento: hltv.org/events/8057"
+      }
     },
     "match_22": {
       "mapa": "de_mirage",
@@ -485,6 +448,7 @@
       "mapa_da_serie": 2,
       "usar_na_calibracao": true,
       "motivo": null,
+      "nota": "ID nao encontrado; placar 13-7 confirmado pela noticia HLTV 45538. Evento: hltv.org/events/8057",
       "jogadores": {
         "iM": null,
         "Aleksib": null,
@@ -496,8 +460,7 @@
         "Jimpphat": null,
         "kyxsan": null,
         "woxic": null
-      },
-      "nota": "ID nao encontrado; placar 13-7 confirmado pela noticia HLTV 45538. Evento: hltv.org/events/8057"
+      }
     },
     "match_23": {
       "mapa": "de_dust2",
@@ -508,6 +471,7 @@
       "mapa_da_serie": 2,
       "usar_na_calibracao": true,
       "motivo": null,
+      "nota": "A CONFERIR: ID achado pela pagina de odds; placar do mapa nao confirmado",
       "jogadores": {
         "ZywOo": null,
         "mezii": null,
@@ -519,8 +483,30 @@
         "eksiver": null,
         "mo0N": null,
         "sFade8": null
-      },
-      "nota": "A CONFERIR: ID achado pela pagina de odds; placar do mapa nao confirmado"
+      }
+    },
+    "match_12": {
+      "mapa": "de_overpass",
+      "placar": "13-10",
+      "hltv_match_id": 2393243,
+      "evento": "iem-rio-2026",
+      "confronto": "furia-vs-vitality",
+      "mapa_da_serie": 1,
+      "usar_na_calibracao": true,
+      "motivo": null,
+      "nota": "ID conferido: Overpass 13-10 Vitality bate com a noticia HLTV 44412 (demo fundida de -p1 e -p2)",
+      "jogadores": {
+        "ropz": null,
+        "ZywOo": null,
+        "mezii": null,
+        "flameZ": null,
+        "apEX": null,
+        "KSCERATO": null,
+        "yuurih": null,
+        "YEKINDAR": null,
+        "molodoy": null,
+        "FalleN": null
+      }
     }
   }
 }
