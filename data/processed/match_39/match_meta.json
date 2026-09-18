@@ -1,0 +1,35 @@
+{
+  "match_id": "match_39",
+  "map_name": "de_dust2",
+  "n_rounds": 24,
+  "source_dem": "C:\\Users\\User\\Desktop\\Projetos Claude\\01 - Parser de Replay CS2\\demos\\iem-katowice-2025-natus-vincere-vs-spirit-bo3-YtA5gkUdrceGTAe_xkPfG-\\natus-vincere-vs-spirit-m2-dust2-p1.dem",
+  "pca": {
+    "explained_variance_ratio": [
+      0.3177372062661366,
+      0.23892554537865607
+    ],
+    "feature_columns": [
+      "avg_distance_from_team",
+      "max_distance_from_team",
+      "distinct_places",
+      "crosshair_score",
+      "height_score",
+      "frac_entering_fight",
+      "time_of_first_contact_s"
+    ],
+    "n_clusters": 4,
+    "fitted_on": "global",
+    "n_player_rounds_global": 1870
+  },
+  "source_fingerprint": "47b8eb64a4d108318162",
+  "source_parts": [
+    "C:\\Users\\User\\Desktop\\Projetos Claude\\01 - Parser de Replay CS2\\demos\\iem-katowice-2025-natus-vincere-vs-spirit-bo3-YtA5gkUdrceGTAe_xkPfG-\\natus-vincere-vs-spirit-m2-dust2-p1.dem",
+    "C:\\Users\\User\\Desktop\\Projetos Claude\\01 - Parser de Replay CS2\\demos\\iem-katowice-2025-natus-vincere-vs-spirit-bo3-YtA5gkUdrceGTAe_xkPfG-\\natus-vincere-vs-spirit-m2-dust2-p2.dem",
+    "C:\\Users\\User\\Desktop\\Projetos Claude\\01 - Parser de Replay CS2\\demos\\iem-katowice-2025-natus-vincere-vs-spirit-bo3-YtA5gkUdrceGTAe_xkPfG-\\natus-vincere-vs-spirit-m2-dust2-p3.dem"
+  ],
+  "source_fingerprints": [
+    "34d3ebd3a85b041b3bbb",
+    "c5a9028a3a65876e8cb8",
+    "dec8925cf9f2cd847e4b"
+  ]
+}
