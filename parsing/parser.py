@@ -306,10 +306,36 @@ def load_interim(interim_dir: Path | str, match_id: str) -> dict[str, pl.DataFra
 # ao atacante.
 #
 # A cauda DEPOIS do fim do round fica: dá pra morrer nos segundos seguintes ao
-# round ser decidido, e essas mortes são do round certo.
+# round ser decidido, e essas mortes são do round certo. EXCETO no round que
+# fecha a metade: dali o jogo vai para o intervalo, e o que acontece depois do
+# fim dele não pertence a round nenhum. Caso real: a bomba explodiu depois do
+# fim do round 12 e matou quem estava perto (donk em match_24, ropz em
+# match_26). A HLTV não conta essas mortes; nos outros rounds conta (6 de 6
+# casos conferidos contra o K-D oficial). Decisão do Pedro: não contar.
+# Medido nas 52 partidas: são as duas únicas mortes depois do fim de um round
+# de intervalo.
+
+
+def _rounds_de_intervalo(rounds: pl.DataFrame) -> list[int]:
+    """Rounds depois dos quais os times trocam de lado (o intervalo).
+
+    Sai da regra de lados, não de um número fixo: no MR12 é o 12, e na
+    prorrogação é o do meio de cada uma (27, 33...). A virada de uma
+    prorrogação para a outra não tem troca e não entra.
+    """
+    from metrics.sides import side_of_team
+
+    nums = rounds["round_num"].drop_nulls().to_list()
+    if not nums:
+        return []
+    ultimo = max(nums)
+    return [int(rn) for rn in nums
+            if rn < ultimo and side_of_team("A", int(rn)) != side_of_team("A", int(rn) + 1)]
+
 
 def kills_do_round_jogado(kills: pl.DataFrame, rounds: pl.DataFrame) -> pl.DataFrame:
-    """Descarta as mortes anteriores ao fim do freeze time do próprio round.
+    """Descarta as mortes que não pertencem ao round jogado: as anteriores ao
+    fim do freeze time e as posteriores ao fim de um round de intervalo.
 
     Este é o filtro que todo consumidor de `kills` deve aplicar. Está aqui, no
     módulo de parsing, porque é limpeza de dado bruto e não decisão de métrica --
@@ -318,12 +344,20 @@ def kills_do_round_jogado(kills: pl.DataFrame, rounds: pl.DataFrame) -> pl.DataF
     if kills.height == 0 or "round_num" not in kills.columns:
         return kills
 
+    intervalo = _rounds_de_intervalo(rounds) if "end" in rounds.columns else []
+    # fim que vale só nos rounds de intervalo; nos outros a cauda fica
+    fim_do_intervalo = (
+        pl.when(pl.col("round_num").is_in(intervalo)).then(pl.col("end")).otherwise(None)
+        if intervalo else pl.lit(None, dtype=pl.Int64)
+    )
     limites = rounds.select(
         pl.col("round_num").cast(kills.schema["round_num"]),
         pl.col("freeze_end"),
+        fim_do_intervalo.alias("_fim_do_intervalo"),
     )
     return (
         kills.join(limites, on="round_num", how="left")
         .filter(pl.col("freeze_end").is_null() | (pl.col("tick") >= pl.col("freeze_end")))
-        .drop("freeze_end")
+        .filter(pl.col("_fim_do_intervalo").is_null() | (pl.col("tick") <= pl.col("_fim_do_intervalo")))
+        .drop(["freeze_end", "_fim_do_intervalo"])
     )
