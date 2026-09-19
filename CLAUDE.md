@@ -56,6 +56,8 @@ demos/       .dem originais (gitignored)
 data/manifest.json origem de cada partida (versionado; scripts/manifest.py)
 data/interim/ tabelas brutas em parquet (gitignored, ticks tem 1M+ linhas)
 data/processed/ métricas calculadas (versionadas — é o que o dashboard usa)
+docs/         site GERADO por build_site.py (NÃO versionado; ver decisão 24)
+.github/workflows/pages.yml  publica o site no Pages a cada push
 data/global_clusters/ clustering ajustado no conjunto das partidas
 data/player_profiles/ perfil por jogador acumulado em todas as partidas
 ```
@@ -782,6 +784,23 @@ testada e estava errada.
       (`tests/test_annotations_browser.py`, Playwright); sem navegador eles são
       pulados, e os estruturais de `test_annotations.py` ficam como rede de
       segurança.
+
+24. **Saída gerada não vai para o repositório.** O que se versiona é o que gera a
+    saída (código e `data/processed/`), não a saída. O site em `docs/` era 54% do
+    histórico (120 de 224 MB, 24 versões) e foi PURGADO em 2026-09-19 com
+    `git filter-repo`, com a concordância do Pedro (repositório nunca
+    compartilhado): pacote local 219 -> 96 MB, clone do GitHub com `.git` de 105
+    MB. `docs/` está no `.gitignore`, e o Pages é gerado pelo GitHub Actions
+    (`.github/workflows/pages.yml`) a partir do código, como artefato -- não
+    entra em branch nenhum. Backup de antes da reescrita: a pasta irmã
+    "...- BACKUP antes da reescrita 2026-09-19", com `historico-completo.bundle`.
+    Teste obrigatório depois de qualquer mudança nisso: clonar do zero, rodar a
+    suíte (os testes que dependem de `data/interim/` são PULADOS, nunca
+    quebram) e gerar o site só com o que está versionado.
+    Peso que continua crescendo, e é deliberado: `replay.json` (50 MB do
+    histórico) e `web_payload.json` (16 MB) em `data/processed/`. O replay sai
+    do interim, que não é versionado, então sem ele um clone não reconstrói o
+    replay.
 
 ## Pontos de calibração — pertencem ao Pedro, não ao código
 
