@@ -284,6 +284,9 @@ def load_interim(interim_dir: Path | str, match_id: str) -> dict[str, pl.DataFra
     # Fica aqui para que TODO consumidor de --from-interim receba o dado limpo
     # sem precisar lembrar de filtrar (ver kills_do_round_jogado).
     tables["kills"] = kills_do_round_jogado(tables["kills"], tables["rounds"])
+    for nome in EVENTOS_COM_CORTE_DO_FREEZE:
+        if nome in tables:
+            tables[nome] = eventos_do_round_jogado(tables[nome], tables["rounds"])
     return tables
 
 
@@ -331,6 +334,33 @@ def _rounds_de_intervalo(rounds: pl.DataFrame) -> list[int]:
     ultimo = max(nums)
     return [int(rn) for rn in nums
             if rn < ultimo and side_of_team("A", int(rn)) != side_of_team("A", int(rn) + 1)]
+
+
+# Tabelas de EVENTO (não de posição) que recebem o mesmo corte do freeze time.
+# Medido nas 52 partidas: 100 danos no freeze time, em 9 partidas, sempre em
+# blocos de 10 -- um por jogador, no mesmo tick, com atacante e vítima do mesmo
+# lado. É o servidor reiniciando o round (pausa técnica): ninguém jogou aquilo.
+# O ADR não era afetado (só soma dano em inimigo), mas o primeiro contato do
+# agrupamento ("causou ou sofreu dano") e qualquer leitor futuro seriam.
+# `grenades` NÃO entra: as linhas dela no freeze time são granada no
+# inventário (posição nula), e é assim que se sabe quem comprou o quê.
+EVENTOS_COM_CORTE_DO_FREEZE = ("damages", "shots", "player_blind")
+
+
+def eventos_do_round_jogado(eventos: pl.DataFrame, rounds: pl.DataFrame) -> pl.DataFrame:
+    """Descarta eventos anteriores ao fim do freeze time do próprio round.
+
+    Mesmo princípio de kills_do_round_jogado, para as tabelas de evento que não
+    são morte. Todo ponto de entrada dessas tabelas passa por aqui.
+    """
+    if eventos is None or eventos.height == 0 or "round_num" not in eventos.columns:
+        return eventos
+    limites = rounds.select(pl.col("round_num").cast(eventos.schema["round_num"]), pl.col("freeze_end"))
+    return (
+        eventos.join(limites, on="round_num", how="left")
+        .filter(pl.col("freeze_end").is_null() | (pl.col("tick") >= pl.col("freeze_end")))
+        .drop("freeze_end")
+    )
 
 
 def kills_do_round_jogado(kills: pl.DataFrame, rounds: pl.DataFrame) -> pl.DataFrame:

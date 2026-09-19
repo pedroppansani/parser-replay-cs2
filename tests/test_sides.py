@@ -80,3 +80,10 @@ def test_mirage_de_furia_x_falcons_fecha_16_14_como_na_hltv():
         pytest.skip("partida FURIA x Falcons (Mirage) não processada")
     m = json.loads((alvo / "insights.json").read_text(encoding="utf-8"))["match"]
     assert sorted([m["score_a"], m["score_b"]], reverse=True) == [16, 14]
+
+
+def test_fim_de_metade_inclui_o_regulamentar_e_as_prorrogacoes():
+    from metrics.sides import fim_de_metade
+
+    fins = [r for r in range(1, 40) if fim_de_metade(r)]
+    assert fins == [12, 24, 27, 30, 33, 36, 39]

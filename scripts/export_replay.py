@@ -20,6 +20,7 @@ from pathlib import Path
 
 import polars as pl
 
+from metrics.round_breakdown import frase_da_morte
 from metrics.sides import team_of_side
 from parsing.parser import kills_do_round_jogado
 
@@ -269,6 +270,10 @@ def build(match_id: str) -> Path:
                     "ay": int(round(k["attacker_Y"])) if k["attacker_Y"] is not None else None,
                     "attacker": k["attacker_name"],
                     "victim": k["victim_name"],
+                    # frase pronta (metrics/round_breakdown.frase_da_morte): o
+                    # template não monta "X matou Y" por conta própria
+                    "quem": frase_da_morte(k)[0],
+                    "acao": frase_da_morte(k)[1],
                     "weapon": k["weapon"],
                     "headshot": bool(k["headshot"]),
                     "side": k["attacker_side"],

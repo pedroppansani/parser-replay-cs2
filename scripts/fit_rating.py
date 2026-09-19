@@ -29,7 +29,7 @@ from pathlib import Path
 import numpy as np
 import polars as pl
 
-from parsing.parser import kills_do_round_jogado
+from parsing.parser import eventos_do_round_jogado, kills_do_round_jogado
 from metrics.rating import (
     ModeloDeRound,
     PESOS_PROVISORIOS,
@@ -69,8 +69,8 @@ def carrega_partida(match_id: str) -> tuple:
         "rounds": rounds,
         "kills": kills,
         "ticks": ticks,
-        "damages": pl.read_parquet(interim / "damages.parquet"),
-        "player_blind": pl.read_parquet(blind) if blind.exists() else None,
+        "damages": eventos_do_round_jogado(pl.read_parquet(interim / "damages.parquet"), rounds),
+        "player_blind": eventos_do_round_jogado(pl.read_parquet(blind), rounds) if blind.exists() else None,
     }
     team_of, _ = resolve_teams(ticks)
     vencedor = {

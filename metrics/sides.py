@@ -89,3 +89,18 @@ def placar_valido(a: int, b: int, n_rounds: int) -> bool:
     if alto == REGULATION_HALF + 1:
         return baixo <= REGULATION_HALF - 1
     return (alto - REGULATION_HALF - 1) % OT_HALF == 0 and alto - 4 <= baixo <= alto - 2
+
+
+def fim_de_metade(round_num: int) -> bool:
+    """O round fecha uma metade? 12 e 24 no tempo regulamentar, e o último de
+    cada metade de prorrogação (27, 30, 33...).
+
+    São os rounds de fronteira irregular -- depois deles vem intervalo ou a
+    virada para a prorrogação --, marcados na autópsia do round. (Quais mortes
+    depois do fim deixam de contar é outra regra, mais estreita: só depois do
+    round seguido de troca de lado; ver parsing.kills_do_round_jogado.)
+    """
+    if round_num in (REGULATION_HALF, 2 * REGULATION_HALF):
+        return True
+    extra = round_num - 2 * REGULATION_HALF
+    return extra > 0 and extra % OT_HALF == 0

@@ -21,7 +21,8 @@ import polars as pl
 import pytest
 
 from metrics.formatting import format_clock, format_money
-from metrics.round_breakdown import CAUDA_POS_ROUND_S, HALFTIME_ROUND, analyze_round
+from metrics.round_breakdown import CAUDA_POS_ROUND_S, analyze_round
+from metrics.sides import REGULATION_HALF as HALFTIME_ROUND
 from parsing.parser import kills_do_round_jogado
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -213,6 +214,33 @@ def test_morte_do_intervalo_nao_existe_mais_nas_partidas_reais():
         assert k.filter(pl.col("victim_name") == quem).height == mortes_hltv
 
 
+def test_dano_do_freeze_time_sai_de_todas_as_tabelas_de_evento():
+    """Restart de round pelo servidor gera dano no freeze time (10 por vez, um
+    por jogador). Não pertence a round nenhum, em nenhuma tabela."""
+    from parsing.parser import eventos_do_round_jogado
+
+    rounds = pl.DataFrame({"round_num": [1], "freeze_end": [1000]}).with_columns(pl.col("round_num").cast(pl.UInt32))
+    danos = pl.DataFrame({"round_num": [1, 1], "tick": [900, 1100], "dmg": [100, 30]}).with_columns(
+        pl.col("round_num").cast(pl.UInt32))
+    assert eventos_do_round_jogado(danos, rounds)["tick"].to_list() == [1100]
+
+
+def test_nenhuma_partida_real_tem_evento_no_freeze_time_depois_da_carga():
+    from pathlib import Path
+    from parsing.parser import EVENTOS_COM_CORTE_DO_FREEZE, load_interim
+
+    pastas = sorted(p for p in Path("data/interim").glob("match_*") if "__" not in p.name)[:6]
+    if not pastas:
+        pytest.skip("interim ausente")
+    for d in pastas:
+        t = load_interim("data/interim", d.name)
+        for nome in ("kills",) + EVENTOS_COM_CORTE_DO_FREEZE:
+            if nome not in t:
+                continue
+            j = t[nome].join(t["rounds"].select(["round_num", "freeze_end"]), on="round_num")
+            assert j.filter(pl.col("tick") < pl.col("freeze_end")).height == 0, (d.name, nome)
+
+
 # --- Casos sintéticos do timeline -------------------------------------------
 
 def _cenario(mortes: list[dict], round_row: dict) -> dict:
@@ -386,3 +414,69 @@ def test_contexto_de_economia_mostra_os_dois_lados():
             if b["equip_value_winner"] is not None:
                 assert "adversário" in b["eco_text"]
     assert achou, "nenhum round de economia nas partidas processadas"
+
+
+# --- Fogo amigo e morte sem atacante ------------------------------------------
+
+def test_fogo_amigo_diz_companheiro_e_nao_vira_adversario():
+    from metrics.round_breakdown import _quem_matou
+
+    kill = {"attacker_steamid": 1, "victim_steamid": 2, "attacker_name": "b1t",
+            "attacker_side": "t", "victim_side": "t", "weapon": "ak47"}
+    assert _quem_matou(kill) == ("b1t", "morto pelo companheiro b1t")
+
+
+def test_causa_de_morte_sem_atacante_nunca_usa_o_nome_da_vitima():
+    from metrics.round_breakdown import _quem_matou
+
+    base = {"attacker_steamid": None, "victim_steamid": 2, "attacker_name": "donk", "victim_name": "donk"}
+    assert _quem_matou({**base, "weapon": "planted_c4"}) == (None, "morreu para a bomba")
+    # `worldent` é como a demo registra a queda (medido nas 52 partidas)
+    assert _quem_matou({**base, "weapon": "worldent"})[1].startswith("morreu para o mapa")
+    assert _quem_matou({**base, "weapon": "inferno"}) == (None, "morreu para o fogo")
+    for arma in ("planted_c4", "worldent", "inferno", "algo_novo"):
+        assert "donk" not in _quem_matou({**base, "weapon": arma})[1]
+
+
+def test_fogo_amigo_e_bomba_antes_do_duelo_nao_sao_abertura():
+    """A abertura é o primeiro duelo ganho contra o adversário. Um teamkill ou
+    uma morte pela bomba antes dele não é abertura de ninguém."""
+    from scripts.build_insights import round_situations
+
+    team_of = {1: "A", 2: "A", 3: "B", 4: "B"}
+    kills = pl.DataFrame([
+        {"round_num": 1, "tick": 100, "attacker_steamid": 1, "attacker_name": "a1",
+         "victim_steamid": 2, "victim_name": "a2", "weapon": "ak47", "attacker_side": "t", "victim_side": "t"},
+        {"round_num": 1, "tick": 200, "attacker_steamid": None, "attacker_name": None,
+         "victim_steamid": 4, "victim_name": "b2", "weapon": "planted_c4", "attacker_side": None, "victim_side": "ct"},
+        {"round_num": 1, "tick": 300, "attacker_steamid": 3, "attacker_name": "b1",
+         "victim_steamid": 1, "victim_name": "a1", "weapon": "m4a1", "attacker_side": "ct", "victim_side": "t"},
+    ]).with_columns(pl.col("round_num").cast(pl.UInt32))
+    rounds = pl.DataFrame({"round_num": [1], "winner": ["ct"]}).with_columns(pl.col("round_num").cast(pl.UInt32))
+    abertura = round_situations(kills, rounds, team_of)[1]["opening"]
+    assert abertura["player"] == "b1" and abertura["team"] == "B"
+
+
+def test_frase_da_morte_no_replay_nunca_usa_a_vitima_como_matador():
+    """REGRESSÃO: a lista de eventos do replay montava "atacante matou vítima"
+    no template -- "null matou donk" sem atacante e "donk matou donk" quando a
+    demo preenche o atacante com a própria vítima."""
+    from metrics.round_breakdown import frase_da_morte
+
+    base = {"victim_steamid": 2, "victim_name": "donk", "weapon": "planted_c4"}
+    assert frase_da_morte({**base, "attacker_steamid": None, "attacker_name": None}) == ("donk", "morreu para a bomba")
+    assert frase_da_morte({**base, "attacker_steamid": 2, "attacker_name": "donk", "weapon": "worldent"})[1] \
+        .startswith("morreu para o mapa")
+    tk = {"attacker_steamid": 1, "attacker_name": "TeSeS", "victim_steamid": 2, "victim_name": "NiKo",
+          "attacker_side": "ct", "victim_side": "ct", "weapon": "m4a1_silencer"}
+    assert frase_da_morte(tk) == ("TeSeS", "matou o companheiro NiKo")
+    duelo = {**tk, "victim_side": "t"}
+    assert frase_da_morte(duelo) == ("TeSeS", "matou NiKo")
+
+
+def test_template_nao_monta_frase_de_morte():
+    from pathlib import Path
+
+    tpl = Path("dashboard/web/template.html").read_text(encoding="utf-8")
+    assert '+ e.attacker + "</b> matou "' not in tpl
+    assert 'm.by + " matou "' not in tpl
