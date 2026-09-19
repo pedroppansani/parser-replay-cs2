@@ -45,14 +45,20 @@
         {
           "arquivo": "1-0007ce25-1e02-40fa-9eb0-1bba64c71b12-1-1.dem",
           "caminho": "demos/1-0007ce25-1e02-40fa-9eb0-1bba64c71b12-1-1.dem/1-0007ce25-1e02-40fa-9eb0-1bba64c71b12-1-1.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 246598552,
           "mtime": 1789501145,
           "sha256": "796b51156e56985d3ddcbeddd19177af49f32635b8cff51796107adf5add41a9"
         }
       ],
       "processado_em": "2026-09-19T02:25",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/1-0007ce25-1e02-40fa-9eb0-1bba64c71b12-1-1.dem/1-0007ce25-1e02-40fa-9eb0-1bba64c71b12-1-1.dem"
+        ],
+        "bytes_liberados": 246598552
+      }
     },
     "match_02": {
       "match_id": "match_02",
@@ -97,14 +103,20 @@
         {
           "arquivo": "1-07642af7-6568-4661-9aeb-a420adeaad61-1-1.dem",
           "caminho": "demos/1-07642af7-6568-4661-9aeb-a420adeaad61-1-1.dem/1-07642af7-6568-4661-9aeb-a420adeaad61-1-1.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 270134914,
           "mtime": 1789501216,
           "sha256": "698bf3f2f4adbf061f6fffc3913db5e83f51d2194a87345d9ae7ec741b938e6b"
         }
       ],
       "processado_em": "2026-09-19T02:25",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/1-07642af7-6568-4661-9aeb-a420adeaad61-1-1.dem/1-07642af7-6568-4661-9aeb-a420adeaad61-1-1.dem"
+        ],
+        "bytes_liberados": 270134914
+      }
     },
     "match_03": {
       "match_id": "match_03",
@@ -149,14 +161,20 @@
         {
           "arquivo": "1-22abf937-659e-4363-9933-cc2a2ae99370-1-1.dem",
           "caminho": "demos/1-22abf937-659e-4363-9933-cc2a2ae99370-1-1.dem/1-22abf937-659e-4363-9933-cc2a2ae99370-1-1.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 284176800,
           "mtime": 1789501188,
           "sha256": "522d50f86f5298d4c0f5a6ee635a9f5fe5d512c31d0dc83b4bbdba8c17635dab"
         }
       ],
       "processado_em": "2026-09-19T02:25",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/1-22abf937-659e-4363-9933-cc2a2ae99370-1-1.dem/1-22abf937-659e-4363-9933-cc2a2ae99370-1-1.dem"
+        ],
+        "bytes_liberados": 284176800
+      }
     },
     "match_04": {
       "match_id": "match_04",
@@ -201,14 +219,20 @@
         {
           "arquivo": "1-50a6313e-9399-4821-848e-f3b25a683149-1-1.dem",
           "caminho": "demos/1-50a6313e-9399-4821-848e-f3b25a683149-1-1.dem/1-50a6313e-9399-4821-848e-f3b25a683149-1-1.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 262581540,
           "mtime": 1789501200,
           "sha256": "8335d600fc7d2771146ccf131a5feae09b989daf6837dd5bbfb6f055791c8454"
         }
       ],
       "processado_em": "2026-09-19T02:26",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/1-50a6313e-9399-4821-848e-f3b25a683149-1-1.dem/1-50a6313e-9399-4821-848e-f3b25a683149-1-1.dem"
+        ],
+        "bytes_liberados": 262581540
+      }
     },
     "match_05": {
       "match_id": "match_05",
@@ -253,14 +277,20 @@
         {
           "arquivo": "1-764e1ec7-1f00-4168-9eed-9741ee3a00e6-1-1.dem",
           "caminho": "demos/1-764e1ec7-1f00-4168-9eed-9741ee3a00e6-1-1.dem/1-764e1ec7-1f00-4168-9eed-9741ee3a00e6-1-1.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 225761299,
           "mtime": 1789501209,
           "sha256": "b371cd555eefa72a86b9a8848054fccd138fdd856b6192a705478a48b364a3c2"
         }
       ],
       "processado_em": "2026-09-19T02:26",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/1-764e1ec7-1f00-4168-9eed-9741ee3a00e6-1-1.dem/1-764e1ec7-1f00-4168-9eed-9741ee3a00e6-1-1.dem"
+        ],
+        "bytes_liberados": 225761299
+      }
     },
     "match_06": {
       "match_id": "match_06",
@@ -305,14 +335,20 @@
         {
           "arquivo": "1-7de2c606-5a1c-4496-9a78-4f9e066aa348-1-1.dem",
           "caminho": "demos/1-7de2c606-5a1c-4496-9a78-4f9e066aa348-1-1.dem/1-7de2c606-5a1c-4496-9a78-4f9e066aa348-1-1.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 217143502,
           "mtime": 1789501161,
           "sha256": "7b8894a2ffc2364679ead62b395e82f4a32f73334b617f03d5d7e17033f82ce5"
         }
       ],
       "processado_em": "2026-09-19T02:26",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/1-7de2c606-5a1c-4496-9a78-4f9e066aa348-1-1.dem/1-7de2c606-5a1c-4496-9a78-4f9e066aa348-1-1.dem"
+        ],
+        "bytes_liberados": 217143502
+      }
     },
     "match_07": {
       "match_id": "match_07",
@@ -357,14 +393,20 @@
         {
           "arquivo": "1-9be6d5a6-abda-4110-908d-deae67dee533-1-1.dem",
           "caminho": "demos/1-9be6d5a6-abda-4110-908d-deae67dee533-1-1.dem/1-9be6d5a6-abda-4110-908d-deae67dee533-1-1.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 253655691,
           "mtime": 1789501108,
           "sha256": "eb8853783b98a7899ab772eb75efb14729b9c628bb050aec3a37339f7638b8b1"
         }
       ],
       "processado_em": "2026-09-19T02:26",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/1-9be6d5a6-abda-4110-908d-deae67dee533-1-1.dem/1-9be6d5a6-abda-4110-908d-deae67dee533-1-1.dem"
+        ],
+        "bytes_liberados": 253655691
+      }
     },
     "match_08": {
       "match_id": "match_08",
@@ -409,14 +451,20 @@
         {
           "arquivo": "1-a2985358-eb2a-4b11-b891-534de044e54e-1-1.dem",
           "caminho": "demos/1-a2985358-eb2a-4b11-b891-534de044e54e-1-1.dem/1-a2985358-eb2a-4b11-b891-534de044e54e-1-1.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 330673514,
           "mtime": 1789501222,
           "sha256": "d280be30ec5469dc76c36a978186e7901b9466e218b769531917fc3f0c413b66"
         }
       ],
       "processado_em": "2026-09-19T02:27",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/1-a2985358-eb2a-4b11-b891-534de044e54e-1-1.dem/1-a2985358-eb2a-4b11-b891-534de044e54e-1-1.dem"
+        ],
+        "bytes_liberados": 330673514
+      }
     },
     "match_09": {
       "match_id": "match_09",
@@ -461,14 +509,20 @@
         {
           "arquivo": "1-c4169514-a91a-470c-9fa7-11413f06ff45-1-1.dem",
           "caminho": "demos/1-c4169514-a91a-470c-9fa7-11413f06ff45-1-1.dem/1-c4169514-a91a-470c-9fa7-11413f06ff45-1-1.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 305027845,
           "mtime": 1789501229,
           "sha256": "d73e40ae595453e9ed92eaada04a51df650ea5120078dff5acfe9200494d7d5c"
         }
       ],
       "processado_em": "2026-09-19T02:27",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/1-c4169514-a91a-470c-9fa7-11413f06ff45-1-1.dem/1-c4169514-a91a-470c-9fa7-11413f06ff45-1-1.dem"
+        ],
+        "bytes_liberados": 305027845
+      }
     },
     "match_10": {
       "match_id": "match_10",
@@ -516,14 +570,20 @@
         {
           "arquivo": "natus-vincere-vs-spirit-m1-dust2.dem",
           "caminho": "demos/iem-cologne-major-2026-natus-vincere-vs-spirit-bo3-kgjfQml_20SbX4SdXD-5FD/natus-vincere-vs-spirit-m1-dust2.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 331960514,
           "mtime": 1781205746,
           "sha256": "00bdd0bfd427775a3cd1844a726c84353dad37517b89a887597a895ba4fc88ff"
         }
       ],
       "processado_em": "2026-09-19T02:30",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/iem-cologne-major-2026-natus-vincere-vs-spirit-bo3-kgjfQml_20SbX4SdXD-5FD/natus-vincere-vs-spirit-m1-dust2.dem"
+        ],
+        "bytes_liberados": 331960514
+      }
     },
     "match_11": {
       "match_id": "match_11",
@@ -571,14 +631,20 @@
         {
           "arquivo": "natus-vincere-vs-spirit-m2-anubis.dem",
           "caminho": "demos/iem-cologne-major-2026-natus-vincere-vs-spirit-bo3-kgjfQml_20SbX4SdXD-5FD - Copia/natus-vincere-vs-spirit-m2-anubis.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 486955729,
           "mtime": 1781209761,
           "sha256": "8ae575cacb202bbcf13b26ccd6984c01bd95eeb0243a74daa74fa53e15321db2"
         }
       ],
       "processado_em": "2026-09-19T02:30",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/iem-cologne-major-2026-natus-vincere-vs-spirit-bo3-kgjfQml_20SbX4SdXD-5FD - Copia/natus-vincere-vs-spirit-m2-anubis.dem"
+        ],
+        "bytes_liberados": 486955729
+      }
     },
     "match_12": {
       "match_id": "match_12",
@@ -626,7 +692,7 @@
         {
           "arquivo": "furia-vs-vitality-m1-overpass-p1.dem",
           "caminho": "demos/iem-rio-2026-furia-vs-vitality-bo3--OutGDctKNBZKy28qkTgMB - Copia/furia-vs-vitality-m1-overpass-p1.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 321163944,
           "mtime": 1776537879,
           "sha256": "d6ded5f8f72cdc11dfe86949752f3158b789aeb8981ef07e2a13feb08dc0ecb4"
@@ -634,14 +700,21 @@
         {
           "arquivo": "furia-vs-vitality-m1-overpass-p2.dem",
           "caminho": "demos/iem-rio-2026-furia-vs-vitality-bo3--OutGDctKNBZKy28qkTgMB/furia-vs-vitality-m1-overpass-p2.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 329976079,
           "mtime": 1776539523,
           "sha256": "214cd0f09b4a347592e340645e6dff1e75c60d76b6a04b2086a06b20e504f0b9"
         }
       ],
       "processado_em": "2026-09-19T02:36",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/iem-rio-2026-furia-vs-vitality-bo3--OutGDctKNBZKy28qkTgMB - Copia/furia-vs-vitality-m1-overpass-p1.dem",
+          "demos/iem-rio-2026-furia-vs-vitality-bo3--OutGDctKNBZKy28qkTgMB/furia-vs-vitality-m1-overpass-p2.dem"
+        ],
+        "bytes_liberados": 651140023
+      }
     },
     "match_14": {
       "match_id": "match_14",
@@ -689,14 +762,20 @@
         {
           "arquivo": "furia-vs-vitality-m2-ancient.dem",
           "caminho": "demos/iem-rio-2026-furia-vs-vitality-bo3--OutGDctKNBZKy28qkTgMB - Copia (2)/furia-vs-vitality-m2-ancient.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 511363016,
           "mtime": 1776543780,
           "sha256": "a423d8fa9bcd7724118cccdde81bc99dac9b0de37ec3692822bc4427d638a2ae"
         }
       ],
       "processado_em": "2026-09-19T02:36",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/iem-rio-2026-furia-vs-vitality-bo3--OutGDctKNBZKy28qkTgMB - Copia (2)/furia-vs-vitality-m2-ancient.dem"
+        ],
+        "bytes_liberados": 511363016
+      }
     },
     "match_15": {
       "match_id": "match_15",
@@ -744,14 +823,20 @@
         {
           "arquivo": "natus-vincere-vs-furia-m1-mirage.dem",
           "caminho": "demos/iem-rio-2026-natus-vincere-vs-furia-bo3-qLZX6MdaBCbmtkWux805qr/natus-vincere-vs-furia-m1-mirage.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 364333863,
           "mtime": 1776193253,
           "sha256": "1bfb43118089c78331bd7b517e849fe12941a0ce9f1619b34b7b1c91c47dfa6d"
         }
       ],
       "processado_em": "2026-09-19T02:36",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/iem-rio-2026-natus-vincere-vs-furia-bo3-qLZX6MdaBCbmtkWux805qr/natus-vincere-vs-furia-m1-mirage.dem"
+        ],
+        "bytes_liberados": 364333863
+      }
     },
     "match_16": {
       "match_id": "match_16",
@@ -799,14 +884,20 @@
         {
           "arquivo": "natus-vincere-vs-furia-m3-nuke.dem",
           "caminho": "demos/iem-rio-2026-natus-vincere-vs-furia-bo3-qLZX6MdaBCbmtkWux805qr - Copia/natus-vincere-vs-furia-m3-nuke.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 712216851,
           "mtime": 1776201513,
           "sha256": "87356d11bdeb8616cf13b148e8f3db69554383440bc29ca4826be4522fbb91d6"
         }
       ],
       "processado_em": "2026-09-19T02:37",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/iem-rio-2026-natus-vincere-vs-furia-bo3-qLZX6MdaBCbmtkWux805qr - Copia/natus-vincere-vs-furia-m3-nuke.dem"
+        ],
+        "bytes_liberados": 712216851
+      }
     },
     "match_17": {
       "match_id": "match_17",
@@ -854,14 +945,20 @@
         {
           "arquivo": "natus-vincere-vs-furia-m2-dust2.dem",
           "caminho": "demos/iem-rio-2026-natus-vincere-vs-furia-bo3-qLZX6MdaBCbmtkWux805qr - Copia (2)/natus-vincere-vs-furia-m2-dust2.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 416945869,
           "mtime": 1776196490,
           "sha256": "bc517609cf2e20861613bfe1cedb1e7ecfda12b744f2f6a22b08f91c8334cf3d"
         }
       ],
       "processado_em": "2026-09-19T02:37",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/iem-rio-2026-natus-vincere-vs-furia-bo3-qLZX6MdaBCbmtkWux805qr - Copia (2)/natus-vincere-vs-furia-m2-dust2.dem"
+        ],
+        "bytes_liberados": 416945869
+      }
     },
     "match_18": {
       "match_id": "match_18",
@@ -909,14 +1006,20 @@
         {
           "arquivo": "furia-vs-falcons-m3-anubis.dem",
           "caminho": "demos/pgl-cluj-napoca-2026-furia-vs-falcons-bo3-OfIsfrpSwnaD_LueyZEScm/furia-vs-falcons-m3-anubis.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 661522920,
           "mtime": 1771273479,
           "sha256": "42aa5f5826231e0141ba712a0a6b6aa30d360f333a87fecf8eda0d8bfcd6905f"
         }
       ],
       "processado_em": "2026-09-19T02:37",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/pgl-cluj-napoca-2026-furia-vs-falcons-bo3-OfIsfrpSwnaD_LueyZEScm/furia-vs-falcons-m3-anubis.dem"
+        ],
+        "bytes_liberados": 661522920
+      }
     },
     "match_19": {
       "match_id": "match_19",
@@ -964,14 +1067,20 @@
         {
           "arquivo": "furia-vs-falcons-m2-inferno.dem",
           "caminho": "demos/pgl-cluj-napoca-2026-furia-vs-falcons-bo3-OfIsfrpSwnaD_LueyZEScm - Copia/furia-vs-falcons-m2-inferno.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 415037611,
           "mtime": 1771269426,
           "sha256": "c358451d9f613becab0966efbbe113ab805d236f1a898020f3f16327777cc974"
         }
       ],
       "processado_em": "2026-09-19T02:38",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/pgl-cluj-napoca-2026-furia-vs-falcons-bo3-OfIsfrpSwnaD_LueyZEScm - Copia/furia-vs-falcons-m2-inferno.dem"
+        ],
+        "bytes_liberados": 415037611
+      }
     },
     "match_20": {
       "match_id": "match_20",
@@ -1019,14 +1128,20 @@
         {
           "arquivo": "furia-vs-falcons-m1-mirage.dem",
           "caminho": "demos/pgl-cluj-napoca-2026-furia-vs-falcons-bo3-OfIsfrpSwnaD_LueyZEScm - Copia (2)/furia-vs-falcons-m1-mirage.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 778875410,
           "mtime": 1771267438,
           "sha256": "3ada17dbeb8b7122f1e96f8041cdd0db60728885c43c217ef82047421884b39b"
         }
       ],
       "processado_em": "2026-09-19T02:38",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/pgl-cluj-napoca-2026-furia-vs-falcons-bo3-OfIsfrpSwnaD_LueyZEScm - Copia (2)/furia-vs-falcons-m1-mirage.dem"
+        ],
+        "bytes_liberados": 778875410
+      }
     },
     "match_21": {
       "match_id": "match_21",
@@ -1071,14 +1186,20 @@
         {
           "arquivo": "natus-vincere-vs-aurora-m1-nuke.dem",
           "caminho": "demos/starladder-starseries-fall-2026-natus-vincere-vs-aurora-bo3-2OPRoFYA87bjQX1AIABecS/natus-vincere-vs-aurora-m1-nuke.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 371055688,
           "mtime": 1789662227,
           "sha256": "d84b02b61af2e213acd9d120e0e556c9f26556f54961bd48aa96db3b380a27b6"
         }
       ],
       "processado_em": "2026-09-19T02:40",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/starladder-starseries-fall-2026-natus-vincere-vs-aurora-bo3-2OPRoFYA87bjQX1AIABecS/natus-vincere-vs-aurora-m1-nuke.dem"
+        ],
+        "bytes_liberados": 371055688
+      }
     },
     "match_22": {
       "match_id": "match_22",
@@ -1123,14 +1244,20 @@
         {
           "arquivo": "natus-vincere-vs-aurora-m2-mirage.dem",
           "caminho": "demos/starladder-starseries-fall-2026-natus-vincere-vs-aurora-bo3-2OPRoFYA87bjQX1AIABecS - Copia/natus-vincere-vs-aurora-m2-mirage.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 313295850,
           "mtime": 1789664211,
           "sha256": "067680a00c73c69dbc79218c5d799940c8573b56ed172dccc095090a2ec05fbb"
         }
       ],
       "processado_em": "2026-09-19T02:40",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/starladder-starseries-fall-2026-natus-vincere-vs-aurora-bo3-2OPRoFYA87bjQX1AIABecS - Copia/natus-vincere-vs-aurora-m2-mirage.dem"
+        ],
+        "bytes_liberados": 313295850
+      }
     },
     "match_23": {
       "match_id": "match_23",
@@ -1178,14 +1305,20 @@
         {
           "arquivo": "vitality-vs-magic-m2-dust2.dem",
           "caminho": "demos/starladder-starseries-fall-2026-vitality-vs-magic-bo3-qBHOW2KPqxQBIay8cnoYpu/vitality-vs-magic-m2-dust2.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 355072683,
           "mtime": 1789656916,
           "sha256": "f18e6acd0f4dcf3574323bbb6237a0e65cd1f55a1a009404e9635df7818f7574"
         }
       ],
       "processado_em": "2026-09-19T02:40",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/starladder-starseries-fall-2026-vitality-vs-magic-bo3-qBHOW2KPqxQBIay8cnoYpu/vitality-vs-magic-m2-dust2.dem"
+        ],
+        "bytes_liberados": 355072683
+      }
     },
     "match_24": {
       "match_id": "match_24",
@@ -1230,14 +1363,20 @@
         {
           "arquivo": "spirit-vs-natus-vincere-m1-dust2.dem",
           "caminho": "demos/blast-open-lisbon-2025-spirit-vs-natus-vincere-bo3-DfMwg-uWd2UuG7dK1Cq3pE/spirit-vs-natus-vincere-m1-dust2.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 557407477,
           "mtime": 1743195904,
           "sha256": "51ced3a89c8e8bba07999c7ae55c6b0190ccf46abe8d51a17c6018b3b003277f"
         }
       ],
       "processado_em": "2026-09-19T02:27",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/blast-open-lisbon-2025-spirit-vs-natus-vincere-bo3-DfMwg-uWd2UuG7dK1Cq3pE/spirit-vs-natus-vincere-m1-dust2.dem"
+        ],
+        "bytes_liberados": 557407477
+      }
     },
     "match_25": {
       "match_id": "match_25",
@@ -1282,14 +1421,20 @@
         {
           "arquivo": "spirit-vs-natus-vincere-m2-anubis.dem",
           "caminho": "demos/blast-open-lisbon-2025-spirit-vs-natus-vincere-bo3-DfMwg-uWd2UuG7dK1Cq3pE/spirit-vs-natus-vincere-m2-anubis.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 478282220,
           "mtime": 1743197281,
           "sha256": "b9a4b505d1c079ba16ca246b359a44a862575aff8e066981c3edf4daa9407d02"
         }
       ],
       "processado_em": "2026-09-19T02:27",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/blast-open-lisbon-2025-spirit-vs-natus-vincere-bo3-DfMwg-uWd2UuG7dK1Cq3pE/spirit-vs-natus-vincere-m2-anubis.dem"
+        ],
+        "bytes_liberados": 478282220
+      }
     },
     "match_26": {
       "match_id": "match_26",
@@ -1334,14 +1479,20 @@
         {
           "arquivo": "vitality-vs-spirit-m1-anubis.dem",
           "caminho": "demos/blast-open-lisbon-2025-vitality-vs-spirit-bo3-IHUpdxSUx1reCpZRn_v9H9/vitality-vs-spirit-m1-anubis.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 473473491,
           "mtime": 1743282857,
           "sha256": "3b2169c84d3d647345a4edd318313cd288768bf2df822fea49e83f98f01501bc"
         }
       ],
       "processado_em": "2026-09-19T02:28",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/blast-open-lisbon-2025-vitality-vs-spirit-bo3-IHUpdxSUx1reCpZRn_v9H9/vitality-vs-spirit-m1-anubis.dem"
+        ],
+        "bytes_liberados": 473473491
+      }
     },
     "match_27": {
       "match_id": "match_27",
@@ -1386,14 +1537,20 @@
         {
           "arquivo": "vitality-vs-spirit-m2-nuke.dem",
           "caminho": "demos/blast-open-lisbon-2025-vitality-vs-spirit-bo3-IHUpdxSUx1reCpZRn_v9H9/vitality-vs-spirit-m2-nuke.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 419959983,
           "mtime": 1743285853,
           "sha256": "de0b5de35e98b352217d8eedd25401684240bf0ac169941f39922dc14eeadb2d"
         }
       ],
       "processado_em": "2026-09-19T02:28",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/blast-open-lisbon-2025-vitality-vs-spirit-bo3-IHUpdxSUx1reCpZRn_v9H9/vitality-vs-spirit-m2-nuke.dem"
+        ],
+        "bytes_liberados": 419959983
+      }
     },
     "match_28": {
       "match_id": "match_28",
@@ -1438,14 +1595,20 @@
         {
           "arquivo": "vitality-vs-spirit-m3-mirage.dem",
           "caminho": "demos/blast-open-lisbon-2025-vitality-vs-spirit-bo3-IHUpdxSUx1reCpZRn_v9H9/vitality-vs-spirit-m3-mirage.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 537117358,
           "mtime": 1743289632,
           "sha256": "cf8a96f821b87aee6851c04f1f15232c73e8ba66a4648facd882e63cd3cb3bdc"
         }
       ],
       "processado_em": "2026-09-19T02:28",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/blast-open-lisbon-2025-vitality-vs-spirit-bo3-IHUpdxSUx1reCpZRn_v9H9/vitality-vs-spirit-m3-mirage.dem"
+        ],
+        "bytes_liberados": 537117358
+      }
     },
     "match_29": {
       "match_id": "match_29",
@@ -1490,14 +1653,20 @@
         {
           "arquivo": "furia-vs-falcons-m1-inferno.dem",
           "caminho": "demos/blast-rivals-2025-season-2-furia-vs-falcons-bo5-L7CZVGSHd1AqjKPyYU04lA/furia-vs-falcons-m1-inferno.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 423993445,
           "mtime": 1763299142,
           "sha256": "ea651630d1bcd20613b11c6d36fa8d6a7a59f3640d7b733eb4f8cd155f293cdc"
         }
       ],
       "processado_em": "2026-09-19T02:28",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/blast-rivals-2025-season-2-furia-vs-falcons-bo5-L7CZVGSHd1AqjKPyYU04lA/furia-vs-falcons-m1-inferno.dem"
+        ],
+        "bytes_liberados": 423993445
+      }
     },
     "match_30": {
       "match_id": "match_30",
@@ -1542,14 +1711,20 @@
         {
           "arquivo": "furia-vs-falcons-m2-nuke.dem",
           "caminho": "demos/blast-rivals-2025-season-2-furia-vs-falcons-bo5-L7CZVGSHd1AqjKPyYU04lA/furia-vs-falcons-m2-nuke.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 498744472,
           "mtime": 1763299161,
           "sha256": "91d445ca120fb4fc7b63e37dfe9d9632d713aa8ab6910ee8f5b3bcffadb53a05"
         }
       ],
       "processado_em": "2026-09-19T02:29",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/blast-rivals-2025-season-2-furia-vs-falcons-bo5-L7CZVGSHd1AqjKPyYU04lA/furia-vs-falcons-m2-nuke.dem"
+        ],
+        "bytes_liberados": 498744472
+      }
     },
     "match_31": {
       "match_id": "match_31",
@@ -1594,14 +1769,20 @@
         {
           "arquivo": "furia-vs-falcons-m3-train.dem",
           "caminho": "demos/blast-rivals-2025-season-2-furia-vs-falcons-bo5-L7CZVGSHd1AqjKPyYU04lA/furia-vs-falcons-m3-train.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 789553033,
           "mtime": 1763299209,
           "sha256": "2735218148a4a12a15e43bbbdf33076313469c6a3ce7370a774fefc28347cb92"
         }
       ],
       "processado_em": "2026-09-19T02:29",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/blast-rivals-2025-season-2-furia-vs-falcons-bo5-L7CZVGSHd1AqjKPyYU04lA/furia-vs-falcons-m3-train.dem"
+        ],
+        "bytes_liberados": 789553033
+      }
     },
     "match_32": {
       "match_id": "match_32",
@@ -1646,14 +1827,20 @@
         {
           "arquivo": "furia-vs-falcons-m4-mirage.dem",
           "caminho": "demos/blast-rivals-2025-season-2-furia-vs-falcons-bo5-L7CZVGSHd1AqjKPyYU04lA/furia-vs-falcons-m4-mirage.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 807749246,
           "mtime": 1763299212,
           "sha256": "c20f551ef270bd343dd359e671d1c2349eb767b7535a8a4bb2d273b886ea2652"
         }
       ],
       "processado_em": "2026-09-19T02:30",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/blast-rivals-2025-season-2-furia-vs-falcons-bo5-L7CZVGSHd1AqjKPyYU04lA/furia-vs-falcons-m4-mirage.dem"
+        ],
+        "bytes_liberados": 807749246
+      }
     },
     "match_33": {
       "match_id": "match_33",
@@ -1698,14 +1885,20 @@
         {
           "arquivo": "mouz-vs-vitality-m1-dust2.dem",
           "caminho": "demos/iem-dallas-2025-mouz-vs-vitality-bo5-28oMdIOx9riDIx31cN4Quc/mouz-vs-vitality-m1-dust2.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 658601135,
           "mtime": 1748205249,
           "sha256": "372557cd3b27fbda9e631717ea1ae82c5288319accb827dba42c8252a9c1bb25"
         }
       ],
       "processado_em": "2026-09-19T02:30",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/iem-dallas-2025-mouz-vs-vitality-bo5-28oMdIOx9riDIx31cN4Quc/mouz-vs-vitality-m1-dust2.dem"
+        ],
+        "bytes_liberados": 658601135
+      }
     },
     "match_34": {
       "match_id": "match_34",
@@ -1750,14 +1943,20 @@
         {
           "arquivo": "mouz-vs-vitality-m2-mirage.dem",
           "caminho": "demos/iem-dallas-2025-mouz-vs-vitality-bo5-28oMdIOx9riDIx31cN4Quc/mouz-vs-vitality-m2-mirage.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 548335648,
           "mtime": 1748209130,
           "sha256": "6ed3d0ed29588b080bef669fb819c5077933da8f99fbba14c09b9a93330179e1"
         }
       ],
       "processado_em": "2026-09-19T02:31",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/iem-dallas-2025-mouz-vs-vitality-bo5-28oMdIOx9riDIx31cN4Quc/mouz-vs-vitality-m2-mirage.dem"
+        ],
+        "bytes_liberados": 548335648
+      }
     },
     "match_35": {
       "match_id": "match_35",
@@ -1802,14 +2001,20 @@
         {
           "arquivo": "mouz-vs-vitality-m3-inferno.dem",
           "caminho": "demos/iem-dallas-2025-mouz-vs-vitality-bo5-28oMdIOx9riDIx31cN4Quc/mouz-vs-vitality-m3-inferno.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 585618225,
           "mtime": 1748213125,
           "sha256": "617673668137ac4f7c533fe191f24dce541d5268676b811ea02f3673d185e276"
         }
       ],
       "processado_em": "2026-09-19T02:31",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/iem-dallas-2025-mouz-vs-vitality-bo5-28oMdIOx9riDIx31cN4Quc/mouz-vs-vitality-m3-inferno.dem"
+        ],
+        "bytes_liberados": 585618225
+      }
     },
     "match_36": {
       "match_id": "match_36",
@@ -1854,14 +2059,20 @@
         {
           "arquivo": "natus-vincere-vs-spirit-m1-mirage.dem",
           "caminho": "demos/iem-katowice-2025-natus-vincere-vs-spirit-bo3-N5C7u8auLvjeMQROftEf4R/natus-vincere-vs-spirit-m1-mirage.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 590059224,
           "mtime": 1739040650,
           "sha256": "a4e69281dfacf9f2b6a6f5836e0937ecdaa7d9189c5172e4ad65c06a12cd5c58"
         }
       ],
       "processado_em": "2026-09-19T02:31",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/iem-katowice-2025-natus-vincere-vs-spirit-bo3-N5C7u8auLvjeMQROftEf4R/natus-vincere-vs-spirit-m1-mirage.dem"
+        ],
+        "bytes_liberados": 590059224
+      }
     },
     "match_37": {
       "match_id": "match_37",
@@ -1906,14 +2117,20 @@
         {
           "arquivo": "natus-vincere-vs-spirit-m2-dust2.dem",
           "caminho": "demos/iem-katowice-2025-natus-vincere-vs-spirit-bo3-N5C7u8auLvjeMQROftEf4R/natus-vincere-vs-spirit-m2-dust2.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 897124939,
           "mtime": 1739046313,
           "sha256": "077731a93eebecf68085894ba5660255ad7e89cff0235e5613fb832ccd0f9af3"
         }
       ],
       "processado_em": "2026-09-19T02:32",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/iem-katowice-2025-natus-vincere-vs-spirit-bo3-N5C7u8auLvjeMQROftEf4R/natus-vincere-vs-spirit-m2-dust2.dem"
+        ],
+        "bytes_liberados": 897124939
+      }
     },
     "match_38": {
       "match_id": "match_38",
@@ -1958,14 +2175,20 @@
         {
           "arquivo": "natus-vincere-vs-spirit-m1-mirage.dem",
           "caminho": "demos/iem-katowice-2025-natus-vincere-vs-spirit-bo3-YtA5gkUdrceGTAe_xkPfG-/natus-vincere-vs-spirit-m1-mirage.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 569697150,
           "mtime": 1738597678,
           "sha256": "0b170f4706cc446f6cf637979155638e29b205ade957a1f9fbf53bbe3f542b88"
         }
       ],
       "processado_em": "2026-09-19T02:32",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/iem-katowice-2025-natus-vincere-vs-spirit-bo3-YtA5gkUdrceGTAe_xkPfG-/natus-vincere-vs-spirit-m1-mirage.dem"
+        ],
+        "bytes_liberados": 569697150
+      }
     },
     "match_39": {
       "match_id": "match_39",
@@ -2010,7 +2233,7 @@
         {
           "arquivo": "natus-vincere-vs-spirit-m2-dust2-p1.dem",
           "caminho": "demos/iem-katowice-2025-natus-vincere-vs-spirit-bo3-YtA5gkUdrceGTAe_xkPfG-/natus-vincere-vs-spirit-m2-dust2-p1.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 102554530,
           "mtime": 1738599169,
           "sha256": "669af697b423c2ccb5631c33b96ae554fdf29a691cad81f09cd871455bb810f9"
@@ -2018,7 +2241,7 @@
         {
           "arquivo": "natus-vincere-vs-spirit-m2-dust2-p2.dem",
           "caminho": "demos/iem-katowice-2025-natus-vincere-vs-spirit-bo3-YtA5gkUdrceGTAe_xkPfG-/natus-vincere-vs-spirit-m2-dust2-p2.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 119044810,
           "mtime": 1738599807,
           "sha256": "68e4ecf46575438a471fa10cacfe2adfc508ee93d370700b4ec0e6bc4d65883a"
@@ -2026,14 +2249,22 @@
         {
           "arquivo": "natus-vincere-vs-spirit-m2-dust2-p3.dem",
           "caminho": "demos/iem-katowice-2025-natus-vincere-vs-spirit-bo3-YtA5gkUdrceGTAe_xkPfG-/natus-vincere-vs-spirit-m2-dust2-p3.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 846269035,
           "mtime": 1738602676,
           "sha256": "dc0f8c4bfdeed063b31c89b457a872edd5fe614622b8a5f30e6244e0fc5868a2"
         }
       ],
       "processado_em": "2026-09-19T02:32",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/iem-katowice-2025-natus-vincere-vs-spirit-bo3-YtA5gkUdrceGTAe_xkPfG-/natus-vincere-vs-spirit-m2-dust2-p1.dem",
+          "demos/iem-katowice-2025-natus-vincere-vs-spirit-bo3-YtA5gkUdrceGTAe_xkPfG-/natus-vincere-vs-spirit-m2-dust2-p2.dem",
+          "demos/iem-katowice-2025-natus-vincere-vs-spirit-bo3-YtA5gkUdrceGTAe_xkPfG-/natus-vincere-vs-spirit-m2-dust2-p3.dem"
+        ],
+        "bytes_liberados": 1067868375
+      }
     },
     "match_40": {
       "match_id": "match_40",
@@ -2078,14 +2309,20 @@
         {
           "arquivo": "natus-vincere-vs-spirit-m3-nuke.dem",
           "caminho": "demos/iem-katowice-2025-natus-vincere-vs-spirit-bo3-YtA5gkUdrceGTAe_xkPfG-/natus-vincere-vs-spirit-m3-nuke.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 774274535,
           "mtime": 1738607606,
           "sha256": "ff92283d6a9c6c8e9ea73d498088ef9d2237c4b0aeb86d1b5848e506bf90e59e"
         }
       ],
       "processado_em": "2026-09-19T02:33",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/iem-katowice-2025-natus-vincere-vs-spirit-bo3-YtA5gkUdrceGTAe_xkPfG-/natus-vincere-vs-spirit-m3-nuke.dem"
+        ],
+        "bytes_liberados": 774274535
+      }
     },
     "match_41": {
       "match_id": "match_41",
@@ -2133,7 +2370,7 @@
         {
           "arquivo": "falcons-vs-mouz-m1-inferno-p1.dem",
           "caminho": "demos/iem-krakw-2026-falcons-vs-mouz-bo3-0NmDSYe_8UmJAHamjCMBo8/falcons-vs-mouz-m1-inferno-p1.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 772019105,
           "mtime": 1770149805,
           "sha256": "24d5c304b7614d54505e4d42e0caeba8ec196d0e96e705bee9e31962331f5cb7"
@@ -2141,14 +2378,21 @@
         {
           "arquivo": "falcons-vs-mouz-m1-inferno-p2.dem",
           "caminho": "demos/iem-krakw-2026-falcons-vs-mouz-bo3-0NmDSYe_8UmJAHamjCMBo8/falcons-vs-mouz-m1-inferno-p2.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 92013283,
           "mtime": 1770150250,
           "sha256": "4164738a697e23005ccda4c6ebc2c2a5f59bd2fdfc39de4da59a85e74d9d37dd"
         }
       ],
       "processado_em": "2026-09-19T02:33",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/iem-krakw-2026-falcons-vs-mouz-bo3-0NmDSYe_8UmJAHamjCMBo8/falcons-vs-mouz-m1-inferno-p1.dem",
+          "demos/iem-krakw-2026-falcons-vs-mouz-bo3-0NmDSYe_8UmJAHamjCMBo8/falcons-vs-mouz-m1-inferno-p2.dem"
+        ],
+        "bytes_liberados": 864032388
+      }
     },
     "match_42": {
       "match_id": "match_42",
@@ -2196,14 +2440,20 @@
         {
           "arquivo": "falcons-vs-mouz-m2-dust2.dem",
           "caminho": "demos/iem-krakw-2026-falcons-vs-mouz-bo3-0NmDSYe_8UmJAHamjCMBo8/falcons-vs-mouz-m2-dust2.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 996820383,
           "mtime": 1770156369,
           "sha256": "0a3129ba726a10239fdbcc0da9050c5aad02a17d975ee5cb0f658b75ba0895f4"
         }
       ],
       "processado_em": "2026-09-19T02:34",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/iem-krakw-2026-falcons-vs-mouz-bo3-0NmDSYe_8UmJAHamjCMBo8/falcons-vs-mouz-m2-dust2.dem"
+        ],
+        "bytes_liberados": 996820383
+      }
     },
     "match_43": {
       "match_id": "match_43",
@@ -2248,14 +2498,20 @@
         {
           "arquivo": "furia-vs-vitality-m1-mirage.dem",
           "caminho": "demos/iem-krakw-2026-furia-vs-vitality-bo5-mm8dtsK9binWQO0i_PtQVF/furia-vs-vitality-m1-mirage.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 740540720,
           "mtime": 1770569672,
           "sha256": "9019e9ee6cdeee54d93a73625620f3372ee55b8560240b6381f67fdb84676cbb"
         }
       ],
       "processado_em": "2026-09-19T02:34",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/iem-krakw-2026-furia-vs-vitality-bo5-mm8dtsK9binWQO0i_PtQVF/furia-vs-vitality-m1-mirage.dem"
+        ],
+        "bytes_liberados": 740540720
+      }
     },
     "match_44": {
       "match_id": "match_44",
@@ -2300,14 +2556,20 @@
         {
           "arquivo": "furia-vs-vitality-m2-inferno.dem",
           "caminho": "demos/iem-krakw-2026-furia-vs-vitality-bo5-mm8dtsK9binWQO0i_PtQVF/furia-vs-vitality-m2-inferno.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 604571739,
           "mtime": 1770573857,
           "sha256": "affd22a7fb10a99d149cd343ebe29b83457a40862244a398de3cb48930110907"
         }
       ],
       "processado_em": "2026-09-19T02:35",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/iem-krakw-2026-furia-vs-vitality-bo5-mm8dtsK9binWQO0i_PtQVF/furia-vs-vitality-m2-inferno.dem"
+        ],
+        "bytes_liberados": 604571739
+      }
     },
     "match_45": {
       "match_id": "match_45",
@@ -2352,14 +2614,20 @@
         {
           "arquivo": "furia-vs-vitality-m3-nuke.dem",
           "caminho": "demos/iem-krakw-2026-furia-vs-vitality-bo5-mm8dtsK9binWQO0i_PtQVF/furia-vs-vitality-m3-nuke.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 333796813,
           "mtime": 1770576742,
           "sha256": "2b2f6f3ceeb869dccc3078c300918a1deb8b495f384ee3809d577dcb5d7da582"
         }
       ],
       "processado_em": "2026-09-19T02:35",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/iem-krakw-2026-furia-vs-vitality-bo5-mm8dtsK9binWQO0i_PtQVF/furia-vs-vitality-m3-nuke.dem"
+        ],
+        "bytes_liberados": 333796813
+      }
     },
     "match_46": {
       "match_id": "match_46",
@@ -2404,14 +2672,20 @@
         {
           "arquivo": "furia-vs-vitality-m4-overpass.dem",
           "caminho": "demos/iem-krakw-2026-furia-vs-vitality-bo5-mm8dtsK9binWQO0i_PtQVF/furia-vs-vitality-m4-overpass.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 604583203,
           "mtime": 1770581733,
           "sha256": "24370e1f72c2f2ca33108f786d9c08f175c3c821c4213641e782080a869c3640"
         }
       ],
       "processado_em": "2026-09-19T02:35",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/iem-krakw-2026-furia-vs-vitality-bo5-mm8dtsK9binWQO0i_PtQVF/furia-vs-vitality-m4-overpass.dem"
+        ],
+        "bytes_liberados": 604583203
+      }
     },
     "match_47": {
       "match_id": "match_47",
@@ -2456,14 +2730,20 @@
         {
           "arquivo": "vitality-vs-mouz-m1-nuke.dem",
           "caminho": "demos/iem-krakw-2026-vitality-vs-mouz-bo3-UD0TEnJpRupm9E_EHc4hZG/vitality-vs-mouz-m1-nuke.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 529591655,
           "mtime": 1770494253,
           "sha256": "061cb84a8f2848158a763fef2d82ceaa2c2dd0613c372c50a288a71b67778c5e"
         }
       ],
       "processado_em": "2026-09-19T02:35",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/iem-krakw-2026-vitality-vs-mouz-bo3-UD0TEnJpRupm9E_EHc4hZG/vitality-vs-mouz-m1-nuke.dem"
+        ],
+        "bytes_liberados": 529591655
+      }
     },
     "match_48": {
       "match_id": "match_48",
@@ -2508,14 +2788,20 @@
         {
           "arquivo": "vitality-vs-mouz-m2-dust2.dem",
           "caminho": "demos/iem-krakw-2026-vitality-vs-mouz-bo3-UD0TEnJpRupm9E_EHc4hZG/vitality-vs-mouz-m2-dust2.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 500335815,
           "mtime": 1770497948,
           "sha256": "c33d48b9dbb8f0797e471f98bf0242b6ac781e7be70d0cbc76d21f7324ecbfa1"
         }
       ],
       "processado_em": "2026-09-19T02:36",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/iem-krakw-2026-vitality-vs-mouz-bo3-UD0TEnJpRupm9E_EHc4hZG/vitality-vs-mouz-m2-dust2.dem"
+        ],
+        "bytes_liberados": 500335815
+      }
     },
     "match_49": {
       "match_id": "match_49",
@@ -2560,14 +2846,20 @@
         {
           "arquivo": "mouz-vs-falcons-m1-mirage.dem",
           "caminho": "demos/starladder-budapest-major-2025-mouz-vs-falcons-bo3-7LqtC5jSlui55p7efVINgu/mouz-vs-falcons-m1-mirage.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 579984054,
           "mtime": 1765045096,
           "sha256": "80e8b0f338d0294de3f87e56e8a4bebcc40330c3b04c2879d25f8e7c81beb078"
         }
       ],
       "processado_em": "2026-09-19T02:39",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/starladder-budapest-major-2025-mouz-vs-falcons-bo3-7LqtC5jSlui55p7efVINgu/mouz-vs-falcons-m1-mirage.dem"
+        ],
+        "bytes_liberados": 579984054
+      }
     },
     "match_50": {
       "match_id": "match_50",
@@ -2612,14 +2904,20 @@
         {
           "arquivo": "mouz-vs-falcons-m2-inferno.dem",
           "caminho": "demos/starladder-budapest-major-2025-mouz-vs-falcons-bo3-7LqtC5jSlui55p7efVINgu/mouz-vs-falcons-m2-inferno.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 500610240,
           "mtime": 1765050225,
           "sha256": "bcda5d9d0dfdee6a043a038e9a99e64780becfdb99ad491775dad559649482b2"
         }
       ],
       "processado_em": "2026-09-19T02:39",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/starladder-budapest-major-2025-mouz-vs-falcons-bo3-7LqtC5jSlui55p7efVINgu/mouz-vs-falcons-m2-inferno.dem"
+        ],
+        "bytes_liberados": 500610240
+      }
     },
     "match_51": {
       "match_id": "match_51",
@@ -2664,14 +2962,20 @@
         {
           "arquivo": "mouz-vs-falcons-m3-nuke.dem",
           "caminho": "demos/starladder-budapest-major-2025-mouz-vs-falcons-bo3-7LqtC5jSlui55p7efVINgu/mouz-vs-falcons-m3-nuke.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 530400740,
           "mtime": 1765050836,
           "sha256": "daf6611302cc68dbcce1be3050be155b9eea7cc16d0fc958325e3d82d48bd438"
         }
       ],
       "processado_em": "2026-09-19T02:39",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/starladder-budapest-major-2025-mouz-vs-falcons-bo3-7LqtC5jSlui55p7efVINgu/mouz-vs-falcons-m3-nuke.dem"
+        ],
+        "bytes_liberados": 530400740
+      }
     },
     "match_52": {
       "match_id": "match_52",
@@ -2716,14 +3020,20 @@
         {
           "arquivo": "vitality-vs-the-mongolz-m1-mirage.dem",
           "caminho": "demos/starladder-budapest-major-2025-vitality-vs-the-mongolz-bo3-XQowskOqXoPqT1nlLULF7g/vitality-vs-the-mongolz-m1-mirage.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 485062922,
           "mtime": 1765483952,
           "sha256": "3433a2ab957a174fe18e09297ba0fecbb35bec7e71b5d55cc90c47de6ace090f"
         }
       ],
       "processado_em": "2026-09-19T02:39",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/starladder-budapest-major-2025-vitality-vs-the-mongolz-bo3-XQowskOqXoPqT1nlLULF7g/vitality-vs-the-mongolz-m1-mirage.dem"
+        ],
+        "bytes_liberados": 485062922
+      }
     },
     "match_53": {
       "match_id": "match_53",
@@ -2768,14 +3078,20 @@
         {
           "arquivo": "vitality-vs-the-mongolz-m2-dust2.dem",
           "caminho": "demos/starladder-budapest-major-2025-vitality-vs-the-mongolz-bo3-XQowskOqXoPqT1nlLULF7g/vitality-vs-the-mongolz-m2-dust2.dem",
-          "existe": true,
+          "existe": false,
           "bytes": 368006015,
           "mtime": 1765487275,
           "sha256": "9c2f1d0d9ad881dfc3da86e98844843ed6d7dc68afe99b1198d97632b5152fc6"
         }
       ],
       "processado_em": "2026-09-19T02:40",
-      "limpeza": null
+      "limpeza": {
+        "em": "2026-09-19T02:52",
+        "removidos": [
+          "demos/starladder-budapest-major-2025-vitality-vs-the-mongolz-bo3-XQowskOqXoPqT1nlLULF7g/vitality-vs-the-mongolz-m2-dust2.dem"
+        ],
+        "bytes_liberados": 368006015
+      }
     }
   }
 }
