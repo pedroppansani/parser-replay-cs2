@@ -485,17 +485,22 @@ def test_cor_escolhida_vale_so_para_os_proximos_tracos(contexto, partida):
     assert t2["cor"] == "#12ab34"
     assert traco_na_tela(pg, meio_do_traco(t2), (0x12, 0xAB, 0x34))
 
-    # RGB digitado, fechado por clique fora
+    # Pelo espectro, sem digitar nada: um terço da barra do arco-íris é o
+    # verde, e o canto superior direito do quadrado é a cor cheia e clara.
     pg.click("#anot-cor-seta")
-    pg.fill("#anot-cor-r", "200")
-    pg.fill("#anot-cor-g", "10")
-    pg.fill("#anot-cor-b", "90")
-    pg.click("#rh-round")
-    assert estado(pg, "cor") == "#c80a5a"
+    barra = pg.locator("#anot-cor-matiz").bounding_box()
+    pg.mouse.click(barra["x"] + barra["width"] / 3, barra["y"] + barra["height"] / 2)
+    quadrado = pg.locator("#anot-cor-sv").bounding_box()
+    # 3px para dentro: o canto é arredondado, e 1px da borda cai fora da curva
+    pg.mouse.click(quadrado["x"] + quadrado["width"] - 3, quadrado["y"] + 3)
+    pg.click("#rh-round")                  # fechar por clique fora aplica
+    verde = estado(pg, "cor")
+    r, g, b = (int(verde[i:i + 2], 16) for i in (1, 3, 5))
+    assert g >= 245 and r <= 20 and b <= 20, verde
 
     # a fileira de recentes troca sem reabrir o seletor
     recentes = pg.evaluate("() => [...document.querySelectorAll('[data-recente]')].map(b => b.dataset.recente)")
-    assert recentes[:2] == ["#c80a5a", "#12ab34"]
+    assert recentes[:2] == [verde, "#12ab34"]
     pg.click('[data-recente="#12ab34"]')
     assert estado(pg, "cor") == "#12ab34"
     assert pg.evaluate("() => document.getElementById('anot-seletor').hidden") is True

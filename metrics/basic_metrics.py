@@ -43,13 +43,22 @@ def roster_per_round(ticks: pl.DataFrame) -> pl.DataFrame:
     )
 
 
-def survived_per_round(ticks: pl.DataFrame) -> pl.DataFrame:
-    """Se o jogador estava vivo (health > 0) na última tick registrada do round."""
+def deaths_per_round(kills: pl.DataFrame) -> pl.DataFrame:
+    """Quem morreu em cada round, pela lista de mortes CONTADAS.
+
+    A sobrevivência do KAST sai daqui, e não da vida no último tick do round.
+    Pelo tick, 71 jogador-rounds nas 52 partidas apareciam como "sobreviveu"
+    tendo morrido: os ticks do round acabam antes da morte do último round da
+    partida ou da cauda depois do fim do round, e o jogador ganhava o S do KAST
+    no mesmo round em que a morte entrava no K-D. E o contrário também: a morte
+    descartada no intervalo (kills_do_round_jogado) continuava "morte" pelo
+    tick. Com uma fonte só, K-D e KAST nunca se contradizem.
+    """
     return (
-        ticks.sort("tick")
-        .group_by(["round_num", "steamid"])
-        .agg(pl.col("health").last().alias("health_at_round_end"))
-        .with_columns((pl.col("health_at_round_end") > 0).alias("survived"))
+        kills.filter(pl.col("victim_steamid").is_not_null())
+        .select(["round_num", pl.col("victim_steamid").alias("steamid")])
+        .unique()
+        .with_columns(pl.lit(True).alias("died"))
     )
 
 
@@ -150,6 +159,55 @@ def calculate_utility_damage(damages: pl.DataFrame, roster: pl.DataFrame) -> tup
 # Trade kills
 # ---------------------------------------------------------------------------
 
+def _pares_de_trade(kills: pl.DataFrame, trade_window_seconds: float, tickrate: int) -> pl.DataFrame:
+    """Pares (morte original, vingança): uma linha por kill de trade, com a
+    kill que ela vingou nas colunas `_prev`.
+
+    Os dois lados do par importam e são coisas diferentes: o kill de trade
+    (`kill_id`) é mérito de quem vingou; a morte vingada (`victim_steamid_prev`)
+    é o T do KAST de quem morreu.
+    """
+    window_ticks = trade_window_seconds * tickrate
+    k = kills.select(
+        [
+            "round_num",
+            "tick",
+            "attacker_steamid",
+            "attacker_side",
+            "victim_steamid",
+            "victim_side",
+        ]
+    ).with_row_index("kill_id")
+    return k.join(k, on="round_num", suffix="_prev").filter(
+        (pl.col("tick") > pl.col("tick_prev"))
+        & (pl.col("tick") - pl.col("tick_prev") <= window_ticks)
+        & (pl.col("attacker_side") == pl.col("victim_side_prev"))
+        & (pl.col("victim_steamid") == pl.col("attacker_steamid_prev"))
+    )
+
+
+def traded_deaths(
+    kills: pl.DataFrame,
+    trade_window_seconds: float = DEFAULT_TRADE_WINDOW_SECONDS,
+    tickrate: int = 64,
+) -> pl.DataFrame:
+    """Quem teve a morte vingada: o T do KAST.
+
+    REGRESSÃO: o KAST marcava a vítima do KILL DE TRADE -- o inimigo que tinha
+    matado o companheiro e morreu em seguida. Esse inimigo já tem um kill no
+    round, então a marcação nunca acrescentava nada: o T do KAST esteve
+    desligado desde a primeira versão (mudar a janela de 3s para 10s não mudava
+    um único KAST), e o KAST ficava ~5 pontos abaixo do da HLTV. Quem ganha o T
+    é o companheiro que morreu primeiro.
+    """
+    return (
+        _pares_de_trade(kills, trade_window_seconds, tickrate)
+        .select(["round_num", pl.col("victim_steamid_prev").alias("steamid")])
+        .unique()
+        .with_columns(pl.lit(True).alias("was_traded"))
+    )
+
+
 def identify_trade_kills(
     kills: pl.DataFrame,
     trade_window_seconds: float = DEFAULT_TRADE_WINDOW_SECONDS,
@@ -167,27 +225,7 @@ def identify_trade_kills(
            (o attacker atual vingou o companheiro matando o responsável).
       Se os três batem, kill_atual é marcada como is_trade_kill = True.
     """
-    window_ticks = trade_window_seconds * tickrate
-
-    k = kills.select(
-        [
-            "round_num",
-            "tick",
-            "attacker_steamid",
-            "attacker_side",
-            "victim_steamid",
-            "victim_side",
-        ]
-    ).with_row_index("kill_id")
-
-    pairs = k.join(k, on="round_num", suffix="_prev").filter(
-        (pl.col("tick") > pl.col("tick_prev"))
-        & (pl.col("tick") - pl.col("tick_prev") <= window_ticks)
-        & (pl.col("attacker_side") == pl.col("victim_side_prev"))
-        & (pl.col("victim_steamid") == pl.col("attacker_steamid_prev"))
-    )
-
-    trade_kill_ids = pairs["kill_id"].unique().to_list()
+    trade_kill_ids = _pares_de_trade(kills, trade_window_seconds, tickrate)["kill_id"].unique().to_list()
 
     return (
         kills.with_row_index("kill_id")
@@ -240,7 +278,6 @@ def calculate_trade_kills(
 
 def calculate_kast(
     kills: pl.DataFrame,
-    ticks: pl.DataFrame,
     roster: pl.DataFrame,
     trade_window_seconds: float = DEFAULT_TRADE_WINDOW_SECONDS,
     tickrate: int = 64,
@@ -269,32 +306,27 @@ def calculate_kast(
         .with_columns(pl.lit(True).alias("had_assist"))
     )
 
-    survived = survived_per_round(ticks).select(["round_num", "steamid", "survived"])
+    died = deaths_per_round(kills)
 
-    kills_flagged = identify_trade_kills(kills, trade_window_seconds, tickrate)
-    was_traded = (
-        kills_flagged.filter(pl.col("is_trade_kill"))
-        .select(["round_num", "victim_steamid"])
-        .unique()
-        .rename({"victim_steamid": "steamid"})
-        .with_columns(pl.lit(True).alias("was_traded"))
-    )
+    was_traded = traded_deaths(kills, trade_window_seconds, tickrate)
 
     per_round = (
         roster.select(["round_num", "steamid", "name"])
         .unique()
         .join(had_kill, on=["round_num", "steamid"], how="left")
         .join(had_assist, on=["round_num", "steamid"], how="left")
-        .join(survived, on=["round_num", "steamid"], how="left")
+        .join(died, on=["round_num", "steamid"], how="left")
         .join(was_traded, on=["round_num", "steamid"], how="left")
         .with_columns(
             [
                 pl.col("had_kill").fill_null(False),
                 pl.col("had_assist").fill_null(False),
-                pl.col("survived").fill_null(False),
+                # quem jogou o round (roster) e não está entre as mortes contadas
+                (~pl.col("died").fill_null(False)).alias("survived"),
                 pl.col("was_traded").fill_null(False),
             ]
         )
+        .drop("died")
         .with_columns(
             (pl.col("had_kill") | pl.col("had_assist") | pl.col("survived") | pl.col("was_traded")).alias(
                 "kast_round"
@@ -329,7 +361,7 @@ def compute_all_basic_metrics(tables: dict[str, pl.DataFrame]) -> dict[str, pl.D
     adr_round, adr_summary = calculate_adr(tables["damages"], roster)
     util_round, util_summary = calculate_utility_damage(tables["damages"], roster)
     trade_round, trade_summary = calculate_trade_kills(tables["kills"], roster)
-    kast_round, kast_summary = calculate_kast(tables["kills"], tables["ticks"], roster)
+    kast_round, kast_summary = calculate_kast(tables["kills"], roster)
 
     return {
         "adr_per_round": adr_round,
