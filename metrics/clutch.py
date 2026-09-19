@@ -8,7 +8,7 @@ converte -- porque o denominador (as tentativas) nunca foi calculado. Contar só
 as vitórias é o mesmo erro de contar só os tiros que acertaram.
 
 Uma situação começa no instante em que um time cai para um jogador vivo contra
-dois ou mais. A partir dali o módulo mede o que o jogador fez com ela: quanto
+um ou mais (ver MIN_ENEMIES_ALIVE). A partir dali o módulo mede o que o jogador fez com ela: quanto
 dano tirou, quantas kills fez e se o round foi convertido.
 
 Aviso de tamanho de amostra, registrado aqui porque é o que limita o uso: nas 9
@@ -23,11 +23,14 @@ from __future__ import annotations
 
 import polars as pl
 
-# Contra quantos inimigos, no mínimo, para a situação contar como clutch. 1v1 é
-# um duelo, não um clutch: fica de fora porque quem "chega em 1v1" está só
-# terminando um round equilibrado, e incluí-lo encheria a métrica de situações
-# que não têm nada de heroico nem de fracasso.
-MIN_ENEMIES_ALIVE = 2
+# Contra quantos inimigos, no mínimo, para a situação contar como clutch: 1vX
+# com X >= 1, como a HLTV. É a definição ÚNICA do projeto (build_insights usa
+# esta mesma constante). Medido contra o "1vsX" oficial de 50 jogadores (página
+# Detailed stats): 32/50 exatos exigindo X >= 2, 41/50 contando o 1v1.
+# O PESO de cada situação é outra coisa e mora em quem usa: o rei do NT pondera
+# pelo X (metrics/archetypes.py), porque perder um 1v1 é quase moeda e sobrar
+# num 1v3 e perder é a assinatura do papel.
+MIN_ENEMIES_ALIVE = 1
 
 
 def clutch_situations(
@@ -36,7 +39,7 @@ def clutch_situations(
     team_of: dict[int, str],
     winner_team_of_round: dict[int, str],
 ) -> tuple[pl.DataFrame, pl.DataFrame]:
-    """Toda vez que alguém ficou por último contra 2+, tenha convertido ou não.
+    """Toda vez que alguém ficou por último (1vX, X >= MIN_ENEMIES_ALIVE), tenha convertido ou não.
 
     `winner_team_of_round` mapeia round -> "A"/"B" já resolvido pelo lado, porque
     o vencedor vem do demo como lado (ct/t) e o lado troca no intervalo.

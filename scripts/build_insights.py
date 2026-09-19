@@ -34,7 +34,7 @@ from metrics.archetypes import (
     load_reference,
     pick_highlight,
 )
-from metrics.clutch import clutch_situations
+from metrics.clutch import MIN_ENEMIES_ALIVE, clutch_situations
 from metrics.player_profile import player_profile
 from metrics.rating import PESOS_FILE, ModeloDeRound, carrega_referencia
 from metrics.rating import rating as calcula_rating
@@ -157,8 +157,9 @@ def round_situations(kills: pl.DataFrame, rounds: pl.DataFrame, team_of: dict[in
             deficit = alive[loser_team] - alive[winner_team]
             worst_deficit = max(worst_deficit, deficit)
 
-            # clutch: vencedor ficou com 1 vivo contra 2+ e ainda ganhou
-            if alive[winner_team] == 1 and alive[loser_team] >= 2 and clutch_player is None:
+            # clutch: vencedor ficou com 1 vivo contra X e ainda ganhou -- a MESMA
+            # definição de metrics/clutch.py (1vX, X >= MIN_ENEMIES_ALIVE)
+            if alive[winner_team] == 1 and alive[loser_team] >= MIN_ENEMIES_ALIVE and clutch_player is None:
                 survivors = set(team_of) - set(
                     rk.filter(pl.col("tick") <= kill["tick"])["victim_steamid"].to_list()
                 )

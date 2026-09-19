@@ -66,6 +66,12 @@ REPICK_MIN_RATIO = 3.0  # percorreu 3x mais do que saiu do lugar
 # índice premiaria quem teve UMA situação e não converteu.
 MIN_CLUTCH_ATTEMPTS = 3
 
+# Peso de cada tentativa de clutch no índice do rei do NT: o próprio X do 1vX
+# (`clutch_peso` em _junta_clutch). Perder um 1v1 é quase moeda (pesa 1); sobrar
+# num 1v3 e perder é a situação que define quem "sempre fica sozinho no quase
+# clutch" (pesa 3). Linear no X, sem constante escolhida -- o X já é a medida da
+# dificuldade. A CONTAGEM de clutch (a que bate com a HLTV) não usa peso nenhum.
+
 # Mínimo de rounds com AWP na mão para o papel de AWPer existir. Abaixo disso é
 # AWP de round de força.
 MIN_AWP_ROUNDS = 4
@@ -486,7 +492,7 @@ COMPONENTES = [
     "awp_round_share", "awp_conversion", "awp_opening_picks",
     "bait_no_trade_share", "bait_untraded_per_round", "bait_return_per_opp", "survival_rate",
     "clutch_attempts", "clutch_conversion", "clutch_damage_per_attempt",
-    "sacrificio_share",
+    "sacrificio_share", "clutch_peso",
 ]
 
 
@@ -681,28 +687,52 @@ def _junta_bait(comp: pl.DataFrame, bait: pl.DataFrame) -> pl.DataFrame:
 
 
 def _junta_clutch(comp: pl.DataFrame, clutch_round: pl.DataFrame) -> pl.DataFrame:
-    """Tentativas de último vivo, conversão e dano produzido dentro delas."""
+    """Tentativas de último vivo, conversão e dano produzido dentro delas.
+
+    Além da contagem (a que bate com o 1vsX da HLTV), cada tentativa pesa o X do
+    1vX em `clutch_peso` e `clutch_peso_perdido` -- é esse peso que o rei do NT
+    usa (ver o comentário do peso pelo X, no topo). `clutch_por_x` guarda a quebra para a frase.
+    """
     if clutch_round.height == 0:
         return comp.with_columns(
             pl.lit(0, dtype=pl.UInt32).alias("clutch_attempts"),
             pl.lit(0, dtype=pl.UInt32).alias("clutch_wins"),
             pl.lit(0.0).alias("clutch_conversion"),
             pl.lit(0.0).alias("clutch_damage_per_attempt"),
+            pl.lit(0.0).alias("clutch_peso"),
+            pl.lit(0.0).alias("clutch_peso_perdido"),
+            pl.lit("").alias("clutch_por_x"),
         )
     tem_dano = "damage_in_clutch" in clutch_round.columns
+    x = pl.col("enemies_alive").cast(pl.Float64)
     agg = clutch_round.group_by("steamid").agg(
         pl.len().cast(pl.UInt32).alias("clutch_attempts"),
         pl.col("won").sum().cast(pl.UInt32).alias("clutch_wins"),
         (
             pl.col("damage_in_clutch").mean() if tem_dano else pl.lit(0.0)
         ).alias("clutch_damage_per_attempt"),
+        x.sum().alias("clutch_peso"),
+        x.filter(~pl.col("won")).sum().alias("clutch_peso_perdido"),
+    )
+    # "1v1: 1/3, 1v2: 0/2" -- convertidas / tentativas em cada X
+    por_x = (
+        clutch_round.group_by("steamid", "enemies_alive")
+        .agg(pl.len().alias("n"), pl.col("won").sum().alias("v"))
+        .sort("enemies_alive")
+        .with_columns(("1v" + pl.col("enemies_alive").cast(pl.Utf8) + ": "
+                       + pl.col("v").cast(pl.Utf8) + "/" + pl.col("n").cast(pl.Utf8)).alias("t"))
+        .group_by("steamid", maintain_order=True).agg(pl.col("t").str.join(", ").alias("clutch_por_x"))
     )
     return (
         comp.join(agg, on="steamid", how="left")
+        .join(por_x, on="steamid", how="left")
         .with_columns(
             pl.col("clutch_attempts").fill_null(0),
             pl.col("clutch_wins").fill_null(0),
             pl.col("clutch_damage_per_attempt").fill_null(0.0),
+            pl.col("clutch_peso").fill_null(0.0),
+            pl.col("clutch_peso_perdido").fill_null(0.0),
+            pl.col("clutch_por_x").fill_null(""),
         )
         .with_columns(
             pl.when(pl.col("clutch_attempts") > 0)
@@ -879,11 +909,16 @@ def archetype_indices(
         for d, c in zip(p("distinct_places_mean"), p("path_per_round"))
     ]
 
+    # Rei do NT: muitas tentativas PONDERADAS PELO X, produção alta dentro delas,
+    # e a fração do peso que foi perdida. Um 1v1 perdido quase não move o índice;
+    # um 1v3 perdido move três vezes mais (peso pelo X, ver o topo do módulo).
     tentativas = components["clutch_attempts"].to_list()
-    conversao = components["clutch_conversion"].to_list()
+    peso = components["clutch_peso"].to_list() if "clutch_peso" in components.columns else [0.0] * components.height
+    perdido = (components["clutch_peso_perdido"].to_list()
+               if "clutch_peso_perdido" in components.columns else [0.0] * components.height)
     rei_nt = [
-        0.0 if t < MIN_CLUTCH_ATTEMPTS else a * d * (1 - c)
-        for t, a, d, c in zip(tentativas, p("clutch_attempts"), p("clutch_damage_per_attempt"), conversao)
+        0.0 if t < MIN_CLUTCH_ATTEMPTS or not w else a * d * (pp / w)
+        for t, w, pp, a, d in zip(tentativas, peso, perdido, p("clutch_peso"), p("clutch_damage_per_attempt"))
     ]
 
     awp_rounds = components["awp_rounds"].to_list()
@@ -994,8 +1029,12 @@ def evidencia(papel: str, row: dict) -> str:
     elif papel == "rei_do_nt":
         if not row.get("clutch_attempts"):
             return ""
-        pedacos.append("ficou por último " + _plural(row["clutch_attempts"], "vez", "vezes"))
-        pedacos.append(_plural(row["clutch_wins"], "convertida", "convertidas"))
+        # contagem e conversão SEMPRE juntas; a quebra por X quando existe
+        pedacos.append("ficou por último " + _plural(row["clutch_attempts"], "vez", "vezes")
+                       + f", {_plural(row['clutch_wins'], 'convertida', 'convertidas')}"
+                       + f" ({row['clutch_wins'] / row['clutch_attempts'] * 100:.0f}%)")
+        if row.get("clutch_por_x"):
+            pedacos.append(row["clutch_por_x"])
         if row.get("clutch_damage_per_attempt"):
             pedacos.append(f"média de {row['clutch_damage_per_attempt']:.0f} de dano em cada")
 

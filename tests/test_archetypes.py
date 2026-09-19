@@ -297,6 +297,8 @@ def _componentes(**valores) -> pl.DataFrame:
         "survival_rate": [0.29, 0.29],
         "clutch_attempts": [2, 2], "clutch_conversion": [0.0, 0.0],
         "clutch_damage_per_attempt": [50.0, 50.0],
+        # peso pelo X: tentativas somando o X de cada 1vX, e o peso das perdidas
+        "clutch_peso": [4.0, 4.0], "clutch_peso_perdido": [4.0, 4.0],
     }
     for chave, valor in valores.items():
         base[chave] = [valor, base[chave][1]]
@@ -559,3 +561,14 @@ def test_manchete_sem_nada_notavel_devolve_none():
         "worst_deficit_overcome": 0, "opening": None, "winner_team": "A",
     }
     assert manchete(vazio) is None
+
+
+def test_rei_do_nt_pondera_pelo_x():
+    """Mesmas 4 tentativas perdidas: quem perdeu 1v3 pesa mais que quem perdeu 1v1."""
+    um_contra_um = _componentes(clutch_attempts=4, clutch_peso=4.0, clutch_peso_perdido=4.0,
+                                clutch_damage_per_attempt=80.0)
+    um_contra_tres = _componentes(clutch_attempts=4, clutch_peso=12.0, clutch_peso_perdido=12.0,
+                                  clutch_damage_per_attempt=80.0)
+    a = archetype_indices(um_contra_um, reference=None).filter(pl.col("name") == "alvo")["idx_rei_do_nt"][0]
+    b = archetype_indices(um_contra_tres, reference=None).filter(pl.col("name") == "alvo")["idx_rei_do_nt"][0]
+    assert b >= a > 0

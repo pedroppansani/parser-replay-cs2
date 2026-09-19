@@ -715,9 +715,16 @@ testada e estava errada.
     multi-kill, kills, headshots e mortes: 50/50 exatos (travado em teste).
     Abertura = primeira kill em INIMIGO do round; as da HLTV somam exatamente um
     por round. O que ainda não bate, medido:
-    - clutch (1vsX vencido): 32/50 com o nosso "último vivo contra 2+"; contando
-      o 1v1, 41/50. A HLTV conta 1v1. Mudar é decisão do Pedro (mexe no rei do
-      NT e nos cards).
+    - clutch (1vsX vencido): 32/50 com o antigo "último vivo contra 2+"; 41/50
+      contando o 1v1. DECISÃO DO PEDRO: clutch é 1vX com X >= 1, alinhado à
+      HLTV, e é a definição ÚNICA do projeto (`metrics/clutch.MIN_ENEMIES_ALIVE`,
+      usada também no `build_insights`). DEFINIÇÃO não é PESO: o rei do NT pondera
+      cada tentativa pelo X (1v1 perdido pesa 1, 1v3 perdido pesa 3), porque o
+      papel é sobre o quase-clutch difícil, não sobre perder duelo; e no round
+      mais impressionante o clutch só pontua de 1v2 para cima
+      (`MIN_INIMIGOS_CLUTCH_ESPETACULO`). Nos cards, contagem e conversão
+      aparecem sempre juntas, com a quebra por X ("1v1: 1/3, 1v2: 0/2"). Os 9
+      que ainda não batem ficam em aberto.
     - assistência: 19/50, faltando 44 no total, 41 delas de FLASH. O evento de
       kill do jogo guarda UM assistente; a HLTV conta a flash à parte. Pela
       cegueira reconstruída, "cegou e a vítima morreu ainda cega para um

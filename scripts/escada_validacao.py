@@ -102,16 +102,31 @@ def detalhado() -> pl.DataFrame:
             inim = k.filter(pl.col("attacker_steamid").is_not_null() & (pl.col("attacker_side") != pl.col("victim_side")))
             # abertura = a primeira kill em inimigo do round (fogo amigo e bomba não abrem)
             primeira = inim.sort("tick").group_by("round_num").first()
+            # clutch: a definição única do projeto (metrics/clutch.py, 1vX com X >= 1)
+            from metrics.clutch import clutch_situations
+            from metrics.player_roles import resolve_teams
+            from metrics.sides import side_of_team
+
+            ticks = pl.read_parquet(INTERIM / mid / "ticks.parquet", columns=["tick", "round_num", "steamid", "name", "side"])
+            team_of, _ = resolve_teams(ticks)
+            venc = {int(r["round_num"]): ("A" if r["winner"] == side_of_team("A", int(r["round_num"])) else "B")
+                    for r in rounds.iter_rows(named=True)}
+            cl, _ = clutch_situations(k, rounds, team_of, venc)
+            nome_de = dict(ticks.group_by("steamid").agg(pl.col("name").last()).iter_rows())
+            ganhos = {}
+            for r in cl.filter(pl.col("won")).iter_rows(named=True):
+                ganhos[nome_de.get(r["steamid"])] = ganhos.get(nome_de.get(r["steamid"]), 0) + 1
             for nome in set(inim["attacker_name"].drop_nulls()) | set(k["victim_name"].drop_nulls()):
                 meu = inim.filter(pl.col("attacker_name") == nome)
-                s = soma.setdefault(nome, {"op_kills": 0, "op_mortes": 0, "mk_rounds": 0, "hs": 0})
+                s = soma.setdefault(nome, {"op_kills": 0, "op_mortes": 0, "mk_rounds": 0, "hs": 0, "clutches": 0})
+                s["clutches"] += ganhos.get(nome, 0)
                 s["op_kills"] += primeira.filter(pl.col("attacker_name") == nome).height
                 s["op_mortes"] += primeira.filter(pl.col("victim_name") == nome).height
                 s["mk_rounds"] += meu.group_by("round_num").len().filter(pl.col("len") >= 2).height
                 s["hs"] += meu.filter(pl.col("headshot")).height
         for nome, o in v["jogadores"].items():
             x = soma.get(apelidos.get(nome, nome)) or soma.get(nome) or {}
-            for campo in ("op_kills", "op_mortes", "mk_rounds", "hs"):
+            for campo in ("op_kills", "op_mortes", "mk_rounds", "hs", "clutches"):
                 linhas.append({"serie": serie, "nome": nome, "campo": campo,
                                "oficial": o[campo], "nosso": x.get(campo, 0)})
     return pl.DataFrame(linhas)
@@ -190,7 +205,7 @@ def main() -> None:
         print(f"\n4. contagens da 'Detailed stats' (por série, {dt['serie'].n_unique()} séries):")
         for campo, g in dt.group_by("campo", maintain_order=True):
             print(f"   {campo[0]:<10} {int((g['nosso'] == g['oficial']).sum())}/{g.height} exatos")
-        print("   (clutch, assistência de flash e morte trocada: ver CLAUDE.md 22j -- ainda não batem)")
+        print("   (assistência de flash e morte trocada: ver CLAUDE.md 22j -- ainda não batem)")
     else:
         print("\n4. multi-kills e aberturas: sem data/reference/hltv_detalhado.json")
 

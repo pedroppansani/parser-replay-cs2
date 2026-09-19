@@ -36,8 +36,12 @@ from metrics.timing import C4_TIMER_SECONDS
 
 # Clutch convertido. O peso cresce com o X do 1vX porque 1v4 não é "um pouco
 # melhor" que 1v2: a chance de converter despenca a cada inimigo a mais. Base
-# mais incremento por inimigo acima de dois (o mínimo que o projeto considera
-# clutch, ver metrics/clutch.py).
+# mais incremento por inimigo acima de dois.
+#
+# A DEFINIÇÃO de clutch do projeto inclui o 1v1 (metrics/clutch.py, alinhada à
+# HLTV); o PESO aqui é outra decisão: um 1v1 vencido é um duelo, e no card do
+# round mais impressionante ele não pontua. Mudar isso é mudar este número.
+MIN_INIMIGOS_CLUTCH_ESPETACULO = 2
 PESO_CLUTCH_BASE = 26.0
 PESO_CLUTCH_POR_INIMIGO_EXTRA = 11.0
 
@@ -116,8 +120,8 @@ def pontua_round(
 
     # --- clutch convertido ----------------------------------------------
     contra = int(situacao.get("clutch_against") or 0)
-    if situacao.get("clutch_player") and contra >= 2:
-        pontos = PESO_CLUTCH_BASE + PESO_CLUTCH_POR_INIMIGO_EXTRA * (contra - 2)
+    if situacao.get("clutch_player") and contra >= MIN_INIMIGOS_CLUTCH_ESPETACULO:
+        pontos = PESO_CLUTCH_BASE + PESO_CLUTCH_POR_INIMIGO_EXTRA * (contra - MIN_INIMIGOS_CLUTCH_ESPETACULO)
         componentes.append({
             "componente": "clutch",
             "pontos": pontos,
