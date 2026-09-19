@@ -36,6 +36,8 @@ from metrics.archetypes import (
 )
 from metrics.clutch import clutch_situations
 from metrics.player_profile import player_profile
+from metrics.rating import PESOS_FILE, ModeloDeRound, carrega_referencia
+from metrics.rating import rating as calcula_rating
 from metrics.positioning import position_samples
 from metrics.match_highlights import match_highlights
 from metrics.round_spectacle import round_spectacle
@@ -327,6 +329,61 @@ def build_player_indices(
 
 # ---------------------------------------------------------------------------
 
+# Fração dos rounds da partida abaixo da qual o rating do jogador aparece como
+# amostra fraca na página. 3/4: quem entrou no lugar de alguém no meio do segundo
+# tempo tem um número que não compara com o dos outros dez.
+FRACAO_MINIMA_DE_ROUNDS = 0.75
+
+
+def _rating_da_partida(tabelas, interim, rounds, team_of, vencedor_por_round, kast, tickrate):
+    """(informação do rating para a página, {steamid: rating do jogador})."""
+    referencia = carrega_referencia()
+    modelo = ModeloDeRound.da_referencia((referencia or {}).get("modelo_de_round"))
+    blind = interim / "player_blind.parquet"
+    entrada = {
+        **tabelas,
+        "player_blind": (eventos_do_round_jogado(pl.read_parquet(blind), rounds)
+                         if blind.exists() else None),
+    }
+    _, resumo = calcula_rating(entrada, team_of, vencedor_por_round, kast, tickrate,
+                               referencia=referencia, modelo=modelo)
+    por_jogador = {
+        j["steamid"]: {
+            "rating": round(float(j["rating"]), 2),
+            # Numa partida todos jogam o mesmo número de rounds, e o piso do
+            # rating (MIN_ROUNDS_CONFIAVEL, pensado para o agregado) apagaria o
+            # número de todo mundo. Aqui a marca é para quem jogou bem MENOS
+            # que a partida: substituição, queda de conexão.
+            "rating_amostra_fraca": bool(j["rounds"] < FRACAO_MINIMA_DE_ROUNDS * rounds.height),
+            # os seis sub-ratings já na escala do rating (1,00 = média), para o
+            # perfil mostrar de onde o número veio
+            "rating_sub": {n: round(float(j[f"norm_{n}"]), 2) for n in resumo["pesos"]},
+        }
+        for j in resumo["jogadores"]
+    }
+    validacao = {}
+    if PESOS_FILE.exists():
+        v = json.loads(PESOS_FILE.read_text(encoding="utf-8")).get("validacao", {})
+        fora = v.get("fora_da_amostra", {})
+        validacao = {"partidas": v.get("partidas"), "erro_medio": fora.get("erro_medio_absoluto"),
+                     "correlacao": fora.get("correlacao")}
+    info = {
+        "rotulo": resumo["rotulo"],
+        "texto": (
+            "Implementação própria da metodologia publicada do Rating 3.0 da HLTV — não é o "
+            "número oficial. Pesos "
+            + ("ajustados contra os ratings oficiais de " + str(validacao["partidas"]) + " partidas "
+               "(erro médio de " + f"{validacao['erro_medio']:.2f}".replace(".", ",") + " fora da amostra)"
+               if validacao.get("partidas") else "provisórios")
+            + "."
+        ),
+        "origem_dos_pesos": resumo["origem_dos_pesos"],
+        "pesos_desatualizados": resumo["pesos_desatualizados"],
+        "validacao": validacao,
+    }
+    return info, por_jogador
+
+
 def build(match_id: str) -> Path:
     processed = PROJECT_ROOT / "data" / "processed" / match_id
     interim = PROJECT_ROOT / "data" / "interim" / match_id
@@ -404,6 +461,14 @@ def build(match_id: str) -> Path:
         int(r["round_num"]): ("A" if r["winner"] == side_of_team("A", int(r["round_num"])) else "B")
         for r in rounds.iter_rows(named=True)
     }
+
+    # --- Rating (metrics/rating.py) ---
+    # Implementação própria da metodologia publicada do Rating 3.0, com os pesos
+    # ajustados contra os ratings oficiais (metrics/rating_weights.json) e o
+    # modelo de round GLOBAL reconstruído da referência -- nunca um modelo
+    # treinado só nesta partida (decisão 11).
+    rating_info, rating_por_jogador = _rating_da_partida(
+        tabelas, interim, rounds, team_of, vencedor_por_round, basic["kast_summary"], tickrate)
 
     # --- Perfil por jogador (metrics/player_profile.py) ---
     # Este é o outro eixo do mesmo dado: o agrupamento diz que TIPOS de round
@@ -518,7 +583,8 @@ def build(match_id: str) -> Path:
         "highlight_candidates": candidatos_destaque.head(8).to_dicts(),
         "economy_decisive": economia,
         "rounds_scored": rounds_scored,
-        "players": players.to_dicts(),
+        "players": [{**p, **rating_por_jogador.get(p["steamid"], {})} for p in players.to_dicts()],
+        "rating_info": rating_info,
         "archetypes": papeis.to_dicts(),
         "player_profile": perfil.to_dicts(),
         "reference_fitted": referencia is not None,

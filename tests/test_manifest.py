@@ -98,7 +98,7 @@ def test_processado_incompleto_nao_deixa_limpar(partida_falsa, monkeypatch):
 def test_limpeza_apaga_e_registra_no_manifesto(partida_falsa, monkeypatch):
     demo, interim = partida_falsa
     monkeypatch.setattr(cm, "verifica", lambda mid: [])
-    r = cm.limpa("match_99", confirmar=True)
+    r = cm.limpa("match_99", confirmar=True, manter_interim=False)
     assert r["ok"] and not demo.exists() and not interim.exists()
     linha = mf.carrega()["partidas"]["match_99"]
     assert linha["limpeza"]["bytes_liberados"] == 1500
@@ -107,10 +107,11 @@ def test_limpeza_apaga_e_registra_no_manifesto(partida_falsa, monkeypatch):
     assert linha["demos"][0]["sha256"] == "0" * 64          # a identidade fica
 
 
-def test_manter_interim_apaga_so_a_demo(partida_falsa, monkeypatch):
+def test_o_padrao_apaga_so_a_demo(partida_falsa, monkeypatch):
+    """Decisão do Pedro: os dados crus ficam, e a partida continua recalculável."""
     demo, interim = partida_falsa
     monkeypatch.setattr(cm, "verifica", lambda mid: [])
-    cm.limpa("match_99", confirmar=True, manter_interim=True)
+    cm.limpa("match_99", confirmar=True)
     assert not demo.exists() and interim.exists()
 
 

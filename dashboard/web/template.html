@@ -20,6 +20,12 @@
     --ct: #2a78d6;
     --t: #eb6834;
     --aqua: #1baf7a;
+    /* Round decisivo nos gráficos da partida. Roxo escuro e não esmeralda: com o
+       Time A em azul e o B em laranja, o validador de paleta (dataviz) aprovou
+       os três juntos -- pior par para daltônico ΔE 13,0 (alvo 8), visão normal
+       16,3, contraste >= 3:1 no fundo branco. A esmeralda passava por menos
+       (9,2) e com contraste 2,8:1; roxos mais claros FALHAVAM contra o azul. */
+    --dec: #4a3aa7;
     --ct-soft: rgba(42, 120, 214, 0.1);
     --t-soft: rgba(235, 104, 52, 0.1);
 
@@ -763,7 +769,7 @@
   .plist { margin-top: 16px; overflow: hidden; }
   .prow {
     display: grid;
-    grid-template-columns: minmax(0,1.4fr) 34px 34px 34px 58px 58px minmax(0,2.2fr) 54px;
+    grid-template-columns: minmax(0,1.4fr) 34px 34px 34px 70px 58px 58px minmax(0,2.2fr) 54px;
     gap: 14px;
     align-items: center;
     padding: 12px 16px;
@@ -776,19 +782,29 @@
   .prow .n { font-family: var(--mono); font-size: 13.5px; font-variant-numeric: tabular-nums; }
   .prow .n.q { color: var(--ink-2); font-size: 12.5px; }
   .prow .sp svg { display: block; width: 100%; height: 28px; }
+  /* Cabeçalho ordenável: clicar na coluna ordena por ela, do maior para o menor. */
+  .prow.hd button { all: unset; cursor: pointer; font: inherit; letter-spacing: inherit; color: inherit; }
+  .prow.hd button:hover { color: var(--ink); }
+  .prow.hd button.on { color: var(--ink); }
+  .prow.hd button.on::after { content: " ↓"; }
+  .prow.hd button:focus-visible { outline: 2px solid var(--ct); outline-offset: 2px; border-radius: 3px; }
+  .prow .n.rt { font-weight: 600; }
+  .prow .n.rt.fraca { color: var(--dim); font-weight: 400; }
+  .rnota { font-family: var(--mono); font-size: 11px; color: var(--dim); margin: 10px 2px 0; line-height: 1.5; }
   @media (max-width: 700px) {
     /* No celular as oito colunas não cabem lado a lado. K/A/M ficam na primeira
        linha junto do nome, ADR e KAST na segunda, e o gráfico ocupa a terceira
        inteira. Nenhum dos três é escondido: kills e mortes não são detalhe. */
     .prow { grid-template-columns: 1fr 32px 32px 32px;
-            grid-template-areas: "nk k a m" "adr kast kast kast" "sp sp sp sp";
+            grid-template-areas: "nk k a m" "rt adr kast kast" "sp sp sp sp";
             row-gap: 8px; column-gap: 8px; }
     .prow > *:nth-child(1) { grid-area: nk; }
     .prow > *:nth-child(2) { grid-area: k; }
     .prow > *:nth-child(3) { grid-area: a; }
     .prow > *:nth-child(4) { grid-area: m; }
-    .prow > *:nth-child(5) { grid-area: adr; }
-    .prow > *:nth-child(6) { grid-area: kast; }
+    .prow > *:nth-child(5) { grid-area: rt; }
+    .prow > *:nth-child(6) { grid-area: adr; }
+    .prow > *:nth-child(7) { grid-area: kast; }
     .prow .sp { grid-area: sp; }
     .prow .hide { display: none; }
   }
@@ -1062,8 +1078,9 @@
       <svg id="swing" viewBox="0 0 900 290" role="img" aria-label="Diferença de rounds ao longo da partida"></svg>
       <div class="legend">
         <span><i style="background:var(--ct)"></i> Time A na frente</span>
-        <span><i style="background:var(--dim)"></i> Time B na frente</span>
-        <span><i style="background:var(--t)"></i> round decisivo</span>
+        <span><i style="background:var(--t)"></i> Time B na frente</span>
+        <span><i style="background:var(--dim)"></i> empate</span>
+        <span><i style="background:var(--dec)"></i> round decisivo</span>
         <span><i style="background:var(--dim);width:6px;height:6px"></i> bomba plantada</span>
       </div>
     </div>
@@ -1155,7 +1172,9 @@
   var R = JSON.parse(document.getElementById("replay").textContent);
   var BD = {};
   (JSON.parse(document.getElementById("breakdown").textContent) || []).forEach(function (b) { BD[b.round] = b; });
-  var C = { ct: "#2a78d6", t: "#eb6834", aqua: "#1baf7a", ink: "#0f1620",
+  // Nos gráficos da partida: Time A = azul (ct), Time B = laranja (t), round
+  // decisivo = roxo (dec). Validado junto, ver --dec no CSS.
+  var C = { ct: "#2a78d6", t: "#eb6834", dec: "#4a3aa7", aqua: "#1baf7a", ink: "#0f1620",
             ink2: "#4c5a6b", dim: "#7d8a99", line: "#dde3eb", paper: "#eef1f5" };
   var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -2474,8 +2493,8 @@
      o round 20 conta uma história; uma escada subindo desde o round 3 conta
      outra, e nenhuma das duas cabe numa frase.
 
-     Paleta: as três cores já validadas do projeto (decisão 10) -- azul para o
-     Time A, cinza para o B, laranja para o round decisivo. */
+     Paleta validada (ver --dec): azul para o Time A, laranja para o B (a faixa
+     abaixo de 50%, onde o B é favorito), roxo para o round decisivo. */
   (function wpchart() {
     var svg = document.getElementById("wpchart");
     var curva = (D.win_probability || {}).curve || [];
@@ -2494,7 +2513,7 @@
     svg.appendChild(svgEl("rect", { x: pL, y: pT, width: W - pL - pR, height: Y(0.5) - pT,
       fill: "rgba(42,120,214,0.05)" }));
     svg.appendChild(svgEl("rect", { x: pL, y: Y(0.5), width: W - pL - pR, height: (H - pB) - Y(0.5),
-      fill: "rgba(125,138,153,0.05)" }));
+      fill: "rgba(235,104,52,0.06)" }));
 
     [0, 0.25, 0.5, 0.75, 1].forEach(function (g) {
       svg.appendChild(svgEl("line", { x1: pL, x2: W - pR, y1: Y(g), y2: Y(g),
@@ -2505,10 +2524,26 @@
       svg.appendChild(lb);
     });
 
-    var area = "M " + X(0) + " " + Y(0.5);
-    pontos.forEach(function (p2, i) { area += " L " + X(i) + " " + Y(p2.wp); });
-    area += " L " + X(pontos.length - 1) + " " + Y(0.5) + " Z";
-    svg.appendChild(svgEl("path", { d: area, fill: "rgba(42,120,214,0.10)" }));
+    // Área entre a curva e os 50%: azul onde o Time A é favorito, laranja onde é
+    // o B. Uma área azul só, por cima da faixa laranja, virava lilás -- e lilás
+    // se confunde com o roxo do round decisivo.
+    var contornoWp = [];
+    pontos.forEach(function (p2, i) {
+      var v = p2.wp - 0.5, ant = i > 0 ? pontos[i - 1].wp - 0.5 : 0;
+      if (i > 0 && ant * v < 0) {
+        var u = ant / (ant - v);
+        contornoWp.push([X(i - 1) + (X(i) - X(i - 1)) * u, 0.5]);
+      }
+      contornoWp.push([X(i), p2.wp]);
+    });
+    [[1, "rgba(42,120,214,0.13)"], [-1, "rgba(235,104,52,0.15)"]].forEach(function (lado) {
+      var d = "M " + contornoWp[0][0] + " " + Y(0.5);
+      contornoWp.forEach(function (pt) {
+        d += " L " + pt[0] + " " + Y(lado[0] > 0 ? Math.max(pt[1], 0.5) : Math.min(pt[1], 0.5));
+      });
+      d += " L " + contornoWp[contornoWp.length - 1][0] + " " + Y(0.5) + " Z";
+      svg.appendChild(svgEl("path", { d: d, fill: lado[1] }));
+    });
     svg.appendChild(svgEl("path", {
       d: pontos.map(function (p2, i) { return (i ? "L" : "M") + " " + X(i) + " " + Y(p2.wp); }).join(" "),
       fill: "none", stroke: C.ct, "stroke-width": 2.4,
@@ -2523,11 +2558,11 @@
       if (iDec > 0) {
         svg.appendChild(svgEl("line", { x1: X(iDec - 1), x2: X(iDec),
           y1: Y(pontos[iDec - 1].wp), y2: Y(pontos[iDec].wp),
-          stroke: C.t, "stroke-width": 4, "stroke-linecap": "round" }));
+          stroke: C.dec, "stroke-width": 4, "stroke-linecap": "round" }));
         svg.appendChild(svgEl("circle", { cx: X(iDec), cy: Y(pontos[iDec].wp), r: 5.5,
-          fill: C.t, stroke: "#fff", "stroke-width": 2.5 }));
+          fill: C.dec, stroke: "#fff", "stroke-width": 2.5 }));
         var rot = svgEl("text", { x: X(iDec), y: Y(pontos[iDec].wp) - 14, "text-anchor": "middle",
-          fill: C.t, "font-family": "DM Mono, monospace", "font-size": 10.5 });
+          fill: C.dec, "font-family": "DM Mono, monospace", "font-size": 10.5 });
         rot.textContent = "round " + decRound;
         svg.appendChild(rot);
       }
@@ -2559,7 +2594,8 @@
     if (leg) {
       leg.innerHTML =
         "<span><i style='background:var(--ct)'></i> chance do Time A</span>" +
-        (decRound != null ? "<span><i style='background:var(--t)'></i> round decisivo</span>" : "") +
+        "<span><i style='background:var(--t)'></i> Time B favorito (abaixo de 50%)</span>" +
+        (decRound != null ? "<span><i style='background:var(--dec)'></i> round decisivo</span>" : "") +
         "<span style='color:var(--dim)'>modelo neutro: cada round vale 50/50, " +
         "e a alavancagem vem só do placar</span>";
     }
@@ -2576,7 +2612,7 @@
     var z = Y(0);
 
     svg.appendChild(svgEl("rect", { x: pL, y: pT, width: W - pL - pR, height: z - pT, fill: "rgba(42,120,214,0.045)" }));
-    svg.appendChild(svgEl("rect", { x: pL, y: z, width: W - pL - pR, height: (H - pB) - z, fill: "rgba(125,138,153,0.05)" }));
+    svg.appendChild(svgEl("rect", { x: pL, y: z, width: W - pL - pR, height: (H - pB) - z, fill: "rgba(235,104,52,0.045)" }));
 
     for (var g = -mx2; g <= mx2; g += 2) {
       svg.appendChild(svgEl("line", { x1: pL, x2: W - pR, y1: Y(g), y2: Y(g),
@@ -2587,13 +2623,32 @@
       svg.appendChild(lb);
     }
 
-    var area = "M " + X(0) + " " + z;
-    diffs.forEach(function (v, i) { area += " L " + X(i) + " " + Y(v); });
-    area += " L " + X(diffs.length - 1) + " " + z + " Z";
-    svg.appendChild(svgEl("path", { d: area, fill: "rgba(42,120,214,0.11)" }));
+    // Área acima de zero em azul (Time A na frente), abaixo em laranja (Time B).
+    // Os pontos em que a linha cruza o zero entram no contorno, senão a cor de
+    // um time vazaria para o trecho em que o outro já liderava.
+    var contorno = [];
+    diffs.forEach(function (v, i) {
+      if (i > 0 && diffs[i - 1] * v < 0) {
+        var u = diffs[i - 1] / (diffs[i - 1] - v);
+        contorno.push([X(i - 1) + (X(i) - X(i - 1)) * u, 0]);
+      }
+      contorno.push([X(i), v]);
+    });
+    function areaDoLado(sinal, cor) {
+      var d = "M " + contorno[0][0] + " " + z;
+      contorno.forEach(function (pt) {
+        d += " L " + pt[0] + " " + Y(sinal > 0 ? Math.max(pt[1], 0) : Math.min(pt[1], 0));
+      });
+      d += " L " + contorno[contorno.length - 1][0] + " " + z + " Z";
+      svg.appendChild(svgEl("path", { d: d, fill: cor }));
+    }
+    areaDoLado(1, "rgba(42,120,214,0.13)");
+    areaDoLado(-1, "rgba(235,104,52,0.14)");
+    // A linha é UMA medida (diferença de rounds): fica em tinta neutra, e quem
+    // carrega a cor de cada time são as áreas e as bolinhas.
     svg.appendChild(svgEl("path", {
       d: diffs.map(function (v, i) { return (i ? "L" : "M") + " " + X(i) + " " + Y(v); }).join(" "),
-      fill: "none", stroke: C.ct, "stroke-width": 2.2, "stroke-linejoin": "round", "stroke-linecap": "round"
+      fill: "none", stroke: C.ink2, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round"
     }));
 
     // Cada round vira um alvo clicável. O círculo visível é pequeno demais pra
@@ -2648,7 +2703,7 @@
     prog.forEach(function (p, i) {
       var dec = p.round === decRound;
       var dot = svgEl("circle", { cx: X(i), cy: Y(diffs[i]), r: dec ? 5.5 : 3.2,
-        fill: dec ? C.t : (diffs[i] >= 0 ? C.ct : C.dim), stroke: "#fff", "stroke-width": dec ? 2.5 : 1.5,
+        fill: dec ? C.dec : (diffs[i] > 0 ? C.ct : diffs[i] < 0 ? C.t : C.dim), stroke: "#fff", "stroke-width": dec ? 2.5 : 1.5,
         "class": "swingdot" });
       svg.appendChild(dot);
 
@@ -2669,7 +2724,7 @@
 
       if (p.round % 2 === 1 || dec) {
         var t = svgEl("text", { x: X(i), y: H - pB + 17, "text-anchor": "middle",
-          fill: dec ? C.t : C.dim, "font-family": "DM Mono, monospace", "font-size": 10.5 });
+          fill: dec ? C.dec : C.dim, "font-family": "DM Mono, monospace", "font-size": 10.5 });
         t.textContent = p.round;
         svg.appendChild(t);
       }
@@ -2690,11 +2745,6 @@
 
   (function players() {
     var wrap = document.getElementById("players");
-    var hd = document.createElement("div");
-    hd.className = "prow hd";
-    hd.innerHTML = "<div>Jogador</div><div>K</div><div>A</div><div>M</div>" +
-      "<div>ADR</div><div>KAST</div><div>Dano round a round</div><div class='hide'>Mira</div>";
-    wrap.appendChild(hd);
 
     var ch = {}; D.crosshair.forEach(function (c) { ch[c.name] = c; });
     // kills/assists/mortes vêm do perfil: é lá que eles são contados, e contar
@@ -2704,29 +2754,75 @@
     Object.keys(D.damage_by_player).forEach(function (k) {
       D.damage_by_player[k].forEach(function (v) { if (v > maxD) maxD = v; });
     });
+    var temRating = D.players.some(function (p) { return p.rating != null; });
 
-    D.players.slice().sort(function (a, b) { return b.adr - a.adr; }).forEach(function (p) {
-      var dmg = D.damage_by_player[p.name] || [], kast = D.kast_by_player[p.name] || [];
-      var w = 240, h = 28, bw = w / dmg.length, sp = "<svg viewBox='0 0 " + w + " " + h + "' preserveAspectRatio='none'>";
-      dmg.forEach(function (v, i) {
-        var bh = Math.max(1.5, (v / maxD) * (h - 4));
-        sp += "<rect x='" + (i * bw + 0.7) + "' y='" + (h - bh) + "' width='" + (bw - 1.4) +
-          "' height='" + bh + "' fill='" + (kast[i] === 1 ? C.ct : "#c9d3de") + "' rx='1'></rect>";
+    // Colunas ordenáveis. A chave diz de onde sai o número de cada jogador.
+    var ORDENS = {
+      rating: function (p) { return p.rating != null ? p.rating : -1; },
+      k: function (p) { return (kad[p.name] || {}).kills_totais || 0; },
+      adr: function (p) { return p.adr || 0; },
+      kast: function (p) { return p.kast_pct || 0; }
+    };
+    var ordem = temRating ? "rating" : "adr";
+
+    function rotulo(chave, texto, titulo) {
+      return "<div><button type='button' data-ordem='" + chave + "' title='" + titulo + "'" +
+        (ordem === chave ? " class='on'" : "") + ">" + texto + "</button></div>";
+    }
+
+    function desenha() {
+      wrap.innerHTML = "";
+      var hd = document.createElement("div");
+      hd.className = "prow hd";
+      hd.innerHTML = "<div>Jogador</div>" + rotulo("k", "K", "Ordenar por kills") +
+        "<div>A</div><div>M</div>" +
+        (temRating ? rotulo("rating", "Rating*", (D.rating_info || {}).texto || "") : "<div></div>") +
+        rotulo("adr", "ADR", "Ordenar por ADR") + rotulo("kast", "KAST", "Ordenar por KAST") +
+        "<div>Dano round a round</div><div class='hide'>Mira</div>";
+      wrap.appendChild(hd);
+      Array.prototype.forEach.call(hd.querySelectorAll("button"), function (b) {
+        b.addEventListener("click", function () { ordem = b.dataset.ordem; desenha(); });
       });
-      sp += "</svg>";
 
-      var row = document.createElement("div");
-      row.className = "prow";
-      var kd = kad[p.name] || {};
-      row.innerHTML = "<div class='nk'>" + p.name + "<small>time " + p.team + "</small></div>" +
-        "<div class='n'>" + (kd.kills_totais != null ? kd.kills_totais : "—") + "</div>" +
-        "<div class='n q'>" + (kd.assistencias != null ? kd.assistencias : "—") + "</div>" +
-        "<div class='n q'>" + (kd.mortes != null ? kd.mortes : "—") + "</div>" +
-        "<div class='n'>" + br(p.adr) + "</div><div class='n q'>" + fmt(p.kast_pct, 0) + "%</div>" +
-        "<div class='sp'>" + sp + "</div>" +
-        "<div class='n q hide'>" + fmt((ch[p.name] || {}).crosshair_score, 0) + "</div>";
-      wrap.appendChild(row);
-    });
+      D.players.slice().sort(function (a, b) { return ORDENS[ordem](b) - ORDENS[ordem](a); }).forEach(function (p) {
+        var dmg = D.damage_by_player[p.name] || [], kast = D.kast_by_player[p.name] || [];
+        var w = 240, h = 28, bw = w / dmg.length, sp = "<svg viewBox='0 0 " + w + " " + h + "' preserveAspectRatio='none'>";
+        dmg.forEach(function (v, i) {
+          var bh = Math.max(1.5, (v / maxD) * (h - 4));
+          sp += "<rect x='" + (i * bw + 0.7) + "' y='" + (h - bh) + "' width='" + (bw - 1.4) +
+            "' height='" + bh + "' fill='" + (kast[i] === 1 ? C.ct : "#c9d3de") + "' rx='1'></rect>";
+        });
+        sp += "</svg>";
+
+        var row = document.createElement("div");
+        row.className = "prow";
+        var kd = kad[p.name] || {};
+        // Amostra fraca (poucos rounds) aparece apagada e com o motivo no title:
+        // o número existe, mas não sustenta comparação.
+        var rt = p.rating == null ? "<div class='n q'>—</div>" :
+          "<div class='n rt" + (p.rating_amostra_fraca ? " fraca" : "") + "'" +
+          (p.rating_amostra_fraca ? " title='amostra pequena: poucos rounds jogados'" : "") + ">" +
+          p.rating.toFixed(2).replace(".", ",") + "</div>";
+        row.innerHTML = "<div class='nk'>" + p.name + "<small>time " + p.team + "</small></div>" +
+          "<div class='n'>" + (kd.kills_totais != null ? kd.kills_totais : "—") + "</div>" +
+          "<div class='n q'>" + (kd.assistencias != null ? kd.assistencias : "—") + "</div>" +
+          "<div class='n q'>" + (kd.mortes != null ? kd.mortes : "—") + "</div>" + rt +
+          "<div class='n'>" + br(p.adr) + "</div><div class='n q'>" + fmt(p.kast_pct, 0) + "%</div>" +
+          "<div class='sp'>" + sp + "</div>" +
+          "<div class='n q hide'>" + fmt((ch[p.name] || {}).crosshair_score, 0) + "</div>";
+        wrap.appendChild(row);
+      });
+
+      // O rótulo acompanha o número em todo lugar: é a implementação própria da
+      // metodologia, não o Rating 3.0 oficial. O texto vem pronto do Python.
+      if (temRating && D.rating_info && D.rating_info.texto) {
+        var nota = document.createElement("p");
+        nota.className = "rnota";
+        nota.textContent = "* " + D.rating_info.texto;
+        wrap.appendChild(nota);
+      }
+    }
+    desenha();
   })();
 
   /* ================= ESTILOS: FUNÇÃO POR JOGADOR ================= */

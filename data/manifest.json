@@ -14,10 +14,10 @@
         "A": {
           "nome": "team_t1ltedbot",
           "jogadores": [
-            "Z_o_R_o",
-            "t1ltedbot",
             "donk666",
             "rol1ng-",
+            "t1ltedbot",
+            "Z_o_R_o",
             "_AmadeuS"
           ],
           "comecou_de": "t"
@@ -25,11 +25,11 @@
         "B": {
           "nome": "team_HLEB",
           "jogadores": [
+            "xhx",
             "HLEB",
             "s-chilla",
             "KREEDZ666",
-            "9amaterasu9",
-            "xhx"
+            "9amaterasu9"
           ],
           "comecou_de": "ct"
         }
@@ -51,7 +51,7 @@
           "sha256": "796b51156e56985d3ddcbeddd19177af49f32635b8cff51796107adf5add41a9"
         }
       ],
-      "processado_em": "2026-09-19T01:20",
+      "processado_em": "2026-09-19T02:25",
       "limpeza": null
     },
     "match_02": {
@@ -66,10 +66,10 @@
         "A": {
           "nome": "team_lilpeepfan-",
           "jogadores": [
+            "-olik",
             "lilpeepfan-",
             "donk666",
             "OG_Pablo_",
-            "-olik",
             "Eleyes"
           ],
           "comecou_de": "t"
@@ -77,11 +77,11 @@
         "B": {
           "nome": "team_Krimbo",
           "jogadores": [
-            "S3NSEYZjE",
+            "Dyshbert",
+            "bezimienny",
             "-h4wkkk",
             "Krimbo",
-            "Dyshbert",
-            "bezimienny"
+            "S3NSEYZjE"
           ],
           "comecou_de": "ct"
         }
@@ -103,7 +103,7 @@
           "sha256": "698bf3f2f4adbf061f6fffc3913db5e83f51d2194a87345d9ae7ec741b938e6b"
         }
       ],
-      "processado_em": "2026-09-19T01:20",
+      "processado_em": "2026-09-19T02:25",
       "limpeza": null
     },
     "match_03": {
@@ -120,20 +120,20 @@
           "jogadores": [
             "publicimage",
             "donk666",
-            "hally-",
+            "ArmaHan",
             "lilpeepfan-",
-            "ArmaHan"
+            "hally-"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "team_zecco",
           "jogadores": [
-            "dyrod",
-            "Unihi",
             "rajkeza",
+            "dyrod",
             "PAiN-M-",
-            "zecco"
+            "zecco",
+            "Unihi"
           ],
           "comecou_de": "ct"
         }
@@ -155,7 +155,7 @@
           "sha256": "522d50f86f5298d4c0f5a6ee635a9f5fe5d512c31d0dc83b4bbdba8c17635dab"
         }
       ],
-      "processado_em": "2026-09-19T01:20",
+      "processado_em": "2026-09-19T02:25",
       "limpeza": null
     },
     "match_04": {
@@ -170,11 +170,11 @@
         "A": {
           "nome": "team_somehxw",
           "jogadores": [
-            "L1nkero",
+            "somehxw",
             "nedorufe",
             "Matthew369",
-            "somehxw",
-            "donk666"
+            "donk666",
+            "L1nkero"
           ],
           "comecou_de": "t"
         },
@@ -182,10 +182,10 @@
           "nome": "team_D0KT0R3N",
           "jogadores": [
             "shiFu-",
-            "MolO11",
-            "D0KT0R3N",
             "pxd11",
-            "borzSE"
+            "D0KT0R3N",
+            "borzSE",
+            "MolO11"
           ],
           "comecou_de": "ct"
         }
@@ -207,7 +207,7 @@
           "sha256": "8335d600fc7d2771146ccf131a5feae09b989daf6837dd5bbfb6f055791c8454"
         }
       ],
-      "processado_em": "2026-09-19T01:21",
+      "processado_em": "2026-09-19T02:26",
       "limpeza": null
     },
     "match_05": {
@@ -223,10 +223,10 @@
           "nome": "team_Olajida",
           "jogadores": [
             "Olajida",
-            "chiefkeef19",
-            "gwizdakk",
             "f0pa",
-            "Dafra1D"
+            "Dafra1D",
+            "chiefkeef19",
+            "gwizdakk"
           ],
           "comecou_de": "t"
         },
@@ -234,9 +234,9 @@
           "nome": "team_lilpeepfan-",
           "jogadores": [
             "donk666",
+            "PR--",
             "lilpeepfan-",
             "PerdYYY",
-            "PR--",
             "dorfen"
           ],
           "comecou_de": "ct"
@@ -259,7 +259,7 @@
           "sha256": "b371cd555eefa72a86b9a8848054fccd138fdd856b6192a705478a48b364a3c2"
         }
       ],
-      "processado_em": "2026-09-19T01:21",
+      "processado_em": "2026-09-19T02:26",
       "limpeza": null
     },
     "match_06": {
@@ -274,11 +274,11 @@
         "A": {
           "nome": "team_xKacpersky",
           "jogadores": [
-            "xKacpersky",
-            "pradablade",
-            "Etaliqe",
+            "adamS",
             "llorente",
-            "adamS"
+            "xKacpersky",
+            "Etaliqe",
+            "pradablade"
           ],
           "comecou_de": "t"
         },
@@ -286,10 +286,10 @@
           "nome": "team_ar1sFLXR",
           "jogadores": [
             "ar1sFLXR",
+            "-_-siNNer",
             "regele",
             "donk666",
-            "Alperen",
-            "-_-siNNer"
+            "Alperen"
           ],
           "comecou_de": "ct"
         }
@@ -311,7 +311,7 @@
           "sha256": "7b8894a2ffc2364679ead62b395e82f4a32f73334b617f03d5d7e17033f82ce5"
         }
       ],
-      "processado_em": "2026-09-19T01:21",
+      "processado_em": "2026-09-19T02:26",
       "limpeza": null
     },
     "match_07": {
@@ -326,9 +326,9 @@
         "A": {
           "nome": "team_Krabeni",
           "jogadores": [
+            "stormy",
             "v1w",
             "donk666",
-            "stormy",
             "EbuDerdaa",
             "Krabeni"
           ],
@@ -337,11 +337,11 @@
         "B": {
           "nome": "team_xKacpersky",
           "jogadores": [
+            "Ajuyep",
             "s-chilla",
             "xKacpersky",
-            "Ajuyep",
-            "e-girlhuntr",
-            "Oller-"
+            "Oller-",
+            "e-girlhuntr"
           ],
           "comecou_de": "ct"
         }
@@ -363,7 +363,7 @@
           "sha256": "eb8853783b98a7899ab772eb75efb14729b9c628bb050aec3a37339f7638b8b1"
         }
       ],
-      "processado_em": "2026-09-19T01:21",
+      "processado_em": "2026-09-19T02:26",
       "limpeza": null
     },
     "match_08": {
@@ -379,21 +379,21 @@
           "nome": "team_Ahuniwip",
           "jogadores": [
             "gwizdakk",
-            "-EsD",
-            "Ahuniwip",
             "KENNY-_",
-            "PoisonLilies"
+            "PoisonLilies",
+            "-EsD",
+            "Ahuniwip"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "team_lilpeepfan-",
           "jogadores": [
-            "Pelle-",
-            "lilpeepfan-",
             "donk666",
+            "lilpeepfan-",
+            "endru-",
             "certa1n",
-            "endru-"
+            "Pelle-"
           ],
           "comecou_de": "ct"
         }
@@ -415,7 +415,7 @@
           "sha256": "d280be30ec5469dc76c36a978186e7901b9466e218b769531917fc3f0c413b66"
         }
       ],
-      "processado_em": "2026-09-19T01:21",
+      "processado_em": "2026-09-19T02:27",
       "limpeza": null
     },
     "match_09": {
@@ -431,20 +431,20 @@
           "nome": "team_lemight",
           "jogadores": [
             "ELVENIMOUS",
-            "d3bab",
             "newnickname7",
-            "wh1temink",
-            "lemight"
+            "d3bab",
+            "lemight",
+            "wh1temink"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "team_Magnojezzz",
           "jogadores": [
-            "donk666",
-            "tezeuts-",
             "Magnojezzz",
             "R0Kk-_",
+            "tezeuts-",
+            "donk666",
             "zzeraj"
           ],
           "comecou_de": "ct"
@@ -467,7 +467,7 @@
           "sha256": "d73e40ae595453e9ed92eaada04a51df650ea5120078dff5acfe9200494d7d5c"
         }
       ],
-      "processado_em": "2026-09-19T01:21",
+      "processado_em": "2026-09-19T02:27",
       "limpeza": null
     },
     "match_10": {
@@ -482,22 +482,22 @@
         "A": {
           "nome": "Team Spirit",
           "jogadores": [
-            "magixx",
-            "sh1ro",
-            "zont1x",
             "donk",
-            "tN1R"
+            "zont1x",
+            "tN1R",
+            "magixx",
+            "sh1ro"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "Natus Vincere",
           "jogadores": [
-            "iM",
-            "Aleksib",
-            "w0nderful",
+            "b1t",
             "makazze",
-            "b1t"
+            "w0nderful",
+            "iM",
+            "Aleksib"
           ],
           "comecou_de": "ct"
         }
@@ -522,7 +522,7 @@
           "sha256": "00bdd0bfd427775a3cd1844a726c84353dad37517b89a887597a895ba4fc88ff"
         }
       ],
-      "processado_em": "2026-09-19T01:21",
+      "processado_em": "2026-09-19T02:30",
       "limpeza": null
     },
     "match_11": {
@@ -538,21 +538,21 @@
           "nome": "Team Spirit",
           "jogadores": [
             "tN1R",
-            "zont1x",
-            "sh1ro",
             "donk",
-            "magixx"
+            "sh1ro",
+            "magixx",
+            "zont1x"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "Natus Vincere",
           "jogadores": [
-            "b1t",
             "makazze",
+            "b1t",
             "w0nderful",
-            "Aleksib",
-            "iM"
+            "iM",
+            "Aleksib"
           ],
           "comecou_de": "ct"
         }
@@ -577,7 +577,7 @@
           "sha256": "8ae575cacb202bbcf13b26ccd6984c01bd95eeb0243a74daa74fa53e15321db2"
         }
       ],
-      "processado_em": "2026-09-19T01:21",
+      "processado_em": "2026-09-19T02:30",
       "limpeza": null
     },
     "match_12": {
@@ -592,10 +592,10 @@
         "A": {
           "nome": "Team Vitality",
           "jogadores": [
-            "mezii",
-            "ZywOo",
             "ropz",
+            "ZywOo",
             "apEX",
+            "mezii",
             "flameZ"
           ],
           "comecou_de": "t"
@@ -603,11 +603,11 @@
         "B": {
           "nome": "FURIA",
           "jogadores": [
-            "YEKINDAR",
-            "FalleN",
-            "KSCERATO",
+            "yuurih",
             "molodoy",
-            "yuurih"
+            "KSCERATO",
+            "FalleN",
+            "YEKINDAR"
           ],
           "comecou_de": "ct"
         }
@@ -640,7 +640,7 @@
           "sha256": "214cd0f09b4a347592e340645e6dff1e75c60d76b6a04b2086a06b20e504f0b9"
         }
       ],
-      "processado_em": "2026-09-19T01:21",
+      "processado_em": "2026-09-19T02:36",
       "limpeza": null
     },
     "match_14": {
@@ -655,10 +655,10 @@
         "A": {
           "nome": "FURIA",
           "jogadores": [
-            "yuurih",
+            "KSCERATO",
             "molodoy",
             "FalleN",
-            "KSCERATO",
+            "yuurih",
             "YEKINDAR"
           ],
           "comecou_de": "t"
@@ -666,10 +666,10 @@
         "B": {
           "nome": "Team Vitality",
           "jogadores": [
-            "apEX",
-            "ZywOo",
-            "ropz",
             "mezii",
+            "apEX",
+            "ropz",
+            "ZywOo",
             "flameZ"
           ],
           "comecou_de": "ct"
@@ -695,7 +695,7 @@
           "sha256": "a423d8fa9bcd7724118cccdde81bc99dac9b0de37ec3692822bc4427d638a2ae"
         }
       ],
-      "processado_em": "2026-09-19T01:21",
+      "processado_em": "2026-09-19T02:36",
       "limpeza": null
     },
     "match_15": {
@@ -710,11 +710,11 @@
         "A": {
           "nome": "Natus Vincere",
           "jogadores": [
-            "w0nderful",
-            "iM",
             "Aleksib",
-            "b1t",
-            "makazze"
+            "iM",
+            "w0nderful",
+            "makazze",
+            "b1t"
           ],
           "comecou_de": "t"
         },
@@ -722,10 +722,10 @@
           "nome": "FURIA",
           "jogadores": [
             "yuurih",
-            "molodoy",
+            "KSCERATO",
             "YEKINDAR",
             "FalleN",
-            "KSCERATO"
+            "molodoy"
           ],
           "comecou_de": "ct"
         }
@@ -750,7 +750,7 @@
           "sha256": "1bfb43118089c78331bd7b517e849fe12941a0ce9f1619b34b7b1c91c47dfa6d"
         }
       ],
-      "processado_em": "2026-09-19T01:21",
+      "processado_em": "2026-09-19T02:36",
       "limpeza": null
     },
     "match_16": {
@@ -765,21 +765,21 @@
         "A": {
           "nome": "Natus Vincere",
           "jogadores": [
-            "makazze",
             "iM",
             "w0nderful",
-            "Aleksib",
-            "b1t"
+            "makazze",
+            "b1t",
+            "Aleksib"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "FURIA",
           "jogadores": [
+            "FalleN",
             "molodoy",
             "yuurih",
             "YEKINDAR",
-            "FalleN",
             "KSCERATO"
           ],
           "comecou_de": "ct"
@@ -805,7 +805,7 @@
           "sha256": "87356d11bdeb8616cf13b148e8f3db69554383440bc29ca4826be4522fbb91d6"
         }
       ],
-      "processado_em": "2026-09-19T01:21",
+      "processado_em": "2026-09-19T02:37",
       "limpeza": null
     },
     "match_17": {
@@ -820,22 +820,22 @@
         "A": {
           "nome": "FURIA",
           "jogadores": [
+            "molodoy",
             "YEKINDAR",
-            "KSCERATO",
-            "yuurih",
             "FalleN",
-            "molodoy"
+            "KSCERATO",
+            "yuurih"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "Natus Vincere",
           "jogadores": [
+            "Aleksib",
             "w0nderful",
             "b1t",
-            "iM",
             "makazze",
-            "Aleksib"
+            "iM"
           ],
           "comecou_de": "ct"
         }
@@ -860,7 +860,7 @@
           "sha256": "bc517609cf2e20861613bfe1cedb1e7ecfda12b744f2f6a22b08f91c8334cf3d"
         }
       ],
-      "processado_em": "2026-09-19T01:22",
+      "processado_em": "2026-09-19T02:37",
       "limpeza": null
     },
     "match_18": {
@@ -875,22 +875,22 @@
         "A": {
           "nome": "FURIA",
           "jogadores": [
+            "FalleN",
             "YEKINDAR",
-            "molodoy",
-            "KSCERATO",
             "yuurih",
-            "FalleN"
+            "molodoy",
+            "KSCERATO"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "Falcons",
           "jogadores": [
-            "NiKo",
-            "m0NESY",
-            "kyousuke",
             "TeSeS",
-            "kyxsan"
+            "kyxsan",
+            "kyousuke",
+            "NiKo",
+            "m0NESY"
           ],
           "comecou_de": "ct"
         }
@@ -915,7 +915,7 @@
           "sha256": "42aa5f5826231e0141ba712a0a6b6aa30d360f333a87fecf8eda0d8bfcd6905f"
         }
       ],
-      "processado_em": "2026-09-19T01:22",
+      "processado_em": "2026-09-19T02:37",
       "limpeza": null
     },
     "match_19": {
@@ -930,22 +930,22 @@
         "A": {
           "nome": "FURIA",
           "jogadores": [
-            "FalleN",
-            "yuurih",
-            "YEKINDAR",
             "KSCERATO",
-            "molodoy"
+            "yuurih",
+            "molodoy",
+            "YEKINDAR",
+            "FalleN"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "Falcons",
           "jogadores": [
-            "m0NESY",
-            "NiKo",
-            "kyxsan",
             "kyousuke",
-            "TeSeS"
+            "TeSeS",
+            "kyxsan",
+            "m0NESY",
+            "NiKo"
           ],
           "comecou_de": "ct"
         }
@@ -970,7 +970,7 @@
           "sha256": "c358451d9f613becab0966efbbe113ab805d236f1a898020f3f16327777cc974"
         }
       ],
-      "processado_em": "2026-09-19T01:22",
+      "processado_em": "2026-09-19T02:38",
       "limpeza": null
     },
     "match_20": {
@@ -985,22 +985,22 @@
         "A": {
           "nome": "Falcons",
           "jogadores": [
-            "kyousuke",
             "kyxsan",
-            "TeSeS",
             "NiKo",
-            "m0NESY"
+            "m0NESY",
+            "kyousuke",
+            "TeSeS"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "FURIA",
           "jogadores": [
-            "KSCERATO",
-            "FalleN",
             "YEKINDAR",
+            "yuurih",
             "molodoy",
-            "yuurih"
+            "KSCERATO",
+            "FalleN"
           ],
           "comecou_de": "ct"
         }
@@ -1025,7 +1025,7 @@
           "sha256": "3ada17dbeb8b7122f1e96f8041cdd0db60728885c43c217ef82047421884b39b"
         }
       ],
-      "processado_em": "2026-09-19T01:22",
+      "processado_em": "2026-09-19T02:38",
       "limpeza": null
     },
     "match_21": {
@@ -1040,22 +1040,22 @@
         "A": {
           "nome": "Aurora Gaming",
           "jogadores": [
-            "XANTARES",
-            "Wicadia",
-            "kyxsan",
             "woxic",
-            "Jimpphat"
+            "Wicadia",
+            "XANTARES",
+            "Jimpphat",
+            "kyxsan"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "Natus Vincere",
           "jogadores": [
-            "iM",
-            "makazze",
-            "b1t",
             "w0nderful",
-            "Aleksib"
+            "makazze",
+            "iM",
+            "Aleksib",
+            "b1t"
           ],
           "comecou_de": "ct"
         }
@@ -1077,7 +1077,7 @@
           "sha256": "d84b02b61af2e213acd9d120e0e556c9f26556f54961bd48aa96db3b380a27b6"
         }
       ],
-      "processado_em": "2026-09-19T01:22",
+      "processado_em": "2026-09-19T02:40",
       "limpeza": null
     },
     "match_22": {
@@ -1092,10 +1092,10 @@
         "A": {
           "nome": "Natus Vincere",
           "jogadores": [
-            "iM",
             "b1t",
             "w0nderful",
             "Aleksib",
+            "iM",
             "makazze"
           ],
           "comecou_de": "t"
@@ -1103,10 +1103,10 @@
         "B": {
           "nome": "Aurora Gaming",
           "jogadores": [
+            "Jimpphat",
+            "kyxsan",
             "woxic",
             "XANTARES",
-            "kyxsan",
-            "Jimpphat",
             "Wicadia"
           ],
           "comecou_de": "ct"
@@ -1129,7 +1129,7 @@
           "sha256": "067680a00c73c69dbc79218c5d799940c8573b56ed172dccc095090a2ec05fbb"
         }
       ],
-      "processado_em": "2026-09-19T01:22",
+      "processado_em": "2026-09-19T02:40",
       "limpeza": null
     },
     "match_23": {
@@ -1144,21 +1144,21 @@
         "A": {
           "nome": "Team Vitality",
           "jogadores": [
-            "flameZ",
-            "mezii",
             "ropz",
+            "flameZ",
             "ZywOo",
-            "apEX"
+            "apEX",
+            "mezii"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "magic",
           "jogadores": [
-            "tenzy",
-            "eksiver",
-            "MaSvAl",
             "mo0N",
+            "eksiver",
+            "tenzy",
+            "MaSvAl",
             "sFade8"
           ],
           "comecou_de": "ct"
@@ -1184,7 +1184,7 @@
           "sha256": "f18e6acd0f4dcf3574323bbb6237a0e65cd1f55a1a009404e9635df7818f7574"
         }
       ],
-      "processado_em": "2026-09-19T01:22",
+      "processado_em": "2026-09-19T02:40",
       "limpeza": null
     },
     "match_24": {
@@ -1199,22 +1199,22 @@
         "A": {
           "nome": "Team Spirit",
           "jogadores": [
-            "zont1x",
-            "donk",
             "chopper",
+            "donk",
             "magixx",
-            "sh1ro"
+            "sh1ro",
+            "zont1x"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "Natus Vincere",
           "jogadores": [
-            "w0nderful",
             "jL",
-            "iM",
+            "b1t",
+            "w0nderful",
             "Aleksib",
-            "b1t"
+            "iM"
           ],
           "comecou_de": "ct"
         }
@@ -1236,7 +1236,7 @@
           "sha256": "51ced3a89c8e8bba07999c7ae55c6b0190ccf46abe8d51a17c6018b3b003277f"
         }
       ],
-      "processado_em": "2026-09-19T01:22",
+      "processado_em": "2026-09-19T02:27",
       "limpeza": null
     },
     "match_25": {
@@ -1251,22 +1251,22 @@
         "A": {
           "nome": "Natus Vincere",
           "jogadores": [
-            "iM",
-            "b1t",
             "w0nderful",
-            "jL",
-            "Aleksib"
+            "iM",
+            "Aleksib",
+            "b1t",
+            "jL"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "Team Spirit",
           "jogadores": [
-            "chopper",
-            "zont1x",
+            "sh1ro",
             "donk",
+            "zont1x",
             "magixx",
-            "sh1ro"
+            "chopper"
           ],
           "comecou_de": "ct"
         }
@@ -1288,7 +1288,7 @@
           "sha256": "b9a4b505d1c079ba16ca246b359a44a862575aff8e066981c3edf4daa9407d02"
         }
       ],
-      "processado_em": "2026-09-19T01:22",
+      "processado_em": "2026-09-19T02:27",
       "limpeza": null
     },
     "match_26": {
@@ -1303,22 +1303,22 @@
         "A": {
           "nome": "Vitality",
           "jogadores": [
-            "mezii",
             "ropz",
+            "mezii",
+            "apEX",
             "ZywOo",
-            "flameZ",
-            "apEX"
+            "flameZ"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "Team Spirit",
           "jogadores": [
-            "chopper",
-            "sh1ro",
             "magixx",
-            "zont1x",
-            "donk"
+            "donk",
+            "sh1ro",
+            "chopper",
+            "zont1x"
           ],
           "comecou_de": "ct"
         }
@@ -1340,7 +1340,7 @@
           "sha256": "3b2169c84d3d647345a4edd318313cd288768bf2df822fea49e83f98f01501bc"
         }
       ],
-      "processado_em": "2026-09-19T01:22",
+      "processado_em": "2026-09-19T02:28",
       "limpeza": null
     },
     "match_27": {
@@ -1355,22 +1355,22 @@
         "A": {
           "nome": "Vitality",
           "jogadores": [
-            "apEX",
-            "ropz",
-            "ZywOo",
             "mezii",
-            "flameZ"
+            "ZywOo",
+            "flameZ",
+            "apEX",
+            "ropz"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "Team Spirit",
           "jogadores": [
-            "zont1x",
-            "sh1ro",
-            "magixx",
             "donk",
-            "chopper"
+            "zont1x",
+            "chopper",
+            "magixx",
+            "sh1ro"
           ],
           "comecou_de": "ct"
         }
@@ -1392,7 +1392,7 @@
           "sha256": "de0b5de35e98b352217d8eedd25401684240bf0ac169941f39922dc14eeadb2d"
         }
       ],
-      "processado_em": "2026-09-19T01:22",
+      "processado_em": "2026-09-19T02:28",
       "limpeza": null
     },
     "match_28": {
@@ -1407,10 +1407,10 @@
         "A": {
           "nome": "Vitality",
           "jogadores": [
+            "apEX",
             "mezii",
             "ropz",
             "ZywOo",
-            "apEX",
             "flameZ"
           ],
           "comecou_de": "t"
@@ -1418,11 +1418,11 @@
         "B": {
           "nome": "Team Spirit",
           "jogadores": [
-            "chopper",
             "zont1x",
+            "donk",
             "magixx",
             "sh1ro",
-            "donk"
+            "chopper"
           ],
           "comecou_de": "ct"
         }
@@ -1444,7 +1444,7 @@
           "sha256": "cf8a96f821b87aee6851c04f1f15232c73e8ba66a4648facd882e63cd3cb3bdc"
         }
       ],
-      "processado_em": "2026-09-19T01:23",
+      "processado_em": "2026-09-19T02:28",
       "limpeza": null
     },
     "match_29": {
@@ -1459,11 +1459,11 @@
         "A": {
           "nome": "FURIA",
           "jogadores": [
-            "molodoy",
-            "yuurih",
             "FalleN",
-            "YEKINDAR",
-            "KSCERATO"
+            "molodoy",
+            "KSCERATO",
+            "yuurih",
+            "YEKINDAR"
           ],
           "comecou_de": "t"
         },
@@ -1471,10 +1471,10 @@
           "nome": "Falcons",
           "jogadores": [
             "m0NESY",
-            "TeSeS",
-            "kyxsan",
+            "NiKo",
             "kyousuke",
-            "NiKo"
+            "TeSeS",
+            "kyxsan"
           ],
           "comecou_de": "ct"
         }
@@ -1496,7 +1496,7 @@
           "sha256": "ea651630d1bcd20613b11c6d36fa8d6a7a59f3640d7b733eb4f8cd155f293cdc"
         }
       ],
-      "processado_em": "2026-09-19T01:23",
+      "processado_em": "2026-09-19T02:28",
       "limpeza": null
     },
     "match_30": {
@@ -1511,22 +1511,22 @@
         "A": {
           "nome": "Falcons",
           "jogadores": [
-            "kyousuke",
-            "TeSeS",
             "m0NESY",
+            "kyousuke",
             "NiKo",
-            "kyxsan"
+            "kyxsan",
+            "TeSeS"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "FURIA",
           "jogadores": [
-            "YEKINDAR",
+            "FalleN",
+            "yuurih",
             "molodoy",
             "KSCERATO",
-            "yuurih",
-            "FalleN"
+            "YEKINDAR"
           ],
           "comecou_de": "ct"
         }
@@ -1548,7 +1548,7 @@
           "sha256": "91d445ca120fb4fc7b63e37dfe9d9632d713aa8ab6910ee8f5b3bcffadb53a05"
         }
       ],
-      "processado_em": "2026-09-19T01:23",
+      "processado_em": "2026-09-19T02:29",
       "limpeza": null
     },
     "match_31": {
@@ -1563,10 +1563,10 @@
         "A": {
           "nome": "FURIA",
           "jogadores": [
+            "molodoy",
+            "YEKINDAR",
             "FalleN",
             "yuurih",
-            "YEKINDAR",
-            "molodoy",
             "KSCERATO"
           ],
           "comecou_de": "t"
@@ -1574,10 +1574,10 @@
         "B": {
           "nome": "Falcons",
           "jogadores": [
-            "m0NESY",
             "TeSeS",
-            "kyousuke",
             "kyxsan",
+            "m0NESY",
+            "kyousuke",
             "NiKo"
           ],
           "comecou_de": "ct"
@@ -1600,7 +1600,7 @@
           "sha256": "2735218148a4a12a15e43bbbdf33076313469c6a3ce7370a774fefc28347cb92"
         }
       ],
-      "processado_em": "2026-09-19T01:23",
+      "processado_em": "2026-09-19T02:29",
       "limpeza": null
     },
     "match_32": {
@@ -1616,8 +1616,8 @@
           "nome": "Falcons",
           "jogadores": [
             "kyxsan",
-            "TeSeS",
             "kyousuke",
+            "TeSeS",
             "NiKo",
             "m0NESY"
           ],
@@ -1626,11 +1626,11 @@
         "B": {
           "nome": "FURIA",
           "jogadores": [
-            "FalleN",
             "molodoy",
-            "yuurih",
+            "YEKINDAR",
             "KSCERATO",
-            "YEKINDAR"
+            "yuurih",
+            "FalleN"
           ],
           "comecou_de": "ct"
         }
@@ -1652,7 +1652,7 @@
           "sha256": "c20f551ef270bd343dd359e671d1c2349eb767b7535a8a4bb2d273b886ea2652"
         }
       ],
-      "processado_em": "2026-09-19T01:23",
+      "processado_em": "2026-09-19T02:30",
       "limpeza": null
     },
     "match_33": {
@@ -1668,21 +1668,21 @@
           "nome": "Team Vitality",
           "jogadores": [
             "flameZ",
-            "apEX",
-            "ropz",
             "ZywOo",
-            "mezii"
+            "ropz",
+            "mezii",
+            "apEX"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "MOUZ",
           "jogadores": [
-            "Spinx",
-            "Brollan",
             "Jimpphat",
-            "xertioN",
-            "torzsi"
+            "Spinx",
+            "torzsi",
+            "Brollan",
+            "xertioN"
           ],
           "comecou_de": "ct"
         }
@@ -1704,7 +1704,7 @@
           "sha256": "372557cd3b27fbda9e631717ea1ae82c5288319accb827dba42c8252a9c1bb25"
         }
       ],
-      "processado_em": "2026-09-19T01:23",
+      "processado_em": "2026-09-19T02:30",
       "limpeza": null
     },
     "match_34": {
@@ -1719,11 +1719,11 @@
         "A": {
           "nome": "MOUZ",
           "jogadores": [
-            "torzsi",
-            "xertioN",
-            "Spinx",
             "Brollan",
-            "Jimpphat"
+            "Jimpphat",
+            "Spinx",
+            "xertioN",
+            "torzsi"
           ],
           "comecou_de": "t"
         },
@@ -1731,10 +1731,10 @@
           "nome": "Team Vitality",
           "jogadores": [
             "ropz",
-            "apEX",
-            "flameZ",
             "mezii",
-            "ZywOo"
+            "ZywOo",
+            "flameZ",
+            "apEX"
           ],
           "comecou_de": "ct"
         }
@@ -1756,7 +1756,7 @@
           "sha256": "6ed3d0ed29588b080bef669fb819c5077933da8f99fbba14c09b9a93330179e1"
         }
       ],
-      "processado_em": "2026-09-19T01:23",
+      "processado_em": "2026-09-19T02:31",
       "limpeza": null
     },
     "match_35": {
@@ -1771,10 +1771,10 @@
         "A": {
           "nome": "Team Vitality",
           "jogadores": [
-            "ZywOo",
             "ropz",
-            "apEX",
             "mezii",
+            "ZywOo",
+            "apEX",
             "flameZ"
           ],
           "comecou_de": "t"
@@ -1782,11 +1782,11 @@
         "B": {
           "nome": "MOUZ",
           "jogadores": [
+            "torzsi",
             "Jimpphat",
             "Brollan",
-            "Spinx",
-            "torzsi",
-            "xertioN"
+            "xertioN",
+            "Spinx"
           ],
           "comecou_de": "ct"
         }
@@ -1808,7 +1808,7 @@
           "sha256": "617673668137ac4f7c533fe191f24dce541d5268676b811ea02f3673d185e276"
         }
       ],
-      "processado_em": "2026-09-19T01:23",
+      "processado_em": "2026-09-19T02:31",
       "limpeza": null
     },
     "match_36": {
@@ -1834,8 +1834,8 @@
         "B": {
           "nome": "Team Spirit",
           "jogadores": [
-            "donk",
             "sh1ro",
+            "donk",
             "chopper",
             "zont1x",
             "magixx"
@@ -1860,7 +1860,7 @@
           "sha256": "a4e69281dfacf9f2b6a6f5836e0937ecdaa7d9189c5172e4ad65c06a12cd5c58"
         }
       ],
-      "processado_em": "2026-09-19T01:23",
+      "processado_em": "2026-09-19T02:31",
       "limpeza": null
     },
     "match_37": {
@@ -1875,22 +1875,22 @@
         "A": {
           "nome": "Team Spirit",
           "jogadores": [
-            "zont1x",
-            "donk",
             "magixx",
+            "zont1x",
             "chopper",
-            "sh1ro"
+            "sh1ro",
+            "donk"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "Natus Vincere",
           "jogadores": [
-            "b1t",
             "jL",
             "iM",
             "Aleksib",
-            "w0nderful"
+            "w0nderful",
+            "b1t"
           ],
           "comecou_de": "ct"
         }
@@ -1912,7 +1912,7 @@
           "sha256": "077731a93eebecf68085894ba5660255ad7e89cff0235e5613fb832ccd0f9af3"
         }
       ],
-      "processado_em": "2026-09-19T01:23",
+      "processado_em": "2026-09-19T02:32",
       "limpeza": null
     },
     "match_38": {
@@ -1927,11 +1927,11 @@
         "A": {
           "nome": "Natus Vincere",
           "jogadores": [
+            "iM",
+            "Aleksib",
             "jL",
             "w0nderful",
-            "Aleksib",
-            "b1t",
-            "iM"
+            "b1t"
           ],
           "comecou_de": "t"
         },
@@ -1939,10 +1939,10 @@
           "nome": "Team Spirit",
           "jogadores": [
             "SH1R0",
-            "zont1x",
-            "magixx",
             "chopper",
-            "donk"
+            "donk",
+            "magixx",
+            "zont1x"
           ],
           "comecou_de": "ct"
         }
@@ -1964,7 +1964,7 @@
           "sha256": "0b170f4706cc446f6cf637979155638e29b205ade957a1f9fbf53bbe3f542b88"
         }
       ],
-      "processado_em": "2026-09-19T01:24",
+      "processado_em": "2026-09-19T02:32",
       "limpeza": null
     },
     "match_39": {
@@ -1981,20 +1981,20 @@
           "jogadores": [
             "SH1R0",
             "chopper",
+            "zont1x",
             "magixx",
-            "donk",
-            "zont1x"
+            "donk"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "Natus Vincere",
           "jogadores": [
-            "jL",
             "Aleksib",
-            "b1t",
             "iM",
-            "w0nderful"
+            "b1t",
+            "w0nderful",
+            "jL"
           ],
           "comecou_de": "ct"
         }
@@ -2032,7 +2032,7 @@
           "sha256": "dc0f8c4bfdeed063b31c89b457a872edd5fe614622b8a5f30e6244e0fc5868a2"
         }
       ],
-      "processado_em": "2026-09-19T01:24",
+      "processado_em": "2026-09-19T02:32",
       "limpeza": null
     },
     "match_40": {
@@ -2047,22 +2047,22 @@
         "A": {
           "nome": "Natus Vincere",
           "jogadores": [
-            "b1t",
             "Aleksib",
-            "jL",
+            "b1t",
+            "w0nderful",
             "iM",
-            "w0nderful"
+            "jL"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "Team Spirit",
           "jogadores": [
-            "chopper",
-            "zont1x",
-            "donk",
             "magixx",
-            "SH1R0"
+            "donk",
+            "zont1x",
+            "SH1R0",
+            "chopper"
           ],
           "comecou_de": "ct"
         }
@@ -2084,7 +2084,7 @@
           "sha256": "ff92283d6a9c6c8e9ea73d498088ef9d2237c4b0aeb86d1b5848e506bf90e59e"
         }
       ],
-      "processado_em": "2026-09-19T01:24",
+      "processado_em": "2026-09-19T02:33",
       "limpeza": null
     },
     "match_41": {
@@ -2099,22 +2099,22 @@
         "A": {
           "nome": "MOUZ",
           "jogadores": [
-            "Jimpphat",
-            "Spinx",
             "Brollan",
+            "xertioN",
             "torzsi",
-            "xertioN"
+            "Jimpphat",
+            "Spinx"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "Team Falcons",
           "jogadores": [
-            "NiKo",
             "m0NESY",
-            "TeSeS",
             "kyxsan",
-            "kyousuke"
+            "kyousuke",
+            "NiKo",
+            "TeSeS"
           ],
           "comecou_de": "ct"
         }
@@ -2147,7 +2147,7 @@
           "sha256": "4164738a697e23005ccda4c6ebc2c2a5f59bd2fdfc39de4da59a85e74d9d37dd"
         }
       ],
-      "processado_em": "2026-09-19T01:24",
+      "processado_em": "2026-09-19T02:33",
       "limpeza": null
     },
     "match_42": {
@@ -2162,10 +2162,10 @@
         "A": {
           "nome": "Team Falcons",
           "jogadores": [
-            "kyousuke",
             "m0NESY",
-            "TeSeS",
+            "kyousuke",
             "kyxsan",
+            "TeSeS",
             "NiKo"
           ],
           "comecou_de": "t"
@@ -2174,10 +2174,10 @@
           "nome": "MOUZ",
           "jogadores": [
             "Spinx",
-            "torzsi",
             "xertioN",
             "Jimpphat",
-            "Brollan"
+            "Brollan",
+            "torzsi"
           ],
           "comecou_de": "ct"
         }
@@ -2202,7 +2202,7 @@
           "sha256": "0a3129ba726a10239fdbcc0da9050c5aad02a17d975ee5cb0f658b75ba0895f4"
         }
       ],
-      "processado_em": "2026-09-19T01:24",
+      "processado_em": "2026-09-19T02:34",
       "limpeza": null
     },
     "match_43": {
@@ -2217,22 +2217,22 @@
         "A": {
           "nome": "FURIA",
           "jogadores": [
-            "molodoy",
-            "KSCERATO",
             "FalleN",
+            "YEKINDAR",
+            "KSCERATO",
             "yuurih",
-            "YEKINDAR"
+            "molodoy"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "Team Vitality",
           "jogadores": [
-            "flameZ",
+            "apEX",
             "mezii",
-            "ropz",
             "ZywOo",
-            "apEX"
+            "flameZ",
+            "ropz"
           ],
           "comecou_de": "ct"
         }
@@ -2254,7 +2254,7 @@
           "sha256": "9019e9ee6cdeee54d93a73625620f3372ee55b8560240b6381f67fdb84676cbb"
         }
       ],
-      "processado_em": "2026-09-19T01:24",
+      "processado_em": "2026-09-19T02:34",
       "limpeza": null
     },
     "match_44": {
@@ -2269,10 +2269,10 @@
         "A": {
           "nome": "Team Vitality",
           "jogadores": [
-            "flameZ",
-            "ZywOo",
             "ropz",
             "apEX",
+            "flameZ",
+            "ZywOo",
             "mezii"
           ],
           "comecou_de": "t"
@@ -2280,11 +2280,11 @@
         "B": {
           "nome": "FURIA",
           "jogadores": [
-            "KSCERATO",
-            "YEKINDAR",
             "FalleN",
             "yuurih",
-            "molodoy"
+            "molodoy",
+            "YEKINDAR",
+            "KSCERATO"
           ],
           "comecou_de": "ct"
         }
@@ -2306,7 +2306,7 @@
           "sha256": "affd22a7fb10a99d149cd343ebe29b83457a40862244a398de3cb48930110907"
         }
       ],
-      "processado_em": "2026-09-19T01:24",
+      "processado_em": "2026-09-19T02:35",
       "limpeza": null
     },
     "match_45": {
@@ -2321,11 +2321,11 @@
         "A": {
           "nome": "FURIA",
           "jogadores": [
-            "YEKINDAR",
             "FalleN",
+            "KSCERATO",
             "molodoy",
-            "yuurih",
-            "KSCERATO"
+            "YEKINDAR",
+            "yuurih"
           ],
           "comecou_de": "t"
         },
@@ -2333,10 +2333,10 @@
           "nome": "Team Vitality",
           "jogadores": [
             "flameZ",
-            "ZywOo",
-            "mezii",
+            "ropz",
             "apEX",
-            "ropz"
+            "ZywOo",
+            "mezii"
           ],
           "comecou_de": "ct"
         }
@@ -2358,7 +2358,7 @@
           "sha256": "2b2f6f3ceeb869dccc3078c300918a1deb8b495f384ee3809d577dcb5d7da582"
         }
       ],
-      "processado_em": "2026-09-19T01:24",
+      "processado_em": "2026-09-19T02:35",
       "limpeza": null
     },
     "match_46": {
@@ -2373,10 +2373,10 @@
         "A": {
           "nome": "Team Vitality",
           "jogadores": [
-            "ropz",
-            "flameZ",
-            "apEX",
             "mezii",
+            "flameZ",
+            "ropz",
+            "apEX",
             "ZywOo"
           ],
           "comecou_de": "t"
@@ -2384,11 +2384,11 @@
         "B": {
           "nome": "FURIA",
           "jogadores": [
-            "molodoy",
             "YEKINDAR",
-            "yuurih",
+            "KSCERATO",
+            "molodoy",
             "FalleN",
-            "KSCERATO"
+            "yuurih"
           ],
           "comecou_de": "ct"
         }
@@ -2410,7 +2410,7 @@
           "sha256": "24370e1f72c2f2ca33108f786d9c08f175c3c821c4213641e782080a869c3640"
         }
       ],
-      "processado_em": "2026-09-19T01:24",
+      "processado_em": "2026-09-19T02:35",
       "limpeza": null
     },
     "match_47": {
@@ -2425,21 +2425,21 @@
         "A": {
           "nome": "MOUZ",
           "jogadores": [
-            "Brollan",
             "torzsi",
-            "Jimpphat",
+            "xertioN",
+            "Brollan",
             "Spinx",
-            "xertioN"
+            "Jimpphat"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "Team Vitality",
           "jogadores": [
-            "flameZ",
-            "mezii",
             "apEX",
+            "flameZ",
             "ZywOo",
+            "mezii",
             "ropz"
           ],
           "comecou_de": "ct"
@@ -2462,7 +2462,7 @@
           "sha256": "061cb84a8f2848158a763fef2d82ceaa2c2dd0613c372c50a288a71b67778c5e"
         }
       ],
-      "processado_em": "2026-09-19T01:25",
+      "processado_em": "2026-09-19T02:35",
       "limpeza": null
     },
     "match_48": {
@@ -2478,21 +2478,21 @@
           "nome": "Team Vitality",
           "jogadores": [
             "ropz",
-            "mezii",
-            "apEX",
             "flameZ",
-            "ZywOo"
+            "ZywOo",
+            "mezii",
+            "apEX"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "MOUZ",
           "jogadores": [
-            "torzsi",
-            "Brollan",
-            "Jimpphat",
             "xertioN",
-            "Spinx"
+            "Spinx",
+            "torzsi",
+            "Jimpphat",
+            "Brollan"
           ],
           "comecou_de": "ct"
         }
@@ -2514,7 +2514,7 @@
           "sha256": "c33d48b9dbb8f0797e471f98bf0242b6ac781e7be70d0cbc76d21f7324ecbfa1"
         }
       ],
-      "processado_em": "2026-09-19T01:25",
+      "processado_em": "2026-09-19T02:36",
       "limpeza": null
     },
     "match_49": {
@@ -2529,22 +2529,22 @@
         "A": {
           "nome": "Team Falcons",
           "jogadores": [
-            "m0NESY",
+            "kyxsan",
+            "kyousuke",
             "TeSeS",
             "NiKo",
-            "kyousuke",
-            "kyxsan"
+            "m0NESY"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "MOUZ",
           "jogadores": [
+            "xertioN",
             "torzsi",
-            "Brollan",
             "Jimpphat",
             "Spinx",
-            "xertioN"
+            "Brollan"
           ],
           "comecou_de": "ct"
         }
@@ -2566,7 +2566,7 @@
           "sha256": "80e8b0f338d0294de3f87e56e8a4bebcc40330c3b04c2879d25f8e7c81beb078"
         }
       ],
-      "processado_em": "2026-09-19T01:25",
+      "processado_em": "2026-09-19T02:39",
       "limpeza": null
     },
     "match_50": {
@@ -2581,10 +2581,10 @@
         "A": {
           "nome": "MOUZ",
           "jogadores": [
-            "xertioN",
-            "Brollan",
-            "Spinx",
             "torzsi",
+            "Spinx",
+            "Brollan",
+            "xertioN",
             "Jimpphat"
           ],
           "comecou_de": "t"
@@ -2592,11 +2592,11 @@
         "B": {
           "nome": "Team Falcons",
           "jogadores": [
-            "kyousuke",
+            "m0NESY",
             "kyxsan",
             "NiKo",
-            "m0NESY",
-            "TeSeS"
+            "TeSeS",
+            "kyousuke"
           ],
           "comecou_de": "ct"
         }
@@ -2618,7 +2618,7 @@
           "sha256": "bcda5d9d0dfdee6a043a038e9a99e64780becfdb99ad491775dad559649482b2"
         }
       ],
-      "processado_em": "2026-09-19T01:25",
+      "processado_em": "2026-09-19T02:39",
       "limpeza": null
     },
     "match_51": {
@@ -2633,22 +2633,22 @@
         "A": {
           "nome": "Team Falcons",
           "jogadores": [
-            "m0NESY",
-            "NiKo",
             "kyxsan",
+            "m0NESY",
             "kyousuke",
-            "TeSeS"
+            "TeSeS",
+            "NiKo"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "MOUZ",
           "jogadores": [
-            "torzsi",
             "Brollan",
             "Jimpphat",
-            "Spinx",
-            "xertioN"
+            "xertioN",
+            "torzsi",
+            "Spinx"
           ],
           "comecou_de": "ct"
         }
@@ -2670,7 +2670,7 @@
           "sha256": "daf6611302cc68dbcce1be3050be155b9eea7cc16d0fc958325e3d82d48bd438"
         }
       ],
-      "processado_em": "2026-09-19T01:25",
+      "processado_em": "2026-09-19T02:39",
       "limpeza": null
     },
     "match_52": {
@@ -2685,22 +2685,22 @@
         "A": {
           "nome": "The MongolZ",
           "jogadores": [
+            "910",
             "controlez",
             "Techno4K",
-            "bLitz",
             "Mzinho",
-            "910"
+            "bLitz"
           ],
           "comecou_de": "t"
         },
         "B": {
           "nome": "Team Vitality",
           "jogadores": [
-            "ropz",
-            "apEX",
             "mezii",
             "flameZ",
-            "ZywOo"
+            "ZywOo",
+            "ropz",
+            "apEX"
           ],
           "comecou_de": "ct"
         }
@@ -2722,7 +2722,7 @@
           "sha256": "3433a2ab957a174fe18e09297ba0fecbb35bec7e71b5d55cc90c47de6ace090f"
         }
       ],
-      "processado_em": "2026-09-19T01:25",
+      "processado_em": "2026-09-19T02:39",
       "limpeza": null
     },
     "match_53": {
@@ -2737,10 +2737,10 @@
         "A": {
           "nome": "Team Vitality",
           "jogadores": [
-            "ZywOo",
-            "mezii",
             "apEX",
+            "mezii",
             "ropz",
+            "ZywOo",
             "flameZ"
           ],
           "comecou_de": "t"
@@ -2748,11 +2748,11 @@
         "B": {
           "nome": "The MongolZ",
           "jogadores": [
-            "Mzinho",
             "910",
             "controlez",
+            "bLitz",
             "Techno4K",
-            "bLitz"
+            "Mzinho"
           ],
           "comecou_de": "ct"
         }
@@ -2774,7 +2774,7 @@
           "sha256": "9c2f1d0d9ad881dfc3da86e98844843ed6d7dc68afe99b1198d97632b5152fc6"
         }
       ],
-      "processado_em": "2026-09-19T01:25",
+      "processado_em": "2026-09-19T02:40",
       "limpeza": null
     }
   }

@@ -320,3 +320,32 @@ def test_os_pesos_gravados_sao_nao_negativos_e_validados_fora_da_amostra():
     # a validação é por PARTIDA, nunca por jogador (o teste ficaria otimista)
     assert v["metodo"] == "deixa uma partida fora" and v["partidas"] >= 10
     assert dados["medias_da_referencia"], "sem a referência, não dá para saber se os pesos envelheceram"
+
+
+def test_a_pagina_leva_o_rating_com_o_rotulo_de_implementacao_propria():
+    import json
+    from pathlib import Path
+
+    partidas = sorted(Path("data/processed").glob("match_*/insights.json"))
+    if not partidas:
+        pytest.skip("nenhuma partida processada")
+    ins = json.loads(partidas[-1].read_text(encoding="utf-8"))
+    assert all(p.get("rating") is not None for p in ins["players"])
+    texto = ins["rating_info"]["texto"]
+    assert "não é o número oficial" in texto and "Implementação própria" in texto
+
+
+def test_o_modelo_reconstruido_da_referencia_da_as_mesmas_probabilidades():
+    """Decisão 11: a página usa o modelo GLOBAL, reconstruído dos coeficientes;
+    se a reconstrução divergisse do modelo treinado, o rating da página não
+    seria o validado."""
+    import numpy as np
+
+    from metrics.rating import ModeloDeRound
+
+    rng = np.random.default_rng(0)
+    X = rng.normal(size=(400, 4))
+    y = (X[:, 0] + 0.5 * X[:, 2] + rng.normal(size=400) > 0).astype(int)
+    treinado = ModeloDeRound().treina(X, y)
+    reconstruido = ModeloDeRound.da_referencia(treinado.metricas)
+    assert np.allclose(treinado.prob(X), reconstruido.prob(X), atol=1e-9)
