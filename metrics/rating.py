@@ -496,13 +496,20 @@ def swing_por_evento(
 
     janela_trade = int(SEGUNDOS_TRADE * tickrate)
     janela_flash = int(SEGUNDOS_FLASH_ANTES_DA_KILL * tickrate)
+    fim_do_round = dict(rounds.select(pl.col("round_num").cast(pl.Int64), "end").iter_rows())
 
     linhas = []
     for rn_t, rk in kills.sort("tick").group_by("round_num", maintain_order=True):
         rn = int(rn_t[0]) if isinstance(rn_t, tuple) else int(rn_t)
         vivos = {"A": 5, "B": 5}
         t_plant = plant.get(rn)
-        eventos = rk.to_dicts()
+        # Round DECIDIDO não move probabilidade: a morte pela bomba é o próprio
+        # fim do round, e as kills da cauda acontecem depois dele. Medido: no
+        # Swing oficial elas somam zero; contadas aqui, a vítima pagava uma
+        # variação que ninguém recebia.
+        fim = fim_do_round.get(rn)
+        eventos = [e for e in rk.to_dicts()
+                   if (fim is None or e["tick"] < fim) and e.get("weapon") != "planted_c4"]
 
         dmg_round = damages.filter(pl.col("round_num") == rn)
         blind_round = (
@@ -623,12 +630,21 @@ def swing_por_evento(
                 len(vivos_fim[venc_time]) - len(vivos_fim[perd_time]), eq_v - eq_p,
                 t_plant is not None, lado_v == "ct")]))[0]
             salto = 1.0 - float(p_fim)
-            for sid in vivos_fim[venc_time]:
+            # Os dois lados do salto SEMPRE têm destinatário, senão a soma do
+            # round vaza (medido: sem isto, 1 de 31 partidas somava zero).
+            # - vencedor sem ninguém vivo (bomba explode com o TR todo morto):
+            #   o salto é do time inteiro que plantou e segurou;
+            # - perdedor sem ninguém vivo: a última morte é a que fechou o round,
+            #   e é ela que paga o salto que o modelo ainda não tinha dado.
+            ganham = vivos_fim[venc_time] or [s for s, x in team_of.items() if x == venc_time]
+            ultima = [e["victim_steamid"] for e in eventos if team_of.get(e["victim_steamid"]) == perd_time]
+            pagam = vivos_fim[perd_time] or ultima[-1:]
+            for sid in ganham:
                 linhas.append({"round_num": rn, "steamid": sid,
-                               "swing": salto / len(vivos_fim[venc_time]), "papel": "fim_do_round"})
-            for sid in vivos_fim[perd_time]:
+                               "swing": salto / len(ganham), "papel": "fim_do_round"})
+            for sid in pagam:
                 linhas.append({"round_num": rn, "steamid": sid,
-                               "swing": -salto / len(vivos_fim[perd_time]), "papel": "fim_do_round"})
+                               "swing": -salto / len(pagam), "papel": "fim_do_round"})
 
     if not linhas:
         return pl.DataFrame(
@@ -636,23 +652,13 @@ def swing_por_evento(
         )
 
     swing = pl.DataFrame(linhas)
-    por_jogador_round = swing.group_by(["round_num", "steamid"]).agg(pl.col("swing").sum())
-
-    # Regra da HLTV: round perdido nao gera Round Swing positivo, nem em clutch.
-    # Quem quase virou e perdeu nao ganha credito por ter chegado perto.
-    return por_jogador_round.with_columns(
-        pl.struct(["round_num", "steamid"])
-        .map_elements(
-            lambda s: vencedor_por_round.get(int(s["round_num"])) != team_of.get(s["steamid"]),
-            return_dtype=pl.Boolean,
-        )
-        .alias("perdeu")
-    ).with_columns(
-        pl.when(pl.col("perdeu"))
-        .then(pl.min_horizontal(pl.col("swing"), pl.lit(0.0)))
-        .otherwise(pl.col("swing"))
-        .alias("swing")
-    ).drop("perdeu")
+    # Variação de probabilidade PURA, sem corte para round perdido (decisão
+    # 22k do CLAUDE.md). A HLTV escreve que "round perdido não gera Swing
+    # positivo", mas o Swing oficial soma zero em 28 de 31 partidas, e cortar o
+    # positivo de quem perdeu faria a soma de TODA partida ficar negativa (a
+    # nossa ficava em -8,7 por partida). A frase descreve o time, não uma regra
+    # por jogador: o time que perde o round já soma negativo por construção.
+    return swing.group_by(["round_num", "steamid"]).agg(pl.col("swing").sum())
 
 
 # ---------------------------------------------------------------------------
@@ -882,9 +888,14 @@ def rating(
             desvios[nome] = float(referencia.get("desvios", {}).get(nome) or 0.0)
         else:
             m, sd = componentes[col].mean(), componentes[col].std()
-            medias[nome] = float(m) if m else 1.0
+            medias[nome] = float(m or 0.0)
             desvios[nome] = float(sd) if sd else 0.0
-        if abs(medias[nome]) < 1e-9:
+        # Média ~0 só é problema onde se DIVIDE pela média (os de razão). O
+        # Round Swing é centrado, e a média dele é zero por construção (soma zero
+        # por partida). REGRESSÃO: a proteção valia para os seis, trocava a média
+        # zero do Swing por 1,0 e deslocava cada partida por um valor diferente --
+        # o peso do Swing caiu de 0,38 para 0,006 na regressão.
+        if nome in SUB_RATINGS_RAZAO and abs(medias[nome]) < 1e-9:
             medias[nome] = 1.0
 
     dispersao_alvo = (

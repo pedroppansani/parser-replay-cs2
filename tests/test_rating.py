@@ -172,28 +172,6 @@ def _contexto(match_id: str):
     return tabelas, team_of, vencedor, kast
 
 
-@pytest.mark.parametrize("match_id", ["match_01", "match_08"])
-def test_round_perdido_nao_gera_swing_positivo(match_id):
-    """Regra explícita da HLTV, e ela vale inclusive em clutch perdido.
-
-    Quem quase virou e perdeu não ganha crédito por ter chegado perto -- o round
-    foi perdido, e o swing existe para medir o que mudou o resultado.
-    """
-    if not (INTERIM / match_id / "kills.parquet").exists():
-        pytest.skip("sem dado interim")
-    tabelas, team_of, vencedor, kast = _contexto(match_id)
-    per_round, _ = rating(tabelas, team_of, vencedor, kast, TICKRATE)
-
-    perdidos = per_round.filter(
-        pl.struct(["round_num", "steamid"]).map_elements(
-            lambda s: vencedor.get(int(s["round_num"])) != team_of.get(s["steamid"]),
-            return_dtype=pl.Boolean,
-        )
-    )
-    assert perdidos.height > 0, "o teste precisa de rounds perdidos para ter conteúdo"
-    assert perdidos["swing"].max() <= 1e-9
-
-
 @pytest.mark.parametrize("match_id", ["match_01"])
 def test_o_grupo_de_equipamento_sai_da_melhor_arma_do_round(match_id):
     """Quem compra AWP e morre com a pistola na mão comprou AWP."""
@@ -208,6 +186,12 @@ def test_o_grupo_de_equipamento_sai_da_melhor_arma_do_round(match_id):
     assert "sniper" in set(g["grupo"].unique())
 
 
+# ESPERADO FALHAR até o passo 7 (recalibração): o Round Swing virou variação de
+# probabilidade pura (decisão 22k) e a referência de escala + os pesos ainda são
+# os de antes, então a média do corpus está em ~1,105 em vez de 1,00. `strict`
+# de propósito: quando a recalibração acontecer o teste volta a passar, o pytest
+# acusa XPASS e obriga a tirar esta marca -- é assim que a pendência não some.
+@pytest.mark.xfail(strict=True, reason="fora de escala até a recalibração do passo 7 (CLAUDE.md 22k)")
 def test_a_media_do_rating_no_corpus_fica_perto_de_um():
     """A escala mantém média 1,00 -- é o que torna o número legível.
 
@@ -349,3 +333,40 @@ def test_o_modelo_reconstruido_da_referencia_da_as_mesmas_probabilidades():
     treinado = ModeloDeRound().treina(X, y)
     reconstruido = ModeloDeRound.da_referencia(treinado.metricas)
     assert np.allclose(treinado.prob(X), reconstruido.prob(X), atol=1e-9)
+
+
+# --- Conservação do Round Swing (decisão 22k) --------------------------------
+
+@pytest.mark.parametrize("match_id", ["match_43", "match_38", "match_30"])
+def test_swing_soma_zero_por_round_exceto_morte_sem_matador_inimigo(match_id):
+    """O Swing é variação de probabilidade pura: em cada round, o que um time
+    ganha o outro perde. A ÚNICA exceção é morte dentro do round sem matador
+    inimigo (fogo amigo, queda): a vítima paga e ninguém recebe -- igual ao
+    Swing oficial, que soma zero em 28 de 31 partidas e erra justamente nessas.
+    match_43 e match_30 têm uma dessas mortes; match_38 não tem nenhuma."""
+    from pathlib import Path
+
+    from metrics.rating import ModeloDeRound, carrega_referencia, grupo_do_round, swing_por_evento
+
+    raiz = Path(__file__).resolve().parent.parent
+    if not (raiz / "data" / "interim" / match_id / "kills.parquet").exists():
+        pytest.skip("sem interim")
+    from scripts.fit_rating import carrega_partida
+
+    t, team_of, venc, _ = carrega_partida(match_id)
+    modelo = ModeloDeRound.da_referencia((carrega_referencia() or {}).get("modelo_de_round"))
+    sw = swing_por_evento(t["kills"], t["damages"], t["player_blind"], t["rounds"],
+                          grupo_do_round(t["ticks"], t["rounds"]), modelo, team_of, venc, 64)
+    soma = dict(sw.group_by("round_num").agg(pl.col("swing").sum()).iter_rows())
+    fim = dict(t["rounds"].select("round_num", "end").iter_rows())
+    k = t["kills"]
+    sem_matador = {
+        int(r["round_num"]) for r in k.iter_rows(named=True)
+        if r["tick"] < fim[r["round_num"]] and r.get("weapon") != "planted_c4"
+        and (r["attacker_steamid"] is None or r["attacker_side"] == r["victim_side"])
+    }
+    for rn, s in soma.items():
+        if int(rn) in sem_matador:
+            assert s < 0, f"round {rn}: a vítima sem matador inimigo tinha que ter pago"
+        else:
+            assert abs(s) < 1e-9, f"round {rn} somou {s}"
