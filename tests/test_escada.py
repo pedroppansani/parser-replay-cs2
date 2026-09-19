@@ -10,7 +10,13 @@ from __future__ import annotations
 import polars as pl
 import pytest
 
-from scripts.escada_validacao import PROCESSED, REF, TOLERANCIA_ADR, contagens
+from scripts.escada_validacao import INTERIM, PROCESSED, REF, TOLERANCIA_ADR, contagens
+
+
+def _sem_interim() -> bool:
+    """O interim não é versionado (data/interim/ no .gitignore): num clone limpo
+    estes testes não têm o que comparar e são pulados, não quebrados."""
+    return not any(INTERIM.glob("*/kills.parquet")) if INTERIM.exists() else True
 
 # ADRs que ficam abaixo do oficial depois da correção do dano no mesmo tick, e
 # que nenhuma regra testada explica (dano em companheiro, corte do freeze time,
@@ -25,8 +31,8 @@ ADR_SEM_EXPLICACAO = {
 
 @pytest.fixture(scope="module")
 def c():
-    if not (REF / "hltv_placar.json").exists() or not PROCESSED.exists():
-        pytest.skip("sem referência oficial ou sem dados processados")
+    if not (REF / "hltv_placar.json").exists() or not PROCESSED.exists() or _sem_interim():
+        pytest.skip("sem referência oficial, dados processados ou interim")
     return contagens()
 
 
@@ -48,6 +54,8 @@ def test_aberturas_multikills_e_headshots_batem_exato_com_a_hltv():
     """Degrau 4, pela página 'Detailed stats' (por série)."""
     from scripts.escada_validacao import detalhado
 
+    if _sem_interim():
+        pytest.skip("sem data/interim (não versionado)")
     d = detalhado()
     if d.height == 0:
         pytest.skip("sem data/reference/hltv_detalhado.json")
