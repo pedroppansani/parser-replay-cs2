@@ -286,6 +286,19 @@ testada e estava errada.
    Pedro): contra o KAST oficial de 50 jogadores, 38 idênticos sem ela e 33
    com ela.
 
+8h. **Cegueira por flash é RECONSTRUÍDA nas demos de campeonato** (elas não
+   gravam `player_blind`; só as de FACEIT gravam). `parsing/cegueira.py`:
+   `flash_duration` recebe a duração TOTAL no tick em que a flash pega, fica
+   parado e volta a zero no fim -- e TROCA de valor sem passar por zero quando
+   outra flash pega o jogador ainda cego. Início = toda mudança para um valor
+   positivo (não só 0 -> positivo). Dono = detonação de flash no mesmo tick
+   (janela de 2 ticks); duas candidatas indistinguíveis deixam a cegueira SEM
+   DONO. Validado contra o evento real nas 9 de FACEIT: **1.578 de 1.578 com o
+   arremessador certo e a duração exata, nenhuma inventada**. Nas 43
+   profissionais: 11.736 cegueiras, 41 (0,35%) sem dono por detonação
+   simultânea. A tabela reconstruída leva `origem = "reconstruida"`. Medido: a
+   proporção de companheiros cegados por flash lançada é a mesma do evento real
+   (0,32 contra 0,34) -- cegar o próprio time é assim frequente mesmo.
 8c. **Sem atacante, o texto nunca usa o nome de alguém.** E fogo amigo diz
    "morto pelo companheiro X" (5 casos nas 52 partidas), nunca "morreu para X"
    como se X fosse adversário. A ABERTURA do round é o primeiro duelo ganho
