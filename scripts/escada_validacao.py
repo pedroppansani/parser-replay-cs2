@@ -11,7 +11,7 @@ na partida seguinte.
     1. rounds, kills e mortes      -- contagem: tem que bater EXATO
     2. ADR                         -- exato no arredondamento da HLTV (0,1)
     3. KAST                        -- rounds inteiros: exato
-    4. multi-kills e aberturas     -- contagem (sem dado oficial transcrito ainda)
+    4. aberturas, multi-kills, HS  -- contagem por SÉRIE (Detailed stats): exato
     5. Round Swing                 -- aqui começa a aproximação: correlação e erro
     6. rating                      -- por último
 
@@ -19,6 +19,7 @@ Fontes oficiais, todas transcritas dos prints da HLTV:
   data/reference/hltv_placar.json      K, D, ADR (410 jogadores, 41 partidas)
   data/reference/hltv_componentes.json KAST e Swing (310 jogadores, 31 partidas)
   data/reference/hltv_ratings.json     rating (430 jogadores, 43 partidas)
+  data/reference/hltv_detalhado.json   Detailed stats por série (50 jogadores, 5 séries)
 """
 from __future__ import annotations
 
@@ -79,6 +80,41 @@ def contagens() -> pl.DataFrame:
                 "kast_oficial": oc.get("kast_rounds"), "kast": kast.get(nome),
             })
     return pl.DataFrame(linhas, infer_schema_length=None)
+
+
+def detalhado() -> pl.DataFrame:
+    """Degrau 4: contagens da página 'Detailed stats' da HLTV, que é por SÉRIE --
+    os nossos mapas de cada série são somados antes de comparar. Série que não
+    está inteira no corpus fica de fora."""
+    arq = REF / "hltv_detalhado.json"
+    if not arq.exists():
+        return pl.DataFrame()
+    ref = json.loads(arq.read_text(encoding="utf-8"))
+    apelidos = ref.get("apelidos", {})
+    linhas = []
+    for serie, v in ref["series"].items():
+        if not v.get("serie_completa_no_corpus"):
+            continue
+        soma: dict[str, dict] = {}
+        for mid in v["mapas"]:
+            rounds = pl.read_parquet(PROCESSED / mid / "rounds.parquet")
+            k = kills_do_round_jogado(pl.read_parquet(INTERIM / mid / "kills.parquet"), rounds)
+            inim = k.filter(pl.col("attacker_steamid").is_not_null() & (pl.col("attacker_side") != pl.col("victim_side")))
+            # abertura = a primeira kill em inimigo do round (fogo amigo e bomba não abrem)
+            primeira = inim.sort("tick").group_by("round_num").first()
+            for nome in set(inim["attacker_name"].drop_nulls()) | set(k["victim_name"].drop_nulls()):
+                meu = inim.filter(pl.col("attacker_name") == nome)
+                s = soma.setdefault(nome, {"op_kills": 0, "op_mortes": 0, "mk_rounds": 0, "hs": 0})
+                s["op_kills"] += primeira.filter(pl.col("attacker_name") == nome).height
+                s["op_mortes"] += primeira.filter(pl.col("victim_name") == nome).height
+                s["mk_rounds"] += meu.group_by("round_num").len().filter(pl.col("len") >= 2).height
+                s["hs"] += meu.filter(pl.col("headshot")).height
+        for nome, o in v["jogadores"].items():
+            x = soma.get(apelidos.get(nome, nome)) or soma.get(nome) or {}
+            for campo in ("op_kills", "op_mortes", "mk_rounds", "hs"):
+                linhas.append({"serie": serie, "nome": nome, "campo": campo,
+                               "oficial": o[campo], "nosso": x.get(campo, 0)})
+    return pl.DataFrame(linhas)
 
 
 def swing() -> pl.DataFrame:
@@ -149,7 +185,14 @@ def main() -> None:
     print(f"\n3. KAST     {int((dk == 0).sum())}/{ck.height} exatos | acima {int((dk > 0).sum())} "
           f"({int(dk.filter(dk > 0).sum()):+d} rounds) | abaixo {int((dk < 0).sum())} ({int(dk.filter(dk < 0).sum()):+d} rounds)")
 
-    print("\n4. multi-kills e aberturas: sem dado oficial transcrito (página 'Detailed stats' da HLTV)")
+    dt = detalhado()
+    if dt.height:
+        print(f"\n4. contagens da 'Detailed stats' (por série, {dt['serie'].n_unique()} séries):")
+        for campo, g in dt.group_by("campo", maintain_order=True):
+            print(f"   {campo[0]:<10} {int((g['nosso'] == g['oficial']).sum())}/{g.height} exatos")
+        print("   (clutch, assistência de flash e morte trocada: ver CLAUDE.md 22j -- ainda não batem)")
+    else:
+        print("\n4. multi-kills e aberturas: sem data/reference/hltv_detalhado.json")
 
     if not args.rapido:
         s = swing().drop_nulls()

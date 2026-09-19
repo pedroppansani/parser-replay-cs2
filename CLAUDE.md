@@ -707,6 +707,24 @@ testada e estava errada.
     e 2). Rounds 41/41, kills e mortes 410/410, ADR 401/410, KAST 230/310.
     Multi-kills e aberturas sem dado oficial ainda. Cada print foi casado com a
     partida pelo RATING, não pelo K-D, para o degrau 1 não ser circular.
+22j. **Degrau 4 pela página "Detailed stats" da HLTV** (`data/reference/
+    hltv_detalhado.json`, POR SÉRIE -- os nossos mapas são somados; 5 séries
+    inteiras no corpus, 50 jogadores). Aberturas feitas e sofridas, rounds de
+    multi-kill, kills, headshots e mortes: 50/50 exatos (travado em teste).
+    Abertura = primeira kill em INIMIGO do round; as da HLTV somam exatamente um
+    por round. O que ainda não bate, medido:
+    - clutch (1vsX vencido): 32/50 com o nosso "último vivo contra 2+"; contando
+      o 1v1, 41/50. A HLTV conta 1v1. Mudar é decisão do Pedro (mexe no rei do
+      NT e nos cards).
+    - assistência: 19/50, faltando 44 no total, 41 delas de FLASH. O evento de
+      kill do jogo guarda UM assistente; a HLTV conta a flash à parte. Pela
+      cegueira reconstruída, "cegou e a vítima morreu ainda cega para um
+      companheiro" acerta o total (+6) mas só 22/50 por jogador.
+    - morte trocada (D(t)): 19/50 com a janela de 5s, e 30 a MAIS -- é a origem
+      direta do excesso do KAST (8g). O total bate com janela de ~4,25s, mas nenhuma
+      janela (2 a 6s), nem "vingada por qualquer um", nem "só a última vítima do
+      matador", nem "companheiro matou qualquer inimigo" passa de 20/50 por
+      jogador. A HLTV atribui a troca por uma regra que os dados não mostram.
 22h. **O Swing OFICIAL soma zero -- confirmado, não suposto.** Nos 310 Swings
     oficiais, a soma dos 10 de uma partida dá zero (dentro do arredondamento) em
     28 de 31, e as três exceções são exatamente as partidas com uma morte DENTRO

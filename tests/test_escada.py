@@ -1,5 +1,5 @@
 """
-Degraus 1 e 2 da escada de validação (scripts/escada_validacao.py): contagem
+Degraus 1, 2 e 4 da escada de validação (scripts/escada_validacao.py): contagem
 contra a HLTV tem que bater EXATO.
 
 Se um destes falhar, não olhe o rating: rating próximo com contagem errada é
@@ -7,6 +7,7 @@ coincidência.
 """
 from __future__ import annotations
 
+import polars as pl
 import pytest
 
 from scripts.escada_validacao import PROCESSED, REF, TOLERANCIA_ADR, contagens
@@ -41,3 +42,14 @@ def test_adr_bate_no_arredondamento_fora_dos_casos_conhecidos(c):
             if abs(r["adr"] - r["adr_oficial"]) > TOLERANCIA_ADR}
     assert fora - ADR_SEM_EXPLICACAO == set(), f"ADR novo fora do oficial: {sorted(fora - ADR_SEM_EXPLICACAO)}"
     assert c.height >= 400
+
+
+def test_aberturas_multikills_e_headshots_batem_exato_com_a_hltv():
+    """Degrau 4, pela página 'Detailed stats' (por série)."""
+    from scripts.escada_validacao import detalhado
+
+    d = detalhado()
+    if d.height == 0:
+        pytest.skip("sem data/reference/hltv_detalhado.json")
+    errados = d.filter(pl.col("nosso") != pl.col("oficial"))
+    assert errados.height == 0, errados
