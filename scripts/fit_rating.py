@@ -29,7 +29,7 @@ from pathlib import Path
 import numpy as np
 import polars as pl
 
-from parsing.parser import eventos_do_round_jogado, kills_do_round_jogado
+from parsing.parser import dano_real_no_mesmo_tick, eventos_do_round_jogado, kills_do_round_jogado
 from metrics.rating import (
     ModeloDeRound,
     PESOS_PROVISORIOS,
@@ -69,7 +69,7 @@ def carrega_partida(match_id: str) -> tuple:
         "rounds": rounds,
         "kills": kills,
         "ticks": ticks,
-        "damages": eventos_do_round_jogado(pl.read_parquet(interim / "damages.parquet"), rounds),
+        "damages": eventos_do_round_jogado(dano_real_no_mesmo_tick(pl.read_parquet(interim / "damages.parquet")), rounds),
         "player_blind": eventos_do_round_jogado(pl.read_parquet(blind), rounds) if blind.exists() else None,
         # compra no fim do freeze time: classe de equipamento do ajuste de economia
         "compra": pl.read_parquet(interim / "compra.parquet") if (interim / "compra.parquet").exists() else None,

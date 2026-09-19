@@ -302,6 +302,12 @@ testada e estava errada.
    ~1 em 5 deles). Também descartados: marcar só a última ou só a primeira
    vítima de um matador que matou várias, e ignorar vingança depois do fim do
    round. A regra que separa esses trades não é recuperável dos dados.
+   A hipótese "falta a assistência" também foi testada nos 310 e cai: o A já
+   conta (assistência comum), 59 dos 80 errados têm KAST A MAIS -- categoria a
+   menos não explica excesso --, e dos 21 abaixo só 1 fecha com flash assist.
+   Assistência por dano (quem feriu a vítima que um companheiro matou) com
+   limite de 41 dá os mesmos 230 (41 é o limite do próprio jogo); sem limite,
+   129. Caso isolado sem explicação: SH1R0 na match_38, 13 contra 16 oficial.
 
 8h. **Cegueira por flash é RECONSTRUÍDA nas demos de campeonato** (elas não
    gravam `player_blind`; só as de FACEIT gravam). `parsing/cegueira.py`:
@@ -328,6 +334,19 @@ testada e estava errada.
    (96%) -- o grupo deles é mais largo que o nome. Só a taxa entra na
    conversão em peso, então a diferença de nome não a afeta. Efeito, com os
    pesos congelados: erro contra o rating oficial 0,109 -> 0,094.
+8j. **`dmg_health_real` do awpy é recalculado no parsing.** O awpy trava cada
+   acerto na vida do INÍCIO do tick; com vários acertos na mesma vítima no mesmo
+   tick (balins de escopeta, dois atiradores juntos) a soma passava da vida --
+   dois balins de MAG-7 de 79 numa vítima de 100 contavam 158. Correção em
+   `parsing.parser.dano_real_no_mesmo_tick` (aplicada no `save_interim`, no
+   `load_interim` e nos scripts que leem o parquet direto; idempotente): cada
+   acerto travado no que os anteriores do tick deixaram. A base é o dano
+   INTEIRO, não a queda de `health` -- a vida é fracionária no jogo, e travar
+   pela queda de `health` derrubou o ADR para 131 de 410. Medido contra 410
+   ADRs oficiais: 380 -> 401 idênticos no arredondamento, maior diferença 2,74
+   -> 0,76. 28 acertos em 22 partidas (584 de dano). Os 9 que sobram estão
+   listados em `tests/test_escada.py`, todos abaixo do oficial, sem regra que os
+   explique. Há teste varrendo o interim atrás de tick com dano acima da vida.
 8c. **Sem atacante, o texto nunca usa o nome de alguém.** E fogo amigo diz
    "morto pelo companheiro X" (5 casos nas 52 partidas), nunca "morreu para X"
    como se X fosse adversário. A ABERTURA do round é o primeiro duelo ganho
@@ -645,6 +664,45 @@ testada e estava errada.
     que fecha em zero; como cada sub-rating é centrado na média do corpus, o
     deslocamento não afeta o rating. Rating: erro de TESTE 0,085, correlação
     0,956, erro por time entre 0,078 e 0,093 nos 6 times grandes.
+22g. **Escada de validação: contagem exata antes de olhar o rating**
+    (`scripts/escada_validacao.py`, K-D-ADR oficiais de 410 jogadores em
+    `data/reference/hltv_placar.json`; `tests/test_escada.py` trava os degraus 1
+    e 2). Rounds 41/41, kills e mortes 410/410, ADR 401/410, KAST 230/310.
+    Multi-kills e aberturas sem dado oficial ainda. Cada print foi casado com a
+    partida pelo RATING, não pelo K-D, para o degrau 1 não ser circular.
+22h. **O Swing OFICIAL soma zero -- confirmado, não suposto.** Nos 310 Swings
+    oficiais, a soma dos 10 de uma partida dá zero (dentro do arredondamento) em
+    28 de 31, e as três exceções são exatamente as partidas com uma morte DENTRO
+    do round sem matador inimigo (fogo amigo do FalleN e do molodoy no KSCERATO,
+    queda do TeSeS): a vítima paga e ninguém recebe. Morte pela bomba e morte
+    depois do fim do round somam zero -- o round já estava decidido. Nosso código
+    faz o mesmo com fogo amigo (match_43: -0,54 nosso, -0,54 oficial). Isto
+    REFUTA a regra do round perdido aplicada como corte: cortar o positivo de
+    quem perdeu deixa a soma negativa em TODA partida (a nossa: mediana -8,7 por
+    partida). Nosso Swing ainda vaza em três pontos, medidos: perdedor sem
+    ninguém vivo no fim (o salto final não é debitado de ninguém), vencedor sem
+    ninguém vivo (bomba explodindo com o TR todo morto: os CTs pagam e ninguém
+    recebe), e eventos com o round já decidido (morte pela bomba, cauda). Com os
+    três fechados a soma zera em 28 de 31, as mesmas três do oficial, e o erro
+    por time cai de 4,89 para 3,29 p.p. A correção no código ESPERA a decisão do
+    Pedro sobre como fica a regra do round perdido (sem a regra ou devolvendo o
+    corte ao próprio time -- os dados não separam as duas).
+22i. **Dividir pela média e padronizar pelo desvio dão o MESMO rating aqui.**
+    Com agregado linear, pesos ajustados e intercepto livre, x/média e
+    (x - média)/desvio são a mesma família de funções: medido, previsões
+    idênticas até 1e-15 em validação deixa-uma-partida-fora. A mudança do
+    Rating 2.0 para desvio-padrão só pesa com pesos FIXOS. Não "corrija" isso.
+    O defeito de forma que existe é outro: `fit_rating.componentes_do_corpus`
+    normaliza cada partida pela PRÓPRIA média (não passa a referência), e o site
+    aplica os pesos sobre a normalização do CORPUS -- os pesos são ajustados numa
+    escala e usados em outra. Medido, custou pouco desta vez (site 0,081 contra
+    0,083 dentro da amostra), mas tem que ser alinhado na próxima calibração.
+    Onde o resíduo do rating se concentra (430 jogadores, controlando o nível):
+    kill com menos de 60 de dano próprio +0,105, morte trocada -0,178, kills de
+    CT menos de TR +0,112 -- os três no sentido dos detalhes que a HLTV publicou
+    (penalidade da kill "assistida", morte trocada punida menos, cálculo por
+    lado), mas juntos explicam só 5,3% da variância do resíduo. O resto é
+    espalhado: forma do modelo de probabilidade, não componente.
 23. **Anotação no mapa: coordenada de jogo, um único ponto de redimensionamento,
     camada sempre transparente.** A camada vive em `dashboard/web/annotations.js`
     e `annotations.css`, injetados no build; o template não tem texto nem estilo
@@ -769,6 +827,7 @@ Não "resolva" nenhum destes automaticamente; pergunte.
 py -3.12 -m pytest tests/ -v          # 291 testes
 py -3.12 -m scripts.process_demo data/raw/match_01.dem --match-id match_01 --from-interim
 py -3.12 -m streamlit run dashboard/app.py
+py -3.12 -m scripts.escada_validacao     # rating: contagens contra a HLTV, de baixo para cima
 ```
 
 Ao mexer numa métrica, confira o efeito na tabela round a round, não só no

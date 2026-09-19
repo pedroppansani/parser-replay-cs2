@@ -182,6 +182,9 @@ def save_interim(demo: Demo, interim_dir: Path | str, match_id: str) -> dict[str
     # O round de faca sai AQUI, antes de gravar: todo leitor do interim (as
     # métricas, o replay, a calibração do rating) recebe a partida já sem ele.
     tables, faca = remove_round_de_faca(tables)
+    # vários acertos no mesmo tick: o awpy trava cada um na vida do início do
+    # tick e a soma passa de 100 (ver dano_real_no_mesmo_tick)
+    tables["damages"] = dano_real_no_mesmo_tick(tables["damages"])
 
     paths: dict[str, Path] = {}
     for name, df in tables.items():
@@ -339,6 +342,8 @@ def load_interim(interim_dir: Path | str, match_id: str) -> dict[str, pl.DataFra
     # Fica aqui para que TODO consumidor de --from-interim receba o dado limpo
     # sem precisar lembrar de filtrar (ver kills_do_round_jogado).
     tables["kills"] = kills_do_round_jogado(tables["kills"], tables["rounds"])
+    # idempotente: um interim gravado antes da correção também sai certo
+    tables["damages"] = dano_real_no_mesmo_tick(tables["damages"])
     for nome in EVENTOS_COM_CORTE_DO_FREEZE:
         if nome in tables:
             tables[nome] = eventos_do_round_jogado(tables[nome], tables["rounds"])
@@ -400,6 +405,47 @@ def _rounds_de_intervalo(rounds: pl.DataFrame) -> list[int]:
 # `grenades` NÃO entra: as linhas dela no freeze time são granada no
 # inventário (posição nula), e é assim que se sabe quem comprou o quê.
 EVENTOS_COM_CORTE_DO_FREEZE = ("damages", "shots", "player_blind")
+
+
+# ---------------------------------------------------------------------------
+# Dano real com vários acertos no mesmo tick
+# ---------------------------------------------------------------------------
+#
+# O awpy calcula `dmg_health_real = min(dmg_health, victim_health)`, e
+# `victim_health` é a vida no INÍCIO do tick. Com vários acertos na mesma vítima
+# no mesmo tick -- os balins de uma escopeta, dois atiradores ao mesmo tempo --
+# cada acerto é travado na MESMA vida inicial e a soma passa da vida que a
+# vítima tinha: dois balins de MAG-7 de 79 numa vítima com 100 contavam 158.
+#
+# Correção: dentro de (round, vítima, tick), na ordem do arquivo, cada acerto é
+# travado no que os anteriores deixaram. A base é o dano INTEIRO do evento, não
+# a queda da coluna `health`: a vida é fracionária no jogo (`health` cai 28
+# quando `dmg_health` diz 27), e o que bate com a HLTV é o dano inteiro travado.
+# Medido contra 410 ADRs oficiais: idênticos no arredondamento em 380 antes e
+# 401 depois; a maior diferença caiu de 2,74 para 0,76. Os 9 que sobram ficam
+# todos ABAIXO do oficial (até 27 de dano na partida) e nenhuma regra testada os
+# explica -- nem dano em companheiro, nem o corte do freeze time.
+#
+# Recalcular a partir de `dmg_health` e `victim_health` torna a função
+# idempotente: aplicar de novo num interim já corrigido não muda nada.
+
+
+def dano_real_no_mesmo_tick(damages: pl.DataFrame) -> pl.DataFrame:
+    """`dmg_health_real` travado na vida que SOBROU depois dos acertos anteriores
+    do mesmo tick na mesma vítima."""
+    necessarias = {"dmg_health", "victim_health", "victim_steamid", "tick"}
+    if damages is None or damages.height == 0 or not necessarias <= set(damages.columns):
+        return damages
+    grupo = [c for c in ("round_num", "victim_steamid", "tick") if c in damages.columns]
+    tipo = damages.schema.get("dmg_health_real", pl.Int32)
+    acumulado = pl.col("dmg_health").cum_sum().over(grupo)
+    return damages.with_columns(
+        (pl.min_horizontal(acumulado, pl.col("victim_health"))
+         - pl.min_horizontal(acumulado - pl.col("dmg_health"), pl.col("victim_health")))
+        .clip(lower_bound=0)
+        .cast(tipo)
+        .alias("dmg_health_real")
+    )
 
 
 def eventos_do_round_jogado(eventos: pl.DataFrame, rounds: pl.DataFrame) -> pl.DataFrame:

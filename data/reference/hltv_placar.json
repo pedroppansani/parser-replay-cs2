@@ -1,0 +1,2301 @@
+{
+  "_leia_isto": "K, D e ADR OFICIAIS da HLTV por jogador, transcritos dos prints enviados pelo Pedro (o rating do mesmo print está em hltv_ratings.json, e foi por ele -- não pelo K-D -- que cada print foi casado com a partida). Nome do jogador como gravado na demo. Base do degrau 1 e 2 da escada de validação (scripts/escada_validacao.py).",
+  "partidas": {
+    "match_12": {
+      "placar": "13-10",
+      "rounds": 23,
+      "jogadores": {
+        "FalleN": {
+          "kills": 11,
+          "mortes": 19,
+          "adr": 59.8
+        },
+        "KSCERATO": {
+          "kills": 22,
+          "mortes": 11,
+          "adr": 106.7
+        },
+        "YEKINDAR": {
+          "kills": 9,
+          "mortes": 15,
+          "adr": 51.7
+        },
+        "ZywOo": {
+          "kills": 22,
+          "mortes": 13,
+          "adr": 99.1
+        },
+        "apEX": {
+          "kills": 15,
+          "mortes": 16,
+          "adr": 73.9
+        },
+        "flameZ": {
+          "kills": 12,
+          "mortes": 15,
+          "adr": 46.7
+        },
+        "mezii": {
+          "kills": 11,
+          "mortes": 14,
+          "adr": 57.8
+        },
+        "molodoy": {
+          "kills": 7,
+          "mortes": 18,
+          "adr": 43.4
+        },
+        "ropz": {
+          "kills": 18,
+          "mortes": 14,
+          "adr": 91.5
+        },
+        "yuurih": {
+          "kills": 23,
+          "mortes": 15,
+          "adr": 85.7
+        }
+      }
+    },
+    "match_14": {
+      "placar": "10-13",
+      "rounds": 23,
+      "jogadores": {
+        "FalleN": {
+          "kills": 9,
+          "mortes": 16,
+          "adr": 58.3
+        },
+        "KSCERATO": {
+          "kills": 14,
+          "mortes": 17,
+          "adr": 80.0
+        },
+        "YEKINDAR": {
+          "kills": 17,
+          "mortes": 17,
+          "adr": 77.8
+        },
+        "ZywOo": {
+          "kills": 27,
+          "mortes": 14,
+          "adr": 96.7
+        },
+        "apEX": {
+          "kills": 19,
+          "mortes": 14,
+          "adr": 74.0
+        },
+        "flameZ": {
+          "kills": 18,
+          "mortes": 15,
+          "adr": 87.4
+        },
+        "mezii": {
+          "kills": 6,
+          "mortes": 16,
+          "adr": 60.2
+        },
+        "molodoy": {
+          "kills": 12,
+          "mortes": 17,
+          "adr": 50.7
+        },
+        "ropz": {
+          "kills": 15,
+          "mortes": 13,
+          "adr": 82.7
+        },
+        "yuurih": {
+          "kills": 20,
+          "mortes": 18,
+          "adr": 89.6
+        }
+      }
+    },
+    "match_15": {
+      "placar": "13-3",
+      "rounds": 16,
+      "jogadores": {
+        "Aleksib": {
+          "kills": 6,
+          "mortes": 8,
+          "adr": 54.4
+        },
+        "FalleN": {
+          "kills": 5,
+          "mortes": 13,
+          "adr": 51.9
+        },
+        "KSCERATO": {
+          "kills": 9,
+          "mortes": 12,
+          "adr": 64.2
+        },
+        "YEKINDAR": {
+          "kills": 9,
+          "mortes": 15,
+          "adr": 69.9
+        },
+        "b1t": {
+          "kills": 9,
+          "mortes": 5,
+          "adr": 63.2
+        },
+        "iM": {
+          "kills": 22,
+          "mortes": 8,
+          "adr": 132.1
+        },
+        "makazze": {
+          "kills": 13,
+          "mortes": 8,
+          "adr": 89.1
+        },
+        "molodoy": {
+          "kills": 3,
+          "mortes": 13,
+          "adr": 19.4
+        },
+        "w0nderful": {
+          "kills": 15,
+          "mortes": 6,
+          "adr": 80.9
+        },
+        "yuurih": {
+          "kills": 9,
+          "mortes": 12,
+          "adr": 57.7
+        }
+      }
+    },
+    "match_16": {
+      "placar": "13-16",
+      "rounds": 29,
+      "jogadores": {
+        "Aleksib": {
+          "kills": 13,
+          "mortes": 21,
+          "adr": 53.5
+        },
+        "FalleN": {
+          "kills": 20,
+          "mortes": 20,
+          "adr": 84.0
+        },
+        "KSCERATO": {
+          "kills": 24,
+          "mortes": 20,
+          "adr": 82.1
+        },
+        "YEKINDAR": {
+          "kills": 18,
+          "mortes": 21,
+          "adr": 70.3
+        },
+        "b1t": {
+          "kills": 17,
+          "mortes": 25,
+          "adr": 70.6
+        },
+        "iM": {
+          "kills": 18,
+          "mortes": 21,
+          "adr": 72.5
+        },
+        "makazze": {
+          "kills": 24,
+          "mortes": 20,
+          "adr": 83.1
+        },
+        "molodoy": {
+          "kills": 19,
+          "mortes": 15,
+          "adr": 55.7
+        },
+        "w0nderful": {
+          "kills": 20,
+          "mortes": 17,
+          "adr": 66.8
+        },
+        "yuurih": {
+          "kills": 21,
+          "mortes": 18,
+          "adr": 86.3
+        }
+      }
+    },
+    "match_17": {
+      "placar": "13-4",
+      "rounds": 17,
+      "jogadores": {
+        "Aleksib": {
+          "kills": 9,
+          "mortes": 12,
+          "adr": 71.2
+        },
+        "FalleN": {
+          "kills": 15,
+          "mortes": 10,
+          "adr": 84.7
+        },
+        "KSCERATO": {
+          "kills": 9,
+          "mortes": 10,
+          "adr": 53.0
+        },
+        "YEKINDAR": {
+          "kills": 13,
+          "mortes": 10,
+          "adr": 78.2
+        },
+        "b1t": {
+          "kills": 6,
+          "mortes": 12,
+          "adr": 70.1
+        },
+        "iM": {
+          "kills": 5,
+          "mortes": 13,
+          "adr": 35.6
+        },
+        "makazze": {
+          "kills": 10,
+          "mortes": 15,
+          "adr": 60.5
+        },
+        "molodoy": {
+          "kills": 18,
+          "mortes": 9,
+          "adr": 107.4
+        },
+        "w0nderful": {
+          "kills": 14,
+          "mortes": 14,
+          "adr": 70.8
+        },
+        "yuurih": {
+          "kills": 11,
+          "mortes": 5,
+          "adr": 81.6
+        }
+      }
+    },
+    "match_18": {
+      "placar": "11-13",
+      "rounds": 24,
+      "jogadores": {
+        "FalleN": {
+          "kills": 15,
+          "mortes": 16,
+          "adr": 72.6
+        },
+        "KSCERATO": {
+          "kills": 28,
+          "mortes": 15,
+          "adr": 118.1
+        },
+        "NiKo": {
+          "kills": 14,
+          "mortes": 15,
+          "adr": 62.0
+        },
+        "TeSeS": {
+          "kills": 14,
+          "mortes": 16,
+          "adr": 65.7
+        },
+        "YEKINDAR": {
+          "kills": 10,
+          "mortes": 20,
+          "adr": 50.2
+        },
+        "kyousuke": {
+          "kills": 24,
+          "mortes": 14,
+          "adr": 96.6
+        },
+        "kyxsan": {
+          "kills": 17,
+          "mortes": 13,
+          "adr": 90.0
+        },
+        "m0NESY": {
+          "kills": 13,
+          "mortes": 12,
+          "adr": 54.5
+        },
+        "molodoy": {
+          "kills": 8,
+          "mortes": 15,
+          "adr": 44.1
+        },
+        "yuurih": {
+          "kills": 8,
+          "mortes": 16,
+          "adr": 43.8
+        }
+      }
+    },
+    "match_19": {
+      "placar": "4-13",
+      "rounds": 17,
+      "jogadores": {
+        "FalleN": {
+          "kills": 7,
+          "mortes": 14,
+          "adr": 42.8
+        },
+        "KSCERATO": {
+          "kills": 8,
+          "mortes": 13,
+          "adr": 61.0
+        },
+        "NiKo": {
+          "kills": 12,
+          "mortes": 8,
+          "adr": 76.3
+        },
+        "TeSeS": {
+          "kills": 10,
+          "mortes": 7,
+          "adr": 57.7
+        },
+        "YEKINDAR": {
+          "kills": 9,
+          "mortes": 13,
+          "adr": 70.5
+        },
+        "kyousuke": {
+          "kills": 23,
+          "mortes": 9,
+          "adr": 119.9
+        },
+        "kyxsan": {
+          "kills": 6,
+          "mortes": 11,
+          "adr": 67.7
+        },
+        "m0NESY": {
+          "kills": 17,
+          "mortes": 6,
+          "adr": 92.6
+        },
+        "molodoy": {
+          "kills": 13,
+          "mortes": 14,
+          "adr": 67.9
+        },
+        "yuurih": {
+          "kills": 3,
+          "mortes": 14,
+          "adr": 40.3
+        }
+      }
+    },
+    "match_20": {
+      "placar": "14-16",
+      "rounds": 30,
+      "jogadores": {
+        "FalleN": {
+          "kills": 21,
+          "mortes": 15,
+          "adr": 66.4
+        },
+        "KSCERATO": {
+          "kills": 19,
+          "mortes": 19,
+          "adr": 59.1
+        },
+        "NiKo": {
+          "kills": 10,
+          "mortes": 22,
+          "adr": 41.3
+        },
+        "TeSeS": {
+          "kills": 12,
+          "mortes": 23,
+          "adr": 42.4
+        },
+        "YEKINDAR": {
+          "kills": 19,
+          "mortes": 20,
+          "adr": 60.3
+        },
+        "kyousuke": {
+          "kills": 21,
+          "mortes": 21,
+          "adr": 83.8
+        },
+        "kyxsan": {
+          "kills": 16,
+          "mortes": 16,
+          "adr": 62.1
+        },
+        "m0NESY": {
+          "kills": 30,
+          "mortes": 17,
+          "adr": 90.2
+        },
+        "molodoy": {
+          "kills": 25,
+          "mortes": 13,
+          "adr": 81.3
+        },
+        "yuurih": {
+          "kills": 15,
+          "mortes": 23,
+          "adr": 78.1
+        }
+      }
+    },
+    "match_21": {
+      "placar": "13-8",
+      "rounds": 21,
+      "jogadores": {
+        "Aleksib": {
+          "kills": 11,
+          "mortes": 16,
+          "adr": 57.0
+        },
+        "Jimpphat": {
+          "kills": 23,
+          "mortes": 11,
+          "adr": 102.2
+        },
+        "Wicadia": {
+          "kills": 16,
+          "mortes": 14,
+          "adr": 70.9
+        },
+        "XANTARES": {
+          "kills": 12,
+          "mortes": 14,
+          "adr": 69.3
+        },
+        "b1t": {
+          "kills": 18,
+          "mortes": 15,
+          "adr": 85.9
+        },
+        "iM": {
+          "kills": 14,
+          "mortes": 15,
+          "adr": 76.8
+        },
+        "kyxsan": {
+          "kills": 11,
+          "mortes": 14,
+          "adr": 59.0
+        },
+        "makazze": {
+          "kills": 16,
+          "mortes": 16,
+          "adr": 84.0
+        },
+        "w0nderful": {
+          "kills": 7,
+          "mortes": 14,
+          "adr": 34.0
+        },
+        "woxic": {
+          "kills": 14,
+          "mortes": 13,
+          "adr": 72.1
+        }
+      }
+    },
+    "match_22": {
+      "placar": "7-13",
+      "rounds": 20,
+      "jogadores": {
+        "Aleksib": {
+          "kills": 9,
+          "mortes": 14,
+          "adr": 58.9
+        },
+        "Jimpphat": {
+          "kills": 15,
+          "mortes": 12,
+          "adr": 69.4
+        },
+        "Wicadia": {
+          "kills": 11,
+          "mortes": 12,
+          "adr": 75.8
+        },
+        "XANTARES": {
+          "kills": 11,
+          "mortes": 14,
+          "adr": 74.7
+        },
+        "b1t": {
+          "kills": 10,
+          "mortes": 17,
+          "adr": 48.1
+        },
+        "iM": {
+          "kills": 15,
+          "mortes": 17,
+          "adr": 81.8
+        },
+        "kyxsan": {
+          "kills": 21,
+          "mortes": 16,
+          "adr": 112.1
+        },
+        "makazze": {
+          "kills": 16,
+          "mortes": 14,
+          "adr": 84.0
+        },
+        "w0nderful": {
+          "kills": 14,
+          "mortes": 14,
+          "adr": 77.0
+        },
+        "woxic": {
+          "kills": 18,
+          "mortes": 10,
+          "adr": 67.2
+        }
+      }
+    },
+    "match_23": {
+      "placar": "13-9",
+      "rounds": 22,
+      "jogadores": {
+        "MaSvAl": {
+          "kills": 11,
+          "mortes": 17,
+          "adr": 60.3
+        },
+        "ZywOo": {
+          "kills": 22,
+          "mortes": 12,
+          "adr": 109.5
+        },
+        "apEX": {
+          "kills": 16,
+          "mortes": 14,
+          "adr": 76.4
+        },
+        "eksiver": {
+          "kills": 11,
+          "mortes": 16,
+          "adr": 51.3
+        },
+        "flameZ": {
+          "kills": 7,
+          "mortes": 15,
+          "adr": 45.0
+        },
+        "mezii": {
+          "kills": 10,
+          "mortes": 15,
+          "adr": 63.5
+        },
+        "mo0N": {
+          "kills": 20,
+          "mortes": 14,
+          "adr": 85.6
+        },
+        "ropz": {
+          "kills": 20,
+          "mortes": 14,
+          "adr": 75.5
+        },
+        "sFade8": {
+          "kills": 13,
+          "mortes": 15,
+          "adr": 66.6
+        },
+        "tenzy": {
+          "kills": 15,
+          "mortes": 15,
+          "adr": 78.5
+        }
+      }
+    },
+    "match_24": {
+      "placar": "13-7",
+      "rounds": 20,
+      "jogadores": {
+        "Aleksib": {
+          "kills": 6,
+          "mortes": 13,
+          "adr": 44.5
+        },
+        "b1t": {
+          "kills": 13,
+          "mortes": 14,
+          "adr": 63.4
+        },
+        "chopper": {
+          "kills": 13,
+          "mortes": 15,
+          "adr": 75.3
+        },
+        "donk": {
+          "kills": 20,
+          "mortes": 11,
+          "adr": 98.1
+        },
+        "iM": {
+          "kills": 8,
+          "mortes": 14,
+          "adr": 53.9
+        },
+        "jL": {
+          "kills": 13,
+          "mortes": 15,
+          "adr": 85.8
+        },
+        "magixx": {
+          "kills": 6,
+          "mortes": 11,
+          "adr": 46.5
+        },
+        "sh1ro": {
+          "kills": 20,
+          "mortes": 8,
+          "adr": 103.2
+        },
+        "w0nderful": {
+          "kills": 11,
+          "mortes": 13,
+          "adr": 66.7
+        },
+        "zont1x": {
+          "kills": 10,
+          "mortes": 6,
+          "adr": 50.4
+        }
+      }
+    },
+    "match_25": {
+      "placar": "6-13",
+      "rounds": 19,
+      "jogadores": {
+        "Aleksib": {
+          "kills": 12,
+          "mortes": 14,
+          "adr": 72.5
+        },
+        "b1t": {
+          "kills": 6,
+          "mortes": 17,
+          "adr": 56.4
+        },
+        "chopper": {
+          "kills": 11,
+          "mortes": 13,
+          "adr": 77.7
+        },
+        "donk": {
+          "kills": 22,
+          "mortes": 9,
+          "adr": 106.2
+        },
+        "iM": {
+          "kills": 9,
+          "mortes": 15,
+          "adr": 67.3
+        },
+        "jL": {
+          "kills": 13,
+          "mortes": 15,
+          "adr": 68.9
+        },
+        "magixx": {
+          "kills": 9,
+          "mortes": 12,
+          "adr": 69.0
+        },
+        "sh1ro": {
+          "kills": 17,
+          "mortes": 6,
+          "adr": 80.8
+        },
+        "w0nderful": {
+          "kills": 9,
+          "mortes": 14,
+          "adr": 50.5
+        },
+        "zont1x": {
+          "kills": 16,
+          "mortes": 9,
+          "adr": 81.9
+        }
+      }
+    },
+    "match_26": {
+      "placar": "13-6",
+      "rounds": 19,
+      "jogadores": {
+        "ZywOo": {
+          "kills": 15,
+          "mortes": 11,
+          "adr": 76.7
+        },
+        "apEX": {
+          "kills": 12,
+          "mortes": 15,
+          "adr": 60.0
+        },
+        "chopper": {
+          "kills": 15,
+          "mortes": 15,
+          "adr": 64.8
+        },
+        "donk": {
+          "kills": 16,
+          "mortes": 10,
+          "adr": 91.1
+        },
+        "flameZ": {
+          "kills": 16,
+          "mortes": 13,
+          "adr": 87.5
+        },
+        "magixx": {
+          "kills": 8,
+          "mortes": 9,
+          "adr": 63.8
+        },
+        "mezii": {
+          "kills": 10,
+          "mortes": 11,
+          "adr": 67.9
+        },
+        "ropz": {
+          "kills": 4,
+          "mortes": 11,
+          "adr": 30.1
+        },
+        "sh1ro": {
+          "kills": 12,
+          "mortes": 11,
+          "adr": 78.6
+        },
+        "zont1x": {
+          "kills": 10,
+          "mortes": 12,
+          "adr": 60.1
+        }
+      }
+    },
+    "match_27": {
+      "placar": "5-13",
+      "rounds": 18,
+      "jogadores": {
+        "ZywOo": {
+          "kills": 12,
+          "mortes": 16,
+          "adr": 72.6
+        },
+        "apEX": {
+          "kills": 11,
+          "mortes": 16,
+          "adr": 62.8
+        },
+        "chopper": {
+          "kills": 17,
+          "mortes": 10,
+          "adr": 95.1
+        },
+        "donk": {
+          "kills": 19,
+          "mortes": 8,
+          "adr": 111.6
+        },
+        "flameZ": {
+          "kills": 9,
+          "mortes": 16,
+          "adr": 53.5
+        },
+        "magixx": {
+          "kills": 16,
+          "mortes": 9,
+          "adr": 89.6
+        },
+        "mezii": {
+          "kills": 4,
+          "mortes": 17,
+          "adr": 38.5
+        },
+        "ropz": {
+          "kills": 10,
+          "mortes": 14,
+          "adr": 65.4
+        },
+        "sh1ro": {
+          "kills": 14,
+          "mortes": 10,
+          "adr": 72.0
+        },
+        "zont1x": {
+          "kills": 12,
+          "mortes": 10,
+          "adr": 75.9
+        }
+      }
+    },
+    "match_28": {
+      "placar": "13-10",
+      "rounds": 23,
+      "jogadores": {
+        "ZywOo": {
+          "kills": 26,
+          "mortes": 14,
+          "adr": 104.5
+        },
+        "apEX": {
+          "kills": 14,
+          "mortes": 19,
+          "adr": 73.0
+        },
+        "chopper": {
+          "kills": 9,
+          "mortes": 18,
+          "adr": 46.7
+        },
+        "donk": {
+          "kills": 21,
+          "mortes": 18,
+          "adr": 97.4
+        },
+        "flameZ": {
+          "kills": 13,
+          "mortes": 16,
+          "adr": 67.0
+        },
+        "magixx": {
+          "kills": 9,
+          "mortes": 15,
+          "adr": 57.9
+        },
+        "mezii": {
+          "kills": 9,
+          "mortes": 13,
+          "adr": 53.5
+        },
+        "ropz": {
+          "kills": 19,
+          "mortes": 13,
+          "adr": 74.8
+        },
+        "sh1ro": {
+          "kills": 20,
+          "mortes": 14,
+          "adr": 94.7
+        },
+        "zont1x": {
+          "kills": 15,
+          "mortes": 16,
+          "adr": 63.0
+        }
+      }
+    },
+    "match_29": {
+      "placar": "3-13",
+      "rounds": 16,
+      "jogadores": {
+        "FalleN": {
+          "kills": 3,
+          "mortes": 16,
+          "adr": 30.4
+        },
+        "KSCERATO": {
+          "kills": 8,
+          "mortes": 14,
+          "adr": 66.9
+        },
+        "NiKo": {
+          "kills": 13,
+          "mortes": 10,
+          "adr": 72.8
+        },
+        "TeSeS": {
+          "kills": 9,
+          "mortes": 10,
+          "adr": 56.9
+        },
+        "YEKINDAR": {
+          "kills": 10,
+          "mortes": 14,
+          "adr": 57.0
+        },
+        "kyousuke": {
+          "kills": 7,
+          "mortes": 14,
+          "adr": 73.6
+        },
+        "kyxsan": {
+          "kills": 23,
+          "mortes": 7,
+          "adr": 140.6
+        },
+        "m0NESY": {
+          "kills": 18,
+          "mortes": 8,
+          "adr": 120.1
+        },
+        "molodoy": {
+          "kills": 15,
+          "mortes": 12,
+          "adr": 94.1
+        },
+        "yuurih": {
+          "kills": 13,
+          "mortes": 15,
+          "adr": 85.2
+        }
+      }
+    },
+    "match_30": {
+      "placar": "9-13",
+      "rounds": 22,
+      "jogadores": {
+        "FalleN": {
+          "kills": 13,
+          "mortes": 12,
+          "adr": 75.4
+        },
+        "KSCERATO": {
+          "kills": 15,
+          "mortes": 13,
+          "adr": 80.1
+        },
+        "NiKo": {
+          "kills": 11,
+          "mortes": 16,
+          "adr": 61.7
+        },
+        "TeSeS": {
+          "kills": 9,
+          "mortes": 16,
+          "adr": 43.0
+        },
+        "YEKINDAR": {
+          "kills": 27,
+          "mortes": 13,
+          "adr": 119.0
+        },
+        "kyousuke": {
+          "kills": 18,
+          "mortes": 19,
+          "adr": 94.0
+        },
+        "kyxsan": {
+          "kills": 13,
+          "mortes": 15,
+          "adr": 67.0
+        },
+        "m0NESY": {
+          "kills": 13,
+          "mortes": 16,
+          "adr": 64.6
+        },
+        "molodoy": {
+          "kills": 9,
+          "mortes": 13,
+          "adr": 37.0
+        },
+        "yuurih": {
+          "kills": 15,
+          "mortes": 13,
+          "adr": 66.3
+        }
+      }
+    },
+    "match_31": {
+      "placar": "19-15",
+      "rounds": 34,
+      "jogadores": {
+        "FalleN": {
+          "kills": 16,
+          "mortes": 25,
+          "adr": 57.6
+        },
+        "KSCERATO": {
+          "kills": 24,
+          "mortes": 26,
+          "adr": 80.8
+        },
+        "NiKo": {
+          "kills": 20,
+          "mortes": 27,
+          "adr": 60.1
+        },
+        "TeSeS": {
+          "kills": 22,
+          "mortes": 23,
+          "adr": 79.0
+        },
+        "YEKINDAR": {
+          "kills": 22,
+          "mortes": 26,
+          "adr": 67.2
+        },
+        "kyousuke": {
+          "kills": 25,
+          "mortes": 25,
+          "adr": 78.4
+        },
+        "kyxsan": {
+          "kills": 22,
+          "mortes": 24,
+          "adr": 70.3
+        },
+        "m0NESY": {
+          "kills": 29,
+          "mortes": 24,
+          "adr": 89.9
+        },
+        "molodoy": {
+          "kills": 32,
+          "mortes": 19,
+          "adr": 82.8
+        },
+        "yuurih": {
+          "kills": 29,
+          "mortes": 22,
+          "adr": 94.3
+        }
+      }
+    },
+    "match_32": {
+      "placar": "16-19",
+      "rounds": 35,
+      "jogadores": {
+        "FalleN": {
+          "kills": 23,
+          "mortes": 23,
+          "adr": 67.8
+        },
+        "KSCERATO": {
+          "kills": 22,
+          "mortes": 19,
+          "adr": 66.8
+        },
+        "NiKo": {
+          "kills": 13,
+          "mortes": 29,
+          "adr": 49.7
+        },
+        "TeSeS": {
+          "kills": 22,
+          "mortes": 25,
+          "adr": 69.2
+        },
+        "YEKINDAR": {
+          "kills": 30,
+          "mortes": 26,
+          "adr": 98.7
+        },
+        "kyousuke": {
+          "kills": 16,
+          "mortes": 27,
+          "adr": 67.2
+        },
+        "kyxsan": {
+          "kills": 25,
+          "mortes": 24,
+          "adr": 72.7
+        },
+        "m0NESY": {
+          "kills": 31,
+          "mortes": 26,
+          "adr": 79.4
+        },
+        "molodoy": {
+          "kills": 32,
+          "mortes": 19,
+          "adr": 86.6
+        },
+        "yuurih": {
+          "kills": 23,
+          "mortes": 21,
+          "adr": 76.7
+        }
+      }
+    },
+    "match_33": {
+      "placar": "13-11",
+      "rounds": 24,
+      "jogadores": {
+        "Brollan": {
+          "kills": 13,
+          "mortes": 20,
+          "adr": 57.2
+        },
+        "Jimpphat": {
+          "kills": 18,
+          "mortes": 15,
+          "adr": 80.9
+        },
+        "Spinx": {
+          "kills": 15,
+          "mortes": 18,
+          "adr": 77.4
+        },
+        "ZywOo": {
+          "kills": 21,
+          "mortes": 12,
+          "adr": 98.8
+        },
+        "apEX": {
+          "kills": 15,
+          "mortes": 17,
+          "adr": 85.6
+        },
+        "flameZ": {
+          "kills": 13,
+          "mortes": 15,
+          "adr": 64.5
+        },
+        "mezii": {
+          "kills": 18,
+          "mortes": 13,
+          "adr": 74.5
+        },
+        "ropz": {
+          "kills": 23,
+          "mortes": 14,
+          "adr": 92.4
+        },
+        "torzsi": {
+          "kills": 13,
+          "mortes": 17,
+          "adr": 48.5
+        },
+        "xertioN": {
+          "kills": 12,
+          "mortes": 20,
+          "adr": 72.5
+        }
+      }
+    },
+    "match_34": {
+      "placar": "9-13",
+      "rounds": 22,
+      "jogadores": {
+        "Brollan": {
+          "kills": 10,
+          "mortes": 18,
+          "adr": 69.5
+        },
+        "Jimpphat": {
+          "kills": 11,
+          "mortes": 15,
+          "adr": 70.4
+        },
+        "Spinx": {
+          "kills": 20,
+          "mortes": 17,
+          "adr": 83.2
+        },
+        "ZywOo": {
+          "kills": 25,
+          "mortes": 12,
+          "adr": 120.2
+        },
+        "apEX": {
+          "kills": 12,
+          "mortes": 17,
+          "adr": 52.0
+        },
+        "flameZ": {
+          "kills": 16,
+          "mortes": 16,
+          "adr": 91.5
+        },
+        "mezii": {
+          "kills": 12,
+          "mortes": 15,
+          "adr": 53.7
+        },
+        "ropz": {
+          "kills": 13,
+          "mortes": 13,
+          "adr": 61.2
+        },
+        "torzsi": {
+          "kills": 18,
+          "mortes": 13,
+          "adr": 69.2
+        },
+        "xertioN": {
+          "kills": 12,
+          "mortes": 16,
+          "adr": 56.5
+        }
+      }
+    },
+    "match_35": {
+      "placar": "13-8",
+      "rounds": 21,
+      "jogadores": {
+        "Brollan": {
+          "kills": 9,
+          "mortes": 15,
+          "adr": 59.6
+        },
+        "Jimpphat": {
+          "kills": 6,
+          "mortes": 13,
+          "adr": 37.2
+        },
+        "Spinx": {
+          "kills": 18,
+          "mortes": 14,
+          "adr": 86.1
+        },
+        "ZywOo": {
+          "kills": 13,
+          "mortes": 11,
+          "adr": 79.0
+        },
+        "apEX": {
+          "kills": 14,
+          "mortes": 9,
+          "adr": 69.4
+        },
+        "flameZ": {
+          "kills": 10,
+          "mortes": 10,
+          "adr": 51.4
+        },
+        "mezii": {
+          "kills": 17,
+          "mortes": 14,
+          "adr": 74.1
+        },
+        "ropz": {
+          "kills": 12,
+          "mortes": 12,
+          "adr": 74.5
+        },
+        "torzsi": {
+          "kills": 7,
+          "mortes": 11,
+          "adr": 48.0
+        },
+        "xertioN": {
+          "kills": 16,
+          "mortes": 13,
+          "adr": 89.3
+        }
+      }
+    },
+    "match_36": {
+      "placar": "8-13",
+      "rounds": 21,
+      "jogadores": {
+        "Aleksib": {
+          "kills": 13,
+          "mortes": 15,
+          "adr": 62.5
+        },
+        "b1t": {
+          "kills": 17,
+          "mortes": 13,
+          "adr": 85.2
+        },
+        "chopper": {
+          "kills": 8,
+          "mortes": 15,
+          "adr": 49.1
+        },
+        "donk": {
+          "kills": 25,
+          "mortes": 13,
+          "adr": 106.6
+        },
+        "iM": {
+          "kills": 12,
+          "mortes": 17,
+          "adr": 64.8
+        },
+        "jL": {
+          "kills": 10,
+          "mortes": 19,
+          "adr": 72.1
+        },
+        "magixx": {
+          "kills": 9,
+          "mortes": 13,
+          "adr": 63.9
+        },
+        "sh1ro": {
+          "kills": 17,
+          "mortes": 12,
+          "adr": 95.6
+        },
+        "w0nderful": {
+          "kills": 13,
+          "mortes": 16,
+          "adr": 60.6
+        },
+        "zont1x": {
+          "kills": 21,
+          "mortes": 13,
+          "adr": 81.7
+        }
+      }
+    },
+    "match_37": {
+      "placar": "16-14",
+      "rounds": 30,
+      "jogadores": {
+        "Aleksib": {
+          "kills": 12,
+          "mortes": 21,
+          "adr": 43.7
+        },
+        "b1t": {
+          "kills": 21,
+          "mortes": 21,
+          "adr": 79.5
+        },
+        "chopper": {
+          "kills": 13,
+          "mortes": 16,
+          "adr": 57.2
+        },
+        "donk": {
+          "kills": 30,
+          "mortes": 23,
+          "adr": 94.5
+        },
+        "iM": {
+          "kills": 20,
+          "mortes": 22,
+          "adr": 91.9
+        },
+        "jL": {
+          "kills": 18,
+          "mortes": 20,
+          "adr": 78.5
+        },
+        "magixx": {
+          "kills": 22,
+          "mortes": 16,
+          "adr": 82.4
+        },
+        "sh1ro": {
+          "kills": 24,
+          "mortes": 17,
+          "adr": 86.3
+        },
+        "w0nderful": {
+          "kills": 17,
+          "mortes": 19,
+          "adr": 56.2
+        },
+        "zont1x": {
+          "kills": 14,
+          "mortes": 16,
+          "adr": 57.4
+        }
+      }
+    },
+    "match_38": {
+      "placar": "13-8",
+      "rounds": 21,
+      "jogadores": {
+        "Aleksib": {
+          "kills": 12,
+          "mortes": 15,
+          "adr": 52.3
+        },
+        "SH1R0": {
+          "kills": 13,
+          "mortes": 11,
+          "adr": 65.9
+        },
+        "b1t": {
+          "kills": 16,
+          "mortes": 14,
+          "adr": 87.6
+        },
+        "chopper": {
+          "kills": 7,
+          "mortes": 17,
+          "adr": 48.1
+        },
+        "donk": {
+          "kills": 17,
+          "mortes": 15,
+          "adr": 98.3
+        },
+        "iM": {
+          "kills": 19,
+          "mortes": 13,
+          "adr": 94.7
+        },
+        "jL": {
+          "kills": 15,
+          "mortes": 14,
+          "adr": 88.9
+        },
+        "magixx": {
+          "kills": 13,
+          "mortes": 16,
+          "adr": 68.8
+        },
+        "w0nderful": {
+          "kills": 12,
+          "mortes": 12,
+          "adr": 55.6
+        },
+        "zont1x": {
+          "kills": 18,
+          "mortes": 15,
+          "adr": 96.7
+        }
+      }
+    },
+    "match_39": {
+      "placar": "13-11",
+      "rounds": 24,
+      "jogadores": {
+        "Aleksib": {
+          "kills": 11,
+          "mortes": 14,
+          "adr": 40.0
+        },
+        "SH1R0": {
+          "kills": 20,
+          "mortes": 13,
+          "adr": 92.9
+        },
+        "b1t": {
+          "kills": 15,
+          "mortes": 16,
+          "adr": 69.0
+        },
+        "chopper": {
+          "kills": 15,
+          "mortes": 15,
+          "adr": 61.0
+        },
+        "donk": {
+          "kills": 24,
+          "mortes": 13,
+          "adr": 110.3
+        },
+        "iM": {
+          "kills": 11,
+          "mortes": 14,
+          "adr": 46.2
+        },
+        "jL": {
+          "kills": 20,
+          "mortes": 17,
+          "adr": 92.7
+        },
+        "magixx": {
+          "kills": 6,
+          "mortes": 15,
+          "adr": 38.3
+        },
+        "w0nderful": {
+          "kills": 13,
+          "mortes": 14,
+          "adr": 79.4
+        },
+        "zont1x": {
+          "kills": 10,
+          "mortes": 14,
+          "adr": 37.8
+        }
+      }
+    },
+    "match_40": {
+      "placar": "16-14",
+      "rounds": 30,
+      "jogadores": {
+        "Aleksib": {
+          "kills": 17,
+          "mortes": 23,
+          "adr": 67.0
+        },
+        "SH1R0": {
+          "kills": 17,
+          "mortes": 22,
+          "adr": 68.2
+        },
+        "b1t": {
+          "kills": 19,
+          "mortes": 21,
+          "adr": 74.5
+        },
+        "chopper": {
+          "kills": 17,
+          "mortes": 24,
+          "adr": 72.6
+        },
+        "donk": {
+          "kills": 30,
+          "mortes": 21,
+          "adr": 102.0
+        },
+        "iM": {
+          "kills": 23,
+          "mortes": 22,
+          "adr": 83.0
+        },
+        "jL": {
+          "kills": 25,
+          "mortes": 19,
+          "adr": 85.2
+        },
+        "magixx": {
+          "kills": 13,
+          "mortes": 19,
+          "adr": 62.6
+        },
+        "w0nderful": {
+          "kills": 20,
+          "mortes": 17,
+          "adr": 65.2
+        },
+        "zont1x": {
+          "kills": 25,
+          "mortes": 19,
+          "adr": 67.2
+        }
+      }
+    },
+    "match_41": {
+      "placar": "16-14",
+      "rounds": 30,
+      "jogadores": {
+        "Brollan": {
+          "kills": 21,
+          "mortes": 19,
+          "adr": 76.6
+        },
+        "Jimpphat": {
+          "kills": 17,
+          "mortes": 16,
+          "adr": 47.7
+        },
+        "NiKo": {
+          "kills": 20,
+          "mortes": 20,
+          "adr": 68.1
+        },
+        "Spinx": {
+          "kills": 24,
+          "mortes": 20,
+          "adr": 80.7
+        },
+        "TeSeS": {
+          "kills": 17,
+          "mortes": 20,
+          "adr": 65.5
+        },
+        "kyousuke": {
+          "kills": 23,
+          "mortes": 23,
+          "adr": 80.0
+        },
+        "kyxsan": {
+          "kills": 11,
+          "mortes": 21,
+          "adr": 65.6
+        },
+        "m0NESY": {
+          "kills": 20,
+          "mortes": 22,
+          "adr": 65.4
+        },
+        "torzsi": {
+          "kills": 24,
+          "mortes": 20,
+          "adr": 84.9
+        },
+        "xertioN": {
+          "kills": 17,
+          "mortes": 18,
+          "adr": 85.3
+        }
+      }
+    },
+    "match_42": {
+      "placar": "17-19",
+      "rounds": 36,
+      "jogadores": {
+        "Brollan": {
+          "kills": 17,
+          "mortes": 29,
+          "adr": 60.9
+        },
+        "Jimpphat": {
+          "kills": 19,
+          "mortes": 23,
+          "adr": 60.4
+        },
+        "NiKo": {
+          "kills": 24,
+          "mortes": 20,
+          "adr": 79.1
+        },
+        "Spinx": {
+          "kills": 24,
+          "mortes": 22,
+          "adr": 70.4
+        },
+        "TeSeS": {
+          "kills": 21,
+          "mortes": 27,
+          "adr": 70.4
+        },
+        "kyousuke": {
+          "kills": 27,
+          "mortes": 24,
+          "adr": 67.6
+        },
+        "kyxsan": {
+          "kills": 18,
+          "mortes": 22,
+          "adr": 48.6
+        },
+        "m0NESY": {
+          "kills": 30,
+          "mortes": 21,
+          "adr": 93.7
+        },
+        "torzsi": {
+          "kills": 21,
+          "mortes": 24,
+          "adr": 54.5
+        },
+        "xertioN": {
+          "kills": 31,
+          "mortes": 23,
+          "adr": 90.7
+        }
+      }
+    },
+    "match_43": {
+      "placar": "13-11",
+      "rounds": 24,
+      "jogadores": {
+        "FalleN": {
+          "kills": 15,
+          "mortes": 17,
+          "adr": 74.2
+        },
+        "KSCERATO": {
+          "kills": 11,
+          "mortes": 14,
+          "adr": 60.0
+        },
+        "YEKINDAR": {
+          "kills": 16,
+          "mortes": 16,
+          "adr": 64.0
+        },
+        "ZywOo": {
+          "kills": 21,
+          "mortes": 13,
+          "adr": 84.4
+        },
+        "apEX": {
+          "kills": 18,
+          "mortes": 19,
+          "adr": 99.0
+        },
+        "flameZ": {
+          "kills": 22,
+          "mortes": 18,
+          "adr": 101.6
+        },
+        "mezii": {
+          "kills": 7,
+          "mortes": 16,
+          "adr": 37.8
+        },
+        "molodoy": {
+          "kills": 17,
+          "mortes": 17,
+          "adr": 74.9
+        },
+        "ropz": {
+          "kills": 13,
+          "mortes": 15,
+          "adr": 48.6
+        },
+        "yuurih": {
+          "kills": 21,
+          "mortes": 18,
+          "adr": 84.8
+        }
+      }
+    },
+    "match_44": {
+      "placar": "13-8",
+      "rounds": 21,
+      "jogadores": {
+        "FalleN": {
+          "kills": 10,
+          "mortes": 14,
+          "adr": 55.1
+        },
+        "KSCERATO": {
+          "kills": 13,
+          "mortes": 13,
+          "adr": 84.0
+        },
+        "YEKINDAR": {
+          "kills": 18,
+          "mortes": 14,
+          "adr": 84.9
+        },
+        "ZywOo": {
+          "kills": 27,
+          "mortes": 10,
+          "adr": 116.0
+        },
+        "apEX": {
+          "kills": 7,
+          "mortes": 14,
+          "adr": 56.7
+        },
+        "flameZ": {
+          "kills": 18,
+          "mortes": 15,
+          "adr": 64.1
+        },
+        "mezii": {
+          "kills": 10,
+          "mortes": 13,
+          "adr": 66.5
+        },
+        "molodoy": {
+          "kills": 13,
+          "mortes": 16,
+          "adr": 66.1
+        },
+        "ropz": {
+          "kills": 9,
+          "mortes": 12,
+          "adr": 57.0
+        },
+        "yuurih": {
+          "kills": 9,
+          "mortes": 14,
+          "adr": 55.3
+        }
+      }
+    },
+    "match_45": {
+      "placar": "2-13",
+      "rounds": 15,
+      "jogadores": {
+        "FalleN": {
+          "kills": 6,
+          "mortes": 14,
+          "adr": 40.0
+        },
+        "KSCERATO": {
+          "kills": 6,
+          "mortes": 14,
+          "adr": 54.3
+        },
+        "YEKINDAR": {
+          "kills": 11,
+          "mortes": 13,
+          "adr": 82.9
+        },
+        "ZywOo": {
+          "kills": 17,
+          "mortes": 6,
+          "adr": 105.8
+        },
+        "apEX": {
+          "kills": 12,
+          "mortes": 8,
+          "adr": 89.4
+        },
+        "flameZ": {
+          "kills": 12,
+          "mortes": 8,
+          "adr": 83.6
+        },
+        "mezii": {
+          "kills": 18,
+          "mortes": 5,
+          "adr": 126.1
+        },
+        "molodoy": {
+          "kills": 4,
+          "mortes": 15,
+          "adr": 34.5
+        },
+        "ropz": {
+          "kills": 10,
+          "mortes": 5,
+          "adr": 60.5
+        },
+        "yuurih": {
+          "kills": 5,
+          "mortes": 14,
+          "adr": 50.4
+        }
+      }
+    },
+    "match_46": {
+      "placar": "13-10",
+      "rounds": 23,
+      "jogadores": {
+        "FalleN": {
+          "kills": 15,
+          "mortes": 17,
+          "adr": 68.7
+        },
+        "KSCERATO": {
+          "kills": 15,
+          "mortes": 15,
+          "adr": 73.2
+        },
+        "YEKINDAR": {
+          "kills": 13,
+          "mortes": 19,
+          "adr": 54.9
+        },
+        "ZywOo": {
+          "kills": 25,
+          "mortes": 12,
+          "adr": 101.3
+        },
+        "apEX": {
+          "kills": 16,
+          "mortes": 16,
+          "adr": 79.9
+        },
+        "flameZ": {
+          "kills": 16,
+          "mortes": 15,
+          "adr": 79.0
+        },
+        "mezii": {
+          "kills": 14,
+          "mortes": 14,
+          "adr": 67.8
+        },
+        "molodoy": {
+          "kills": 10,
+          "mortes": 16,
+          "adr": 38.4
+        },
+        "ropz": {
+          "kills": 14,
+          "mortes": 11,
+          "adr": 69.5
+        },
+        "yuurih": {
+          "kills": 14,
+          "mortes": 18,
+          "adr": 84.3
+        }
+      }
+    },
+    "match_47": {
+      "placar": "7-13",
+      "rounds": 20,
+      "jogadores": {
+        "Brollan": {
+          "kills": 14,
+          "mortes": 17,
+          "adr": 72.7
+        },
+        "Jimpphat": {
+          "kills": 19,
+          "mortes": 14,
+          "adr": 90.4
+        },
+        "Spinx": {
+          "kills": 9,
+          "mortes": 17,
+          "adr": 51.0
+        },
+        "ZywOo": {
+          "kills": 22,
+          "mortes": 11,
+          "adr": 107.5
+        },
+        "apEX": {
+          "kills": 20,
+          "mortes": 15,
+          "adr": 98.9
+        },
+        "flameZ": {
+          "kills": 11,
+          "mortes": 16,
+          "adr": 69.8
+        },
+        "mezii": {
+          "kills": 11,
+          "mortes": 13,
+          "adr": 54.3
+        },
+        "ropz": {
+          "kills": 18,
+          "mortes": 12,
+          "adr": 97.7
+        },
+        "torzsi": {
+          "kills": 11,
+          "mortes": 17,
+          "adr": 61.0
+        },
+        "xertioN": {
+          "kills": 14,
+          "mortes": 17,
+          "adr": 82.9
+        }
+      }
+    },
+    "match_48": {
+      "placar": "13-6",
+      "rounds": 19,
+      "jogadores": {
+        "Brollan": {
+          "kills": 9,
+          "mortes": 16,
+          "adr": 57.5
+        },
+        "Jimpphat": {
+          "kills": 9,
+          "mortes": 13,
+          "adr": 55.2
+        },
+        "Spinx": {
+          "kills": 8,
+          "mortes": 12,
+          "adr": 60.8
+        },
+        "ZywOo": {
+          "kills": 18,
+          "mortes": 8,
+          "adr": 99.9
+        },
+        "apEX": {
+          "kills": 10,
+          "mortes": 12,
+          "adr": 54.3
+        },
+        "flameZ": {
+          "kills": 12,
+          "mortes": 11,
+          "adr": 78.5
+        },
+        "mezii": {
+          "kills": 8,
+          "mortes": 8,
+          "adr": 39.4
+        },
+        "ropz": {
+          "kills": 17,
+          "mortes": 7,
+          "adr": 84.5
+        },
+        "torzsi": {
+          "kills": 13,
+          "mortes": 13,
+          "adr": 59.9
+        },
+        "xertioN": {
+          "kills": 6,
+          "mortes": 13,
+          "adr": 50.3
+        }
+      }
+    },
+    "match_49": {
+      "placar": "13-11",
+      "rounds": 24,
+      "jogadores": {
+        "Brollan": {
+          "kills": 13,
+          "mortes": 21,
+          "adr": 69.5
+        },
+        "Jimpphat": {
+          "kills": 13,
+          "mortes": 14,
+          "adr": 54.2
+        },
+        "NiKo": {
+          "kills": 19,
+          "mortes": 14,
+          "adr": 77.4
+        },
+        "Spinx": {
+          "kills": 10,
+          "mortes": 18,
+          "adr": 58.4
+        },
+        "TeSeS": {
+          "kills": 15,
+          "mortes": 14,
+          "adr": 68.5
+        },
+        "kyousuke": {
+          "kills": 17,
+          "mortes": 16,
+          "adr": 70.0
+        },
+        "kyxsan": {
+          "kills": 18,
+          "mortes": 16,
+          "adr": 82.2
+        },
+        "m0NESY": {
+          "kills": 18,
+          "mortes": 13,
+          "adr": 78.9
+        },
+        "torzsi": {
+          "kills": 18,
+          "mortes": 15,
+          "adr": 70.1
+        },
+        "xertioN": {
+          "kills": 19,
+          "mortes": 19,
+          "adr": 83.9
+        }
+      }
+    },
+    "match_50": {
+      "placar": "13-6",
+      "rounds": 19,
+      "jogadores": {
+        "Brollan": {
+          "kills": 8,
+          "mortes": 13,
+          "adr": 53.9
+        },
+        "Jimpphat": {
+          "kills": 10,
+          "mortes": 9,
+          "adr": 53.0
+        },
+        "NiKo": {
+          "kills": 11,
+          "mortes": 14,
+          "adr": 70.2
+        },
+        "Spinx": {
+          "kills": 20,
+          "mortes": 13,
+          "adr": 96.1
+        },
+        "TeSeS": {
+          "kills": 15,
+          "mortes": 14,
+          "adr": 83.1
+        },
+        "kyousuke": {
+          "kills": 5,
+          "mortes": 15,
+          "adr": 38.6
+        },
+        "kyxsan": {
+          "kills": 8,
+          "mortes": 12,
+          "adr": 50.5
+        },
+        "m0NESY": {
+          "kills": 14,
+          "mortes": 14,
+          "adr": 71.8
+        },
+        "torzsi": {
+          "kills": 18,
+          "mortes": 8,
+          "adr": 91.6
+        },
+        "xertioN": {
+          "kills": 13,
+          "mortes": 10,
+          "adr": 74.5
+        }
+      }
+    },
+    "match_51": {
+      "placar": "10-13",
+      "rounds": 23,
+      "jogadores": {
+        "Brollan": {
+          "kills": 11,
+          "mortes": 14,
+          "adr": 54.1
+        },
+        "Jimpphat": {
+          "kills": 19,
+          "mortes": 14,
+          "adr": 86.2
+        },
+        "NiKo": {
+          "kills": 14,
+          "mortes": 16,
+          "adr": 70.5
+        },
+        "Spinx": {
+          "kills": 20,
+          "mortes": 14,
+          "adr": 80.4
+        },
+        "TeSeS": {
+          "kills": 8,
+          "mortes": 16,
+          "adr": 50.6
+        },
+        "kyousuke": {
+          "kills": 22,
+          "mortes": 17,
+          "adr": 92.2
+        },
+        "kyxsan": {
+          "kills": 12,
+          "mortes": 17,
+          "adr": 58.4
+        },
+        "m0NESY": {
+          "kills": 16,
+          "mortes": 13,
+          "adr": 80.9
+        },
+        "torzsi": {
+          "kills": 12,
+          "mortes": 14,
+          "adr": 68.7
+        },
+        "xertioN": {
+          "kills": 16,
+          "mortes": 16,
+          "adr": 75.4
+        }
+      }
+    },
+    "match_52": {
+      "placar": "5-13",
+      "rounds": 18,
+      "jogadores": {
+        "910": {
+          "kills": 9,
+          "mortes": 16,
+          "adr": 51.4
+        },
+        "Mzinho": {
+          "kills": 14,
+          "mortes": 14,
+          "adr": 86.0
+        },
+        "Techno4K": {
+          "kills": 12,
+          "mortes": 14,
+          "adr": 61.3
+        },
+        "ZywOo": {
+          "kills": 25,
+          "mortes": 8,
+          "adr": 135.3
+        },
+        "apEX": {
+          "kills": 5,
+          "mortes": 12,
+          "adr": 41.3
+        },
+        "bLitz": {
+          "kills": 11,
+          "mortes": 15,
+          "adr": 93.9
+        },
+        "controlez": {
+          "kills": 6,
+          "mortes": 15,
+          "adr": 43.4
+        },
+        "flameZ": {
+          "kills": 15,
+          "mortes": 12,
+          "adr": 84.0
+        },
+        "mezii": {
+          "kills": 18,
+          "mortes": 11,
+          "adr": 105.2
+        },
+        "ropz": {
+          "kills": 11,
+          "mortes": 9,
+          "adr": 75.7
+        }
+      }
+    },
+    "match_53": {
+      "placar": "13-4",
+      "rounds": 17,
+      "jogadores": {
+        "910": {
+          "kills": 14,
+          "mortes": 14,
+          "adr": 75.2
+        },
+        "Mzinho": {
+          "kills": 15,
+          "mortes": 14,
+          "adr": 87.7
+        },
+        "Techno4K": {
+          "kills": 7,
+          "mortes": 13,
+          "adr": 48.6
+        },
+        "ZywOo": {
+          "kills": 21,
+          "mortes": 10,
+          "adr": 126.4
+        },
+        "apEX": {
+          "kills": 9,
+          "mortes": 11,
+          "adr": 48.2
+        },
+        "bLitz": {
+          "kills": 7,
+          "mortes": 16,
+          "adr": 64.0
+        },
+        "controlez": {
+          "kills": 6,
+          "mortes": 14,
+          "adr": 42.5
+        },
+        "flameZ": {
+          "kills": 11,
+          "mortes": 11,
+          "adr": 84.1
+        },
+        "mezii": {
+          "kills": 12,
+          "mortes": 10,
+          "adr": 69.4
+        },
+        "ropz": {
+          "kills": 18,
+          "mortes": 8,
+          "adr": 97.5
+        }
+      }
+    }
+  }
+}

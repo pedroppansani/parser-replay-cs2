@@ -105,13 +105,23 @@ a cada vez (nunca o mesmo jogo dos dois lados da divisão).
 
 A maior parte do ganho veio de **consertar componentes**, não de ajustar pesos:
 com os componentes corrigidos, até os pesos antigos dão erro 0,086. Cada
-componente também é conferido direto contra o que a HLTV publica por jogador:
+componente também é conferido direto contra o que a HLTV publica por jogador,
+de baixo para cima — contagem errada embaixo faria qualquer acerto em cima ser
+coincidência (`py -3.12 -m scripts.escada_validacao`):
 
-- **K-D e ADR**: idênticos (K-D) e a menos de 1–2 de ADR nos 430 jogadores;
+- **rounds, kills e mortes**: idênticos em 41 de 41 mapas e 410 de 410
+  jogadores (travado em teste);
+- **ADR**: idêntico no arredondamento em 401 de 410; os 9 restantes ficam a no
+  máximo 0,76 abaixo. Chegar aqui exigiu corrigir o dano do awpy quando há
+  vários acertos no mesmo tick (balins de escopeta contavam 158 de dano numa
+  vítima de 100 de vida);
 - **KAST**: idêntico em 230 de 310 jogadores; o excesso restante está em rounds
   creditados só por trade, e a regra exata da HLTV não é recuperável dos dados;
 - **Round Swing**: correlação 0,89 com o Swing oficial de 310 jogadores, na
-  mesma escala (inclinação 1,01).
+  mesma escala (inclinação 1,01). O Swing oficial **soma zero** em cada mapa
+  (28 de 31; as três exceções são exatamente os mapas com fogo amigo ou queda
+  no meio do round) — uma propriedade que a HLTV não publicou e que vira
+  restrição do modelo daqui.
 
 Erro de teste por time (o corpus é quase todo de 7 times; se o modelo tivesse
 aprendido o estilo de um deles, aquele time destoaria):

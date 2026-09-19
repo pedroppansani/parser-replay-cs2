@@ -26,7 +26,7 @@ from pathlib import Path
 
 import polars as pl
 
-from parsing.parser import eventos_do_round_jogado, kills_do_round_jogado
+from parsing.parser import dano_real_no_mesmo_tick, eventos_do_round_jogado, kills_do_round_jogado
 from metrics.archetypes import (
     PAPEIS,
     compute_for_match,
@@ -449,7 +449,7 @@ def build(match_id: str) -> Path:
         "ticks": ticks,
         "kills": kills,
         "rounds": rounds,
-        "damages": eventos_do_round_jogado(pl.read_parquet(interim / "damages.parquet"), rounds),
+        "damages": eventos_do_round_jogado(dano_real_no_mesmo_tick(pl.read_parquet(interim / "damages.parquet")), rounds),
     }
     saidas = {
         "cluster_features": features,

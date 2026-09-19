@@ -90,7 +90,9 @@ def calculate_adr(damages: pl.DataFrame, roster: pl.DataFrame) -> tuple[pl.DataF
     Usa dmg_health_real, que o awpy já calcula travando o dano no HP restante da
     vítima -- sem isso, um headshot de AWP (115 de dano) num inimigo com 40 de
     vida infla o dano "de verdade" acima do que aconteceu. É assim que
-    HLTV/Leetify calculam ADR também.
+    HLTV/Leetify calculam ADR também. Com vários acertos no mesmo tick a trava
+    do awpy falha (usa a vida do início do tick para todos); o parsing corrige
+    isso antes de chegar aqui (`parsing.parser.dano_real_no_mesmo_tick`).
     """
     dmg_by_round = (
         enemy_damages(damages)
