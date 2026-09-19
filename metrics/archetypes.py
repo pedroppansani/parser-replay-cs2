@@ -73,6 +73,33 @@ MIN_AWP_ROUNDS = 4
 # Kills no round que caracterizam multikill, igual ao usado nos insights.
 MULTIKILL_MIN = 3
 
+# --- Eixo carrega piano <-> baiter ------------------------------------------
+#
+# Os dois são o MESMO eixo visto das duas pontas: quem paga a conta para o time
+# colher, e quem deixa o time pagar a conta dele. Um jogador não pode ser os dois
+# na mesma partida -- por isso é UM índice contínuo com sinal, e os rótulos saem
+# das duas pontas:
+#
+#   sacrifice_index = percentil(sacrifício com retorno)
+#                   - percentil(mortes de companheiro por perto sem troca, por round)
+#
+# de -1 (baiter) a +1 (carrega piano). O que separa carrega piano de jogador
+# ruim é o RETORNO: os dois morrem abrindo o round, mas só no primeiro o time
+# colhe. Medido nas 52 partidas (520 jogador-partidas): pagar a conta SEM
+# retorno correlaciona -0,31 com o rating; pagar COM retorno, -0,05 --
+# independente de jogar bem ou mal, que é o que o papel tem que ser.
+
+# Janela em que uma flash ainda explica a kill do companheiro que veio depois.
+# A mesma do crédito de flash no Round Swing (metrics/rating.py).
+SEGUNDOS_FLASH_RETORNO = 3.0
+
+# Pisos do eixo. 0,5 = meia distribuição de diferença entre as duas pontas (por
+# exemplo, quartil de cima no sacrifício e quartil de baixo na isca). Medido no
+# corpus: 91 jogador-partidas do lado do piano e 86 do lado do baiter, de 520.
+# Ponto de calibração do Pedro -- ver scripts/calibration_report.py.
+PISO_CARREGA_PIANO = 0.5
+PISO_BAITER = -0.5
+
 
 # --- Fatos por round --------------------------------------------------------
 
@@ -405,6 +432,47 @@ def solo_hold_signals(player_areas: pl.DataFrame) -> pl.DataFrame:
     )
 
 
+def flash_convertida(
+    blinds: pl.DataFrame | None, kills: pl.DataFrame, tickrate: int = 64,
+    janela_s: float = SEGUNDOS_FLASH_RETORNO,
+) -> pl.DataFrame:
+    """Rounds em que o jogador cegou um inimigo que um COMPANHEIRO matou logo depois.
+
+    É a terceira forma de o time colher do sacrifício (além de vencer o round e
+    de trocar a morte): a utility dele virou kill de outro. A kill do próprio
+    arremessador não conta aqui -- essa já é dele, não retorno para o time.
+    Cegueira de companheiro também não: cegar o próprio time não ajuda ninguém.
+    """
+    vazio = pl.DataFrame(schema={"round_num": pl.UInt32, "steamid": pl.UInt64, "flash_convertida": pl.Boolean})
+    if blinds is None or blinds.height == 0 or kills.height == 0:
+        return vazio
+    cegas = blinds.filter(
+        pl.col("attacker_steamid").is_not_null() & (pl.col("attacker_side") != pl.col("user_side"))
+    ).select(
+        pl.col("round_num").cast(pl.UInt32), pl.col("tick").alias("tick_flash"),
+        pl.col("attacker_steamid").cast(pl.UInt64).alias("steamid"), pl.col("attacker_side").alias("lado"),
+        pl.col("user_steamid").cast(pl.UInt64).alias("vitima"),
+    )
+    mortes = kills.filter(pl.col("attacker_steamid").is_not_null()).select(
+        pl.col("round_num").cast(pl.UInt32), pl.col("tick").alias("tick_kill"),
+        pl.col("victim_steamid").cast(pl.UInt64).alias("vitima"),
+        pl.col("attacker_steamid").cast(pl.UInt64).alias("matador"), pl.col("attacker_side").alias("lado_matador"),
+    )
+    janela = int(janela_s * tickrate)
+    conv = (
+        cegas.join(mortes, on=["round_num", "vitima"], how="inner")
+        .filter(
+            (pl.col("tick_kill") >= pl.col("tick_flash"))
+            & (pl.col("tick_kill") - pl.col("tick_flash") <= janela)
+            & (pl.col("matador") != pl.col("steamid"))
+            & (pl.col("lado_matador") == pl.col("lado"))
+        )
+        .select("round_num", "steamid").unique()
+        .with_columns(pl.lit(True).alias("flash_convertida"))
+    )
+    return conv if conv.height else vazio
+
+
 # --- Componentes por jogador ------------------------------------------------
 
 # Todo componente bruto que entra em algum índice. A lista é explícita porque é
@@ -418,6 +486,7 @@ COMPONENTES = [
     "awp_round_share", "awp_conversion", "awp_opening_picks",
     "bait_no_trade_share", "bait_untraded_per_round", "bait_return_per_opp", "survival_rate",
     "clutch_attempts", "clutch_conversion", "clutch_damage_per_attempt",
+    "sacrificio_share",
 ]
 
 
@@ -430,6 +499,7 @@ def player_components(
     clutch_round: pl.DataFrame,
     awp_summary: pl.DataFrame | None,
     team_of: dict[int, str],
+    flash_conv: pl.DataFrame | None = None,
 ) -> tuple[pl.DataFrame, pl.DataFrame]:
     """Devolve (per_round, componentes): os fatos round a round e o agregado.
 
@@ -438,12 +508,18 @@ def player_components(
     contra a referência do conjunto -- assim a tabela por jogador continua
     auditável em número de jogo, que é o que permite discordar do índice.
     """
+    if flash_conv is None or flash_conv.height == 0:
+        flash_conv = pl.DataFrame(schema={"round_num": pl.UInt32, "steamid": pl.UInt64, "flash_convertida": pl.Boolean})
     per_round = (
         facts.join(eco, on=["round_num", "steamid"], how="left")
         .join(solo, on=["round_num", "steamid"], how="left")
+        .join(flash_conv.with_columns(pl.col("round_num").cast(facts.schema["round_num"]),
+                                      pl.col("steamid").cast(facts.schema["steamid"])),
+              on=["round_num", "steamid"], how="left")
         .with_columns(
             pl.col("eco_sacrifice").fill_null(False),
             pl.col("alone_in_area").fill_null(False),
+            pl.col("flash_convertida").fill_null(False),
             pl.col("steamid")
             .map_elements(lambda s: team_of.get(s), return_dtype=pl.String)
             .alias("team"),
@@ -462,11 +538,22 @@ def player_components(
             pl.col("eco_sacrifice").alias("piano_eco_paid_raw"),
         )
         .with_columns(
-            # "o time colheu": venceu o round, ou (no caso do entry) a morte dele
-            # foi trocada -- a troca e o benefício imediato mesmo em round perdido
-            (pl.col("piano_t_paid_raw") & (pl.col("round_won") | pl.col("was_traded"))).alias("piano_t"),
-            (pl.col("piano_ct_paid_raw") & pl.col("round_won")).alias("piano_ct"),
-            (pl.col("piano_eco_paid_raw") & pl.col("round_won")).alias("piano_eco"),
+            # "O time colheu", igual para as três formas: venceu o round, vingou
+            # a morte dele, ou matou alguém que ele cegou (a utility virou kill
+            # de outro). A troca e a flash valem mesmo em round perdido: são o
+            # benefício imediato de ele ter pago a conta.
+            (pl.col("round_won") | pl.col("was_traded") | pl.col("flash_convertida")).alias("time_colheu"),
+        )
+        .with_columns(
+            (pl.col("piano_t_paid_raw") & pl.col("time_colheu")).alias("piano_t"),
+            (pl.col("piano_ct_paid_raw") & pl.col("time_colheu")).alias("piano_ct"),
+            (pl.col("piano_eco_paid_raw") & pl.col("time_colheu")).alias("piano_eco"),
+            (pl.col("piano_t_paid_raw") | pl.col("piano_ct_paid_raw") | pl.col("piano_eco_paid_raw")).alias("pagou"),
+        )
+        .with_columns(
+            # o round conta UMA vez mesmo se ele pagou de duas formas nele
+            (pl.col("pagou") & pl.col("time_colheu")).alias("sacrificio"),
+            (pl.col("pagou") & ~pl.col("time_colheu")).alias("pagou_sem_retorno"),
         )
     )
 
@@ -494,6 +581,11 @@ def player_components(
         pl.col("piano_ct").sum().alias("piano_ct_rounds"),
         pl.col("piano_eco").sum().alias("piano_eco_rounds"),
         pl.col("eco_sacrifice").sum().alias("eco_sacrifice_rounds"),
+        pl.col("pagou").sum().alias("pagou_rounds"),
+        pl.col("sacrificio").sum().alias("sacrificio_rounds"),
+        pl.col("sacrificio").mean().alias("sacrificio_share"),
+        pl.col("pagou_sem_retorno").sum().alias("pagou_sem_retorno_rounds"),
+        (pl.col("sacrificio") & pl.col("flash_convertida")).sum().alias("sacrificio_com_flash_rounds"),
     )
 
     # Fatias do time: dano e kills do jogador sobre o total do próprio time. E a
@@ -726,9 +818,12 @@ def archetype_indices(
     Cada componente bruto vira percentil contra a referencia do conjunto (ver o
     topo do modulo). Os indices sao combinacoes explicitas desses percentis:
 
-    - carrega_piano: soma das TRES formas ja pagas (entry de T, solo hold de CT,
-      sacrificio de economia). Nao e uma formula de entry -- um jogador pode ser
-      carrega piano a partida inteira sem nunca ter sido o primeiro a morrer.
+    - carrega_piano e baiter: as duas pontas do MESMO eixo, `sacrifice_index`
+      (ver PISO_CARREGA_PIANO). O lado positivo são os rounds em que ele pagou
+      a conta (entry de T, solo hold de CT, sacrificio de economia) E o time
+      colheu; o negativo, as mortes de companheiro por perto sem troca. Nao e
+      uma formula de entry -- um jogador pode ser carrega piano a partida
+      inteira sem nunca ter sido o primeiro a morrer.
     - carry: fatia de dano, fatia de kills, multikills e clutches convertidos.
     - mochila: esforco baixo E impacto baixo, como produto dos dois complementos.
     - rei_do_nt: muitas tentativas de ultimo vivo, producao alta dentro delas e
@@ -737,7 +832,6 @@ def archetype_indices(
     - repick: fracao de engajamentos com a assinatura de jiggle.
     - awper: fatia de rounds com AWP vezes o que produziu com ela. So existe
       acima de MIN_AWP_ROUNDS.
-    - baiter: companheiro caiu perto, a troca nao veio, e ele seguiu vivo.
     """
     if components.height == 0:
         return components
@@ -771,7 +865,12 @@ def archetype_indices(
             components["piano_eco_share"].to_list(),
         )
     ]
-    piano = _percentis(piano_bruto, quantis.get("piano_total_share"))
+    # Eixo único carrega piano <-> baiter (ver PISO_CARREGA_PIANO). Cada ponta só
+    # recebe índice além do próprio piso, então os dois rótulos nunca caem no
+    # mesmo jogador -- por construção, não por desempate.
+    eixo = [s - b for s, b in zip(p("sacrificio_share"), p("bait_untraded_per_round"))]
+    piano = [e if e >= PISO_CARREGA_PIANO else 0.0 for e in eixo]
+    baiter = [-e if e <= PISO_BAITER else 0.0 for e in eixo]
 
     carry = _media(p("damage_share"), p("kill_share"), p("multikill_rounds"), p("clutch_wins"))
     mochila = [(1 - e) * (1 - i) for e, i in zip(esforco, impacto)]
@@ -779,7 +878,6 @@ def archetype_indices(
         (1 - d) * (1 - c)
         for d, c in zip(p("distinct_places_mean"), p("path_per_round"))
     ]
-    baiter = [b * s for b, s in zip(p("bait_untraded_per_round"), p("survival_rate"))]
 
     tentativas = components["clutch_attempts"].to_list()
     conversao = components["clutch_conversion"].to_list()
@@ -797,6 +895,7 @@ def archetype_indices(
 
     return components.with_columns(
         pl.Series("piano_total_share", piano_bruto),
+        pl.Series("sacrifice_index", eixo),
         pl.Series("effort_pct", esforco),
         pl.Series("impact_pct", impacto),
         pl.Series("idx_carrega_piano", piano),
@@ -867,6 +966,10 @@ def evidencia(papel: str, row: dict) -> str:
                 + _plural(row["eco_sacrifice_rounds"], "round", "rounds")
                 + " com menos equipamento que o time"
             )
+        # o retorno é o que separa carrega piano de quem só morreu cedo
+        if row.get("pagou_rounds"):
+            pedacos.append(f"o time colheu em {int(row.get('sacrificio_rounds') or 0)} dos "
+                           + _plural(row["pagou_rounds"], "round em que ele pagou", "rounds em que ele pagou"))
         if row.get("traded_death_share"):
             pedacos.append(f"{row['traded_death_share'] * 100:.0f}% das mortes dele foram trocadas")
 
@@ -1043,8 +1146,10 @@ def compute_for_match(
     clutch_round, _ = clutch_situations(kills, rounds, team_of, winner_team_of_round)
     clutch_round = add_damage_in_clutch(clutch_round, tables["damages"], team_of)
 
+    flash = flash_convertida(tables.get("player_blind"), kills, tickrate=tickrate)
+
     per_round, comp = player_components(
-        facts, eco, solo, bait, repick, clutch_round, outputs.get("awp_summary"), team_of
+        facts, eco, solo, bait, repick, clutch_round, outputs.get("awp_summary"), team_of, flash
     )
     summary = archetype_indices(comp, reference)
     return per_round, summary

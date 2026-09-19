@@ -131,6 +131,12 @@ testada e estava errada.
    E lado importa: distância, ancoragem e contato cedo saem também em `_ct` e
    `_t`, com a referência calculada dentro do lado.
 
+   Os grupos chegam à pessoa por `player_profile.cards_de_estilo`: um card por
+   grupo com os 3 jogadores de MAIOR FRAÇÃO dos próprios rounds nele ("7 de 22
+   rounds — 32%"; ordenar pela contagem favoreceria quem jogou mais rounds), e
+   a lista de quem não passa de `CONCENTRACAO_MINIMA_GRUPO` em grupo nenhum
+   ("sem grupo dominante"). Texto todo gerado em Python.
+
 7c. **"Longe do time" precisa de piso absoluto, não só do corte na mediana.**
    Corte na mediana marca metade dos rounds como "longe" por construção,
    inclusive num time em que todo mundo joga colado — basta ser marginalmente
@@ -208,6 +214,10 @@ testada e estava errada.
    capitão: medido, o jogador com 32% de toda a voz de uma partida era o astro
    do time, não quem chamava. O rótulo vem de `roles_manual.json`, preenchido à
    mão, e há teste que falha se o código escrever nesse arquivo.
+   `scripts/igl_candidatos.py` ranqueia CANDIDATOS por time com cinco proxies
+   (doa arma, compra menos que o time, contato tardio, granadas por round,
+   rating baixo), cada um comparado dentro do time, com aviso de confiança
+   baixa. Só imprime; há teste garantindo que ele não escreve nada.
 
 8. **O KMeans não nomeia os grupos.** Apelido de jogo ("lurker", "âncora",
    "entry") é interpretação e cabe ao Pedro, via `clustering/cluster_names.json`.
@@ -421,6 +431,33 @@ testada e estava errada.
     comprar (economia). Não reduza a uma fórmula de entry: dá para ser carrega
     piano a partida inteira sem nunca ter sido o primeiro a morrer.
 
+15a. **Carrega piano e baiter são as duas pontas de UM eixo** (`sacrifice_index`
+    em `metrics/archetypes.py`): percentil dos rounds em que ele pagou a conta E
+    o time colheu, menos o percentil das mortes de companheiro por perto sem
+    troca. De -1 a +1; rótulo só além de `PISO_CARREGA_PIANO` (0,5) ou
+    `PISO_BAITER` (-0,5), então os dois nunca caem no mesmo jogador -- por
+    construção, não por desempate. "O time colheu" é igual nas três formas:
+    venceu o round, vingou a morte dele, OU matou alguém que ele cegou (a flash
+    entrou aqui; antes o piano não usava flash). O retorno é o que separa
+    carrega piano de jogador ruim, e isso foi medido: pagar a conta SEM retorno
+    correlaciona -0,31 com o rating, COM retorno -0,05. A flash como único
+    retorno é rara (43 de 2.308 rounds). Achado para o Pedro julgar: a ponta do
+    baiter tem rating médio 1,15 contra 1,05 do meio -- "usa o time de isca
+    para conseguir kills" pega muito astro que joga de segundo.
+
+15b. **Repick classifica CADA briga, e a junção é pelo tick da briga.**
+    REGRESSÃO: `awp_metrics.classify_engagement_style` foi escrito para a
+    primeira briga de AWP (uma por jogador e round) e juntava o resultado por
+    (round, jogador). O repick o reusa para todas as brigas, e as k brigas de um
+    jogador no round cruzavam com os k estilos dele (k² linhas: 916 em vez de
+    480 numa partida), ponderando o `repick_share` errado. A chave agora inclui
+    `engagement_tick`. Junto: `scripts/fit_archetype_reference.py` lia o
+    interim CRU (sem o filtro de kills do round jogado, sem a correção de dano,
+    sem a cegueira) e passou a usar `load_interim` -- a referência era ajustada
+    sobre um dado diferente do que ela depois escala.
+    Os 10 casos de `scripts/casos_repick.py` mostram 9 com UMA saída e volta só:
+    a métrica pega um jiggle, não necessariamente o "fica repickando" repetido.
+    Se exige 2+ saídas, é decisão do Pedro.
 16. **A escala dos papéis é ajustada no conjunto das partidas, não dentro da
     partida.** `metrics/archetype_reference.json`, mesmo padrão do
     `global_model.json`. Normalizar dentro da partida faz alguém ficar em 1,0
@@ -782,6 +819,12 @@ Não "resolva" nenhum destes automaticamente; pergunte.
   percurso, razão 3x), mínimo de tentativas de clutch (3), mínimo de rounds com
   AWP (4), compra abaixo da média do time (-400), fração do time de rifle (60%),
   e o quanto um papel crítico precisa se destacar para virar card (0,85).
+- Distribuição de todo índice de função, antes (9 de FACEIT) e depois (corpus
+  inteiro): `py -3.12 -m scripts.calibration_report`. Tabela de funções com os
+  componentes abertos, por jogador: `py -3.12 -m scripts.tabela_funcoes`.
+- Pisos do eixo carrega piano <-> baiter (`PISO_CARREGA_PIANO` 0,5 e
+  `PISO_BAITER` -0,5) e se o repick exige mais de uma saída e volta
+  (`scripts/casos_repick.py`).
 - Pisos de função (`TRAIT_SPECS` em `metrics/player_roles.py`). Sensibilidade
   medida: lurker (0,40) é estável (±10% muda 1 rótulo), âncora (0,80) é sensível
   só para cima (+10% perde 28% dos rótulos) e **entry (0,32) é sensível dos dois

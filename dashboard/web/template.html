@@ -866,6 +866,20 @@
   .pfbarra i { display:block; height:100%; background:var(--ink2); }
   .pfbarra i.destaque { background:var(--ct); }
 
+  /* ---- quem joga em cada jeito de jogar (cards_de_estilo) ---- */
+  .pfestilos { margin-top:28px; }
+  .pfestilos > h3 { font-size:15px; margin:0 0 10px; letter-spacing:-.01em; }
+  .estcards { display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:12px; }
+  .estcard { border:1px solid var(--line); border-radius:10px; padding:12px 14px; background:var(--paper); }
+  .estcard > b { display:block; font-size:13.5px; color:var(--ink); }
+  .estcard .estsub { display:block; font-family:var(--mono); font-size:10.5px; color:var(--dim); margin:2px 0 8px; }
+  .estcard ol { margin:0; padding-left:18px; font-size:13px; }
+  .estcard li { margin:3px 0; color:var(--ink); }
+  .estcard li span { display:block; font-family:var(--mono); font-size:11px; color:var(--dim); }
+  .estcard li em { font-family:var(--mono); font-style:normal; font-size:9.5px; letter-spacing:.05em;
+                   text-transform:uppercase; color:var(--ct); margin-left:6px; }
+  .estnota { font-size:12.5px; color:var(--ink-2); margin:10px 0 0; }
+
   /* ---- jeitos de jogar: legenda, descricao e barra grande ---- */
 
   /* ---- funções por jogador (aba Estilos) ---- */
@@ -1135,6 +1149,7 @@
     <div id="pf-leitura" class="pfleitura"></div>
     <div id="pf-head" class="pfhead"></div>
     <div id="pf-tabela"></div>
+    <div id="pf-estilos" class="pfestilos"></div>
     <div class="callout" id="pf-nota"></div>
   </section>
 
@@ -3122,6 +3137,22 @@
       "<i>amostra fraca</i> e o que vale é o bruto: 1 de 1 não é 100%. " +
       "O “jeito de jogar mais frequente” vem do agrupamento da aba Estilos, e a descrição dele " +
       "é <b>automática</b> — uma releitura das médias do grupo, não um nome de função.";
+
+    // Quem joga em cada grupo. Todo o texto vem pronto do Python
+    // (metrics.player_profile.cards_de_estilo); aqui só se monta o HTML.
+    (function () {
+      var E = D.cards_de_estilo, el = document.getElementById("pf-estilos");
+      if (!el || !E || !E.grupos || !E.grupos.length) return;
+      el.innerHTML = "<h3>" + E.titulo + "</h3><div class='estcards'>" +
+        E.grupos.map(function (g) {
+          return "<div class='estcard'><b>" + nomeDoGrupoPerfil(g.cluster) + "</b>" +
+            "<span class='estsub'>" + g.subtitulo + "</span><ol>" +
+            g.jogadores.map(function (j) {
+              return "<li>" + j.name + (j.dominante ? "<em>" + E.rotulo_dominante + "</em>" : "") +
+                "<span>" + j.texto + "</span></li>";
+            }).join("") + "</ol></div>";
+        }).join("") + "</div><p class='estnota'>" + E.nota + "</p>";
+    })();
 
     preencheSelects();
     montaBotoes();

@@ -56,13 +56,15 @@ def winner_team_by_round(rounds: pl.DataFrame) -> dict[int, str]:
 
 def carrega_partida(match_id: str) -> tuple[dict, dict, pl.DataFrame, pl.DataFrame, dict, dict]:
     """Tudo que `compute_for_match` precisa, lido do disco."""
-    interim = INTERIM_DIR / match_id
     processed = PROCESSED_DIR / match_id
 
-    tables = {
-        nome: pl.read_parquet(interim / f"{nome}.parquet")
-        for nome in ("ticks", "kills", "rounds", "damages")
-    }
+    # load_interim, e não o parquet cru: é o MESMO caminho do pipeline (kills do
+    # round jogado, corte do freeze time, dano corrigido, cegueira reconstruída).
+    # Lendo cru, a referência era ajustada sobre um dado diferente do que ela
+    # depois escala.
+    from parsing.parser import load_interim
+
+    tables = load_interim(INTERIM_DIR, match_id)
     outputs = {
         nome: pl.read_parquet(processed / f"{nome}.parquet")
         for nome in SAIDAS

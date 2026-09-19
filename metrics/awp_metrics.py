@@ -172,6 +172,7 @@ def classify_engagement_style(
                 {
                     "round_num": eng["round_num"],
                     "steamid": eng["steamid"],
+                    "engagement_tick": eng["engagement_tick"],
                     "net_displacement": None,
                     "path_distance": None,
                     "slow_fraction": None,
@@ -207,6 +208,7 @@ def classify_engagement_style(
             {
                 "round_num": eng["round_num"],
                 "steamid": eng["steamid"],
+                "engagement_tick": eng["engagement_tick"],
                 "net_displacement": round(net, 1),
                 "path_distance": round(path, 1),
                 "slow_fraction": round(slow_fraction, 3) if slow_fraction is not None else None,
@@ -220,6 +222,7 @@ def classify_engagement_style(
         schema={
             "round_num": pl.UInt32,
             "steamid": pl.UInt64,
+            "engagement_tick": pl.Int64,
             "net_displacement": pl.Float64,
             "path_distance": pl.Float64,
             "slow_fraction": pl.Float64,
@@ -227,7 +230,13 @@ def classify_engagement_style(
             "style": pl.String,
         },
     )
-    return engagements.join(styles, on=["round_num", "steamid"], how="left")
+    # A chave inclui o TICK da briga. REGRESSÃO: com só (round, jogador), o
+    # repick -- que classifica TODAS as brigas, não só a primeira de AWP --
+    # cruzava as k brigas de um jogador no round com os k estilos dele (k²
+    # linhas; 916 em vez de 480 numa partida) e o repick_share saía ponderado
+    # errado.
+    return engagements.with_columns(pl.col("engagement_tick").cast(pl.Int64)).join(
+        styles, on=["round_num", "steamid", "engagement_tick"], how="left")
 
 
 def resolve_engagement_outcomes(

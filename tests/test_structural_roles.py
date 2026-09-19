@@ -425,3 +425,16 @@ def test_quem_troca_a_morte_mas_estava_longe_nao_e_trader():
     """
     tables = _cenario_entrada(distancia_do_apoio=2000.0)
     assert "trader" not in _funcoes_de(tables, 2)
+
+
+def test_candidatos_a_igl_nao_escrevem_nada():
+    """A lista de candidatos é material para o Pedro decidir (decisão 7g): o
+    script só LÊ. Nenhuma chamada de escrita e nenhuma referência ao arquivo
+    manual podem aparecer nele."""
+    from pathlib import Path
+
+    fonte = (Path(__file__).resolve().parent.parent / "scripts" / "igl_candidatos.py").read_text(encoding="utf-8")
+    codigo = "\n".join(l for l in fonte.splitlines() if not l.strip().startswith("#"))
+    corpo = codigo.split('"""', 2)[-1]  # fora da docstring do módulo
+    for proibido in ("write_text", "write_parquet", ".write(", "open(", "ROLES_MANUAL", "json.dump"):
+        assert proibido not in corpo, proibido

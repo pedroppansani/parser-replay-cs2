@@ -19,6 +19,8 @@ from metrics.archetypes import (
     LIMIAR_CRITICO,
     MIN_AWP_ROUNDS,
     MIN_CLUTCH_ATTEMPTS,
+    PISO_BAITER,
+    PISO_CARREGA_PIANO,
     REPICK_MIN_PATH,
     TEAM_RIFLE_FRACTION,
     UNDERBUY_DELTA,
@@ -26,6 +28,7 @@ from metrics.archetypes import (
     bait_events,
     economy_signals,
     evidencia,
+    flash_convertida,
     pick_highlight,
     piano_form,
     repick_engagements,
@@ -318,13 +321,64 @@ def test_esforco_sem_beneficio_ao_time_nao_e_carrega_piano():
     assert alvo["idx_carrega_piano"] <= neutro["idx_carrega_piano"]
 
 
-def test_as_tres_formas_somam_no_mesmo_indice():
-    """Um jogador pode ser carrega piano sem nunca ter entrado primeiro."""
-    so_economia = _componentes(piano_eco_share=0.5)
-    idx = archetype_indices(so_economia, reference=None)
+def _com_eixo(sacrificio: float, isca: float) -> pl.DataFrame:
+    """Alvo contra dois neutros, para o percentil dentro da partida ter escala."""
+    base = _componentes(bait_untraded_per_round=isca)
+    base = base.with_columns(pl.Series("sacrificio_share", [sacrificio, 0.2]))
+    neutros = base.filter(pl.col("name") == "neutro")
+    return pl.concat([base, neutros.with_columns(pl.lit(3, dtype=base.schema["steamid"]).alias("steamid"), pl.lit("neutro2").alias("name"))])
+
+
+def test_sacrificio_com_retorno_e_pouca_isca_e_carrega_piano():
+    """Um jogador pode ser carrega piano sem nunca ter entrado primeiro: o que
+    conta é pagar a conta e o time colher."""
+    idx = archetype_indices(_com_eixo(sacrificio=0.5, isca=0.1), reference=None)
     alvo = idx.filter(pl.col("name") == "alvo").row(0, named=True)
-    assert alvo["idx_carrega_piano"] > 0
-    assert alvo["piano_total_share"] == pytest.approx(0.5)
+    assert alvo["sacrifice_index"] >= PISO_CARREGA_PIANO
+    assert alvo["idx_carrega_piano"] > 0 and alvo["idx_baiter"] == 0.0
+
+
+def test_isca_sem_sacrificio_e_baiter():
+    idx = archetype_indices(_com_eixo(sacrificio=0.0, isca=2.0), reference=None)
+    alvo = idx.filter(pl.col("name") == "alvo").row(0, named=True)
+    assert alvo["sacrifice_index"] <= PISO_BAITER
+    assert alvo["idx_baiter"] > 0 and alvo["idx_carrega_piano"] == 0.0
+
+
+def test_nunca_os_dois_rotulos_no_mesmo_jogador():
+    """Um eixo, duas pontas: por construção, não por desempate."""
+    import random
+
+    rnd = random.Random(7)
+    for _ in range(200):
+        n = 10
+        comp = pl.concat([_componentes()] * 5).with_columns(
+            pl.Series("steamid", list(range(n))),
+            pl.Series("sacrificio_share", [rnd.random() for _ in range(n)]),
+            pl.Series("bait_untraded_per_round", [rnd.random() * 2 for _ in range(n)]),
+        )
+        idx = archetype_indices(comp, reference=None)
+        assert idx.filter((pl.col("idx_carrega_piano") > 0) & (pl.col("idx_baiter") > 0)).height == 0
+
+
+def test_flash_convertida_exige_kill_de_companheiro_na_janela():
+    """A utility vira retorno quando OUTRO do time mata quem ele cegou.
+    Kill do próprio arremessador, kill tarde demais e cegueira de companheiro não."""
+    cegas = pl.DataFrame({
+        "round_num": [1, 1, 1, 1], "tick": [100, 100, 100, 100],
+        "attacker_steamid": [1, 1, 1, 1], "attacker_side": ["t", "t", "t", "t"],
+        "user_steamid": [10, 11, 12, 2], "user_side": ["ct", "ct", "ct", "t"],
+    })
+    mortes = pl.DataFrame({
+        "round_num": [1, 1, 1, 1], "tick": [150, 120, 100 + 64 * 4, 130],
+        "victim_steamid": [10, 11, 12, 2], "attacker_steamid": [3, 1, 3, 20],
+        "attacker_side": ["t", "t", "t", "ct"],
+    })
+    conv = flash_convertida(cegas, mortes, tickrate=64)
+    assert conv.height == 1 and conv["steamid"][0] == 1
+    # só a vítima 10 (morta pelo companheiro 3 dentro de 3s) fez valer
+    so_ele = flash_convertida(cegas.filter(pl.col("user_steamid") != 10), mortes, tickrate=64)
+    assert so_ele.height == 0
 
 
 def test_piano_form_nomeia_a_forma_dominante():

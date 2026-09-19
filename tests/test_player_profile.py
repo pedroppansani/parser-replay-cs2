@@ -425,3 +425,31 @@ def test_resumo_lista_no_maximo_o_teto_de_caracteristicas():
     d = descreve_jogador(_perfil_cru(**valores))
     assert len(d["caracteristicas"]) == MAX_CARACTERISTICAS
     assert d["resumo"].count(" e ") >= 1
+
+
+# --- Cards de estilo (quem joga em cada grupo) ------------------------------
+
+def test_card_de_estilo_ordena_pela_fracao_dos_proprios_rounds_e_mostra_o_bruto():
+    """7 de 10 (70%) vem antes de 8 de 20 (40%): o peso é no jogador, não na contagem."""
+    from metrics.player_profile import CONCENTRACAO_MINIMA_GRUPO, cards_de_estilo
+
+    linhas = []
+    for sid, nome, n_rounds, no_grupo0 in ((1, "a", 10, 7), (2, "b", 20, 8), (3, "c", 12, 3)):
+        for rn in range(1, n_rounds + 1):
+            # o resto dos rounds espalhado pelos grupos 1, 2 e 3
+            linhas.append({"steamid": sid, "name": nome, "round_num": rn,
+                           "cluster": 0 if rn <= no_grupo0 else 1 + rn % 3})
+    cards = cards_de_estilo(pl.DataFrame(linhas))
+    g0 = next(g for g in cards["grupos"] if g["cluster"] == 0)
+    assert [j["name"] for j in g0["jogadores"]] == ["a", "b", "c"]
+    assert g0["jogadores"][0]["texto"] == "7 de 10 rounds — 70%"
+    assert g0["jogadores"][0]["dominante"] and CONCENTRACAO_MINIMA_GRUPO <= 0.70
+    # c tem 3 de 12 no grupo 0 e o resto espalhado: nenhum grupo passa do piso
+    assert "c" in cards["sem_grupo_dominante"]
+    assert "c" in cards["nota"]
+
+
+def test_card_de_estilo_sem_agrupamento_nao_estoura():
+    from metrics.player_profile import cards_de_estilo
+
+    assert cards_de_estilo(pl.DataFrame())["grupos"] == []

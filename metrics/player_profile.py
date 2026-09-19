@@ -685,6 +685,62 @@ def mistura_de_grupos(cluster_assignments: pl.DataFrame) -> pl.DataFrame:
     return resumo.join(largo, on="steamid", how="left")
 
 
+# Quantos jogadores cada card de estilo mostra.
+TOP_POR_GRUPO = 3
+
+
+def _contagem(n: int, d: int) -> str:
+    """"7 de 22 rounds — 32%": o bruto primeiro, a taxa depois (decisão 7a)."""
+    return f"{n} de {d} rounds — {round(100 * n / d)}%" if d else f"{n} de {d} rounds"
+
+
+def cards_de_estilo(cluster_assignments: pl.DataFrame, top: int = TOP_POR_GRUPO) -> dict:
+    """Um card por grupo de estilo, com QUEM joga nele: os `top` jogadores com a
+    maior fração dos PRÓPRIOS rounds naquele grupo.
+
+    A ordem é pela fração, não pela contagem: 7 de 22 rounds (32%) e 7 de 30
+    (23%) não são o mesmo peso no jogador. Cada linha traz o bruto ao lado.
+
+    Junto vai a visão "um jogador, um grupo dominante": quem passa de
+    CONCENTRACAO_MINIMA_GRUPO num grupo é marcado nele, e quem não passa em
+    nenhum aparece em `sem_grupo_dominante` -- versátil, não sem dado.
+    """
+    vazio = {"grupos": [], "sem_grupo_dominante": [], "titulo": "", "nota": "", "rotulo_dominante": ""}
+    if cluster_assignments.height == 0 or "cluster" not in cluster_assignments.columns:
+        return vazio
+    total = cluster_assignments.group_by("steamid", "name").agg(pl.len().alias("d"))
+    por = (cluster_assignments.group_by("steamid", "cluster").agg(pl.len().alias("n"))
+           .join(total, on="steamid").with_columns((pl.col("n") / pl.col("d")).alias("taxa")))
+    dom = mistura_de_grupos(cluster_assignments).select("steamid", "grupo_dominante")
+    por = por.join(dom, on="steamid", how="left")
+
+    grupos = []
+    for (c,), g in por.sort("cluster").group_by("cluster", maintain_order=True):
+        melhores = g.sort(["taxa", "n"], descending=True).head(top)
+        grupos.append({
+            "cluster": int(c),
+            "rounds_no_grupo": int(g["n"].sum()),
+            "subtitulo": f"{int(g['n'].sum())} rounds da partida caíram aqui",
+            "jogadores": [{
+                "name": r["name"], "n": int(r["n"]), "d": int(r["d"]), "taxa": float(r["taxa"]),
+                "texto": _contagem(int(r["n"]), int(r["d"])),
+                "dominante": r["grupo_dominante"] is not None and int(r["grupo_dominante"]) == int(c),
+            } for r in melhores.iter_rows(named=True)],
+        })
+    espalhados = sorted(dom.join(total, on="steamid").filter(pl.col("grupo_dominante").is_null())["name"].to_list())
+    piso = round(100 * CONCENTRACAO_MINIMA_GRUPO)
+    return {
+        "titulo": "Quem joga em cada jeito de jogar nesta partida",
+        "rotulo_dominante": "dominante",
+        "grupos": grupos,
+        "sem_grupo_dominante": espalhados,
+        "nota": (f"Os três jogadores com a maior fração dos próprios rounds em cada grupo. "
+                 f"Marcado como dominante quem tem pelo menos {piso}% dos rounds num grupo só; "
+                 + (f"sem grupo dominante (espalhados pelos quatro): {', '.join(espalhados)}."
+                    if espalhados else "nesta partida todos têm um grupo dominante.")),
+    }
+
+
 def player_profile(
     features: pl.DataFrame,
     positions: pl.DataFrame,

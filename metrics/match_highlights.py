@@ -365,7 +365,7 @@ def _evidencia_obrigatoria(cand: dict, archetypes: pl.DataFrame) -> dict | None:
         "mochila": ("damage_share", "de fatia do dano do time"),
         "baiter": ("bait_no_trade_share", "de mortes por perto sem troca"),
         "rei_do_nt": ("clutch_attempts", "tentativas de clutch"),
-        "carrega_piano": ("piano_total_share", "de rounds assumindo o custo"),
+        "carrega_piano": ("sacrificio_share", "de rounds pagando a conta com retorno ao time"),
         "awper": ("awp_rounds", "rounds com AWP na mão"),
         "camper": ("distinct_places_mean", "regiões por round"),
         "repick": ("repick_share", "de brigas no mesmo ângulo"),

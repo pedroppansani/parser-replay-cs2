@@ -17,6 +17,7 @@ from pathlib import Path
 import polars as pl
 
 from clustering.playstyle import describe_clusters, load_cluster_names
+from metrics.player_profile import cards_de_estilo
 from metrics.structural_roles import FUNCOES
 from scripts.narrative import descreve_jogador
 
@@ -148,6 +149,9 @@ def build(match_id: str) -> Path:
         # cluster_names.json nunca chegava à página e a nomeação não teria efeito
         # nenhum -- o arquivo existiria só para o dashboard local.
         "cluster_names": load_cluster_names(),
+        # Quem joga em cada grupo: top 3 por fração dos próprios rounds, com o
+        # bruto ("7 de 22 rounds — 32%"), e quem não tem grupo dominante.
+        "cards_de_estilo": cards_de_estilo(rd("cluster_assignments")),
         # Perfil acumulado do jogador em TODAS as partidas processadas. Vai junto
         # do perfil desta partida porque a interface precisa deixar claro sobre
         # quantas partidas e quantos rounds cada taxa foi montada -- 40% em 22
