@@ -84,6 +84,47 @@ crus do parse ficam em `data/interim/` (também fora). O que é versionado é
 `data/processed/` — leve, e é o que o site consome — e o `data/manifest.json`,
 que registra de onde veio cada partida mesmo depois de a demo ser apagada.
 
+## Validação do rating contra a HLTV
+
+O rating daqui é uma **implementação própria da metodologia publicada do
+[Rating 3.0 da HLTV](https://www.hltv.org/news/41283/introducing-rating-30)** —
+os coeficientes da HLTV são fechados, então este não é o número oficial. Ele é
+conferido contra os ratings oficiais de **43 mapas profissionais (430
+jogadores)**, com a regressão validada **deixando uma partida inteira de fora**
+a cada vez (nunca o mesmo jogo dos dois lados da divisão).
+
+| Etapa | Erro médio (fora da amostra) | Correlação |
+|---|---|---|
+| Pesos provisórios, componentes originais | 0,155 | 0,891 |
+| Pesos ajustados | 0,111 | 0,921 |
+| + cegueira reconstruída nas demos de campeonato | 0,111 | 0,921 |
+| + economia estimada no corpus (arma + colete) | 0,094* | 0,949* |
+| **+ Round Swing corrigido (crédito soma zero, fim de round)** | **0,085** | **0,956** |
+
+\* medido com os pesos congelados, antes de recalibrar.
+
+A maior parte do ganho veio de **consertar componentes**, não de ajustar pesos:
+com os componentes corrigidos, até os pesos antigos dão erro 0,086. Cada
+componente também é conferido direto contra o que a HLTV publica por jogador:
+
+- **K-D e ADR**: idênticos (K-D) e a menos de 1–2 de ADR nos 430 jogadores;
+- **KAST**: idêntico em 230 de 310 jogadores; o excesso restante está em rounds
+  creditados só por trade, e a regra exata da HLTV não é recuperável dos dados;
+- **Round Swing**: correlação 0,89 com o Swing oficial de 310 jogadores, na
+  mesma escala (inclinação 1,01).
+
+Erro de teste por time (o corpus é quase todo de 7 times; se o modelo tivesse
+aprendido o estilo de um deles, aquele time destoaria):
+
+| Time | Jogador-partidas | Erro médio |
+|---|---|---|
+| Vitality | 85 | 0,093 |
+| FURIA | 80 | 0,079 |
+| Natus Vincere | 70 | 0,080 |
+| Spirit | 60 | 0,092 |
+| Falcons | 60 | 0,078 |
+| MOUZ | 50 | 0,081 |
+
 ## Módulos
 
 | Pasta | O que faz |
@@ -103,9 +144,10 @@ que registra de onde veio cada partida mesmo depois de a demo ser apagada.
 
 - **Corpus pequeno e concentrado:** 52 partidas, quase todas de 7 times. O modelo
   do Round Swing (AUC 0,90) e a calibração do rating melhoram a cada demo.
-- **Rating:** reimplementação da metodologia, não o número da HLTV. Os pesos dos
-  sub-ratings ainda são provisórios; a regressão contra os oficiais existe
-  (erro médio 0,12 fora da amostra), e a troca dos pesos é decisão pendente.
+- **Rating:** reimplementação da metodologia, não o número da HLTV (erro médio
+  0,085 contra o oficial, fora da amostra). O modelo de chance de vitória do
+  Round Swing usa 4 entradas; o da HLTV é mais rico (tempo restante, mapa), e
+  a divergência de Swing que sobra é espalhada, não concentrada.
 - **Estilo de jogo é contínuo:** a silhueta do agrupamento é baixa (~0,2) e não
   melhorou com volume; os grupos descrevem, não classificam com fronteira nítida.
 - **Probabilidade de vitória** supõe rounds independentes (economia e momentum

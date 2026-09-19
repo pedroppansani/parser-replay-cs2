@@ -1,33 +1,33 @@
 {
   "pesos": {
-    "kills": 0.073,
-    "dano": 0.27,
-    "sobrevivencia": 0.023,
-    "kast": 0.455,
-    "multikills": 0.135,
-    "round_swing": 0.48
+    "kills": 0.21,
+    "dano": 0.355,
+    "sobrevivencia": 0.101,
+    "kast": 0.326,
+    "multikills": 0.092,
+    "round_swing": 0.375
   },
-  "intercepto": -0.365,
+  "intercepto": -0.387,
   "validacao": {
     "metodo": "deixa uma partida fora",
     "partidas": 43,
     "jogador_partidas": 430,
     "fora_da_amostra": {
-      "erro_medio_absoluto": 0.111,
-      "correlacao": 0.922
+      "erro_medio_absoluto": 0.085,
+      "correlacao": 0.956
     },
     "pesos_em_uso_antes_deste_ajuste": {
-      "erro_medio_absoluto": 0.108,
-      "correlacao": 0.927
+      "erro_medio_absoluto": 0.086,
+      "correlacao": 0.955
     }
   },
   "medias_da_referencia": {
-    "kills": 0.6881977991684919,
-    "dano": 75.5921744737615,
+    "kills": 0.6731498164805242,
+    "dano": 74.27064922133098,
     "sobrevivencia": 0.32492879443875894,
     "kast": 0.7191349025535314,
-    "multikills": 0.21451872544043046,
-    "round_swing": -0.04682788414647201
+    "multikills": 0.21071929891173197,
+    "round_swing": -0.008065857724371234
   },
   "aviso": "Pesos estimados por regressao nao-negativa contra ratings oficiais publicados pela HLTV. Implementacao propria da metodologia do Rating 3.0, nao o numero oficial."
 }
