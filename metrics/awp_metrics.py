@@ -308,8 +308,14 @@ def opening_kills_with_awp(kills: pl.DataFrame) -> pl.DataFrame:
     numérica antes de qualquer troca. Um kill de AWP no meio do round vale, mas
     não é a mesma coisa.
     """
+    # Só kill em inimigo abre o round: fogo amigo e morte sem atacante (bomba,
+    # queda) antes do primeiro duelo não são pick de ninguém.
     first_kills = (
-        kills.sort("tick")
+        kills.filter(
+            pl.col("attacker_steamid").is_not_null()
+            & (pl.col("attacker_side") != pl.col("victim_side"))
+        )
+        .sort("tick")
         .group_by("round_num")
         .agg(
             pl.col("attacker_steamid").first().alias("steamid"),

@@ -50,9 +50,10 @@ clustering/   playstyle (PCA + KMeans), global_model.json e cluster_names.json
 dashboard/    app Streamlit + theme + web/
 scripts/      process_demo (CLI), fit_global_clusters, fit_archetype_reference,
               build_player_profiles, show_derived_angles e show_map_areas
-              (calibração), narrative, build_site
-tests/        291 testes (8 pulados por dependerem do dado)
-data/raw/     .dem originais (gitignored)
+              (calibração), narrative, build_site, manifest, clean_match
+tests/        ~725 testes (os de navegador usam Playwright + Chrome; sem eles, pulados)
+demos/       .dem originais (gitignored)
+data/manifest.json origem de cada partida (versionado; scripts/manifest.py)
 data/interim/ tabelas brutas em parquet (gitignored, ticks tem 1M+ linhas)
 data/processed/ métricas calculadas (versionadas — é o que o dashboard usa)
 data/global_clusters/ clustering ajustado no conjunto das partidas
@@ -155,7 +156,9 @@ testada e estava errada.
      — carrega piano, baiter, mochila, rei do NT, camper, repick.
 
    Um âncora pode ser carrega piano ou baiter; um entry pode ser carry ou
-   mochila. São leituras independentes e **nunca colapsam num ranking único**.
+   mochila. (O plano de trabalho chama o segundo módulo de
+   `behavior_traits.py`; ele é `metrics/archetypes.py` -- nome mantido de
+   propósito, para não quebrar imports, testes e esta decisão.) São leituras independentes e **nunca colapsam num ranking único**.
 
    A função é atribuída por (jogador, round), e a da partida é a DOMINANTE nos
    rounds daquele lado, sempre exibida com a concentração ("âncora em 9 de 12
@@ -252,6 +255,13 @@ testada e estava errada.
    filtro é `parsing.kills_do_round_jogado` e precisa ser aplicado em **todo**
    ponto de entrada de kills — `load_interim`, o parse do zero e os scripts que
    leem o parquet direto. A cauda depois do fim do round fica.
+   Danos, tiros e cegueiras recebem o MESMO corte do freeze time
+   (`parsing.eventos_do_round_jogado`, aplicado em `load_interim` e nos scripts
+   que leem direto): medido, 100 danos no freeze time em 9 partidas, sempre em
+   blocos de 10 com atacante e vítima do mesmo lado -- restart de round pelo
+   servidor. O ADR não era afetado (só soma dano em inimigo), mas o primeiro
+   contato ("causou ou sofreu dano") era. A tabela `grenades` fica de fora: as
+   linhas dela no freeze time são granada no inventário, com posição nula.
 
 8f. **Round de faca gravado na demo sai no parse, e os rounds são renumerados.**
    Algumas demos profissionais trazem a faca que decide o lado como round 1. A
@@ -273,7 +283,12 @@ testada e estava errada.
    -4,5). O mesmo `was_traded` alimenta o carrega piano de TR e as "mortes
    trocadas" do perfil, que também estavam desligados. Não é feature do KMeans.
 
-8c. **Sem atacante, o texto nunca usa o nome de alguém.** Morte por queda, bomba
+8c. **Sem atacante, o texto nunca usa o nome de alguém.** E fogo amigo diz
+   "morto pelo companheiro X" (5 casos nas 52 partidas), nunca "morreu para X"
+   como se X fosse adversário. A ABERTURA do round é o primeiro duelo ganho
+   contra o adversário: teamkill, bomba ou queda antes dele não é abertura de
+   ninguém (`round_situations` e `opening_kills_with_awp`). O fim de cada
+   metade (12, 24, 27, 30...) é marcado na autópsia (`sides.fim_de_metade`). Morte por queda, bomba
    ou dano de zona vem com `attacker_steamid` nulo, e o demo às vezes preenche o
    atacante com a própria vítima. O código diz o que aconteceu ("morreu para a
    bomba") em vez de cair num fallback que nomeia a vítima como matador. Há teste

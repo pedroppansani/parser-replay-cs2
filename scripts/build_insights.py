@@ -26,7 +26,7 @@ from pathlib import Path
 
 import polars as pl
 
-from parsing.parser import kills_do_round_jogado
+from parsing.parser import eventos_do_round_jogado, kills_do_round_jogado
 from metrics.archetypes import (
     PAPEIS,
     compute_for_match,
@@ -134,10 +134,14 @@ def round_situations(kills: pl.DataFrame, rounds: pl.DataFrame, team_of: dict[in
         clutch_against = 0
         opening = None
 
-        for i, kill in enumerate(rk.iter_rows(named=True)):
+        for kill in rk.iter_rows(named=True):
             victim_team = team_of.get(kill["victim_steamid"])
             attacker_team = team_of.get(kill["attacker_steamid"])
-            if i == 0 and attacker_team is not None:
+            # A abertura é o primeiro duelo ganho contra o ADVERSÁRIO. Morte por
+            # fogo amigo, bomba ou queda antes dela tira alguém do round mas
+            # não é abertura de ninguém -- nem abertura perdida para o outro time.
+            if (opening is None and attacker_team is not None
+                    and victim_team is not None and attacker_team != victim_team):
                 opening = {
                     "player": kill["attacker_name"],
                     "team": attacker_team,
@@ -386,7 +390,7 @@ def build(match_id: str) -> Path:
         "ticks": ticks,
         "kills": kills,
         "rounds": rounds,
-        "damages": pl.read_parquet(interim / "damages.parquet"),
+        "damages": eventos_do_round_jogado(pl.read_parquet(interim / "damages.parquet"), rounds),
     }
     saidas = {
         "cluster_features": features,

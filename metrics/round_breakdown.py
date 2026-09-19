@@ -36,6 +36,7 @@ import numpy as np
 import polars as pl
 
 from metrics.formatting import format_money
+from metrics.sides import fim_de_metade
 
 # Janela para considerar uma morte "trocada" — mesma do resto do projeto.
 TRADE_WINDOW_SECONDS = 5.0
@@ -58,9 +59,6 @@ ECO_EQUIP_VALUE = 2000
 # abaixo disso os dois times brigam com armas comparáveis.
 DIFERENCA_EQUIP_RELEVANTE = 1500
 
-# Round em que os lados trocam (MR12). O último round de cada metade tem a mesma
-# pegadinha de fronteira do último da partida e por isso é marcado.
-HALFTIME_ROUND = 12
 
 # Quanto tempo depois do fim do round um evento ainda conta como do round. O
 # replay já estende a janela pela mesma razão (TAIL_TICKS em export_replay).
@@ -160,10 +158,36 @@ def _quem_matou(kill: dict) -> tuple[str | None, str]:
     if atacante is None or atacante == vitima:
         if arma in ("planted_c4", "c4"):
             return None, "morreu para a bomba"
-        if arma in ("world", ""):
+        if arma in ("inferno", "molotov", "incgrenade"):
+            return None, "morreu para o fogo"
+        if arma in ("world", "worldent", "trigger_hurt", ""):
             return None, "morreu para o mapa — queda ou dano de zona"
         return None, "morreu sem atacante registrado"
+    # Fogo amigo: 5 casos nas 52 partidas. "morreu para X" com X do próprio
+    # time lê como se X fosse adversário.
+    lado_a, lado_v = kill.get("attacker_side"), kill.get("victim_side")
+    if lado_a is not None and lado_a == lado_v:
+        return kill.get("attacker_name"), "morto pelo companheiro " + str(kill.get("attacker_name"))
     return kill.get("attacker_name"), "morreu para " + str(kill.get("attacker_name"))
+
+
+def frase_da_morte(kill: dict) -> tuple[str, str]:
+    """(quem, ação) da morte, para a lista de eventos do replay.
+
+    O nome em destaque é de quem AGIU; sem atacante, é a vítima, com a causa:
+      "donk" "matou b1t"
+      "TeSeS" "matou o companheiro NiKo"
+      "b1t" "morreu para a bomba"
+    Montar "atacante matou vítima" no template produzia "null matou donk" e,
+    quando a demo preenche o atacante com a própria vítima, "donk matou donk".
+    """
+    nome, causa = _quem_matou(kill)
+    vitima = str(kill.get("victim_name"))
+    if nome is None:
+        return vitima, causa
+    if causa.startswith("morto pelo companheiro"):
+        return str(nome), "matou o companheiro " + vitima
+    return str(nome), "matou " + vitima
 
 
 def analyze_round(
@@ -224,8 +248,15 @@ def analyze_round(
         tags.append("round de economia")
 
     # --- morte de abertura ---
-    if timeline:
-        first = timeline[0]
+    # A abertura é o primeiro duelo contra o adversário: fogo amigo, bomba ou
+    # queda antes dele tiram alguém do round, mas não são abertura perdida.
+    duelos = [
+        t for t in timeline
+        if team_of.get(t["attacker_steamid"]) is not None
+        and team_of.get(t["attacker_steamid"]) != team_of.get(t["victim_steamid"])
+    ]
+    if duelos:
+        first = duelos[0]
         victim_team = team_of.get(first["victim_steamid"])
         traded = any(
             t["tick"] > first["tick"]
@@ -379,7 +410,9 @@ def analyze_round(
     # diferente dos demais (o da partida costuma vir sem `official_end`, porque a
     # partida acaba junto). Fica explícito na saída para aparecer na leitura.
     eh_ultimo = ultimo_round is not None and rn == int(ultimo_round)
-    eh_fim_de_metade = rn == HALFTIME_ROUND
+    # 12 e 24, e o fim de cada metade de prorrogação (metrics/sides.py): antes
+    # só o 12 era marcado, e as partidas com prorrogação ficavam sem a marca.
+    eh_fim_de_metade = fim_de_metade(rn)
 
     # O texto muda com a DIFERENÇA, não só com o valor absoluto. Medido nas 9
     # partidas: dos 56 rounds abaixo do limiar de eco, 18 são round de pistola em

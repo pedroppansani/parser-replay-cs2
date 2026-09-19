@@ -2125,7 +2125,10 @@
       "mapa_da_serie": 1,
       "data": "2026-02-03T17:24",
       "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
-      "hltv": null,
+      "hltv": {
+        "match_id": 2389660,
+        "url": "https://www.hltv.org/matches/2389660/falcons-vs-mouz"
+      },
       "demos": [
         {
           "arquivo": "falcons-vs-mouz-m1-inferno-p1.dem",
@@ -2185,7 +2188,10 @@
       "mapa_da_serie": 2,
       "data": "2026-02-03T19:06",
       "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
-      "hltv": null,
+      "hltv": {
+        "match_id": 2389660,
+        "url": "https://www.hltv.org/matches/2389660/falcons-vs-mouz"
+      },
       "demos": [
         {
           "arquivo": "falcons-vs-mouz-m2-dust2.dem",

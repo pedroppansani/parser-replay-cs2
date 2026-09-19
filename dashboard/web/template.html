@@ -1561,7 +1561,7 @@
       } else if (m.kind === "abertura_perdida") {
         extra = "<small>" + causa + (m.traded ? " · trocado" : " · sem troca") + "</small>";
       } else if (m.kind === "virada_numerica") {
-        extra = "<small>" + (m.by ? m.by + " matou " + m.victim : causa) + "</small>";
+        extra = "<small>" + m.victim + " " + causa + "</small>";
       }
 
       // Tempo decorrido desde o fim do freeze time, no relógio. Segundos crus
@@ -1695,7 +1695,9 @@
     }
     var e = it.e;
     if (e.type === "kill") {
-      return "<span class='who'><b>" + e.attacker + "</b> matou " + e.victim + "</span> " +
+      // a frase vem pronta do Python (frase_da_morte): sem atacante, fogo amigo
+      // e atacante igual à vítima têm cada um a sua
+      return "<span class='who'><b>" + e.quem + "</b> " + e.acao + "</span> " +
         "<span class='wpn'>" + (e.weapon || "").replace(/_/g, " ") + (e.headshot ? " · hs" : "") + "</span>";
     }
     if (e.type === "plant") {
