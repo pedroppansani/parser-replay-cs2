@@ -357,3 +357,14 @@ def test_granada_no_inventario_nao_e_arremesso():
     tab = _cenario([_um(classe="CFlashbang")])
     pr, _ = grenade_throws(tab, TICKRATE)
     assert pr.height == 0
+
+
+def test_tres_grupos_recebem_curto_medio_longo_pela_ordem_a_confirmar():
+    """Com três grupos, o mais lento é o curto e o mais rápido o longo -- marcados
+    como pendentes até o Pedro confirmar (FORCA_CONFIRMADA)."""
+    from metrics.grenade_throws import FORCA_CONFIRMADA
+
+    grupos = [(201.0, 50), (440.0, 60), (674.0, 300)]
+    sufixo = "" if FORCA_CONFIRMADA else " (a confirmar)"
+    assert [rotula_forca(c, grupos) for c, _ in grupos] == [
+        "curto" + sufixo, "médio" + sufixo, "longo" + sufixo]

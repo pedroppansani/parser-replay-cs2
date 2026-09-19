@@ -515,17 +515,29 @@ def grupos_de_forca(velocidades: np.ndarray) -> list[tuple[float, int]]:
     return sorted(grupos)
 
 
+# Rótulos dos grupos de força, do mais fraco para o mais forte. A ordem não é
+# ambígua (menor velocidade = arremesso curto) e bate com os três jeitos de soltar
+# a granada no CS2: botão direito (lob), os dois botões (médio), botão esquerdo
+# (cheio). PENDENTE DE CONFIRMAÇÃO DO PEDRO: até ele conferir a distribuição, o
+# rótulo sai com "(a confirmar)". Confirmado, é trocar FORCA_CONFIRMADA.
+ROTULOS_FORCA = ("curto", "médio", "longo")
+FORCA_CONFIRMADA = False
+
+
 def rotula_forca(velocidade: float | None, grupos: list[tuple[float, int]]) -> str | None:
     """Qual grupo de força aquela velocidade pertence.
 
-    O rótulo é NEUTRO ("força A/B/C", do mais fraco para o mais forte) enquanto o
-    Pedro não confirmar a leitura na distribuição. Chamar o grupo de "curto" sem
-    conferência é exatamente inventar o dado que o módulo se recusa a inventar em
-    outros lugares.
+    Com exatamente três grupos, o rótulo é curto/médio/longo pela ordem
+    (ROTULOS_FORCA), marcado "(a confirmar)" enquanto FORCA_CONFIRMADA for falso.
+    Com outro número de grupos a leitura por ordem não vale, e o rótulo continua
+    NEUTRO ("força A/B/...", do mais fraco para o mais forte) -- chamar um grupo
+    de "curto" sem essa correspondência seria inventar o dado.
     """
     if velocidade is None or not grupos:
         return None
     i = int(np.argmin([abs(velocidade - c) for c, _ in grupos]))
+    if len(grupos) == len(ROTULOS_FORCA):
+        return ROTULOS_FORCA[i] + ("" if FORCA_CONFIRMADA else " (a confirmar)")
     return f"força {chr(ord('A') + i)}"
 
 
