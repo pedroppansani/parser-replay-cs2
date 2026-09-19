@@ -112,10 +112,69 @@ def bloco(df: pl.DataFrame, coluna: str, piso: float | None, titulo: str) -> lis
     return linhas
 
 
+# Cortes candidatos: o piso atual e os quartis da distribuição dos LÍDERES de
+# time nas partidas profissionais -- é entre eles que o piso decide.
+QUANTIS_CANDIDATOS = (0.25, 0.50, 0.75)
+# Jogador que liderou o time menos vezes que isto não entra na tabela de nomes:
+# uma partida só não diz se o corte acerta ele.
+MIN_LIDERANCAS_NA_TABELA = 2
+
+
+def _arredonda(v: float, referencia: float) -> float:
+    """Corte legível: 2 casas para frações, inteiro para segundos e ADR."""
+    return round(v, 2) if referencia < 5 else float(round(v))
+
+
+def cortes_com_nomes(funcoes: pl.DataFrame, trait) -> list[str]:
+    """Para cada corte candidato, QUEM recebe o rótulo: por jogador, em quantas
+    partidas ele liderou o time nesta métrica e em quantas passaria de cada corte.
+
+    Os pisos continuam ABSOLUTOS (decisão do Pedro): um percentil faria uma
+    fração fixa receber rótulo sempre, e "nenhum suporte nesta partida" deixaria
+    de poder acontecer. Os quartis aqui só sugerem ONDE olhar.
+    """
+    pro = funcoes.filter(pl.col("origem") == "profissional").drop_nulls(trait.column)
+    lid = lideres(pro, trait.column)
+    q = [_arredonda(float(lid[trait.column].quantile(x)), trait.floor) for x in QUANTIS_CANDIDATOS]
+    cortes = sorted({trait.floor, *q})
+    tab = lid.group_by("name").agg(
+        pl.len().alias("lidera"),
+        *[(pl.col(trait.column) >= c).sum().alias(f"≥{c:g}") for c in cortes],
+        pl.col(trait.column).median().round(2).alias("mediana quando lidera"),
+        pl.col("time_real").mode().first().alias("time"),
+    ).filter(pl.col("lidera") >= MIN_LIDERANCAS_NA_TABELA).sort(["time", "name"])
+    linhas = [f"\n=== {trait.label} ({trait.column}) -- piso atual {trait.floor}, candidatos {', '.join(f'{c:g}' for c in cortes)} ===",
+              f"  {lid.height} lideranças de time em {lid['match_id'].n_unique()} partidas profissionais. Coluna '≥c' = em quantas das "
+              f"partidas que ele liderou o rótulo sai com o corte c."]
+    pl.Config.set_tbl_rows(80)
+    pl.Config.set_tbl_width_chars(200)
+    pl.Config.set_tbl_hide_dataframe_shape(True)
+    pl.Config.set_tbl_hide_column_data_types(True)
+    linhas.append(str(tab))
+    return linhas
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--indice", help="mostra só este índice (nome da coluna)")
+    ap.add_argument("--cortes", action="store_true",
+                    help="para cada piso de função, cortes candidatos e QUEM recebe o rótulo em cada um")
     args = ap.parse_args()
+
+    if args.cortes:
+        funcoes = carrega("player_roles")
+        man = json.loads(MANIFESTO.read_text(encoding="utf-8"))["partidas"]
+        time_de = {(m, n): (v["times"][t]["nome"] or "").removeprefix("Team ")
+                   for m, v in man.items() for t in ("A", "B") for n in v["times"][t]["jogadores"]}
+        funcoes = funcoes.with_columns(pl.struct(["match_id", "name"]).map_elements(
+            lambda r: time_de.get((r["match_id"], r["name"])), return_dtype=pl.Utf8).alias("time_real"))
+        saida = ["PISOS DE FUNÇÃO -- cortes candidatos com os NOMES de quem recebe o rótulo (só partidas profissionais)"]
+        for t in TRAIT_SPECS:
+            if args.indice and args.indice != t.column:
+                continue
+            saida += cortes_com_nomes(funcoes, t)
+        print("\n".join(saida))
+        return
 
     funcoes = carrega("player_roles")
     papeis = carrega("archetypes_summary")
