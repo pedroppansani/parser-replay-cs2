@@ -296,6 +296,12 @@ testada e estava errada.
    isolados nos rounds de fronteira (12, 24, fim de prorrogação, último).
    Ninguém dos 12 deixou de jogar algum round. Os trades "a mais" se espalham
    de 0,02s a 4,8s, igual aos dos jogadores exatos: não é a janela.
+   Com 310 KASTs oficiais (data/reference/hltv_componentes.json) o quadro se
+   confirma: 230 de 310 idênticos (74%), excesso de +45 rounds, e o excesso
+   está nos rounds creditados SÓ por trade (correlação +0,39; a HLTV não conta
+   ~1 em 5 deles). Também descartados: marcar só a última ou só a primeira
+   vítima de um matador que matou várias, e ignorar vingança depois do fim do
+   round. A regra que separa esses trades não é recuperável dos dados.
 
 8h. **Cegueira por flash é RECONSTRUÍDA nas demos de campeonato** (elas não
    gravam `player_blind`; só as de FACEIT gravam). `parsing/cegueira.py`:
@@ -310,6 +316,18 @@ testada e estava errada.
    simultânea. A tabela reconstruída leva `origem = "reconstruida"`. Medido: a
    proporção de companheiros cegados por flash lançada é a mesma do evento real
    (0,32 contra 0,34) -- cegar o próprio time é assim frequente mesmo.
+8i. **Economia do rating estimada no CORPUS, por arma mais cara + colete**
+   (`metrics/economia.py`, `scripts/fit_economia.py` ->
+   `metrics/economia_reference.json`, refazer a cada demo nova). A versão por
+   partida tinha ~20 rounds para dezenas de células e mal agia. Classe lida da
+   COMPRA no fim do freeze time; colete importa (pistola inicial sem colete
+   vence 4-10%, com colete ~50%). Encolhimento em dois níveis: célula com
+   colete -> mesma sem colete -> taxa do lado (K = 20). Conferido contra a
+   HLTV: rifle x rifle TR 49,4% (HLTV 48%); o "matar pistola inicial 75%" da
+   HLTV bate com rifle contra QUALQUER pistola (75,9%), não com pistola inicial
+   (96%) -- o grupo deles é mais largo que o nome. Só a taxa entra na
+   conversão em peso, então a diferença de nome não a afeta. Efeito, com os
+   pesos congelados: erro contra o rating oficial 0,109 -> 0,094.
 8c. **Sem atacante, o texto nunca usa o nome de alguém.** E fogo amigo diz
    "morto pelo companheiro X" (5 casos nas 52 partidas), nunca "morreu para X"
    como se X fosse adversário. A ABERTURA do round é o primeiro duelo ganho

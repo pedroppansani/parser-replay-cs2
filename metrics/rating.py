@@ -281,6 +281,18 @@ def taxas_por_confronto(
     return celulas, base_lado
 
 
+class CelulasComFallback(dict):
+    """Tabela de confrontos que, sem a célula com colete, cai na mesma célula
+    sem colete (e o rating cai na taxa do lado se nem ela existir)."""
+
+    def get(self, chave, default=None):
+        if chave in self:
+            return self[chave]
+        lado, meu, dele = chave
+        sem = (lado, str(meu).split("|")[0], str(dele).split("|")[0])
+        return dict.get(self, sem, default)
+
+
 def peso_da_kill(taxa: float | None) -> float:
     """Quanto vale uma kill num confronto com aquela taxa de vitória.
 
@@ -786,7 +798,29 @@ def rating(
     blinds = tables.get("player_blind")
 
     grupos = grupo_do_round(ticks, rounds)
-    celulas, base_lado = taxas_por_confronto(grupos, rounds, team_of, vencedor_por_round)
+    # Economia pelo CORPUS (metrics/economia.py): classe = arma mais cara +
+    # colete, lida da compra; taxas estimadas nas 52 partidas. Sem a compra ou
+    # sem a tabela, cai na estimativa dentro da partida (a versão antiga).
+    from metrics.economia import carrega_tabela, celulas_para_o_rating, classe, compra_por_jogador
+
+    tabela_eco = carrega_tabela()
+    compra = tables.get("compra")
+    if tabela_eco is not None and compra is not None and compra.height:
+        classes = compra_por_jogador(compra).with_columns(
+            pl.struct(["grupo", "colete"]).map_elements(lambda r: classe(r["grupo"], r["colete"]),
+                                                         return_dtype=pl.Utf8).alias("classe")
+        ).select("round_num", "steamid", "classe")
+        grupos = (
+            grupos.with_columns(pl.col("round_num").cast(pl.Int64), pl.col("steamid").cast(pl.UInt64))
+            .join(classes, on=["round_num", "steamid"], how="left")
+            .with_columns(pl.coalesce(["classe", "grupo"]).alias("grupo")).drop("classe")
+        )
+        celulas = CelulasComFallback(celulas_para_o_rating(tabela_eco))
+        base_lado = tabela_eco["taxa_base_por_lado"]
+        fonte_economia = "corpus"
+    else:
+        celulas, base_lado = taxas_por_confronto(grupos, rounds, team_of, vencedor_por_round)
+        fonte_economia = "partida"
 
     if modelo is None:
         X, y = amostras_de_round(kills, rounds, grupos, team_of, vencedor_por_round)
@@ -862,6 +896,7 @@ def rating(
         "modelo_de_round": modelo.metricas,
         "taxa_base_por_lado": base_lado,
         "confrontos_estimados": len(celulas),
+        "fonte_da_economia": fonte_economia,
         "referencia_ajustada": referencia is not None,
         "pesos": ajuste["pesos"],
         "intercepto": ajuste["intercepto"],

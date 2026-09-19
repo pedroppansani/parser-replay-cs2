@@ -71,6 +71,8 @@ def carrega_partida(match_id: str) -> tuple:
         "ticks": ticks,
         "damages": eventos_do_round_jogado(pl.read_parquet(interim / "damages.parquet"), rounds),
         "player_blind": eventos_do_round_jogado(pl.read_parquet(blind), rounds) if blind.exists() else None,
+        # compra no fim do freeze time: classe de equipamento do ajuste de economia
+        "compra": pl.read_parquet(interim / "compra.parquet") if (interim / "compra.parquet").exists() else None,
     }
     team_of, _ = resolve_teams(ticks)
     vencedor = {
