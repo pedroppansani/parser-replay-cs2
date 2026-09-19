@@ -91,6 +91,39 @@ def test_trade_kill_is_detected_within_window():
     assert result == [False, True]
 
 
+def test_kast_da_o_t_a_quem_teve_a_morte_vingada_e_nao_ao_inimigo():
+    """REGRESSÃO: o T do KAST ia para o inimigo que matou e morreu na troca
+    (que já tinha o K), e não para o companheiro vingado. O T esteve desligado
+    desde a primeira versão, e nenhum teste olhava QUEM recebia a marcação."""
+    ticks = _ticks_df(
+        [
+            {"round_num": 1, "steamid": sid, "name": nome, "side": lado, "health": 100, "tick": 100}
+            for sid, nome, lado in ((111, "T1", "t"), (222, "CT1", "ct"), (333, "CT2", "ct"))
+        ]
+    )
+    kills = _kills_df(
+        [
+            # T1 mata CT1; 2s depois CT2 mata T1 e vinga CT1
+            {"round_num": 1, "tick": 1000, "attacker_steamid": 111, "attacker_side": "t",
+             "victim_steamid": 222, "victim_side": "ct"},
+            {"round_num": 1, "tick": 1000 + int(2 * TICKRATE), "attacker_steamid": 333,
+             "attacker_side": "ct", "victim_steamid": 111, "victim_side": "t"},
+        ]
+    )
+    per_round, _ = calculate_kast(kills, roster_per_round(ticks))
+    linha = {r["steamid"]: r for r in per_round.iter_rows(named=True)}
+    assert linha[222]["was_traded"] is True and linha[222]["kast_round"] is True   # vingado
+    assert linha[111]["was_traded"] is False                                       # o inimigo
+    assert linha[111]["kast_round"] is True                                        # pelo K dele
+
+    # fora da janela a morte não foi vingada
+    tarde = kills.with_columns(
+        pl.when(pl.col("attacker_steamid") == 333).then(1000 + int(10 * TICKRATE)).otherwise(pl.col("tick")).alias("tick")
+    )
+    per_round, _ = calculate_kast(tarde, roster_per_round(ticks))
+    assert per_round.filter(pl.col("steamid") == 222)["kast_round"].to_list() == [False]
+
+
 def test_trade_kill_outside_window_is_not_detected():
     # Mesma sequência, mas a vingança acontece 10s depois -- fora da janela de 5s.
     kills = _kills_df(
@@ -219,7 +252,7 @@ def test_kast_true_when_only_survived():
     )
     kills = _kills_df([])
     roster = roster_per_round(ticks)
-    per_round, summary = calculate_kast(kills, ticks, roster)
+    per_round, summary = calculate_kast(kills, roster)
     assert per_round["kast_round"].to_list() == [True]
     assert summary.row(0, named=True)["kast_pct"] == 100.0
 
@@ -244,7 +277,26 @@ def test_kast_false_when_died_and_not_traded():
         ]
     )
     roster = roster_per_round(ticks)
-    per_round, summary = calculate_kast(kills, ticks, roster)
+    per_round, summary = calculate_kast(kills, roster)
     row = per_round.filter(pl.col("steamid") == 1).row(0, named=True)
     assert row["survived"] is False
     assert row["kast_round"] is False
+
+
+def test_kast_morte_contada_nao_e_sobrevivencia_mesmo_com_vida_no_ultimo_tick():
+    """REGRESSÃO: pelo último tick do round, quem morria na cauda depois do fim
+    do round (ou no último round da partida) aparecia vivo e ganhava o S do KAST
+    no mesmo round em que a morte entrava no K-D. 71 casos nas 52 partidas."""
+    ticks = _ticks_df(
+        [
+            {"round_num": 1, "steamid": 1, "name": "A", "side": "t", "health": 100, "tick": 100},
+            {"round_num": 1, "steamid": 1, "name": "A", "side": "t", "health": 100, "tick": 200},
+        ]
+    )
+    kills = _kills_df(
+        [{"round_num": 1, "tick": 260, "attacker_steamid": 99, "attacker_side": "ct",
+          "victim_steamid": 1, "victim_side": "t"}]
+    )
+    per_round, _ = calculate_kast(kills, roster_per_round(ticks))
+    row = per_round.row(0, named=True)
+    assert row["survived"] is False and row["kast_round"] is False

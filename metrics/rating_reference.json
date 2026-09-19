@@ -1,35 +1,35 @@
 {
   "medias": {
-    "kills": 0.7438873945527249,
-    "dano": 80.66666811247353,
-    "sobrevivencia": 0.27925958811665735,
-    "kast": 0.6624006118484963,
-    "multikills": 0.23711329017039193,
-    "round_swing": -0.04333735021270547
+    "kills": 0.6882248640079152,
+    "dano": 75.58688956896363,
+    "sobrevivencia": 0.32492879443875894,
+    "kast": 0.724288133174393,
+    "multikills": 0.21460945837346843,
+    "round_swing": -0.04682788414647201
   },
   "desvios": {
-    "kills": 0.2645596120866846,
-    "dano": 23.664571914130715,
-    "sobrevivencia": 0.11882355197803798,
-    "kast": 0.1228275772983456,
-    "multikills": 0.1655347969478771,
-    "round_swing": 0.030852500716062364
+    "kills": 0.24460077828396987,
+    "dano": 21.294121586249975,
+    "sobrevivencia": 0.12753937723558467,
+    "kast": 0.10955895215581987,
+    "multikills": 0.14272945769777343,
+    "round_swing": 0.036797701468561275
   },
-  "dispersao_alvo": 0.35564470378713114,
-  "n_partidas": 9,
-  "n_jogador_partidas": 90,
+  "dispersao_alvo": 0.3554082264036842,
+  "n_partidas": 52,
+  "n_jogador_partidas": 520,
   "modelo_de_round": {
-    "amostras": 2692,
+    "amostras": 15536,
     "treinou": true,
-    "brier": 0.12945122288070643,
-    "auc": 0.8971726252900565,
+    "brier": 0.12812546189997565,
+    "auc": 0.9007476804148314,
     "coeficientes": {
-      "dif_vivos": 1.0941,
-      "dif_equip_milhares": 0.0651,
-      "bomba_a_favor": 0.7103,
-      "eh_ct": -0.791
+      "dif_vivos": 1.2336,
+      "dif_equip_milhares": 0.0534,
+      "bomba_a_favor": 1.0503,
+      "eh_ct": -0.6553
     },
-    "intercepto": 0.3951124030981408
+    "intercepto": 0.3276041269255751
   },
   "pesos_usados": {
     "kills": 0.28,

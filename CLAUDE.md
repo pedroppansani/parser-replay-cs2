@@ -238,7 +238,11 @@ testada e estava errada.
    troca de lado em seguida) a morte não conta -- o jogo já foi para o
    intervalo. Caso real: a bomba matou donk (match_24) e ropz (match_26) depois
    do fim do round 12; a HLTV não conta essas mortes e conta as da cauda dos
-   outros rounds (6 de 6 conferidos). O
+   outros rounds (6 de 6 conferidos). A sobrevivência do KAST sai da MESMA
+   lista de mortes contadas (`basic_metrics.deaths_per_round`), não da vida
+   no último tick do round: pelo tick, 71 jogador-rounds apareciam vivos tendo
+   morrido (último round da partida, cauda depois do fim), e K-D e KAST se
+   contradiziam. O
    filtro é `parsing.kills_do_round_jogado` e precisa ser aplicado em **todo**
    ponto de entrada de kills — `load_interim`, o parse do zero e os scripts que
    leem o parquet direto. A cauda depois do fim do round fica.
@@ -252,6 +256,16 @@ testada e estava errada.
    (`parsing.remove_round_de_faca`, aplicado em `save_interim`). Há teste que
    varre todas as partidas atrás de placar impossível -- ele pega esta classe
    de bug (lado errado, round a mais) em qualquer demo nova.
+
+8g. **O T do KAST vai para quem teve a MORTE VINGADA.** Até aqui o KAST
+   marcava a vítima do kill de trade -- o inimigo que matou e morreu na troca,
+   que já tinha o K --, e o T nunca acrescentava nada: trocar a janela de 3s
+   para 10s não mudava um único KAST, e o KAST ficava ~5 pontos abaixo do da
+   HLTV. Corrigido (`basic_metrics.traded_deaths`), a janela de 5s que o projeto
+   já usava é a que mais bate: 24 de 30 jogadores com KAST idêntico ao da HLTV
+   em 3 partidas conferidas, erro médio 1,2 ponto (antes, 13 de 30 e viés de
+   -4,5). O mesmo `was_traded` alimenta o carrega piano de TR e as "mortes
+   trocadas" do perfil, que também estavam desligados. Não é feature do KMeans.
 
 8c. **Sem atacante, o texto nunca usa o nome de alguém.** Morte por queda, bomba
    ou dano de zona vem com `attacker_steamid` nulo, e o demo às vezes preenche o

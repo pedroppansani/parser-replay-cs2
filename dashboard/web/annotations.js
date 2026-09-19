@@ -100,6 +100,7 @@ window.MapAnnotations = (function () {
     cor: COR_PADRAO,
     recentes: [],
     corPendente: null,      // cor em edição no seletor; só vale ao fechar
+    hsv: { h: 0, s: 1, v: 1 },   // posição do seletor visual
     espessura: ESPESSURAS[1],
     soDepois: false,        // o traço aparece só a partir do instante em que foi feito
     round: null,
@@ -862,6 +863,28 @@ window.MapAnnotations = (function () {
     return [1, 3, 5].map(function (i) { return parseInt(hex.slice(i, i + 2), 16); });
   }
 
+  /** HSV é o espaço do seletor visual: a matiz é a barra do arco-íris, e
+      saturação x brilho é o quadrado. h em graus, s e v de 0 a 1. */
+  function deHsv(h, sat, v) {
+    var f = function (n) {
+      var k = (n + h / 60) % 6;
+      return v - v * sat * Math.max(0, Math.min(k, 4 - k, 1));
+    };
+    return deRgb(Math.round(f(5) * 255), Math.round(f(3) * 255), Math.round(f(1) * 255));
+  }
+  function paraHsv(hex) {
+    var c = paraRgb(hex).map(function (x) { return x / 255; });
+    var max = Math.max(c[0], c[1], c[2]), min = Math.min(c[0], c[1], c[2]), d = max - min;
+    var h = 0;
+    if (d) {
+      if (max === c[0]) h = ((c[1] - c[2]) / d) % 6;
+      else if (max === c[1]) h = (c[2] - c[0]) / d + 2;
+      else h = (c[0] - c[1]) / d + 4;
+      h = (h * 60 + 360) % 360;
+    }
+    return { h: h, s: max ? d / max : 0, v: max };
+  }
+
   function aplicaCor(hex) {
     var cor = normalizaCor(hex);
     if (!cor) return;
@@ -883,9 +906,9 @@ window.MapAnnotations = (function () {
     pop.hidden = false;
     posicionaSeletor(pop);
     document.getElementById("anot-cor-seta").setAttribute("aria-expanded", "true");
-    // sem rolar: o painel tem overflow escondido, e focar um campo que passa
-    // da borda faria o navegador deslizar a barra inteira para o lado
-    document.getElementById("anot-cor-hex").focus({ preventScroll: true });
+    // sem rolar: o painel tem overflow escondido, e focar algo que passa da
+    // borda faria o navegador deslizar a barra inteira para o lado
+    document.getElementById("anot-cor-sv").focus({ preventScroll: true });
   }
 
   /** O seletor abre para baixo da bolinha, mas nunca para fora do painel: a
@@ -910,23 +933,51 @@ window.MapAnnotations = (function () {
     S.corPendente = null;
   }
 
-  /** Mantém os campos do seletor iguais à cor pendente. `origem` é o campo que
-      o usuário está digitando -- esse não é reescrito, senão o cursor pula. */
+  /** Mantém o seletor igual à cor pendente. `origem` diz de onde veio a
+      mudança: o campo que o usuário está digitando não é reescrito (senão o
+      cursor pula), e a posição HSV não é recalculada a partir do hex quando foi
+      ela que mudou -- num cinza a matiz não existe no hex, e a barra pularia
+      para o vermelho. */
   function sincronizaSeletor(origem) {
     var cor = S.corPendente || S.cor;
-    var rgb = paraRgb(cor);
-    var campos = {
-      nativa: document.getElementById("anot-cor-nativa"),
-      hex: document.getElementById("anot-cor-hex"),
-      r: document.getElementById("anot-cor-r"),
-      g: document.getElementById("anot-cor-g"),
-      b: document.getElementById("anot-cor-b")
-    };
-    if (origem !== "nativa") campos.nativa.value = cor;
-    if (origem !== "hex") { campos.hex.value = cor; campos.hex.removeAttribute("aria-invalid"); }
-    ["r", "g", "b"].forEach(function (k, i) {
-      if (origem !== "rgb") { campos[k].value = rgb[i]; campos[k].removeAttribute("aria-invalid"); }
+    if (origem !== "sv" && origem !== "matiz") S.hsv = paraHsv(cor);
+    var hsv = S.hsv;
+
+    var sv = document.getElementById("anot-cor-sv");
+    sv.style.backgroundColor = deHsv(hsv.h, 1, 1);
+    var alca = document.getElementById("anot-cor-sv-alca");
+    alca.style.left = (hsv.s * 100) + "%";
+    alca.style.top = ((1 - hsv.v) * 100) + "%";
+    alca.style.background = cor;
+    sv.setAttribute("aria-valuetext", "saturação " + Math.round(hsv.s * 100) +
+                    "%, brilho " + Math.round(hsv.v * 100) + "%");
+    var matiz = document.getElementById("anot-cor-matiz");
+    document.getElementById("anot-cor-matiz-alca").style.left = (hsv.h / 360 * 100) + "%";
+    matiz.setAttribute("aria-valuenow", String(Math.round(hsv.h)));
+
+    document.getElementById("anot-cor-amostra").style.background = cor;
+    var hex = document.getElementById("anot-cor-hex");
+    if (origem !== "hex") { hex.value = cor; hex.removeAttribute("aria-invalid"); }
+  }
+
+  /** Arrastar dentro de uma área (quadrado ou barra) com o mesmo código para
+      mouse, toque e caneta. `aoMover` recebe a posição relativa, de 0 a 1. */
+  function arrastavel(el, aoMover) {
+    var ativo = false;
+    function posicao(e) {
+      var r = el.getBoundingClientRect();
+      aoMover(Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)),
+              Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)));
+    }
+    el.addEventListener("pointerdown", function (e) {
+      ativo = true;
+      el.setPointerCapture(e.pointerId);
+      posicao(e);
+      e.preventDefault();
     });
+    el.addEventListener("pointermove", function (e) { if (ativo) posicao(e); });
+    el.addEventListener("pointerup", function () { ativo = false; });
+    el.addEventListener("pointercancel", function () { ativo = false; });
   }
 
   function montaCor() {
@@ -963,12 +1014,6 @@ window.MapAnnotations = (function () {
     pop.setAttribute("role", "dialog");
     pop.setAttribute("aria-label", "Escolher cor");
 
-    function campo(rotulo, input) {
-      var l = document.createElement("label");
-      l.textContent = rotulo;
-      l.appendChild(input);
-      return l;
-    }
     function entrada(tipo, id) {
       var i = document.createElement("input");
       i.type = tipo;
@@ -978,17 +1023,75 @@ window.MapAnnotations = (function () {
       return i;
     }
 
-    var nativa = entrada("color", "anot-cor-nativa");
-    nativa.setAttribute("aria-label", "Paleta");
-    nativa.addEventListener("input", function () {
-      S.corPendente = normalizaCor(nativa.value) || S.corPendente;
-      sincronizaSeletor("nativa");
-    });
-    pop.appendChild(nativa);
+    // O ESPECTRO é o seletor: um quadrado de saturação x brilho sobre a matiz
+    // escolhida na barra do arco-íris. Clicar ou arrastar escolhe a cor vendo a
+    // cor -- o código hex fica embaixo, só para quem quiser colar um valor.
+    function mudaHsv(origem) {
+      S.corPendente = deHsv(S.hsv.h, S.hsv.s, S.hsv.v);
+      sincronizaSeletor(origem);
+    }
 
+    var sv = document.createElement("div");
+    sv.className = "anot-sv";
+    sv.id = "anot-cor-sv";
+    sv.tabIndex = 0;
+    sv.setAttribute("role", "slider");
+    sv.setAttribute("aria-label", "Saturação e brilho");
+    var svAlca = document.createElement("div");
+    svAlca.className = "anot-sv-alca";
+    svAlca.id = "anot-cor-sv-alca";
+    sv.appendChild(svAlca);
+    arrastavel(sv, function (x, y) { S.hsv.s = x; S.hsv.v = 1 - y; mudaHsv("sv"); });
+    sv.addEventListener("keydown", function (e) {
+      var passo = e.shiftKey ? 0.1 : 0.02;
+      var d = { ArrowLeft: [-passo, 0], ArrowRight: [passo, 0], ArrowUp: [0, passo], ArrowDown: [0, -passo] }[e.key];
+      if (!d) return;
+      e.preventDefault();
+      S.hsv.s = Math.min(1, Math.max(0, S.hsv.s + d[0]));
+      S.hsv.v = Math.min(1, Math.max(0, S.hsv.v + d[1]));
+      mudaHsv("sv");
+    });
+    pop.appendChild(sv);
+
+    var matiz = document.createElement("div");
+    matiz.className = "anot-matiz";
+    matiz.id = "anot-cor-matiz";
+    matiz.tabIndex = 0;
+    matiz.setAttribute("role", "slider");
+    matiz.setAttribute("aria-label", "Matiz");
+    matiz.setAttribute("aria-valuemin", "0");
+    matiz.setAttribute("aria-valuemax", "360");
+    var matizAlca = document.createElement("div");
+    matizAlca.className = "anot-matiz-alca";
+    matizAlca.id = "anot-cor-matiz-alca";
+    matiz.appendChild(matizAlca);
+    arrastavel(matiz, function (x) {
+      S.hsv.h = Math.min(359.9, x * 360);
+      // escolher a matiz num cinza não mostraria cor nenhuma: leva para a
+      // cor cheia, que é o que quem clicou no arco-íris quer ver
+      if (S.hsv.s < 0.05 || S.hsv.v < 0.05) { S.hsv.s = 1; S.hsv.v = 1; }
+      mudaHsv("matiz");
+    });
+    matiz.addEventListener("keydown", function (e) {
+      var d = { ArrowLeft: -1, ArrowRight: 1 }[e.key];
+      if (!d) return;
+      e.preventDefault();
+      S.hsv.h = (S.hsv.h + d * (e.shiftKey ? 30 : 5) + 360) % 360;
+      mudaHsv("matiz");
+    });
+    pop.appendChild(matiz);
+
+    var linha = document.createElement("div");
+    linha.className = "anot-cor-linha";
+    var amostra = document.createElement("span");
+    amostra.className = "anot-amostra";
+    amostra.id = "anot-cor-amostra";
+    amostra.setAttribute("aria-hidden", "true");
+    linha.appendChild(amostra);
     var hex = entrada("text", "anot-cor-hex");
     hex.maxLength = 22;
-    hex.placeholder = "#eb6834 ou rgb(235, 104, 52)";
+    hex.setAttribute("aria-label", "Código da cor (hex ou rgb)");
+    hex.placeholder = "#eb6834";
     hex.addEventListener("input", function () {
       var cor = normalizaCor(hex.value);
       if (!cor) { hex.setAttribute("aria-invalid", "true"); return; }
@@ -996,27 +1099,8 @@ window.MapAnnotations = (function () {
       S.corPendente = cor;
       sincronizaSeletor("hex");
     });
-    pop.appendChild(campo("Hex ou RGB", hex));
-
-    var linhaRgb = document.createElement("div");
-    linhaRgb.className = "anot-rgb";
-    ["r", "g", "b"].forEach(function (k) {
-      var n = entrada("number", "anot-cor-" + k);
-      n.min = "0"; n.max = "255"; n.step = "1";
-      n.addEventListener("input", function () {
-        var v = ["r", "g", "b"].map(function (c) {
-          var s = document.getElementById("anot-cor-" + c).value;
-          return s === "" ? NaN : Number(s);
-        });
-        var cor = deRgb(v[0], v[1], v[2]);
-        if (!cor) { n.setAttribute("aria-invalid", "true"); return; }
-        ["r", "g", "b"].forEach(function (c) { document.getElementById("anot-cor-" + c).removeAttribute("aria-invalid"); });
-        S.corPendente = cor;
-        sincronizaSeletor("rgb");
-      });
-      linhaRgb.appendChild(campo(k.toUpperCase(), n));
-    });
-    pop.appendChild(linhaRgb);
+    linha.appendChild(hex);
+    pop.appendChild(linha);
 
     var ok = botao("Aplicar", "Aplicar a cor e fechar", fechaSeletor, "principal");
     pop.appendChild(ok);
