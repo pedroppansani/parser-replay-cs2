@@ -28,7 +28,7 @@ ALL_TABLES = EVENT_TABLES + ("ticks",)
 # do demo que diz QUEM ficou cego, POR QUANTO TEMPO e POR CULPA DE QUEM. Sem
 # ele, flash vira só um ponto voando no mapa: dá pra ver a granada, não o efeito
 # — e toda métrica de utility que depende de cegueira zera em silêncio.
-EXTRA_EVENTS = ["player_blind"]
+EXTRA_EVENTS = ["player_blind", "item_pickup", "bomb_dropped", "bomb_pickup", "grenade_thrown"]
 
 # Eventos de detonação. O awpy monta tabela pronta pra smoke e inferno (que têm
 # duração), mas flash e HE detonam num instante e ficam só nos eventos crus. São
@@ -41,6 +41,19 @@ GRENADE_EVENT_TABLES = (
     "smokegrenade_detonate",
     "inferno_startburn",
 )
+
+# Eventos gravados ANTES de as demos serem apagadas, porque não saem de mais
+# lugar nenhum depois (a demo é a única fonte):
+#   item_pickup     quem pegou que arma -- é como se vê o DROP (a arma que um
+#                   pega e outro comprou); pedido pelo suporte e pelo carrega
+#                   piano (jogar com a arma pior porque deu a boa)
+#   bomb_dropped / bomb_pickup   quem carregou a bomba e quando largou
+#   grenade_thrown  o tick em que a granada saiu da mão, registrado pelo
+#                   servidor -- só as demos de campeonato trazem; é a
+#                   conferência direta da soltura derivada por geometria
+# `player_blind` existe só nas demos de FACEIT: as de campeonato não gravam o
+# evento. Nelas a cegueira sai de `flash_duration` nos ticks.
+EVENTOS_SALVOS = GRENADE_EVENT_TABLES + ("item_pickup", "bomb_dropped", "bomb_pickup", "grenade_thrown")
 
 # Propriedades por jogador que a gente extrai de cada tick. A Fase 1 só precisava
 # de posição e vida; as métricas autorais da Fase 2 precisam de mais:
@@ -61,7 +74,24 @@ PLAYER_PROPS = [
     "is_walking",
     "armor_value",
     "current_equip_value",
+    # Economia e postura, extraídas antes de as demos serem apagadas:
+    #   balance / cash_spent_this_round -> round "com dinheiro" ou não; é o que
+    #       separa jogar de SMG por escolha de jogar de SMG por falta
+    #   has_helmet / has_defuser -> grupo de equipamento do ajuste de economia
+    #   ducking -> postura na soltura da granada (a Fase 5 a derivava só pela
+    #       altura dos olhos, por falta da flag)
+    "balance",
+    "cash_spent_this_round",
+    "has_helmet",
+    "has_defuser",
+    "ducking",
 ]
+
+# Inventário completo no fim do freeze time de cada round: a compra do round.
+# Uma lista por jogador por tick pesaria demais nos ticks, e o que interessa
+# dele é o instante em que o round começa.
+PROPS_DA_COMPRA = ["inventory", "balance", "cash_spent_this_round", "has_helmet",
+                   "has_defuser", "armor_value", "current_equip_value"]
 
 
 def parse_demo(
@@ -83,6 +113,21 @@ def parse_demo(
     return demo
 
 
+def compra_por_round(demo: Demo) -> pl.DataFrame | None:
+    """Inventário e dinheiro de cada jogador no fim do freeze time de cada round."""
+    rounds = demo.rounds
+    if rounds is None or rounds.height == 0 or "freeze_end" not in rounds.columns:
+        return None
+    ticks = [int(t) for t in rounds["freeze_end"].drop_nulls().to_list()]
+    try:
+        df = pl.from_pandas(demo.parser.parse_ticks(PROPS_DA_COMPRA, ticks=ticks))
+    except Exception:
+        return None
+    if df.height == 0:
+        return None
+    return apply_round_num(df=df, rounds_df=rounds, tick_col="tick").filter(pl.col("round_num").is_not_null())
+
+
 def grenade_event_tables(demo: Demo) -> dict[str, pl.DataFrame]:
     """Eventos crus de granada, já com round_num aplicado.
 
@@ -91,7 +136,7 @@ def grenade_event_tables(demo: Demo) -> dict[str, pl.DataFrame]:
     consumir não precisar refazer o casamento por faixa de tick.
     """
     out: dict[str, pl.DataFrame] = {}
-    for name in GRENADE_EVENT_TABLES:
+    for name in EVENTOS_SALVOS:
         df = demo.events.get(name)
         if df is None or df.height == 0:
             continue
@@ -124,6 +169,9 @@ def save_interim(demo: Demo, interim_dir: Path | str, match_id: str) -> dict[str
         "ticks": demo.ticks,
     }
     tables.update(grenade_event_tables(demo))
+    compra = compra_por_round(demo)
+    if compra is not None:
+        tables["compra"] = compra
     # O round de faca sai AQUI, antes de gravar: todo leitor do interim (as
     # métricas, o replay, a calibração do rating) recebe a partida já sem ele.
     tables, faca = remove_round_de_faca(tables)
@@ -275,7 +323,7 @@ def load_interim(interim_dir: Path | str, match_id: str) -> dict[str, pl.DataFra
     # esses arquivos, e as métricas de utility tratam ausência como zero. Sem
     # carregá-los aqui, porém, a ausência é SEMPRE — foi assim que as métricas de
     # flash zeraram sem ninguém perceber.
-    for name in GRENADE_EVENT_TABLES + ("smokes", "infernos", "bomb"):
+    for name in EVENTOS_SALVOS + ("smokes", "infernos", "bomb", "compra"):
         path = match_dir / f"{name}.parquet"
         if path.exists():
             tables[name] = pl.read_parquet(path)

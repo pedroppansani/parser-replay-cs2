@@ -12,13 +12,14 @@ export_replay e as calibrações (fit_rating, fit_archetype_reference). Depois
 da limpeza, a partida continua no site exatamente como está, mas mudança de
 métrica ou de texto não chega mais nela, e ela sai da recalibração do rating
 -- a menos que a demo seja baixada de novo (o manifesto guarda o hash e o link
-da HLTV para isso). O interim pesa ~15MB por partida contra 200-500MB da demo:
---manter-interim apaga só a demo e preserva a capacidade de recalcular.
+da HLTV para isso). O interim pesa ~15MB por partida contra 200-500MB da demo.
+Por isso o PADRÃO é apagar só a demo (decisão do Pedro); --apagar-interim
+apaga os dois.
 
 Uso:
     py -3.12 -m scripts.clean_match match_43                    # só confere
-    py -3.12 -m scripts.clean_match match_43 --confirmar        # apaga
-    py -3.12 -m scripts.clean_match match_43 --confirmar --manter-interim
+    py -3.12 -m scripts.clean_match match_43 --confirmar        # apaga a demo
+    py -3.12 -m scripts.clean_match match_43 --confirmar --apagar-interim
 """
 from __future__ import annotations
 
@@ -126,7 +127,7 @@ def _tamanho(p: Path) -> int:
     return sum(f.stat().st_size for f in p.rglob("*") if f.is_file())
 
 
-def limpa(match_id: str, confirmar: bool = False, manter_interim: bool = False) -> dict:
+def limpa(match_id: str, confirmar: bool = False, manter_interim: bool = True) -> dict:
     """Confere e, com `confirmar`, apaga. Devolve o que foi (ou seria) feito."""
     problemas = verifica(match_id)
     if problemas:
@@ -148,11 +149,11 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="Apaga demo e interim de uma partida já processada.")
     ap.add_argument("match_ids", nargs="+")
     ap.add_argument("--confirmar", action="store_true", help="apaga de verdade (sem isto, só confere)")
-    ap.add_argument("--manter-interim", action="store_true",
-                    help="apaga só a demo; a partida continua recalculável")
+    ap.add_argument("--apagar-interim", action="store_true",
+                    help="apaga também os dados crus: a partida deixa de ser recalculável")
     args = ap.parse_args()
     for mid in args.match_ids:
-        r = limpa(mid, args.confirmar, args.manter_interim)
+        r = limpa(mid, args.confirmar, manter_interim=not args.apagar_interim)
         if not r["ok"]:
             print(f"[{mid}] NÃO LIMPA -- processado não está íntegro:")
             for p in r["problemas"]:

@@ -318,6 +318,15 @@ testada e estava errada.
     passa nos critérios junto das três primeiras no modo escuro. Não troque por
     4 cores num gráfico só.
 
+    Nos gráficos da partida (vantagem e probabilidade de vitória), por pedido
+    do Pedro: Time A azul, Time B laranja, round decisivo **roxo escuro
+    `#4a3aa7`**. Validado com o script da skill dataviz, os três juntos e em
+    todos os pares: pior par para daltônico ΔE 13,0, visão normal 16,3,
+    contraste >= 3:1. Esmeralda passava por menos (9,2) e com contraste 2,8:1;
+    roxos mais claros falhavam contra o azul. A linha da diferença de rounds é
+    uma medida só e fica em tinta neutra; a cor de cada time está nas áreas e
+    nas bolinhas, e empate é cinza.
+
 11. **O KMeans é ajustado UMA vez no conjunto das partidas, não por partida.**
     O rótulo numérico do KMeans é arbitrário: treinando por partida, o "cluster
     3" de uma não tem relação com o da outra — e `cluster_names.json` é um
@@ -575,6 +584,11 @@ testada e estava errada.
     calibração exige demos de partidas oficiais cobertas por ela, e o mínimo
     estatístico está em `scripts/fit_rating.py`: 7 de treino + 3 de teste, com a
     divisão feita por PARTIDA e nunca por jogador.
+
+22e. **O rating aparece na aba Jogadores** (coluna ordenável, com a nota de
+    implementação própria vinda do Python) e sai do `build_insights`, com o
+    modelo de round GLOBAL reconstruído da referência
+    (`ModeloDeRound.da_referencia`) -- nunca treinado só na partida.
 
 23. **Anotação no mapa: coordenada de jogo, um único ponto de redimensionamento,
     camada sempre transparente.** A camada vive em `dashboard/web/annotations.js`

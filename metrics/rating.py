@@ -342,13 +342,31 @@ class ModeloDeRound:
             "brier": float(brier_score_loss(y, p)),
             # AUC mede SEPARAÇÃO: se ele ordena bem os estados vencedores.
             "auc": float(roc_auc_score(y, p)),
-            "coeficientes": dict(zip(self.COLUNAS, self.modelo.coef_[0].round(4).tolist())),
+            # precisão cheia: o pipeline de cada partida reconstrói o modelo a
+            # partir daqui (da_referencia), e arredondar mudaria o Round Swing
+            "coeficientes": dict(zip(self.COLUNAS, self.modelo.coef_[0].tolist())),
             "intercepto": float(self.modelo.intercept_[0]),
         }
         return self
 
+    @classmethod
+    def da_referencia(cls, metricas: dict | None) -> "ModeloDeRound":
+        """O modelo GLOBAL, reconstruído dos coeficientes gravados na
+        referência de escala -- sem retreinar a cada partida (decisão 11: um
+        modelo só, senão o Round Swing de uma página não compara com o de outra).
+        """
+        m = cls()
+        m.metricas = dict(metricas or {})
+        if metricas and metricas.get("treinou") and metricas.get("coeficientes"):
+            m._coef = np.array([float(metricas["coeficientes"][c]) for c in cls.COLUNAS])
+            m._intercepto = float(metricas["intercepto"])
+        return m
+
     def prob(self, X: np.ndarray) -> np.ndarray:
         """Probabilidade de vitória. Sempre em (0, 1), nunca 0 nem 1 cravados."""
+        if self.modelo is None and getattr(self, "_coef", None) is not None:
+            p = 1.0 / (1.0 + np.exp(-(X @ self._coef + self._intercepto)))
+            return np.clip(p, 1e-6, 1 - 1e-6)
         if self.modelo is None:
             return np.full(X.shape[0], 0.5)
         return np.clip(self.modelo.predict_proba(X)[:, 1], 1e-6, 1 - 1e-6)
