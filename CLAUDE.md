@@ -285,6 +285,17 @@ testada e estava errada.
    **Assistência por flash não é o A do KAST**, como na HLTV (decisão do
    Pedro): contra o KAST oficial de 50 jogadores, 38 idênticos sem ela e 33
    com ela.
+   **Os 12 que não batem foram investigados (Fase B) e nenhuma regra os
+   explica** -- não mude a definição sem dado novo. 9 dos 12 têm KAST A MAIS
+   (+1 ou +2), 3 a menos; não é categoria faltando (o A existe: assistência
+   comum conta). Testado contra os 50, e todas pioram ou empatam os 38 atuais:
+   janela de trade 3/4/6s; trade "por qualquer um" em vez de "por
+   companheiro"; sobrevivência medida no fim do round em vez de na cauda;
+   contar assistência por flash; KAST só no tempo regulamentar nas partidas
+   com prorrogação (cai para 1 de 10); descontar sobrevivência ou trade
+   isolados nos rounds de fronteira (12, 24, fim de prorrogação, último).
+   Ninguém dos 12 deixou de jogar algum round. Os trades "a mais" se espalham
+   de 0,02s a 4,8s, igual aos dos jogadores exatos: não é a janela.
 
 8h. **Cegueira por flash é RECONSTRUÍDA nas demos de campeonato** (elas não
    gravam `player_blind`; só as de FACEIT gravam). `parsing/cegueira.py`:
