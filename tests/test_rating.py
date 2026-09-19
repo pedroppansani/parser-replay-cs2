@@ -288,3 +288,35 @@ def test_os_pesos_provisorios_somam_um():
     assert set(PESOS_PROVISORIOS) == {
         "kills", "dano", "sobrevivencia", "kast", "multikills", "round_swing",
     }
+
+
+# --- Pesos ajustados contra os ratings oficiais --------------------------------
+
+def test_pesos_ajustados_substituem_os_provisorios_quando_existem(tmp_path, monkeypatch):
+    import json
+
+    from metrics import rating as mr
+
+    monkeypatch.setattr(mr, "PESOS_FILE", tmp_path / "rating_weights.json")
+    assert mr.carrega_pesos()["origem"] == "provisorios"
+    pesos = {n: 0.1 for n in mr.PESOS_PROVISORIOS}
+    (tmp_path / "rating_weights.json").write_text(
+        json.dumps({"pesos": pesos, "intercepto": -0.3, "medias_da_referencia": None}), encoding="utf-8")
+    ajuste = mr.carrega_pesos()
+    assert ajuste["pesos"] == pesos and ajuste["intercepto"] == -0.3
+    assert ajuste["origem"].startswith("ajustados")
+
+
+def test_os_pesos_gravados_sao_nao_negativos_e_validados_fora_da_amostra():
+    import json
+
+    from metrics.rating import PESOS_FILE
+
+    if not PESOS_FILE.exists():
+        pytest.skip("pesos ainda não ajustados")
+    dados = json.loads(PESOS_FILE.read_text(encoding="utf-8"))
+    assert all(v >= 0 for v in dados["pesos"].values())
+    v = dados["validacao"]
+    # a validação é por PARTIDA, nunca por jogador (o teste ficaria otimista)
+    assert v["metodo"] == "deixa uma partida fora" and v["partidas"] >= 10
+    assert dados["medias_da_referencia"], "sem a referência, não dá para saber se os pesos envelheceram"
