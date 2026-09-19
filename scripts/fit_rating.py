@@ -351,14 +351,34 @@ def ajusta_pesos(ids: list[str]) -> dict:
         reg = LinearRegression().fit(X, y)
         return np.append(reg.coef_, reg.intercept_)
 
-    def _deixa_uma_fora(ajusta, cols) -> dict:
+    previsoes = {}
+
+    def _deixa_uma_fora(ajusta, cols, guarda=None) -> dict:
         prev = np.zeros(dados.height)
         for mid in partidas_com_alvo:
             teste = (dados["match_id"] == mid).to_numpy()
             X = dados.select(cols).to_numpy()
             w = ajusta(X[~teste], real[~teste])
             prev[teste] = X[teste] @ w[:-1] + w[-1]
+        if guarda:
+            previsoes[guarda] = prev
         return _erro(prev)
+
+    def _por_time(prev) -> dict:
+        """Erro de TESTE quebrado por time. O corpus é quase todo de 7 times: se
+        o erro variar muito entre eles, o modelo aprendeu o estilo desses times,
+        não o rating -- e isso só aparece nesta quebra."""
+        times = _times_dos_jogadores()
+        t = dados.select("match_id", "name").with_columns(
+            pl.struct(["match_id", "name"]).map_elements(
+                lambda r: times.get((r["match_id"], r["name"])), return_dtype=pl.Utf8).alias("time"),
+            pl.Series("erro", np.abs(prev - real)), pl.Series("vies", prev - real))
+        return {
+            r["time"]: {"jogador_partidas": r["n"], "erro_medio_absoluto": round(r["erro"], 3),
+                        "vies": round(r["vies"], 3)}
+            for r in t.group_by("time").agg(pl.len().alias("n"), pl.col("erro").mean(), pl.col("vies").mean())
+            .sort("n", descending=True).iter_rows(named=True)
+        }
 
     def _erro(prev) -> dict:
         return {
@@ -374,7 +394,8 @@ def ajusta_pesos(ids: list[str]) -> dict:
         "validacao": "deixa uma partida fora",
         "pesos_atuais": _erro(dados["rating"].to_numpy()),
         "pesos_atuais_so_reescalados": _deixa_uma_fora(_reescala, ["rating"]),
-        "pesos_ajustados": _deixa_uma_fora(_nao_negativo, colunas),
+        "pesos_ajustados": _deixa_uma_fora(_nao_negativo, colunas, guarda="ajustados"),
+        "erro_de_teste_por_time": _por_time(previsoes["ajustados"]),
         # ajustados no conjunto inteiro; o erro acima é o de fora da amostra
         "pesos": {n: round(float(v), 3) for n, v in zip(nomes, w[:-1])},
         "intercepto": round(float(w[-1]), 3),
@@ -383,6 +404,22 @@ def ajusta_pesos(ids: list[str]) -> dict:
             "desvio_do_oficial": round(float(np.std(real, ddof=1)), 3),
         },
     }
+
+
+def _times_dos_jogadores() -> dict:
+    """(match_id, nick) -> nome do time, pelo manifesto. Os nomes que a demo
+    grava variam ("Vitality" e "Team Vitality"); aqui eles são unificados
+    tirando o prefixo "Team "."""
+    arq = PROJECT_ROOT / "data" / "manifest.json"
+    if not arq.exists():
+        return {}
+    out = {}
+    for mid, v in json.loads(arq.read_text(encoding="utf-8"))["partidas"].items():
+        for lado in ("A", "B"):
+            nome = (v["times"][lado]["nome"] or "?").removeprefix("Team ")
+            for j in v["times"][lado]["jogadores"]:
+                out[(mid, j)] = nome
+    return out
 
 
 def grava_pesos(resultado: dict) -> Path:

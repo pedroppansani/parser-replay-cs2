@@ -126,6 +126,8 @@ K_ENCOLHIMENTO = 20.0
 # projeto, e somam exatamente 1,0 -- é isso que garante que o crédito distribuído
 # nunca exceda a variação de probabilidade do evento (há teste travando).
 # ---------------------------------------------------------------------------
+# O matador fica com o que sobra depois de dano, flash e trade (no mínimo
+# 0,55 quando todos existem): o swing de cada evento soma zero entre os dez.
 CREDITO_KILL = 0.55
 CREDITO_DANO = 0.25
 CREDITO_FLASH = 0.10
@@ -540,9 +542,16 @@ def swing_por_evento(
                 # credito, mas a vitima ja pagou
                 continue
 
-            # --- dano final ------------------------------------------------
+            # --- dano final: fica com o que os outros não levaram -----------
+            # REGRESSÃO (Fase D): o matador levava só CREDITO_KILL (55%) e a parte
+            # sem destinatário -- sem dano de outro, sem flash, sem trade -- não
+            # ia para ninguém. O swing de um evento, que esta docstring promete
+            # somar zero, pendia para baixo: média -4,67 p.p. por round contra
+            # -0,01 do Swing oficial da HLTV, e escala 0,70 da oficial.
+            # Com a sobra para o matador: escala 0,95-1,01, erro 4,71 -> 1,93.
+            i_matador = len(linhas)
             linhas.append({"round_num": rn, "steamid": k["attacker_steamid"],
-                           "swing": delta * CREDITO_KILL, "papel": "kill"})
+                           "swing": delta, "papel": "kill"})
 
             # --- quem deu dano antes --------------------------------------
             anteriores = dmg_round.filter(
@@ -594,6 +603,32 @@ def swing_por_evento(
             if trocou:
                 linhas.append({"round_num": rn, "steamid": k["attacker_steamid"],
                                "swing": delta * CREDITO_TRADE, "papel": "trade"})
+            linhas[i_matador]["swing"] = delta - sum(l["swing"] for l in linhas[i_matador + 1:])
+
+        # --- fim do round: a chance vai do último estado a 1 (ou 0) ----------
+        # O salto final (bomba explodindo, desarme, tempo, a última kill não
+        # levar a exatamente 100%) não é de nenhuma kill e antes não ia para
+        # ninguém. Vai em partes iguais para quem TERMINOU VIVO: o time que
+        # venceu recebe, o que perdeu e ainda tinha gente viva paga. Medido
+        # contra os 310 Swings oficiais: escala 0,95 -> 1,01, erro 2,08 -> 1,93.
+        venc_time = vencedor_por_round.get(rn)
+        if venc_time in ("A", "B"):
+            perd_time = "B" if venc_time == "A" else "A"
+            mortos = {e["victim_steamid"] for e in eventos}
+            vivos_fim = {tm: [s for s, x in team_of.items() if x == tm and s not in mortos]
+                         for tm in ("A", "B")}
+            eq_v, lado_v = equip.get((rn, venc_time), (0.0, "ct"))
+            eq_p, _ = equip.get((rn, perd_time), (0.0, "ct"))
+            p_fim = modelo.prob(np.array([_estado(
+                len(vivos_fim[venc_time]) - len(vivos_fim[perd_time]), eq_v - eq_p,
+                t_plant is not None, lado_v == "ct")]))[0]
+            salto = 1.0 - float(p_fim)
+            for sid in vivos_fim[venc_time]:
+                linhas.append({"round_num": rn, "steamid": sid,
+                               "swing": salto / len(vivos_fim[venc_time]), "papel": "fim_do_round"})
+            for sid in vivos_fim[perd_time]:
+                linhas.append({"round_num": rn, "steamid": sid,
+                               "swing": -salto / len(vivos_fim[perd_time]), "papel": "fim_do_round"})
 
     if not linhas:
         return pl.DataFrame(
