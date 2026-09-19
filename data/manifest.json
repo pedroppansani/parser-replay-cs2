@@ -1,0 +1,2775 @@
+{
+  "_leia_isto": "Registro de origem de cada partida processada. Atualizado por scripts/manifest.py e scripts/process_all_demos.py; a limpeza é registrada por scripts/clean_match.py.",
+  "formato": 1,
+  "partidas": {
+    "match_01": {
+      "match_id": "match_01",
+      "mapa": "de_ancient",
+      "placar": {
+        "A": 13,
+        "B": 9
+      },
+      "rounds": 22,
+      "times": {
+        "A": {
+          "nome": "team_t1ltedbot",
+          "jogadores": [
+            "Z_o_R_o",
+            "t1ltedbot",
+            "donk666",
+            "rol1ng-",
+            "_AmadeuS"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "team_HLEB",
+          "jogadores": [
+            "HLEB",
+            "s-chilla",
+            "KREEDZ666",
+            "9amaterasu9",
+            "xhx"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "faceit",
+      "evento": null,
+      "confronto": null,
+      "mapa_da_serie": null,
+      "data": "2026-09-15T16:39",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "1-0007ce25-1e02-40fa-9eb0-1bba64c71b12-1-1.dem",
+          "caminho": "demos/1-0007ce25-1e02-40fa-9eb0-1bba64c71b12-1-1.dem/1-0007ce25-1e02-40fa-9eb0-1bba64c71b12-1-1.dem",
+          "existe": true,
+          "bytes": 246598552,
+          "mtime": 1789501145,
+          "sha256": "796b51156e56985d3ddcbeddd19177af49f32635b8cff51796107adf5add41a9"
+        }
+      ],
+      "processado_em": "2026-09-19T01:20",
+      "limpeza": null
+    },
+    "match_02": {
+      "match_id": "match_02",
+      "mapa": "de_mirage",
+      "placar": {
+        "A": 13,
+        "B": 9
+      },
+      "rounds": 22,
+      "times": {
+        "A": {
+          "nome": "team_lilpeepfan-",
+          "jogadores": [
+            "lilpeepfan-",
+            "donk666",
+            "OG_Pablo_",
+            "-olik",
+            "Eleyes"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "team_Krimbo",
+          "jogadores": [
+            "S3NSEYZjE",
+            "-h4wkkk",
+            "Krimbo",
+            "Dyshbert",
+            "bezimienny"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "faceit",
+      "evento": null,
+      "confronto": null,
+      "mapa_da_serie": null,
+      "data": "2026-09-15T16:40",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "1-07642af7-6568-4661-9aeb-a420adeaad61-1-1.dem",
+          "caminho": "demos/1-07642af7-6568-4661-9aeb-a420adeaad61-1-1.dem/1-07642af7-6568-4661-9aeb-a420adeaad61-1-1.dem",
+          "existe": true,
+          "bytes": 270134914,
+          "mtime": 1789501216,
+          "sha256": "698bf3f2f4adbf061f6fffc3913db5e83f51d2194a87345d9ae7ec741b938e6b"
+        }
+      ],
+      "processado_em": "2026-09-19T01:20",
+      "limpeza": null
+    },
+    "match_03": {
+      "match_id": "match_03",
+      "mapa": "de_anubis",
+      "placar": {
+        "A": 13,
+        "B": 7
+      },
+      "rounds": 20,
+      "times": {
+        "A": {
+          "nome": "team_lilpeepfan-",
+          "jogadores": [
+            "publicimage",
+            "donk666",
+            "hally-",
+            "lilpeepfan-",
+            "ArmaHan"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "team_zecco",
+          "jogadores": [
+            "dyrod",
+            "Unihi",
+            "rajkeza",
+            "PAiN-M-",
+            "zecco"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "faceit",
+      "evento": null,
+      "confronto": null,
+      "mapa_da_serie": null,
+      "data": "2026-09-15T16:39",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "1-22abf937-659e-4363-9933-cc2a2ae99370-1-1.dem",
+          "caminho": "demos/1-22abf937-659e-4363-9933-cc2a2ae99370-1-1.dem/1-22abf937-659e-4363-9933-cc2a2ae99370-1-1.dem",
+          "existe": true,
+          "bytes": 284176800,
+          "mtime": 1789501188,
+          "sha256": "522d50f86f5298d4c0f5a6ee635a9f5fe5d512c31d0dc83b4bbdba8c17635dab"
+        }
+      ],
+      "processado_em": "2026-09-19T01:20",
+      "limpeza": null
+    },
+    "match_04": {
+      "match_id": "match_04",
+      "mapa": "de_ancient",
+      "placar": {
+        "A": 13,
+        "B": 8
+      },
+      "rounds": 21,
+      "times": {
+        "A": {
+          "nome": "team_somehxw",
+          "jogadores": [
+            "L1nkero",
+            "nedorufe",
+            "Matthew369",
+            "somehxw",
+            "donk666"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "team_D0KT0R3N",
+          "jogadores": [
+            "shiFu-",
+            "MolO11",
+            "D0KT0R3N",
+            "pxd11",
+            "borzSE"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "faceit",
+      "evento": null,
+      "confronto": null,
+      "mapa_da_serie": null,
+      "data": "2026-09-15T16:40",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "1-50a6313e-9399-4821-848e-f3b25a683149-1-1.dem",
+          "caminho": "demos/1-50a6313e-9399-4821-848e-f3b25a683149-1-1.dem/1-50a6313e-9399-4821-848e-f3b25a683149-1-1.dem",
+          "existe": true,
+          "bytes": 262581540,
+          "mtime": 1789501200,
+          "sha256": "8335d600fc7d2771146ccf131a5feae09b989daf6837dd5bbfb6f055791c8454"
+        }
+      ],
+      "processado_em": "2026-09-19T01:21",
+      "limpeza": null
+    },
+    "match_05": {
+      "match_id": "match_05",
+      "mapa": "de_nuke",
+      "placar": {
+        "A": 4,
+        "B": 13
+      },
+      "rounds": 17,
+      "times": {
+        "A": {
+          "nome": "team_Olajida",
+          "jogadores": [
+            "Olajida",
+            "chiefkeef19",
+            "gwizdakk",
+            "f0pa",
+            "Dafra1D"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "team_lilpeepfan-",
+          "jogadores": [
+            "donk666",
+            "lilpeepfan-",
+            "PerdYYY",
+            "PR--",
+            "dorfen"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "faceit",
+      "evento": null,
+      "confronto": null,
+      "mapa_da_serie": null,
+      "data": "2026-09-15T16:40",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "1-764e1ec7-1f00-4168-9eed-9741ee3a00e6-1-1.dem",
+          "caminho": "demos/1-764e1ec7-1f00-4168-9eed-9741ee3a00e6-1-1.dem/1-764e1ec7-1f00-4168-9eed-9741ee3a00e6-1-1.dem",
+          "existe": true,
+          "bytes": 225761299,
+          "mtime": 1789501209,
+          "sha256": "b371cd555eefa72a86b9a8848054fccd138fdd856b6192a705478a48b364a3c2"
+        }
+      ],
+      "processado_em": "2026-09-19T01:21",
+      "limpeza": null
+    },
+    "match_06": {
+      "match_id": "match_06",
+      "mapa": "de_mirage",
+      "placar": {
+        "A": 13,
+        "B": 5
+      },
+      "rounds": 18,
+      "times": {
+        "A": {
+          "nome": "team_xKacpersky",
+          "jogadores": [
+            "xKacpersky",
+            "pradablade",
+            "Etaliqe",
+            "llorente",
+            "adamS"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "team_ar1sFLXR",
+          "jogadores": [
+            "ar1sFLXR",
+            "regele",
+            "donk666",
+            "Alperen",
+            "-_-siNNer"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "faceit",
+      "evento": null,
+      "confronto": null,
+      "mapa_da_serie": null,
+      "data": "2026-09-15T16:39",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "1-7de2c606-5a1c-4496-9a78-4f9e066aa348-1-1.dem",
+          "caminho": "demos/1-7de2c606-5a1c-4496-9a78-4f9e066aa348-1-1.dem/1-7de2c606-5a1c-4496-9a78-4f9e066aa348-1-1.dem",
+          "existe": true,
+          "bytes": 217143502,
+          "mtime": 1789501161,
+          "sha256": "7b8894a2ffc2364679ead62b395e82f4a32f73334b617f03d5d7e17033f82ce5"
+        }
+      ],
+      "processado_em": "2026-09-19T01:21",
+      "limpeza": null
+    },
+    "match_07": {
+      "match_id": "match_07",
+      "mapa": "de_mirage",
+      "placar": {
+        "A": 13,
+        "B": 6
+      },
+      "rounds": 19,
+      "times": {
+        "A": {
+          "nome": "team_Krabeni",
+          "jogadores": [
+            "v1w",
+            "donk666",
+            "stormy",
+            "EbuDerdaa",
+            "Krabeni"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "team_xKacpersky",
+          "jogadores": [
+            "s-chilla",
+            "xKacpersky",
+            "Ajuyep",
+            "e-girlhuntr",
+            "Oller-"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "faceit",
+      "evento": null,
+      "confronto": null,
+      "mapa_da_serie": null,
+      "data": "2026-09-15T16:38",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "1-9be6d5a6-abda-4110-908d-deae67dee533-1-1.dem",
+          "caminho": "demos/1-9be6d5a6-abda-4110-908d-deae67dee533-1-1.dem/1-9be6d5a6-abda-4110-908d-deae67dee533-1-1.dem",
+          "existe": true,
+          "bytes": 253655691,
+          "mtime": 1789501108,
+          "sha256": "eb8853783b98a7899ab772eb75efb14729b9c628bb050aec3a37339f7638b8b1"
+        }
+      ],
+      "processado_em": "2026-09-19T01:21",
+      "limpeza": null
+    },
+    "match_08": {
+      "match_id": "match_08",
+      "mapa": "de_mirage",
+      "placar": {
+        "A": 11,
+        "B": 13
+      },
+      "rounds": 24,
+      "times": {
+        "A": {
+          "nome": "team_Ahuniwip",
+          "jogadores": [
+            "gwizdakk",
+            "-EsD",
+            "Ahuniwip",
+            "KENNY-_",
+            "PoisonLilies"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "team_lilpeepfan-",
+          "jogadores": [
+            "Pelle-",
+            "lilpeepfan-",
+            "donk666",
+            "certa1n",
+            "endru-"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "faceit",
+      "evento": null,
+      "confronto": null,
+      "mapa_da_serie": null,
+      "data": "2026-09-15T16:40",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "1-a2985358-eb2a-4b11-b891-534de044e54e-1-1.dem",
+          "caminho": "demos/1-a2985358-eb2a-4b11-b891-534de044e54e-1-1.dem/1-a2985358-eb2a-4b11-b891-534de044e54e-1-1.dem",
+          "existe": true,
+          "bytes": 330673514,
+          "mtime": 1789501222,
+          "sha256": "d280be30ec5469dc76c36a978186e7901b9466e218b769531917fc3f0c413b66"
+        }
+      ],
+      "processado_em": "2026-09-19T01:21",
+      "limpeza": null
+    },
+    "match_09": {
+      "match_id": "match_09",
+      "mapa": "de_mirage",
+      "placar": {
+        "A": 11,
+        "B": 13
+      },
+      "rounds": 24,
+      "times": {
+        "A": {
+          "nome": "team_lemight",
+          "jogadores": [
+            "ELVENIMOUS",
+            "d3bab",
+            "newnickname7",
+            "wh1temink",
+            "lemight"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "team_Magnojezzz",
+          "jogadores": [
+            "donk666",
+            "tezeuts-",
+            "Magnojezzz",
+            "R0Kk-_",
+            "zzeraj"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "faceit",
+      "evento": null,
+      "confronto": null,
+      "mapa_da_serie": null,
+      "data": "2026-09-15T16:40",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "1-c4169514-a91a-470c-9fa7-11413f06ff45-1-1.dem",
+          "caminho": "demos/1-c4169514-a91a-470c-9fa7-11413f06ff45-1-1.dem/1-c4169514-a91a-470c-9fa7-11413f06ff45-1-1.dem",
+          "existe": true,
+          "bytes": 305027845,
+          "mtime": 1789501229,
+          "sha256": "d73e40ae595453e9ed92eaada04a51df650ea5120078dff5acfe9200494d7d5c"
+        }
+      ],
+      "processado_em": "2026-09-19T01:21",
+      "limpeza": null
+    },
+    "match_10": {
+      "match_id": "match_10",
+      "mapa": "de_dust2",
+      "placar": {
+        "A": 13,
+        "B": 1
+      },
+      "rounds": 14,
+      "times": {
+        "A": {
+          "nome": "Team Spirit",
+          "jogadores": [
+            "magixx",
+            "sh1ro",
+            "zont1x",
+            "donk",
+            "tN1R"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Natus Vincere",
+          "jogadores": [
+            "iM",
+            "Aleksib",
+            "w0nderful",
+            "makazze",
+            "b1t"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "iem-cologne-major-2026",
+      "confronto": "natus-vincere-vs-spirit",
+      "mapa_da_serie": 1,
+      "data": "2026-06-11T16:22",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": {
+        "match_id": 2394900,
+        "url": "https://www.hltv.org/matches/2394900/natus-vincere-vs-spirit"
+      },
+      "demos": [
+        {
+          "arquivo": "natus-vincere-vs-spirit-m1-dust2.dem",
+          "caminho": "demos/iem-cologne-major-2026-natus-vincere-vs-spirit-bo3-kgjfQml_20SbX4SdXD-5FD/natus-vincere-vs-spirit-m1-dust2.dem",
+          "existe": true,
+          "bytes": 331960514,
+          "mtime": 1781205746,
+          "sha256": "00bdd0bfd427775a3cd1844a726c84353dad37517b89a887597a895ba4fc88ff"
+        }
+      ],
+      "processado_em": "2026-09-19T01:21",
+      "limpeza": null
+    },
+    "match_11": {
+      "match_id": "match_11",
+      "mapa": "de_anubis",
+      "placar": {
+        "A": 13,
+        "B": 8
+      },
+      "rounds": 21,
+      "times": {
+        "A": {
+          "nome": "Team Spirit",
+          "jogadores": [
+            "tN1R",
+            "zont1x",
+            "sh1ro",
+            "donk",
+            "magixx"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Natus Vincere",
+          "jogadores": [
+            "b1t",
+            "makazze",
+            "w0nderful",
+            "Aleksib",
+            "iM"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "iem-cologne-major-2026",
+      "confronto": "natus-vincere-vs-spirit",
+      "mapa_da_serie": 2,
+      "data": "2026-06-11T17:29",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": {
+        "match_id": 2394900,
+        "url": "https://www.hltv.org/matches/2394900/natus-vincere-vs-spirit"
+      },
+      "demos": [
+        {
+          "arquivo": "natus-vincere-vs-spirit-m2-anubis.dem",
+          "caminho": "demos/iem-cologne-major-2026-natus-vincere-vs-spirit-bo3-kgjfQml_20SbX4SdXD-5FD - Copia/natus-vincere-vs-spirit-m2-anubis.dem",
+          "existe": true,
+          "bytes": 486955729,
+          "mtime": 1781209761,
+          "sha256": "8ae575cacb202bbcf13b26ccd6984c01bd95eeb0243a74daa74fa53e15321db2"
+        }
+      ],
+      "processado_em": "2026-09-19T01:21",
+      "limpeza": null
+    },
+    "match_12": {
+      "match_id": "match_12",
+      "mapa": "de_overpass",
+      "placar": {
+        "A": 13,
+        "B": 10
+      },
+      "rounds": 23,
+      "times": {
+        "A": {
+          "nome": "Team Vitality",
+          "jogadores": [
+            "mezii",
+            "ZywOo",
+            "ropz",
+            "apEX",
+            "flameZ"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "FURIA",
+          "jogadores": [
+            "YEKINDAR",
+            "FalleN",
+            "KSCERATO",
+            "molodoy",
+            "yuurih"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "iem-rio-2026",
+      "confronto": "furia-vs-vitality",
+      "mapa_da_serie": 1,
+      "data": "2026-04-18T16:12",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": {
+        "match_id": 2393243,
+        "url": "https://www.hltv.org/matches/2393243/furia-vs-vitality"
+      },
+      "demos": [
+        {
+          "arquivo": "furia-vs-vitality-m1-overpass-p1.dem",
+          "caminho": "demos/iem-rio-2026-furia-vs-vitality-bo3--OutGDctKNBZKy28qkTgMB - Copia/furia-vs-vitality-m1-overpass-p1.dem",
+          "existe": true,
+          "bytes": 321163944,
+          "mtime": 1776537879,
+          "sha256": "d6ded5f8f72cdc11dfe86949752f3158b789aeb8981ef07e2a13feb08dc0ecb4"
+        },
+        {
+          "arquivo": "furia-vs-vitality-m1-overpass-p2.dem",
+          "caminho": "demos/iem-rio-2026-furia-vs-vitality-bo3--OutGDctKNBZKy28qkTgMB/furia-vs-vitality-m1-overpass-p2.dem",
+          "existe": true,
+          "bytes": 329976079,
+          "mtime": 1776539523,
+          "sha256": "214cd0f09b4a347592e340645e6dff1e75c60d76b6a04b2086a06b20e504f0b9"
+        }
+      ],
+      "processado_em": "2026-09-19T01:21",
+      "limpeza": null
+    },
+    "match_14": {
+      "match_id": "match_14",
+      "mapa": "de_ancient",
+      "placar": {
+        "A": 10,
+        "B": 13
+      },
+      "rounds": 23,
+      "times": {
+        "A": {
+          "nome": "FURIA",
+          "jogadores": [
+            "yuurih",
+            "molodoy",
+            "FalleN",
+            "KSCERATO",
+            "YEKINDAR"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Team Vitality",
+          "jogadores": [
+            "apEX",
+            "ZywOo",
+            "ropz",
+            "mezii",
+            "flameZ"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "iem-rio-2026",
+      "confronto": "furia-vs-vitality",
+      "mapa_da_serie": 2,
+      "data": "2026-04-18T17:23",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": {
+        "match_id": 2393243,
+        "url": "https://www.hltv.org/matches/2393243/furia-vs-vitality"
+      },
+      "demos": [
+        {
+          "arquivo": "furia-vs-vitality-m2-ancient.dem",
+          "caminho": "demos/iem-rio-2026-furia-vs-vitality-bo3--OutGDctKNBZKy28qkTgMB - Copia (2)/furia-vs-vitality-m2-ancient.dem",
+          "existe": true,
+          "bytes": 511363016,
+          "mtime": 1776543780,
+          "sha256": "a423d8fa9bcd7724118cccdde81bc99dac9b0de37ec3692822bc4427d638a2ae"
+        }
+      ],
+      "processado_em": "2026-09-19T01:21",
+      "limpeza": null
+    },
+    "match_15": {
+      "match_id": "match_15",
+      "mapa": "de_mirage",
+      "placar": {
+        "A": 13,
+        "B": 3
+      },
+      "rounds": 16,
+      "times": {
+        "A": {
+          "nome": "Natus Vincere",
+          "jogadores": [
+            "w0nderful",
+            "iM",
+            "Aleksib",
+            "b1t",
+            "makazze"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "FURIA",
+          "jogadores": [
+            "yuurih",
+            "molodoy",
+            "YEKINDAR",
+            "FalleN",
+            "KSCERATO"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "iem-rio-2026",
+      "confronto": "natus-vincere-vs-furia",
+      "mapa_da_serie": 1,
+      "data": "2026-04-14T16:00",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": {
+        "match_id": 2393228,
+        "url": "https://www.hltv.org/matches/2393228/natus-vincere-vs-furia"
+      },
+      "demos": [
+        {
+          "arquivo": "natus-vincere-vs-furia-m1-mirage.dem",
+          "caminho": "demos/iem-rio-2026-natus-vincere-vs-furia-bo3-qLZX6MdaBCbmtkWux805qr/natus-vincere-vs-furia-m1-mirage.dem",
+          "existe": true,
+          "bytes": 364333863,
+          "mtime": 1776193253,
+          "sha256": "1bfb43118089c78331bd7b517e849fe12941a0ce9f1619b34b7b1c91c47dfa6d"
+        }
+      ],
+      "processado_em": "2026-09-19T01:21",
+      "limpeza": null
+    },
+    "match_16": {
+      "match_id": "match_16",
+      "mapa": "de_nuke",
+      "placar": {
+        "A": 13,
+        "B": 16
+      },
+      "rounds": 29,
+      "times": {
+        "A": {
+          "nome": "Natus Vincere",
+          "jogadores": [
+            "makazze",
+            "iM",
+            "w0nderful",
+            "Aleksib",
+            "b1t"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "FURIA",
+          "jogadores": [
+            "molodoy",
+            "yuurih",
+            "YEKINDAR",
+            "FalleN",
+            "KSCERATO"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "iem-rio-2026",
+      "confronto": "natus-vincere-vs-furia",
+      "mapa_da_serie": 3,
+      "data": "2026-04-14T18:18",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": {
+        "match_id": 2393228,
+        "url": "https://www.hltv.org/matches/2393228/natus-vincere-vs-furia"
+      },
+      "demos": [
+        {
+          "arquivo": "natus-vincere-vs-furia-m3-nuke.dem",
+          "caminho": "demos/iem-rio-2026-natus-vincere-vs-furia-bo3-qLZX6MdaBCbmtkWux805qr - Copia/natus-vincere-vs-furia-m3-nuke.dem",
+          "existe": true,
+          "bytes": 712216851,
+          "mtime": 1776201513,
+          "sha256": "87356d11bdeb8616cf13b148e8f3db69554383440bc29ca4826be4522fbb91d6"
+        }
+      ],
+      "processado_em": "2026-09-19T01:21",
+      "limpeza": null
+    },
+    "match_17": {
+      "match_id": "match_17",
+      "mapa": "de_dust2",
+      "placar": {
+        "A": 13,
+        "B": 4
+      },
+      "rounds": 17,
+      "times": {
+        "A": {
+          "nome": "FURIA",
+          "jogadores": [
+            "YEKINDAR",
+            "KSCERATO",
+            "yuurih",
+            "FalleN",
+            "molodoy"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Natus Vincere",
+          "jogadores": [
+            "w0nderful",
+            "b1t",
+            "iM",
+            "makazze",
+            "Aleksib"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "iem-rio-2026",
+      "confronto": "natus-vincere-vs-furia",
+      "mapa_da_serie": 2,
+      "data": "2026-04-14T16:54",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": {
+        "match_id": 2393228,
+        "url": "https://www.hltv.org/matches/2393228/natus-vincere-vs-furia"
+      },
+      "demos": [
+        {
+          "arquivo": "natus-vincere-vs-furia-m2-dust2.dem",
+          "caminho": "demos/iem-rio-2026-natus-vincere-vs-furia-bo3-qLZX6MdaBCbmtkWux805qr - Copia (2)/natus-vincere-vs-furia-m2-dust2.dem",
+          "existe": true,
+          "bytes": 416945869,
+          "mtime": 1776196490,
+          "sha256": "bc517609cf2e20861613bfe1cedb1e7ecfda12b744f2f6a22b08f91c8334cf3d"
+        }
+      ],
+      "processado_em": "2026-09-19T01:22",
+      "limpeza": null
+    },
+    "match_18": {
+      "match_id": "match_18",
+      "mapa": "de_anubis",
+      "placar": {
+        "A": 11,
+        "B": 13
+      },
+      "rounds": 24,
+      "times": {
+        "A": {
+          "nome": "FURIA",
+          "jogadores": [
+            "YEKINDAR",
+            "molodoy",
+            "KSCERATO",
+            "yuurih",
+            "FalleN"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Falcons",
+          "jogadores": [
+            "NiKo",
+            "m0NESY",
+            "kyousuke",
+            "TeSeS",
+            "kyxsan"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "pgl-cluj-napoca-2026",
+      "confronto": "furia-vs-falcons",
+      "mapa_da_serie": 3,
+      "data": "2026-02-16T17:24",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": {
+        "match_id": 2389969,
+        "url": "https://www.hltv.org/matches/2389969/furia-vs-falcons"
+      },
+      "demos": [
+        {
+          "arquivo": "furia-vs-falcons-m3-anubis.dem",
+          "caminho": "demos/pgl-cluj-napoca-2026-furia-vs-falcons-bo3-OfIsfrpSwnaD_LueyZEScm/furia-vs-falcons-m3-anubis.dem",
+          "existe": true,
+          "bytes": 661522920,
+          "mtime": 1771273479,
+          "sha256": "42aa5f5826231e0141ba712a0a6b6aa30d360f333a87fecf8eda0d8bfcd6905f"
+        }
+      ],
+      "processado_em": "2026-09-19T01:22",
+      "limpeza": null
+    },
+    "match_19": {
+      "match_id": "match_19",
+      "mapa": "de_inferno",
+      "placar": {
+        "A": 4,
+        "B": 13
+      },
+      "rounds": 17,
+      "times": {
+        "A": {
+          "nome": "FURIA",
+          "jogadores": [
+            "FalleN",
+            "yuurih",
+            "YEKINDAR",
+            "KSCERATO",
+            "molodoy"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Falcons",
+          "jogadores": [
+            "m0NESY",
+            "NiKo",
+            "kyxsan",
+            "kyousuke",
+            "TeSeS"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "pgl-cluj-napoca-2026",
+      "confronto": "furia-vs-falcons",
+      "mapa_da_serie": 2,
+      "data": "2026-02-16T16:17",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": {
+        "match_id": 2389969,
+        "url": "https://www.hltv.org/matches/2389969/furia-vs-falcons"
+      },
+      "demos": [
+        {
+          "arquivo": "furia-vs-falcons-m2-inferno.dem",
+          "caminho": "demos/pgl-cluj-napoca-2026-furia-vs-falcons-bo3-OfIsfrpSwnaD_LueyZEScm - Copia/furia-vs-falcons-m2-inferno.dem",
+          "existe": true,
+          "bytes": 415037611,
+          "mtime": 1771269426,
+          "sha256": "c358451d9f613becab0966efbbe113ab805d236f1a898020f3f16327777cc974"
+        }
+      ],
+      "processado_em": "2026-09-19T01:22",
+      "limpeza": null
+    },
+    "match_20": {
+      "match_id": "match_20",
+      "mapa": "de_mirage",
+      "placar": {
+        "A": 14,
+        "B": 16
+      },
+      "rounds": 30,
+      "times": {
+        "A": {
+          "nome": "Falcons",
+          "jogadores": [
+            "kyousuke",
+            "kyxsan",
+            "TeSeS",
+            "NiKo",
+            "m0NESY"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "FURIA",
+          "jogadores": [
+            "KSCERATO",
+            "FalleN",
+            "YEKINDAR",
+            "molodoy",
+            "yuurih"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "pgl-cluj-napoca-2026",
+      "confronto": "furia-vs-falcons",
+      "mapa_da_serie": 1,
+      "data": "2026-02-16T15:43",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": {
+        "match_id": 2389969,
+        "url": "https://www.hltv.org/matches/2389969/furia-vs-falcons"
+      },
+      "demos": [
+        {
+          "arquivo": "furia-vs-falcons-m1-mirage.dem",
+          "caminho": "demos/pgl-cluj-napoca-2026-furia-vs-falcons-bo3-OfIsfrpSwnaD_LueyZEScm - Copia (2)/furia-vs-falcons-m1-mirage.dem",
+          "existe": true,
+          "bytes": 778875410,
+          "mtime": 1771267438,
+          "sha256": "3ada17dbeb8b7122f1e96f8041cdd0db60728885c43c217ef82047421884b39b"
+        }
+      ],
+      "processado_em": "2026-09-19T01:22",
+      "limpeza": null
+    },
+    "match_21": {
+      "match_id": "match_21",
+      "mapa": "de_nuke",
+      "placar": {
+        "A": 13,
+        "B": 8
+      },
+      "rounds": 21,
+      "times": {
+        "A": {
+          "nome": "Aurora Gaming",
+          "jogadores": [
+            "XANTARES",
+            "Wicadia",
+            "kyxsan",
+            "woxic",
+            "Jimpphat"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Natus Vincere",
+          "jogadores": [
+            "iM",
+            "makazze",
+            "b1t",
+            "w0nderful",
+            "Aleksib"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "starladder-starseries-fall-2026",
+      "confronto": "natus-vincere-vs-aurora",
+      "mapa_da_serie": 1,
+      "data": "2026-09-17T13:23",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "natus-vincere-vs-aurora-m1-nuke.dem",
+          "caminho": "demos/starladder-starseries-fall-2026-natus-vincere-vs-aurora-bo3-2OPRoFYA87bjQX1AIABecS/natus-vincere-vs-aurora-m1-nuke.dem",
+          "existe": true,
+          "bytes": 371055688,
+          "mtime": 1789662227,
+          "sha256": "d84b02b61af2e213acd9d120e0e556c9f26556f54961bd48aa96db3b380a27b6"
+        }
+      ],
+      "processado_em": "2026-09-19T01:22",
+      "limpeza": null
+    },
+    "match_22": {
+      "match_id": "match_22",
+      "mapa": "de_mirage",
+      "placar": {
+        "A": 7,
+        "B": 13
+      },
+      "rounds": 20,
+      "times": {
+        "A": {
+          "nome": "Natus Vincere",
+          "jogadores": [
+            "iM",
+            "b1t",
+            "w0nderful",
+            "Aleksib",
+            "makazze"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Aurora Gaming",
+          "jogadores": [
+            "woxic",
+            "XANTARES",
+            "kyxsan",
+            "Jimpphat",
+            "Wicadia"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "starladder-starseries-fall-2026",
+      "confronto": "natus-vincere-vs-aurora",
+      "mapa_da_serie": 2,
+      "data": "2026-09-17T13:56",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "natus-vincere-vs-aurora-m2-mirage.dem",
+          "caminho": "demos/starladder-starseries-fall-2026-natus-vincere-vs-aurora-bo3-2OPRoFYA87bjQX1AIABecS - Copia/natus-vincere-vs-aurora-m2-mirage.dem",
+          "existe": true,
+          "bytes": 313295850,
+          "mtime": 1789664211,
+          "sha256": "067680a00c73c69dbc79218c5d799940c8573b56ed172dccc095090a2ec05fbb"
+        }
+      ],
+      "processado_em": "2026-09-19T01:22",
+      "limpeza": null
+    },
+    "match_23": {
+      "match_id": "match_23",
+      "mapa": "de_dust2",
+      "placar": {
+        "A": 13,
+        "B": 9
+      },
+      "rounds": 22,
+      "times": {
+        "A": {
+          "nome": "Team Vitality",
+          "jogadores": [
+            "flameZ",
+            "mezii",
+            "ropz",
+            "ZywOo",
+            "apEX"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "magic",
+          "jogadores": [
+            "tenzy",
+            "eksiver",
+            "MaSvAl",
+            "mo0N",
+            "sFade8"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "starladder-starseries-fall-2026",
+      "confronto": "vitality-vs-magic",
+      "mapa_da_serie": 2,
+      "data": "2026-09-17T11:55",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": {
+        "match_id": 2398089,
+        "url": "https://www.hltv.org/matches/2398089/vitality-vs-magic"
+      },
+      "demos": [
+        {
+          "arquivo": "vitality-vs-magic-m2-dust2.dem",
+          "caminho": "demos/starladder-starseries-fall-2026-vitality-vs-magic-bo3-qBHOW2KPqxQBIay8cnoYpu/vitality-vs-magic-m2-dust2.dem",
+          "existe": true,
+          "bytes": 355072683,
+          "mtime": 1789656916,
+          "sha256": "f18e6acd0f4dcf3574323bbb6237a0e65cd1f55a1a009404e9635df7818f7574"
+        }
+      ],
+      "processado_em": "2026-09-19T01:22",
+      "limpeza": null
+    },
+    "match_24": {
+      "match_id": "match_24",
+      "mapa": "de_dust2",
+      "placar": {
+        "A": 13,
+        "B": 7
+      },
+      "rounds": 20,
+      "times": {
+        "A": {
+          "nome": "Team Spirit",
+          "jogadores": [
+            "zont1x",
+            "donk",
+            "chopper",
+            "magixx",
+            "sh1ro"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Natus Vincere",
+          "jogadores": [
+            "w0nderful",
+            "jL",
+            "iM",
+            "Aleksib",
+            "b1t"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "blast-open-lisbon-2025",
+      "confronto": "spirit-vs-natus-vincere",
+      "mapa_da_serie": 1,
+      "data": "2025-03-28T18:05",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "spirit-vs-natus-vincere-m1-dust2.dem",
+          "caminho": "demos/blast-open-lisbon-2025-spirit-vs-natus-vincere-bo3-DfMwg-uWd2UuG7dK1Cq3pE/spirit-vs-natus-vincere-m1-dust2.dem",
+          "existe": true,
+          "bytes": 557407477,
+          "mtime": 1743195904,
+          "sha256": "51ced3a89c8e8bba07999c7ae55c6b0190ccf46abe8d51a17c6018b3b003277f"
+        }
+      ],
+      "processado_em": "2026-09-19T01:22",
+      "limpeza": null
+    },
+    "match_25": {
+      "match_id": "match_25",
+      "mapa": "de_anubis",
+      "placar": {
+        "A": 6,
+        "B": 13
+      },
+      "rounds": 19,
+      "times": {
+        "A": {
+          "nome": "Natus Vincere",
+          "jogadores": [
+            "iM",
+            "b1t",
+            "w0nderful",
+            "jL",
+            "Aleksib"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Team Spirit",
+          "jogadores": [
+            "chopper",
+            "zont1x",
+            "donk",
+            "magixx",
+            "sh1ro"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "blast-open-lisbon-2025",
+      "confronto": "spirit-vs-natus-vincere",
+      "mapa_da_serie": 2,
+      "data": "2025-03-28T18:28",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "spirit-vs-natus-vincere-m2-anubis.dem",
+          "caminho": "demos/blast-open-lisbon-2025-spirit-vs-natus-vincere-bo3-DfMwg-uWd2UuG7dK1Cq3pE/spirit-vs-natus-vincere-m2-anubis.dem",
+          "existe": true,
+          "bytes": 478282220,
+          "mtime": 1743197281,
+          "sha256": "b9a4b505d1c079ba16ca246b359a44a862575aff8e066981c3edf4daa9407d02"
+        }
+      ],
+      "processado_em": "2026-09-19T01:22",
+      "limpeza": null
+    },
+    "match_26": {
+      "match_id": "match_26",
+      "mapa": "de_anubis",
+      "placar": {
+        "A": 13,
+        "B": 6
+      },
+      "rounds": 19,
+      "times": {
+        "A": {
+          "nome": "Vitality",
+          "jogadores": [
+            "mezii",
+            "ropz",
+            "ZywOo",
+            "flameZ",
+            "apEX"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Team Spirit",
+          "jogadores": [
+            "chopper",
+            "sh1ro",
+            "magixx",
+            "zont1x",
+            "donk"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "blast-open-lisbon-2025",
+      "confronto": "vitality-vs-spirit",
+      "mapa_da_serie": 1,
+      "data": "2025-03-29T18:14",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "vitality-vs-spirit-m1-anubis.dem",
+          "caminho": "demos/blast-open-lisbon-2025-vitality-vs-spirit-bo3-IHUpdxSUx1reCpZRn_v9H9/vitality-vs-spirit-m1-anubis.dem",
+          "existe": true,
+          "bytes": 473473491,
+          "mtime": 1743282857,
+          "sha256": "3b2169c84d3d647345a4edd318313cd288768bf2df822fea49e83f98f01501bc"
+        }
+      ],
+      "processado_em": "2026-09-19T01:22",
+      "limpeza": null
+    },
+    "match_27": {
+      "match_id": "match_27",
+      "mapa": "de_nuke",
+      "placar": {
+        "A": 5,
+        "B": 13
+      },
+      "rounds": 18,
+      "times": {
+        "A": {
+          "nome": "Vitality",
+          "jogadores": [
+            "apEX",
+            "ropz",
+            "ZywOo",
+            "mezii",
+            "flameZ"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Team Spirit",
+          "jogadores": [
+            "zont1x",
+            "sh1ro",
+            "magixx",
+            "donk",
+            "chopper"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "blast-open-lisbon-2025",
+      "confronto": "vitality-vs-spirit",
+      "mapa_da_serie": 2,
+      "data": "2025-03-29T19:04",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "vitality-vs-spirit-m2-nuke.dem",
+          "caminho": "demos/blast-open-lisbon-2025-vitality-vs-spirit-bo3-IHUpdxSUx1reCpZRn_v9H9/vitality-vs-spirit-m2-nuke.dem",
+          "existe": true,
+          "bytes": 419959983,
+          "mtime": 1743285853,
+          "sha256": "de0b5de35e98b352217d8eedd25401684240bf0ac169941f39922dc14eeadb2d"
+        }
+      ],
+      "processado_em": "2026-09-19T01:22",
+      "limpeza": null
+    },
+    "match_28": {
+      "match_id": "match_28",
+      "mapa": "de_mirage",
+      "placar": {
+        "A": 13,
+        "B": 10
+      },
+      "rounds": 23,
+      "times": {
+        "A": {
+          "nome": "Vitality",
+          "jogadores": [
+            "mezii",
+            "ropz",
+            "ZywOo",
+            "apEX",
+            "flameZ"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Team Spirit",
+          "jogadores": [
+            "chopper",
+            "zont1x",
+            "magixx",
+            "sh1ro",
+            "donk"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "blast-open-lisbon-2025",
+      "confronto": "vitality-vs-spirit",
+      "mapa_da_serie": 3,
+      "data": "2025-03-29T20:07",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "vitality-vs-spirit-m3-mirage.dem",
+          "caminho": "demos/blast-open-lisbon-2025-vitality-vs-spirit-bo3-IHUpdxSUx1reCpZRn_v9H9/vitality-vs-spirit-m3-mirage.dem",
+          "existe": true,
+          "bytes": 537117358,
+          "mtime": 1743289632,
+          "sha256": "cf8a96f821b87aee6851c04f1f15232c73e8ba66a4648facd882e63cd3cb3bdc"
+        }
+      ],
+      "processado_em": "2026-09-19T01:23",
+      "limpeza": null
+    },
+    "match_29": {
+      "match_id": "match_29",
+      "mapa": "de_inferno",
+      "placar": {
+        "A": 3,
+        "B": 13
+      },
+      "rounds": 16,
+      "times": {
+        "A": {
+          "nome": "FURIA",
+          "jogadores": [
+            "molodoy",
+            "yuurih",
+            "FalleN",
+            "YEKINDAR",
+            "KSCERATO"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Falcons",
+          "jogadores": [
+            "m0NESY",
+            "TeSeS",
+            "kyxsan",
+            "kyousuke",
+            "NiKo"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "blast-rivals-2025-season-2",
+      "confronto": "furia-vs-falcons",
+      "mapa_da_serie": 1,
+      "data": "2025-11-16T10:19",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "furia-vs-falcons-m1-inferno.dem",
+          "caminho": "demos/blast-rivals-2025-season-2-furia-vs-falcons-bo5-L7CZVGSHd1AqjKPyYU04lA/furia-vs-falcons-m1-inferno.dem",
+          "existe": true,
+          "bytes": 423993445,
+          "mtime": 1763299142,
+          "sha256": "ea651630d1bcd20613b11c6d36fa8d6a7a59f3640d7b733eb4f8cd155f293cdc"
+        }
+      ],
+      "processado_em": "2026-09-19T01:23",
+      "limpeza": null
+    },
+    "match_30": {
+      "match_id": "match_30",
+      "mapa": "de_nuke",
+      "placar": {
+        "A": 9,
+        "B": 13
+      },
+      "rounds": 22,
+      "times": {
+        "A": {
+          "nome": "Falcons",
+          "jogadores": [
+            "kyousuke",
+            "TeSeS",
+            "m0NESY",
+            "NiKo",
+            "kyxsan"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "FURIA",
+          "jogadores": [
+            "YEKINDAR",
+            "molodoy",
+            "KSCERATO",
+            "yuurih",
+            "FalleN"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "blast-rivals-2025-season-2",
+      "confronto": "furia-vs-falcons",
+      "mapa_da_serie": 2,
+      "data": "2025-11-16T10:19",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "furia-vs-falcons-m2-nuke.dem",
+          "caminho": "demos/blast-rivals-2025-season-2-furia-vs-falcons-bo5-L7CZVGSHd1AqjKPyYU04lA/furia-vs-falcons-m2-nuke.dem",
+          "existe": true,
+          "bytes": 498744472,
+          "mtime": 1763299161,
+          "sha256": "91d445ca120fb4fc7b63e37dfe9d9632d713aa8ab6910ee8f5b3bcffadb53a05"
+        }
+      ],
+      "processado_em": "2026-09-19T01:23",
+      "limpeza": null
+    },
+    "match_31": {
+      "match_id": "match_31",
+      "mapa": "de_train",
+      "placar": {
+        "A": 19,
+        "B": 15
+      },
+      "rounds": 34,
+      "times": {
+        "A": {
+          "nome": "FURIA",
+          "jogadores": [
+            "FalleN",
+            "yuurih",
+            "YEKINDAR",
+            "molodoy",
+            "KSCERATO"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Falcons",
+          "jogadores": [
+            "m0NESY",
+            "TeSeS",
+            "kyousuke",
+            "kyxsan",
+            "NiKo"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "blast-rivals-2025-season-2",
+      "confronto": "furia-vs-falcons",
+      "mapa_da_serie": 3,
+      "data": "2025-11-16T10:20",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "furia-vs-falcons-m3-train.dem",
+          "caminho": "demos/blast-rivals-2025-season-2-furia-vs-falcons-bo5-L7CZVGSHd1AqjKPyYU04lA/furia-vs-falcons-m3-train.dem",
+          "existe": true,
+          "bytes": 789553033,
+          "mtime": 1763299209,
+          "sha256": "2735218148a4a12a15e43bbbdf33076313469c6a3ce7370a774fefc28347cb92"
+        }
+      ],
+      "processado_em": "2026-09-19T01:23",
+      "limpeza": null
+    },
+    "match_32": {
+      "match_id": "match_32",
+      "mapa": "de_mirage",
+      "placar": {
+        "A": 16,
+        "B": 19
+      },
+      "rounds": 35,
+      "times": {
+        "A": {
+          "nome": "Falcons",
+          "jogadores": [
+            "kyxsan",
+            "TeSeS",
+            "kyousuke",
+            "NiKo",
+            "m0NESY"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "FURIA",
+          "jogadores": [
+            "FalleN",
+            "molodoy",
+            "yuurih",
+            "KSCERATO",
+            "YEKINDAR"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "blast-rivals-2025-season-2",
+      "confronto": "furia-vs-falcons",
+      "mapa_da_serie": 4,
+      "data": "2025-11-16T10:20",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "furia-vs-falcons-m4-mirage.dem",
+          "caminho": "demos/blast-rivals-2025-season-2-furia-vs-falcons-bo5-L7CZVGSHd1AqjKPyYU04lA/furia-vs-falcons-m4-mirage.dem",
+          "existe": true,
+          "bytes": 807749246,
+          "mtime": 1763299212,
+          "sha256": "c20f551ef270bd343dd359e671d1c2349eb767b7535a8a4bb2d273b886ea2652"
+        }
+      ],
+      "processado_em": "2026-09-19T01:23",
+      "limpeza": null
+    },
+    "match_33": {
+      "match_id": "match_33",
+      "mapa": "de_dust2",
+      "placar": {
+        "A": 13,
+        "B": 11
+      },
+      "rounds": 24,
+      "times": {
+        "A": {
+          "nome": "Team Vitality",
+          "jogadores": [
+            "flameZ",
+            "apEX",
+            "ropz",
+            "ZywOo",
+            "mezii"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "MOUZ",
+          "jogadores": [
+            "Spinx",
+            "Brollan",
+            "Jimpphat",
+            "xertioN",
+            "torzsi"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "iem-dallas-2025",
+      "confronto": "mouz-vs-vitality",
+      "mapa_da_serie": 1,
+      "data": "2025-05-25T17:34",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "mouz-vs-vitality-m1-dust2.dem",
+          "caminho": "demos/iem-dallas-2025-mouz-vs-vitality-bo5-28oMdIOx9riDIx31cN4Quc/mouz-vs-vitality-m1-dust2.dem",
+          "existe": true,
+          "bytes": 658601135,
+          "mtime": 1748205249,
+          "sha256": "372557cd3b27fbda9e631717ea1ae82c5288319accb827dba42c8252a9c1bb25"
+        }
+      ],
+      "processado_em": "2026-09-19T01:23",
+      "limpeza": null
+    },
+    "match_34": {
+      "match_id": "match_34",
+      "mapa": "de_mirage",
+      "placar": {
+        "A": 9,
+        "B": 13
+      },
+      "rounds": 22,
+      "times": {
+        "A": {
+          "nome": "MOUZ",
+          "jogadores": [
+            "torzsi",
+            "xertioN",
+            "Spinx",
+            "Brollan",
+            "Jimpphat"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Team Vitality",
+          "jogadores": [
+            "ropz",
+            "apEX",
+            "flameZ",
+            "mezii",
+            "ZywOo"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "iem-dallas-2025",
+      "confronto": "mouz-vs-vitality",
+      "mapa_da_serie": 2,
+      "data": "2025-05-25T18:38",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "mouz-vs-vitality-m2-mirage.dem",
+          "caminho": "demos/iem-dallas-2025-mouz-vs-vitality-bo5-28oMdIOx9riDIx31cN4Quc/mouz-vs-vitality-m2-mirage.dem",
+          "existe": true,
+          "bytes": 548335648,
+          "mtime": 1748209130,
+          "sha256": "6ed3d0ed29588b080bef669fb819c5077933da8f99fbba14c09b9a93330179e1"
+        }
+      ],
+      "processado_em": "2026-09-19T01:23",
+      "limpeza": null
+    },
+    "match_35": {
+      "match_id": "match_35",
+      "mapa": "de_inferno",
+      "placar": {
+        "A": 13,
+        "B": 8
+      },
+      "rounds": 21,
+      "times": {
+        "A": {
+          "nome": "Team Vitality",
+          "jogadores": [
+            "ZywOo",
+            "ropz",
+            "apEX",
+            "mezii",
+            "flameZ"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "MOUZ",
+          "jogadores": [
+            "Jimpphat",
+            "Brollan",
+            "Spinx",
+            "torzsi",
+            "xertioN"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "iem-dallas-2025",
+      "confronto": "mouz-vs-vitality",
+      "mapa_da_serie": 3,
+      "data": "2025-05-25T19:45",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "mouz-vs-vitality-m3-inferno.dem",
+          "caminho": "demos/iem-dallas-2025-mouz-vs-vitality-bo5-28oMdIOx9riDIx31cN4Quc/mouz-vs-vitality-m3-inferno.dem",
+          "existe": true,
+          "bytes": 585618225,
+          "mtime": 1748213125,
+          "sha256": "617673668137ac4f7c533fe191f24dce541d5268676b811ea02f3673d185e276"
+        }
+      ],
+      "processado_em": "2026-09-19T01:23",
+      "limpeza": null
+    },
+    "match_36": {
+      "match_id": "match_36",
+      "mapa": "de_mirage",
+      "placar": {
+        "A": 8,
+        "B": 13
+      },
+      "rounds": 21,
+      "times": {
+        "A": {
+          "nome": "Natus Vincere",
+          "jogadores": [
+            "iM",
+            "jL",
+            "w0nderful",
+            "Aleksib",
+            "b1t"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Team Spirit",
+          "jogadores": [
+            "donk",
+            "sh1ro",
+            "chopper",
+            "zont1x",
+            "magixx"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "iem-katowice-2025",
+      "confronto": "natus-vincere-vs-spirit",
+      "mapa_da_serie": 1,
+      "data": "2025-02-08T15:50",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "natus-vincere-vs-spirit-m1-mirage.dem",
+          "caminho": "demos/iem-katowice-2025-natus-vincere-vs-spirit-bo3-N5C7u8auLvjeMQROftEf4R/natus-vincere-vs-spirit-m1-mirage.dem",
+          "existe": true,
+          "bytes": 590059224,
+          "mtime": 1739040650,
+          "sha256": "a4e69281dfacf9f2b6a6f5836e0937ecdaa7d9189c5172e4ad65c06a12cd5c58"
+        }
+      ],
+      "processado_em": "2026-09-19T01:23",
+      "limpeza": null
+    },
+    "match_37": {
+      "match_id": "match_37",
+      "mapa": "de_dust2",
+      "placar": {
+        "A": 16,
+        "B": 14
+      },
+      "rounds": 30,
+      "times": {
+        "A": {
+          "nome": "Team Spirit",
+          "jogadores": [
+            "zont1x",
+            "donk",
+            "magixx",
+            "chopper",
+            "sh1ro"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Natus Vincere",
+          "jogadores": [
+            "b1t",
+            "jL",
+            "iM",
+            "Aleksib",
+            "w0nderful"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "iem-katowice-2025",
+      "confronto": "natus-vincere-vs-spirit",
+      "mapa_da_serie": 2,
+      "data": "2025-02-08T17:25",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "natus-vincere-vs-spirit-m2-dust2.dem",
+          "caminho": "demos/iem-katowice-2025-natus-vincere-vs-spirit-bo3-N5C7u8auLvjeMQROftEf4R/natus-vincere-vs-spirit-m2-dust2.dem",
+          "existe": true,
+          "bytes": 897124939,
+          "mtime": 1739046313,
+          "sha256": "077731a93eebecf68085894ba5660255ad7e89cff0235e5613fb832ccd0f9af3"
+        }
+      ],
+      "processado_em": "2026-09-19T01:23",
+      "limpeza": null
+    },
+    "match_38": {
+      "match_id": "match_38",
+      "mapa": "de_mirage",
+      "placar": {
+        "A": 13,
+        "B": 8
+      },
+      "rounds": 21,
+      "times": {
+        "A": {
+          "nome": "Natus Vincere",
+          "jogadores": [
+            "jL",
+            "w0nderful",
+            "Aleksib",
+            "b1t",
+            "iM"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Team Spirit",
+          "jogadores": [
+            "SH1R0",
+            "zont1x",
+            "magixx",
+            "chopper",
+            "donk"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "iem-katowice-2025",
+      "confronto": "natus-vincere-vs-spirit",
+      "mapa_da_serie": 1,
+      "data": "2025-02-03T12:47",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "natus-vincere-vs-spirit-m1-mirage.dem",
+          "caminho": "demos/iem-katowice-2025-natus-vincere-vs-spirit-bo3-YtA5gkUdrceGTAe_xkPfG-/natus-vincere-vs-spirit-m1-mirage.dem",
+          "existe": true,
+          "bytes": 569697150,
+          "mtime": 1738597678,
+          "sha256": "0b170f4706cc446f6cf637979155638e29b205ade957a1f9fbf53bbe3f542b88"
+        }
+      ],
+      "processado_em": "2026-09-19T01:24",
+      "limpeza": null
+    },
+    "match_39": {
+      "match_id": "match_39",
+      "mapa": "de_dust2",
+      "placar": {
+        "A": 13,
+        "B": 11
+      },
+      "rounds": 24,
+      "times": {
+        "A": {
+          "nome": "Team Spirit",
+          "jogadores": [
+            "SH1R0",
+            "chopper",
+            "magixx",
+            "donk",
+            "zont1x"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Natus Vincere",
+          "jogadores": [
+            "jL",
+            "Aleksib",
+            "b1t",
+            "iM",
+            "w0nderful"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "iem-katowice-2025",
+      "confronto": "natus-vincere-vs-spirit",
+      "mapa_da_serie": 2,
+      "data": "2025-02-03T14:11",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "natus-vincere-vs-spirit-m2-dust2-p1.dem",
+          "caminho": "demos/iem-katowice-2025-natus-vincere-vs-spirit-bo3-YtA5gkUdrceGTAe_xkPfG-/natus-vincere-vs-spirit-m2-dust2-p1.dem",
+          "existe": true,
+          "bytes": 102554530,
+          "mtime": 1738599169,
+          "sha256": "669af697b423c2ccb5631c33b96ae554fdf29a691cad81f09cd871455bb810f9"
+        },
+        {
+          "arquivo": "natus-vincere-vs-spirit-m2-dust2-p2.dem",
+          "caminho": "demos/iem-katowice-2025-natus-vincere-vs-spirit-bo3-YtA5gkUdrceGTAe_xkPfG-/natus-vincere-vs-spirit-m2-dust2-p2.dem",
+          "existe": true,
+          "bytes": 119044810,
+          "mtime": 1738599807,
+          "sha256": "68e4ecf46575438a471fa10cacfe2adfc508ee93d370700b4ec0e6bc4d65883a"
+        },
+        {
+          "arquivo": "natus-vincere-vs-spirit-m2-dust2-p3.dem",
+          "caminho": "demos/iem-katowice-2025-natus-vincere-vs-spirit-bo3-YtA5gkUdrceGTAe_xkPfG-/natus-vincere-vs-spirit-m2-dust2-p3.dem",
+          "existe": true,
+          "bytes": 846269035,
+          "mtime": 1738602676,
+          "sha256": "dc0f8c4bfdeed063b31c89b457a872edd5fe614622b8a5f30e6244e0fc5868a2"
+        }
+      ],
+      "processado_em": "2026-09-19T01:24",
+      "limpeza": null
+    },
+    "match_40": {
+      "match_id": "match_40",
+      "mapa": "de_nuke",
+      "placar": {
+        "A": 16,
+        "B": 14
+      },
+      "rounds": 30,
+      "times": {
+        "A": {
+          "nome": "Natus Vincere",
+          "jogadores": [
+            "b1t",
+            "Aleksib",
+            "jL",
+            "iM",
+            "w0nderful"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Team Spirit",
+          "jogadores": [
+            "chopper",
+            "zont1x",
+            "donk",
+            "magixx",
+            "SH1R0"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "iem-katowice-2025",
+      "confronto": "natus-vincere-vs-spirit",
+      "mapa_da_serie": 3,
+      "data": "2025-02-03T15:33",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "natus-vincere-vs-spirit-m3-nuke.dem",
+          "caminho": "demos/iem-katowice-2025-natus-vincere-vs-spirit-bo3-YtA5gkUdrceGTAe_xkPfG-/natus-vincere-vs-spirit-m3-nuke.dem",
+          "existe": true,
+          "bytes": 774274535,
+          "mtime": 1738607606,
+          "sha256": "ff92283d6a9c6c8e9ea73d498088ef9d2237c4b0aeb86d1b5848e506bf90e59e"
+        }
+      ],
+      "processado_em": "2026-09-19T01:24",
+      "limpeza": null
+    },
+    "match_41": {
+      "match_id": "match_41",
+      "mapa": "de_inferno",
+      "placar": {
+        "A": 16,
+        "B": 14
+      },
+      "rounds": 30,
+      "times": {
+        "A": {
+          "nome": "MOUZ",
+          "jogadores": [
+            "Jimpphat",
+            "Spinx",
+            "Brollan",
+            "torzsi",
+            "xertioN"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Team Falcons",
+          "jogadores": [
+            "NiKo",
+            "m0NESY",
+            "TeSeS",
+            "kyxsan",
+            "kyousuke"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "iem-krakw-2026",
+      "confronto": "falcons-vs-mouz",
+      "mapa_da_serie": 1,
+      "data": "2026-02-03T17:24",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "falcons-vs-mouz-m1-inferno-p1.dem",
+          "caminho": "demos/iem-krakw-2026-falcons-vs-mouz-bo3-0NmDSYe_8UmJAHamjCMBo8/falcons-vs-mouz-m1-inferno-p1.dem",
+          "existe": true,
+          "bytes": 772019105,
+          "mtime": 1770149805,
+          "sha256": "24d5c304b7614d54505e4d42e0caeba8ec196d0e96e705bee9e31962331f5cb7"
+        },
+        {
+          "arquivo": "falcons-vs-mouz-m1-inferno-p2.dem",
+          "caminho": "demos/iem-krakw-2026-falcons-vs-mouz-bo3-0NmDSYe_8UmJAHamjCMBo8/falcons-vs-mouz-m1-inferno-p2.dem",
+          "existe": true,
+          "bytes": 92013283,
+          "mtime": 1770150250,
+          "sha256": "4164738a697e23005ccda4c6ebc2c2a5f59bd2fdfc39de4da59a85e74d9d37dd"
+        }
+      ],
+      "processado_em": "2026-09-19T01:24",
+      "limpeza": null
+    },
+    "match_42": {
+      "match_id": "match_42",
+      "mapa": "de_dust2",
+      "placar": {
+        "A": 17,
+        "B": 19
+      },
+      "rounds": 36,
+      "times": {
+        "A": {
+          "nome": "Team Falcons",
+          "jogadores": [
+            "kyousuke",
+            "m0NESY",
+            "TeSeS",
+            "kyxsan",
+            "NiKo"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "MOUZ",
+          "jogadores": [
+            "Spinx",
+            "torzsi",
+            "xertioN",
+            "Jimpphat",
+            "Brollan"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "iem-krakw-2026",
+      "confronto": "falcons-vs-mouz",
+      "mapa_da_serie": 2,
+      "data": "2026-02-03T19:06",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "falcons-vs-mouz-m2-dust2.dem",
+          "caminho": "demos/iem-krakw-2026-falcons-vs-mouz-bo3-0NmDSYe_8UmJAHamjCMBo8/falcons-vs-mouz-m2-dust2.dem",
+          "existe": true,
+          "bytes": 996820383,
+          "mtime": 1770156369,
+          "sha256": "0a3129ba726a10239fdbcc0da9050c5aad02a17d975ee5cb0f658b75ba0895f4"
+        }
+      ],
+      "processado_em": "2026-09-19T01:24",
+      "limpeza": null
+    },
+    "match_43": {
+      "match_id": "match_43",
+      "mapa": "de_mirage",
+      "placar": {
+        "A": 13,
+        "B": 11
+      },
+      "rounds": 24,
+      "times": {
+        "A": {
+          "nome": "FURIA",
+          "jogadores": [
+            "molodoy",
+            "KSCERATO",
+            "FalleN",
+            "yuurih",
+            "YEKINDAR"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Team Vitality",
+          "jogadores": [
+            "flameZ",
+            "mezii",
+            "ropz",
+            "ZywOo",
+            "apEX"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "iem-krakw-2026",
+      "confronto": "furia-vs-vitality",
+      "mapa_da_serie": 1,
+      "data": "2026-02-08T13:54",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "furia-vs-vitality-m1-mirage.dem",
+          "caminho": "demos/iem-krakw-2026-furia-vs-vitality-bo5-mm8dtsK9binWQO0i_PtQVF/furia-vs-vitality-m1-mirage.dem",
+          "existe": true,
+          "bytes": 740540720,
+          "mtime": 1770569672,
+          "sha256": "9019e9ee6cdeee54d93a73625620f3372ee55b8560240b6381f67fdb84676cbb"
+        }
+      ],
+      "processado_em": "2026-09-19T01:24",
+      "limpeza": null
+    },
+    "match_44": {
+      "match_id": "match_44",
+      "mapa": "de_inferno",
+      "placar": {
+        "A": 13,
+        "B": 8
+      },
+      "rounds": 21,
+      "times": {
+        "A": {
+          "nome": "Team Vitality",
+          "jogadores": [
+            "flameZ",
+            "ZywOo",
+            "ropz",
+            "apEX",
+            "mezii"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "FURIA",
+          "jogadores": [
+            "KSCERATO",
+            "YEKINDAR",
+            "FalleN",
+            "yuurih",
+            "molodoy"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "iem-krakw-2026",
+      "confronto": "furia-vs-vitality",
+      "mapa_da_serie": 2,
+      "data": "2026-02-08T15:04",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "furia-vs-vitality-m2-inferno.dem",
+          "caminho": "demos/iem-krakw-2026-furia-vs-vitality-bo5-mm8dtsK9binWQO0i_PtQVF/furia-vs-vitality-m2-inferno.dem",
+          "existe": true,
+          "bytes": 604571739,
+          "mtime": 1770573857,
+          "sha256": "affd22a7fb10a99d149cd343ebe29b83457a40862244a398de3cb48930110907"
+        }
+      ],
+      "processado_em": "2026-09-19T01:24",
+      "limpeza": null
+    },
+    "match_45": {
+      "match_id": "match_45",
+      "mapa": "de_nuke",
+      "placar": {
+        "A": 2,
+        "B": 13
+      },
+      "rounds": 15,
+      "times": {
+        "A": {
+          "nome": "FURIA",
+          "jogadores": [
+            "YEKINDAR",
+            "FalleN",
+            "molodoy",
+            "yuurih",
+            "KSCERATO"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Team Vitality",
+          "jogadores": [
+            "flameZ",
+            "ZywOo",
+            "mezii",
+            "apEX",
+            "ropz"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "iem-krakw-2026",
+      "confronto": "furia-vs-vitality",
+      "mapa_da_serie": 3,
+      "data": "2026-02-08T15:52",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "furia-vs-vitality-m3-nuke.dem",
+          "caminho": "demos/iem-krakw-2026-furia-vs-vitality-bo5-mm8dtsK9binWQO0i_PtQVF/furia-vs-vitality-m3-nuke.dem",
+          "existe": true,
+          "bytes": 333796813,
+          "mtime": 1770576742,
+          "sha256": "2b2f6f3ceeb869dccc3078c300918a1deb8b495f384ee3809d577dcb5d7da582"
+        }
+      ],
+      "processado_em": "2026-09-19T01:24",
+      "limpeza": null
+    },
+    "match_46": {
+      "match_id": "match_46",
+      "mapa": "de_overpass",
+      "placar": {
+        "A": 13,
+        "B": 10
+      },
+      "rounds": 23,
+      "times": {
+        "A": {
+          "nome": "Team Vitality",
+          "jogadores": [
+            "ropz",
+            "flameZ",
+            "apEX",
+            "mezii",
+            "ZywOo"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "FURIA",
+          "jogadores": [
+            "molodoy",
+            "YEKINDAR",
+            "yuurih",
+            "FalleN",
+            "KSCERATO"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "iem-krakw-2026",
+      "confronto": "furia-vs-vitality",
+      "mapa_da_serie": 4,
+      "data": "2026-02-08T17:15",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "furia-vs-vitality-m4-overpass.dem",
+          "caminho": "demos/iem-krakw-2026-furia-vs-vitality-bo5-mm8dtsK9binWQO0i_PtQVF/furia-vs-vitality-m4-overpass.dem",
+          "existe": true,
+          "bytes": 604583203,
+          "mtime": 1770581733,
+          "sha256": "24370e1f72c2f2ca33108f786d9c08f175c3c821c4213641e782080a869c3640"
+        }
+      ],
+      "processado_em": "2026-09-19T01:24",
+      "limpeza": null
+    },
+    "match_47": {
+      "match_id": "match_47",
+      "mapa": "de_nuke",
+      "placar": {
+        "A": 7,
+        "B": 13
+      },
+      "rounds": 20,
+      "times": {
+        "A": {
+          "nome": "MOUZ",
+          "jogadores": [
+            "Brollan",
+            "torzsi",
+            "Jimpphat",
+            "Spinx",
+            "xertioN"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Team Vitality",
+          "jogadores": [
+            "flameZ",
+            "mezii",
+            "apEX",
+            "ZywOo",
+            "ropz"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "iem-krakw-2026",
+      "confronto": "vitality-vs-mouz",
+      "mapa_da_serie": 1,
+      "data": "2026-02-07T16:57",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "vitality-vs-mouz-m1-nuke.dem",
+          "caminho": "demos/iem-krakw-2026-vitality-vs-mouz-bo3-UD0TEnJpRupm9E_EHc4hZG/vitality-vs-mouz-m1-nuke.dem",
+          "existe": true,
+          "bytes": 529591655,
+          "mtime": 1770494253,
+          "sha256": "061cb84a8f2848158a763fef2d82ceaa2c2dd0613c372c50a288a71b67778c5e"
+        }
+      ],
+      "processado_em": "2026-09-19T01:25",
+      "limpeza": null
+    },
+    "match_48": {
+      "match_id": "match_48",
+      "mapa": "de_dust2",
+      "placar": {
+        "A": 13,
+        "B": 6
+      },
+      "rounds": 19,
+      "times": {
+        "A": {
+          "nome": "Team Vitality",
+          "jogadores": [
+            "ropz",
+            "mezii",
+            "apEX",
+            "flameZ",
+            "ZywOo"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "MOUZ",
+          "jogadores": [
+            "torzsi",
+            "Brollan",
+            "Jimpphat",
+            "xertioN",
+            "Spinx"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "iem-krakw-2026",
+      "confronto": "vitality-vs-mouz",
+      "mapa_da_serie": 2,
+      "data": "2026-02-07T17:59",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "vitality-vs-mouz-m2-dust2.dem",
+          "caminho": "demos/iem-krakw-2026-vitality-vs-mouz-bo3-UD0TEnJpRupm9E_EHc4hZG/vitality-vs-mouz-m2-dust2.dem",
+          "existe": true,
+          "bytes": 500335815,
+          "mtime": 1770497948,
+          "sha256": "c33d48b9dbb8f0797e471f98bf0242b6ac781e7be70d0cbc76d21f7324ecbfa1"
+        }
+      ],
+      "processado_em": "2026-09-19T01:25",
+      "limpeza": null
+    },
+    "match_49": {
+      "match_id": "match_49",
+      "mapa": "de_mirage",
+      "placar": {
+        "A": 13,
+        "B": 11
+      },
+      "rounds": 24,
+      "times": {
+        "A": {
+          "nome": "Team Falcons",
+          "jogadores": [
+            "m0NESY",
+            "TeSeS",
+            "NiKo",
+            "kyousuke",
+            "kyxsan"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "MOUZ",
+          "jogadores": [
+            "torzsi",
+            "Brollan",
+            "Jimpphat",
+            "Spinx",
+            "xertioN"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "starladder-budapest-major-2025",
+      "confronto": "mouz-vs-falcons",
+      "mapa_da_serie": 1,
+      "data": "2025-12-06T15:18",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "mouz-vs-falcons-m1-mirage.dem",
+          "caminho": "demos/starladder-budapest-major-2025-mouz-vs-falcons-bo3-7LqtC5jSlui55p7efVINgu/mouz-vs-falcons-m1-mirage.dem",
+          "existe": true,
+          "bytes": 579984054,
+          "mtime": 1765045096,
+          "sha256": "80e8b0f338d0294de3f87e56e8a4bebcc40330c3b04c2879d25f8e7c81beb078"
+        }
+      ],
+      "processado_em": "2026-09-19T01:25",
+      "limpeza": null
+    },
+    "match_50": {
+      "match_id": "match_50",
+      "mapa": "de_inferno",
+      "placar": {
+        "A": 13,
+        "B": 6
+      },
+      "rounds": 19,
+      "times": {
+        "A": {
+          "nome": "MOUZ",
+          "jogadores": [
+            "xertioN",
+            "Brollan",
+            "Spinx",
+            "torzsi",
+            "Jimpphat"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Team Falcons",
+          "jogadores": [
+            "kyousuke",
+            "kyxsan",
+            "NiKo",
+            "m0NESY",
+            "TeSeS"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "starladder-budapest-major-2025",
+      "confronto": "mouz-vs-falcons",
+      "mapa_da_serie": 2,
+      "data": "2025-12-06T16:43",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "mouz-vs-falcons-m2-inferno.dem",
+          "caminho": "demos/starladder-budapest-major-2025-mouz-vs-falcons-bo3-7LqtC5jSlui55p7efVINgu/mouz-vs-falcons-m2-inferno.dem",
+          "existe": true,
+          "bytes": 500610240,
+          "mtime": 1765050225,
+          "sha256": "bcda5d9d0dfdee6a043a038e9a99e64780becfdb99ad491775dad559649482b2"
+        }
+      ],
+      "processado_em": "2026-09-19T01:25",
+      "limpeza": null
+    },
+    "match_51": {
+      "match_id": "match_51",
+      "mapa": "de_nuke",
+      "placar": {
+        "A": 10,
+        "B": 13
+      },
+      "rounds": 23,
+      "times": {
+        "A": {
+          "nome": "Team Falcons",
+          "jogadores": [
+            "m0NESY",
+            "NiKo",
+            "kyxsan",
+            "kyousuke",
+            "TeSeS"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "MOUZ",
+          "jogadores": [
+            "torzsi",
+            "Brollan",
+            "Jimpphat",
+            "Spinx",
+            "xertioN"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "starladder-budapest-major-2025",
+      "confronto": "mouz-vs-falcons",
+      "mapa_da_serie": 3,
+      "data": "2025-12-06T16:53",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "mouz-vs-falcons-m3-nuke.dem",
+          "caminho": "demos/starladder-budapest-major-2025-mouz-vs-falcons-bo3-7LqtC5jSlui55p7efVINgu/mouz-vs-falcons-m3-nuke.dem",
+          "existe": true,
+          "bytes": 530400740,
+          "mtime": 1765050836,
+          "sha256": "daf6611302cc68dbcce1be3050be155b9eea7cc16d0fc958325e3d82d48bd438"
+        }
+      ],
+      "processado_em": "2026-09-19T01:25",
+      "limpeza": null
+    },
+    "match_52": {
+      "match_id": "match_52",
+      "mapa": "de_mirage",
+      "placar": {
+        "A": 5,
+        "B": 13
+      },
+      "rounds": 18,
+      "times": {
+        "A": {
+          "nome": "The MongolZ",
+          "jogadores": [
+            "controlez",
+            "Techno4K",
+            "bLitz",
+            "Mzinho",
+            "910"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "Team Vitality",
+          "jogadores": [
+            "ropz",
+            "apEX",
+            "mezii",
+            "flameZ",
+            "ZywOo"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "starladder-budapest-major-2025",
+      "confronto": "vitality-vs-the-mongolz",
+      "mapa_da_serie": 1,
+      "data": "2025-12-11T17:12",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "vitality-vs-the-mongolz-m1-mirage.dem",
+          "caminho": "demos/starladder-budapest-major-2025-vitality-vs-the-mongolz-bo3-XQowskOqXoPqT1nlLULF7g/vitality-vs-the-mongolz-m1-mirage.dem",
+          "existe": true,
+          "bytes": 485062922,
+          "mtime": 1765483952,
+          "sha256": "3433a2ab957a174fe18e09297ba0fecbb35bec7e71b5d55cc90c47de6ace090f"
+        }
+      ],
+      "processado_em": "2026-09-19T01:25",
+      "limpeza": null
+    },
+    "match_53": {
+      "match_id": "match_53",
+      "mapa": "de_dust2",
+      "placar": {
+        "A": 13,
+        "B": 4
+      },
+      "rounds": 17,
+      "times": {
+        "A": {
+          "nome": "Team Vitality",
+          "jogadores": [
+            "ZywOo",
+            "mezii",
+            "apEX",
+            "ropz",
+            "flameZ"
+          ],
+          "comecou_de": "t"
+        },
+        "B": {
+          "nome": "The MongolZ",
+          "jogadores": [
+            "Mzinho",
+            "910",
+            "controlez",
+            "Techno4K",
+            "bLitz"
+          ],
+          "comecou_de": "ct"
+        }
+      },
+      "origem": "profissional",
+      "evento": "starladder-budapest-major-2025",
+      "confronto": "vitality-vs-the-mongolz",
+      "mapa_da_serie": 2,
+      "data": "2025-12-11T18:07",
+      "fonte_da_data": "data de modificação do arquivo .dem (costuma ser o fim da gravação do GOTV); não conferida na HLTV",
+      "hltv": null,
+      "demos": [
+        {
+          "arquivo": "vitality-vs-the-mongolz-m2-dust2.dem",
+          "caminho": "demos/starladder-budapest-major-2025-vitality-vs-the-mongolz-bo3-XQowskOqXoPqT1nlLULF7g/vitality-vs-the-mongolz-m2-dust2.dem",
+          "existe": true,
+          "bytes": 368006015,
+          "mtime": 1765487275,
+          "sha256": "9c2f1d0d9ad881dfc3da86e98844843ed6d7dc68afe99b1198d97632b5152fc6"
+        }
+      ],
+      "processado_em": "2026-09-19T01:25",
+      "limpeza": null
+    }
+  }
+}

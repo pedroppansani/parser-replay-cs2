@@ -1,19 +1,132 @@
-# 01 — Parser de Replay CS2 com Dashboard de Estatísticas
+# Parser de Replay CS2 — métricas com decisão de jogo
 
-**[→ Ver a demonstração ao vivo](https://pedroppansani.github.io/parser-replay-cs2/)** — 9 partidas
-profissionais, replay round a round no mapa, e o perfil de cada jogador.
+**[→ Demonstração ao vivo](https://pedroppansani.github.io/parser-replay-cs2/)** —
+52 partidas (43 profissionais de NAVI, Spirit, Vitality, FURIA, Falcons, MOUZ e
+The MongolZ, e 9 de FACEIT), com replay round a round no radar, leitura da
+partida e perfil de cada jogador.
 
-Projeto 1 de 5 do portfólio. Ferramenta que lê replays (.dem) do CS2, extrai
-estatísticas e gera dashboards — com foco em métricas que descrevem **como** o
-jogo foi jogado em nível competitivo, não só quem fez mais kill.
+Lê replays `.dem` do Counter-Strike 2, extrai as estatísticas e gera um site
+estático por partida. Projeto 1 de 5 de um portfólio.
 
-**Status: Fases 1 a 4 implementadas.** Pipeline de parsing, métricas básicas,
-métricas autorais (AWP, crosshair placement, posicionamento), clustering de
-estilos de jogo, métricas de utility por efeito, função de jogador e dois
-painéis (Streamlit para trabalho, página web autocontida para portfólio),
-testados end-to-end numa partida real. Pendente: calibração manual dos
-parâmetros de jogo e nomeação dos clusters (ver "O que ainda depende de
-julgamento humano").
+![Resumo da partida: round decisivo, MVP e o outro destaque](docs/img/insights.png)
+
+## O que é, e qual o diferencial
+
+O parsing não é o diferencial: a biblioteca [awpy](https://awpy.rtfd.io/) (sobre
+o parser Rust `demoparser2`) já resolve isso. **O diferencial é o desenho das
+métricas: cada uma carrega uma decisão de jogo explícita no código**, escrita e
+testada — e várias foram corrigidas justamente porque a versão ingênua
+contradizia o que acontece numa partida de verdade. Alguns exemplos:
+
+- **Round decisivo** sai da variação da probabilidade de vencer a partida
+  (programação dinâmica sobre o placar), não de uma soma de pontos inventados.
+  Numa partida 13-3, nenhum round decidiu nada — e a página diz isso.
+- **Crosshair placement** só é cobrado nos instantes que antecedem um contato
+  real; medir a distância até o inimigo mais próximo pune quem pré-mira certo.
+- **Função do jogador** (âncora, rotativo, entry, lurker, AWPer...) e **traço de
+  comportamento** (carrega piano, baiter, carry, mochila...) são camadas
+  separadas: um âncora pode ser carrega piano ou baiter.
+- **Toda taxa vem com o bruto e com referência**: "41% (9 de 22), mediana dos
+  outros 30%" — com 22 rounds, 41% e 50% são o mesmo número.
+- **O rating é uma implementação própria da metodologia publicada do Rating 3.0
+  da HLTV**, não o número oficial (os coeficientes da HLTV são fechados). Ele é
+  validado contra os ratings oficiais de 41 mapas profissionais.
+
+Quem define o que cada métrica deve medir é conhecimento de jogo (Faceit Level
+10 / Level 20 GC, flex AWPer); os limiares são constantes nomeadas, com o
+porquê ao lado, e os pontos que dependem de julgamento humano estão listados
+em vez de escondidos.
+
+![Replay: radar com posições, granadas, anotação à mão livre e os dois times](docs/img/replay.png)
+
+## Como rodar
+
+**Python 3.11 a 3.13** (o awpy 2.0.2 não suporta 3.14). No Windows: `py -3.12`.
+
+```bash
+pip install -r requirements.txt
+
+# radares oficiais, extraídos da instalação local do CS2 (uma vez só)
+python -m scripts.extract_radars
+
+# processar todas as demos da pasta demos/ (parse, métricas, replay, página)
+python -m scripts.process_all_demos
+
+# site de demonstração com todas as partidas processadas -> docs/index.html
+python -m scripts.build_site
+
+# testes (os de navegador usam o Chrome instalado via Playwright; sem ele, são pulados)
+python -m pytest tests/ -v
+```
+
+Outros comandos:
+
+```bash
+# uma demo só, ou reaproveitando um parse anterior (pula os ~14s de parsing)
+python -m scripts.process_demo demos/partida.dem --match-id match_60 [--from-interim]
+
+# manifesto das partidas (times, evento, hash da demo) -> data/manifest.json
+python -m scripts.manifest
+
+# apagar demo e dados crus de uma partida, só se o processado estiver íntegro
+python -m scripts.clean_match match_43              # confere e simula
+python -m scripts.clean_match match_43 --confirmar  # apaga e registra no manifesto
+
+# rating: referência de escala, e regressão contra os ratings oficiais
+python -m scripts.fit_rating [--fit-pesos]
+
+# dashboard de trabalho (Streamlit)
+streamlit run dashboard/app.py
+```
+
+As demos (200–500MB cada) ficam em `demos/` e **não vão para o git**; os dados
+crus do parse ficam em `data/interim/` (também fora). O que é versionado é
+`data/processed/` — leve, e é o que o site consome — e o `data/manifest.json`,
+que registra de onde veio cada partida mesmo depois de a demo ser apagada.
+
+## Módulos
+
+| Pasta | O que faz |
+|---|---|
+| `parsing/` | Wrapper do awpy: parse, persistência em parquet, e a limpeza que vale para todo leitor (mortes do freeze time e do intervalo, round de faca, demo dividida pelo GOTV) |
+| `metrics/` | As métricas. Básicas (ADR, KAST, trades), AWP, crosshair, posicionamento, áreas do mapa, granadas e arremessos, clutch, funções estruturais (`structural_roles`), traços de comportamento (`archetypes`), perfil por jogador, probabilidade de vitória, round decisivo e impressionante, destaques, rating, regra de lados |
+| `clustering/` | Estilo de jogo por (jogador, round): PCA + KMeans ajustado uma vez no conjunto das partidas |
+| `scripts/` | Pipeline (processar, insights, replay, página, site), calibração (rating, escala dos papéis, clusters, ângulos, áreas), manifesto e limpeza |
+| `dashboard/` | Streamlit de trabalho e o template da página web; `dashboard/web/annotations.*` é a camada de desenho, zoom e tela cheia |
+| `data/processed/` | Métricas calculadas por partida (versionado) |
+| `data/reference/` | Ratings oficiais da HLTV usados na validação do rating |
+| `tests/` | ~700 testes, incluindo testes de navegador da camada de desenho |
+
+![Aba de jogadores](docs/img/jogadores.png)
+
+## Limitações conhecidas
+
+- **Corpus pequeno e concentrado:** 52 partidas, quase todas de 7 times. O modelo
+  do Round Swing (AUC 0,90) e a calibração do rating melhoram a cada demo.
+- **Rating:** reimplementação da metodologia, não o número da HLTV. Os pesos dos
+  sub-ratings ainda são provisórios; a regressão contra os oficiais existe
+  (erro médio 0,12 fora da amostra), e a troca dos pesos é decisão pendente.
+- **Estilo de jogo é contínuo:** a silhueta do agrupamento é baixa (~0,2) e não
+  melhorou com volume; os grupos descrevem, não classificam com fronteira nítida.
+- **Probabilidade de vitória** supõe rounds independentes (economia e momentum
+  violam isso) e trata a prorrogação como 50/50.
+- **A Nuke** (dois andares) tem a partição de áreas menos revisada.
+- **Comando de console dos arremessos** (`setpos`/`setang`) ainda não foi validado
+  dentro do jogo; até lá, não é apresentado como exato.
+- **A demo não guarda a data da partida**; o manifesto registra a data do arquivo
+  e diz de onde ela veio.
+- Depois de `clean_match` sem `--manter-interim`, a partida continua no site mas
+  não pode mais ser recalculada sem baixar a demo de novo.
+
+![Perfil do jogador](docs/img/perfil.png)
+
+---
+
+# Registro técnico: decisões e bugs encontrados
+
+O que segue é o histórico de como cada métrica chegou onde está, com as
+versões que foram testadas e descartadas. As decisões que não devem ser
+desfeitas sem discussão estão resumidas em `CLAUDE.md`.
 
 ## Por que esse projeto
 
@@ -524,50 +637,6 @@ não erro. É exatamente o tipo de caso que a calibração manual existe pra
 resolver.
 
 ---
-
-## Como rodar
-
-```bash
-pip install -r requirements.txt
-
-# processar uma demo (parse + todas as métricas + clustering)
-python -m scripts.process_demo data/raw/sua_partida.dem --match-id sua_partida
-
-# reaproveitar um parse anterior (pula os ~14s de parsing)
-python -m scripts.process_demo data/raw/sua_partida.dem --match-id sua_partida --from-interim
-
-# ver os ângulos derivados pra calibrar
-python -m scripts.show_derived_angles sua_partida
-
-# testes
-python -m pytest tests/ -v
-
-# radares oficiais, extraídos da instalação local do CS2 (uma vez só)
-python -m scripts.extract_radars
-
-# processar todas as demos da pasta demos/ de uma vez
-python -m scripts.process_all_demos
-
-# dashboard de trabalho
-streamlit run dashboard/app.py
-
-# site de demonstração com todas as partidas processadas
-python -m scripts.build_site                    # -> docs/index.html
-
-# ou a página de uma partida só, arquivo único, nessa ordem
-python -m scripts.build_insights sua_partida
-python -m scripts.build_breakdown sua_partida
-python -m scripts.export_replay sua_partida
-python -m scripts.export_web_payload sua_partida
-python -m scripts.build_web_page sua_partida    # -> dashboard/web/sua_partida.html
-```
-
-**Demonstração ao vivo:** https://pedroppansani.github.io/parser-replay-cs2/
-
-**Requer Python 3.11 a 3.13** (o awpy 2.0.2 ainda não suporta 3.14).
-
-Opcional, pro overlay do radar do mapa nos heatmaps: `awpy get maps` (baixa os
-assets de mapa; precisa de rede liberada para `awpycs.com`).
 
 ## Os textos dos cards são gerados, não escritos
 

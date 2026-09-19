@@ -29,3 +29,16 @@ __pycache__/
 
 .venv/
 venv/
+
+# Rede de segurança: demo em QUALQUER pasta fica fora. Uma demo de 300MB
+# entrando por engano trava o push (o GitHub recusa acima de 100MB) e fica no
+# histórico para sempre.
+*.dem
+*.dem.gz
+*.dem.bz2
+*.zip
+*.rar
+*.7z
+.env
+*.log
+.ipynb_checkpoints/

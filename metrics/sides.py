@@ -69,3 +69,23 @@ def team_of_side(side: str, round_num: int) -> str:
     if side == "t":
         return "A" if a_on_t else "B"
     return "B" if a_on_t else "A"
+
+
+def placar_valido(a: int, b: int, n_rounds: int) -> bool:
+    """O placar final é possível no MR12 com prorrogação MR3?
+
+    Vence quem chega a 13; no 12-12, cada prorrogação começa empatada e acaba
+    em 4-0, 4-1 ou 4-2, então o vencedor fecha em 16, 19, 22... com o perdedor
+    2 a 4 atrás. Partida de FACEIT pode acabar antes por desistência, e aí
+    ninguém chega a 13. Um placar impossível denuncia lado trocado, round a mais
+    (faca, warmup) ou demo dividida sem fundir -- foi assim que o round de faca
+    da Vitality x Spirit apareceu (15-9 em 24 rounds).
+    """
+    alto, baixo = max(a, b), min(a, b)
+    if a + b != n_rounds:
+        return False
+    if alto <= REGULATION_HALF:            # desistência antes do fim
+        return True
+    if alto == REGULATION_HALF + 1:
+        return baixo <= REGULATION_HALF - 1
+    return (alto - REGULATION_HALF - 1) % OT_HALF == 0 and alto - 4 <= baixo <= alto - 2
