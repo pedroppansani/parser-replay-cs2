@@ -1,0 +1,1710 @@
+{
+  "_leia_isto": "KAST e Swing OFICIAIS da HLTV por jogador, transcritos dos prints enviados pelo Pedro. Swing em pontos percentuais (a variação média da chance de o time ganhar o round, como a HLTV mostra). kast_rounds = KAST% x rounds, conferido como inteiro na transcrição.",
+  "partidas": {
+    "match_38": {
+      "rounds": 21,
+      "jogadores": {
+        "iM": {
+          "kast_pct": 76.2,
+          "kast_rounds": 16,
+          "swing_pct": 4.28
+        },
+        "b1t": {
+          "kast_pct": 71.4,
+          "kast_rounds": 15,
+          "swing_pct": 6.49
+        },
+        "jL": {
+          "kast_pct": 76.2,
+          "kast_rounds": 16,
+          "swing_pct": 0.98
+        },
+        "w0nderful": {
+          "kast_pct": 66.7,
+          "kast_rounds": 14,
+          "swing_pct": 0.69
+        },
+        "Aleksib": {
+          "kast_pct": 61.9,
+          "kast_rounds": 13,
+          "swing_pct": -3.88
+        },
+        "zont1x": {
+          "kast_pct": 76.2,
+          "kast_rounds": 16,
+          "swing_pct": 4.01
+        },
+        "donk": {
+          "kast_pct": 76.2,
+          "kast_rounds": 16,
+          "swing_pct": 4.03
+        },
+        "SH1R0": {
+          "kast_pct": 76.2,
+          "kast_rounds": 16,
+          "swing_pct": 1.88
+        },
+        "magixx": {
+          "kast_pct": 61.9,
+          "kast_rounds": 13,
+          "swing_pct": -10.24
+        },
+        "chopper": {
+          "kast_pct": 52.4,
+          "kast_rounds": 11,
+          "swing_pct": -8.25
+        }
+      }
+    },
+    "match_39": {
+      "rounds": 24,
+      "jogadores": {
+        "jL": {
+          "kast_pct": 79.2,
+          "kast_rounds": 19,
+          "swing_pct": 7.55
+        },
+        "w0nderful": {
+          "kast_pct": 79.2,
+          "kast_rounds": 19,
+          "swing_pct": -1.44
+        },
+        "b1t": {
+          "kast_pct": 75.0,
+          "kast_rounds": 18,
+          "swing_pct": -2.67
+        },
+        "Aleksib": {
+          "kast_pct": 79.2,
+          "kast_rounds": 19,
+          "swing_pct": -1.94
+        },
+        "iM": {
+          "kast_pct": 50.0,
+          "kast_rounds": 12,
+          "swing_pct": -4.77
+        },
+        "donk": {
+          "kast_pct": 70.8,
+          "kast_rounds": 17,
+          "swing_pct": 8.95
+        },
+        "SH1R0": {
+          "kast_pct": 79.2,
+          "kast_rounds": 19,
+          "swing_pct": 3.83
+        },
+        "chopper": {
+          "kast_pct": 79.2,
+          "kast_rounds": 19,
+          "swing_pct": 0.65
+        },
+        "zont1x": {
+          "kast_pct": 50.0,
+          "kast_rounds": 12,
+          "swing_pct": -4.79
+        },
+        "magixx": {
+          "kast_pct": 70.8,
+          "kast_rounds": 17,
+          "swing_pct": -5.37
+        }
+      }
+    },
+    "match_40": {
+      "rounds": 30,
+      "jogadores": {
+        "iM": {
+          "kast_pct": 76.7,
+          "kast_rounds": 23,
+          "swing_pct": 2.57
+        },
+        "jL": {
+          "kast_pct": 70.0,
+          "kast_rounds": 21,
+          "swing_pct": 3.25
+        },
+        "w0nderful": {
+          "kast_pct": 63.3,
+          "kast_rounds": 19,
+          "swing_pct": 1.38
+        },
+        "b1t": {
+          "kast_pct": 73.3,
+          "kast_rounds": 22,
+          "swing_pct": 0.35
+        },
+        "Aleksib": {
+          "kast_pct": 66.7,
+          "kast_rounds": 20,
+          "swing_pct": -3.38
+        },
+        "donk": {
+          "kast_pct": 66.7,
+          "kast_rounds": 20,
+          "swing_pct": 2.71
+        },
+        "zont1x": {
+          "kast_pct": 60.0,
+          "kast_rounds": 18,
+          "swing_pct": 2.58
+        },
+        "SH1R0": {
+          "kast_pct": 73.3,
+          "kast_rounds": 22,
+          "swing_pct": 1.21
+        },
+        "chopper": {
+          "kast_pct": 70.0,
+          "kast_rounds": 21,
+          "swing_pct": -5.27
+        },
+        "magixx": {
+          "kast_pct": 70.0,
+          "kast_rounds": 21,
+          "swing_pct": -5.41
+        }
+      }
+    },
+    "match_36": {
+      "rounds": 21,
+      "jogadores": {
+        "b1t": {
+          "kast_pct": 71.4,
+          "kast_rounds": 15,
+          "swing_pct": 6.53
+        },
+        "w0nderful": {
+          "kast_pct": 66.7,
+          "kast_rounds": 14,
+          "swing_pct": 3.03
+        },
+        "Aleksib": {
+          "kast_pct": 52.4,
+          "kast_rounds": 11,
+          "swing_pct": -2.6
+        },
+        "iM": {
+          "kast_pct": 61.9,
+          "kast_rounds": 13,
+          "swing_pct": -6.0
+        },
+        "jL": {
+          "kast_pct": 66.7,
+          "kast_rounds": 14,
+          "swing_pct": -7.88
+        },
+        "donk": {
+          "kast_pct": 76.2,
+          "kast_rounds": 16,
+          "swing_pct": 4.92
+        },
+        "zont1x": {
+          "kast_pct": 71.4,
+          "kast_rounds": 15,
+          "swing_pct": 4.09
+        },
+        "sh1ro": {
+          "kast_pct": 81.0,
+          "kast_rounds": 17,
+          "swing_pct": 2.53
+        },
+        "magixx": {
+          "kast_pct": 66.7,
+          "kast_rounds": 14,
+          "swing_pct": -0.74
+        },
+        "chopper": {
+          "kast_pct": 66.7,
+          "kast_rounds": 14,
+          "swing_pct": -3.88
+        }
+      }
+    },
+    "match_37": {
+      "rounds": 30,
+      "jogadores": {
+        "iM": {
+          "kast_pct": 80.0,
+          "kast_rounds": 24,
+          "swing_pct": 2.58
+        },
+        "jL": {
+          "kast_pct": 73.3,
+          "kast_rounds": 22,
+          "swing_pct": 3.45
+        },
+        "b1t": {
+          "kast_pct": 70.0,
+          "kast_rounds": 21,
+          "swing_pct": 0.81
+        },
+        "w0nderful": {
+          "kast_pct": 73.3,
+          "kast_rounds": 22,
+          "swing_pct": -1.55
+        },
+        "Aleksib": {
+          "kast_pct": 60.0,
+          "kast_rounds": 18,
+          "swing_pct": -4.83
+        },
+        "donk": {
+          "kast_pct": 76.7,
+          "kast_rounds": 23,
+          "swing_pct": 6.52
+        },
+        "magixx": {
+          "kast_pct": 73.3,
+          "kast_rounds": 22,
+          "swing_pct": 1.81
+        },
+        "sh1ro": {
+          "kast_pct": 76.7,
+          "kast_rounds": 23,
+          "swing_pct": 0.63
+        },
+        "chopper": {
+          "kast_pct": 73.3,
+          "kast_rounds": 22,
+          "swing_pct": -4.87
+        },
+        "zont1x": {
+          "kast_pct": 80.0,
+          "kast_rounds": 24,
+          "swing_pct": -4.56
+        }
+      }
+    },
+    "match_24": {
+      "rounds": 20,
+      "jogadores": {
+        "sh1ro": {
+          "kast_pct": 90.0,
+          "kast_rounds": 18,
+          "swing_pct": 3.72
+        },
+        "donk": {
+          "kast_pct": 80.0,
+          "kast_rounds": 16,
+          "swing_pct": 4.24
+        },
+        "chopper": {
+          "kast_pct": 75.0,
+          "kast_rounds": 15,
+          "swing_pct": 0.26
+        },
+        "magixx": {
+          "kast_pct": 70.0,
+          "kast_rounds": 14,
+          "swing_pct": 1.01
+        },
+        "zont1x": {
+          "kast_pct": 75.0,
+          "kast_rounds": 15,
+          "swing_pct": -1.48
+        },
+        "jL": {
+          "kast_pct": 75.0,
+          "kast_rounds": 15,
+          "swing_pct": 1.95
+        },
+        "iM": {
+          "kast_pct": 60.0,
+          "kast_rounds": 12,
+          "swing_pct": 1.38
+        },
+        "w0nderful": {
+          "kast_pct": 65.0,
+          "kast_rounds": 13,
+          "swing_pct": 0.21
+        },
+        "b1t": {
+          "kast_pct": 65.0,
+          "kast_rounds": 13,
+          "swing_pct": -7.07
+        },
+        "Aleksib": {
+          "kast_pct": 65.0,
+          "kast_rounds": 13,
+          "swing_pct": -4.23
+        }
+      }
+    },
+    "match_25": {
+      "rounds": 19,
+      "jogadores": {
+        "donk": {
+          "kast_pct": 84.2,
+          "kast_rounds": 16,
+          "swing_pct": 6.57
+        },
+        "sh1ro": {
+          "kast_pct": 84.2,
+          "kast_rounds": 16,
+          "swing_pct": 7.57
+        },
+        "zont1x": {
+          "kast_pct": 94.7,
+          "kast_rounds": 18,
+          "swing_pct": 2.63
+        },
+        "magixx": {
+          "kast_pct": 78.9,
+          "kast_rounds": 15,
+          "swing_pct": 0.94
+        },
+        "chopper": {
+          "kast_pct": 68.4,
+          "kast_rounds": 13,
+          "swing_pct": -4.1
+        },
+        "Aleksib": {
+          "kast_pct": 57.9,
+          "kast_rounds": 11,
+          "swing_pct": 3.47
+        },
+        "jL": {
+          "kast_pct": 57.9,
+          "kast_rounds": 11,
+          "swing_pct": -3.94
+        },
+        "iM": {
+          "kast_pct": 68.4,
+          "kast_rounds": 13,
+          "swing_pct": -2.55
+        },
+        "w0nderful": {
+          "kast_pct": 63.2,
+          "kast_rounds": 12,
+          "swing_pct": -6.16
+        },
+        "b1t": {
+          "kast_pct": 47.4,
+          "kast_rounds": 9,
+          "swing_pct": -4.45
+        }
+      }
+    },
+    "match_26": {
+      "rounds": 19,
+      "jogadores": {
+        "ZywOo": {
+          "kast_pct": 73.7,
+          "kast_rounds": 14,
+          "swing_pct": 7.42
+        },
+        "flameZ": {
+          "kast_pct": 78.9,
+          "kast_rounds": 15,
+          "swing_pct": 5.66
+        },
+        "mezii": {
+          "kast_pct": 78.9,
+          "kast_rounds": 15,
+          "swing_pct": 2.73
+        },
+        "apEX": {
+          "kast_pct": 52.6,
+          "kast_rounds": 10,
+          "swing_pct": 3.45
+        },
+        "ropz": {
+          "kast_pct": 73.7,
+          "kast_rounds": 14,
+          "swing_pct": 1.62
+        },
+        "donk": {
+          "kast_pct": 94.7,
+          "kast_rounds": 18,
+          "swing_pct": -1.03
+        },
+        "magixx": {
+          "kast_pct": 94.7,
+          "kast_rounds": 18,
+          "swing_pct": -1.28
+        },
+        "sh1ro": {
+          "kast_pct": 78.9,
+          "kast_rounds": 15,
+          "swing_pct": -3.05
+        },
+        "chopper": {
+          "kast_pct": 52.6,
+          "kast_rounds": 10,
+          "swing_pct": -9.74
+        },
+        "zont1x": {
+          "kast_pct": 63.2,
+          "kast_rounds": 12,
+          "swing_pct": -5.77
+        }
+      }
+    },
+    "match_27": {
+      "rounds": 18,
+      "jogadores": {
+        "ZywOo": {
+          "kast_pct": 66.7,
+          "kast_rounds": 12,
+          "swing_pct": 0.71
+        },
+        "apEX": {
+          "kast_pct": 44.4,
+          "kast_rounds": 8,
+          "swing_pct": -0.03
+        },
+        "ropz": {
+          "kast_pct": 66.7,
+          "kast_rounds": 12,
+          "swing_pct": -0.64
+        },
+        "flameZ": {
+          "kast_pct": 61.1,
+          "kast_rounds": 11,
+          "swing_pct": -1.89
+        },
+        "mezii": {
+          "kast_pct": 50.0,
+          "kast_rounds": 9,
+          "swing_pct": -11.04
+        },
+        "donk": {
+          "kast_pct": 94.4,
+          "kast_rounds": 17,
+          "swing_pct": 3.78
+        },
+        "chopper": {
+          "kast_pct": 83.3,
+          "kast_rounds": 15,
+          "swing_pct": 5.1
+        },
+        "magixx": {
+          "kast_pct": 94.4,
+          "kast_rounds": 17,
+          "swing_pct": 2.52
+        },
+        "zont1x": {
+          "kast_pct": 88.9,
+          "kast_rounds": 16,
+          "swing_pct": 3.3
+        },
+        "sh1ro": {
+          "kast_pct": 77.8,
+          "kast_rounds": 14,
+          "swing_pct": -1.8
+        }
+      }
+    },
+    "match_28": {
+      "rounds": 23,
+      "jogadores": {
+        "ZywOo": {
+          "kast_pct": 87.0,
+          "kast_rounds": 20,
+          "swing_pct": 10.52
+        },
+        "ropz": {
+          "kast_pct": 91.3,
+          "kast_rounds": 21,
+          "swing_pct": 4.24
+        },
+        "apEX": {
+          "kast_pct": 73.9,
+          "kast_rounds": 17,
+          "swing_pct": -2.64
+        },
+        "flameZ": {
+          "kast_pct": 73.9,
+          "kast_rounds": 17,
+          "swing_pct": -1.35
+        },
+        "mezii": {
+          "kast_pct": 69.6,
+          "kast_rounds": 16,
+          "swing_pct": -2.27
+        },
+        "sh1ro": {
+          "kast_pct": 82.6,
+          "kast_rounds": 19,
+          "swing_pct": 2.91
+        },
+        "donk": {
+          "kast_pct": 78.3,
+          "kast_rounds": 18,
+          "swing_pct": 0.05
+        },
+        "zont1x": {
+          "kast_pct": 56.5,
+          "kast_rounds": 13,
+          "swing_pct": -0.82
+        },
+        "magixx": {
+          "kast_pct": 69.6,
+          "kast_rounds": 16,
+          "swing_pct": -6.26
+        },
+        "chopper": {
+          "kast_pct": 60.9,
+          "kast_rounds": 14,
+          "swing_pct": -4.38
+        }
+      }
+    },
+    "match_33": {
+      "rounds": 24,
+      "jogadores": {
+        "Jimpphat": {
+          "kast_pct": 66.7,
+          "kast_rounds": 16,
+          "swing_pct": 2.27
+        },
+        "Spinx": {
+          "kast_pct": 66.7,
+          "kast_rounds": 16,
+          "swing_pct": -0.36
+        },
+        "Brollan": {
+          "kast_pct": 62.5,
+          "kast_rounds": 15,
+          "swing_pct": -1.48
+        },
+        "torzsi": {
+          "kast_pct": 54.2,
+          "kast_rounds": 13,
+          "swing_pct": -0.22
+        },
+        "xertioN": {
+          "kast_pct": 58.3,
+          "kast_rounds": 14,
+          "swing_pct": -4.49
+        },
+        "ropz": {
+          "kast_pct": 83.3,
+          "kast_rounds": 20,
+          "swing_pct": 1.16
+        },
+        "ZywOo": {
+          "kast_pct": 83.3,
+          "kast_rounds": 20,
+          "swing_pct": 1.87
+        },
+        "flameZ": {
+          "kast_pct": 87.5,
+          "kast_rounds": 21,
+          "swing_pct": 2.47
+        },
+        "mezii": {
+          "kast_pct": 75.0,
+          "kast_rounds": 18,
+          "swing_pct": 2.06
+        },
+        "apEX": {
+          "kast_pct": 62.5,
+          "kast_rounds": 15,
+          "swing_pct": -3.28
+        }
+      }
+    },
+    "match_34": {
+      "rounds": 22,
+      "jogadores": {
+        "torzsi": {
+          "kast_pct": 81.8,
+          "kast_rounds": 18,
+          "swing_pct": 6.89
+        },
+        "Spinx": {
+          "kast_pct": 63.6,
+          "kast_rounds": 14,
+          "swing_pct": -1.16
+        },
+        "Jimpphat": {
+          "kast_pct": 77.3,
+          "kast_rounds": 17,
+          "swing_pct": -2.95
+        },
+        "xertioN": {
+          "kast_pct": 59.1,
+          "kast_rounds": 13,
+          "swing_pct": -3.95
+        },
+        "Brollan": {
+          "kast_pct": 72.7,
+          "kast_rounds": 16,
+          "swing_pct": -6.53
+        },
+        "ZywOo": {
+          "kast_pct": 72.7,
+          "kast_rounds": 16,
+          "swing_pct": 7.03
+        },
+        "flameZ": {
+          "kast_pct": 72.7,
+          "kast_rounds": 16,
+          "swing_pct": 4.27
+        },
+        "mezii": {
+          "kast_pct": 77.3,
+          "kast_rounds": 17,
+          "swing_pct": 1.18
+        },
+        "ropz": {
+          "kast_pct": 68.2,
+          "kast_rounds": 15,
+          "swing_pct": -2.06
+        },
+        "apEX": {
+          "kast_pct": 68.2,
+          "kast_rounds": 15,
+          "swing_pct": -2.72
+        }
+      }
+    },
+    "match_35": {
+      "rounds": 21,
+      "jogadores": {
+        "xertioN": {
+          "kast_pct": 71.4,
+          "kast_rounds": 15,
+          "swing_pct": 2.03
+        },
+        "Spinx": {
+          "kast_pct": 76.2,
+          "kast_rounds": 16,
+          "swing_pct": -0.87
+        },
+        "torzsi": {
+          "kast_pct": 66.7,
+          "kast_rounds": 14,
+          "swing_pct": 0.39
+        },
+        "Brollan": {
+          "kast_pct": 81.0,
+          "kast_rounds": 17,
+          "swing_pct": -5.19
+        },
+        "Jimpphat": {
+          "kast_pct": 57.1,
+          "kast_rounds": 12,
+          "swing_pct": -4.82
+        },
+        "apEX": {
+          "kast_pct": 85.7,
+          "kast_rounds": 18,
+          "swing_pct": 5.57
+        },
+        "ZywOo": {
+          "kast_pct": 81.0,
+          "kast_rounds": 17,
+          "swing_pct": 5.48
+        },
+        "mezii": {
+          "kast_pct": 81.0,
+          "kast_rounds": 17,
+          "swing_pct": 1.45
+        },
+        "flameZ": {
+          "kast_pct": 76.2,
+          "kast_rounds": 16,
+          "swing_pct": 1.37
+        },
+        "ropz": {
+          "kast_pct": 61.9,
+          "kast_rounds": 13,
+          "swing_pct": -5.42
+        }
+      }
+    },
+    "match_49": {
+      "rounds": 24,
+      "jogadores": {
+        "xertioN": {
+          "kast_pct": 70.8,
+          "kast_rounds": 17,
+          "swing_pct": 3.93
+        },
+        "Jimpphat": {
+          "kast_pct": 70.8,
+          "kast_rounds": 17,
+          "swing_pct": 1.92
+        },
+        "torzsi": {
+          "kast_pct": 75.0,
+          "kast_rounds": 18,
+          "swing_pct": -1.89
+        },
+        "Brollan": {
+          "kast_pct": 62.5,
+          "kast_rounds": 15,
+          "swing_pct": -3.69
+        },
+        "Spinx": {
+          "kast_pct": 58.3,
+          "kast_rounds": 14,
+          "swing_pct": -2.38
+        },
+        "kyousuke": {
+          "kast_pct": 95.8,
+          "kast_rounds": 23,
+          "swing_pct": 1.39
+        },
+        "m0NESY": {
+          "kast_pct": 75.0,
+          "kast_rounds": 18,
+          "swing_pct": 2.9
+        },
+        "kyxsan": {
+          "kast_pct": 83.3,
+          "kast_rounds": 20,
+          "swing_pct": 0.12
+        },
+        "NiKo": {
+          "kast_pct": 75.0,
+          "kast_rounds": 18,
+          "swing_pct": 0.31
+        },
+        "TeSeS": {
+          "kast_pct": 75.0,
+          "kast_rounds": 18,
+          "swing_pct": -2.62
+        }
+      }
+    },
+    "match_50": {
+      "rounds": 19,
+      "jogadores": {
+        "torzsi": {
+          "kast_pct": 78.9,
+          "kast_rounds": 15,
+          "swing_pct": 10.19
+        },
+        "Spinx": {
+          "kast_pct": 78.9,
+          "kast_rounds": 15,
+          "swing_pct": 5.93
+        },
+        "xertioN": {
+          "kast_pct": 78.9,
+          "kast_rounds": 15,
+          "swing_pct": 1.01
+        },
+        "Jimpphat": {
+          "kast_pct": 78.9,
+          "kast_rounds": 15,
+          "swing_pct": 0.32
+        },
+        "Brollan": {
+          "kast_pct": 73.7,
+          "kast_rounds": 14,
+          "swing_pct": -0.74
+        },
+        "TeSeS": {
+          "kast_pct": 57.9,
+          "kast_rounds": 11,
+          "swing_pct": 0.52
+        },
+        "m0NESY": {
+          "kast_pct": 68.4,
+          "kast_rounds": 13,
+          "swing_pct": -0.51
+        },
+        "kyxsan": {
+          "kast_pct": 63.2,
+          "kast_rounds": 12,
+          "swing_pct": -2.92
+        },
+        "NiKo": {
+          "kast_pct": 63.2,
+          "kast_rounds": 12,
+          "swing_pct": -4.59
+        },
+        "kyousuke": {
+          "kast_pct": 63.2,
+          "kast_rounds": 12,
+          "swing_pct": -9.22
+        }
+      }
+    },
+    "match_51": {
+      "rounds": 23,
+      "jogadores": {
+        "Spinx": {
+          "kast_pct": 87.0,
+          "kast_rounds": 20,
+          "swing_pct": 2.92
+        },
+        "Jimpphat": {
+          "kast_pct": 73.9,
+          "kast_rounds": 17,
+          "swing_pct": 3.11
+        },
+        "xertioN": {
+          "kast_pct": 73.9,
+          "kast_rounds": 17,
+          "swing_pct": 0.08
+        },
+        "torzsi": {
+          "kast_pct": 69.6,
+          "kast_rounds": 16,
+          "swing_pct": 0.5
+        },
+        "Brollan": {
+          "kast_pct": 73.9,
+          "kast_rounds": 17,
+          "swing_pct": -1.13
+        },
+        "kyousuke": {
+          "kast_pct": 73.9,
+          "kast_rounds": 17,
+          "swing_pct": 2.26
+        },
+        "m0NESY": {
+          "kast_pct": 73.9,
+          "kast_rounds": 17,
+          "swing_pct": 1.99
+        },
+        "NiKo": {
+          "kast_pct": 73.9,
+          "kast_rounds": 17,
+          "swing_pct": -1.31
+        },
+        "kyxsan": {
+          "kast_pct": 65.2,
+          "kast_rounds": 15,
+          "swing_pct": -4.27
+        },
+        "TeSeS": {
+          "kast_pct": 60.9,
+          "kast_rounds": 14,
+          "swing_pct": -4.14
+        }
+      }
+    },
+    "match_29": {
+      "rounds": 16,
+      "jogadores": {
+        "molodoy": {
+          "kast_pct": 68.8,
+          "kast_rounds": 11,
+          "swing_pct": -1.41
+        },
+        "yuurih": {
+          "kast_pct": 75.0,
+          "kast_rounds": 12,
+          "swing_pct": -3.61
+        },
+        "YEKINDAR": {
+          "kast_pct": 50.0,
+          "kast_rounds": 8,
+          "swing_pct": -1.0
+        },
+        "KSCERATO": {
+          "kast_pct": 62.5,
+          "kast_rounds": 10,
+          "swing_pct": -5.65
+        },
+        "FalleN": {
+          "kast_pct": 50.0,
+          "kast_rounds": 8,
+          "swing_pct": -11.24
+        },
+        "kyxsan": {
+          "kast_pct": 87.5,
+          "kast_rounds": 14,
+          "swing_pct": 15.59
+        },
+        "m0NESY": {
+          "kast_pct": 87.5,
+          "kast_rounds": 14,
+          "swing_pct": 14.99
+        },
+        "NiKo": {
+          "kast_pct": 81.2,
+          "kast_rounds": 13,
+          "swing_pct": 0.0
+        },
+        "TeSeS": {
+          "kast_pct": 75.0,
+          "kast_rounds": 12,
+          "swing_pct": -3.01
+        },
+        "kyousuke": {
+          "kast_pct": 81.2,
+          "kast_rounds": 13,
+          "swing_pct": -5.26
+        }
+      }
+    },
+    "match_30": {
+      "rounds": 22,
+      "jogadores": {
+        "YEKINDAR": {
+          "kast_pct": 77.3,
+          "kast_rounds": 17,
+          "swing_pct": 10.75
+        },
+        "KSCERATO": {
+          "kast_pct": 86.4,
+          "kast_rounds": 19,
+          "swing_pct": 0.88
+        },
+        "yuurih": {
+          "kast_pct": 72.7,
+          "kast_rounds": 16,
+          "swing_pct": -3.26
+        },
+        "FalleN": {
+          "kast_pct": 77.3,
+          "kast_rounds": 17,
+          "swing_pct": -4.93
+        },
+        "molodoy": {
+          "kast_pct": 63.6,
+          "kast_rounds": 14,
+          "swing_pct": -4.25
+        },
+        "kyousuke": {
+          "kast_pct": 72.7,
+          "kast_rounds": 16,
+          "swing_pct": 4.97
+        },
+        "kyxsan": {
+          "kast_pct": 72.7,
+          "kast_rounds": 16,
+          "swing_pct": 2.77
+        },
+        "NiKo": {
+          "kast_pct": 59.1,
+          "kast_rounds": 13,
+          "swing_pct": -0.64
+        },
+        "m0NESY": {
+          "kast_pct": 68.2,
+          "kast_rounds": 15,
+          "swing_pct": -1.19
+        },
+        "TeSeS": {
+          "kast_pct": 54.5,
+          "kast_rounds": 12,
+          "swing_pct": -5.75
+        }
+      }
+    },
+    "match_31": {
+      "rounds": 34,
+      "jogadores": {
+        "yuurih": {
+          "kast_pct": 70.6,
+          "kast_rounds": 24,
+          "swing_pct": 4.31
+        },
+        "molodoy": {
+          "kast_pct": 85.3,
+          "kast_rounds": 29,
+          "swing_pct": 3.57
+        },
+        "KSCERATO": {
+          "kast_pct": 73.5,
+          "kast_rounds": 25,
+          "swing_pct": 2.02
+        },
+        "FalleN": {
+          "kast_pct": 61.8,
+          "kast_rounds": 21,
+          "swing_pct": -1.02
+        },
+        "YEKINDAR": {
+          "kast_pct": 64.7,
+          "kast_rounds": 22,
+          "swing_pct": -3.97
+        },
+        "m0NESY": {
+          "kast_pct": 67.6,
+          "kast_rounds": 23,
+          "swing_pct": 1.22
+        },
+        "kyousuke": {
+          "kast_pct": 73.5,
+          "kast_rounds": 25,
+          "swing_pct": -0.03
+        },
+        "TeSeS": {
+          "kast_pct": 73.5,
+          "kast_rounds": 25,
+          "swing_pct": 0.67
+        },
+        "kyxsan": {
+          "kast_pct": 64.7,
+          "kast_rounds": 22,
+          "swing_pct": -0.89
+        },
+        "NiKo": {
+          "kast_pct": 70.6,
+          "kast_rounds": 24,
+          "swing_pct": -5.87
+        }
+      }
+    },
+    "match_32": {
+      "rounds": 35,
+      "jogadores": {
+        "YEKINDAR": {
+          "kast_pct": 77.1,
+          "kast_rounds": 27,
+          "swing_pct": 1.3
+        },
+        "yuurih": {
+          "kast_pct": 77.1,
+          "kast_rounds": 27,
+          "swing_pct": 3.7
+        },
+        "molodoy": {
+          "kast_pct": 62.9,
+          "kast_rounds": 22,
+          "swing_pct": 0.26
+        },
+        "FalleN": {
+          "kast_pct": 74.3,
+          "kast_rounds": 26,
+          "swing_pct": -1.01
+        },
+        "KSCERATO": {
+          "kast_pct": 74.3,
+          "kast_rounds": 26,
+          "swing_pct": -1.26
+        },
+        "m0NESY": {
+          "kast_pct": 71.4,
+          "kast_rounds": 25,
+          "swing_pct": 4.94
+        },
+        "kyxsan": {
+          "kast_pct": 80.0,
+          "kast_rounds": 28,
+          "swing_pct": 0.55
+        },
+        "TeSeS": {
+          "kast_pct": 62.9,
+          "kast_rounds": 22,
+          "swing_pct": -0.27
+        },
+        "kyousuke": {
+          "kast_pct": 65.7,
+          "kast_rounds": 23,
+          "swing_pct": -4.98
+        },
+        "NiKo": {
+          "kast_pct": 48.6,
+          "kast_rounds": 17,
+          "swing_pct": -3.23
+        }
+      }
+    },
+    "match_52": {
+      "rounds": 18,
+      "jogadores": {
+        "ZywOo": {
+          "kast_pct": 83.3,
+          "kast_rounds": 15,
+          "swing_pct": 17.54
+        },
+        "mezii": {
+          "kast_pct": 83.3,
+          "kast_rounds": 15,
+          "swing_pct": 5.21
+        },
+        "flameZ": {
+          "kast_pct": 72.2,
+          "kast_rounds": 13,
+          "swing_pct": 3.87
+        },
+        "ropz": {
+          "kast_pct": 94.4,
+          "kast_rounds": 17,
+          "swing_pct": 1.42
+        },
+        "apEX": {
+          "kast_pct": 50.0,
+          "kast_rounds": 9,
+          "swing_pct": -11.43
+        },
+        "Mzinho": {
+          "kast_pct": 66.7,
+          "kast_rounds": 12,
+          "swing_pct": 2.42
+        },
+        "bLitz": {
+          "kast_pct": 66.7,
+          "kast_rounds": 12,
+          "swing_pct": -2.34
+        },
+        "Techno4K": {
+          "kast_pct": 66.7,
+          "kast_rounds": 12,
+          "swing_pct": -1.73
+        },
+        "910": {
+          "kast_pct": 55.6,
+          "kast_rounds": 10,
+          "swing_pct": -7.58
+        },
+        "controlez": {
+          "kast_pct": 44.4,
+          "kast_rounds": 8,
+          "swing_pct": -7.38
+        }
+      }
+    },
+    "match_53": {
+      "rounds": 17,
+      "jogadores": {
+        "ropz": {
+          "kast_pct": 88.2,
+          "kast_rounds": 15,
+          "swing_pct": 8.96
+        },
+        "ZywOo": {
+          "kast_pct": 94.1,
+          "kast_rounds": 16,
+          "swing_pct": 8.12
+        },
+        "flameZ": {
+          "kast_pct": 76.5,
+          "kast_rounds": 13,
+          "swing_pct": 3.44
+        },
+        "mezii": {
+          "kast_pct": 88.2,
+          "kast_rounds": 15,
+          "swing_pct": -0.27
+        },
+        "apEX": {
+          "kast_pct": 76.5,
+          "kast_rounds": 13,
+          "swing_pct": -2.58
+        },
+        "910": {
+          "kast_pct": 76.5,
+          "kast_rounds": 13,
+          "swing_pct": 0.22
+        },
+        "Mzinho": {
+          "kast_pct": 58.8,
+          "kast_rounds": 10,
+          "swing_pct": 0.28
+        },
+        "bLitz": {
+          "kast_pct": 58.8,
+          "kast_rounds": 10,
+          "swing_pct": -1.44
+        },
+        "Techno4K": {
+          "kast_pct": 64.7,
+          "kast_rounds": 11,
+          "swing_pct": -6.26
+        },
+        "controlez": {
+          "kast_pct": 41.2,
+          "kast_rounds": 7,
+          "swing_pct": -10.48
+        }
+      }
+    },
+    "match_47": {
+      "rounds": 20,
+      "jogadores": {
+        "ZywOo": {
+          "kast_pct": 80.0,
+          "kast_rounds": 16,
+          "swing_pct": 6.39
+        },
+        "ropz": {
+          "kast_pct": 75.0,
+          "kast_rounds": 15,
+          "swing_pct": 7.62
+        },
+        "apEX": {
+          "kast_pct": 80.0,
+          "kast_rounds": 16,
+          "swing_pct": 1.33
+        },
+        "flameZ": {
+          "kast_pct": 85.0,
+          "kast_rounds": 17,
+          "swing_pct": 0.32
+        },
+        "mezii": {
+          "kast_pct": 70.0,
+          "kast_rounds": 14,
+          "swing_pct": -3.26
+        },
+        "Jimpphat": {
+          "kast_pct": 70.0,
+          "kast_rounds": 14,
+          "swing_pct": 2.15
+        },
+        "Brollan": {
+          "kast_pct": 55.0,
+          "kast_rounds": 11,
+          "swing_pct": -1.55
+        },
+        "xertioN": {
+          "kast_pct": 65.0,
+          "kast_rounds": 13,
+          "swing_pct": -1.63
+        },
+        "Spinx": {
+          "kast_pct": 60.0,
+          "kast_rounds": 12,
+          "swing_pct": -5.33
+        },
+        "torzsi": {
+          "kast_pct": 70.0,
+          "kast_rounds": 14,
+          "swing_pct": -6.04
+        }
+      }
+    },
+    "match_48": {
+      "rounds": 19,
+      "jogadores": {
+        "ZywOo": {
+          "kast_pct": 94.7,
+          "kast_rounds": 18,
+          "swing_pct": 8.1
+        },
+        "ropz": {
+          "kast_pct": 84.2,
+          "kast_rounds": 16,
+          "swing_pct": 5.64
+        },
+        "flameZ": {
+          "kast_pct": 78.9,
+          "kast_rounds": 15,
+          "swing_pct": 2.68
+        },
+        "mezii": {
+          "kast_pct": 89.5,
+          "kast_rounds": 17,
+          "swing_pct": 0.43
+        },
+        "apEX": {
+          "kast_pct": 63.2,
+          "kast_rounds": 12,
+          "swing_pct": -5.27
+        },
+        "Brollan": {
+          "kast_pct": 52.6,
+          "kast_rounds": 10,
+          "swing_pct": 1.99
+        },
+        "Spinx": {
+          "kast_pct": 63.2,
+          "kast_rounds": 12,
+          "swing_pct": 0.04
+        },
+        "torzsi": {
+          "kast_pct": 52.6,
+          "kast_rounds": 10,
+          "swing_pct": -5.2
+        },
+        "Jimpphat": {
+          "kast_pct": 63.2,
+          "kast_rounds": 12,
+          "swing_pct": -2.56
+        },
+        "xertioN": {
+          "kast_pct": 73.7,
+          "kast_rounds": 14,
+          "swing_pct": -5.85
+        }
+      }
+    },
+    "match_43": {
+      "rounds": 24,
+      "jogadores": {
+        "molodoy": {
+          "kast_pct": 66.7,
+          "kast_rounds": 16,
+          "swing_pct": 4.46
+        },
+        "yuurih": {
+          "kast_pct": 70.8,
+          "kast_rounds": 17,
+          "swing_pct": 0.69
+        },
+        "YEKINDAR": {
+          "kast_pct": 58.3,
+          "kast_rounds": 14,
+          "swing_pct": -0.83
+        },
+        "FalleN": {
+          "kast_pct": 66.7,
+          "kast_rounds": 16,
+          "swing_pct": 1.38
+        },
+        "KSCERATO": {
+          "kast_pct": 66.7,
+          "kast_rounds": 16,
+          "swing_pct": -1.15
+        },
+        "flameZ": {
+          "kast_pct": 79.2,
+          "kast_rounds": 19,
+          "swing_pct": 5.41
+        },
+        "ZywOo": {
+          "kast_pct": 70.8,
+          "kast_rounds": 17,
+          "swing_pct": 2.43
+        },
+        "apEX": {
+          "kast_pct": 75.0,
+          "kast_rounds": 18,
+          "swing_pct": -1.21
+        },
+        "ropz": {
+          "kast_pct": 75.0,
+          "kast_rounds": 18,
+          "swing_pct": -6.43
+        },
+        "mezii": {
+          "kast_pct": 66.7,
+          "kast_rounds": 16,
+          "swing_pct": -5.29
+        }
+      }
+    },
+    "match_44": {
+      "rounds": 21,
+      "jogadores": {
+        "YEKINDAR": {
+          "kast_pct": 85.7,
+          "kast_rounds": 18,
+          "swing_pct": 3.81
+        },
+        "KSCERATO": {
+          "kast_pct": 61.9,
+          "kast_rounds": 13,
+          "swing_pct": 2.63
+        },
+        "molodoy": {
+          "kast_pct": 71.4,
+          "kast_rounds": 15,
+          "swing_pct": -2.63
+        },
+        "FalleN": {
+          "kast_pct": 85.7,
+          "kast_rounds": 18,
+          "swing_pct": -5.91
+        },
+        "yuurih": {
+          "kast_pct": 61.9,
+          "kast_rounds": 13,
+          "swing_pct": -6.36
+        },
+        "ZywOo": {
+          "kast_pct": 90.5,
+          "kast_rounds": 19,
+          "swing_pct": 11.8
+        },
+        "flameZ": {
+          "kast_pct": 61.9,
+          "kast_rounds": 13,
+          "swing_pct": 4.46
+        },
+        "mezii": {
+          "kast_pct": 71.4,
+          "kast_rounds": 15,
+          "swing_pct": -0.15
+        },
+        "ropz": {
+          "kast_pct": 71.4,
+          "kast_rounds": 15,
+          "swing_pct": -5.29
+        },
+        "apEX": {
+          "kast_pct": 81.0,
+          "kast_rounds": 17,
+          "swing_pct": -2.38
+        }
+      }
+    },
+    "match_45": {
+      "rounds": 15,
+      "jogadores": {
+        "YEKINDAR": {
+          "kast_pct": 60.0,
+          "kast_rounds": 9,
+          "swing_pct": -0.07
+        },
+        "FalleN": {
+          "kast_pct": 46.7,
+          "kast_rounds": 7,
+          "swing_pct": -3.15
+        },
+        "yuurih": {
+          "kast_pct": 60.0,
+          "kast_rounds": 9,
+          "swing_pct": -5.85
+        },
+        "KSCERATO": {
+          "kast_pct": 46.7,
+          "kast_rounds": 7,
+          "swing_pct": -5.37
+        },
+        "molodoy": {
+          "kast_pct": 46.7,
+          "kast_rounds": 7,
+          "swing_pct": -8.55
+        },
+        "mezii": {
+          "kast_pct": 93.3,
+          "kast_rounds": 14,
+          "swing_pct": 13.07
+        },
+        "ZywOo": {
+          "kast_pct": 100.0,
+          "kast_rounds": 15,
+          "swing_pct": 9.01
+        },
+        "ropz": {
+          "kast_pct": 80.0,
+          "kast_rounds": 12,
+          "swing_pct": 2.22
+        },
+        "flameZ": {
+          "kast_pct": 86.7,
+          "kast_rounds": 13,
+          "swing_pct": -0.39
+        },
+        "apEX": {
+          "kast_pct": 80.0,
+          "kast_rounds": 12,
+          "swing_pct": -0.91
+        }
+      }
+    },
+    "match_46": {
+      "rounds": 23,
+      "jogadores": {
+        "KSCERATO": {
+          "kast_pct": 69.6,
+          "kast_rounds": 16,
+          "swing_pct": 1.0
+        },
+        "FalleN": {
+          "kast_pct": 60.9,
+          "kast_rounds": 14,
+          "swing_pct": 0.49
+        },
+        "yuurih": {
+          "kast_pct": 73.9,
+          "kast_rounds": 17,
+          "swing_pct": -0.36
+        },
+        "YEKINDAR": {
+          "kast_pct": 60.9,
+          "kast_rounds": 14,
+          "swing_pct": -1.08
+        },
+        "molodoy": {
+          "kast_pct": 52.2,
+          "kast_rounds": 12,
+          "swing_pct": -3.54
+        },
+        "ZywOo": {
+          "kast_pct": 69.6,
+          "kast_rounds": 16,
+          "swing_pct": 2.37
+        },
+        "apEX": {
+          "kast_pct": 78.3,
+          "kast_rounds": 18,
+          "swing_pct": 3.84
+        },
+        "flameZ": {
+          "kast_pct": 65.2,
+          "kast_rounds": 15,
+          "swing_pct": -0.99
+        },
+        "mezii": {
+          "kast_pct": 87.0,
+          "kast_rounds": 20,
+          "swing_pct": -0.19
+        },
+        "ropz": {
+          "kast_pct": 78.3,
+          "kast_rounds": 18,
+          "swing_pct": -1.55
+        }
+      }
+    },
+    "match_41": {
+      "rounds": 30,
+      "jogadores": {
+        "kyousuke": {
+          "kast_pct": 73.3,
+          "kast_rounds": 22,
+          "swing_pct": 2.87
+        },
+        "NiKo": {
+          "kast_pct": 70.0,
+          "kast_rounds": 21,
+          "swing_pct": 1.19
+        },
+        "m0NESY": {
+          "kast_pct": 76.7,
+          "kast_rounds": 23,
+          "swing_pct": -2.37
+        },
+        "TeSeS": {
+          "kast_pct": 73.3,
+          "kast_rounds": 22,
+          "swing_pct": -0.3
+        },
+        "kyxsan": {
+          "kast_pct": 56.7,
+          "kast_rounds": 17,
+          "swing_pct": -1.87
+        },
+        "torzsi": {
+          "kast_pct": 80.0,
+          "kast_rounds": 24,
+          "swing_pct": 2.39
+        },
+        "Brollan": {
+          "kast_pct": 76.7,
+          "kast_rounds": 23,
+          "swing_pct": 1.63
+        },
+        "Spinx": {
+          "kast_pct": 83.3,
+          "kast_rounds": 25,
+          "swing_pct": 2.03
+        },
+        "xertioN": {
+          "kast_pct": 73.3,
+          "kast_rounds": 22,
+          "swing_pct": -3.75
+        },
+        "Jimpphat": {
+          "kast_pct": 63.3,
+          "kast_rounds": 19,
+          "swing_pct": -1.81
+        }
+      }
+    },
+    "match_42": {
+      "rounds": 36,
+      "jogadores": {
+        "m0NESY": {
+          "kast_pct": 75.0,
+          "kast_rounds": 27,
+          "swing_pct": 1.91
+        },
+        "kyousuke": {
+          "kast_pct": 66.7,
+          "kast_rounds": 24,
+          "swing_pct": 0.81
+        },
+        "NiKo": {
+          "kast_pct": 77.8,
+          "kast_rounds": 28,
+          "swing_pct": -0.08
+        },
+        "TeSeS": {
+          "kast_pct": 75.0,
+          "kast_rounds": 27,
+          "swing_pct": -1.11
+        },
+        "kyxsan": {
+          "kast_pct": 69.4,
+          "kast_rounds": 25,
+          "swing_pct": -5.14
+        },
+        "xertioN": {
+          "kast_pct": 77.8,
+          "kast_rounds": 28,
+          "swing_pct": 4.09
+        },
+        "Spinx": {
+          "kast_pct": 77.8,
+          "kast_rounds": 28,
+          "swing_pct": 1.58
+        },
+        "Jimpphat": {
+          "kast_pct": 66.7,
+          "kast_rounds": 24,
+          "swing_pct": 3.07
+        },
+        "torzsi": {
+          "kast_pct": 69.4,
+          "kast_rounds": 25,
+          "swing_pct": 0.44
+        },
+        "Brollan": {
+          "kast_pct": 58.3,
+          "kast_rounds": 21,
+          "swing_pct": -5.58
+        }
+      }
+    },
+    "match_23": {
+      "rounds": 22,
+      "jogadores": {
+        "ZywOo": {
+          "kast_pct": 72.7,
+          "kast_rounds": 16,
+          "swing_pct": 9.36
+        },
+        "ropz": {
+          "kast_pct": 81.8,
+          "kast_rounds": 18,
+          "swing_pct": 3.2
+        },
+        "apEX": {
+          "kast_pct": 77.3,
+          "kast_rounds": 17,
+          "swing_pct": 0.35
+        },
+        "mezii": {
+          "kast_pct": 72.7,
+          "kast_rounds": 16,
+          "swing_pct": -0.3
+        },
+        "flameZ": {
+          "kast_pct": 59.1,
+          "kast_rounds": 13,
+          "swing_pct": -0.38
+        },
+        "mo0N": {
+          "kast_pct": 81.8,
+          "kast_rounds": 18,
+          "swing_pct": -1.8
+        },
+        "tenzy": {
+          "kast_pct": 72.7,
+          "kast_rounds": 16,
+          "swing_pct": -1.12
+        },
+        "sFade8": {
+          "kast_pct": 63.6,
+          "kast_rounds": 14,
+          "swing_pct": -2.34
+        },
+        "eksiver": {
+          "kast_pct": 63.6,
+          "kast_rounds": 14,
+          "swing_pct": -2.26
+        },
+        "MaSvAl": {
+          "kast_pct": 72.7,
+          "kast_rounds": 16,
+          "swing_pct": -4.71
+        }
+      }
+    }
+  }
+}

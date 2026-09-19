@@ -344,6 +344,8 @@ def _rating_da_partida(tabelas, interim, rounds, team_of, vencedor_por_round, ka
         **tabelas,
         "player_blind": (eventos_do_round_jogado(pl.read_parquet(blind), rounds)
                          if blind.exists() else None),
+        "compra": (pl.read_parquet(interim / "compra.parquet")
+                   if (interim / "compra.parquet").exists() else None),
     }
     _, resumo = calcula_rating(entrada, team_of, vencedor_por_round, kast, tickrate,
                                referencia=referencia, modelo=modelo)

@@ -1,0 +1,638 @@
+{
+  "taxa_base_por_lado": {
+    "t": 0.4774305555555556,
+    "ct": 0.5225694444444444
+  },
+  "celulas_sem_colete": {
+    "t||rifle_t1||rifle_t1": {
+      "n": 546,
+      "taxa_crua": 0.4963,
+      "taxa": 0.4957
+    },
+    "t||pistola_inicial||rifle_t1": {
+      "n": 45,
+      "taxa_crua": 0.0889,
+      "taxa": 0.2084
+    },
+    "t||pistola_inicial||pistola_inicial": {
+      "n": 103,
+      "taxa_crua": 0.4757,
+      "taxa": 0.476
+    },
+    "ct||pistola_melhorada||pistola_inicial": {
+      "n": 1,
+      "taxa_crua": 0.0,
+      "taxa": 0.4977
+    },
+    "ct||smg_shotgun||pistola_inicial": {
+      "n": 8,
+      "taxa_crua": 1.0,
+      "taxa": 0.659
+    },
+    "t||rifle_t2||pistola_melhorada": {
+      "n": 30,
+      "taxa_crua": 0.7,
+      "taxa": 0.611
+    },
+    "t||pistola_inicial||sniper": {
+      "n": 1,
+      "taxa_crua": 0.0,
+      "taxa": 0.4547
+    },
+    "t||pistola_melhorada||smg_shotgun": {
+      "n": 9,
+      "taxa_crua": 0.1111,
+      "taxa": 0.3637
+    },
+    "ct||rifle_t1||smg_shotgun": {
+      "n": 2,
+      "taxa_crua": 1.0,
+      "taxa": 0.566
+    },
+    "ct||rifle_t1||pistola_inicial": {
+      "n": 45,
+      "taxa_crua": 0.9111,
+      "taxa": 0.7916
+    },
+    "ct||pistola_melhorada||rifle_t1": {
+      "n": 84,
+      "taxa_crua": 0.2857,
+      "taxa": 0.3313
+    },
+    "ct||rifle_t2||pistola_melhorada": {
+      "n": 7,
+      "taxa_crua": 0.4286,
+      "taxa": 0.4982
+    },
+    "ct||smg_shotgun||rifle_t2": {
+      "n": 11,
+      "taxa_crua": 0.3636,
+      "taxa": 0.4662
+    },
+    "t||rifle_t1||sniper": {
+      "n": 2,
+      "taxa_crua": 0.0,
+      "taxa": 0.434
+    },
+    "ct||pistola_melhorada||rifle_t2": {
+      "n": 30,
+      "taxa_crua": 0.3,
+      "taxa": 0.389
+    },
+    "t||smg_shotgun||pistola_inicial": {
+      "n": 2,
+      "taxa_crua": 1.0,
+      "taxa": 0.5249
+    },
+    "t||pistola_melhorada||rifle_t2": {
+      "n": 7,
+      "taxa_crua": 0.5714,
+      "taxa": 0.5018
+    },
+    "ct||sniper||pistola_inicial": {
+      "n": 1,
+      "taxa_crua": 1.0,
+      "taxa": 0.5453
+    },
+    "t||rifle_t2||sniper": {
+      "n": 1,
+      "taxa_crua": 1.0,
+      "taxa": 0.5023
+    },
+    "t||rifle_t2||pistola_inicial": {
+      "n": 6,
+      "taxa_crua": 1.0,
+      "taxa": 0.598
+    },
+    "t||rifle_t1||pistola_inicial": {
+      "n": 21,
+      "taxa_crua": 0.9524,
+      "taxa": 0.7207
+    },
+    "t||rifle_t1||smg_shotgun": {
+      "n": 39,
+      "taxa_crua": 0.641,
+      "taxa": 0.5856
+    },
+    "ct||smg_shotgun||pistola_melhorada": {
+      "n": 9,
+      "taxa_crua": 0.8889,
+      "taxa": 0.6363
+    },
+    "t||pistola_melhorada||rifle_t1": {
+      "n": 146,
+      "taxa_crua": 0.2397,
+      "taxa": 0.2684
+    },
+    "t||rifle_t1||rifle_t2": {
+      "n": 10,
+      "taxa_crua": 0.1,
+      "taxa": 0.3516
+    },
+    "ct||sniper||rifle_t1": {
+      "n": 2,
+      "taxa_crua": 1.0,
+      "taxa": 0.566
+    },
+    "ct||pistola_inicial||rifle_t2": {
+      "n": 6,
+      "taxa_crua": 0.0,
+      "taxa": 0.402
+    },
+    "ct||pistola_inicial||smg_shotgun": {
+      "n": 2,
+      "taxa_crua": 0.0,
+      "taxa": 0.4751
+    },
+    "t||pistola_inicial||rifle_t2": {
+      "n": 1,
+      "taxa_crua": 0.0,
+      "taxa": 0.4547
+    },
+    "t||rifle_t2||smg_shotgun": {
+      "n": 11,
+      "taxa_crua": 0.6364,
+      "taxa": 0.5338
+    },
+    "ct||rifle_t1||rifle_t1": {
+      "n": 546,
+      "taxa_crua": 0.5037,
+      "taxa": 0.5043
+    },
+    "t||smg_shotgun||pistola_melhorada": {
+      "n": 9,
+      "taxa_crua": 0.6667,
+      "taxa": 0.5362
+    },
+    "ct||pistola_inicial||rifle_t1": {
+      "n": 21,
+      "taxa_crua": 0.0476,
+      "taxa": 0.2793
+    },
+    "ct||rifle_t1||rifle_t2": {
+      "n": 68,
+      "taxa_crua": 0.4706,
+      "taxa": 0.4824
+    },
+    "t||rifle_t1||pistola_melhorada": {
+      "n": 84,
+      "taxa_crua": 0.7143,
+      "taxa": 0.6687
+    },
+    "ct||pistola_melhorada||smg_shotgun": {
+      "n": 9,
+      "taxa_crua": 0.3333,
+      "taxa": 0.4638
+    },
+    "ct||pistola_inicial||pistola_inicial": {
+      "n": 103,
+      "taxa_crua": 0.5243,
+      "taxa": 0.524
+    },
+    "t||pistola_inicial||smg_shotgun": {
+      "n": 8,
+      "taxa_crua": 0.0,
+      "taxa": 0.341
+    },
+    "ct||rifle_t1||pistola_melhorada": {
+      "n": 146,
+      "taxa_crua": 0.7603,
+      "taxa": 0.7316
+    },
+    "ct||sniper||rifle_t2": {
+      "n": 1,
+      "taxa_crua": 0.0,
+      "taxa": 0.4977
+    },
+    "ct||rifle_t2||rifle_t1": {
+      "n": 10,
+      "taxa_crua": 0.9,
+      "taxa": 0.6484
+    },
+    "ct||rifle_t2||pistola_inicial": {
+      "n": 1,
+      "taxa_crua": 1.0,
+      "taxa": 0.5453
+    },
+    "t||rifle_t2||rifle_t1": {
+      "n": 68,
+      "taxa_crua": 0.5294,
+      "taxa": 0.5176
+    },
+    "ct||smg_shotgun||rifle_t1": {
+      "n": 39,
+      "taxa_crua": 0.359,
+      "taxa": 0.4144
+    },
+    "t||smg_shotgun||rifle_t1": {
+      "n": 2,
+      "taxa_crua": 0.0,
+      "taxa": 0.434
+    },
+    "t||pistola_inicial||pistola_melhorada": {
+      "n": 1,
+      "taxa_crua": 1.0,
+      "taxa": 0.5023
+    }
+  },
+  "celulas": {
+    "t||smg_shotgun|colete||pistola_inicial|sem_colete": {
+      "n": 2,
+      "taxa_crua": 1.0,
+      "taxa": 0.5681,
+      "amostra_fraca": true
+    },
+    "t||pistola_melhorada|colete||smg_shotgun|colete": {
+      "n": 7,
+      "taxa_crua": 0.1429,
+      "taxa": 0.3065,
+      "amostra_fraca": true
+    },
+    "ct||pistola_melhorada|colete||smg_shotgun|colete": {
+      "n": 8,
+      "taxa_crua": 0.375,
+      "taxa": 0.4385,
+      "amostra_fraca": true
+    },
+    "t||rifle_t2|colete||sniper|colete": {
+      "n": 1,
+      "taxa_crua": 1.0,
+      "taxa": 0.526,
+      "amostra_fraca": true
+    },
+    "ct||smg_shotgun|colete||pistola_melhorada|sem_colete": {
+      "n": 2,
+      "taxa_crua": 1.0,
+      "taxa": 0.6693,
+      "amostra_fraca": true
+    },
+    "ct||pistola_inicial|sem_colete||rifle_t1|colete": {
+      "n": 19,
+      "taxa_crua": 0.0526,
+      "taxa": 0.1689,
+      "amostra_fraca": true
+    },
+    "ct||rifle_t2|colete||pistola_melhorada|colete": {
+      "n": 6,
+      "taxa_crua": 0.3333,
+      "taxa": 0.4602,
+      "amostra_fraca": true
+    },
+    "ct||pistola_melhorada|colete||rifle_t1|colete": {
+      "n": 58,
+      "taxa_crua": 0.3276,
+      "taxa": 0.3285,
+      "amostra_fraca": false
+    },
+    "t||pistola_melhorada|colete||rifle_t1|colete": {
+      "n": 111,
+      "taxa_crua": 0.2793,
+      "taxa": 0.2776,
+      "amostra_fraca": false
+    },
+    "t||rifle_t1|colete||rifle_t1|colete": {
+      "n": 546,
+      "taxa_crua": 0.4963,
+      "taxa": 0.4963,
+      "amostra_fraca": false
+    },
+    "t||rifle_t2|colete||pistola_melhorada|sem_colete": {
+      "n": 8,
+      "taxa_crua": 0.75,
+      "taxa": 0.6507,
+      "amostra_fraca": true
+    },
+    "ct||pistola_melhorada|sem_colete||smg_shotgun|colete": {
+      "n": 1,
+      "taxa_crua": 0.0,
+      "taxa": 0.4418,
+      "amostra_fraca": true
+    },
+    "t||pistola_inicial|sem_colete||rifle_t1|colete": {
+      "n": 43,
+      "taxa_crua": 0.0698,
+      "taxa": 0.1138,
+      "amostra_fraca": false
+    },
+    "t||rifle_t2|colete||smg_shotgun|colete": {
+      "n": 11,
+      "taxa_crua": 0.6364,
+      "taxa": 0.5702,
+      "amostra_fraca": true
+    },
+    "ct||rifle_t1|colete||smg_shotgun|colete": {
+      "n": 2,
+      "taxa_crua": 1.0,
+      "taxa": 0.6054,
+      "amostra_fraca": true
+    },
+    "t||pistola_inicial|sem_colete||smg_shotgun|colete": {
+      "n": 7,
+      "taxa_crua": 0.0,
+      "taxa": 0.2526,
+      "amostra_fraca": true
+    },
+    "ct||rifle_t1|colete||rifle_t1|colete": {
+      "n": 546,
+      "taxa_crua": 0.5037,
+      "taxa": 0.5037,
+      "amostra_fraca": false
+    },
+    "t||rifle_t2|colete||rifle_t1|colete": {
+      "n": 68,
+      "taxa_crua": 0.5294,
+      "taxa": 0.5267,
+      "amostra_fraca": false
+    },
+    "ct||pistola_inicial|colete||pistola_inicial|sem_colete": {
+      "n": 7,
+      "taxa_crua": 0.5714,
+      "taxa": 0.5363,
+      "amostra_fraca": true
+    },
+    "t||pistola_melhorada|colete||rifle_t2|colete": {
+      "n": 6,
+      "taxa_crua": 0.6667,
+      "taxa": 0.5398,
+      "amostra_fraca": true
+    },
+    "ct||pistola_melhorada|sem_colete||rifle_t2|colete": {
+      "n": 8,
+      "taxa_crua": 0.25,
+      "taxa": 0.3493,
+      "amostra_fraca": true
+    },
+    "t||rifle_t1|colete||pistola_inicial|sem_colete": {
+      "n": 19,
+      "taxa_crua": 0.9474,
+      "taxa": 0.8311,
+      "amostra_fraca": true
+    },
+    "ct||rifle_t1|colete||pistola_melhorada|sem_colete": {
+      "n": 35,
+      "taxa_crua": 0.8857,
+      "taxa": 0.8297,
+      "amostra_fraca": false
+    },
+    "ct||pistola_inicial|sem_colete||smg_shotgun|colete": {
+      "n": 2,
+      "taxa_crua": 0.0,
+      "taxa": 0.4319,
+      "amostra_fraca": true
+    },
+    "t||smg_shotgun|colete||rifle_t1|colete": {
+      "n": 2,
+      "taxa_crua": 0.0,
+      "taxa": 0.3946,
+      "amostra_fraca": true
+    },
+    "t||rifle_t1|colete||smg_shotgun|colete": {
+      "n": 39,
+      "taxa_crua": 0.641,
+      "taxa": 0.6222,
+      "amostra_fraca": false
+    },
+    "ct||smg_shotgun|colete||pistola_melhorada|colete": {
+      "n": 7,
+      "taxa_crua": 0.8571,
+      "taxa": 0.6935,
+      "amostra_fraca": true
+    },
+    "t||rifle_t1|colete||sniper|colete": {
+      "n": 2,
+      "taxa_crua": 0.0,
+      "taxa": 0.3946,
+      "amostra_fraca": true
+    },
+    "ct||sniper|colete||rifle_t2|colete": {
+      "n": 1,
+      "taxa_crua": 0.0,
+      "taxa": 0.474,
+      "amostra_fraca": true
+    },
+    "ct||rifle_t2|colete||pistola_melhorada|sem_colete": {
+      "n": 1,
+      "taxa_crua": 1.0,
+      "taxa": 0.5221,
+      "amostra_fraca": true
+    },
+    "t||rifle_t2|colete||pistola_inicial|sem_colete": {
+      "n": 6,
+      "taxa_crua": 1.0,
+      "taxa": 0.6908,
+      "amostra_fraca": true
+    },
+    "ct||pistola_inicial|sem_colete||rifle_t2|colete": {
+      "n": 6,
+      "taxa_crua": 0.0,
+      "taxa": 0.3092,
+      "amostra_fraca": true
+    },
+    "t||pistola_inicial|sem_colete||rifle_t2|colete": {
+      "n": 1,
+      "taxa_crua": 0.0,
+      "taxa": 0.433,
+      "amostra_fraca": true
+    },
+    "t||pistola_inicial|colete||smg_shotgun|colete": {
+      "n": 1,
+      "taxa_crua": 0.0,
+      "taxa": 0.3248,
+      "amostra_fraca": true
+    },
+    "t||smg_shotgun|colete||pistola_melhorada|sem_colete": {
+      "n": 1,
+      "taxa_crua": 1.0,
+      "taxa": 0.5582,
+      "amostra_fraca": true
+    },
+    "t||smg_shotgun|colete||pistola_melhorada|colete": {
+      "n": 8,
+      "taxa_crua": 0.625,
+      "taxa": 0.5615,
+      "amostra_fraca": true
+    },
+    "t||pistola_inicial|colete||pistola_melhorada|colete": {
+      "n": 1,
+      "taxa_crua": 1.0,
+      "taxa": 0.526,
+      "amostra_fraca": true
+    },
+    "ct||sniper|colete||rifle_t1|colete": {
+      "n": 2,
+      "taxa_crua": 1.0,
+      "taxa": 0.6054,
+      "amostra_fraca": true
+    },
+    "ct||rifle_t1|colete||pistola_inicial|sem_colete": {
+      "n": 43,
+      "taxa_crua": 0.9302,
+      "taxa": 0.8862,
+      "amostra_fraca": false
+    },
+    "ct||rifle_t2|colete||pistola_inicial|sem_colete": {
+      "n": 1,
+      "taxa_crua": 1.0,
+      "taxa": 0.567,
+      "amostra_fraca": true
+    },
+    "ct||sniper|colete||pistola_inicial|sem_colete": {
+      "n": 1,
+      "taxa_crua": 1.0,
+      "taxa": 0.567,
+      "amostra_fraca": true
+    },
+    "ct||pistola_melhorada|colete||rifle_t2|colete": {
+      "n": 22,
+      "taxa_crua": 0.3182,
+      "taxa": 0.3519,
+      "amostra_fraca": false
+    },
+    "ct||rifle_t2|colete||rifle_t1|colete": {
+      "n": 10,
+      "taxa_crua": 0.9,
+      "taxa": 0.7323,
+      "amostra_fraca": true
+    },
+    "t||rifle_t1|colete||rifle_t2|colete": {
+      "n": 10,
+      "taxa_crua": 0.1,
+      "taxa": 0.2677,
+      "amostra_fraca": true
+    },
+    "t||rifle_t1|colete||pistola_melhorada|colete": {
+      "n": 58,
+      "taxa_crua": 0.6724,
+      "taxa": 0.6715,
+      "amostra_fraca": false
+    },
+    "ct||rifle_t1|colete||pistola_melhorada|colete": {
+      "n": 111,
+      "taxa_crua": 0.7207,
+      "taxa": 0.7224,
+      "amostra_fraca": false
+    },
+    "ct||pistola_inicial|colete||rifle_t1|colete": {
+      "n": 2,
+      "taxa_crua": 0.0,
+      "taxa": 0.2539,
+      "amostra_fraca": true
+    },
+    "t||pistola_melhorada|sem_colete||rifle_t2|colete": {
+      "n": 1,
+      "taxa_crua": 0.0,
+      "taxa": 0.4779,
+      "amostra_fraca": true
+    },
+    "ct||pistola_melhorada|sem_colete||rifle_t1|colete": {
+      "n": 26,
+      "taxa_crua": 0.1923,
+      "taxa": 0.2527,
+      "amostra_fraca": false
+    },
+    "t||rifle_t2|colete||pistola_melhorada|colete": {
+      "n": 22,
+      "taxa_crua": 0.6818,
+      "taxa": 0.6481,
+      "amostra_fraca": false
+    },
+    "ct||pistola_melhorada|colete||pistola_inicial|colete": {
+      "n": 1,
+      "taxa_crua": 0.0,
+      "taxa": 0.474,
+      "amostra_fraca": true
+    },
+    "t||rifle_t1|colete||pistola_inicial|colete": {
+      "n": 2,
+      "taxa_crua": 1.0,
+      "taxa": 0.7461,
+      "amostra_fraca": true
+    },
+    "t||rifle_t1|colete||pistola_melhorada|sem_colete": {
+      "n": 26,
+      "taxa_crua": 0.8077,
+      "taxa": 0.7473,
+      "amostra_fraca": false
+    },
+    "t||pistola_inicial|colete||rifle_t1|colete": {
+      "n": 2,
+      "taxa_crua": 0.5,
+      "taxa": 0.2349,
+      "amostra_fraca": true
+    },
+    "t||pistola_melhorada|sem_colete||rifle_t1|colete": {
+      "n": 35,
+      "taxa_crua": 0.1143,
+      "taxa": 0.1703,
+      "amostra_fraca": false
+    },
+    "ct||smg_shotgun|colete||pistola_inicial|sem_colete": {
+      "n": 7,
+      "taxa_crua": 1.0,
+      "taxa": 0.7474,
+      "amostra_fraca": true
+    },
+    "t||pistola_inicial|colete||pistola_inicial|colete": {
+      "n": 96,
+      "taxa_crua": 0.4792,
+      "taxa": 0.4786,
+      "amostra_fraca": false
+    },
+    "ct||rifle_t1|colete||pistola_inicial|colete": {
+      "n": 2,
+      "taxa_crua": 0.5,
+      "taxa": 0.7651,
+      "amostra_fraca": true
+    },
+    "t||pistola_inicial|sem_colete||sniper|colete": {
+      "n": 1,
+      "taxa_crua": 0.0,
+      "taxa": 0.433,
+      "amostra_fraca": true
+    },
+    "ct||smg_shotgun|colete||rifle_t1|colete": {
+      "n": 39,
+      "taxa_crua": 0.359,
+      "taxa": 0.3778,
+      "amostra_fraca": false
+    },
+    "ct||smg_shotgun|colete||rifle_t2|colete": {
+      "n": 11,
+      "taxa_crua": 0.3636,
+      "taxa": 0.4298,
+      "amostra_fraca": true
+    },
+    "ct||pistola_inicial|colete||pistola_inicial|colete": {
+      "n": 96,
+      "taxa_crua": 0.5208,
+      "taxa": 0.5214,
+      "amostra_fraca": false
+    },
+    "t||pistola_inicial|sem_colete||pistola_inicial|colete": {
+      "n": 7,
+      "taxa_crua": 0.4286,
+      "taxa": 0.4637,
+      "amostra_fraca": true
+    },
+    "t||pistola_melhorada|sem_colete||smg_shotgun|colete": {
+      "n": 2,
+      "taxa_crua": 0.0,
+      "taxa": 0.3307,
+      "amostra_fraca": true
+    },
+    "ct||rifle_t1|colete||rifle_t2|colete": {
+      "n": 68,
+      "taxa_crua": 0.4706,
+      "taxa": 0.4733,
+      "amostra_fraca": false
+    },
+    "ct||smg_shotgun|colete||pistola_inicial|colete": {
+      "n": 1,
+      "taxa_crua": 1.0,
+      "taxa": 0.6752,
+      "amostra_fraca": true
+    }
+  },
+  "lados_round": 2304,
+  "k_encolhimento": 20.0
+}
