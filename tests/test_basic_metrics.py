@@ -300,3 +300,24 @@ def test_kast_morte_contada_nao_e_sobrevivencia_mesmo_com_vida_no_ultimo_tick():
     per_round, _ = calculate_kast(kills, roster_per_round(ticks))
     row = per_round.row(0, named=True)
     assert row["survived"] is False and row["kast_round"] is False
+
+
+def test_kast_nao_conta_assistencia_por_flash():
+    """Como na HLTV: cegar o inimigo que o companheiro matou não é o A do KAST.
+    Medido contra 50 KASTs oficiais: 38 idênticos sem, 33 com."""
+    ticks = _ticks_df(
+        [{"round_num": 1, "steamid": sid, "name": n, "side": s, "health": 100, "tick": 100}
+         for sid, n, s in ((1, "T1", "t"), (2, "T2", "t"), (3, "CT1", "ct"))]
+    )
+    base = {"round_num": 1, "tick": 500, "attacker_steamid": 1, "attacker_side": "t",
+            "victim_steamid": 3, "victim_side": "ct", "assister_steamid": 2}
+    for flash, esperado in ((True, False), (False, True)):
+        # T2 dá a assistência no primeiro kill e morre depois, sem troca: o KAST
+        # dele só pode vir da assistência
+        kills = _kills_df([
+            base,
+            {"round_num": 1, "tick": 900, "attacker_steamid": 3, "attacker_side": "ct",
+             "victim_steamid": 2, "victim_side": "t"},
+        ]).with_columns(pl.Series("assistedflash", [flash, False]))
+        per_round, _ = calculate_kast(kills, roster_per_round(ticks))
+        assert per_round.filter(pl.col("steamid") == 2)["kast_round"].to_list() == [esperado], flash

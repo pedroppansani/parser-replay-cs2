@@ -282,6 +282,9 @@ testada e estava errada.
    em 3 partidas conferidas, erro médio 1,2 ponto (antes, 13 de 30 e viés de
    -4,5). O mesmo `was_traded` alimenta o carrega piano de TR e as "mortes
    trocadas" do perfil, que também estavam desligados. Não é feature do KMeans.
+   **Assistência por flash não é o A do KAST**, como na HLTV (decisão do
+   Pedro): contra o KAST oficial de 50 jogadores, 38 idênticos sem ela e 33
+   com ela.
 
 8c. **Sem atacante, o texto nunca usa o nome de alguém.** E fogo amigo diz
    "morto pelo companheiro X" (5 casos nas 52 partidas), nunca "morreu para X"
@@ -617,8 +620,15 @@ Não "resolva" nenhum destes automaticamente; pergunte.
 - Ratings oficiais da HLTV em `data/reference/hltv_ratings.json`, e demos de
   partidas oficiais para preenchê-lo. Sem isso os pesos do rating continuam
   provisórios.
-- Pesos dos seis sub-ratings (`PESOS_PROVISORIOS` em `metrics/rating.py`) e os
-  da divisão de crédito do Round Swing (`CREDITO_KILL` e companhia).
+- Pesos dos seis sub-ratings: **ajustados** contra os ratings oficiais de 43
+  partidas (430 jogador-mapas) e gravados em `metrics/rating_weights.json` por
+  `fit_rating --fit-pesos --gravar` -- regressão com pesos >= 0 e intercepto
+  livre, validada deixando uma partida fora (erro médio 0,111, correlação
+  0,921). `PESOS_PROVISORIOS` ficou só como plano B sem o arquivo. Os pesos
+  valem para a referência de escala em que foram ajustados: refazer a
+  referência exige refazer os pesos (o rating marca `pesos_desatualizados`).
+  Os da divisão de crédito do Round Swing (`CREDITO_KILL` e companhia)
+  continuam do Pedro.
   `py -3.12 -m scripts.fit_rating --fit-pesos` mostra os pesos ajustados ao
   lado dos atuais, com erro fora da amostra.
 - Rótulos dos três grupos de força de arremesso (201 / 440 / 674 u/s): confirmar

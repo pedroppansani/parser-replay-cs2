@@ -335,9 +335,15 @@ def ajusta_pesos(ids: list[str]) -> dict:
     real = dados["rating_oficial"].to_numpy()
 
     def _nao_negativo(X, y):
-        # a coluna de uns é o intercepto, que também fica >= 0
-        w, _ = nnls(np.hstack([X, np.ones((len(X), 1))]), y)
-        return w
+        # Pesos >= 0, intercepto LIVRE. A primeira versão forçava o intercepto a
+        # >= 0 também, e ele travava em zero: a escala da HLTV é mais esticada
+        # que a daqui (desvio 0,38 contra 0,27) e precisa de intercepto
+        # negativo. Travado, o ajuste subestimava todo rating alto (viés de
+        # +0,15 acima de 1,5) e superestimava todo rating baixo. Intercepto
+        # livre = duas colunas não-negativas de sinais opostos.
+        uns = np.ones((len(X), 1))
+        w, _ = nnls(np.hstack([X, uns, -uns]), y)
+        return np.append(w[:-2], w[-2] - w[-1])
 
     def _reescala(X, y):
         reg = LinearRegression().fit(X, y)
@@ -377,10 +383,38 @@ def ajusta_pesos(ids: list[str]) -> dict:
     }
 
 
+def grava_pesos(resultado: dict) -> Path:
+    """Grava os pesos ajustados, com a validação e a referência de escala que
+    eles pressupõem (ver metrics/rating.carrega_pesos)."""
+    from metrics.rating import PESOS_FILE, carrega_referencia
+
+    ref = carrega_referencia() or {}
+    PESOS_FILE.write_text(json.dumps({
+        "pesos": resultado["pesos"],
+        "intercepto": resultado["intercepto"],
+        "validacao": {
+            "metodo": resultado["validacao"],
+            "partidas": len(resultado["partidas"]),
+            "jogador_partidas": resultado["n_jogador_partidas"],
+            "fora_da_amostra": resultado["pesos_ajustados"],
+            "pesos_em_uso_antes_deste_ajuste": resultado["pesos_atuais"],
+        },
+        "medias_da_referencia": ref.get("medias"),
+        "aviso": (
+            "Pesos estimados por regressao nao-negativa contra ratings oficiais "
+            "publicados pela HLTV. Implementacao propria da metodologia do "
+            "Rating 3.0, nao o numero oficial."
+        ),
+    }, ensure_ascii=False, indent=2), encoding="utf-8")
+    return PESOS_FILE
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description="Ajusta a escala e os pesos do rating.")
     p.add_argument("--fit-pesos", action="store_true",
                    help="tenta a regressão contra os ratings oficiais")
+    p.add_argument("--gravar", action="store_true",
+                   help="com --fit-pesos: grava os pesos ajustados em metrics/rating_weights.json")
     p.add_argument("--esqueleto", action="store_true",
                    help="(re)cria data/reference/hltv_ratings.json para preencher")
     args = p.parse_args()
@@ -396,6 +430,9 @@ def main() -> None:
     if args.fit_pesos:
         r = ajusta_pesos(ids)
         print(json.dumps(r, ensure_ascii=False, indent=2))
+        if args.gravar and r.get("ajustou"):
+            caminho = grava_pesos(r)
+            print(f"\nPesos gravados em {caminho}")
         return
 
     ref = ajusta_referencia(ids)

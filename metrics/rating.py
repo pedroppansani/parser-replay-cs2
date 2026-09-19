@@ -597,6 +597,32 @@ def swing_por_evento(
 REFERENCIA_FILE = Path(__file__).resolve().parent / "rating_reference.json"
 
 
+# Pesos AJUSTADOS contra os ratings oficiais publicados, gravados por
+# `scripts/fit_rating.py --fit-pesos --gravar`. Quando o arquivo existe, eles
+# substituem os provisórios; os provisórios ficam como plano B (primeira
+# execução, corpus sem rating oficial).
+#
+# Os pesos valem para a REFERÊNCIA DE ESCALA sobre a qual foram ajustados: a
+# regressão roda sobre os sub-ratings normalizados, e normalizar depende das
+# médias do corpus. Por isso o arquivo guarda as médias usadas, e o rating
+# avisa (`pesos_desatualizados`) quando a referência mudou desde o ajuste.
+PESOS_FILE = Path(__file__).resolve().parent / "rating_weights.json"
+
+
+def carrega_pesos() -> dict:
+    """{"pesos", "intercepto", "origem", "medias_da_referencia"}."""
+    if PESOS_FILE.exists():
+        dados = json.loads(PESOS_FILE.read_text(encoding="utf-8"))
+        return {
+            "pesos": {n: float(dados["pesos"][n]) for n in PESOS_PROVISORIOS},
+            "intercepto": float(dados.get("intercepto", 0.0)),
+            "origem": "ajustados contra ratings oficiais",
+            "medias_da_referencia": dados.get("medias_da_referencia"),
+        }
+    return {"pesos": dict(PESOS_PROVISORIOS), "intercepto": 0.0,
+            "origem": "provisorios", "medias_da_referencia": None}
+
+
 def carrega_referencia() -> dict | None:
     """Medias de cada sub-rating no conjunto das partidas.
 
@@ -795,8 +821,17 @@ def rating(
         expressoes.append(pl.lit(1.0).alias("norm_round_swing"))
 
     normalizados = componentes.with_columns(expressoes)
-    agregado = sum(
-        PESOS_PROVISORIOS[nome] * pl.col(f"norm_{nome}") for nome in nomes
+    ajuste = carrega_pesos()
+    agregado = ajuste["intercepto"] + sum(
+        ajuste["pesos"][nome] * pl.col(f"norm_{nome}") for nome in nomes
+    )
+    # Pesos ajustados sobre outra referência de escala: o número continua
+    # saindo, mas marcado -- refaça `fit_rating --fit-pesos --gravar`.
+    medias_do_ajuste = ajuste["medias_da_referencia"]
+    desatualizados = bool(
+        medias_do_ajuste and referencia
+        and any(abs(float(medias_do_ajuste.get(n, 0)) - float(referencia["medias"].get(n, 0)))
+                > 1e-6 * max(1.0, abs(float(referencia["medias"].get(n, 0)))) for n in nomes)
     )
     resultado = normalizados.with_columns(
         agregado.alias("rating"),
@@ -810,7 +845,10 @@ def rating(
         "taxa_base_por_lado": base_lado,
         "confrontos_estimados": len(celulas),
         "referencia_ajustada": referencia is not None,
-        "pesos": dict(PESOS_PROVISORIOS),
+        "pesos": ajuste["pesos"],
+        "intercepto": ajuste["intercepto"],
+        "origem_dos_pesos": ajuste["origem"],
+        "pesos_desatualizados": desatualizados,
         # Rotulo obrigatorio: em nenhum lugar este numero pode passar por
         # Rating 3.0 oficial da HLTV.
         "rotulo": "implementacao propria da metodologia do Rating 3.0 (HLTV)",

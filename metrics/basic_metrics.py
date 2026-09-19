@@ -298,8 +298,15 @@ def calculate_kast(
         .with_columns(pl.lit(True).alias("had_kill"))
     )
 
+    # Assistência por flash NÃO conta como o A do KAST, como na HLTV. Medido
+    # contra o KAST oficial de 50 jogadores (5 partidas): sem a flash assist,
+    # 38 de 50 idênticos; contando, 33 de 50. O cegar continua medido onde é o
+    # assunto (métricas de utility), só não vira "participou do round" aqui.
+    assistencias = kills.filter(pl.col("assister_steamid").is_not_null())
+    if "assistedflash" in assistencias.columns:
+        assistencias = assistencias.filter(~pl.col("assistedflash").fill_null(False))
     had_assist = (
-        kills.filter(pl.col("assister_steamid").is_not_null())
+        assistencias
         .select(["round_num", "assister_steamid"])
         .unique()
         .rename({"assister_steamid": "steamid"})
