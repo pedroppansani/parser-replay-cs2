@@ -25,7 +25,7 @@ import traceback
 from pathlib import Path
 
 from parsing.parser import merge_interim, parse_demo, save_interim
-from scripts import build_breakdown, build_insights, export_replay, export_web_payload
+from scripts import build_breakdown, build_insights, export_replay, export_web_payload, manifest
 from scripts.process_demo import process
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -240,6 +240,9 @@ def main() -> None:
             for f in fps:
                 by_fp[f] = match_id
             build_chain(match_id)
+            # Registro de origem ANTES de a demo poder ser apagada: times,
+            # evento, hash do arquivo inteiro (scripts/manifest.py).
+            manifest.atualiza([match_id])
             print(f"[{match_id}] ok em {time.time() - t0:.0f}s\n")
         except Exception:
             # uma demo corrompida não pode derrubar o lote inteiro

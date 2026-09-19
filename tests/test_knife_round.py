@@ -14,6 +14,7 @@ from pathlib import Path
 import polars as pl
 import pytest
 
+from metrics.sides import placar_valido as _placar_valido
 from parsing.parser import remove_round_de_faca, round_de_faca
 
 PROCESSED = Path("data/processed")
@@ -54,21 +55,6 @@ def test_round_de_pistola_nao_e_confundido_com_faca():
 
 def test_round_sem_dano_nenhum_nao_e_tratado_como_faca():
     assert round_de_faca(_tabelas([])) is None
-
-
-def _placar_valido(a: int, b: int, n_rounds: int) -> bool:
-    """MR12: vence quem chega a 13; no 12-12, prorrogações MR3 até alguém abrir
-    4 de 6. Partida de FACEIT pode acabar antes por desistência (surrender)."""
-    alto, baixo = max(a, b), min(a, b)
-    if a + b != n_rounds:
-        return False
-    if alto <= 12:                     # desistência antes do fim
-        return True
-    if alto == 13:
-        return baixo <= 11
-    # prorrogação: cada OT começa empatado e acaba em 4-0, 4-1 ou 4-2, então o
-    # vencedor fecha em 16, 19, 22... e o perdedor fica 2 a 4 atrás
-    return (alto - 13) % 3 == 0 and alto - 4 <= baixo <= alto - 2
 
 
 @pytest.mark.parametrize("a,b,n,ok", [

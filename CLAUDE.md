@@ -26,8 +26,14 @@ pronto não serve aqui.
 - **O demo é 64 tick, não 128.** Nunca assuma; `metrics/timing.py` detecta pelo
   timer da bomba (40s fixos no CS2) e confere pela velocidade máxima dos
   jogadores (~250 u/s). Todo cálculo de tempo depende disso.
-- Demos ficam em `data/raw/` (gitignored). São arquivos de 200MB+ que expiram no
-  FACEIT em 30 dias.
+- Demos ficam em `demos/` (gitignored, e `*.dem` é ignorado em qualquer pasta).
+  São arquivos de 200-500MB. A origem de cada partida (times, evento, hash do
+  .dem inteiro, link da HLTV quando conferido) fica em `data/manifest.json`,
+  versionado, atualizado por `scripts/process_all_demos.py` e
+  `scripts/manifest.py`. `scripts/clean_match.py` apaga demo e interim de uma
+  partida só depois de conferir o processado, e registra no manifesto. **Sem o
+  interim a partida não pode ser recalculada** (insights, replay, calibração do
+  rating leem de lá) sem baixar a demo de novo.
 - Parsing leva ~14s por partida. Use `--from-interim` para reaproveitar um parse
   já feito em vez de reparsear enquanto itera nas métricas.
 
