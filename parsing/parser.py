@@ -169,6 +169,13 @@ def save_interim(demo: Demo, interim_dir: Path | str, match_id: str) -> dict[str
         "ticks": demo.ticks,
     }
     tables.update(grenade_event_tables(demo))
+    # Demo de campeonato não grava `player_blind`: a cegueira é reconstruída de
+    # `flash_duration` + detonações (parsing/cegueira.py, validada contra o
+    # evento real nas demos de FACEIT: 1.578 de 1.578 com o dono certo).
+    if "player_blind" not in tables and demo.ticks is not None:
+        from parsing.cegueira import reconstroi
+
+        tables["player_blind"] = reconstroi(demo.ticks, tables.get("flashbang_detonate"))
     compra = compra_por_round(demo)
     if compra is not None:
         tables["compra"] = compra
