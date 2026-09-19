@@ -42,3 +42,11 @@ venv/
 .env
 *.log
 .ipynb_checkpoints/
+
+# Site GERADO por scripts/build_site.py. Não é versionado: cada reconstrução
+# regravava as 52 páginas (~130MB) e o histórico guardava todas as versões para
+# sempre -- era 54% do repositório quando foi purgado (2026-09-19). O site é
+# publicado pelo GitHub Actions (.github/workflows/pages.yml), que o gera a
+# partir do código e de data/processed/ e entrega como artefato do Pages: nada
+# disso entra em branch nenhum.
+docs/
