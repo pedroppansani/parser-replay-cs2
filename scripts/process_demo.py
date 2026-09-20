@@ -47,6 +47,7 @@ from metrics.site_roles import (
     player_round_areas,
 )
 from parsing.parser import load_interim, parse_demo, save_interim
+from parsing.versao import versoes
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
@@ -199,6 +200,10 @@ def process(
         "map_name": map_name,
         "n_rounds": tables["rounds"].height,
         "source_dem": str(dem_path),
+        # Com que versão do código estes números foram feitos (parsing/versao.py).
+        # Sem isto, data/processed/ vira uma mistura de versões e a comparação
+        # entre partidas confunde mudança de jogo com mudança de código.
+        "versao": versoes(),
         "pca": meta,
     }
     (processed_dir / "match_meta.json").write_text(

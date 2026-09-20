@@ -131,3 +131,42 @@ def test_verificacao_pega_placar_impossivel(tmp_path, monkeypatch):
     monkeypatch.setattr(cm, "PROCESSED_DIR", tmp_path)
     problemas = cm.verifica("match_98")
     assert any("placar impossível" in p for p in problemas)
+
+
+def test_atualizar_o_manifesto_nunca_apaga_um_sha256_ja_medido(tmp_path, monkeypatch):
+    """O hash é a identidade PERMANENTE da demo -- ele sobrevive ao arquivo.
+
+    REGRESSÃO (2026-09-20): ao ensinar o manifesto a reencontrar uma demo que
+    mudou de pasta, o registro anterior passou a ser procurado por um caminho
+    que não existia mais. Sem `anterior`, `_demo` regravava a linha sem o hash,
+    e uma rodada do script apagou o sha256 das 52 partidas de uma vez -- num
+    arquivo versionado, cujo motivo de existir é justamente não perder isso
+    depois que a demo é apagada.
+    """
+    sumida = tmp_path / "demos" / "sumiu.dem"
+    anterior = {"arquivo": "sumiu.dem", "caminho": "demos/sumiu.dem", "existe": True,
+                "bytes": 123, "mtime": 456, "sha256": "a" * 64}
+    linha = mf._demo(sumida, anterior)
+    assert linha["existe"] is False
+    assert linha["sha256"] == "a" * 64, "o hash medido quando o arquivo existia se perdeu"
+    assert linha["bytes"] == 123 and linha["mtime"] == 456
+
+
+def test_demo_que_mudou_de_pasta_e_reencontrada_e_o_caminho_antigo_fica_registrado(tmp_path, monkeypatch):
+    """A demo muda de lugar (extraída de novo, pasta " - Copia"). O manifesto
+    reencontra pelo hash e ANOTA de onde ela saiu -- caminho trocado em silêncio
+    é a próxima pergunta sem resposta."""
+    monkeypatch.setattr(mf, "PROJECT_ROOT", tmp_path)
+    nova = tmp_path / "demos" / "pasta nova"
+    nova.mkdir(parents=True)
+    arquivo = nova / "partida.dem"
+    arquivo.write_bytes(b"demo de verdade")
+    sha = mf.sha256_do_arquivo(arquivo)
+
+    antigo = tmp_path / "demos" / "pasta velha" / "partida.dem"
+    linha = mf._demo(antigo, {"arquivo": "partida.dem", "caminho": "demos/pasta velha/partida.dem",
+                              "existe": True, "sha256": sha})
+    assert linha["existe"] is True
+    assert linha["caminho"] == "demos/pasta nova/partida.dem"
+    assert linha["caminho_anterior"] == "demos/pasta velha/partida.dem"
+    assert linha["sha256"] == sha
