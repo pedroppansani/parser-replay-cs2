@@ -33,6 +33,7 @@ from metrics.archetypes import (
     build_reference,
     compute_for_match,
 )
+from metrics.archetypes import MIN_ROUNDS_FUNCAO_NA_REFERENCIA
 from metrics.player_roles import resolve_teams
 from metrics.sides import side_of_team
 from metrics.positioning import position_samples
@@ -42,7 +43,9 @@ PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
 INTERIM_DIR = PROJECT_ROOT / "data" / "interim"
 
 # Tabelas de data/processed/ que os papéis consomem.
-SAIDAS = ("cluster_features", "grenades_per_round", "awp_summary", "player_round_areas")
+SAIDAS = ("cluster_features", "grenades_per_round", "awp_summary", "player_round_areas",
+          # a função do round: é dentro dela que a isca é comparada (decisão 15a)
+          "structural_roles")
 
 
 def winner_team_by_round(rounds: pl.DataFrame) -> dict[int, str]:
@@ -86,23 +89,54 @@ def main() -> None:
     if not partidas:
         raise SystemExit("Nenhuma partida processada em data/processed/.")
 
-    pedacos = []
+    # PASSO 1: a isca esperada de cada FUNÇÃO, no corpus inteiro. Sem isso, a
+    # isca relativa de cada jogador não tem contra o que ser comparada (decisão
+    # 15a: comparar com a média geral confunde função com atitude).
+    carregadas = {}
+    rounds_de_isca = []
     for match_id in partidas:
-        interim = INTERIM_DIR / match_id
-        if not (interim / "ticks.parquet").exists():
+        if not (INTERIM_DIR / match_id / "ticks.parquet").exists():
             print(f"  {match_id}: sem parse em data/interim/, pulando")
             continue
-        tables, outputs, positions, areas, team_of, winners = carrega_partida(match_id)
-        # reference=None de propósito: a referência está sendo CONSTRUÍDA agora, e
-        # usar a anterior aqui faria a escala nova depender da velha.
-        _, resumo = compute_for_match(
+        carregadas[match_id] = carrega_partida(match_id)
+        tables, outputs, positions, areas, team_of, winners = carregadas[match_id]
+        per_round, _ = compute_for_match(
             tables, outputs, positions, areas, team_of, winners, reference=None
+        )
+        rounds_de_isca.append(per_round.select("funcao_do_round", "isca_no_round"))
+
+    isca = pl.concat(rounds_de_isca, how="diagonal")
+    geral = float(isca["isca_no_round"].mean())
+    por_funcao = isca.group_by("funcao_do_round").agg(
+        pl.len().alias("rounds"), pl.col("isca_no_round").mean().alias("media"))
+    isca_por_funcao = {"_geral": geral}
+    fracas = []
+    for r in por_funcao.iter_rows(named=True):
+        # função com pouca gente no corpus não sustenta uma média própria
+        if r["rounds"] >= MIN_ROUNDS_FUNCAO_NA_REFERENCIA:
+            isca_por_funcao[r["funcao_do_round"]] = float(r["media"])
+        else:
+            fracas.append((r["funcao_do_round"], r["rounds"]))
+    print("\nisca esperada por função (mortes de companheiro por perto sem troca, por round):")
+    for f, v in sorted(isca_por_funcao.items(), key=lambda kv: -kv[1]):
+        n = por_funcao.filter(pl.col("funcao_do_round") == f)["rounds"]
+        print(f"  {f:<14} {v:.3f}" + (f"  ({int(n[0])} rounds)" if n.len() else "  (todas as funções)"))
+    if fracas:
+        print("  amostra fraca, caem na média geral:", ", ".join(f"{f} ({n})" for f, n in fracas))
+
+    # PASSO 2: os componentes já com a isca comparada dentro da função
+    pedacos = []
+    for match_id, (tables, outputs, positions, areas, team_of, winners) in carregadas.items():
+        _, resumo = compute_for_match(
+            tables, outputs, positions, areas, team_of, winners,
+            reference={"isca_por_funcao": isca_por_funcao},
         )
         pedacos.append(resumo.with_columns(pl.lit(match_id).alias("match_id")))
         print(f"  {match_id}: {resumo.height} jogadores")
 
     componentes = pl.concat(pedacos, how="diagonal")
     referencia = build_reference(componentes)
+    referencia["isca_por_funcao"] = isca_por_funcao
 
     print(f"\n{componentes.height} jogador-partidas, {len(referencia['quantis'])} componentes")
     print("\nmediana de cada componente no conjunto:")

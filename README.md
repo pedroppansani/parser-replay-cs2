@@ -99,7 +99,11 @@ a cada vez (nunca o mesmo jogo dos dois lados da divisão).
 | Pesos ajustados | 0,111 | 0,921 |
 | + cegueira reconstruída nas demos de campeonato | 0,111 | 0,921 |
 | + economia estimada no corpus (arma + colete) | 0,094* | 0,949* |
-| **+ Round Swing corrigido (crédito soma zero, fim de round)** | **0,085** | **0,956** |
+| + Round Swing corrigido (crédito soma zero, fim de round) | 0,085 | 0,956 |
+| + Swing sem a regra de corte e sem os vazamentos do fim do round | 0,086 | 0,956 |
+| + escala alinhada entre a calibração e o site | 0,083 | 0,961 |
+| + cálculo separado por lado (CT e TR) | 0,082 | 0,963 |
+| **+ kill assistida e morte trocada separadas** | **0,079** | **0,966** |
 
 \* medido com os pesos congelados, antes de recalibrar.
 
@@ -117,8 +121,12 @@ coincidência (`py -3.12 -m scripts.escada_validacao`):
   vítima de 100 de vida);
 - **KAST**: idêntico em 230 de 310 jogadores; o excesso restante está em rounds
   creditados só por trade, e a regra exata da HLTV não é recuperável dos dados;
-- **Round Swing**: correlação 0,89 com o Swing oficial de 310 jogadores, na
-  mesma escala (inclinação 1,01). O Swing oficial **soma zero** em cada mapa
+- **aberturas, rounds de multi-kill e headshots**: idênticos em 50 de 50
+  jogadores, pela página "Detailed stats" da HLTV (5 séries completas);
+- **clutch (1vsX vencido)**: idêntico em 41 de 50 — foi o dado que mostrou que
+  a HLTV conta o 1v1, e a definição do projeto passou a contar também;
+- **Round Swing**: correlação 0,90 com o Swing oficial de 310 jogadores, na
+  mesma escala (inclinação 1,07). O Swing oficial **soma zero** em cada mapa
   (28 de 31; as três exceções são exatamente os mapas com fogo amigo ou queda
   no meio do round) — uma propriedade que a HLTV não publicou e que vira
   restrição do modelo daqui.
@@ -128,12 +136,12 @@ aprendido o estilo de um deles, aquele time destoaria):
 
 | Time | Jogador-partidas | Erro médio |
 |---|---|---|
-| Vitality | 85 | 0,093 |
-| FURIA | 80 | 0,079 |
-| Natus Vincere | 70 | 0,080 |
-| Spirit | 60 | 0,092 |
-| Falcons | 60 | 0,078 |
-| MOUZ | 50 | 0,081 |
+| Vitality | 85 | 0,085 |
+| FURIA | 80 | 0,065 |
+| Natus Vincere | 70 | 0,081 |
+| Spirit | 60 | 0,082 |
+| Falcons | 60 | 0,076 |
+| MOUZ | 50 | 0,079 |
 
 ## Módulos
 

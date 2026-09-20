@@ -461,6 +461,35 @@ testada e estava errada.
     baiter tem rating médio 1,15 contra 1,05 do meio -- "usa o time de isca
     para conseguir kills" pega muito astro que joga de segundo.
 
+15c. **Traço comportamental é comparado DENTRO DA FUNÇÃO estrutural.**
+    (Decisão do Pedro, 2026-09-19.) A função determina o comportamento
+    esperado: jogar de trás e não trocar de perto é o trabalho do AWPer e do
+    âncora, não oportunismo. Comparar com a média geral confunde função com
+    atitude -- medido, 56% dos rótulos de baiter iam para AWPers, que são 18%
+    dos jogador-partidas. O eixo usa `isca_relativa` = isca observada / isca
+    ESPERADA da função, e o esperado vem do CORPUS inteiro (1 ou 2 AWPers por
+    partida seriam ruído), round a round pelo contexto daquele round -- quem
+    puxa AWP em alguns rounds é comparado como AWPer só neles. Medido em 11.520
+    player-rounds, mortes de companheiro por perto sem troca, por round:
+    suporte 1,02 | trader 0,77 | sem função 0,77 | AWPer 0,70 | entry 0,57 |
+    rotativo 0,51 | lurker 0,49 | coringa 0,43 | âncora 0,34. Função com menos
+    de MIN_ROUNDS_FUNCAO_NA_REFERENCIA rounds cai na média geral.
+    Dependência de ordem, conferida: `structural_roles` é calculado antes dos
+    papéis comportamentais (process_demo escreve, build_insights lê).
+
+15d. **Repick é jiggle MAIS evento no ângulo.** Sair e voltar sozinho é jiggle
+    (decisão 1), não repick: dos 10 casos conferidos pelo Pedro, 9 eram uma
+    saída e volta sem nada no meio. O critério agora exige que entre a saída e a
+    volta tenha acontecido algo naquele ângulo -- ele atirou, causou ou sofreu
+    dano, ou alguém morreu a menos de `BAIT_MAX_DISTANCE` dele. Uma saída só
+    basta quando houve evento (é o refrag depois da morte do companheiro), e dez
+    saídas não bastam sem evento. O NÚMERO de saídas vira sinal de qualidade
+    (`saidas`), não critério.
+    O DESFECHO é campo separado (`desfecho`: ganhou o duelo, perdeu o duelo,
+    morreu para utility, nada) e NÃO entra na identificação: a causa da morte é
+    resultado, e morrer para uma HE não desfaz o repick que aconteceu antes.
+    Morte para utility é categoria própria e fica fora de qualquer taxa de duelo.
+
 15b. **Repick classifica CADA briga, e a junção é pelo tick da briga.**
     REGRESSÃO: `awp_metrics.classify_engagement_style` foi escrito para a
     primeira briga de AWP (uma por jogador e round) e juntava o resultado por
@@ -723,6 +752,33 @@ testada e estava errada.
     e 2). Rounds 41/41, kills e mortes 410/410, ADR 401/410, KAST 230/310.
     Multi-kills e aberturas sem dado oficial ainda. Cada print foi casado com a
     partida pelo RATING, não pelo K-D, para o degrau 1 não ser circular.
+22l. **Os detalhes estruturais do Rating 2.0/3.0, aplicados um a um e medidos**
+    (2026-09-19). Cada etapa foi medida sozinha, com erro de TESTE (deixa uma
+    partida fora, 43 partidas / 430 jogador-partidas):
+    - sem a regra de corte + vazamentos do fim do round: 0,085 -> 0,086 (igual);
+    - **escala alinhada**: a calibração normalizava cada partida pela PRÓPRIA
+      média e o site pela média do CORPUS -- pesos ajustados numa escala e
+      usados em outra. `componentes_do_corpus` passou a receber a referência:
+      0,086 -> 0,083. Custou pouco aqui, mas a diferença entre as escalas
+      depende da composição do corpus; tratar como sorte, não como prova;
+    - **por lado** (CT e TR normalizados contra a média DAQUELE lado e juntados
+      pelos rounds de cada um): 0,083 -> 0,082, e o erro por time ficou mais
+      parelho;
+    - **kill assistida** (menos de `DANO_PROPRIO_PARA_KILL_LIMPA` = 60 de dano
+      próprio na vítima) e **morte trocada** entram como componentes separados:
+      0,082 -> **0,079**, correlação 0,966. A regressão dá 0,25 para a kill
+      limpa e 0,025 para a assistida -- a kill "roubada" vale quase nada --, e
+      0,055 de crédito de volta para a morte trocada. São 20,7% das kills e
+      22,4% das mortes. A morte trocada entra como CRÉDITO (e não como
+      penalidade menor) porque os pesos são não-negativos: "punir menos" não
+      cabe num peso positivo;
+    - **forma dos sub-ratings** (dividir pela média x padronizar pelo desvio),
+      com os lados separados: 0,0788 x 0,0781, empate técnico. Mantida a
+      divisão pela média, que já estava no código.
+    Recalibração final: referência de escala + pesos regravados
+    (`kills_limpas` 0,251, `kills_assistidas` 0,025, dano 0,268, sobrevivência
+    0,127, `mortes_trocadas` 0,055, KAST 0,183, multikills 0,082, Round Swing
+    0,490; intercepto -0,399). Os pesos anteriores, nesta escala, dariam 0,107.
 22k. **O Round Swing é variação de probabilidade PURA, sem regra de corte para
     round perdido** (decisão do Pedro, 2026-09-19). A HLTV escreve que "round
     perdido não gera Swing positivo", mas isso descreve o TIME, não é regra por

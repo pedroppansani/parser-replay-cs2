@@ -1,21 +1,73 @@
 {
   "medias": {
-    "kills": 0.6731498164805242,
-    "dano": 74.27064922133098,
+    "kills_limpas": 0.5339897852314356,
+    "kills_assistidas": 0.13916003124908863,
+    "dano": 74.21724560358393,
     "sobrevivencia": 0.32492879443875894,
+    "mortes_trocadas": 0.15013137735937132,
     "kast": 0.7191349025535314,
-    "multikills": 0.21071929891173197,
-    "round_swing": -0.008065857724371234
+    "multikills": 0.21071929891173194,
+    "round_swing": -9.74792983487357e-05
   },
   "desvios": {
-    "kills": 0.2329989085180288,
-    "dano": 20.311953351671338,
+    "kills_limpas": 0.20424014959237669,
+    "kills_assistidas": 0.08993165636762623,
+    "dano": 20.3013076107672,
     "sobrevivencia": 0.12753937723558467,
-    "kast": 0.11056161084937739,
+    "mortes_trocadas": 0.07729216252745395,
+    "kast": 0.1105616108493774,
     "multikills": 0.13890851540605054,
-    "round_swing": 0.051716008853741786
+    "round_swing": 0.05307194331272357
   },
-  "dispersao_alvo": 0.34613232123605575,
+  "medias_por_lado": {
+    "ct": {
+      "medias": {
+        "kills_limpas": 0.5430953514713923,
+        "kills_assistidas": 0.15580097589701505,
+        "dano": 76.51281865097701,
+        "sobrevivencia": 0.38384357472592767,
+        "mortes_trocadas": 0.1214695129217188,
+        "kast": 0.7642776443327914,
+        "multikills": 0.2191094750492084,
+        "round_swing": 0.0269136668932691
+      },
+      "desvios": {
+        "kills_limpas": 0.26639362307249664,
+        "kills_assistidas": 0.1386391716815194,
+        "dano": 26.417263358068624,
+        "sobrevivencia": 0.19080081072933028,
+        "mortes_trocadas": 0.10039460097648055,
+        "kast": 0.15096908328969705,
+        "multikills": 0.19353473761134748,
+        "round_swing": 0.07328816037296162
+      },
+      "jogador_partidas": 520
+    },
+    "t": {
+      "medias": {
+        "kills_limpas": 0.5291965597707786,
+        "kills_assistidas": 0.12106261387293413,
+        "dano": 72.32200966341478,
+        "sobrevivencia": 0.26354358264284733,
+        "mortes_trocadas": 0.18208766111339642,
+        "kast": 0.6750443755590814,
+        "multikills": 0.20677759164185688,
+        "round_swing": -0.02687708784315985
+      },
+      "desvios": {
+        "kills_limpas": 0.31747495589526237,
+        "kills_assistidas": 0.12918806453940837,
+        "dano": 31.460174620818513,
+        "sobrevivencia": 0.1660653316376635,
+        "mortes_trocadas": 0.13005716396419037,
+        "kast": 0.16980141750603198,
+        "multikills": 0.21652591515051248,
+        "round_swing": 0.07838158018897766
+      },
+      "jogador_partidas": 520
+    }
+  },
+  "dispersao_alvo": 0.3925148506948426,
   "n_partidas": 52,
   "n_jogador_partidas": 520,
   "modelo_de_round": {
@@ -32,9 +84,11 @@
     "intercepto": 0.3276041269255751
   },
   "pesos_usados": {
-    "kills": 0.28,
+    "kills_limpas": 0.24,
+    "kills_assistidas": 0.04,
     "dano": 0.18,
     "sobrevivencia": 0.14,
+    "mortes_trocadas": 0.05,
     "kast": 0.16,
     "multikills": 0.09,
     "round_swing": 0.15

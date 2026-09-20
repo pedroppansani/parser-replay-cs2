@@ -57,7 +57,10 @@ def test_tentativa_convertida_conta_como_vitoria():
     linha = per_round.row(0, named=True)
     assert linha["won"] is True
     assert linha["kills_in_clutch"] == 5
-    assert summary.row(0, named=True)["clutch_conversion"] == 1.0
+    # com o 1v1 contando (MIN_ENEMIES_ALIVE = 1), o último vivo do OUTRO time
+    # também vira tentativa: o resumo tem duas linhas e a do clutcher é pelo id
+    dele = summary.filter(pl.col("steamid") == 1).row(0, named=True)
+    assert dele["clutch_conversion"] == 1.0
 
 
 def test_um_contra_um_nao_e_clutch():

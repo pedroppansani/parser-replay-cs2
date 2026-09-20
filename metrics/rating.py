@@ -140,6 +140,12 @@ SEGUNDOS_TRADE = 5.0
 # Dano abaixo disto não divide crédito -- um tiro de raspão não fez a kill.
 DANO_MINIMO_PARA_CREDITO = 20.0
 
+# Dano PRÓPRIO na vítima abaixo do qual a kill é "assistida": o companheiro fez
+# o trabalho e o jogador deu o tiro final. Publicado pela HLTV para o Kill
+# Rating do 2.0. Medido no corpus: 20,7% das kills; a regressão dá peso 0,208 à
+# kill limpa e 0,014 à assistida -- ou seja, ela vale quase nada.
+DANO_PROPRIO_PARA_KILL_LIMPA = 60.0
+
 # ---------------------------------------------------------------------------
 # Pesos dos seis sub-ratings no agregado.
 #
@@ -150,11 +156,18 @@ DANO_MINIMO_PARA_CREDITO = 20.0
 # informado pela documentação da HLTV -- que diz que a fórmula foi reajustada
 # depois do lançamento para dar MAIS peso a kills.
 # ---------------------------------------------------------------------------
+# Oito componentes: as kills entram separadas em LIMPA (o jogador causou pelo
+# menos DANO_PROPRIO_PARA_KILL_LIMPA na vítima) e ASSISTIDA, e a morte trocada
+# entra como CRÉDITO DE VOLTA ao lado da sobrevivência -- "morte trocada pune
+# menos" não cabe num peso negativo, e os pesos aqui são não-negativos de
+# propósito (ver scripts/fit_rating).
 PESOS_PROVISORIOS = {
-    "kills": 0.28,
+    "kills_limpas": 0.25,
+    "kills_assistidas": 0.03,
     "dano": 0.18,
-    "sobrevivencia": 0.14,
-    "kast": 0.16,
+    "sobrevivencia": 0.12,
+    "mortes_trocadas": 0.03,
+    "kast": 0.15,
     "multikills": 0.09,
     "round_swing": 0.15,
 }
@@ -166,7 +179,8 @@ MIN_ROUNDS_CONFIAVEL = 30
 
 # Os cinco sub-ratings de escala de RAZÃO (só valores não-negativos, e o zero
 # quer dizer "nada"). Nesses, normalizar é dividir pela média do conjunto.
-SUB_RATINGS_RAZAO = ("kills", "dano", "sobrevivencia", "kast", "multikills")
+SUB_RATINGS_RAZAO = ("kills_limpas", "kills_assistidas", "dano", "sobrevivencia",
+                     "mortes_trocadas", "kast", "multikills")
 
 # O Round Swing NÃO é escala de razão: ele tem sinal, e a média dele no corpus é
 # NEGATIVA (-0,043 nas 9 partidas). A regra da HLTV de que round perdido não gera
@@ -684,12 +698,20 @@ def carrega_pesos() -> dict:
     """{"pesos", "intercepto", "origem", "medias_da_referencia"}."""
     if PESOS_FILE.exists():
         dados = json.loads(PESOS_FILE.read_text(encoding="utf-8"))
-        return {
-            "pesos": {n: float(dados["pesos"][n]) for n in PESOS_PROVISORIOS},
-            "intercepto": float(dados.get("intercepto", 0.0)),
-            "origem": "ajustados contra ratings oficiais",
-            "medias_da_referencia": dados.get("medias_da_referencia"),
-        }
+        # O arquivo pode ser de uma lista de componentes ANTERIOR (foi o caso
+        # quando as kills se separaram em limpa/assistida). Nesse caso ele não
+        # serve: cair nos provisórios e dizer isso é melhor que estourar ou,
+        # pior, completar com zero em silêncio.
+        if set(PESOS_PROVISORIOS) <= set(dados.get("pesos", {})):
+            return {
+                "pesos": {n: float(dados["pesos"][n]) for n in PESOS_PROVISORIOS},
+                "intercepto": float(dados.get("intercepto", 0.0)),
+                "origem": "ajustados contra ratings oficiais",
+                "medias_da_referencia": dados.get("medias_da_referencia"),
+            }
+        return {"pesos": dict(PESOS_PROVISORIOS), "intercepto": 0.0,
+                "origem": "provisorios (o arquivo de pesos é de outra lista de componentes; refaça --fit-pesos --gravar)",
+                "medias_da_referencia": None}
     return {"pesos": dict(PESOS_PROVISORIOS), "intercepto": 0.0,
             "origem": "provisorios", "medias_da_referencia": None}
 
@@ -711,7 +733,7 @@ def carrega_referencia() -> dict | None:
 def sub_ratings(
     kills: pl.DataFrame, damages: pl.DataFrame, rounds: pl.DataFrame,
     grupos: pl.DataFrame, swing: pl.DataFrame, kast: pl.DataFrame,
-    celulas: dict, team_of: dict[int, str],
+    celulas: dict, team_of: dict[int, str], tickrate: int = 64,
 ) -> pl.DataFrame:
     """Os seis componentes por jogador, ainda em unidade bruta (por round).
 
@@ -725,6 +747,16 @@ def sub_ratings(
         (int(r["round_num"]), int(r["steamid"])): (r["grupo"], r["side"])
         for r in grupos.iter_rows(named=True)
     }
+
+    # Dano PRÓPRIO do matador naquela vítima, naquele round: é ele que separa a
+    # kill limpa da assistida (DANO_PROPRIO_PARA_KILL_LIMPA).
+    meu_dano = {}
+    for d in damages.iter_rows(named=True):
+        atk, vit = d["attacker_steamid"], d["victim_steamid"]
+        if atk is None or vit is None or team_of.get(atk) == team_of.get(vit):
+            continue
+        chave = (int(d["round_num"]), int(atk), int(vit))
+        meu_dano[chave] = meu_dano.get(chave, 0.0) + float(d["dmg_health_real"])
 
     # --- peso de cada kill pela economia do confronto ---------------------
     linhas_kill = []
@@ -740,16 +772,19 @@ def sub_ratings(
         else:
             celula = celulas.get((meu[1], meu[0], dele[0]))
             peso = peso_da_kill(None if celula is None else celula["taxa"])
-        linhas_kill.append({"steamid": atk, "round_num": rn, "peso": peso})
+        limpa = meu_dano.get((rn, int(atk), int(vit)), 0.0) >= DANO_PROPRIO_PARA_KILL_LIMPA
+        linhas_kill.append({"steamid": atk, "round_num": rn, "peso": peso, "limpa": limpa})
 
+    esquema_kill = {"steamid": pl.Int64, "round_num": pl.Int64, "peso": pl.Float64, "limpa": pl.Boolean}
     por_kill = (
-        pl.DataFrame(linhas_kill, schema={"steamid": pl.Int64, "round_num": pl.Int64, "peso": pl.Float64})
-        if linhas_kill else
-        pl.DataFrame(schema={"steamid": pl.Int64, "round_num": pl.Int64, "peso": pl.Float64})
+        pl.DataFrame(linhas_kill, schema=esquema_kill) if linhas_kill
+        else pl.DataFrame(schema=esquema_kill)
     )
 
     kills_ajustadas = por_kill.group_by("steamid").agg(
-        pl.col("peso").sum().alias("kills_ponderadas"), pl.len().alias("kills_cruas")
+        pl.col("peso").sum().alias("kills_ponderadas"), pl.len().alias("kills_cruas"),
+        pl.col("peso").filter(pl.col("limpa")).sum().alias("kills_limpas_ponderadas"),
+        pl.col("peso").filter(~pl.col("limpa")).sum().alias("kills_assistidas_ponderadas"),
     )
     # multi-kill: rounds com 2 ou mais kills, ponderados pelo peso medio deles
     multi = (
@@ -771,9 +806,9 @@ def sub_ratings(
         dele = grupo_de.get((rn, int(vit)))
         celula = None if meu is None or dele is None else celulas.get((meu[1], meu[0], dele[0]))
         peso = peso_da_kill(None if celula is None else celula["taxa"])
-        linhas_dano.append({"steamid": atk, "dano": float(d["dmg_health_real"]) * peso})
+        linhas_dano.append({"steamid": atk, "round_num": rn, "dano": float(d["dmg_health_real"]) * peso})
     dano = (
-        pl.DataFrame(linhas_dano, schema={"steamid": pl.Int64, "dano": pl.Float64})
+        pl.DataFrame(linhas_dano, schema={"steamid": pl.Int64, "round_num": pl.Int64, "dano": pl.Float64})
         .group_by("steamid").agg(pl.col("dano").sum().alias("dano_ponderado"))
         if linhas_dano else pl.DataFrame(schema={"steamid": pl.Int64, "dano_ponderado": pl.Float64})
     )
@@ -783,6 +818,16 @@ def sub_ratings(
         .group_by("victim_steamid").agg(pl.len().alias("mortes"))
         .rename({"victim_steamid": "steamid"})
     )
+    # Morte TROCADA: a mesma marcação do KAST (basic_metrics), usada aqui como
+    # crédito de volta -- morrer e o time trocar não é morrer à toa.
+    from metrics.basic_metrics import DEFAULT_TRADE_WINDOW_SECONDS, traded_deaths
+
+    trocadas = traded_deaths(kills, DEFAULT_TRADE_WINDOW_SECONDS, tickrate)
+    trocadas_por_jogador = (
+        trocadas.filter(pl.col("was_traded")).group_by("steamid").agg(pl.len().alias("mortes_trocadas"))
+        .select(pl.col("steamid").cast(pl.Int64), "mortes_trocadas")
+        if trocadas.height else pl.DataFrame(schema={"steamid": pl.Int64, "mortes_trocadas": pl.UInt32})
+    )
     swing_total = swing.group_by("steamid").agg(pl.col("swing").sum().alias("swing_total"))
 
     base = (
@@ -791,19 +836,157 @@ def sub_ratings(
         .join(multi, on="steamid", how="left")
         .join(dano, on="steamid", how="left")
         .join(mortes, on="steamid", how="left")
+        .join(trocadas_por_jogador, on="steamid", how="left")
         .join(swing_total, on="steamid", how="left")
-        .join(kast.select(["steamid", "kast_pct"]).cast({"steamid": pl.Int64}), on="steamid", how="left")
+        .join(_kast_por_jogador(kast), on="steamid", how="left")
         .fill_null(0)
     )
 
-    return base.with_columns(
+    resultado = base.with_columns(
         pl.lit(n_rounds).alias("rounds"),
         (pl.col("kills_ponderadas") / n_rounds).alias("sub_kills"),
+        (pl.col("kills_limpas_ponderadas") / n_rounds).alias("sub_kills_limpas"),
+        (pl.col("kills_assistidas_ponderadas") / n_rounds).alias("sub_kills_assistidas"),
         (pl.col("dano_ponderado") / n_rounds).alias("sub_dano"),
         (1.0 - pl.col("mortes") / n_rounds).alias("sub_sobrevivencia"),
+        (pl.col("mortes_trocadas") / n_rounds).alias("sub_mortes_trocadas"),
         (pl.col("kast_pct") / 100.0).alias("sub_kast"),
         (pl.col("multikills_ponderados") / n_rounds).alias("sub_multikills"),
         (pl.col("swing_total") / n_rounds).alias("sub_round_swing"),
+    )
+
+    # Os mesmos seis, separados por lado (ver componentes_por_lado). Ficam em
+    # colunas `sub_<nome>_ct` e `sub_<nome>_t`, com os rounds de cada lado; é
+    # `rating()` que decide se normaliza por lado ou no agregado.
+    lado_de = {chave: v[1] for chave, v in grupo_de.items()}
+    por_lado = componentes_por_lado(por_kill, linhas_dano, kills, swing, kast, lado_de, team_of, trocadas)
+    if por_lado.height:
+        colunas = ["rounds_lado"] + [f"sub_{n}" for n in PESOS_PROVISORIOS]
+        largo = por_lado.select(["steamid", "lado", *colunas]).pivot(
+            on="lado", index="steamid", values=colunas)
+        # o pivot nomeia "sub_kills_ct"/"sub_kills_t" quando há mais de um valor
+        renomes = {c: c.replace("_lado_", "_") for c in largo.columns if c.startswith("rounds_lado_")}
+        largo = largo.rename(renomes)
+        resultado = resultado.join(largo, on="steamid", how="left")
+    return resultado
+
+
+def _kast_por_jogador(kast: pl.DataFrame) -> pl.DataFrame:
+    """KAST% por jogador, aceitando o resumo OU a tabela round a round.
+
+    O round a round é o que permite separar CT de TR (ver componentes_por_lado);
+    o resumo continua servindo para quem só tem ele.
+    """
+    if "kast_pct" in kast.columns:
+        return kast.select(pl.col("steamid").cast(pl.Int64), "kast_pct")
+    return (kast.group_by("steamid")
+            .agg((100.0 * pl.col("kast_round").cast(pl.Float64).mean()).alias("kast_pct"))
+            .select(pl.col("steamid").cast(pl.Int64), "kast_pct"))
+
+
+def componentes_por_lado(
+    por_kill: pl.DataFrame, linhas_dano: list[dict], kills: pl.DataFrame,
+    swing: pl.DataFrame, kast: pl.DataFrame, lado_de: dict, team_of: dict[int, str],
+    trocadas: pl.DataFrame | None = None,
+) -> pl.DataFrame:
+    """Os mesmos componentes, mas separados em CT e TR.
+
+    Por que separado (metodologia do Rating 2.0 da HLTV, que publica dez
+    sub-ratings, cinco por lado): os dois lados são trabalhos diferentes e têm
+    escalas diferentes -- no corpus, a sobrevivência de CT é sistematicamente
+    maior que a de TR. Normalizar tudo junto faz o jogador ser comparado com uma
+    média que mistura os dois, e quem jogou mais rounds de um lado ganha ou perde
+    por isso. `rating()` normaliza cada lado contra a média DAQUELE lado e junta
+    os dois pelos rounds jogados em cada um.
+    """
+    lado = pl.Series("lado", [], dtype=pl.Utf8)
+    rounds_lado = {}
+    for (rn, sid), s in lado_de.items():
+        rounds_lado[(sid, s)] = rounds_lado.get((sid, s), 0) + 1
+    base = pl.DataFrame(
+        [{"steamid": sid, "lado": s, "rounds_lado": n} for (sid, s), n in rounds_lado.items()],
+        schema={"steamid": pl.Int64, "lado": pl.Utf8, "rounds_lado": pl.Int64},
+    )
+    if base.height == 0:
+        return base
+
+    def _lado(rn, sid):
+        return lado_de.get((int(rn), int(sid)))
+
+    k = por_kill.with_columns(
+        pl.struct(["round_num", "steamid"]).map_elements(
+            lambda r: _lado(r["round_num"], r["steamid"]), return_dtype=pl.Utf8).alias("lado")
+    ).drop_nulls("lado")
+    kills_lado = k.group_by("steamid", "lado").agg(
+        pl.col("peso").sum().alias("kills_ponderadas"),
+        pl.col("peso").filter(pl.col("limpa")).sum().alias("kills_limpas_ponderadas"),
+        pl.col("peso").filter(~pl.col("limpa")).sum().alias("kills_assistidas_ponderadas"),
+    )
+    multi_lado = (
+        k.group_by("steamid", "lado", "round_num")
+        .agg(pl.len().alias("n"), pl.col("peso").mean().alias("peso_medio"))
+        .filter(pl.col("n") >= 2)
+        .group_by("steamid", "lado")
+        .agg(((pl.col("n") - 1) * pl.col("peso_medio")).sum().alias("multikills_ponderados"))
+    )
+    dano_lado = (
+        pl.DataFrame(linhas_dano, schema={"steamid": pl.Int64, "round_num": pl.Int64, "dano": pl.Float64})
+        .with_columns(pl.struct(["round_num", "steamid"]).map_elements(
+            lambda r: _lado(r["round_num"], r["steamid"]), return_dtype=pl.Utf8).alias("lado"))
+        .drop_nulls("lado").group_by("steamid", "lado").agg(pl.col("dano").sum().alias("dano_ponderado"))
+        if linhas_dano else pl.DataFrame(schema={"steamid": pl.Int64, "lado": pl.Utf8, "dano_ponderado": pl.Float64})
+    )
+    mortes_lado = (
+        kills.filter(pl.col("victim_steamid").is_not_null())
+        .select(pl.col("victim_steamid").cast(pl.Int64).alias("steamid"), pl.col("round_num").cast(pl.Int64))
+        .with_columns(pl.struct(["round_num", "steamid"]).map_elements(
+            lambda r: _lado(r["round_num"], r["steamid"]), return_dtype=pl.Utf8).alias("lado"))
+        .drop_nulls("lado").group_by("steamid", "lado").agg(pl.len().alias("mortes"))
+    )
+    swing_lado = (
+        swing.select(pl.col("steamid").cast(pl.Int64), pl.col("round_num").cast(pl.Int64), "swing")
+        .with_columns(pl.struct(["round_num", "steamid"]).map_elements(
+            lambda r: _lado(r["round_num"], r["steamid"]), return_dtype=pl.Utf8).alias("lado"))
+        .drop_nulls("lado").group_by("steamid", "lado").agg(pl.col("swing").sum().alias("swing_total"))
+    )
+    # KAST por lado exige o dado ROUND A ROUND. Com só o resumo (kast_pct), o
+    # KAST do jogador entra igual nos dois lados -- e o resumo avisa.
+    if "kast_round" in kast.columns:
+        kast_lado = (
+            kast.select(pl.col("steamid").cast(pl.Int64), pl.col("round_num").cast(pl.Int64), "kast_round")
+            .with_columns(pl.struct(["round_num", "steamid"]).map_elements(
+                lambda r: _lado(r["round_num"], r["steamid"]), return_dtype=pl.Utf8).alias("lado"))
+            .drop_nulls("lado").group_by("steamid", "lado")
+            .agg((100.0 * pl.col("kast_round").cast(pl.Float64).mean()).alias("kast_pct"))
+        )
+    else:
+        kast_lado = base.join(
+            kast.select(pl.col("steamid").cast(pl.Int64), "kast_pct"), on="steamid", how="left"
+        ).select("steamid", "lado", "kast_pct")
+
+    if trocadas is not None and trocadas.height:
+        trocadas_lado = (
+            trocadas.filter(pl.col("was_traded"))
+            .select(pl.col("steamid").cast(pl.Int64), pl.col("round_num").cast(pl.Int64))
+            .with_columns(pl.struct(["round_num", "steamid"]).map_elements(
+                lambda r: _lado(r["round_num"], r["steamid"]), return_dtype=pl.Utf8).alias("lado"))
+            .drop_nulls("lado").group_by("steamid", "lado").agg(pl.len().alias("mortes_trocadas"))
+        )
+    else:
+        trocadas_lado = pl.DataFrame(schema={"steamid": pl.Int64, "lado": pl.Utf8, "mortes_trocadas": pl.UInt32})
+
+    for parte in (kills_lado, multi_lado, dano_lado, mortes_lado, swing_lado, kast_lado, trocadas_lado):
+        base = base.join(parte, on=["steamid", "lado"], how="left")
+    return base.fill_null(0).with_columns(
+        (pl.col("kills_ponderadas") / pl.col("rounds_lado")).alias("sub_kills"),
+        (pl.col("kills_limpas_ponderadas") / pl.col("rounds_lado")).alias("sub_kills_limpas"),
+        (pl.col("kills_assistidas_ponderadas") / pl.col("rounds_lado")).alias("sub_kills_assistidas"),
+        (pl.col("dano_ponderado") / pl.col("rounds_lado")).alias("sub_dano"),
+        (1.0 - pl.col("mortes") / pl.col("rounds_lado")).alias("sub_sobrevivencia"),
+        (pl.col("mortes_trocadas") / pl.col("rounds_lado")).alias("sub_mortes_trocadas"),
+        (pl.col("kast_pct") / 100.0).alias("sub_kast"),
+        (pl.col("multikills_ponderados") / pl.col("rounds_lado")).alias("sub_multikills"),
+        (pl.col("swing_total") / pl.col("rounds_lado")).alias("sub_round_swing"),
     )
 
 
@@ -872,7 +1055,7 @@ def rating(
         team_of, vencedor_por_round, tickrate,
     )
     componentes = sub_ratings(
-        kills, damages, rounds, grupos, swing, kast, celulas, team_of
+        kills, damages, rounds, grupos, swing, kast, celulas, team_of, tickrate
     )
 
     # --- escala: media 1,00 -----------------------------------------------
@@ -904,19 +1087,49 @@ def rating(
         else dispersao_de_referencia(medias, desvios)
     )
 
-    expressoes = [
-        (pl.col(f"sub_{nome}") / medias[nome]).alias(f"norm_{nome}")
-        for nome in SUB_RATINGS_RAZAO
-    ]
-    # Round Swing: centrado em 1,00 e escalado -- ver o comentario da constante.
-    sd_swing = desvios.get("round_swing") or 0.0
-    if sd_swing > 1e-9:
-        expressoes.append(
-            (1.0 + (pl.col("sub_round_swing") - medias["round_swing"]) / sd_swing * dispersao_alvo)
-            .alias("norm_round_swing")
-        )
-    else:
-        expressoes.append(pl.lit(1.0).alias("norm_round_swing"))
+    def _normalizado(col: str, nome: str, m: float, sd: float) -> pl.Expr:
+        """Um sub-rating na escala do rating: 1,00 e a media.
+
+        Os de razao dividem pela media; o Round Swing e centrado e escalado pelo
+        desvio, porque tem sinal e media zero (ver o comentario da constante).
+        """
+        if nome in SUB_RATINGS_RAZAO:
+            return pl.col(col) / (m if abs(m) > 1e-9 else 1.0)
+        if sd > 1e-9:
+            return 1.0 + (pl.col(col) - m) / sd * dispersao_alvo
+        return pl.lit(1.0)
+
+    # --- por LADO, quando a referencia tem as medias de cada lado -----------
+    # Metodologia do Rating 2.0 (dez sub-ratings, cinco por lado): CT e TR sao
+    # trabalhos diferentes e tem escalas diferentes. Cada lado e normalizado
+    # contra a media DAQUELE lado, e os dois entram no agregado pesados pelos
+    # rounds jogados em cada um -- quem jogou 12 de CT e 9 de TR nao pode ter os
+    # dois lados valendo igual.
+    por_lado = (referencia or {}).get("medias_por_lado") or {}
+    tem_colunas = all(f"sub_{n}_{l}" in componentes.columns for n in nomes for l in ("ct", "t"))
+    usa_lados = bool(por_lado) and tem_colunas
+
+    expressoes = []
+    for nome in nomes:
+        if usa_lados:
+            partes = []
+            for lado in ("ct", "t"):
+                m = float(por_lado[lado]["medias"][nome])
+                sd = float(por_lado[lado].get("desvios", {}).get(nome) or 0.0)
+                partes.append(
+                    pl.col(f"rounds_{lado}").fill_null(0)
+                    * _normalizado(f"sub_{nome}_{lado}", nome, m, sd).fill_nan(1.0).fill_null(1.0)
+                )
+            total = pl.col("rounds_ct").fill_null(0) + pl.col("rounds_t").fill_null(0)
+            expressoes.append(
+                pl.when(total > 0).then((partes[0] + partes[1]) / total)
+                .otherwise(_normalizado(f"sub_{nome}", nome, medias[nome], desvios.get(nome) or 0.0))
+                .alias(f"norm_{nome}")
+            )
+        else:
+            expressoes.append(
+                _normalizado(f"sub_{nome}", nome, medias[nome], desvios.get(nome) or 0.0).alias(f"norm_{nome}")
+            )
 
     normalizados = componentes.with_columns(expressoes)
     ajuste = carrega_pesos()
@@ -944,6 +1157,7 @@ def rating(
         "confrontos_estimados": len(celulas),
         "fonte_da_economia": fonte_economia,
         "referencia_ajustada": referencia is not None,
+        "normalizado_por_lado": usa_lados,
         "pesos": ajuste["pesos"],
         "intercepto": ajuste["intercepto"],
         "origem_dos_pesos": ajuste["origem"],

@@ -79,7 +79,9 @@ def carrega_partida(match_id: str) -> tuple:
         int(r["round_num"]): ("A" if r["winner"] == side_of_team("A", int(r["round_num"])) else "B")
         for r in rounds.iter_rows(named=True)
     }
-    kast = pl.read_parquet(processed / "kast_summary.parquet")
+    # round a round quando existe: é o que permite o rating separar CT de TR
+    kast_round = processed / "kast_per_round.parquet"
+    kast = pl.read_parquet(kast_round if kast_round.exists() else processed / "kast_summary.parquet")
     return tabelas, team_of, vencedor, kast
 
 
@@ -111,12 +113,24 @@ def modelo_global(ids: list[str]) -> ModeloDeRound:
     return ModeloDeRound().treina(np.vstack(Xs), np.concatenate(ys))
 
 
-def componentes_do_corpus(ids: list[str], modelo: ModeloDeRound) -> pl.DataFrame:
-    """Os seis sub-ratings de cada jogador em cada partida, em unidade bruta."""
+def componentes_do_corpus(ids: list[str], modelo: ModeloDeRound,
+                          referencia: dict | None = None) -> pl.DataFrame:
+    """Os seis sub-ratings de cada jogador em cada partida.
+
+    `referencia` é a escala em que os `norm_*` saem. Passá-la é o que mantém a
+    CALIBRAÇÃO e o SITE na mesma escala. REGRESSÃO: sem ela, cada partida era
+    normalizada pela própria média, os pesos eram ajustados nessa escala e
+    depois aplicados sobre a normalização do CORPUS, no site -- ajuste numa
+    escala, uso em outra. Custou pouco quando foi medido (0,083 contra 0,081),
+    mas a diferença entre as duas escalas depende da composição do corpus.
+    As colunas `sub_*` (unidade bruta) não dependem da referência, então
+    calcular a referência a partir de uma execução sem ela continua válido.
+    """
     linhas = []
     for mid in ids:
         tabelas, team_of, vencedor, kast = carrega_partida(mid)
-        _, resumo = rating(tabelas, team_of, vencedor, kast, 64, modelo=modelo)
+        _, resumo = rating(tabelas, team_of, vencedor, kast, 64,
+                           referencia=referencia, modelo=modelo)
         # o rating sai por steamid; o rating oficial foi transcrito por nick, que é
         # o que a HLTV mostra -- mesma fonte de nome do elenco (resolve_teams)
         nick = dict(
@@ -127,22 +141,29 @@ def componentes_do_corpus(ids: list[str], modelo: ModeloDeRound) -> pl.DataFrame
     return pl.DataFrame(linhas, infer_schema_length=None)
 
 
-def ajusta_referencia(ids: list[str]) -> dict:
-    """Calcula e grava as médias de escala do conjunto."""
-    modelo = modelo_global(ids)
-    comp = componentes_do_corpus(ids, modelo)
+def referencia_de(comp: pl.DataFrame, modelo: ModeloDeRound, ids: list[str]) -> dict:
+    """A escala do conjunto a partir dos componentes em unidade bruta.
 
-    medias = {
-        nome: float(comp[f"sub_{nome}"].mean())
-        for nome in PESOS_PROVISORIOS
-    }
-    desvios = {
-        nome: float(comp[f"sub_{nome}"].std() or 0.0)
-        for nome in PESOS_PROVISORIOS
-    }
-    referencia = {
+    Separada de `ajusta_referencia` para poder ser calculada SEM gravar --
+    é assim que cada etapa do rating é medida antes de virar arquivo.
+    """
+    medias = {nome: float(comp[f"sub_{nome}"].mean()) for nome in PESOS_PROVISORIOS}
+    desvios = {nome: float(comp[f"sub_{nome}"].std() or 0.0) for nome in PESOS_PROVISORIOS}
+    # Médias e desvios de cada LADO: é contra eles que cada metade da partida é
+    # normalizada (metodologia do Rating 2.0, cinco sub-ratings por lado).
+    medias_por_lado = {}
+    for lado in ("ct", "t"):
+        cols = {n: f"sub_{n}_{lado}" for n in PESOS_PROVISORIOS if f"sub_{n}_{lado}" in comp.columns}
+        if len(cols) == len(PESOS_PROVISORIOS):
+            medias_por_lado[lado] = {
+                "medias": {n: float(comp[c].drop_nulls().mean() or 0.0) for n, c in cols.items()},
+                "desvios": {n: float(comp[c].drop_nulls().std() or 0.0) for n, c in cols.items()},
+                "jogador_partidas": int(comp[next(iter(cols.values()))].drop_nulls().len()),
+            }
+    return {
         "medias": medias,
         "desvios": desvios,
+        "medias_por_lado": medias_por_lado,
         "dispersao_alvo": dispersao_de_referencia(medias, desvios),
         "n_partidas": len(ids),
         "n_jogador_partidas": comp.height,
@@ -154,6 +175,12 @@ def ajusta_referencia(ids: list[str]) -> dict:
             "regressao contra ratings publicados (--fit-pesos)."
         ),
     }
+
+
+def ajusta_referencia(ids: list[str]) -> dict:
+    """Calcula e grava as médias de escala do conjunto."""
+    modelo = modelo_global(ids)
+    referencia = referencia_de(componentes_do_corpus(ids, modelo), modelo, ids)
     REFERENCIA_FILE.write_text(
         json.dumps(referencia, ensure_ascii=False, indent=2), encoding="utf-8"
     )
@@ -316,7 +343,10 @@ def ajusta_pesos(ids: list[str]) -> dict:
     from sklearn.linear_model import LinearRegression
 
     modelo = modelo_global(ids)
+    # a MESMA escala do site: os pesos são aplicados sobre a normalização do
+    # corpus, então é nela que eles têm que ser estimados (ver componentes_do_corpus)
     comp = componentes_do_corpus(ids, modelo)
+    comp = componentes_do_corpus(ids, modelo, referencia_de(comp, modelo, ids))
     dados = _linhas_com_alvo(comp)
 
     partidas_com_alvo = sorted(set(dados["match_id"].to_list())) if dados.height else []

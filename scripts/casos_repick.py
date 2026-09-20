@@ -27,7 +27,7 @@ import polars as pl
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from metrics.archetypes import engagement_ticks, repick_engagements  # noqa: E402
+from metrics.archetypes import engagement_ticks, marca_repick  # noqa: E402
 from metrics.awp_metrics import PRE_ENGAGEMENT_WINDOW_SECONDS, classify_engagement_style  # noqa: E402
 from metrics.timing import detect_tickrate  # noqa: E402
 from parsing.parser import load_interim  # noqa: E402
@@ -66,7 +66,7 @@ def casos_da_partida(match_id: str) -> list[dict]:
     tickrate = detect_tickrate(rounds, ticks)["tickrate"]
     eng = engagement_ticks(kills)
     estilos = classify_engagement_style(eng, ticks, tickrate=tickrate)
-    marcados = repick_engagements(estilos)
+    marcados = marca_repick(estilos, ticks, kills, t.get("damages"), t.get("shots"), tickrate)
     casos = []
     freeze = dict(rounds.select(pl.col("round_num").cast(pl.UInt32), "freeze_end").iter_rows())
     nome = dict(ticks.group_by("steamid").agg(pl.col("name").last()).iter_rows())
@@ -92,6 +92,8 @@ def casos_da_partida(match_id: str) -> list[dict]:
             "andou": round(r["path_distance"]), "saiu_do_lugar": round(r["net_displacement"]),
             "saidas": _saidas(w["X"].to_numpy().astype(float), w["Y"].to_numpy().astype(float)),
             "venceu": k["attacker_steamid"] == sid, "aconteceu": aconteceu,
+            "evento_no_angulo": r.get("evento_no_angulo"), "desfecho": r.get("desfecho"),
+            "saidas_metrica": r.get("saidas"),
         })
     return casos
 
@@ -126,6 +128,7 @@ def main() -> None:
         print(f"    mira: {c['mira']}")
         print(f"    nos {PRE_ENGAGEMENT_WINDOW_SECONDS:.0f}s antes: andou {c['andou']}u, terminou a {c['saiu_do_lugar']}u de onde "
               f"começou, {c['saidas']} saída(s) e volta(s)")
+        print(f"    o que aconteceu NO ÂNGULO entre sair e voltar: {c['evento_no_angulo']}")
         print(f"    o que aconteceu: {c['aconteceu']}\n")
 
 

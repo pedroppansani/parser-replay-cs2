@@ -35,7 +35,7 @@ from pathlib import Path
 import numpy as np
 import polars as pl
 
-from metrics.awp_metrics import HOLD_MAX_DISPLACEMENT
+from metrics.awp_metrics import HOLD_MAX_DISPLACEMENT, PRE_ENGAGEMENT_WINDOW_SECONDS
 from metrics.geometry import horizontal_distance
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -60,6 +60,13 @@ BAIT_MAX_DISTANCE = 900.0
 # hold; o que distingue repick de ficar parado é ter andado no meio.
 REPICK_MIN_PATH = 250.0
 REPICK_MIN_RATIO = 3.0  # percorreu 3x mais do que saiu do lugar
+# Distância do ponto inicial que conta como ter SAÍDO do ângulo. Um passo
+# lateral de peek no CS2 é de 60 a 100u; 40u separa balançar a mira parado
+# de sair de verdade.
+REPICK_SAIDA_MIN = 40.0
+# Armas cuja morte não é duelo: o desfecho "morreu para utility" é categoria
+# própria e fica fora de qualquer taxa de duelo.
+UTILITY_LETAL = {"hegrenade", "inferno", "molotov", "incgrenade", "flashbang", "decoy"}
 
 # Mínimo de situações de último vivo para o "rei do NT" aparecer. Nas 9 partidas
 # são 182 tentativas em 187 rounds, ~2 por jogador por partida: sem um mínimo, o
@@ -98,6 +105,15 @@ MULTIKILL_MIN = 3
 # Janela em que uma flash ainda explica a kill do companheiro que veio depois.
 # A mesma do crédito de flash no Round Swing (metrics/rating.py).
 SEGUNDOS_FLASH_RETORNO = 3.0
+
+# A isca é comparada DENTRO DA FUNÇÃO. Jogar de trás e não trocar de perto é a
+# função do AWPer e do âncora, não oportunismo -- medido, 56% dos rótulos de
+# baiter iam para AWPers, que são 18% dos jogador-partidas. A referência de cada
+# função sai do CORPUS inteiro (1 ou 2 AWPers por partida seriam ruído), e a
+# comparação é ROUND A ROUND pelo contexto daquele round: quem puxa AWP em
+# alguns rounds é comparado como AWPer só neles.
+MIN_ROUNDS_FUNCAO_NA_REFERENCIA = 100
+CONTEXTO_SEM_FUNCAO = "sem_funcao"
 
 # Pisos do eixo. 0,5 = meia distribuição de diferença entre as duas pontas (por
 # exemplo, quartil de cima no sacrifício e quartil de baixo na isca). Medido no
@@ -283,16 +299,14 @@ def bait_events(
 
 
 def repick_engagements(styles: pl.DataFrame) -> pl.DataFrame:
-    """Marca quais engajamentos têm a assinatura de repick.
+    """Assinatura de JIGGLE: andou bastante e terminou perto de onde comecou.
 
-    Recebe a saída de `awp_metrics.classify_engagement_style` (que já mede
-    deslocamento líquido e distância percorrida) e aplica o critério de jiggle:
-    andou bastante e terminou perto de onde começou. É "sai e volta no mesmo
-    ângulo", não "trocou a morte do companheiro" -- essa é outra métrica
-    (trade_share).
+    E so a primeira metade do criterio. Jiggle sozinho NAO e repick (decisao 1:
+    sair e voltar e jogar um angulo) -- o que faz o repick e o que aconteceu no
+    angulo no meio do caminho, e isso e `marca_repick`.
     """
     if styles.height == 0:
-        return styles.with_columns(pl.lit(False).alias("repick"))
+        return styles.with_columns(pl.lit(False).alias("jiggle"))
 
     return styles.with_columns(
         (
@@ -300,8 +314,110 @@ def repick_engagements(styles: pl.DataFrame) -> pl.DataFrame:
             & (pl.col("net_displacement") < HOLD_MAX_DISPLACEMENT)
             & (pl.col("path_distance") >= REPICK_MIN_PATH)
             & (pl.col("path_distance") >= REPICK_MIN_RATIO * pl.col("net_displacement").clip(1.0))
-        ).alias("repick")
+        ).alias("jiggle")
     )
+
+
+def marca_repick(
+    styles: pl.DataFrame, ticks: pl.DataFrame, kills: pl.DataFrame,
+    damages: pl.DataFrame | None, shots: pl.DataFrame | None, tickrate: int = 64,
+) -> pl.DataFrame:
+    """Repick = retomar um angulo que foi CONTESTADO.
+
+    A identificacao tem duas partes, e nenhuma basta sozinha:
+
+    1. a assinatura de jiggle (`repick_engagements`): saiu do angulo e voltou;
+    2. **aconteceu alguma coisa naquele angulo entre sair e voltar** -- ele
+       atirou, causou ou sofreu dano, ou alguem morreu por perto.
+
+    Sem a segunda, e jiggle: dos 10 casos que o Pedro conferiu, 9 tinham UMA
+    saida e volta sem nada no meio. Com ela, um repick de uma saida so continua
+    valendo -- e o caso de quem volta para pegar o refrag depois de o companheiro
+    cair. O numero de saidas vira sinal de QUALIDADE (`saidas`), nao criterio.
+
+    O DESFECHO fica em coluna separada e nao entra na identificacao: a causa da
+    morte e resultado, e morrer para uma granada nao desfaz o repick que
+    aconteceu antes. Morte por utility e categoria propria, fora de qualquer
+    taxa de duelo.
+    """
+    marcados = repick_engagements(styles)
+    vazio = {"repick": pl.Boolean, "saidas": pl.Int32, "evento_no_angulo": pl.Utf8, "desfecho": pl.Utf8}
+    if marcados.height == 0 or "engagement_tick" not in marcados.columns:
+        return marcados.with_columns([pl.lit(None, dtype=t).alias(c) for c, t in vazio.items()])
+
+    janela = int(PRE_ENGAGEMENT_WINDOW_SECONDS * tickrate)
+    pos = {}
+    for (rn, sid), g in ticks.select("round_num", "steamid", "tick", "X", "Y").sort("tick").group_by(
+            ["round_num", "steamid"]):
+        pos[(int(rn), int(sid))] = (
+            g["tick"].to_numpy(), g["X"].to_numpy().astype(float), g["Y"].to_numpy().astype(float))
+
+    def _por_round(df, colunas):
+        fora = {}
+        if df is None or df.height == 0 or not set(colunas) <= set(df.columns):
+            return fora
+        for (rn,), g in df.select(["round_num", *colunas]).group_by("round_num"):
+            fora[int(rn)] = g
+        return fora
+
+    dano_por_round = _por_round(damages, ["tick", "attacker_steamid", "victim_steamid"])
+    tiro_por_round = _por_round(shots, ["tick", "player_steamid"])
+    kills_por_round = _por_round(
+        kills, ["tick", "victim_X", "victim_Y", "weapon", "attacker_steamid", "victim_steamid"])
+
+    linhas = []
+    for r in marcados.iter_rows(named=True):
+        rn, sid, tk = int(r["round_num"]), int(r["steamid"]), int(r["engagement_tick"])
+        evento, saidas = None, 0
+        if r["jiggle"] and (rn, sid) in pos:
+            t, xs, ys = pos[(rn, sid)]
+            dentro = (t >= tk - janela) & (t <= tk)
+            t, xs, ys = t[dentro], xs[dentro], ys[dentro]
+            if t.size >= 2:
+                d = np.hypot(xs - xs[0], ys - ys[0])
+                intervalos, fora, t_ini = [], False, None
+                for i, v in enumerate(d):
+                    if not fora and v > REPICK_SAIDA_MIN:
+                        fora, t_ini, saidas = True, t[i], saidas + 1
+                    elif fora and v < REPICK_SAIDA_MIN / 2:
+                        intervalos.append((t_ini, t[i]))
+                        fora = False
+                if fora:  # saiu e a briga aconteceu antes de ele voltar
+                    intervalos.append((t_ini, t[-1]))
+                for a, b in intervalos:
+                    g = dano_por_round.get(rn)
+                    if g is not None and g.filter(
+                            (pl.col("tick") >= a) & (pl.col("tick") <= b)
+                            & ((pl.col("attacker_steamid") == sid) | (pl.col("victim_steamid") == sid))).height:
+                        evento = "dano"
+                        break
+                    g = tiro_por_round.get(rn)
+                    if g is not None and g.filter(
+                            (pl.col("tick") >= a) & (pl.col("tick") <= b) & (pl.col("player_steamid") == sid)).height:
+                        evento = "tiro"
+                        break
+                    g = kills_por_round.get(rn)
+                    if g is not None:
+                        perto = g.filter((pl.col("tick") >= a) & (pl.col("tick") <= b))
+                        if perto.height:
+                            j = int(np.argmin(np.abs(t - float(perto["tick"][0]))))
+                            dist = np.hypot(perto["victim_X"].to_numpy().astype(float) - xs[j],
+                                            perto["victim_Y"].to_numpy().astype(float) - ys[j])
+                            if bool((dist <= BAIT_MAX_DISTANCE).any()):
+                                evento = "morte por perto"
+                                break
+        desfecho = None
+        g = kills_por_round.get(rn)
+        if g is not None:
+            for k in g.filter(pl.col("tick") == tk).iter_rows(named=True):
+                if k["attacker_steamid"] == sid:
+                    desfecho = "ganhou o duelo"
+                elif k["victim_steamid"] == sid:
+                    desfecho = "morreu para utility" if k["weapon"] in UTILITY_LETAL else "perdeu o duelo"
+        linhas.append({"repick": bool(r["jiggle"] and evento), "saidas": saidas,
+                       "evento_no_angulo": evento, "desfecho": desfecho})
+
+    return pl.concat([marcados, pl.DataFrame(linhas, schema=vazio)], how="horizontal")
 
 
 # --- Referência de escala ---------------------------------------------------
@@ -492,7 +608,7 @@ COMPONENTES = [
     "awp_round_share", "awp_conversion", "awp_opening_picks",
     "bait_no_trade_share", "bait_untraded_per_round", "bait_return_per_opp", "survival_rate",
     "clutch_attempts", "clutch_conversion", "clutch_damage_per_attempt",
-    "sacrificio_share", "clutch_peso",
+    "sacrificio_share", "clutch_peso", "isca_relativa",
 ]
 
 
@@ -506,6 +622,8 @@ def player_components(
     awp_summary: pl.DataFrame | None,
     team_of: dict[int, str],
     flash_conv: pl.DataFrame | None = None,
+    funcoes_round: pl.DataFrame | None = None,
+    isca_por_funcao: dict | None = None,
 ) -> tuple[pl.DataFrame, pl.DataFrame]:
     """Devolve (per_round, componentes): os fatos round a round e o agregado.
 
@@ -563,6 +681,35 @@ def player_components(
         )
     )
 
+    # --- função estrutural do round e isca comparada dentro dela -----------
+    if funcoes_round is not None and funcoes_round.height:
+        f = funcoes_round.select(
+            pl.col("round_num").cast(per_round.schema["round_num"]),
+            pl.col("steamid").cast(per_round.schema["steamid"]),
+            pl.col("funcao").fill_null(CONTEXTO_SEM_FUNCAO).alias("funcao_do_round"),
+        )
+        per_round = per_round.join(f, on=["round_num", "steamid"], how="left").with_columns(
+            pl.col("funcao_do_round").fill_null(CONTEXTO_SEM_FUNCAO))
+    else:
+        per_round = per_round.with_columns(pl.lit(CONTEXTO_SEM_FUNCAO).alias("funcao_do_round"))
+
+    if bait.height:
+        isca_round = (bait.filter(~pl.col("traded")).group_by(["round_num", "steamid"])
+                      .agg(pl.len().alias("isca_no_round")))
+        per_round = per_round.join(
+            isca_round.select(pl.col("round_num").cast(per_round.schema["round_num"]),
+                              pl.col("steamid").cast(per_round.schema["steamid"]), "isca_no_round"),
+            on=["round_num", "steamid"], how="left")
+    per_round = per_round.with_columns(
+        pl.col("isca_no_round").fill_null(0) if "isca_no_round" in per_round.columns
+        else pl.lit(0).alias("isca_no_round"))
+    # o esperado daquele contexto; sem referência, 1,0 (a isca relativa vira a crua)
+    esperado = (isca_por_funcao or {})
+    per_round = per_round.with_columns(
+        pl.col("funcao_do_round").map_elements(
+            lambda f: float(esperado.get(f, esperado.get("_geral", 0.0)) or 0.0),
+            return_dtype=pl.Float64).alias("isca_esperada_do_round"))
+
     rounds_por_lado = per_round.group_by(["steamid", "side"]).agg(pl.len().alias("n"))
     t_rounds = rounds_por_lado.filter(pl.col("side") == "t").select(
         ["steamid", pl.col("n").alias("t_rounds")]
@@ -592,6 +739,8 @@ def player_components(
         pl.col("sacrificio").mean().alias("sacrificio_share"),
         pl.col("pagou_sem_retorno").sum().alias("pagou_sem_retorno_rounds"),
         (pl.col("sacrificio") & pl.col("flash_convertida")).sum().alias("sacrificio_com_flash_rounds"),
+        pl.col("isca_no_round").sum().alias("isca_observada"),
+        pl.col("isca_esperada_do_round").sum().alias("isca_esperada"),
     )
 
     # Fatias do time: dano e kills do jogador sobre o total do próprio time. E a
@@ -626,6 +775,12 @@ def player_components(
         )
     )
 
+    comp = comp.with_columns(
+        pl.when(pl.col("isca_esperada") > 0)
+        .then(pl.col("isca_observada") / pl.col("isca_esperada"))
+        .otherwise(1.0)
+        .alias("isca_relativa")
+    )
     comp = _junta_repick(comp, repick)
     comp = _junta_bait(comp, bait)
     comp = _junta_clutch(comp, clutch_round)
@@ -898,7 +1053,7 @@ def archetype_indices(
     # Eixo único carrega piano <-> baiter (ver PISO_CARREGA_PIANO). Cada ponta só
     # recebe índice além do próprio piso, então os dois rótulos nunca caem no
     # mesmo jogador -- por construção, não por desempate.
-    eixo = [s - b for s, b in zip(p("sacrificio_share"), p("bait_untraded_per_round"))]
+    eixo = [s - b for s, b in zip(p("sacrificio_share"), p("isca_relativa"))]
     piano = [e if e >= PISO_CARREGA_PIANO else 0.0 for e in eixo]
     baiter = [-e if e <= PISO_BAITER else 0.0 for e in eixo]
 
@@ -1180,7 +1335,7 @@ def compute_for_match(
     bait = bait_events(kills, ticks, team_of, tickrate=tickrate)
 
     styles = classify_engagement_style(engagement_ticks(kills), ticks, tickrate=tickrate)
-    repick = repick_engagements(styles)
+    repick = marca_repick(styles, ticks, kills, tables.get("damages"), tables.get("shots"), tickrate)
 
     clutch_round, _ = clutch_situations(kills, rounds, team_of, winner_team_of_round)
     clutch_round = add_damage_in_clutch(clutch_round, tables["damages"], team_of)
@@ -1188,7 +1343,9 @@ def compute_for_match(
     flash = flash_convertida(tables.get("player_blind"), kills, tickrate=tickrate)
 
     per_round, comp = player_components(
-        facts, eco, solo, bait, repick, clutch_round, outputs.get("awp_summary"), team_of, flash
+        facts, eco, solo, bait, repick, clutch_round, outputs.get("awp_summary"), team_of, flash,
+        funcoes_round=outputs.get("structural_roles"),
+        isca_por_funcao=(reference or {}).get("isca_por_funcao"),
     )
     summary = archetype_indices(comp, reference)
     return per_round, summary

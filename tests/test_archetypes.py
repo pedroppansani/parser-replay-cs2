@@ -16,6 +16,8 @@ import pytest
 
 from metrics.archetypes import (
     BAIT_MAX_DISTANCE,
+    REPICK_SAIDA_MIN,
+    marca_repick,
     LIMIAR_CRITICO,
     MIN_AWP_ROUNDS,
     MIN_CLUTCH_ATTEMPTS,
@@ -55,22 +57,23 @@ def _styles(linhas: list[tuple[float, float]]) -> pl.DataFrame:
     )
 
 
-def test_repick_e_andar_muito_e_voltar_pro_mesmo_lugar():
-    """A assinatura de jiggle: percorreu muito, saiu pouco do lugar."""
+def test_jiggle_e_andar_muito_e_voltar_pro_mesmo_lugar():
+    """A assinatura de jiggle: percorreu muito, saiu pouco do lugar. É metade do
+    critério de repick -- a outra metade é ter acontecido algo no ângulo."""
     marcado = repick_engagements(_styles([(30.0, 600.0)]))
-    assert marcado["repick"].to_list() == [True]
+    assert marcado["jiggle"].to_list() == [True]
 
 
 def test_ficar_parado_nao_e_repick():
     """Deslocamento baixo E distância percorrida baixa é hold, não repick."""
     marcado = repick_engagements(_styles([(20.0, 40.0)]))
-    assert marcado["repick"].to_list() == [False]
+    assert marcado["jiggle"].to_list() == [False]
 
 
 def test_avancar_espaco_nao_e_repick():
     """Quem percorreu muito e TERMINOU longe avançou, não reapareceu no ângulo."""
     marcado = repick_engagements(_styles([(800.0, 900.0)]))
-    assert marcado["repick"].to_list() == [False]
+    assert marcado["jiggle"].to_list() == [False]
     assert REPICK_MIN_PATH < 900.0, "fixture precisa passar do piso de percurso"
 
 
@@ -299,6 +302,7 @@ def _componentes(**valores) -> pl.DataFrame:
         "clutch_damage_per_attempt": [50.0, 50.0],
         # peso pelo X: tentativas somando o X de cada 1vX, e o peso das perdidas
         "clutch_peso": [4.0, 4.0], "clutch_peso_perdido": [4.0, 4.0],
+        "isca_relativa": [1.0, 1.0],
     }
     for chave, valor in valores.items():
         base[chave] = [valor, base[chave][1]]
@@ -324,9 +328,14 @@ def test_esforco_sem_beneficio_ao_time_nao_e_carrega_piano():
 
 
 def _com_eixo(sacrificio: float, isca: float) -> pl.DataFrame:
-    """Alvo contra dois neutros, para o percentil dentro da partida ter escala."""
+    """Alvo contra dois neutros, para o percentil dentro da partida ter escala.
+
+    `isca` é a isca RELATIVA à função (1,0 = exatamente o esperado de quem joga
+    aquela função), não a contagem crua.
+    """
     base = _componentes(bait_untraded_per_round=isca)
-    base = base.with_columns(pl.Series("sacrificio_share", [sacrificio, 0.2]))
+    base = base.with_columns(pl.Series("sacrificio_share", [sacrificio, 0.2]),
+                             pl.Series("isca_relativa", [isca, 1.0]))
     neutros = base.filter(pl.col("name") == "neutro")
     return pl.concat([base, neutros.with_columns(pl.lit(3, dtype=base.schema["steamid"]).alias("steamid"), pl.lit("neutro2").alias("name"))])
 
@@ -358,6 +367,7 @@ def test_nunca_os_dois_rotulos_no_mesmo_jogador():
             pl.Series("steamid", list(range(n))),
             pl.Series("sacrificio_share", [rnd.random() for _ in range(n)]),
             pl.Series("bait_untraded_per_round", [rnd.random() * 2 for _ in range(n)]),
+            pl.Series("isca_relativa", [rnd.random() * 2 for _ in range(n)]),
         )
         idx = archetype_indices(comp, reference=None)
         assert idx.filter((pl.col("idx_carrega_piano") > 0) & (pl.col("idx_baiter") > 0)).height == 0
@@ -572,3 +582,65 @@ def test_rei_do_nt_pondera_pelo_x():
     a = archetype_indices(um_contra_um, reference=None).filter(pl.col("name") == "alvo")["idx_rei_do_nt"][0]
     b = archetype_indices(um_contra_tres, reference=None).filter(pl.col("name") == "alvo")["idx_rei_do_nt"][0]
     assert b >= a > 0
+
+
+# --- Repick: jiggle + evento no ângulo --------------------------------------
+
+def _cenario_repick(com_evento: bool):
+    """Um jogador que sai do ângulo e volta, com ou sem nada acontecendo no meio."""
+    ticks = pl.DataFrame({
+        "round_num": [1] * 7, "steamid": [1] * 7,
+        "tick": [0, 32, 64, 96, 128, 160, 192],
+        "X": [0.0, 60.0, 120.0, 120.0, 60.0, 5.0, 0.0], "Y": [0.0] * 7,
+    }).with_columns(pl.col("round_num").cast(pl.UInt32))
+    styles = pl.DataFrame({
+        "round_num": [1], "steamid": [1], "engagement_tick": [192],
+        "net_displacement": [0.0], "path_distance": [400.0],
+    }).with_columns(pl.col("round_num").cast(pl.UInt32))
+    kills = pl.DataFrame({
+        "round_num": [1], "tick": [192], "victim_X": [0.0], "victim_Y": [0.0],
+        "weapon": ["ak47"], "attacker_steamid": [1], "victim_steamid": [2],
+    }).with_columns(pl.col("round_num").cast(pl.UInt32))
+    damages = pl.DataFrame({
+        "round_num": [1], "tick": [96 if com_evento else 999],
+        "attacker_steamid": [1], "victim_steamid": [2],
+    }).with_columns(pl.col("round_num").cast(pl.UInt32))
+    return marca_repick(styles, ticks, kills, damages, None, tickrate=64)
+
+
+def test_jiggle_sem_nada_no_angulo_nao_e_repick():
+    """Sair e voltar sem que nada aconteça é jiggle (decisão 1), não repick."""
+    r = _cenario_repick(com_evento=False)
+    assert r["jiggle"][0] is True
+    assert r["repick"][0] is False
+    assert r["saidas"][0] >= 1 and REPICK_SAIDA_MIN > 0
+
+
+def test_uma_saida_com_evento_no_angulo_e_repick():
+    """Uma saída só basta quando o ângulo foi contestado -- é o refrag depois da
+    morte do companheiro."""
+    r = _cenario_repick(com_evento=True)
+    assert r["repick"][0] is True
+    assert r["evento_no_angulo"][0] == "dano"
+    assert r["desfecho"][0] == "ganhou o duelo"
+
+
+def test_morte_por_utility_e_desfecho_proprio_e_nao_desfaz_o_repick():
+    ticks = pl.DataFrame({
+        "round_num": [1] * 5, "steamid": [1] * 5, "tick": [0, 32, 64, 96, 128],
+        "X": [0.0, 70.0, 120.0, 40.0, 0.0], "Y": [0.0] * 5,
+    }).with_columns(pl.col("round_num").cast(pl.UInt32))
+    styles = pl.DataFrame({
+        "round_num": [1], "steamid": [1], "engagement_tick": [128],
+        "net_displacement": [0.0], "path_distance": [400.0],
+    }).with_columns(pl.col("round_num").cast(pl.UInt32))
+    kills = pl.DataFrame({
+        "round_num": [1], "tick": [128], "victim_X": [0.0], "victim_Y": [0.0],
+        "weapon": ["hegrenade"], "attacker_steamid": [2], "victim_steamid": [1],
+    }).with_columns(pl.col("round_num").cast(pl.UInt32))
+    damages = pl.DataFrame({
+        "round_num": [1], "tick": [64], "attacker_steamid": [2], "victim_steamid": [1],
+    }).with_columns(pl.col("round_num").cast(pl.UInt32))
+    r = marca_repick(styles, ticks, kills, damages, None, tickrate=64)
+    assert r["repick"][0] is True
+    assert r["desfecho"][0] == "morreu para utility"

@@ -471,7 +471,9 @@ def build(match_id: str) -> Path:
     # modelo de round GLOBAL reconstruído da referência -- nunca um modelo
     # treinado só nesta partida (decisão 11).
     rating_info, rating_por_jogador = _rating_da_partida(
-        tabelas, interim, rounds, team_of, vencedor_por_round, basic["kast_summary"], tickrate)
+        tabelas, interim, rounds, team_of, vencedor_por_round,
+        # round a round: o rating separa CT de TR com ele
+        basic.get("kast_per_round", basic["kast_summary"]), tickrate)
 
     # --- Perfil por jogador (metrics/player_profile.py) ---
     # Este é o outro eixo do mesmo dado: o agrupamento diz que TIPOS de round

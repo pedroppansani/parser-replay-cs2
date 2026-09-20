@@ -186,12 +186,6 @@ def test_o_grupo_de_equipamento_sai_da_melhor_arma_do_round(match_id):
     assert "sniper" in set(g["grupo"].unique())
 
 
-# ESPERADO FALHAR até o passo 7 (recalibração): o Round Swing virou variação de
-# probabilidade pura (decisão 22k) e a referência de escala + os pesos ainda são
-# os de antes, então a média do corpus está em ~1,105 em vez de 1,00. `strict`
-# de propósito: quando a recalibração acontecer o teste volta a passar, o pytest
-# acusa XPASS e obriga a tirar esta marca -- é assim que a pendência não some.
-@pytest.mark.xfail(strict=True, reason="fora de escala até a recalibração do passo 7 (CLAUDE.md 22k)")
 def test_a_media_do_rating_no_corpus_fica_perto_de_um():
     """A escala mantém média 1,00 -- é o que torna o número legível.
 
@@ -269,8 +263,11 @@ def test_o_rotulo_nunca_afirma_ser_o_rating_oficial():
 def test_os_pesos_provisorios_somam_um():
     """Se não somarem 1,0, a média do corpus deixa de ser 1,00 por construção."""
     assert sum(PESOS_PROVISORIOS.values()) == pytest.approx(1.0)
+    # As kills entram separadas (limpa x assistida, DANO_PROPRIO_PARA_KILL_LIMPA)
+    # e a morte trocada entra como crédito ao lado da sobrevivência.
     assert set(PESOS_PROVISORIOS) == {
-        "kills", "dano", "sobrevivencia", "kast", "multikills", "round_swing",
+        "kills_limpas", "kills_assistidas", "dano", "sobrevivencia",
+        "mortes_trocadas", "kast", "multikills", "round_swing",
     }
 
 
