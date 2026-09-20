@@ -359,6 +359,8 @@ testada e estava errada.
    -> 0,76. 28 acertos em 22 partidas (584 de dano). Os 9 que sobram estão
    listados em `tests/test_escada.py`, todos abaixo do oficial, sem regra que os
    explique. Há teste varrendo o interim atrás de tick com dano acima da vida.
+   Reportado ao awpy: https://github.com/pnxenopoulos/awpy/issues/525 (com o caso,
+   a detecção genérica e a correção). Se for corrigido lá, a correção local sai.
 8c. **Sem atacante, o texto nunca usa o nome de alguém.** E fogo amigo diz
    "morto pelo companheiro X" (5 casos nas 52 partidas), nunca "morreu para X"
    como se X fosse adversário. A ABERTURA do round é o primeiro duelo ganho
