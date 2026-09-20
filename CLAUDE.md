@@ -368,9 +368,16 @@ testada e estava errada.
    INTEIRO, não a queda de `health` -- a vida é fracionária no jogo, e travar
    pela queda de `health` derrubou o ADR para 131 de 410. Medido contra 410
    ADRs oficiais: 380 -> 401 idênticos no arredondamento, maior diferença 2,74
-   -> 0,76. 28 acertos em 22 partidas (584 de dano). Os 9 que sobram estão
-   listados em `tests/test_escada.py`, todos abaixo do oficial, sem regra que os
-   explique. Há teste varrendo o interim atrás de tick com dano acima da vida.
+   -> 0,76. 28 acertos em 22 partidas (584 de dano). Há teste varrendo o interim
+   atrás de tick com dano acima da vida.
+   LIMITAÇÃO CONHECIDA, investigada: os 9 restantes (listados em
+   `tests/test_escada.py`) estão TODOS abaixo do oficial, no máximo 0,76 de ADR
+   (27 de dano numa partida inteira). Não é arredondamento, que seria simétrico:
+   é fonte de dano que a HLTV conta e nós não. Descartados como explicação: dano
+   em companheiro, corte do freeze time, cauda pós-round (só 2 dos 9 têm dano
+   pós-round, e esse dano ENTRA no nosso número), arma e tipo de round. Há uma
+   concentração fraca em Dust2 (6 de 90 jogadores, 6,7%, contra 0% em Mirage e
+   Inferno), pequena demais para sustentar conclusão.
    Reportado ao awpy: https://github.com/pnxenopoulos/awpy/issues/525 (com o caso,
    a detecção genérica e a correção). Se for corrigido lá, a correção local sai.
 8c. **Sem atacante, o texto nunca usa o nome de alguém.** E fogo amigo diz
@@ -915,7 +922,17 @@ Não "resolva" nenhum destes automaticamente; pergunte.
 - Ângulos de entrada manuais (`MANUAL_ENTRY_ANGLES` em `metrics/map_angles.py`).
   Rode `python -m scripts.show_derived_angles <match_id>` para ver os derivados.
   Os com `n_kills` baixo (4-5) são os que mais precisam de julgamento humano.
-- Limiares: janela de trade (5s), peek/hold (120u / 250u), janela de contato
+- Janela de trade: **5,0s, calibrada empiricamente** (2026-09-19,
+  `py -3.12 -m scripts.varre_trade`) contra DOIS gabaritos oficiais -- 310 KASTs
+  e as 50 mortes trocadas D(t) da página Detailed stats. A curva é LARGA e
+  suave (4,5 a 6,0s ficam todas perto do topo), o que é sinal de regra e não de
+  coincidência do corpus. Os dois gabaritos discordam do ótimo: KAST prefere
+  5,5s (235 de 310 contra 231), D(t) prefere 5,0s (20 de 50 contra 14); 5,0s é
+  o compromisso e é o valor em uso. Também medido e DESCARTADO: limite de
+  distância entre o vingador e a morte (900u derruba o KAST para 204, 1500u é
+  neutro) e "vingada por qualquer um" em vez de por companheiro (2 a 4 KASTs
+  pior em toda a curva). Revisar quando o corpus crescer.
+- Limiares: peek/hold (120u / 250u), janela de contato
   (1s), tolerância de pré-fire (25°), permanência mínima para contar rotação
   (15% do round).
 - Ratings oficiais da HLTV em `data/reference/hltv_ratings.json`, e demos de
