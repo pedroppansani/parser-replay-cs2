@@ -413,13 +413,21 @@ testada e estava errada.
     4 cores num gráfico só.
 
     Nos gráficos da partida (vantagem e probabilidade de vitória), por pedido
-    do Pedro: Time A azul, Time B laranja, round decisivo **roxo escuro
-    `#4a3aa7`**. Validado com o script da skill dataviz, os três juntos e em
-    todos os pares: pior par para daltônico ΔE 13,0, visão normal 16,3,
-    contraste >= 3:1. Esmeralda passava por menos (9,2) e com contraste 2,8:1;
-    roxos mais claros falhavam contra o azul. A linha da diferença de rounds é
-    uma medida só e fica em tinta neutra; a cor de cada time está nas áreas e
-    nas bolinhas, e empate é cinza.
+    do Pedro: Time A azul `#2a78d6`, Time B laranja `#eb6834`, round decisivo
+    **verde esmeralda escuro `#0b6b4a`** (2026-09-20, no lugar do roxo
+    `#4a3aa7`). A linha da diferença de rounds é uma medida só e fica em tinta
+    neutra; a cor de cada time está nas áreas e nas bolinhas, e empate é cinza.
+
+    A TROCA CORRIGIU UM DIAGNÓSTICO MEU, e o registro antigo estava errado: ele
+    dizia que "esmeralda passava por menos (ΔE 9,2) e com contraste 2,8:1",
+    como se a cor tivesse sido reprovada. O que foi reprovado era o esmeralda
+    CLARO (`#1baf7a`, o `--aqua` do tema) -- e o defeito era a LUMINÂNCIA, não
+    o matiz. Medido de novo com `scripts/valida_paleta.py` (ΔE2000 e dicromacia
+    por Viénot 1999), o esmeralda escuro empata com o roxo no critério mais
+    duro: pior par para daltônico ΔE **14,5** contra 14,9 do roxo (alvo 8),
+    visão normal 40,6 contra 23,1, contraste no branco 6,53:1 contra 8,56:1.
+    O piso é esse: `#0f8f63` já cai para ΔE 9,0 e `#1baf7a` reprova no
+    contraste. **Não clareie o verde sem rodar o script.**
 
 11. **O KMeans é ajustado UMA vez no conjunto das partidas, não por partida.**
     O rótulo numérico do KMeans é arbitrário: treinando por partida, o "cluster
@@ -1033,6 +1041,9 @@ Não "resolva" nenhum destes automaticamente; pergunte.
   percurso, razão 3x), mínimo de tentativas de clutch (3), mínimo de rounds com
   AWP (4), compra abaixo da média do time (-400), fração do time de rifle (60%),
   e o quanto um papel crítico precisa se destacar para virar card (0,85).
+- Paleta dos gráficos: `py -3.12 -m scripts.valida_paleta` mede ΔE2000 entre
+  todos os pares, em visão normal e em protanopia/deuteranopia, e o contraste
+  no branco. Rode antes de trocar qualquer cor de gráfico.
 - Distribuição de todo índice de função, antes (9 de FACEIT) e depois (corpus
   inteiro): `py -3.12 -m scripts.calibration_report`. Tabela de funções com os
   componentes abertos, por jogador: `py -3.12 -m scripts.tabela_funcoes`.

@@ -20,12 +20,18 @@
     --ct: #2a78d6;
     --t: #eb6834;
     --aqua: #1baf7a;
-    /* Round decisivo nos gráficos da partida. Roxo escuro e não esmeralda: com o
-       Time A em azul e o B em laranja, o validador de paleta (dataviz) aprovou
-       os três juntos -- pior par para daltônico ΔE 13,0 (alvo 8), visão normal
-       16,3, contraste >= 3:1 no fundo branco. A esmeralda passava por menos
-       (9,2) e com contraste 2,8:1; roxos mais claros FALHAVAM contra o azul. */
-    --dec: #4a3aa7;
+    /* Round decisivo nos gráficos da partida. VERDE ESMERALDA ESCURO, por pedido
+       do Pedro (2026-09-20), no lugar do roxo #4a3aa7.
+       O tom é escuro por medição, não por gosto: o que reprovava a esmeralda
+       antes era o esmeralda CLARO (#1baf7a, o --aqua daqui de cima), com
+       contraste 2,82:1 -- abaixo do mínimo de 3:1. Escurecendo, ela passa com
+       folga e empata com o roxo no critério mais duro.
+       Medido com o Time A em azul e o B em laranja, os três juntos e em todos
+       os pares: pior par para daltônico (protanopia/deuteranopia, Viénot 1999)
+       ΔE 14,5 contra 14,9 do roxo (alvo 8), visão normal 40,6 contra 23,1,
+       contraste no branco 6,53:1 contra 8,56:1.
+       Não clareie: #0f8f63 cai para ΔE 9,0 e #1baf7a reprova no contraste. */
+    --dec: #0b6b4a;
     --ct-soft: rgba(42, 120, 214, 0.1);
     --t-soft: rgba(235, 104, 52, 0.1);
 
@@ -1188,8 +1194,8 @@
   var BD = {};
   (JSON.parse(document.getElementById("breakdown").textContent) || []).forEach(function (b) { BD[b.round] = b; });
   // Nos gráficos da partida: Time A = azul (ct), Time B = laranja (t), round
-  // decisivo = roxo (dec). Validado junto, ver --dec no CSS.
-  var C = { ct: "#2a78d6", t: "#eb6834", dec: "#4a3aa7", aqua: "#1baf7a", ink: "#0f1620",
+  // decisivo = verde esmeralda escuro (dec). Validado junto, ver --dec no CSS.
+  var C = { ct: "#2a78d6", t: "#eb6834", dec: "#0b6b4a", aqua: "#1baf7a", ink: "#0f1620",
             ink2: "#4c5a6b", dim: "#7d8a99", line: "#dde3eb", paper: "#eef1f5" };
   var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -2509,7 +2515,8 @@
      outra, e nenhuma das duas cabe numa frase.
 
      Paleta validada (ver --dec): azul para o Time A, laranja para o B (a faixa
-     abaixo de 50%, onde o B é favorito), roxo para o round decisivo. */
+     abaixo de 50%, onde o B é favorito), verde esmeralda para o round
+     decisivo. */
   (function wpchart() {
     var svg = document.getElementById("wpchart");
     var curva = (D.win_probability || {}).curve || [];
@@ -2540,8 +2547,11 @@
     });
 
     // Área entre a curva e os 50%: azul onde o Time A é favorito, laranja onde é
-    // o B. Uma área azul só, por cima da faixa laranja, virava lilás -- e lilás
-    // se confunde com o roxo do round decisivo.
+    // o B. Uma área azul só, por cima da faixa laranja, virava lilás: a cor
+    // resultante não é de time nenhum, e quem olha não sabe mais quem está na
+    // frente. (O motivo original era outro -- lilás se confundia com o roxo do
+    // round decisivo, que agora é verde --, mas a separação se sustenta
+    // sozinha: área sobreposta mistura as duas cores de time.)
     var contornoWp = [];
     pontos.forEach(function (p2, i) {
       var v = p2.wp - 0.5, ant = i > 0 ? pontos[i - 1].wp - 0.5 : 0;
