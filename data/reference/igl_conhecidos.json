@@ -1,0 +1,19 @@
+{
+  "_leia_isto": "IGL de cada time segundo o Pedro. É GABARITO, não atribuição: o rótulo que o projeto usa continua vindo de roles_manual.json, preenchido à mão. Este arquivo existe para medir a taxa de acerto dos proxies (scripts/igl_candidatos.py) quando o corpus crescer, em vez de conferir de memória. 'confirmado' = o Pedro confirmou; 'em_aberto' = ninguém confirmou ainda, e o nome é só a leitura pública mais provável.",
+  "_como_usar": "py -3.12 -m scripts.igl_candidatos compara o ranking dos proxies com este arquivo. Medido em 2026-09-19, com 43 partidas profissionais: a média dos cinco proxies acertou o IGL em 5 dos 6 times com gabarito; os proxies mais fortes, sozinhos, foram 'compra menos que o time' e 'granadas por round' (o IGL nunca ficou abaixo do 2º lugar em nenhum dos dois).",
+  "times": {
+    "Natus Vincere": {"igl": "Aleksib", "status": "confirmado", "proxy_apontou": "Aleksib", "posicao_no_ranking": 1},
+    "Vitality": {"igl": "apEX", "status": "confirmado", "proxy_apontou": "mezii", "posicao_no_ranking": 4,
+                 "nota": "o caso que mostra o viés: apEX é IGL agressivo, entra na frente e fragga, e os proxies descrevem o IGL que joga atrás"},
+    "Spirit": {"igl": "chopper", "status": "confirmado", "proxy_apontou": "chopper", "posicao_no_ranking": 1},
+    "FURIA": {"igl": "FalleN", "status": "confirmado", "proxy_apontou": "FalleN", "posicao_no_ranking": 1},
+    "MOUZ": {"igl": "Brollan", "status": "em_aberto", "proxy_apontou": "Brollan", "posicao_no_ranking": 1},
+    "Falcons": {"igl": "kyxsan", "status": "em_aberto", "proxy_apontou": "kyxsan", "posicao_no_ranking": 1},
+    "The MongolZ": {"igl": null, "status": "em_aberto", "proxy_apontou": "Techno4K", "posicao_no_ranking": 1,
+                    "nota": "2 partidas só; amostra fraca"},
+    "Aurora Gaming": {"igl": null, "status": "em_aberto", "proxy_apontou": "Jimpphat", "posicao_no_ranking": 1,
+                      "nota": "2 partidas só; amostra fraca"},
+    "magic": {"igl": null, "status": "em_aberto", "proxy_apontou": "eksiver", "posicao_no_ranking": 1,
+              "nota": "1 partida só; amostra fraca"}
+  }
+}
