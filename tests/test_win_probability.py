@@ -18,6 +18,8 @@ from metrics.round_spectacle import (
     round_spectacle,
 )
 from metrics.win_probability import (
+    MAX_PRORROGACOES_MODELADAS,
+    _alvo_efetivo,
     MR12,
     MR15,
     curva_da_partida,
@@ -125,14 +127,41 @@ def test_partida_de_placar_largo_nao_tem_round_decisivo():
     assert resumo["maior_wpa"] < resumo["minimo_exigido"]
 
 
-def test_partida_decidida_no_12_12_elege_o_ultimo_round():
-    """Chegou em 12-12 e alguém ganhou: aquele round valeu a partida inteira."""
-    prog = _progressao(["A", "B"] * 12 + ["A"])
-    curva, resumo = win_probability(prog, MR12)
-    assert prog[-1]["score_a"] == 13 and prog[-1]["score_b"] == 12
-    assert resumo["decisivo"]["round"] == 25
-    # levou de 50% (empate) a 100%: é o maior salto possível num round
-    assert resumo["decisivo"]["wpa_abs"] == pytest.approx(0.5)
+def test_ganhar_o_round_em_12_12_nao_decide_a_partida():
+    """Em 12-12 o round seguinte NÃO vale a partida: abre a prorrogação.
+
+    REGRESSÃO: com o alvo fixo em 13, 13-12 era vitória e esse round sozinho
+    levava de 50% a 100% -- o maior salto possível. Era o mesmo defeito que
+    fazia a curva de uma partida de prorrogação fechar em 100% para o time
+    ERRADO (ver `_valor`). Com a prorrogação modelada, 13-12 é o primeiro round
+    do OT e vale 65,6%: quem vence precisa de mais três.
+    """
+    assert probabilidade_de_vitoria(12, 12, MR12) == pytest.approx(0.5)
+    assert probabilidade_de_vitoria(13, 12, MR12) == pytest.approx(0.65625)
+    assert probabilidade_de_vitoria(16, 12, MR12) == pytest.approx(1.0)
+    # e o maior salto por round deixou de ser 0,50: como todo empate abre outra
+    # prorrogação, nenhum round leva de 50% a 100% sozinho
+    maior = max(
+        abs(probabilidade_de_vitoria(a + 1, b, MR12) - probabilidade_de_vitoria(a, b, MR12))
+        for a in range(0, 20) for b in range(0, 20)
+        if probabilidade_de_vitoria(a, b, MR12) not in (0.0, 1.0)
+    )
+    assert maior == pytest.approx(0.25)
+
+
+def test_a_prorrogacao_tem_fundo_em_vez_de_recursao_infinita():
+    """A cadeia de prorrogações é infinita; a conta precisa parar em algum lugar.
+
+    Chegar ao começo da MAX_PRORROGACOES_MODELADAS-ésima exige tantos empates
+    seguidos que o estado vale 0,5 -- e 0,5 num empate é a resposta certa. O que
+    este teste trava é que ela PARE: sem o fundo, `_valor` estoura
+    RecursionError e a página da partida não renderiza.
+    """
+    alvo, n = _alvo_efetivo(24, 24, MR12.rounds_para_vencer)
+    assert n >= MAX_PRORROGACOES_MODELADAS
+    assert probabilidade_de_vitoria(24, 24, MR12) == pytest.approx(0.5)
+    # e o alvo cresce de 4 em 4 a cada prorrogação, a partir de 13
+    assert [_alvo_efetivo(x, x, 13)[0] for x in (11, 12, 15, 18)] == [13, 16, 19, 22]
 
 
 def test_empate_no_topo_e_declarado_em_vez_de_escondido():
@@ -215,11 +244,11 @@ def test_round_sem_nada_de_notavel_nao_vira_o_mais_impressionante():
 def test_o_impressionante_e_o_decisivo_podem_ser_rounds_diferentes():
     """O caso que motivou separar os dois módulos.
 
-    Partida decidida no fim (o round 25 vale a partida inteira) mas com o clutch
+    Partida decidida no fim (o round 24 leva de 75% a 100%) mas com o clutch
     de 1v4 lá no round 2, quando o placar ainda não significava nada. O código
     tem que devolver rounds diferentes, sem que um contamine o outro.
     """
-    prog = _progressao(["A", "B"] * 12 + ["A"])
+    prog = _progressao(["A", "B"] * 10 + ["A", "A", "B", "A"])
     _, wp = win_probability(prog, MR12)
 
     sit = {
@@ -231,14 +260,14 @@ def test_o_impressionante_e_o_decisivo_podem_ser_rounds_diferentes():
     sit[2].update({"clutch_player": "donk666", "clutch_against": 4})
     _, esp = round_spectacle(sit, _rounds_sinteticos(len(prog)), _kills_vazias(), None, {}, TICKRATE)
 
-    assert wp["decisivo"]["round"] == 25
+    assert wp["decisivo"]["round"] == 24
     assert esp["impressionante"]["round"] == 2
     assert esp["impressionante"]["round"] != wp["decisivo"]["round"]
 
 
 def test_o_impressionante_e_o_decisivo_podem_ser_o_mesmo_round():
     """O outro caso: o clutch aconteceu justamente no round que valeu a partida."""
-    prog = _progressao(["A", "B"] * 12 + ["A"])
+    prog = _progressao(["A", "B"] * 10 + ["A", "A", "B", "A"])
     _, wp = win_probability(prog, MR12)
 
     sit = {
@@ -247,10 +276,10 @@ def test_o_impressionante_e_o_decisivo_podem_ser_o_mesmo_round():
                      "worst_deficit_overcome": 0, "opening": None}
         for p in prog
     }
-    sit[25].update({"clutch_player": "donk666", "clutch_against": 4})
+    sit[24].update({"clutch_player": "donk666", "clutch_against": 4})
     _, esp = round_spectacle(sit, _rounds_sinteticos(len(prog)), _kills_vazias(), None, {}, TICKRATE)
 
-    assert esp["impressionante"]["round"] == wp["decisivo"]["round"] == 25
+    assert esp["impressionante"]["round"] == wp["decisivo"]["round"] == 24
 
 
 def test_componente_que_nao_pontuou_nao_aparece_no_card():

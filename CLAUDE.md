@@ -554,11 +554,38 @@ testada e estava errada.
     construção), déficit (estado desequilibrado move pouco) e placar apertado
     (11-11 é o pico natural da curva).
 
+    A prorrogação entra na conta desde 2026-09-20 (decisão 19e).
+
     A probabilidade de ganhar um round isolado é **neutra (0,5)** de propósito:
     alavancagem é propriedade do ESTADO DO PLACAR, não de qual time é melhor.
     Usar a taxa observada na própria partida seria circular — o time que venceu
     teve taxa alta justamente porque venceu. Há um ajuste por lado
     (`PROB_ROUND_CT`) desligado por padrão, para quando houver corpus suficiente.
+
+19e. **Prorrogação é MODELADA: o alvo não é fixo** (2026-09-20, corrigido
+    porque um invariante do corpus pegou). A simplificação antiga ("empate vale
+    0,5 e para por ali") estava registrada como limitação aceita, e não era
+    aceitável: com o alvo fixo em 13, todo placar a partir de 12-12 era vitória
+    para quem chegasse a 13, e a curva de OITO partidas do corpus terminava
+    afirmando **100% para o time que PERDEU** em 4 delas (16, 20, 32 e 42 --
+    nas outras 4 o time A venceu e o erro apontava para o lado certo por
+    acidente). Afirmar certeza sobre o time errado não é simplificar.
+    `_alvo_efetivo` sobe o alvo em 4 a cada prorrogação (13 -> 16 -> 19 -> 22) e
+    devolve também QUANTAS já começaram; a recursão recebe sempre o alvo do
+    FORMATO, nunca o já ajustado -- reaproveitar o ajustado perde a base e a
+    conta não sabe mais em que prorrogação está.
+    A cadeia é infinita por construção (todo empate abre a próxima), então a
+    recursão precisa de fundo: `MAX_PRORROGACOES_MODELADAS` = 5, e ali o estado
+    vale 0,5. Não é a simplificação antiga de volta -- lá o corte dava 1,0 para
+    um time num estado empatado; aqui dá 0,5 num empate, depois de quatro
+    empates seguidos (probabilidade da ordem de 1e-3 de sequer chegar lá).
+    CONSEQUÊNCIA MEDIDA, e ela muda a leitura da aba: o maior salto possível num
+    round caiu de 0,50 para **0,25**, porque nenhum round leva de 50% a 100%
+    sozinho -- sempre há prorrogação depois. Nas 8 partidas de OT o round
+    decisivo saiu do OT e voltou para o fim do tempo regulamentar (r23/r24, o
+    que leva ao match point ou o que empata em 12-12), e 7 das 8 ficaram com
+    `empate_no_topo` -- chegar a 12-11 e devolver para 12-12 movem 0,25 cada.
+    Isso é propriedade do formato, não defeito do desempate.
 
 19a. **Impressionante e decisivo são perguntas SEPARADAS, e por isso são dois
     cards.** "Que round mais mudou o resultado" e "que round foi mais
@@ -867,6 +894,39 @@ testada e estava errada.
     (penalidade da kill "assistida", morte trocada punida menos, cálculo por
     lado), mas juntos explicam só 5,3% da variância do resíduo. O resto é
     espalhado: forma do modelo de probabilidade, não componente.
+25. **Identidade é o STEAMID; o nome é rótulo de exibição** (2026-09-20).
+    `metrics/identidade.py` é o único lugar que resolve nome: para cada steamid,
+    o nick mais frequente no corpus, e todo relatório entre partidas passa por
+    ele. Medido nas 52 partidas / 520 jogador-partidas / 116 steamids: **4
+    steamids com mais de um nick** (donk/donk666, sh1ro/SH1R0,
+    magixx/lilpeepfan-, e um smurf de FACEIT com 4 nicks), registrados em
+    `data/reference/nicks_conhecidos.json`. O risco INVERSO -- dois jogadores
+    diferentes com o mesmo nome, que não aparece como duplicata e sim como um
+    jogador de estatística estranha -- foi procurado e **não existe no corpus
+    hoje**; há invariante que falha se aparecer.
+    REGISTRO DE UM DIAGNÓSTICO QUE A MEDIÇÃO REFUTOU: a suspeita era que as
+    RÉGUAS do corpus (referência de escala do rating, referência dos papéis)
+    estivessem tortas por agrupar por nome. Não estavam: elas agregam por
+    (partida, steamid), e o nome só viaja junto como coluna. O estrago estava
+    nos relatórios ENTRE partidas (IGL, perfis), que agrupavam por nome e
+    partiam o donk em dois. Não "conserte" a régua -- ela não tem esse defeito.
+
+26. **Invariantes sobre o corpus inteiro** (`tests/test_invariantes_corpus.py`):
+    o que não pode acontecer em partida nenhuma, por mais demos que entrem.
+    São dez, e cada um corresponde a um bug que já aconteceu ou que aconteceria
+    em silêncio -- tempo negativo no timeline, atacante igual à vítima, warmup
+    dentro das métricas, KAST fora de 0-100, nulo em métrica final, média do
+    rating longe da OFICIAL, a curva de probabilidade indo de 0,5 ao resultado,
+    e os três de identidade. **Já pagou na primeira execução**: foi o invariante
+    da curva que achou a prorrogação terminando em 100% para o time errado
+    (decisão 19e), que passou meses invisível porque nenhuma das 9 partidas
+    iniciais tinha ido para OT.
+    O da média do rating compara com a média OFICIAL dos mesmos jogador-partidas
+    (1,0720 nosso contra 1,0726 da HLTV em 430), não com 1,00: o corpus é de
+    times de topo e não é amostra neutra -- exigir 1,00 seria pedir que a nossa
+    escala discordasse da oficial. Sem `data/processed/` os testes são
+    pulados, nunca quebram.
+
 23. **Anotação no mapa: coordenada de jogo, um único ponto de redimensionamento,
     camada sempre transparente.** A camada vive em `dashboard/web/annotations.js`
     e `annotations.css`, injetados no build; o template não tem texto nem estilo
@@ -1012,11 +1072,6 @@ Não "resolva" nenhum destes automaticamente; pergunte.
   a compra do seguinte, e a chance real do próximo round não é mais 0,5. Modelar
   economia exigiria um estado (placar, dinheiro, armas) grande demais para 9
   partidas. Fica registrado como simplificação, não como descuido.
-- **Prorrogação é 50/50 a partir do empate** (12-12 no MR12). O OT tem formato
-  próprio — MR3, e um novo empate leva a outro OT — e modelar isso exigiria uma
-  segunda cadeia de estados com critério de parada arbitrário para a sequência de
-  prorrogações. Nenhuma das 9 partidas do corpus foi para OT, então a
-  simplificação nunca foi exercitada em dado real.
 
 ## Como validar mudanças
 

@@ -1,0 +1,11 @@
+{
+  "_leia_isto": "Jogadores que aparecem no corpus com mais de um nome de exibição. Identidade é o steamid (metrics/identidade.py); esta lista existe só para o invariante de identidade (tests/test_invariantes_corpus.py) distinguir o caso conhecido do caso novo. Um steamid novo com dois nicks é troca de nome e entra aqui depois de conferido; um NOME apontando para dois steamids é outra coisa -- dois jogadores diferentes prestes a serem fundidos -- e nunca entra aqui sem investigação.",
+  "_conferido_em": "2026-09-20, 52 partidas, 520 jogador-partidas, 116 steamids",
+  "varios_nicks": {
+    "76561198386265483": {"nicks": ["donk", "donk666"], "nota": "donk666 nas partidas de FACEIT"},
+    "76561198081484775": {"nicks": ["sh1ro", "SH1R0"], "nota": "só muda a caixa"},
+    "76561199063238565": {"nicks": ["magixx", "lilpeepfan-"], "nota": "lilpeepfan- nas partidas de FACEIT"},
+    "76561198296417934": {"nicks": ["Olajida", "Etaliqe", "Ajuyep", "Ahuniwip"], "nota": "smurf de FACEIT trocando de nick a cada partida"}
+  },
+  "nomes_compartilhados": {}
+}

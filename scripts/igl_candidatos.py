@@ -36,6 +36,8 @@ import polars as pl
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+from metrics.identidade import com_nome_de_exibicao  # noqa: E402
+
 PROCESSED = PROJECT_ROOT / "data" / "processed"
 INTERIM = PROJECT_ROOT / "data" / "interim"
 MANIFESTO = PROJECT_ROOT / "data" / "manifest.json"
@@ -104,7 +106,7 @@ def sinais() -> pl.DataFrame:
             sid = f["steamid"]
             dr, pa = drops.get(sid, {}), eco.get(sid, {})
             linhas.append({
-                "match_id": mid, "time": time_de.get(f["name"]), "nome": f["name"],
+                "match_id": mid, "time": time_de.get(f["name"]), "nome": f["name"], "steamid": sid,
                 "doa_por_round": (dr.get("rounds_doando", 0) / dr["rounds_compra"]) if dr.get("rounds_compra") else None,
                 "rounds_doando": dr.get("rounds_doando"),
                 "compra_menos_share": (pa.get("eco_sacrifice_rounds", 0) / pa["rounds_played"]) if pa.get("rounds_played") else None,
@@ -112,7 +114,9 @@ def sinais() -> pl.DataFrame:
                 "granadas_por_round": f.get("nades_per_round"),
                 "rating": rating.get(sid),
             })
-    return pl.DataFrame(linhas, infer_schema_length=None).drop_nulls("time")
+    df = pl.DataFrame(linhas, infer_schema_length=None).drop_nulls("time")
+    # identidade é o steamid (metrics/identidade.py): o nick muda entre partidas
+    return com_nome_de_exibicao(df.rename({"nome": "name"})).rename({"name": "nome"})
 
 
 def postos(s: pl.DataFrame) -> pl.DataFrame:
@@ -132,7 +136,8 @@ def ranking(s: pl.DataFrame) -> pl.DataFrame:
     ag = [pl.len().alias("partidas"), pl.col("posto_medio").mean()]
     ag += [pl.col(f"posto_{n}").mean() for n in PROXIES]
     ag += [pl.col(PROXIES[n][0]).mean() for n in PROXIES]
-    return p.group_by("time", "nome").agg(ag).sort(["time", "posto_medio"])
+    return (p.group_by("time", "steamid").agg(pl.col("nome").last().alias("nome"), *ag)
+            .drop("steamid").sort(["time", "posto_medio"]))
 
 
 def main() -> None:

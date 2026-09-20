@@ -170,23 +170,66 @@ def _round_da_troca_de_lado(ticks: pl.DataFrame) -> int | None:
 # O modelo
 # ---------------------------------------------------------------------------
 
+# Rounds que a prorrogação acrescenta ao alvo (MR3: seis rounds, vence quem
+# fizer quatro). No MR12, o alvo sai de 13 para 16; um novo empate em 15-15 leva
+# a outra prorrogação, com alvo 19.
+ROUNDS_PARA_VENCER_A_PRORROGACAO = 4
+ROUNDS_PARA_EMPATAR_A_PRORROGACAO = 3
+
+
+# Quantas prorrogações seguidas a conta modela antes de parar em 0,5. A cadeia
+# de prorrogações é INFINITA por construção (todo empate abre a próxima), então
+# a recursão precisa de um fundo -- sem ele, estoura RecursionError. O fundo é
+# 0,5 porque chegar ao começo da 5ª prorrogação exige quatro empates seguidos,
+# e nesse estado os dois times estão a no máximo 3 rounds um do outro: o erro
+# que isso introduz é multiplicado por uma probabilidade da ordem de 1e-3 de
+# sequer chegar lá. Cortar em 0,5 num empate é honesto; era cortar em 1,0 para
+# o time errado que não era (ver a regressão abaixo).
+MAX_PRORROGACOES_MODELADAS = 5
+
+
+def _alvo_efetivo(a: int, b: int, alvo: int) -> tuple[int, int]:
+    """(rounds que vencem a partida a partir deste placar, prorrogações abertas).
+
+    Fora da prorrogação é o alvo do formato. Dentro dela, cada prorrogação sobe
+    o alvo em ROUNDS_PARA_VENCER_A_PRORROGACAO, e uma nova prorrogação começa
+    sempre que os dois times chegam a um round do alvo anterior.
+
+    Recebe SEMPRE o alvo do formato, nunca um alvo já ajustado: quem chama
+    perde a base se reaproveitar o retorno, e aí não dá mais para saber quantas
+    prorrogações já aconteceram.
+    """
+    prorrogacoes = 0
+    limite = alvo - 1  # empatar aqui leva à prorrogação (12-12 no MR12)
+    while min(a, b) >= limite:
+        alvo = limite + ROUNDS_PARA_VENCER_A_PRORROGACAO
+        limite = alvo - 1
+        prorrogacoes += 1
+    return alvo, prorrogacoes
+
+
 @lru_cache(maxsize=None)
 def _valor(a: int, b: int, alvo: int, intervalo: int, p_ct: float | None) -> float:
     """Chance de o time A vencer a partida a partir do placar (a, b).
 
-    A prorrogação é a SIMPLIFICAÇÃO conhecida do modelo: ao empatar em
-    (alvo-1, alvo-1) a partida vai para OT, que tem formato próprio (MR3, e um
-    novo empate leva a outro OT). Modelar isso exigiria uma segunda cadeia de
-    estados e um critério de parada arbitrário para a sequência de prorrogações;
-    aqui o empate vale 0,5 e para por ali -- que é, aliás, o que o estado
-    significa: dois times que chegaram exatamente iguais ao fim do tempo
-    regulamentar. Nenhuma das 9 partidas do corpus foi para prorrogação.
+    O alvo NÃO é fixo: a partir de (alvo-1, alvo-1) a partida vai para
+    prorrogação, e quem vence é quem chega a `alvo - 1 + 4` (16 no MR12). Um
+    novo empate em 15-15 leva a outra prorrogação, com alvo 19, e assim por
+    diante -- é o que `_alvo_efetivo` calcula.
+
+    REGRESSÃO (2026-09-20, pega pelo invariante do corpus): com o alvo fixo em
+    13, a curva de uma partida de prorrogação terminava afirmando 100% para o
+    time ERRADO -- 4 partidas do corpus (16, 20, 32 e 42) fecharam 13-16 e
+    14-16 com o gráfico dando a vitória a quem perdeu. O comentário antigo
+    chamava isso de simplificação aceita ("o empate vale 0,5 e para por ali"),
+    mas afirmar certeza sobre o time errado não é simplificar, é errar.
     """
-    if a >= alvo:
+    alvo_agora, prorrogacoes = _alvo_efetivo(a, b, alvo)
+    if a >= alvo_agora:
         return 1.0
-    if b >= alvo:
+    if b >= alvo_agora:
         return 0.0
-    if a == alvo - 1 and b == alvo - 1:
+    if prorrogacoes >= MAX_PRORROGACOES_MODELADAS:
         return 0.5
 
     p = P_ROUND_NEUTRA

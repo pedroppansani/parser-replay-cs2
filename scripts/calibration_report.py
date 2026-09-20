@@ -29,6 +29,7 @@ import polars as pl
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+from metrics.identidade import com_nome_de_exibicao  # noqa: E402
 from metrics.player_roles import TRAIT_SPECS  # noqa: E402
 
 PROCESSED = PROJECT_ROOT / "data" / "processed"
@@ -54,7 +55,12 @@ def carrega(tabela: str) -> pl.DataFrame:
             df = pl.read_parquet(p)
             partes.append(df.with_columns(pl.lit(d.name).alias("match_id"),
                                           pl.lit(origem.get(d.name, "?")).alias("origem")))
-    return pl.concat(partes, how="diagonal_relaxed") if partes else pl.DataFrame()
+    if not partes:
+        return pl.DataFrame()
+    junto = pl.concat(partes, how="diagonal_relaxed")
+    # identidade é o steamid: o mesmo jogador com dois nicks (sh1ro/SH1R0) sairia
+    # como duas pessoas em qualquer contagem entre partidas
+    return com_nome_de_exibicao(junto) if "steamid" in junto.columns else junto
 
 
 def histograma(valores: np.ndarray, piso: float | None, lo: float, hi: float) -> list[str]:
@@ -137,12 +143,13 @@ def cortes_com_nomes(funcoes: pl.DataFrame, trait) -> list[str]:
     lid = lideres(pro, trait.column)
     q = [_arredonda(float(lid[trait.column].quantile(x)), trait.floor) for x in QUANTIS_CANDIDATOS]
     cortes = sorted({trait.floor, *q})
-    tab = lid.group_by("name").agg(
+    tab = lid.group_by("steamid").agg(
+        pl.col("name").last().alias("name"),
         pl.len().alias("lidera"),
         *[(pl.col(trait.column) >= c).sum().alias(f"≥{c:g}") for c in cortes],
         pl.col(trait.column).median().round(2).alias("mediana quando lidera"),
         pl.col("time_real").mode().first().alias("time"),
-    ).filter(pl.col("lidera") >= MIN_LIDERANCAS_NA_TABELA).sort(["time", "name"])
+    ).drop("steamid").filter(pl.col("lidera") >= MIN_LIDERANCAS_NA_TABELA).sort(["time", "name"])
     linhas = [f"\n=== {trait.label} ({trait.column}) -- piso atual {trait.floor}, candidatos {', '.join(f'{c:g}' for c in cortes)} ===",
               f"  {lid.height} lideranças de time em {lid['match_id'].n_unique()} partidas profissionais. Coluna '≥c' = em quantas das "
               f"partidas que ele liderou o rótulo sai com o corte c."]

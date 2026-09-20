@@ -28,6 +28,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from clustering.playstyle import describe_clusters  # noqa: E402
+from metrics.identidade import com_nome_de_exibicao  # noqa: E402
 from metrics.grenade_throws import grenade_throws, grupos_de_forca, rotula_forca, trajetorias  # noqa: E402
 from metrics.player_roles import TRAIT_SPECS  # noqa: E402
 from parsing.parser import load_interim  # noqa: E402
@@ -86,11 +87,11 @@ def secao_grupos() -> list[str]:
     partes = [pl.read_parquet(d / "cluster_assignments.parquet").with_columns(
         pl.lit(d.name).alias("match_id"), pl.lit(man[d.name]["mapa"].replace("de_", "")).alias("mapa"))
         for d in sorted(PROCESSED.glob("match_*")) if (d / "cluster_assignments.parquet").exists()]
-    c = pl.concat(partes, how="diagonal_relaxed")
+    c = com_nome_de_exibicao(pl.concat(partes, how="diagonal_relaxed"))
     perfil_global = PROJECT_ROOT / "data" / "global_clusters" / "cluster_profiles.parquet"
     desc = {r["cluster"]: r["titulo"] for r in describe_clusters(pl.read_parquet(perfil_global)).to_dicts()}
     geral = {f: (c[f].mean(), c[f].std()) for f in FEATURES}
-    tot = c.group_by("name").agg(pl.len().alias("d"))
+    tot = c.group_by("steamid").agg(pl.col("name").last().alias("name"), pl.len().alias("d"))
     out = ["## 2. Nomes dos quatro grupos de estilo", "",
            "A descrição automática é releitura das médias, não nome de função (decisão 8). "
            "As sugestões abaixo são só sugestões: quem nomeia é você, em `clustering/cluster_names.json`.", ""]
@@ -99,7 +100,7 @@ def secao_grupos() -> list[str]:
         titulo = desc.get(k, f"grupo {k}")
         z = sorted(((f, (g[f].mean() - geral[f][0]) / geral[f][1], g[f].mean(), geral[f][0]) for f in FEATURES),
                    key=lambda x: -abs(x[1]))[:4]
-        top = (g.group_by("name").len().join(tot, on="name").filter(pl.col("d") >= 150)
+        top = (g.group_by("steamid").len().join(tot, on="steamid").filter(pl.col("d") >= 150)
                .with_columns((pl.col("len") / pl.col("d")).alias("fr")).sort("fr", descending=True).head(5))
         cx, cy = g["pca_1"].mean(), g["pca_2"].mean()
         ex = (g.with_columns(((pl.col("pca_1") - cx) ** 2 + (pl.col("pca_2") - cy) ** 2).alias("dist"))

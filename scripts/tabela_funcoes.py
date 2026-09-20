@@ -28,6 +28,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from metrics.archetypes import PISO_BAITER, PISO_CARREGA_PIANO  # noqa: E402
+from metrics.identidade import com_nome_de_exibicao  # noqa: E402
 from metrics.structural_roles import FUNCOES  # noqa: E402
 
 PROCESSED = PROJECT_ROOT / "data" / "processed"
@@ -49,7 +50,10 @@ def _le(tabela: str, partidas: dict[str, dict]) -> pl.DataFrame:
             partes.append(df.with_columns(
                 pl.lit(mid).alias("match_id"),
                 pl.col("name").replace_strict(time_de, default=None).alias("time_real")))
-    return pl.concat(partes, how="diagonal_relaxed") if partes else pl.DataFrame()
+    if not partes:
+        return pl.DataFrame()
+    # identidade é o steamid; o nick muda entre partidas (metrics/identidade.py)
+    return com_nome_de_exibicao(pl.concat(partes, how="diagonal_relaxed"))
 
 
 def tabela() -> pl.DataFrame:
@@ -58,23 +62,25 @@ def tabela() -> pl.DataFrame:
 
     # 1. função estrutural por lado, somando os rounds de todas as partidas
     est = _le("structural_roles_summary", pro).drop_nulls("time_real")
-    por_funcao = (est.drop_nulls("funcao").group_by("name", "side", "funcao")
+    por_funcao = (est.drop_nulls("funcao").group_by("steamid", "side", "funcao")
                   .agg(pl.col("rounds_na_funcao").sum().alias("n")))
-    total_lado = est.unique(["match_id", "name", "side"]).group_by("name", "side").agg(
+    total_lado = est.unique(["match_id", "steamid", "side"]).group_by("steamid", "side").agg(
         pl.col("rounds_no_lado").sum().alias("d"))
-    dom = (por_funcao.sort("n", descending=True).group_by("name", "side", maintain_order=True).first()
-           .join(total_lado, on=["name", "side"])
+    dom = (por_funcao.sort("n", descending=True).group_by("steamid", "side", maintain_order=True).first()
+           .join(total_lado, on=["steamid", "side"])
            .with_columns((pl.col("funcao").replace_strict({k: v[0] for k, v in FUNCOES.items()}, default=pl.col("funcao"))
                           + " " + pl.col("n").cast(pl.Utf8) + " de " + pl.col("d").cast(pl.Utf8)).alias("txt")))
-    ct = dom.filter(pl.col("side") == "ct").select("name", pl.col("txt").alias("CT: função dominante"))
-    tr = dom.filter(pl.col("side") == "t").select("name", pl.col("txt").alias("TR: função dominante"))
+    ct = dom.filter(pl.col("side") == "ct").select("steamid", pl.col("txt").alias("CT: função dominante"))
+    tr = dom.filter(pl.col("side") == "t").select("steamid", pl.col("txt").alias("TR: função dominante"))
 
     # 2. rótulo da partida e os componentes que o decidem
     pr = _le("player_roles", pro).drop_nulls("time_real")
-    rot = (pr.drop_nulls("role").group_by("name", "role").agg(pl.len().alias("n"))
-           .sort("n", descending=True).group_by("name", maintain_order=True).first())
-    partidas = pr.group_by("name").agg(pl.len().alias("partidas"), pl.col("time_real").mode().first().alias("time"))
-    comp = pr.group_by("name").agg(
+    rot = (pr.drop_nulls("role").group_by("steamid", "role").agg(pl.len().alias("n"))
+           .sort("n", descending=True).group_by("steamid", maintain_order=True).first())
+    partidas = pr.group_by("steamid").agg(
+        pl.col("name").last().alias("name"), pl.len().alias("partidas"),
+        pl.col("time_real").mode().first().alias("time"))
+    comp = pr.group_by("steamid").agg(
         pl.col("awp_share").mean().round(2).alias("awp"),
         pl.col("first_contact_share").mean().round(2).alias("abre(0,32)"),
         pl.col("off_team_share").mean().round(2).alias("lurk(0,40)"),
@@ -86,18 +92,19 @@ def tabela() -> pl.DataFrame:
 
     # 3. eixo carrega piano <-> baiter
     ar = _le("archetypes_summary", pro).drop_nulls("time_real")
-    eixo = ar.group_by("name").agg(
+    eixo = ar.group_by("steamid").agg(
         pl.col("sacrifice_index").mean().round(2).alias("eixo"),
         (pl.col("sacrifice_index") >= PISO_CARREGA_PIANO).sum().alias("partidas_piano"),
         (pl.col("sacrifice_index") <= PISO_BAITER).sum().alias("partidas_baiter"),
         (pl.col("sacrificio_rounds").sum().cast(pl.Utf8) + "/" + pl.col("pagou_rounds").sum().cast(pl.Utf8)).alias("colheu/pagou"),
         pl.col("bait_untraded_per_round").mean().round(2).alias("isca/round"),
-    ) if "sacrifice_index" in ar.columns else pl.DataFrame({"name": []})
+    ) if "sacrifice_index" in ar.columns else pl.DataFrame({"steamid": []}, schema={"steamid": pl.UInt64})
 
-    return (partidas.join(ct, on="name", how="left").join(tr, on="name", how="left")
-            .join(rot.select("name", (pl.col("role") + " (" + pl.col("n").cast(pl.Utf8) + ")").alias("rótulo mais comum")),
-                  on="name", how="left")
-            .join(comp, on="name", how="left").join(eixo, on="name", how="left")
+    return (partidas.join(ct, on="steamid", how="left").join(tr, on="steamid", how="left")
+            .join(rot.select("steamid", (pl.col("role") + " (" + pl.col("n").cast(pl.Utf8) + ")").alias("rótulo mais comum")),
+                  on="steamid", how="left")
+            .join(comp, on="steamid", how="left").join(eixo, on="steamid", how="left")
+            .drop("steamid")
             .sort(["time", "name"]))
 
 
