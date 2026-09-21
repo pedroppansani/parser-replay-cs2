@@ -46,8 +46,17 @@ RAIZ = Path(__file__).resolve().parent.parent
 #   -- afirmar retroativamente que ela rodou na versão 1 seria inventar.
 VERSAO_DO_PARSER = 1
 
+# 2 (2026-09-21) processamento determinístico (decisão 28 do CLAUDE.md): empate
+#   no corte do card de estilo entra inteiro, mode() desempata pelo menor valor
+#   (inclui a classe de economia do jogador no rating), unique com subset fica
+#   com a primeira linha. Antes, esses três casos dependiam da ordem de hash.
 # 1 (2026-09-20) primeira versão declarada, mesmo raciocínio acima.
-VERSAO_DAS_METRICAS = 1
+VERSAO_DAS_METRICAS = 2
+
+# Pastas cujo estado define o NÚMERO. `sujo` olha só estas: olhar o repositório
+# inteiro marcava todo reprocessamento como sujo, porque o próprio
+# data/processed recém-escrito aparece como mudança não commitada.
+PASTAS_DE_CODIGO = ("parsing", "metrics", "clustering", "scripts")
 
 
 @lru_cache(maxsize=1)
@@ -66,7 +75,7 @@ def _commit() -> dict[str, str | bool | None]:
         return {"commit": None, "sujo": None}
     # "sujo" = havia mudança não commitada no momento do processamento. É o
     # aviso de que o commit registrado NÃO descreve inteiramente este número.
-    status = git("status", "--porcelain")
+    status = git("status", "--porcelain", "--", *PASTAS_DE_CODIGO)
     return {"commit": sha[:12], "sujo": bool(status)}
 
 

@@ -130,3 +130,14 @@ def test_o_historico_de_versoes_fica_no_modulo_e_nao_na_cabeca_de_ninguem(campo)
     atual = getattr(v, "VERSAO_DO_PARSER" if campo == "parser" else "VERSAO_DAS_METRICAS")
     assert f"# {atual} (" in fonte, (
         f"versão {atual} não tem linha de histórico em parsing/versao.py")
+
+
+def test_sujo_olha_so_o_codigo_e_nao_os_dados():
+    """REGRESSÃO: `sujo` olhava o repositório inteiro, e todo reprocessamento
+    saía sujo -- o data/processed que ele mesmo acabou de escrever aparece como
+    mudança não commitada. Sujo é "o código que fez este número não está no
+    commit registrado", e isso só o código responde."""
+    fonte = (v.RAIZ / "parsing" / "versao.py").read_text(encoding="utf-8")
+    assert '"--", *PASTAS_DE_CODIGO' in fonte
+    assert "data" not in v.PASTAS_DE_CODIGO
+    assert set(v.PASTAS_DE_CODIGO) >= {"parsing", "metrics", "scripts"}
