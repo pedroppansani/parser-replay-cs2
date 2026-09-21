@@ -994,6 +994,21 @@ testada e estava errada.
     `--processos` na linha de comando; `--sequencial` roda num processo só.
     Referências globais NÃO são reajustadas por padrão (reajustar é decisão);
     os pesos do rating nunca são refeitos ali.
+    REPROCESSAMENTO DO CORPUS (etapa 5, 2026-09-21), contra o que estava
+    commitado: rating idêntico nos 520 jogador-partidas (erro contra o oficial
+    0,077, correlação 0,967, média 1,0720 contra 1,0726 -- tudo igual), round
+    decisivo idêntico nas 52, eixo carrega piano/baiter sem mudança, escada de
+    validação idêntica. Mudaram 3 de 1.040 funções estruturais dominantes, as três
+    de TR para lurker (match_44 flameZ e molodoy, match_51 xertioN). PROVADO que
+    eram cara ou coroa: o código de antes da etapa 4, rodado 5 vezes na mesma
+    entrada, deu flameZ entry 4x/lurker 1x, molodoy suporte 3x/lurker 2x,
+    xertioN entry 4x/lurker 1x. Nos três, a "dominante" é um EMPATE de 4 vias
+    com 1 round cada, desempatado pela pontuação média -- que variava porque
+    vinha de `.first()` sobre grupos em ordem de hash. Agora é reprodutível;
+    se um empate assim deveria virar "sem função dominante" é decisão do Pedro
+    (`resume_por_lado` não trata empate na contagem).
+    As 52 partidas registram `parser 1, métricas 2`, o commit `56742b2` e
+    `sujo: false`; o manifesto passou de 52 "desconhecidas" para 52 em dia.
 
 23. **Anotação no mapa: coordenada de jogo, um único ponto de redimensionamento,
     camada sempre transparente.** A camada vive em `dashboard/web/annotations.js`

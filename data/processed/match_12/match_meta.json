@@ -29,5 +29,13 @@
   "source_fingerprints": [
     "90cbd70755e03b033be0",
     "2452c3f21f651fd23bc2"
-  ]
+  ],
+  "versao": {
+    "parser": 1,
+    "metricas": 2,
+    "commit": "56742b2d4337",
+    "sujo": false,
+    "awpy": "2.0.2",
+    "demoparser2": "0.42.0"
+  }
 }

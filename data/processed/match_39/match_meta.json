@@ -31,5 +31,13 @@
     "34d3ebd3a85b041b3bbb",
     "c5a9028a3a65876e8cb8",
     "dec8925cf9f2cd847e4b"
-  ]
+  ],
+  "versao": {
+    "parser": 1,
+    "metricas": 2,
+    "commit": "56742b2d4337",
+    "sujo": false,
+    "awpy": "2.0.2",
+    "demoparser2": "0.42.0"
+  }
 }

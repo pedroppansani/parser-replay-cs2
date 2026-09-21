@@ -21,5 +21,13 @@
     "fitted_on": "global",
     "n_player_rounds_global": 1870
   },
-  "source_fingerprint": "07976f29cf6be726a97b"
+  "source_fingerprint": "07976f29cf6be726a97b",
+  "versao": {
+    "parser": 1,
+    "metricas": 2,
+    "commit": "56742b2d4337",
+    "sujo": false,
+    "awpy": "2.0.2",
+    "demoparser2": "0.42.0"
+  }
 }
