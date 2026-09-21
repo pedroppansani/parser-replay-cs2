@@ -103,13 +103,13 @@ def grenades_thrown(grenades: pl.DataFrame, roster: pl.DataFrame) -> pl.DataFram
     lançada por quem morre no ar existe na trajetória e é uma decisão de jogo
     tomada, mesmo que o efeito tenha sido perdido.
     """
-    base = roster.select(["round_num", "steamid", "name"]).unique()
+    base = roster.select(["round_num", "steamid", "name"]).unique(maintain_order=True)
 
     if grenades is None or grenades.height == 0:
         return base.with_columns(_empty_kind_columns()).sort(["steamid", "round_num"])
 
     per_entity = (
-        grenades.group_by(["round_num", "entity_id"])
+        grenades.group_by(["round_num", "entity_id"], maintain_order=True)
         .agg(
             pl.col("thrower_steamid").first().alias("steamid"),
             pl.col("grenade_type").first().alias("grenade_type"),
@@ -123,7 +123,7 @@ def grenades_thrown(grenades: pl.DataFrame, roster: pl.DataFrame) -> pl.DataFram
     )
 
     counts = (
-        per_entity.group_by(["round_num", "steamid", "kind"])
+        per_entity.group_by(["round_num", "steamid", "kind"], maintain_order=True)
         .agg(pl.len().alias("n"))
         .pivot(on="kind", index=["round_num", "steamid"], values="n")
     )
@@ -155,7 +155,7 @@ def flash_impact(
       flash_assists         inimigo morto por um COMPANHEIRO enquanto cego por mim
       flash_kills           inimigo morto por MIM enquanto cego pela minha flash
     """
-    base = roster.select(["round_num", "steamid", "name"]).unique()
+    base = roster.select(["round_num", "steamid", "name"]).unique(maintain_order=True)
     zero = base.with_columns(
         pl.lit(0, dtype=pl.Int32).alias("enemies_flashed"),
         pl.lit(0.0).alias("enemy_blind_seconds"),
@@ -189,7 +189,7 @@ def flash_impact(
     on_mate = pl.col("same_side") & ~pl.col("is_self")
 
     agg = (
-        blinds.group_by(["round_num", "steamid"])
+        blinds.group_by(["round_num", "steamid"], maintain_order=True)
         .agg(
             (on_enemy & effective).sum().cast(pl.Int32).alias("enemies_flashed"),
             pl.when(on_enemy).then(pl.col("blind_duration")).otherwise(0.0).sum().alias("enemy_blind_seconds"),
@@ -247,11 +247,11 @@ def _flash_assists(blinds: pl.DataFrame, kills: pl.DataFrame, tickrate: int) -> 
         )
         # a mesma morte pode casar com mais de uma flash (duas pessoas flasharam o
         # mesmo inimigo); cada flasher leva o crédito uma vez só por morte
-        .unique(subset=["round_num", "steamid", "victim_steamid", "kill_tick"])
+        .unique(subset=["round_num", "steamid", "victim_steamid", "kill_tick"], maintain_order=True, keep="first")
     )
 
     return (
-        matched.group_by(["round_num", "steamid"])
+        matched.group_by(["round_num", "steamid"], maintain_order=True)
         .agg(
             (pl.col("killer_steamid") != pl.col("steamid")).sum().cast(pl.Int32).alias("flash_assists"),
             (pl.col("killer_steamid") == pl.col("steamid")).sum().cast(pl.Int32).alias("flash_kills"),
@@ -266,7 +266,7 @@ def utility_damage_split(damages: pl.DataFrame, roster: pl.DataFrame) -> pl.Data
     porque as duas armas jogam papéis diferentes: HE é dano de execução e de
     chip, molotov é negação de espaço que às vezes cobra dano de quem insiste.
     """
-    base = roster.select(["round_num", "steamid", "name"]).unique()
+    base = roster.select(["round_num", "steamid", "name"]).unique(maintain_order=True)
 
     by_weapon = (
         enemy_damages(damages)
@@ -277,7 +277,7 @@ def utility_damage_split(damages: pl.DataFrame, roster: pl.DataFrame) -> pl.Data
             .otherwise(pl.lit("fire_damage"))
             .alias("bucket")
         )
-        .group_by(["round_num", "attacker_steamid", "bucket"])
+        .group_by(["round_num", "attacker_steamid", "bucket"], maintain_order=True)
         .agg(pl.col("dmg_health_real").sum().alias("dmg"))
         .rename({"attacker_steamid": "steamid"})
         .pivot(on="bucket", index=["round_num", "steamid"], values="dmg")
@@ -305,14 +305,14 @@ def first_utility_time(
     round, e considerá-la daria "primeira utility" sempre negativa (antes do fim
     do freeze time), que foi exatamente o sintoma que revelou a mistura.
     """
-    base = roster.select(["round_num", "steamid"]).unique()
+    base = roster.select(["round_num", "steamid"]).unique(maintain_order=True)
 
     if grenades is None or grenades.height == 0:
         return base.with_columns(pl.lit(None, dtype=pl.Float64).alias("first_utility_s"))
 
     firsts = (
         grenades.filter(pl.col("grenade_type").is_in(list(PROJECTILE_KIND)))
-        .group_by(["round_num", "thrower_steamid"])
+        .group_by(["round_num", "thrower_steamid"], maintain_order=True)
         .agg(pl.col("tick").min().alias("first_tick"))
         .rename({"thrower_steamid": "steamid"})
         .join(rounds.select(["round_num", "freeze_end"]), on="round_num", how="left")
@@ -347,7 +347,7 @@ def compute_grenade_metrics(
     rounds_played = per_round["round_num"].n_unique()
 
     summary = (
-        per_round.group_by(["steamid", "name"])
+        per_round.group_by(["steamid", "name"], maintain_order=True)
         .agg(
             pl.col("nades_thrown").sum().alias("nades_thrown"),
             *[pl.col(f"{k}_thrown").sum().alias(f"{k}_thrown") for k in KIND_ORDER],

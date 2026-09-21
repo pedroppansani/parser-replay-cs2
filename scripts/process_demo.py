@@ -195,7 +195,15 @@ def process(
         df.write_parquet(processed_dir / f"{name}.parquet")
     tables["rounds"].write_parquet(processed_dir / "rounds.parquet")
 
+    # O match_meta é compartilhado: process_all_demos grava ali a impressão
+    # digital da demo (deduplicação) e as partes de uma demo dividida, que o
+    # manifesto usa para registrar o hash de cada parte. Reescrever o arquivo do
+    # zero apagava esses campos -- e reprocessar a partir do interim fazia isso
+    # nas 52 partidas de uma vez. Este módulo só sobrescreve o que ele calcula.
+    meta_path = processed_dir / "match_meta.json"
+    anterior = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else {}
     match_meta = {
+        **anterior,
         "match_id": match_id,
         "map_name": map_name,
         "n_rounds": tables["rounds"].height,
@@ -206,9 +214,7 @@ def process(
         "versao": versoes(),
         "pca": meta,
     }
-    (processed_dir / "match_meta.json").write_text(
-        json.dumps(match_meta, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
+    meta_path.write_text(json.dumps(match_meta, ensure_ascii=False, indent=2), encoding="utf-8")
 
     print(f"\nPronto. Métricas processadas em: {processed_dir}")
     print(f"Melhor silhueta: k={silhouettes['n_clusters'][0]} ({silhouettes['silhouette'][0]:.3f})")

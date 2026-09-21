@@ -123,7 +123,7 @@ def clutch_situations(
         return per_round, summary
 
     summary = (
-        per_round.group_by("steamid")
+        per_round.group_by("steamid", maintain_order=True)
         .agg(
             pl.len().cast(pl.UInt32).alias("clutch_attempts"),
             pl.col("won").sum().cast(pl.UInt32).alias("clutch_wins"),
@@ -163,7 +163,7 @@ def add_damage_in_clutch(
             .alias("time_vitima")
         )
         .filter(pl.col("time_vitima") != pl.col("team"))
-        .group_by(["round_num", "attacker_steamid"])
+        .group_by(["round_num", "attacker_steamid"], maintain_order=True)
         .agg(pl.col("dmg_health_real").sum().alias("damage_in_clutch"))
         .rename({"attacker_steamid": "steamid"})
     )

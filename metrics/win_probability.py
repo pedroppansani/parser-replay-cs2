@@ -145,7 +145,7 @@ def _round_da_troca_de_lado(ticks: pl.DataFrame) -> int | None:
     primeiro = (
         ticks.filter(pl.col("round_num") == 1)
         .sort("tick")
-        .group_by("steamid")
+        .group_by("steamid", maintain_order=True)
         .agg(pl.col("side").first())
     )
     comecaram_t = primeiro.filter(pl.col("side") == "t")["steamid"].to_list()
@@ -156,8 +156,8 @@ def _round_da_troca_de_lado(ticks: pl.DataFrame) -> int | None:
     # simplesmente não ter amostra num round.
     por_round = (
         ticks.filter(pl.col("steamid").is_in(comecaram_t))
-        .group_by("round_num")
-        .agg(pl.col("side").mode().first().alias("lado"))
+        .group_by("round_num", maintain_order=True)
+        .agg(pl.col("side").mode().sort().first().alias("lado"))
         .sort("round_num")
     )
     for linha in por_round.iter_rows(named=True):

@@ -50,3 +50,6 @@ venv/
 # partir do código e de data/processed/ e entrega como artefato do Pages: nada
 # disso entra em branch nenhum.
 docs/
+
+# saída dos reprocessamentos (scripts/reprocessa.py)
+logs/

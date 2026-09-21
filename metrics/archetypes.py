@@ -152,7 +152,7 @@ def round_facts(
             (pl.col("Y") - pl.col("Y").shift(1).over(["round_num", "steamid"])).alias("dy"),
         )
         .with_columns((pl.col("dx") ** 2 + pl.col("dy") ** 2).sqrt().alias("passo"))
-        .group_by(["round_num", "steamid"])
+        .group_by(["round_num", "steamid"], maintain_order=True)
         .agg(pl.col("passo").sum().alias("path_distance_round"))
     )
 
@@ -243,7 +243,7 @@ def bait_events(
     pos_na_morte = ticks.select(
         ["round_num", "tick", "steamid", "X", "Y", "is_alive"]
     ).join(
-        mortes.select(["round_num", "death_tick"]).unique(),
+        mortes.select(["round_num", "death_tick"]).unique(maintain_order=True),
         left_on=["round_num", "tick"],
         right_on=["round_num", "death_tick"],
         how="inner",
@@ -291,7 +291,7 @@ def bait_events(
                 & (pl.col("revenge_tick") <= pl.col("death_tick") + janela)
             ).alias("traded")
         )
-        .group_by(["round_num", "steamid", "death_tick", "victim_steamid"])
+        .group_by(["round_num", "steamid", "death_tick", "victim_steamid"], maintain_order=True)
         .agg(pl.col("distance").first(), pl.col("traded").any())
     )
 
@@ -348,7 +348,7 @@ def marca_repick(
     janela = int(PRE_ENGAGEMENT_WINDOW_SECONDS * tickrate)
     pos = {}
     for (rn, sid), g in ticks.select("round_num", "steamid", "tick", "X", "Y").sort("tick").group_by(
-            ["round_num", "steamid"]):
+            ["round_num", "steamid"], maintain_order=True):
         pos[(int(rn), int(sid))] = (
             g["tick"].to_numpy(), g["X"].to_numpy().astype(float), g["Y"].to_numpy().astype(float))
 
@@ -356,7 +356,7 @@ def marca_repick(
         fora = {}
         if df is None or df.height == 0 or not set(colunas) <= set(df.columns):
             return fora
-        for (rn,), g in df.select(["round_num", *colunas]).group_by("round_num"):
+        for (rn,), g in df.select(["round_num", *colunas]).group_by("round_num", maintain_order=True):
             fora[int(rn)] = g
         return fora
 
@@ -484,7 +484,7 @@ def economy_signals(ticks: pl.DataFrame, rounds: pl.DataFrame) -> pl.DataFrame:
         ticks.join(alvo, on="round_num", how="inner")
         .filter(pl.col("tick") >= pl.col("freeze_end"))
         .sort("tick")
-        .group_by(["round_num", "steamid"])
+        .group_by(["round_num", "steamid"], maintain_order=True)
         .first()
         .select(
             ["round_num", "steamid", "name", "side",
@@ -500,7 +500,7 @@ def economy_signals(ticks: pl.DataFrame, rounds: pl.DataFrame) -> pl.DataFrame:
         ticks.filter(
             pl.col("is_alive") & pl.col("active_weapon_name").is_in(list(SMGS | RIFLES))
         )
-        .group_by(["round_num", "steamid", "active_weapon_name"])
+        .group_by(["round_num", "steamid", "active_weapon_name"], maintain_order=True)
         .len()
         .sort("len", descending=True)
         .group_by(["round_num", "steamid"], maintain_order=True)
@@ -589,7 +589,7 @@ def flash_convertida(
             & (pl.col("matador") != pl.col("steamid"))
             & (pl.col("lado_matador") == pl.col("lado"))
         )
-        .select("round_num", "steamid").unique()
+        .select("round_num", "steamid").unique(maintain_order=True)
         .with_columns(pl.lit(True).alias("flash_convertida"))
     )
     return conv if conv.height else vazio
@@ -694,7 +694,7 @@ def player_components(
         per_round = per_round.with_columns(pl.lit(CONTEXTO_SEM_FUNCAO).alias("funcao_do_round"))
 
     if bait.height:
-        isca_round = (bait.filter(~pl.col("traded")).group_by(["round_num", "steamid"])
+        isca_round = (bait.filter(~pl.col("traded")).group_by(["round_num", "steamid"], maintain_order=True)
                       .agg(pl.len().alias("isca_no_round")))
         per_round = per_round.join(
             isca_round.select(pl.col("round_num").cast(per_round.schema["round_num"]),
@@ -710,7 +710,7 @@ def player_components(
             lambda f: float(esperado.get(f, esperado.get("_geral", 0.0)) or 0.0),
             return_dtype=pl.Float64).alias("isca_esperada_do_round"))
 
-    rounds_por_lado = per_round.group_by(["steamid", "side"]).agg(pl.len().alias("n"))
+    rounds_por_lado = per_round.group_by(["steamid", "side"], maintain_order=True).agg(pl.len().alias("n"))
     t_rounds = rounds_por_lado.filter(pl.col("side") == "t").select(
         ["steamid", pl.col("n").alias("t_rounds")]
     )
@@ -718,7 +718,7 @@ def player_components(
         ["steamid", pl.col("n").alias("ct_rounds")]
     )
 
-    base = per_round.group_by(["steamid", "name", "team"]).agg(
+    base = per_round.group_by(["steamid", "name", "team"], maintain_order=True).agg(
         pl.len().alias("rounds_played"),
         pl.col("first_contact_of_team").mean().alias("first_contact_share"),
         (pl.col("enemy_blind_seconds") + pl.col("utility_damage")).mean().alias("util_per_round"),
@@ -746,7 +746,7 @@ def player_components(
     # Fatias do time: dano e kills do jogador sobre o total do próprio time. E a
     # traducao direta de "levar o time nas costas" -- e por ser fracao do time,
     # não sofre com partida de placar alto ou baixo.
-    totais_time = base.group_by("team").agg(
+    totais_time = base.group_by("team", maintain_order=True).agg(
         pl.col("total_damage").sum().alias("team_damage"),
         pl.col("total_kills").sum().alias("team_kills"),
     )
@@ -795,7 +795,7 @@ def _junta_repick(comp: pl.DataFrame, repick: pl.DataFrame) -> pl.DataFrame:
         return comp.with_columns(
             pl.lit(0.0).alias("repick_share"), pl.lit(0, dtype=pl.UInt32).alias("engagements")
         )
-    agg = repick.group_by("steamid").agg(
+    agg = repick.group_by("steamid", maintain_order=True).agg(
         pl.len().cast(pl.UInt32).alias("engagements"),
         pl.col("repick").mean().alias("repick_share"),
     )
@@ -813,7 +813,7 @@ def _junta_bait(comp: pl.DataFrame, bait: pl.DataFrame) -> pl.DataFrame:
             pl.lit(0.0).alias("bait_return_per_opp"),
             pl.lit(0.0).alias("bait_untraded_per_round"),
         )
-    agg = bait.group_by("steamid").agg(
+    agg = bait.group_by("steamid", maintain_order=True).agg(
         pl.len().cast(pl.UInt32).alias("bait_opportunities"),
         (~pl.col("traded")).mean().alias("bait_no_trade_share"),
     )
@@ -860,7 +860,7 @@ def _junta_clutch(comp: pl.DataFrame, clutch_round: pl.DataFrame) -> pl.DataFram
         )
     tem_dano = "damage_in_clutch" in clutch_round.columns
     x = pl.col("enemies_alive").cast(pl.Float64)
-    agg = clutch_round.group_by("steamid").agg(
+    agg = clutch_round.group_by("steamid", maintain_order=True).agg(
         pl.len().cast(pl.UInt32).alias("clutch_attempts"),
         pl.col("won").sum().cast(pl.UInt32).alias("clutch_wins"),
         (
@@ -871,7 +871,7 @@ def _junta_clutch(comp: pl.DataFrame, clutch_round: pl.DataFrame) -> pl.DataFram
     )
     # "1v1: 1/3, 1v2: 0/2" -- convertidas / tentativas em cada X
     por_x = (
-        clutch_round.group_by("steamid", "enemies_alive")
+        clutch_round.group_by("steamid", "enemies_alive", maintain_order=True)
         .agg(pl.len().alias("n"), pl.col("won").sum().alias("v"))
         .sort("enemies_alive")
         .with_columns(("1v" + pl.col("enemies_alive").cast(pl.Utf8) + ": "
@@ -1302,7 +1302,7 @@ def engagement_ticks(kills: pl.DataFrame) -> pl.DataFrame:
     return (
         pl.concat([lado("attacker_steamid"), lado("victim_steamid")])
         .filter(pl.col("steamid").is_not_null())
-        .unique()
+        .unique(maintain_order=True)
         .sort(["round_num", "engagement_tick"])
     )
 

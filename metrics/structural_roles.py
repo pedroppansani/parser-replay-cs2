@@ -164,7 +164,7 @@ def _primeiro_contato(damages: pl.DataFrame) -> pl.DataFrame:
     return (
         pl.concat(lados)
         .filter(pl.col("steamid").is_not_null())
-        .group_by(["round_num", "steamid"])
+        .group_by(["round_num", "steamid"], maintain_order=True)
         .agg(pl.col("tick").min().alias("tick_contato"))
     )
 
@@ -248,7 +248,7 @@ def _time_veio_atras(
             & (pl.col("tick") <= pl.col("tick_contato") + janela)
         )
         .select(["round_num", "steamid"])
-        .unique()
+        .unique(maintain_order=True)
         .with_columns(pl.lit(True).alias("time_veio_atras"))
     )
 
@@ -264,13 +264,13 @@ def _sinais_de_sniper(ticks: pl.DataFrame, kills: pl.DataFrame) -> pl.DataFrame:
             pl.col("is_alive") & pl.col("active_weapon_name").is_in(list(SNIPERS_NO_DEMO))
         )
         .select(["round_num", "steamid"])
-        .unique()
+        .unique(maintain_order=True)
         .with_columns(pl.lit(True).alias("sniper_na_mao"))
     )
 
     abertura = (
         kills.sort("tick")
-        .group_by("round_num")
+        .group_by("round_num", maintain_order=True)
         .first()
         .select(
             pl.col("round_num").cast(pl.UInt32),
@@ -290,7 +290,7 @@ def _sinais_de_sniper(ticks: pl.DataFrame, kills: pl.DataFrame) -> pl.DataFrame:
             pl.col("attacker_steamid").is_not_null()
             & pl.col("arma").is_in(list(SNIPERS_NA_TABELA_DE_KILLS))
         )
-        .group_by([pl.col("round_num").cast(pl.UInt32), pl.col("attacker_steamid").alias("steamid")])
+        .group_by([pl.col("round_num").cast(pl.UInt32), pl.col("attacker_steamid").alias("steamid")], maintain_order=True)
         .agg(pl.len().cast(pl.Int32).alias("kills_de_sniper_no_round"))
     )
 
@@ -385,7 +385,7 @@ def _sinais_de_trader(
             & (pl.col("tick") <= pl.col("tick_morte_entry") + janela)
         )
         .select(["round_num", pl.col("matador").alias("steamid")])
-        .unique()
+        .unique(maintain_order=True)
         .with_columns(pl.lit(True).alias("trocou_o_entry"))
     )
 
@@ -456,7 +456,7 @@ def _sinais_de_suporte(
     if junto.height == 0:
         return vazio
     return (
-        junto.group_by(["round_num", "lancador"])
+        junto.group_by(["round_num", "lancador"], maintain_order=True)
         .agg(pl.len().cast(pl.Int32).alias("utility_virou_kill"))
         .rename({"lancador": "steamid"})
     )
@@ -496,7 +496,7 @@ def fatos_por_round(
 
     # deslocamento líquido e regiões distintas no round
     ordenado = positions.sort(["round_num", "steamid", "tick"])
-    movimento = ordenado.group_by(["round_num", "steamid"]).agg(
+    movimento = ordenado.group_by(["round_num", "steamid"], maintain_order=True).agg(
         pl.col("X").first().alias("x0"), pl.col("Y").first().alias("y0"),
         pl.col("X").last().alias("x1"), pl.col("Y").last().alias("y1"),
         pl.col("place").n_unique().alias("regioes"),
@@ -510,14 +510,14 @@ def fatos_por_round(
         pl.col("place").replace_strict(area_de, default=None).alias("area")
     ).filter(pl.col("area").is_not_null())
     dominante = (
-        com_area.group_by(["round_num", "steamid", "side", "area"]).agg(pl.len().alias("n"))
+        com_area.group_by(["round_num", "steamid", "side", "area"], maintain_order=True).agg(pl.len().alias("n"))
         .sort(["n", "area"], descending=[True, False])
         .group_by(["round_num", "steamid"], maintain_order=True)
         .first()
         .select(["round_num", "steamid", "side", pl.col("area").alias("area_dominante")])
     )
     do_time = (
-        dominante.group_by(["round_num", "side", "area_dominante"]).agg(pl.len().alias("n"))
+        dominante.group_by(["round_num", "side", "area_dominante"], maintain_order=True).agg(pl.len().alias("n"))
         .sort(["n", "area_dominante"], descending=[True, False])
         .group_by(["round_num", "side"], maintain_order=True)
         .first()
@@ -529,7 +529,7 @@ def fatos_por_round(
         ticks.join(rounds.select(["round_num", "freeze_end"]), on="round_num", how="inner")
         .filter(pl.col("tick") >= pl.col("freeze_end"))
         .sort("tick")
-        .group_by(["round_num", "steamid"])
+        .group_by(["round_num", "steamid"], maintain_order=True)
         .first()
         .select(["round_num", "steamid", "side", pl.col("current_equip_value").cast(pl.Float64)])
         .with_columns(
@@ -545,7 +545,7 @@ def fatos_por_round(
     gren = tables.get("grenades")
     utility = (
         gren.filter(pl.col("thrower_steamid").is_not_null())
-        .group_by([pl.col("round_num").cast(pl.UInt32), pl.col("thrower_steamid").alias("steamid")])
+        .group_by([pl.col("round_num").cast(pl.UInt32), pl.col("thrower_steamid").alias("steamid")], maintain_order=True)
         .agg(pl.col("entity_id").n_unique().cast(pl.Int32).alias("granadas"))
         if gren is not None and gren.height and "thrower_steamid" in gren.columns
         else pl.DataFrame(schema={"round_num": pl.UInt32, "steamid": pl.UInt64, "granadas": pl.Int32})
@@ -576,7 +576,7 @@ def fatos_por_round(
             pl.col("companheiro").map_elements(lambda s: team_of.get(s), return_dtype=pl.String).alias("tc"),
         )
         .filter(pl.col("tm") == pl.col("tc"))
-        .group_by(["round_num", "matador"])
+        .group_by(["round_num", "matador"], maintain_order=True)
         .agg(pl.len().cast(pl.Int32).alias("trades_feitos"))
         .rename({"matador": "steamid"})
     )
@@ -673,7 +673,7 @@ def dispersao_do_inicio(fatos: pl.DataFrame) -> pl.DataFrame:
     de TR, e misturar os dois inventaria dispersão em todo mundo.
     """
     linhas = []
-    for (sid, side), g in fatos.group_by(["steamid", "side"]):
+    for (sid, side), g in fatos.group_by(["steamid", "side"], maintain_order=True):
         validos = g.filter(pl.col("inicio_x").is_not_null())
         if validos.height == 0:
             continue
@@ -702,7 +702,7 @@ def consistencia_de_sniper(fatos: pl.DataFrame) -> pl.DataFrame:
     rounds: a função exige consistência ao longo da partida, não evento isolado.
     """
     return (
-        fatos.group_by("steamid")
+        fatos.group_by("steamid", maintain_order=True)
         .agg(
             pl.len().alias("rounds_totais"),
             pl.col("sniper_na_mao").sum().alias("rounds_com_sniper"),
@@ -906,7 +906,7 @@ def resume_por_lado(por_round: pl.DataFrame, match_id: str = "") -> pl.DataFrame
     """
     com_funcao = por_round.filter(pl.col("funcao").is_not_null())
 
-    total = por_round.group_by(["steamid", "name", "side"]).agg(
+    total = por_round.group_by(["steamid", "name", "side"], maintain_order=True).agg(
         pl.len().alias("rounds_no_lado")
     )
     if com_funcao.height == 0:
@@ -918,7 +918,7 @@ def resume_por_lado(por_round: pl.DataFrame, match_id: str = "") -> pl.DataFrame
             pl.lit(match_id).alias("match_id"),
         )
 
-    por_funcao = com_funcao.group_by(["steamid", "name", "side", "funcao"]).agg(
+    por_funcao = com_funcao.group_by(["steamid", "name", "side", "funcao"], maintain_order=True).agg(
         pl.len().cast(pl.UInt32).alias("rounds_na_funcao"),
         pl.col("pontuacao").mean().alias("pontuacao_media"),
     )
@@ -963,7 +963,7 @@ def structural_roles(
         tables["kills"]
         .select(pl.col("round_num").cast(pl.UInt32), pl.col("victim_steamid").alias("steamid"))
         .filter(pl.col("steamid").is_not_null())
-        .unique()
+        .unique(maintain_order=True)
         .with_columns(pl.lit(False).alias("sobreviveu"))
     )
     fatos = fatos.join(mortos, on=["round_num", "steamid"], how="left").with_columns(

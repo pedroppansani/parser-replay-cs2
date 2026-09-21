@@ -225,7 +225,7 @@ def grupo_do_round(ticks: pl.DataFrame, rounds: pl.DataFrame) -> pl.DataFrame:
         )
     )
     return (
-        base.group_by(["round_num", "steamid"])
+        base.group_by(["round_num", "steamid"], maintain_order=True)
         .agg(
             pl.col("side").first(),
             pl.col("grupo").sort_by("forca").last(),
@@ -255,12 +255,12 @@ def taxas_por_confronto(
             .alias("time")
         )
         .drop_nulls("time")
-        .group_by(["round_num", "time"])
-        .agg(pl.col("grupo").mode().first(), pl.col("side").mode().first())
+        .group_by(["round_num", "time"], maintain_order=True)
+        .agg(pl.col("grupo").mode().sort().first(), pl.col("side").mode().sort().first())
     )
 
     linhas = []
-    for rn, g in por_time.group_by("round_num"):
+    for rn, g in por_time.group_by("round_num", maintain_order=True):
         rn = int(rn[0]) if isinstance(rn, tuple) else int(rn)
         if g.height != 2:
             continue
@@ -278,11 +278,11 @@ def taxas_por_confronto(
     df = pl.DataFrame(linhas)
     base_lado = {
         r["side"]: float(r["taxa"])
-        for r in df.group_by("side").agg(pl.col("venceu").mean().alias("taxa")).iter_rows(named=True)
+        for r in df.group_by("side", maintain_order=True).agg(pl.col("venceu").mean().alias("taxa")).iter_rows(named=True)
     }
     celulas = {}
     for r in (
-        df.group_by(["side", "meu", "dele"])
+        df.group_by(["side", "meu", "dele"], maintain_order=True)
         .agg(pl.col("venceu").mean().alias("taxa"), pl.len().alias("n"))
         .iter_rows(named=True)
     ):
@@ -428,8 +428,8 @@ def amostras_de_round(
             pl.col("steamid").map_elements(lambda s: team_of.get(s), return_dtype=pl.String).alias("time")
         )
         .drop_nulls("time")
-        .group_by(["round_num", "time"])
-        .agg(pl.col("equip").sum().alias("equip_time"), pl.col("side").mode().first())
+        .group_by(["round_num", "time"], maintain_order=True)
+        .agg(pl.col("equip").sum().alias("equip_time"), pl.col("side").mode().sort().first())
     )
     equip = {
         (int(r["round_num"]), r["time"]): (float(r["equip_time"]), r["side"])
@@ -496,8 +496,8 @@ def swing_por_evento(
             pl.col("steamid").map_elements(lambda s: team_of.get(s), return_dtype=pl.String).alias("time")
         )
         .drop_nulls("time")
-        .group_by(["round_num", "time"])
-        .agg(pl.col("equip").sum().alias("equip_time"), pl.col("side").mode().first())
+        .group_by(["round_num", "time"], maintain_order=True)
+        .agg(pl.col("equip").sum().alias("equip_time"), pl.col("side").mode().sort().first())
     )
     equip = {
         (int(r["round_num"]), r["time"]): (float(r["equip_time"]), r["side"])
@@ -583,7 +583,7 @@ def swing_por_evento(
             )
             if anteriores.height:
                 por_jogador = (
-                    anteriores.group_by("attacker_steamid")
+                    anteriores.group_by("attacker_steamid", maintain_order=True)
                     .agg(pl.col("dmg_health_real").sum().alias("d"))
                     .filter(pl.col("d") >= DANO_MINIMO_PARA_CREDITO)
                 )
@@ -672,7 +672,7 @@ def swing_por_evento(
     # positivo de quem perdeu faria a soma de TODA partida ficar negativa (a
     # nossa ficava em -8,7 por partida). A frase descreve o time, não uma regra
     # por jogador: o time que perde o round já soma negativo por construção.
-    return swing.group_by(["round_num", "steamid"]).agg(pl.col("swing").sum())
+    return swing.group_by(["round_num", "steamid"], maintain_order=True).agg(pl.col("swing").sum())
 
 
 # ---------------------------------------------------------------------------
@@ -781,17 +781,17 @@ def sub_ratings(
         else pl.DataFrame(schema=esquema_kill)
     )
 
-    kills_ajustadas = por_kill.group_by("steamid").agg(
+    kills_ajustadas = por_kill.group_by("steamid", maintain_order=True).agg(
         pl.col("peso").sum().alias("kills_ponderadas"), pl.len().alias("kills_cruas"),
         pl.col("peso").filter(pl.col("limpa")).sum().alias("kills_limpas_ponderadas"),
         pl.col("peso").filter(~pl.col("limpa")).sum().alias("kills_assistidas_ponderadas"),
     )
     # multi-kill: rounds com 2 ou mais kills, ponderados pelo peso medio deles
     multi = (
-        por_kill.group_by(["steamid", "round_num"])
+        por_kill.group_by(["steamid", "round_num"], maintain_order=True)
         .agg(pl.len().alias("n"), pl.col("peso").mean().alias("peso_medio"))
         .filter(pl.col("n") >= 2)
-        .group_by("steamid")
+        .group_by("steamid", maintain_order=True)
         .agg(((pl.col("n") - 1) * pl.col("peso_medio")).sum().alias("multikills_ponderados"))
     )
 
@@ -809,13 +809,13 @@ def sub_ratings(
         linhas_dano.append({"steamid": atk, "round_num": rn, "dano": float(d["dmg_health_real"]) * peso})
     dano = (
         pl.DataFrame(linhas_dano, schema={"steamid": pl.Int64, "round_num": pl.Int64, "dano": pl.Float64})
-        .group_by("steamid").agg(pl.col("dano").sum().alias("dano_ponderado"))
+        .group_by("steamid", maintain_order=True).agg(pl.col("dano").sum().alias("dano_ponderado"))
         if linhas_dano else pl.DataFrame(schema={"steamid": pl.Int64, "dano_ponderado": pl.Float64})
     )
 
     mortes = (
         kills.filter(pl.col("victim_steamid").is_not_null())
-        .group_by("victim_steamid").agg(pl.len().alias("mortes"))
+        .group_by("victim_steamid", maintain_order=True).agg(pl.len().alias("mortes"))
         .rename({"victim_steamid": "steamid"})
     )
     # Morte TROCADA: a mesma marcação do KAST (basic_metrics), usada aqui como
@@ -824,11 +824,11 @@ def sub_ratings(
 
     trocadas = traded_deaths(kills, DEFAULT_TRADE_WINDOW_SECONDS, tickrate)
     trocadas_por_jogador = (
-        trocadas.filter(pl.col("was_traded")).group_by("steamid").agg(pl.len().alias("mortes_trocadas"))
+        trocadas.filter(pl.col("was_traded")).group_by("steamid", maintain_order=True).agg(pl.len().alias("mortes_trocadas"))
         .select(pl.col("steamid").cast(pl.Int64), "mortes_trocadas")
         if trocadas.height else pl.DataFrame(schema={"steamid": pl.Int64, "mortes_trocadas": pl.UInt32})
     )
-    swing_total = swing.group_by("steamid").agg(pl.col("swing").sum().alias("swing_total"))
+    swing_total = swing.group_by("steamid", maintain_order=True).agg(pl.col("swing").sum().alias("swing_total"))
 
     base = (
         pl.DataFrame({"steamid": sorted(team_of)}, schema={"steamid": pl.Int64})
@@ -879,7 +879,7 @@ def _kast_por_jogador(kast: pl.DataFrame) -> pl.DataFrame:
     """
     if "kast_pct" in kast.columns:
         return kast.select(pl.col("steamid").cast(pl.Int64), "kast_pct")
-    return (kast.group_by("steamid")
+    return (kast.group_by("steamid", maintain_order=True)
             .agg((100.0 * pl.col("kast_round").cast(pl.Float64).mean()).alias("kast_pct"))
             .select(pl.col("steamid").cast(pl.Int64), "kast_pct"))
 
@@ -917,23 +917,23 @@ def componentes_por_lado(
         pl.struct(["round_num", "steamid"]).map_elements(
             lambda r: _lado(r["round_num"], r["steamid"]), return_dtype=pl.Utf8).alias("lado")
     ).drop_nulls("lado")
-    kills_lado = k.group_by("steamid", "lado").agg(
+    kills_lado = k.group_by("steamid", "lado", maintain_order=True).agg(
         pl.col("peso").sum().alias("kills_ponderadas"),
         pl.col("peso").filter(pl.col("limpa")).sum().alias("kills_limpas_ponderadas"),
         pl.col("peso").filter(~pl.col("limpa")).sum().alias("kills_assistidas_ponderadas"),
     )
     multi_lado = (
-        k.group_by("steamid", "lado", "round_num")
+        k.group_by("steamid", "lado", "round_num", maintain_order=True)
         .agg(pl.len().alias("n"), pl.col("peso").mean().alias("peso_medio"))
         .filter(pl.col("n") >= 2)
-        .group_by("steamid", "lado")
+        .group_by("steamid", "lado", maintain_order=True)
         .agg(((pl.col("n") - 1) * pl.col("peso_medio")).sum().alias("multikills_ponderados"))
     )
     dano_lado = (
         pl.DataFrame(linhas_dano, schema={"steamid": pl.Int64, "round_num": pl.Int64, "dano": pl.Float64})
         .with_columns(pl.struct(["round_num", "steamid"]).map_elements(
             lambda r: _lado(r["round_num"], r["steamid"]), return_dtype=pl.Utf8).alias("lado"))
-        .drop_nulls("lado").group_by("steamid", "lado").agg(pl.col("dano").sum().alias("dano_ponderado"))
+        .drop_nulls("lado").group_by("steamid", "lado", maintain_order=True).agg(pl.col("dano").sum().alias("dano_ponderado"))
         if linhas_dano else pl.DataFrame(schema={"steamid": pl.Int64, "lado": pl.Utf8, "dano_ponderado": pl.Float64})
     )
     mortes_lado = (
@@ -941,13 +941,13 @@ def componentes_por_lado(
         .select(pl.col("victim_steamid").cast(pl.Int64).alias("steamid"), pl.col("round_num").cast(pl.Int64))
         .with_columns(pl.struct(["round_num", "steamid"]).map_elements(
             lambda r: _lado(r["round_num"], r["steamid"]), return_dtype=pl.Utf8).alias("lado"))
-        .drop_nulls("lado").group_by("steamid", "lado").agg(pl.len().alias("mortes"))
+        .drop_nulls("lado").group_by("steamid", "lado", maintain_order=True).agg(pl.len().alias("mortes"))
     )
     swing_lado = (
         swing.select(pl.col("steamid").cast(pl.Int64), pl.col("round_num").cast(pl.Int64), "swing")
         .with_columns(pl.struct(["round_num", "steamid"]).map_elements(
             lambda r: _lado(r["round_num"], r["steamid"]), return_dtype=pl.Utf8).alias("lado"))
-        .drop_nulls("lado").group_by("steamid", "lado").agg(pl.col("swing").sum().alias("swing_total"))
+        .drop_nulls("lado").group_by("steamid", "lado", maintain_order=True).agg(pl.col("swing").sum().alias("swing_total"))
     )
     # KAST por lado exige o dado ROUND A ROUND. Com só o resumo (kast_pct), o
     # KAST do jogador entra igual nos dois lados -- e o resumo avisa.
@@ -956,7 +956,7 @@ def componentes_por_lado(
             kast.select(pl.col("steamid").cast(pl.Int64), pl.col("round_num").cast(pl.Int64), "kast_round")
             .with_columns(pl.struct(["round_num", "steamid"]).map_elements(
                 lambda r: _lado(r["round_num"], r["steamid"]), return_dtype=pl.Utf8).alias("lado"))
-            .drop_nulls("lado").group_by("steamid", "lado")
+            .drop_nulls("lado").group_by("steamid", "lado", maintain_order=True)
             .agg((100.0 * pl.col("kast_round").cast(pl.Float64).mean()).alias("kast_pct"))
         )
     else:
@@ -970,7 +970,7 @@ def componentes_por_lado(
             .select(pl.col("steamid").cast(pl.Int64), pl.col("round_num").cast(pl.Int64))
             .with_columns(pl.struct(["round_num", "steamid"]).map_elements(
                 lambda r: _lado(r["round_num"], r["steamid"]), return_dtype=pl.Utf8).alias("lado"))
-            .drop_nulls("lado").group_by("steamid", "lado").agg(pl.len().alias("mortes_trocadas"))
+            .drop_nulls("lado").group_by("steamid", "lado", maintain_order=True).agg(pl.len().alias("mortes_trocadas"))
         )
     else:
         trocadas_lado = pl.DataFrame(schema={"steamid": pl.Int64, "lado": pl.Utf8, "mortes_trocadas": pl.UInt32})

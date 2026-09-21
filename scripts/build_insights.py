@@ -74,7 +74,7 @@ def resolve_teams(ticks: pl.DataFrame) -> tuple[dict[int, str], dict[str, list[s
     first = (
         ticks.filter(pl.col("round_num") == 1)
         .sort("tick")
-        .group_by("steamid")
+        .group_by("steamid", maintain_order=True)
         .agg(pl.col("name").first(), pl.col("side").first())
     )
     team_of_player: dict[int, str] = {}
@@ -223,7 +223,7 @@ def contexto_economico(
         )
         if recorte.height == 0:
             return None
-        por_jogador = recorte.group_by("steamid").agg(
+        por_jogador = recorte.group_by("steamid", maintain_order=True).agg(
             pl.col("current_equip_value").max().alias("v")
         )
         return float(por_jogador["v"].mean() or 0)
@@ -283,14 +283,14 @@ def build_player_indices(
         if sit.get("clutch_player"):
             clutches[sit["clutch_player"]] = clutches.get(sit["clutch_player"], 0) + 1
 
-    per_player_round = features.group_by(["steamid"]).agg(
+    per_player_round = features.group_by(["steamid"], maintain_order=True).agg(
         pl.col("time_of_first_contact_s").median().alias("median_first_contact_s"),
         pl.col("survived").mean().alias("survival_rate"),
     )
 
     ch = crosshair.select(["steamid", "crosshair_score", "frac_entering_fight"])
     pos = (
-        position.group_by("steamid")
+        position.group_by("steamid", maintain_order=True)
         .agg(pl.col("avg_distance_from_team").mean().alias("avg_distance_from_team"))
     )
 
@@ -411,7 +411,7 @@ def build(match_id: str) -> Path:
     crosshair = pl.read_parquet(processed / "crosshair_summary.parquet")
     ch_round = pl.read_parquet(processed / "crosshair_per_round.parquet")
     crosshair = crosshair.join(
-        ch_round.group_by("steamid").agg(pl.col("frac_entering_fight").mean()),
+        ch_round.group_by("steamid", maintain_order=True).agg(pl.col("frac_entering_fight").mean()),
         on="steamid",
         how="left",
     )

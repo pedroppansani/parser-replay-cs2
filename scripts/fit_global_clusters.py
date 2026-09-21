@@ -100,7 +100,7 @@ def report(profiles: pl.DataFrame, assignments: pl.DataFrame, model: dict) -> No
 
     print("\n=== PRESENÇA POR PARTIDA (cluster só de uma partida é artefato) ===")
     print(
-        assignments.group_by(["match_id", "cluster"])
+        assignments.group_by(["match_id", "cluster"], maintain_order=True)
         .len()
         .pivot(on="cluster", index="match_id", values="len")
         .sort("match_id")
@@ -109,7 +109,7 @@ def report(profiles: pl.DataFrame, assignments: pl.DataFrame, model: dict) -> No
 
     print("\n=== LADO (T/CT) ===")
     print(
-        assignments.group_by(["cluster", "side"])
+        assignments.group_by(["cluster", "side"], maintain_order=True)
         .len()
         .pivot(on="side", index="cluster", values="len")
         .sort("cluster")

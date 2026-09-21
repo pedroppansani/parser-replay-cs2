@@ -35,7 +35,7 @@ def roster_per_round(ticks: pl.DataFrame) -> pl.DataFrame:
     """
     return (
         ticks.sort("tick")
-        .group_by(["round_num", "steamid"])
+        .group_by(["round_num", "steamid"], maintain_order=True)
         .agg(
             pl.col("name").first(),
             pl.col("side").first(),
@@ -57,7 +57,7 @@ def deaths_per_round(kills: pl.DataFrame) -> pl.DataFrame:
     return (
         kills.filter(pl.col("victim_steamid").is_not_null())
         .select(["round_num", pl.col("victim_steamid").alias("steamid")])
-        .unique()
+        .unique(maintain_order=True)
         .with_columns(pl.lit(True).alias("died"))
     )
 
@@ -96,21 +96,21 @@ def calculate_adr(damages: pl.DataFrame, roster: pl.DataFrame) -> tuple[pl.DataF
     """
     dmg_by_round = (
         enemy_damages(damages)
-        .group_by(["round_num", "attacker_steamid"])
+        .group_by(["round_num", "attacker_steamid"], maintain_order=True)
         .agg(pl.col("dmg_health_real").sum().alias("damage"))
         .rename({"attacker_steamid": "steamid"})
     )
 
     per_round = (
         roster.select(["round_num", "steamid", "name"])
-        .unique()
+        .unique(maintain_order=True)
         .join(dmg_by_round, on=["round_num", "steamid"], how="left")
         .with_columns(pl.col("damage").fill_null(0))
         .sort(["steamid", "round_num"])
     )
 
     summary = (
-        per_round.group_by(["steamid", "name"])
+        per_round.group_by(["steamid", "name"], maintain_order=True)
         .agg(
             pl.col("damage").sum().alias("total_damage"),
             pl.col("round_num").n_unique().alias("rounds_played"),
@@ -130,21 +130,21 @@ def calculate_utility_damage(damages: pl.DataFrame, roster: pl.DataFrame) -> tup
     dmg_by_round = (
         enemy_damages(damages)
         .filter(pl.col("weapon").is_in(UTILITY_WEAPONS))
-        .group_by(["round_num", "attacker_steamid"])
+        .group_by(["round_num", "attacker_steamid"], maintain_order=True)
         .agg(pl.col("dmg_health_real").sum().alias("utility_damage"))
         .rename({"attacker_steamid": "steamid"})
     )
 
     per_round = (
         roster.select(["round_num", "steamid", "name"])
-        .unique()
+        .unique(maintain_order=True)
         .join(dmg_by_round, on=["round_num", "steamid"], how="left")
         .with_columns(pl.col("utility_damage").fill_null(0))
         .sort(["steamid", "round_num"])
     )
 
     summary = (
-        per_round.group_by(["steamid", "name"])
+        per_round.group_by(["steamid", "name"], maintain_order=True)
         .agg(
             pl.col("utility_damage").sum().alias("total_utility_damage"),
             pl.col("round_num").n_unique().alias("rounds_played"),
@@ -205,7 +205,7 @@ def traded_deaths(
     return (
         _pares_de_trade(kills, trade_window_seconds, tickrate)
         .select(["round_num", pl.col("victim_steamid_prev").alias("steamid")])
-        .unique()
+        .unique(maintain_order=True)
         .with_columns(pl.lit(True).alias("was_traded"))
     )
 
@@ -227,7 +227,7 @@ def identify_trade_kills(
            (o attacker atual vingou o companheiro matando o responsável).
       Se os três batem, kill_atual é marcada como is_trade_kill = True.
     """
-    trade_kill_ids = _pares_de_trade(kills, trade_window_seconds, tickrate)["kill_id"].unique().to_list()
+    trade_kill_ids = _pares_de_trade(kills, trade_window_seconds, tickrate)["kill_id"].unique(maintain_order=True).to_list()
 
     return (
         kills.with_row_index("kill_id")
@@ -247,7 +247,7 @@ def calculate_trade_kills(
     kills_flagged = enemy_kills(kills_flagged)
 
     per_round = (
-        kills_flagged.group_by(["round_num", "attacker_steamid"])
+        kills_flagged.group_by(["round_num", "attacker_steamid"], maintain_order=True)
         .agg(
             pl.len().alias("kills"),
             pl.col("is_trade_kill").sum().alias("trade_kills"),
@@ -257,12 +257,12 @@ def calculate_trade_kills(
     )
 
     summary = (
-        per_round.group_by("steamid")
+        per_round.group_by("steamid", maintain_order=True)
         .agg(
             pl.col("kills").sum().alias("total_kills"),
             pl.col("trade_kills").sum().alias("total_trade_kills"),
         )
-        .join(roster.select(["steamid", "name"]).unique(), on="steamid", how="left")
+        .join(roster.select(["steamid", "name"]).unique(maintain_order=True), on="steamid", how="left")
         .with_columns(
             pl.when(pl.col("total_kills") > 0)
             .then(100 * pl.col("total_trade_kills") / pl.col("total_kills"))
@@ -295,7 +295,7 @@ def calculate_kast(
     had_kill = (
         enemy_kills(kills)
         .select(["round_num", "attacker_steamid"])
-        .unique()
+        .unique(maintain_order=True)
         .rename({"attacker_steamid": "steamid"})
         .with_columns(pl.lit(True).alias("had_kill"))
     )
@@ -310,7 +310,7 @@ def calculate_kast(
     had_assist = (
         assistencias
         .select(["round_num", "assister_steamid"])
-        .unique()
+        .unique(maintain_order=True)
         .rename({"assister_steamid": "steamid"})
         .with_columns(pl.lit(True).alias("had_assist"))
     )
@@ -321,7 +321,7 @@ def calculate_kast(
 
     per_round = (
         roster.select(["round_num", "steamid", "name"])
-        .unique()
+        .unique(maintain_order=True)
         .join(had_kill, on=["round_num", "steamid"], how="left")
         .join(had_assist, on=["round_num", "steamid"], how="left")
         .join(died, on=["round_num", "steamid"], how="left")
@@ -345,7 +345,7 @@ def calculate_kast(
     )
 
     summary = (
-        per_round.group_by(["steamid", "name"])
+        per_round.group_by(["steamid", "name"], maintain_order=True)
         .agg(
             pl.col("kast_round").sum().alias("kast_rounds"),
             pl.col("round_num").n_unique().alias("rounds_played"),

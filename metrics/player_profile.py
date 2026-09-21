@@ -135,12 +135,12 @@ def distancia_do_companheiro_mais_proximo(positions: pl.DataFrame) -> pl.DataFra
             (((pl.col("X") - pl.col("ox")) ** 2 + (pl.col("Y") - pl.col("oy")) ** 2).sqrt())
             .alias("d")
         )
-        .group_by(["round_num", "tick", "steamid"])
+        .group_by(["round_num", "tick", "steamid"], maintain_order=True)
         .agg(pl.col("d").min().alias("dist_vizinho"))
     )
 
     return (
-        por_tick.group_by(["round_num", "steamid"])
+        por_tick.group_by(["round_num", "steamid"], maintain_order=True)
         .agg(
             pl.col("dist_vizinho").mean().alias("dist_vizinho_media"),
             (pl.col("dist_vizinho") > RAIO_COMPANHEIRO).mean().alias("frac_tempo_isolado"),
@@ -157,7 +157,7 @@ def deslocamento_no_round(positions: pl.DataFrame) -> pl.DataFrame:
     CLAUDE.md).
     """
     ordenado = positions.sort(["round_num", "steamid", "tick"])
-    extremos = ordenado.group_by(["round_num", "steamid"]).agg(
+    extremos = ordenado.group_by(["round_num", "steamid"], maintain_order=True).agg(
         pl.col("X").first().alias("x0"), pl.col("Y").first().alias("y0"),
         pl.col("X").last().alias("x1"), pl.col("Y").last().alias("y1"),
         pl.col("place").n_unique().alias("regioes"),
@@ -175,7 +175,7 @@ def fatos_de_arma(ticks: pl.DataFrame, kills: pl.DataFrame) -> pl.DataFrame:
     teve_awp = (
         vivos.filter(pl.col("active_weapon_name") == AWP_NO_DEMO)
         .select(["round_num", "steamid"])
-        .unique()
+        .unique(maintain_order=True)
         .with_columns(pl.lit(True).alias("teve_awp"))
     )
 
@@ -183,7 +183,7 @@ def fatos_de_arma(ticks: pl.DataFrame, kills: pl.DataFrame) -> pl.DataFrame:
     # jogador costuma estar com a faca, e olhar aquele instante classifica errado.
     primaria = (
         vivos.filter(pl.col("active_weapon_name").is_in(list(RIFLES | SMGS | PISTOLAS)))
-        .group_by(["round_num", "steamid", "side", "active_weapon_name"])
+        .group_by(["round_num", "steamid", "side", "active_weapon_name"], maintain_order=True)
         .len()
         .sort("len", descending=True)
         .group_by(["round_num", "steamid"], maintain_order=True)
@@ -207,7 +207,7 @@ def fatos_de_arma(ticks: pl.DataFrame, kills: pl.DataFrame) -> pl.DataFrame:
     # Abertura de AWP: a primeira kill do round foi dele, de AWP.
     primeira_kill = (
         kills.sort("tick")
-        .group_by("round_num")
+        .group_by("round_num", maintain_order=True)
         .first()
         .select(
             pl.col("round_num").cast(pl.UInt32),
@@ -298,7 +298,7 @@ def area_diferente_do_time(player_areas: pl.DataFrame) -> pl.DataFrame:
     if companheiros.height == 0:
         return vazio
 
-    contagem = companheiros.group_by(["round_num", "steamid", "area_outro"]).agg(
+    contagem = companheiros.group_by(["round_num", "steamid", "area_outro"], maintain_order=True).agg(
         pl.len().alias("n")
     )
     maioria = (
@@ -313,7 +313,7 @@ def area_diferente_do_time(player_areas: pl.DataFrame) -> pl.DataFrame:
             pl.when(pl.col("empatados") > 1).then(None).otherwise(pl.col("area_outro")).alias("area_time")
         )
         .select(["round_num", "steamid", "area_time"])
-        .unique(subset=["round_num", "steamid"])
+        .unique(subset=["round_num", "steamid"], maintain_order=True, keep="first")
     )
 
     return (
@@ -364,7 +364,7 @@ def round_flags(
             pl.col("weapon").str.to_lowercase().alias("arma"),
         )
         .filter(pl.col("steamid").is_not_null())
-        .group_by(["round_num", "steamid"])
+        .group_by(["round_num", "steamid"], maintain_order=True)
         .agg(
             pl.len().alias("kills_no_round"),
             (pl.col("arma") == AWP_NA_TABELA_DE_KILLS).sum().alias("kills_de_awp_no_round"),
@@ -379,7 +379,7 @@ def round_flags(
             pl.col("assister_steamid").alias("steamid"),
         )
         .filter(pl.col("steamid").is_not_null())
-        .group_by(["round_num", "steamid"])
+        .group_by(["round_num", "steamid"], maintain_order=True)
         .agg(pl.len().alias("assists_no_round"))
         if "assister_steamid" in kills.columns
         else pl.DataFrame(schema={"round_num": pl.UInt32, "steamid": pl.UInt64,
@@ -522,7 +522,7 @@ def _agrega(flags: pl.DataFrame, chaves: list[str]) -> pl.DataFrame:
         pl.col("contato_cedo").count().alias("_ignora"),
     ]
 
-    fora = flags.group_by(chaves).agg(agg).drop("_ignora")
+    fora = flags.group_by(chaves, maintain_order=True).agg(agg).drop("_ignora")
 
     # Denominadores: quase todas as taxas são sobre rounds jogados; as três de
     # baixo têm denominador próprio, e é por isso que elas aparecem sempre
@@ -651,8 +651,8 @@ def mistura_de_grupos(cluster_assignments: pl.DataFrame) -> pl.DataFrame:
     if cluster_assignments.height == 0 or "cluster" not in cluster_assignments.columns:
         return vazio
 
-    total = cluster_assignments.group_by("steamid").agg(pl.len().alias("grupo_dominante_d"))
-    por_grupo = cluster_assignments.group_by(["steamid", "cluster"]).agg(pl.len().alias("n"))
+    total = cluster_assignments.group_by("steamid", maintain_order=True).agg(pl.len().alias("grupo_dominante_d"))
+    por_grupo = cluster_assignments.group_by(["steamid", "cluster"], maintain_order=True).agg(pl.len().alias("n"))
 
     topo = (
         por_grupo.sort(["n", "cluster"], descending=[True, False])
@@ -708,15 +708,27 @@ def cards_de_estilo(cluster_assignments: pl.DataFrame, top: int = TOP_POR_GRUPO)
     vazio = {"grupos": [], "sem_grupo_dominante": [], "titulo": "", "nota": "", "rotulo_dominante": ""}
     if cluster_assignments.height == 0 or "cluster" not in cluster_assignments.columns:
         return vazio
-    total = cluster_assignments.group_by("steamid", "name").agg(pl.len().alias("d"))
-    por = (cluster_assignments.group_by("steamid", "cluster").agg(pl.len().alias("n"))
+    total = cluster_assignments.group_by("steamid", "name", maintain_order=True).agg(pl.len().alias("d"))
+    por = (cluster_assignments.group_by("steamid", "cluster", maintain_order=True).agg(pl.len().alias("n"))
            .join(total, on="steamid").with_columns((pl.col("n") / pl.col("d")).alias("taxa")))
     dom = mistura_de_grupos(cluster_assignments).select("steamid", "grupo_dominante")
     por = por.join(dom, on="steamid", how="left")
 
     grupos = []
     for (c,), g in por.sort("cluster").group_by("cluster", maintain_order=True):
-        melhores = g.sort(["taxa", "n"], descending=True).head(top)
+        # Empate no corte entra inteiro. Com `.head(top)` puro, quem ficava quando
+        # dois jogadores empatavam no 3º lugar dependia da ORDEM DAS LINHAS -- e
+        # ela mudava a cada execução: o mesmo card mostrava PerdYYY numa rodada e
+        # chiefkeef19 na outra (match_05, 7 de 17 os dois). O nome é o último
+        # critério só para a ordem de exibição ser estável, nunca para cortar.
+        ordenado = g.sort(["taxa", "n", "name"], descending=[True, True, False])
+        if ordenado.height > top:
+            corte = ordenado.row(top - 1, named=True)
+            ordenado = ordenado.filter(
+                (pl.col("taxa") > corte["taxa"])
+                | ((pl.col("taxa") == corte["taxa"]) & (pl.col("n") >= corte["n"]))
+            )
+        melhores = ordenado
         grupos.append({
             "cluster": int(c),
             "rounds_no_grupo": int(g["n"].sum()),
@@ -734,7 +746,8 @@ def cards_de_estilo(cluster_assignments: pl.DataFrame, top: int = TOP_POR_GRUPO)
         "rotulo_dominante": "dominante",
         "grupos": grupos,
         "sem_grupo_dominante": espalhados,
-        "nota": (f"Os três jogadores com a maior fração dos próprios rounds em cada grupo. "
+        "nota": (f"Os três jogadores com a maior fração dos próprios rounds em cada grupo "
+                 f"(empatados no terceiro lugar aparecem todos). "
                  f"Marcado como dominante quem tem pelo menos {piso}% dos rounds num grupo só; "
                  + (f"sem grupo dominante (espalhados pelos quatro): {', '.join(espalhados)}."
                     if espalhados else "nesta partida todos têm um grupo dominante.")),
@@ -811,7 +824,7 @@ def accumulate(perfis: list[pl.DataFrame]) -> pl.DataFrame:
     if "tempo_mediano_ate_contato_s" in colunas:
         agg.append(pl.col("tempo_mediano_ate_contato_s").median())
 
-    somado = todos.group_by("steamid").agg(agg)
+    somado = todos.group_by("steamid", maintain_order=True).agg(agg)
 
     sensiveis = [c for c, _, por_l in TAXAS_POR_ROUND if por_l]
     recalcular = TAXAS_TODAS + [f"{c}_{lado}" for c in sensiveis for lado in ("ct", "t")]

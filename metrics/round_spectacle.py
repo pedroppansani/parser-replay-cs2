@@ -80,7 +80,7 @@ def _ticks_de_defuse(bomb: pl.DataFrame | None) -> dict[int, int]:
         return {}
     d = (
         bomb.filter(pl.col("event") == "defuse")
-        .group_by("round_num")
+        .group_by("round_num", maintain_order=True)
         .agg(pl.col("tick").min())
     )
     return {int(r["round_num"]): int(r["tick"]) for r in d.iter_rows(named=True)}

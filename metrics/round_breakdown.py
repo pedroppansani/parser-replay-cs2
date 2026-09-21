@@ -212,7 +212,7 @@ def analyze_round(
     window = TRADE_WINDOW_SECONDS * TICKRATE
 
     # steamid -> nick, para poder nomear quem sobrou vivo (e não só quem morreu)
-    roster = ticks.filter(pl.col("round_num") == rn).group_by("steamid").agg(pl.col("name").first())
+    roster = ticks.filter(pl.col("round_num") == rn).group_by("steamid", maintain_order=True).agg(pl.col("name").first())
     names = {int(r["steamid"]): r["name"] for r in roster.iter_rows(named=True)}
 
     moments = []
@@ -230,7 +230,7 @@ def analyze_round(
         )
         if recorte.height == 0:
             return None
-        por_jogador = recorte.group_by("steamid").agg(
+        por_jogador = recorte.group_by("steamid", maintain_order=True).agg(
             pl.col("current_equip_value").max().alias("v")
         )
         return float(por_jogador["v"].mean() or 0)

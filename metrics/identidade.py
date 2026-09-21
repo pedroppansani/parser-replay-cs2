@@ -41,7 +41,7 @@ def nome_de_exibicao(df: pl.DataFrame, coluna_partida: str = "match_id") -> pl.D
     if df.height == 0 or not {"steamid", "name"} <= set(df.columns):
         return pl.DataFrame(schema={"steamid": pl.UInt64, "nome": pl.Utf8})
     chaves = ["steamid", "name"]
-    contagem = df.group_by(chaves).agg(
+    contagem = df.group_by(chaves, maintain_order=True).agg(
         pl.len().alias("n"),
         (pl.col(coluna_partida).max() if coluna_partida in df.columns else pl.lit("")).alias("ultima"),
     )

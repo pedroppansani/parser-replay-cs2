@@ -91,16 +91,16 @@ def secao_grupos() -> list[str]:
     perfil_global = PROJECT_ROOT / "data" / "global_clusters" / "cluster_profiles.parquet"
     desc = {r["cluster"]: r["titulo"] for r in describe_clusters(pl.read_parquet(perfil_global)).to_dicts()}
     geral = {f: (c[f].mean(), c[f].std()) for f in FEATURES}
-    tot = c.group_by("steamid").agg(pl.col("name").last().alias("name"), pl.len().alias("d"))
+    tot = c.group_by("steamid", maintain_order=True).agg(pl.col("name").last().alias("name"), pl.len().alias("d"))
     out = ["## 2. Nomes dos quatro grupos de estilo", "",
            "A descrição automática é releitura das médias, não nome de função (decisão 8). "
            "As sugestões abaixo são só sugestões: quem nomeia é você, em `clustering/cluster_names.json`.", ""]
-    for k in sorted(c["cluster"].unique()):
+    for k in sorted(c["cluster"].unique(maintain_order=True)):
         g = c.filter(pl.col("cluster") == k)
         titulo = desc.get(k, f"grupo {k}")
         z = sorted(((f, (g[f].mean() - geral[f][0]) / geral[f][1], g[f].mean(), geral[f][0]) for f in FEATURES),
                    key=lambda x: -abs(x[1]))[:4]
-        top = (g.group_by("steamid").len().join(tot, on="steamid").filter(pl.col("d") >= 150)
+        top = (g.group_by("steamid", maintain_order=True).len().join(tot, on="steamid").filter(pl.col("d") >= 150)
                .with_columns((pl.col("len") / pl.col("d")).alias("fr")).sort("fr", descending=True).head(5))
         cx, cy = g["pca_1"].mean(), g["pca_2"].mean()
         ex = (g.with_columns(((pl.col("pca_1") - cx) ** 2 + (pl.col("pca_2") - cy) ** 2).alias("dist"))

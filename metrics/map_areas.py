@@ -110,7 +110,7 @@ def site_centroids(bomb: pl.DataFrame, positions: pl.DataFrame) -> dict[str, np.
     if bomb is not None and bomb.height and "bombsite" in bomb.columns:
         plants = (
             bomb.filter(pl.col("bombsite").is_not_null())
-            .group_by("bombsite")
+            .group_by("bombsite", maintain_order=True)
             .agg(pl.col("X").mean(), pl.col("Y").mean(), pl.col("Z").mean())
         )
         for row in plants.iter_rows(named=True):
@@ -133,7 +133,7 @@ def place_centroids(positions: pl.DataFrame) -> pl.DataFrame:
     """Centróide de cada callout, pelas posições amostradas dos jogadores vivos."""
     return (
         positions.filter(pl.col("place").is_not_null() & (pl.col("place") != ""))
-        .group_by("place")
+        .group_by("place", maintain_order=True)
         .agg(
             pl.len().alias("n_samples"),
             pl.col("X").mean(),

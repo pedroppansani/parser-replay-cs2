@@ -48,7 +48,8 @@ metrics/      geometry, basic_metrics, awp_metrics, crosshair, map_angles,
               match_highlights, grenade_throws, rating (+ rating_reference.json)
 clustering/   playstyle (PCA + KMeans), global_model.json e cluster_names.json
 dashboard/    app Streamlit + theme + web/
-scripts/      process_demo (CLI), fit_global_clusters, fit_archetype_reference,
+scripts/      process_demo (CLI), reprocessa (corpus inteiro a partir do interim,
+              em paralelo), fit_global_clusters, fit_archetype_reference,
               build_player_profiles, show_derived_angles e show_map_areas
               (calibração), narrative, build_site, manifest, clean_match
 tests/        ~725 testes (os de navegador usam Playwright + Chrome; sem eles, pulados)
@@ -958,6 +959,41 @@ testada e estava errada.
     A 52ª (match_23) estava marcada como apagada e não estava: tinha mudado de
     pasta. O manifesto agora reencontra a demo pelo nome **conferindo o
     sha256** (nome de arquivo não identifica demo) e anota o caminho anterior.
+
+28. **O processamento é DETERMINÍSTICO, e o paralelo é aceito só por
+    identidade** (2026-09-21). Critério do Pedro: tempo não é o gargalo,
+    confiança no número é -- qualquer diferença entre execuções é bug até prova
+    em contrário, inclusive ordem de linha e último bit de float.
+    O QUE A MEDIÇÃO MOSTROU: antes de paralelizar qualquer coisa, duas execuções
+    SEQUENCIAIS das mesmas 3 partidas diferiam em 38 arquivos. O paralelo não
+    criava diferença; herdava. Causa: `group_by` e `unique` do Polars devolvem
+    os grupos em ordem de HASH, que muda a cada processo (158 `group_by` e 37
+    `unique` sem ordem declarada). A ordem não ficava na ordem: vazava para valor
+    sempre que alguém cortava ou desempatava depois -- o card de estilo mostrava
+    PerdYYY numa execução e chiefkeef19 na outra (empate no 3º lugar com
+    `.head(3)`), `unique(subset=)` com `keep="any"` escolhia qualquer linha
+    duplicada (a área do jogador em site_roles), `mode().first()` desempatava ao
+    acaso (a classe de economia do jogador no rating), e somas em outra ordem
+    mudavam o último bit. Pela mesma causa, a SEMENTE FIXA do KMeans não
+    garantia resultado: ela vale para a mesma ordem de linhas.
+    Correção explícita no código, nada de remendo global na biblioteca: todo
+    `group_by`/`unique` com `maintain_order=True`, `unique` com subset com
+    `keep="first"`, `mode().sort().first()`, e empate no corte do card entra
+    inteiro. `tests/test_determinismo.py` varre o código e falha se aparecer um
+    `group_by` sem ordem.
+    Aceitação, sem tolerância nenhuma (só o carimbo `processado_em` fica fora):
+    3 partidas seq x seq, par x par e seq x par: 141/141 idênticos; **corpus
+    inteiro, seq x par e par x par: 2.395/2.395 arquivos idênticos**.
+    `scripts/reprocessa.py` refaz o corpus a partir do interim na ordem das
+    dependências (métricas -> [referências, só com flag] -> insights -> perfis
+    acumulados -> payload -> manifesto), com barreira entre as etapas.
+    Medido: sequencial 5 min 35 s; 6 processos 2 min 16 s. Memória com 6
+    processos: pico de 9,3 GB acima do início, maior processo 2,36 GB
+    (`MEMORIA_POR_PROCESSO_GB` = 2,5). O número de processos sai da memória
+    livre e dos núcleos, e é configurável: `PROCESSOS` no módulo ou
+    `--processos` na linha de comando; `--sequencial` roda num processo só.
+    Referências globais NÃO são reajustadas por padrão (reajustar é decisão);
+    os pesos do rating nunca são refeitos ali.
 
 23. **Anotação no mapa: coordenada de jogo, um único ponto de redimensionamento,
     camada sempre transparente.** A camada vive em `dashboard/web/annotations.js`

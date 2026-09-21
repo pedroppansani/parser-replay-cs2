@@ -134,7 +134,7 @@ def componentes_do_corpus(ids: list[str], modelo: ModeloDeRound,
         # o rating sai por steamid; o rating oficial foi transcrito por nick, que é
         # o que a HLTV mostra -- mesma fonte de nome do elenco (resolve_teams)
         nick = dict(
-            tabelas["ticks"].group_by("steamid").agg(pl.col("name").last()).iter_rows()
+            tabelas["ticks"].group_by("steamid", maintain_order=True).agg(pl.col("name").last()).iter_rows()
         )
         for j in resumo["jogadores"]:
             linhas.append({**j, "name": nick.get(j["steamid"]), "match_id": mid})
@@ -406,7 +406,7 @@ def ajusta_pesos(ids: list[str]) -> dict:
         return {
             r["time"]: {"jogador_partidas": r["n"], "erro_medio_absoluto": round(r["erro"], 3),
                         "vies": round(r["vies"], 3)}
-            for r in t.group_by("time").agg(pl.len().alias("n"), pl.col("erro").mean(), pl.col("vies").mean())
+            for r in t.group_by("time", maintain_order=True).agg(pl.len().alias("n"), pl.col("erro").mean(), pl.col("vies").mean())
             .sort("n", descending=True).iter_rows(named=True)
         }
 

@@ -132,7 +132,7 @@ def derive_entry_angles(
         )
 
     rows = []
-    for (place, side), group in k.group_by(["attacker_place", "attacker_side"]):
+    for (place, side), group in k.group_by(["attacker_place", "attacker_side"], maintain_order=True):
         yaws = group["attacker_yaw"].to_numpy().astype(float)
         for yaw, n in _find_angle_modes(yaws, radius, min_kills):
             rows.append(
@@ -190,7 +190,7 @@ def entry_angles_for_map(map_name: str, kills: pl.DataFrame) -> pl.DataFrame:
         manual_rows,
         schema={"place": pl.String, "side": pl.String, "yaw": pl.Float64, "n_kills": pl.UInt32, "source": pl.String},
     )
-    overridden = manual.select(["place", "side"]).unique()
+    overridden = manual.select(["place", "side"]).unique(maintain_order=True)
     derived_kept = derived.join(overridden, on=["place", "side"], how="anti")
     return pl.concat([manual, derived_kept], how="vertical")
 

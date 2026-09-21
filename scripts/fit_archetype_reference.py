@@ -107,7 +107,7 @@ def main() -> None:
 
     isca = pl.concat(rounds_de_isca, how="diagonal")
     geral = float(isca["isca_no_round"].mean())
-    por_funcao = isca.group_by("funcao_do_round").agg(
+    por_funcao = isca.group_by("funcao_do_round", maintain_order=True).agg(
         pl.len().alias("rounds"), pl.col("isca_no_round").mean().alias("media"))
     isca_por_funcao = {"_geral": geral}
     fracas = []

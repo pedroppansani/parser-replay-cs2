@@ -103,7 +103,7 @@ def first_contact_per_player_round(damages: pl.DataFrame, rounds: pl.DataFrame, 
     )
 
     return (
-        contacts.group_by(["round_num", "steamid"])
+        contacts.group_by(["round_num", "steamid"], maintain_order=True)
         .agg(pl.col("tick").min().alias("first_contact_tick"))
         .join(rounds.select(["round_num", "freeze_end", "end"]), on="round_num", how="left")
         .with_columns(
@@ -249,7 +249,7 @@ def representative_rounds(assignments: pl.DataFrame, per_cluster: int = 5) -> pl
     """Rounds mais próximos do centro de cada cluster -- os exemplos pra eu
     assistir/conferir na hora de nomear o cluster.
     """
-    centers = assignments.group_by("cluster").agg(
+    centers = assignments.group_by("cluster", maintain_order=True).agg(
         pl.col("pca_1").mean().alias("cx"), pl.col("pca_2").mean().alias("cy")
     )
     return (
@@ -260,7 +260,7 @@ def representative_rounds(assignments: pl.DataFrame, per_cluster: int = 5) -> pl
             )
         )
         .sort(["cluster", "distance_to_center"])
-        .group_by("cluster")
+        .group_by("cluster", maintain_order=True)
         .head(per_cluster)
         # match_id só existe quando os exemplos saem do conjunto de várias
         # partidas. Sem ele, "round 5" no relatório global não diz de qual
@@ -325,7 +325,7 @@ def _profile_clusters(assignments: pl.DataFrame, cols: list[str]) -> pl.DataFram
     jogo (dano, unidades de distância, segundos) e não em z-score.
     """
     return (
-        assignments.group_by("cluster")
+        assignments.group_by("cluster", maintain_order=True)
         .agg(pl.len().alias("n_rounds"), *[pl.col(c).mean().alias(c) for c in cols])
         .sort("cluster")
     )

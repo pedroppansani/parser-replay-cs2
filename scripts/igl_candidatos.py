@@ -75,14 +75,14 @@ def drops_da_partida(match_id: str) -> pl.DataFrame:
                             columns=["tick", "round_num", "steamid", "is_alive", "current_equip_value"])
     # o que ele levou do round anterior: o equipamento no fim, se estava vivo
     fim = (ticks.join(rounds.select("round_num", "end"), on="round_num")
-           .filter(pl.col("tick") <= pl.col("end")).sort("tick").group_by("round_num", "steamid").last()
+           .filter(pl.col("tick") <= pl.col("end")).sort("tick").group_by("round_num", "steamid", maintain_order=True).last()
            .select((pl.col("round_num") + 1).cast(compra.schema["round_num"]).alias("round_num"), "steamid",
                    pl.when(pl.col("is_alive")).then(pl.col("current_equip_value")).otherwise(0).alias("guardado")))
     x = (compra.join(fim, on=["round_num", "steamid"], how="left")
          .with_columns(pl.col("guardado").fill_null(0))
          .with_columns((pl.col("cash_spent_this_round").cast(pl.Int64)
                         - (pl.col("current_equip_value").cast(pl.Int64) - pl.col("guardado").cast(pl.Int64))).alias("doado")))
-    return x.group_by("steamid").agg(
+    return x.group_by("steamid", maintain_order=True).agg(
         pl.len().alias("rounds_compra"), (pl.col("doado") >= DROP_MIN).sum().alias("rounds_doando"))
 
 
@@ -136,7 +136,7 @@ def ranking(s: pl.DataFrame) -> pl.DataFrame:
     ag = [pl.len().alias("partidas"), pl.col("posto_medio").mean()]
     ag += [pl.col(f"posto_{n}").mean() for n in PROXIES]
     ag += [pl.col(PROXIES[n][0]).mean() for n in PROXIES]
-    return (p.group_by("time", "steamid").agg(pl.col("nome").last().alias("nome"), *ag)
+    return (p.group_by("time", "steamid", maintain_order=True).agg(pl.col("nome").last().alias("nome"), *ag)
             .drop("steamid").sort(["time", "posto_medio"]))
 
 

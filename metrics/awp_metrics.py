@@ -87,7 +87,7 @@ def awp_rounds(ticks: pl.DataFrame) -> pl.DataFrame:
     """
     return (
         ticks.filter(pl.col("active_weapon_name") == AWP_WEAPON_TICKS)
-        .group_by(["round_num", "steamid"])
+        .group_by(["round_num", "steamid"], maintain_order=True)
         .agg(
             pl.col("name").first(),
             pl.col("side").first(),
@@ -109,7 +109,7 @@ def first_awp_engagements(
     first_shots = (
         shots.filter(pl.col("weapon") == AWP_WEAPON_SHOTS)
         .sort("tick")
-        .group_by(["round_num", "player_steamid"])
+        .group_by(["round_num", "player_steamid"], maintain_order=True)
         .agg(
             pl.col("player_name").first().alias("name"),
             pl.col("tick").first().alias("engagement_tick"),
@@ -325,7 +325,7 @@ def opening_kills_with_awp(kills: pl.DataFrame) -> pl.DataFrame:
             & (pl.col("attacker_side") != pl.col("victim_side"))
         )
         .sort("tick")
-        .group_by("round_num")
+        .group_by("round_num", maintain_order=True)
         .agg(
             pl.col("attacker_steamid").first().alias("steamid"),
             pl.col("attacker_name").first().alias("name"),
@@ -368,7 +368,7 @@ def calculate_awp_metrics(
     )
 
     summary = (
-        per_round.group_by(["steamid", "name"])
+        per_round.group_by(["steamid", "name"], maintain_order=True)
         .agg(
             pl.len().alias("awp_rounds"),
             pl.col("engagement_tick").is_not_null().sum().alias("rounds_with_engagement"),

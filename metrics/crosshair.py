@@ -146,7 +146,7 @@ def build_pitch_reference(kills: pl.DataFrame, min_kills: int = MIN_KILLS_FOR_DE
         return {}
 
     ref = (
-        k.group_by("attacker_place")
+        k.group_by("attacker_place", maintain_order=True)
         .agg(pl.col("attacker_pitch").median().alias("ref_pitch"), pl.len().alias("n"))
         .filter(pl.col("n") >= min_kills)
     )
@@ -228,7 +228,7 @@ def _nearest_enemy_per_sample(samples: pl.DataFrame, ticks: pl.DataFrame) -> pl.
 
     nearest = (
         joined.sort("enemy_distance")
-        .group_by(["round_num", "tick", "steamid"])
+        .group_by(["round_num", "tick", "steamid"], maintain_order=True)
         .agg(
             pl.col("enemy_X").first(),
             pl.col("enemy_Y").first(),
@@ -273,7 +273,7 @@ def add_contact_window_flag(
             ),
         ],
         how="vertical",
-    ).unique()
+    ).unique(maintain_order=True)
 
     # join_asof precisa das duas tabelas ordenadas pela chave temporal: pra cada
     # amostra, acha o próximo contato daquele jogador naquele round.
@@ -411,7 +411,7 @@ def calculate_crosshair_metrics(
     samples = score_samples(samples, pitch_reference, angle_lookup)
 
     per_round = (
-        samples.group_by(["round_num", "steamid", "name"])
+        samples.group_by(["round_num", "steamid", "name"], maintain_order=True)
         .agg(
             pl.col("crosshair_score").mean().alias("crosshair_score"),
             pl.col("height_score").mean().alias("height_score"),
@@ -426,7 +426,7 @@ def calculate_crosshair_metrics(
     )
 
     summary = (
-        samples.group_by(["steamid", "name"])
+        samples.group_by(["steamid", "name"], maintain_order=True)
         .agg(
             pl.col("crosshair_score").mean().alias("crosshair_score"),
             pl.col("height_score").mean().alias("height_score"),

@@ -69,7 +69,7 @@ def casos_da_partida(match_id: str) -> list[dict]:
     marcados = marca_repick(estilos, ticks, kills, t.get("damages"), t.get("shots"), tickrate)
     casos = []
     freeze = dict(rounds.select(pl.col("round_num").cast(pl.UInt32), "freeze_end").iter_rows())
-    nome = dict(ticks.group_by("steamid").agg(pl.col("name").last()).iter_rows())
+    nome = dict(ticks.group_by("steamid", maintain_order=True).agg(pl.col("name").last()).iter_rows())
     janela = int(PRE_ENGAGEMENT_WINDOW_SECONDS * tickrate)
     for r in marcados.filter(pl.col("repick")).iter_rows(named=True):
         rn, sid, tk = int(r["round_num"]), r["steamid"], int(r["engagement_tick"])

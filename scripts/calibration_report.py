@@ -143,12 +143,12 @@ def cortes_com_nomes(funcoes: pl.DataFrame, trait) -> list[str]:
     lid = lideres(pro, trait.column)
     q = [_arredonda(float(lid[trait.column].quantile(x)), trait.floor) for x in QUANTIS_CANDIDATOS]
     cortes = sorted({trait.floor, *q})
-    tab = lid.group_by("steamid").agg(
+    tab = lid.group_by("steamid", maintain_order=True).agg(
         pl.col("name").last().alias("name"),
         pl.len().alias("lidera"),
         *[(pl.col(trait.column) >= c).sum().alias(f"≥{c:g}") for c in cortes],
         pl.col(trait.column).median().round(2).alias("mediana quando lidera"),
-        pl.col("time_real").mode().first().alias("time"),
+        pl.col("time_real").mode().sort().first().alias("time"),
     ).drop("steamid").filter(pl.col("lidera") >= MIN_LIDERANCAS_NA_TABELA).sort(["time", "name"])
     linhas = [f"\n=== {trait.label} ({trait.column}) -- piso atual {trait.floor}, candidatos {', '.join(f'{c:g}' for c in cortes)} ===",
               f"  {lid.height} lideranças de time em {lid['match_id'].n_unique()} partidas profissionais. Coluna '≥c' = em quantas das "
@@ -187,7 +187,7 @@ def main() -> None:
     papeis = carrega("archetypes_summary")
     saida: list[str] = [
         "RELATÓRIO DE CALIBRAÇÃO -- distribuição de cada índice de função",
-        f"partidas: {funcoes['match_id'].n_unique()} ({(funcoes.unique('match_id')['origem'] == 'faceit').sum()} de FACEIT)",
+        f"partidas: {funcoes['match_id'].n_unique()} ({(funcoes.unique('match_id', maintain_order=True, keep="first")['origem'] == 'faceit').sum()} de FACEIT)",
         "O rótulo exige LIDERAR o time e passar do piso: veja a linha dos líderes.",
     ]
 

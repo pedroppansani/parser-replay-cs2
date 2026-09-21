@@ -62,9 +62,9 @@ def tabela() -> pl.DataFrame:
 
     # 1. função estrutural por lado, somando os rounds de todas as partidas
     est = _le("structural_roles_summary", pro).drop_nulls("time_real")
-    por_funcao = (est.drop_nulls("funcao").group_by("steamid", "side", "funcao")
+    por_funcao = (est.drop_nulls("funcao").group_by("steamid", "side", "funcao", maintain_order=True)
                   .agg(pl.col("rounds_na_funcao").sum().alias("n")))
-    total_lado = est.unique(["match_id", "steamid", "side"]).group_by("steamid", "side").agg(
+    total_lado = est.unique(["match_id", "steamid", "side"], maintain_order=True, keep="first").group_by("steamid", "side", maintain_order=True).agg(
         pl.col("rounds_no_lado").sum().alias("d"))
     dom = (por_funcao.sort("n", descending=True).group_by("steamid", "side", maintain_order=True).first()
            .join(total_lado, on=["steamid", "side"])
@@ -75,12 +75,12 @@ def tabela() -> pl.DataFrame:
 
     # 2. rótulo da partida e os componentes que o decidem
     pr = _le("player_roles", pro).drop_nulls("time_real")
-    rot = (pr.drop_nulls("role").group_by("steamid", "role").agg(pl.len().alias("n"))
+    rot = (pr.drop_nulls("role").group_by("steamid", "role", maintain_order=True).agg(pl.len().alias("n"))
            .sort("n", descending=True).group_by("steamid", maintain_order=True).first())
-    partidas = pr.group_by("steamid").agg(
+    partidas = pr.group_by("steamid", maintain_order=True).agg(
         pl.col("name").last().alias("name"), pl.len().alias("partidas"),
-        pl.col("time_real").mode().first().alias("time"))
-    comp = pr.group_by("steamid").agg(
+        pl.col("time_real").mode().sort().first().alias("time"))
+    comp = pr.group_by("steamid", maintain_order=True).agg(
         pl.col("awp_share").mean().round(2).alias("awp"),
         pl.col("first_contact_share").mean().round(2).alias("abre(0,32)"),
         pl.col("off_team_share").mean().round(2).alias("lurk(0,40)"),
@@ -92,7 +92,7 @@ def tabela() -> pl.DataFrame:
 
     # 3. eixo carrega piano <-> baiter
     ar = _le("archetypes_summary", pro).drop_nulls("time_real")
-    eixo = ar.group_by("steamid").agg(
+    eixo = ar.group_by("steamid", maintain_order=True).agg(
         pl.col("sacrifice_index").mean().round(2).alias("eixo"),
         (pl.col("sacrifice_index") >= PISO_CARREGA_PIANO).sum().alias("partidas_piano"),
         (pl.col("sacrifice_index") <= PISO_BAITER).sum().alias("partidas_baiter"),

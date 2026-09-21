@@ -64,8 +64,8 @@ def contagens() -> pl.DataFrame:
     for mid, v in placar.items():
         rounds = pl.read_parquet(PROCESSED / mid / "rounds.parquet")
         k = kills_do_round_jogado(pl.read_parquet(INTERIM / mid / "kills.parquet"), rounds)
-        kills = dict(k.filter(pl.col("attacker_side") != pl.col("victim_side")).group_by("attacker_name").len().iter_rows())
-        mortes = dict(k.group_by("victim_name").len().iter_rows())
+        kills = dict(k.filter(pl.col("attacker_side") != pl.col("victim_side")).group_by("attacker_name", maintain_order=True).len().iter_rows())
+        mortes = dict(k.group_by("victim_name", maintain_order=True).len().iter_rows())
         adr = dict(pl.read_parquet(PROCESSED / mid / "adr_summary.parquet").select("name", "adr").iter_rows())
         kast = dict(pl.read_parquet(PROCESSED / mid / "kast_summary.parquet").select("name", "kast_rounds").iter_rows())
         of_comp = (comp.get(mid) or {}).get("jogadores", {})
@@ -101,7 +101,7 @@ def detalhado() -> pl.DataFrame:
             k = kills_do_round_jogado(pl.read_parquet(INTERIM / mid / "kills.parquet"), rounds)
             inim = k.filter(pl.col("attacker_steamid").is_not_null() & (pl.col("attacker_side") != pl.col("victim_side")))
             # abertura = a primeira kill em inimigo do round (fogo amigo e bomba não abrem)
-            primeira = inim.sort("tick").group_by("round_num").first()
+            primeira = inim.sort("tick").group_by("round_num", maintain_order=True).first()
             # clutch: a definição única do projeto (metrics/clutch.py, 1vX com X >= 1)
             from metrics.clutch import clutch_situations
             from metrics.player_roles import resolve_teams
@@ -112,7 +112,7 @@ def detalhado() -> pl.DataFrame:
             venc = {int(r["round_num"]): ("A" if r["winner"] == side_of_team("A", int(r["round_num"])) else "B")
                     for r in rounds.iter_rows(named=True)}
             cl, _ = clutch_situations(k, rounds, team_of, venc)
-            nome_de = dict(ticks.group_by("steamid").agg(pl.col("name").last()).iter_rows())
+            nome_de = dict(ticks.group_by("steamid", maintain_order=True).agg(pl.col("name").last()).iter_rows())
             ganhos = {}
             for r in cl.filter(pl.col("won")).iter_rows(named=True):
                 ganhos[nome_de.get(r["steamid"])] = ganhos.get(nome_de.get(r["steamid"]), 0) + 1
@@ -122,7 +122,7 @@ def detalhado() -> pl.DataFrame:
                 s["clutches"] += ganhos.get(nome, 0)
                 s["op_kills"] += primeira.filter(pl.col("attacker_name") == nome).height
                 s["op_mortes"] += primeira.filter(pl.col("victim_name") == nome).height
-                s["mk_rounds"] += meu.group_by("round_num").len().filter(pl.col("len") >= 2).height
+                s["mk_rounds"] += meu.group_by("round_num", maintain_order=True).len().filter(pl.col("len") >= 2).height
                 s["hs"] += meu.filter(pl.col("headshot")).height
         for nome, o in v["jogadores"].items():
             x = soma.get(apelidos.get(nome, nome)) or soma.get(nome) or {}
@@ -143,7 +143,7 @@ def swing() -> pl.DataFrame:
     for mid, v in _ler("hltv_componentes.json").items():
         tabelas, team_of, vencedor, kast = carrega_partida(mid)
         _, resumo = rating(tabelas, team_of, vencedor, kast, 64, referencia=referencia, modelo=modelo)
-        nick = dict(tabelas["ticks"].group_by("steamid").agg(pl.col("name").last()).iter_rows())
+        nick = dict(tabelas["ticks"].group_by("steamid", maintain_order=True).agg(pl.col("name").last()).iter_rows())
         nosso = {nick.get(j["steamid"]): 100 * j["sub_round_swing"] for j in resumo["jogadores"]}
         for nome, o in v["jogadores"].items():
             linhas.append({"match_id": mid, "nome": nome, "swing_oficial": o["swing_pct"],
@@ -175,7 +175,7 @@ def main() -> None:
 
     c = contagens()
     n = c.height
-    por_partida = c.unique("match_id")
+    por_partida = c.unique("match_id", maintain_order=True, keep="first")
     print(f"ESCADA DE VALIDAÇÃO -- {n} jogadores em {por_partida.height} partidas com K-D-ADR oficial\n")
 
     r_ok = int((por_partida["rounds"] == por_partida["rounds_oficial"]).sum())

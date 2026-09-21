@@ -78,10 +78,10 @@ def player_round_area_shares(
             }
         )
 
-    por_area = com_area.group_by(["round_num", "steamid", "name", "side", "area"]).agg(
+    por_area = com_area.group_by(["round_num", "steamid", "name", "side", "area"], maintain_order=True).agg(
         pl.len().cast(pl.UInt32).alias("samples")
     )
-    total = por_area.group_by(["round_num", "steamid"]).agg(
+    total = por_area.group_by(["round_num", "steamid"], maintain_order=True).agg(
         pl.col("samples").sum().cast(pl.UInt32).alias("n_samples")
     )
 
@@ -121,7 +121,7 @@ def _area_majoritaria(areas: pl.DataFrame, chaves: list[str]) -> pl.DataFrame:
     "a área do time", e chutar uma delas faria o parceiro do lurker parecer
     lurker também.
     """
-    contagem = areas.group_by([*chaves, "area"]).agg(pl.len().alias("n"))
+    contagem = areas.group_by([*chaves, "area"], maintain_order=True).agg(pl.len().alias("n"))
     ranked = contagem.with_columns(
         pl.col("n").rank("dense", descending=True).over(chaves).alias("rk"),
         pl.len().over([*chaves, "n"]).alias("empatados"),
@@ -129,7 +129,7 @@ def _area_majoritaria(areas: pl.DataFrame, chaves: list[str]) -> pl.DataFrame:
 
     return ranked.with_columns(
         pl.when(pl.col("empatados") > 1).then(None).otherwise(pl.col("area")).alias("group_area")
-    ).select([*chaves, "group_area"]).unique(subset=chaves)
+    ).select([*chaves, "group_area"]).unique(subset=chaves, maintain_order=True, keep="first")
 
 
 def anchor_metrics(
@@ -176,7 +176,7 @@ def anchor_metrics(
     # jogador e não de uma tabela de posições "certas" por mapa -- quem ancora o
     # B de um time pode ancorar o A de outro.
     casa = (
-        cts.group_by(["steamid", "area"])
+        cts.group_by(["steamid", "area"], maintain_order=True)
         .agg(pl.len().alias("rounds_na_area"))
         .sort(["rounds_na_area", "area"], descending=[True, False])
         .group_by("steamid", maintain_order=True)
@@ -200,7 +200,7 @@ def anchor_metrics(
             & (pl.col("share") >= min_other_site_share)
         )
         .select(["round_num", "steamid"])
-        .unique()
+        .unique(maintain_order=True)
         .with_columns(pl.lit(True).alias("rotacionou"))
     )
 
@@ -227,7 +227,7 @@ def anchor_metrics(
     )
 
     summary = (
-        per_round.group_by(["steamid", "name"])
+        per_round.group_by(["steamid", "name"], maintain_order=True)
         .agg(
             pl.col("home_area").first(),
             pl.len().alias("n_rounds_ct"),
@@ -300,7 +300,7 @@ def lurk_metrics(
     )
 
     summary = (
-        per_round.group_by(["steamid", "name"])
+        per_round.group_by(["steamid", "name"], maintain_order=True)
         .agg(
             pl.len().alias("n_rounds_t"),
             pl.col("off_team").is_not_null().sum().alias("n_rounds_time_definido"),

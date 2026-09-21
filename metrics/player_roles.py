@@ -199,7 +199,7 @@ def resolve_teams(ticks: pl.DataFrame) -> tuple[dict[int, str], dict[str, list[s
     first = (
         ticks.filter(pl.col("round_num") == 1)
         .sort("tick")
-        .group_by("steamid")
+        .group_by("steamid", maintain_order=True)
         .agg(pl.col("name").first(), pl.col("side").first())
     )
     team_of_player: dict[int, str] = {}
@@ -231,7 +231,7 @@ def build_signals(
             .map_elements(lambda s: team_of.get(s, "?"), return_dtype=pl.String)
             .alias("team")
         )
-        .group_by(["steamid", "name", "team"])
+        .group_by(["steamid", "name", "team"], maintain_order=True)
         .agg(
             pl.col("time_of_first_contact_s").median().alias("median_first_contact_s"),
             pl.col("survived").mean().alias("survival_rate"),
@@ -260,7 +260,7 @@ def build_signals(
         .with_columns(
             pl.col("rk").eq(1).sum().over(["round_num", "team"]).alias("empatados")
         )
-        .group_by("steamid")
+        .group_by("steamid", maintain_order=True)
         .agg(
             ((pl.col("rk") == 1) & (pl.col("empatados") == 1))
             .mean()

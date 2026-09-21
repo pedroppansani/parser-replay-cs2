@@ -78,10 +78,10 @@ def confrontos_da_partida(compra: pl.DataFrame, team_of: dict[int, str],
     j = compra_por_jogador(compra).with_columns(
         pl.col("steamid").map_elements(lambda s: team_of.get(int(s)), return_dtype=pl.Utf8).alias("time")
     ).drop_nulls("time")
-    por_time = j.group_by(["round_num", "time"]).agg(
-        pl.col("grupo").mode().first(), (pl.col("colete").mean() >= 0.5).alias("colete"))
+    por_time = j.group_by(["round_num", "time"], maintain_order=True).agg(
+        pl.col("grupo").mode().sort().first(), (pl.col("colete").mean() >= 0.5).alias("colete"))
     linhas = []
-    for (rn,), g in por_time.group_by("round_num"):
+    for (rn,), g in por_time.group_by("round_num", maintain_order=True):
         if g.height != 2:
             continue
         a, b = g.row(0, named=True), g.row(1, named=True)
@@ -97,10 +97,10 @@ def confrontos_da_partida(compra: pl.DataFrame, team_of: dict[int, str],
 
 def ajusta_tabela(confrontos: pl.DataFrame) -> dict:
     """Taxas encolhidas por célula, a partir dos confrontos do corpus inteiro."""
-    base = {lado: float(t) for lado, t in confrontos.group_by("lado").agg(pl.col("venceu").mean()).iter_rows()}
+    base = {lado: float(t) for lado, t in confrontos.group_by("lado", maintain_order=True).agg(pl.col("venceu").mean()).iter_rows()}
 
     pai = {}
-    for r in confrontos.group_by(["lado", "grupo", "grupo_dele"]).agg(
+    for r in confrontos.group_by(["lado", "grupo", "grupo_dele"], maintain_order=True).agg(
             pl.len().alias("n"), pl.col("venceu").mean().alias("taxa")).iter_rows(named=True):
         w = r["n"] / (r["n"] + K_ENCOLHIMENTO)
         pai[(r["lado"], r["grupo"], r["grupo_dele"])] = {
@@ -109,7 +109,7 @@ def ajusta_tabela(confrontos: pl.DataFrame) -> dict:
         }
 
     celulas = {}
-    for r in confrontos.group_by(["lado", "grupo", "colete", "grupo_dele", "colete_dele"]).agg(
+    for r in confrontos.group_by(["lado", "grupo", "colete", "grupo_dele", "colete_dele"], maintain_order=True).agg(
             pl.len().alias("n"), pl.col("venceu").mean().alias("taxa")).iter_rows(named=True):
         acima = pai[(r["lado"], r["grupo"], r["grupo_dele"])]["taxa"]
         w = r["n"] / (r["n"] + K_ENCOLHIMENTO)

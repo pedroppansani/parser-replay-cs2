@@ -81,7 +81,7 @@ def heatmap_bins(
             (pl.col("X") / bin_size).floor().cast(pl.Int32).alias("bin_x"),
             (pl.col("Y") / bin_size).floor().cast(pl.Int32).alias("bin_y"),
         )
-        .group_by(["side", "bin_x", "bin_y"])
+        .group_by(["side", "bin_x", "bin_y"], maintain_order=True)
         .agg(pl.len().alias("samples"))
         .with_columns(
             (pl.col("bin_x") * bin_size + bin_size / 2).alias("x"),
@@ -112,7 +112,7 @@ def setup_snapshot(
         ticks.join(targets, on="round_num", how="inner")
         .filter(pl.col("tick") <= pl.col("setup_tick"))
         .sort("tick")
-        .group_by(["round_num", "steamid"])
+        .group_by(["round_num", "steamid"], maintain_order=True)
         .agg(
             pl.col("name").last(),
             pl.col("side").last(),
@@ -130,7 +130,7 @@ def zone_occupancy(setup: pl.DataFrame) -> pl.DataFrame:
     """Quantos jogadores de cada lado estavam em cada região, por round."""
     return (
         setup.filter(pl.col("place").is_not_null())
-        .group_by(["round_num", "side", "place"])
+        .group_by(["round_num", "side", "place"], maintain_order=True)
         .agg(pl.len().alias("players"))
         .sort(["round_num", "side", "players"], descending=[False, False, True])
     )
@@ -143,7 +143,7 @@ def standard_setup(occupancy: pl.DataFrame) -> pl.DataFrame:
     """
     n_rounds = occupancy.select(pl.col("round_num").n_unique()).item()
     return (
-        occupancy.group_by(["side", "place"])
+        occupancy.group_by(["side", "place"], maintain_order=True)
         .agg(pl.col("players").sum().alias("total_players"))
         .with_columns((pl.col("total_players") / n_rounds).alias("avg_players"))
         .sort(["side", "avg_players"], descending=[False, True])
@@ -185,7 +185,7 @@ def setup_deviation(
 
     # produto cartesiano round x referência, pra que região esperada e ausente no
     # round conte como desvio (e não simplesmente suma do join)
-    rounds_sides = occupancy.select(["round_num", "side"]).unique()
+    rounds_sides = occupancy.select(["round_num", "side"]).unique(maintain_order=True)
     expected = rounds_sides.join(reference, on="side", how="left")
 
     joined = expected.join(occupancy, on=["round_num", "side", "place"], how="left").with_columns(
@@ -194,7 +194,7 @@ def setup_deviation(
 
     deviation = (
         joined.with_columns((pl.col("players") - pl.col("avg_players")).abs().alias("abs_diff"))
-        .group_by(["round_num", "side"])
+        .group_by(["round_num", "side"], maintain_order=True)
         .agg((pl.col("abs_diff").sum() / 2).alias("setup_deviation"))
     )
 
@@ -213,7 +213,7 @@ def player_position_profile(positions: pl.DataFrame, setup: pl.DataFrame) -> pl.
     - `setup_place`: onde ele começou o round.
     """
     team_centroid = (
-        positions.group_by(["round_num", "tick", "side"])
+        positions.group_by(["round_num", "tick", "side"], maintain_order=True)
         .agg(pl.col("X").mean().alias("team_x"), pl.col("Y").mean().alias("team_y"))
     )
 
@@ -224,7 +224,7 @@ def player_position_profile(positions: pl.DataFrame, setup: pl.DataFrame) -> pl.
     )
 
     profile = (
-        with_centroid.group_by(["round_num", "steamid", "name"])
+        with_centroid.group_by(["round_num", "steamid", "name"], maintain_order=True)
         .agg(
             pl.col("distance_from_team").mean().alias("avg_distance_from_team"),
             pl.col("distance_from_team").max().alias("max_distance_from_team"),
