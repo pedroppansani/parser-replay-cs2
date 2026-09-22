@@ -44,7 +44,7 @@ from metrics.round_spectacle import round_spectacle
 # side_of_team é reexportado daqui: build_breakdown e fit_rating importam deste
 # módulo. A regra em si (inclusive a prorrogação) vive em metrics/sides.py.
 from metrics.sides import REGULATION_HALF as HALFTIME_ROUND, side_of_team  # noqa: F401
-from metrics.structural_roles import FUNCOES
+from metrics.structural_roles import FUNCOES, texto_empate
 from metrics.timing import detect_tickrate
 from metrics.win_probability import detecta_formato, win_probability
 from scripts.narrative import (
@@ -502,14 +502,20 @@ def build(match_id: str) -> Path:
     caminho_funcoes = processed / "structural_roles_summary.parquet"
     estruturais = pl.read_parquet(caminho_funcoes) if caminho_funcoes.exists() else None
     if estruturais is not None:
-        # a função exibida no card do MVP é a do lado em que ele jogou mais
-        melhor = estruturais.filter(pl.col("funcao").is_not_null()).sort(
-            "rounds_na_funcao", descending=True
+        # A função exibida no card do MVP é a do lado em que ele jogou mais -- e
+        # se esse lado é EMPATE, o card declara o empate em vez de cair para o
+        # outro lado. Sem isso, o ZywOo da match_47 (AWPer 6 x coringa 6 de CT)
+        # aparecia como "Trader" (3 de 8 de TR): uma função mais fraca mostrada
+        # como se fosse a leitura do jogador.
+        tem_leitura = pl.col("funcao").is_not_null()
+        if "empate_funcao" in estruturais.columns:
+            tem_leitura = tem_leitura | pl.col("empate_funcao")
+        melhor = estruturais.filter(tem_leitura).sort(
+            ["rounds_na_funcao", "side"], descending=[True, False]
         )
         for linha in melhor.iter_rows(named=True):
-            funcao_por_steamid.setdefault(
-                int(linha["steamid"]), FUNCOES[linha["funcao"]][0]
-            )
+            rotulo = texto_empate(linha) or FUNCOES[linha["funcao"]][0]
+            funcao_por_steamid.setdefault(int(linha["steamid"]), rotulo)
 
     referencia = load_reference()
     papeis_round, papeis = compute_for_match(
