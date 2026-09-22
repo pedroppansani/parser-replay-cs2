@@ -4,283 +4,704 @@ Gerado por `py -3.12 -m scripts.material_calibracao`. Cada seção termina com a
 
 ## 1. Pisos de função
 
-O rótulo exige **liderar o próprio time** naquela métrica E passar do piso. Por isso a tabela é dos líderes: para cada jogador, em quantas partidas ele liderou o time e em quantas levaria o rótulo com cada corte candidato. Os pisos continuam ABSOLUTOS -- percentil faria uma fração fixa sempre receber rótulo, e "nenhum suporte nesta partida" deixaria de poder acontecer.
+Gerado por `py -3.12 -m scripts.proposta_pisos`. O rótulo exige **liderar o próprio time** na métrica E passar do piso; o piso barra o líder que não é destacado. Para cada função: a distribuição completa (todos os jogador-partidas e só os líderes), três métodos objetivos -- **maior vazio** entre valores consecutivos, **Otsu** (menor variância dentro das duas classes) e **vale da densidade** (KDE) --, o veredito de concordância e os líderes mais próximos de cada corte. Métodos que concordam = corte real; métodos que discordam = a métrica é um contínuo e o piso é convenção. Os pisos continuam ABSOLUTOS. O que é seu: olhar a fronteira e dizer se aquele jogador jogou a função naquela partida.
 
-### AWPer — hoje `awp_share >= 0.25`
+### AWPer — `awp_share`, piso atual 0.250
+
+430 jogador-partidas profissionais em 43 partidas; 86 líderes de time (empate na liderança conta os dois).
+
+Distribuição -- TODOS (as marcas são os cortes de cada método):
+```
+     0.000-0.042     167 ##############################################
+     0.042-0.083      84 #######################
+     0.083-0.125      48 #############
+     0.125-0.167      29 ########
+     0.167-0.208      12 ###
+     0.208-0.250      11 ###
+     0.250-0.292       5 #   <- atual, vazio (todos), otsu (todos), vale (todos)
+     0.292-0.333       3 #
+     0.333-0.375       9 ##
+     0.375-0.417       5 #
+     0.417-0.458       6 ##
+     0.458-0.500      10 ###
+     0.500-0.542      12 ###
+     0.542-0.583       7 ##
+     0.583-0.625      10 ###
+     0.625-0.667       6 ##
+     0.667-0.708       3 #
+     0.708-0.750       3 #
 ```
 
-AWPer (awp_share) -- piso atual 0.25, candidatos 0.25, 0.35, 0.48, 0.58
-  86 lideranças de time em 43 partidas profissionais. Coluna '≥c' = em quantas das partidas que ele liderou o rótulo sai com o corte c.
-┌───────────┬────────┬───────┬───────┬───────┬───────┬───────────────────────┬───────────────┐
-│ name      ┆ lidera ┆ ≥0.25 ┆ ≥0.35 ┆ ≥0.48 ┆ ≥0.58 ┆ mediana quando lidera ┆ time          │
-╞═══════════╪════════╪═══════╪═══════╪═══════╪═══════╪═══════════════════════╪═══════════════╡
-│ woxic     ┆ 2      ┆ 2     ┆ 2     ┆ 2     ┆ 0     ┆ 0.54                  ┆ Aurora Gaming │
-│ molodoy   ┆ 16     ┆ 12    ┆ 12    ┆ 12    ┆ 7     ┆ 0.57                  ┆ FURIA         │
-│ m0NESY    ┆ 12     ┆ 11    ┆ 10    ┆ 7     ┆ 4     ┆ 0.51                  ┆ Falcons       │
-│ torzsi    ┆ 10     ┆ 10    ┆ 8     ┆ 5     ┆ 2     ┆ 0.49                  ┆ MOUZ          │
-│ w0nderful ┆ 14     ┆ 11    ┆ 10    ┆ 3     ┆ 2     ┆ 0.44                  ┆ Natus Vincere │
-│ SH1R0     ┆ 3      ┆ 3     ┆ 3     ┆ 2     ┆ 1     ┆ 0.57                  ┆ Spirit        │
-│ sh1ro     ┆ 9      ┆ 8     ┆ 7     ┆ 2     ┆ 1     ┆ 0.45                  ┆ Spirit        │
-│ 910       ┆ 2      ┆ 1     ┆ 1     ┆ 0     ┆ 0     ┆ 0.29                  ┆ The MongolZ   │
-│ ZywOo     ┆ 16     ┆ 14    ┆ 12    ┆ 7     ┆ 4     ┆ 0.48                  ┆ Vitality      │
-└───────────┴────────┴───────┴───────┴───────┴───────┴───────────────────────┴───────────────┘
+Distribuição -- LÍDERES (as marcas são os cortes de cada método):
 ```
-**Sua resposta:** piso de AWPer = ____
-
-### Abre o round — hoje `first_contact_share >= 0.32`
-```
-
-Abre o round (first_contact_share) -- piso atual 0.32, candidatos 0.27, 0.31, 0.32, 0.35
-  86 lideranças de time em 43 partidas profissionais. Coluna '≥c' = em quantas das partidas que ele liderou o rótulo sai com o corte c.
-┌───────────┬────────┬───────┬───────┬───────┬───────┬───────────────────────┬───────────────┐
-│ name      ┆ lidera ┆ ≥0.27 ┆ ≥0.31 ┆ ≥0.32 ┆ ≥0.35 ┆ mediana quando lidera ┆ time          │
-╞═══════════╪════════╪═══════╪═══════╪═══════╪═══════╪═══════════════════════╪═══════════════╡
-│ kyxsan    ┆ 3      ┆ 3     ┆ 2     ┆ 2     ┆ 1     ┆ 0.32                  ┆ Aurora Gaming │
-│ KSCERATO  ┆ 4      ┆ 3     ┆ 1     ┆ 1     ┆ 1     ┆ 0.28                  ┆ FURIA         │
-│ YEKINDAR  ┆ 9      ┆ 7     ┆ 6     ┆ 4     ┆ 4     ┆ 0.31                  ┆ FURIA         │
-│ NiKo      ┆ 3      ┆ 2     ┆ 0     ┆ 0     ┆ 0     ┆ 0.29                  ┆ Falcons       │
-│ TeSeS     ┆ 2      ┆ 0     ┆ 0     ┆ 0     ┆ 0     ┆ 0.24                  ┆ Falcons       │
-│ kyousuke  ┆ 3      ┆ 2     ┆ 1     ┆ 0     ┆ 0     ┆ 0.27                  ┆ Falcons       │
-│ m0NESY    ┆ 3      ┆ 3     ┆ 1     ┆ 0     ┆ 0     ┆ 0.3                   ┆ Falcons       │
-│ Brollan   ┆ 2      ┆ 1     ┆ 1     ┆ 1     ┆ 1     ┆ 0.3                   ┆ MOUZ          │
-│ Jimpphat  ┆ 2      ┆ 1     ┆ 1     ┆ 1     ┆ 1     ┆ 0.34                  ┆ MOUZ          │
-│ Spinx     ┆ 3      ┆ 1     ┆ 0     ┆ 0     ┆ 0     ┆ 0.27                  ┆ MOUZ          │
-│ xertioN   ┆ 2      ┆ 2     ┆ 2     ┆ 2     ┆ 1     ┆ 0.35                  ┆ MOUZ          │
-│ Aleksib   ┆ 2      ┆ 1     ┆ 0     ┆ 0     ┆ 0     ┆ 0.26                  ┆ Natus Vincere │
-│ b1t       ┆ 3      ┆ 1     ┆ 0     ┆ 0     ┆ 0     ┆ 0.27                  ┆ Natus Vincere │
-│ iM        ┆ 5      ┆ 4     ┆ 3     ┆ 2     ┆ 1     ┆ 0.31                  ┆ Natus Vincere │
-│ w0nderful ┆ 3      ┆ 2     ┆ 1     ┆ 1     ┆ 0     ┆ 0.3                   ┆ Natus Vincere │
-│ donk      ┆ 6      ┆ 6     ┆ 4     ┆ 4     ┆ 2     ┆ 0.34                  ┆ Spirit        │
-│ zont1x    ┆ 3      ┆ 2     ┆ 2     ┆ 0     ┆ 0     ┆ 0.32                  ┆ Spirit        │
-│ ZywOo     ┆ 5      ┆ 3     ┆ 3     ┆ 1     ┆ 1     ┆ 0.32                  ┆ Vitality      │
-│ apEX      ┆ 3      ┆ 2     ┆ 2     ┆ 2     ┆ 1     ┆ 0.33                  ┆ Vitality      │
-│ flameZ    ┆ 5      ┆ 4     ┆ 4     ┆ 4     ┆ 2     ┆ 0.35                  ┆ Vitality      │
-│ ropz      ┆ 3      ┆ 3     ┆ 2     ┆ 2     ┆ 2     ┆ 0.37                  ┆ Vitality      │
-└───────────┴────────┴───────┴───────┴───────┴───────┴───────────────────────┴───────────────┘
-```
-**Sua resposta:** piso de Abre o round = ____
-
-### Suporte de utility — hoje `enemy_blind_seconds >= 20.0`
+     0.056-0.094       2 ######
+     0.094-0.133       1 ###
+     0.133-0.171       2 ######   <- vazio (líderes)
+     0.171-0.210       3 #########
+     0.210-0.248       5 ###############
+     0.248-0.287       1 ###   <- atual
+     0.287-0.326       2 ######
+     0.326-0.364       7 #####################
+     0.364-0.403       6 ##################
+     0.403-0.441       1 ###   <- otsu (líderes)
+     0.441-0.480      15 ##############################################
+     0.480-0.519       6 ##################
+     0.519-0.557       8 #########################
+     0.557-0.596       8 #########################
+     0.596-0.634      10 ###############################
+     0.634-0.673       4 ############
+     0.673-0.711       3 #########
+     0.711-0.750       2 ######
 ```
 
-Suporte de utility (enemy_blind_seconds) -- piso atual 20.0, candidatos 20, 40, 54, 81
-  86 lideranças de time em 43 partidas profissionais. Coluna '≥c' = em quantas das partidas que ele liderou o rótulo sai com o corte c.
-┌───────────┬────────┬─────┬─────┬─────┬─────┬───────────────────────┬───────────────┐
-│ name      ┆ lidera ┆ ≥20 ┆ ≥40 ┆ ≥54 ┆ ≥81 ┆ mediana quando lidera ┆ time          │
-╞═══════════╪════════╪═════╪═════╪═════╪═════╪═══════════════════════╪═══════════════╡
-│ FalleN    ┆ 10     ┆ 10  ┆ 9   ┆ 5   ┆ 3   ┆ 56.66                 ┆ FURIA         │
-│ KSCERATO  ┆ 3      ┆ 3   ┆ 2   ┆ 1   ┆ 0   ┆ 45.33                 ┆ FURIA         │
-│ YEKINDAR  ┆ 3      ┆ 3   ┆ 2   ┆ 1   ┆ 1   ┆ 43.65                 ┆ FURIA         │
-│ NiKo      ┆ 2      ┆ 2   ┆ 1   ┆ 0   ┆ 0   ┆ 40.23                 ┆ Falcons       │
-│ kyxsan    ┆ 8      ┆ 8   ┆ 8   ┆ 7   ┆ 6   ┆ 92.54                 ┆ Falcons       │
-│ m0NESY    ┆ 2      ┆ 2   ┆ 2   ┆ 2   ┆ 1   ┆ 115.39                ┆ Falcons       │
-│ Brollan   ┆ 3      ┆ 3   ┆ 3   ┆ 1   ┆ 0   ┆ 50.91                 ┆ MOUZ          │
-│ torzsi    ┆ 4      ┆ 3   ┆ 2   ┆ 2   ┆ 2   ┆ 62.46                 ┆ MOUZ          │
-│ xertioN   ┆ 3      ┆ 2   ┆ 1   ┆ 0   ┆ 0   ┆ 30.55                 ┆ MOUZ          │
-│ Aleksib   ┆ 7      ┆ 7   ┆ 7   ┆ 3   ┆ 1   ┆ 46.55                 ┆ Natus Vincere │
-│ b1t       ┆ 2      ┆ 2   ┆ 1   ┆ 1   ┆ 0   ┆ 54.34                 ┆ Natus Vincere │
-│ makazze   ┆ 2      ┆ 2   ┆ 2   ┆ 1   ┆ 0   ┆ 66.88                 ┆ Natus Vincere │
-│ w0nderful ┆ 2      ┆ 2   ┆ 1   ┆ 0   ┆ 0   ┆ 36.76                 ┆ Natus Vincere │
-│ chopper   ┆ 4      ┆ 4   ┆ 1   ┆ 0   ┆ 0   ┆ 35.76                 ┆ Spirit        │
-│ magixx    ┆ 4      ┆ 4   ┆ 4   ┆ 3   ┆ 3   ┆ 91.6                  ┆ Spirit        │
-│ bLitz     ┆ 2      ┆ 2   ┆ 1   ┆ 0   ┆ 0   ┆ 39.96                 ┆ The MongolZ   │
-│ ZywOo     ┆ 2      ┆ 2   ┆ 1   ┆ 1   ┆ 0   ┆ 50.28                 ┆ Vitality      │
-│ apEX      ┆ 11     ┆ 10  ┆ 10  ┆ 8   ┆ 3   ┆ 67.07                 ┆ Vitality      │
-│ flameZ    ┆ 3      ┆ 2   ┆ 2   ┆ 2   ┆ 0   ┆ 68.86                 ┆ Vitality      │
-└───────────┴────────┴─────┴─────┴─────┴─────┴───────────────────────┴───────────────┘
-```
-**Sua resposta:** piso de Suporte de utility = ____
+| método | corte | líderes que levam o rótulo |
+|---|---|---|
+| atual | 0.250 | 73 de 86 |
+| vazio (todos) | 0.271 | 73 de 86 |
+| otsu (todos) | 0.271 | 73 de 86 |
+| vale (todos) | 0.289 | 72 de 86 |
+| vazio (líderes) | 0.158 | 81 de 86 |
+| otsu (líderes) | 0.414 | 57 de 86 |
+| vale (líderes) | sem corte (distribuição unimodal) | — |
 
-### Lurker — hoje `off_team_share >= 0.4`
-```
+- todos: espalhamento 0.12 amplitude interquartil (0.143) -> **CONCORDAM**, mediana 0.271
+- líderes: espalhamento 1.13 amplitude interquartil (0.227) -> **discordam**
 
-Lurker (off_team_share) -- piso atual 0.4, candidatos 0.4, 0.5, 0.62
-  86 lideranças de time em 43 partidas profissionais. Coluna '≥c' = em quantas das partidas que ele liderou o rótulo sai com o corte c.
-┌──────────┬────────┬──────┬──────┬───────┬───────────────────────┬───────────────┐
-│ name     ┆ lidera ┆ ≥0.4 ┆ ≥0.5 ┆ ≥0.62 ┆ mediana quando lidera ┆ time          │
-╞══════════╪════════╪══════╪══════╪═══════╪═══════════════════════╪═══════════════╡
-│ KSCERATO ┆ 7      ┆ 5    ┆ 4    ┆ 1     ┆ 0.55                  ┆ FURIA         │
-│ YEKINDAR ┆ 6      ┆ 4    ┆ 3    ┆ 1     ┆ 0.45                  ┆ FURIA         │
-│ yuurih   ┆ 2      ┆ 2    ┆ 2    ┆ 1     ┆ 0.77                  ┆ FURIA         │
-│ NiKo     ┆ 3      ┆ 3    ┆ 3    ┆ 0     ┆ 0.5                   ┆ Falcons       │
-│ TeSeS    ┆ 3      ┆ 3    ┆ 3    ┆ 2     ┆ 0.75                  ┆ Falcons       │
-│ kyxsan   ┆ 3      ┆ 2    ┆ 1    ┆ 0     ┆ 0.42                  ┆ Falcons       │
-│ m0NESY   ┆ 2      ┆ 1    ┆ 1    ┆ 0     ┆ 0.44                  ┆ Falcons       │
-│ Brollan  ┆ 3      ┆ 2    ┆ 2    ┆ 1     ┆ 0.56                  ┆ MOUZ          │
-│ Jimpphat ┆ 2      ┆ 1    ┆ 0    ┆ 0     ┆ 0.31                  ┆ MOUZ          │
-│ Spinx    ┆ 4      ┆ 4    ┆ 4    ┆ 1     ┆ 0.59                  ┆ MOUZ          │
-│ Aleksib  ┆ 4      ┆ 2    ┆ 2    ┆ 2     ┆ 0.4                   ┆ Natus Vincere │
-│ iM       ┆ 4      ┆ 4    ┆ 4    ┆ 2     ┆ 0.61                  ┆ Natus Vincere │
-│ jL       ┆ 3      ┆ 2    ┆ 2    ┆ 1     ┆ 0.57                  ┆ Natus Vincere │
-│ makazze  ┆ 2      ┆ 2    ┆ 1    ┆ 1     ┆ 0.62                  ┆ Natus Vincere │
-│ chopper  ┆ 3      ┆ 3    ┆ 3    ┆ 3     ┆ 0.75                  ┆ Spirit        │
-│ donk     ┆ 2      ┆ 1    ┆ 1    ┆ 0     ┆ 0.35                  ┆ Spirit        │
-│ sh1ro    ┆ 2      ┆ 1    ┆ 1    ┆ 1     ┆ 0.41                  ┆ Spirit        │
-│ zont1x   ┆ 3      ┆ 3    ┆ 2    ┆ 1     ┆ 0.56                  ┆ Spirit        │
-│ apEX     ┆ 5      ┆ 5    ┆ 2    ┆ 1     ┆ 0.45                  ┆ Vitality      │
-│ flameZ   ┆ 2      ┆ 2    ┆ 2    ┆ 0     ┆ 0.5                   ┆ Vitality      │
-│ mezii    ┆ 3      ┆ 2    ┆ 1    ┆ 0     ┆ 0.4                   ┆ Vitality      │
-│ ropz     ┆ 6      ┆ 5    ┆ 5    ┆ 2     ┆ 0.58                  ┆ Vitality      │
-└──────────┴────────┴──────┴──────┴───────┴───────────────────────┴───────────────┘
-```
-**Sua resposta:** piso de Lurker = ____
+**Veredito: corte real em 0.271** (métodos concordam entre todos). Piso atual 0.250: 73 líderes com rótulo; sugerido: 73.
 
-### Âncora de bomb — hoje `never_left_share >= 0.8`
-```
+**Fronteira do corte atual (0.250)** -- os 5 líderes mais próximos de cada lado:
 
-Âncora de bomb (never_left_share) -- piso atual 0.8, candidatos 0.8, 0.86, 0.92, 1
-  86 lideranças de time em 43 partidas profissionais. Coluna '≥c' = em quantas das partidas que ele liderou o rótulo sai com o corte c.
-┌──────────┬────────┬──────┬───────┬───────┬─────┬───────────────────────┬───────────────┐
-│ name     ┆ lidera ┆ ≥0.8 ┆ ≥0.86 ┆ ≥0.92 ┆ ≥1  ┆ mediana quando lidera ┆ time          │
-╞══════════╪════════╪══════╪═══════╪═══════╪═════╪═══════════════════════╪═══════════════╡
-│ FalleN   ┆ 8      ┆ 8    ┆ 5     ┆ 2     ┆ 2   ┆ 0.88                  ┆ FURIA         │
-│ KSCERATO ┆ 2      ┆ 2    ┆ 2     ┆ 2     ┆ 1   ┆ 0.96                  ┆ FURIA         │
-│ yuurih   ┆ 5      ┆ 5    ┆ 5     ┆ 3     ┆ 3   ┆ 1.0                   ┆ FURIA         │
-│ TeSeS    ┆ 7      ┆ 7    ┆ 6     ┆ 3     ┆ 2   ┆ 0.92                  ┆ Falcons       │
-│ kyxsan   ┆ 4      ┆ 3    ┆ 2     ┆ 2     ┆ 1   ┆ 0.88                  ┆ Falcons       │
-│ Brollan  ┆ 4      ┆ 4    ┆ 3     ┆ 1     ┆ 1   ┆ 0.89                  ┆ MOUZ          │
-│ Jimpphat ┆ 7      ┆ 7    ┆ 5     ┆ 3     ┆ 2   ┆ 0.92                  ┆ MOUZ          │
-│ Aleksib  ┆ 4      ┆ 4    ┆ 4     ┆ 2     ┆ 2   ┆ 0.95                  ┆ Natus Vincere │
-│ b1t      ┆ 4      ┆ 4    ┆ 3     ┆ 1     ┆ 1   ┆ 0.9                   ┆ Natus Vincere │
-│ jL       ┆ 2      ┆ 2    ┆ 2     ┆ 1     ┆ 1   ┆ 0.94                  ┆ Natus Vincere │
-│ makazze  ┆ 2      ┆ 2    ┆ 1     ┆ 0     ┆ 0   ┆ 0.88                  ┆ Natus Vincere │
-│ chopper  ┆ 2      ┆ 1    ┆ 1     ┆ 0     ┆ 0   ┆ 0.83                  ┆ Spirit        │
-│ donk     ┆ 4      ┆ 4    ┆ 2     ┆ 0     ┆ 0   ┆ 0.86                  ┆ Spirit        │
-│ magixx   ┆ 5      ┆ 5    ┆ 5     ┆ 5     ┆ 4   ┆ 1.0                   ┆ Spirit        │
-│ Mzinho   ┆ 2      ┆ 2    ┆ 2     ┆ 1     ┆ 1   ┆ 0.96                  ┆ The MongolZ   │
-│ ZywOo    ┆ 3      ┆ 3    ┆ 3     ┆ 2     ┆ 2   ┆ 1.0                   ┆ Vitality      │
-│ apEX     ┆ 5      ┆ 4    ┆ 2     ┆ 2     ┆ 2   ┆ 0.86                  ┆ Vitality      │
-│ flameZ   ┆ 3      ┆ 1    ┆ 1     ┆ 0     ┆ 0   ┆ 0.78                  ┆ Vitality      │
-│ mezii    ┆ 3      ┆ 3    ┆ 2     ┆ 1     ┆ 1   ┆ 0.92                  ┆ Vitality      │
-│ ropz     ┆ 3      ┆ 2    ┆ 2     ┆ 1     ┆ 1   ┆ 0.92                  ┆ Vitality      │
-└──────────┴────────┴──────┴───────┴───────┴─────┴───────────────────────┴───────────────┘
-```
-**Sua resposta:** piso de Âncora de bomb = ____
+| lado | jogador | time | partida | mapa | awp_share |
+|---|---|---|---|---|---|
+| rótulo | ZywOo | Team Vitality | match_43 | mirage | 0.333 |
+| rótulo | sh1ro | Team Spirit | match_27 | nuke | 0.333 |
+| rótulo | w0nderful | Natus Vincere | match_15 | mirage | 0.312 |
+| rótulo | ZywOo | Team Vitality | match_14 | ancient | 0.304 |
+| rótulo | torzsi | MOUZ | match_35 | inferno | 0.286 |
+| — corte 0.250 — | | | | | |
+| sem rótulo | ZywOo | Team Vitality | match_35 | inferno | 0.238 |
+| sem rótulo | w0nderful | Natus Vincere | match_38 | mirage | 0.238 |
+| sem rótulo | 910 | The MongolZ | match_52 | mirage | 0.222 |
+| sem rótulo | sh1ro | Team Spirit | match_28 | mirage | 0.217 |
+| sem rótulo | w0nderful | Natus Vincere | match_25 | anubis | 0.211 |
 
-### Segundo homem — hoje `trade_share >= 0.35`
+**Fronteira do corte sugerido (0.271)** -- os 5 líderes mais próximos de cada lado:
+
+| lado | jogador | time | partida | mapa | awp_share |
+|---|---|---|---|---|---|
+| rótulo | ZywOo | Team Vitality | match_43 | mirage | 0.333 |
+| rótulo | sh1ro | Team Spirit | match_27 | nuke | 0.333 |
+| rótulo | w0nderful | Natus Vincere | match_15 | mirage | 0.312 |
+| rótulo | ZywOo | Team Vitality | match_14 | ancient | 0.304 |
+| rótulo | torzsi | MOUZ | match_35 | inferno | 0.286 |
+| — corte 0.271 — | | | | | |
+| sem rótulo | ZywOo | Team Vitality | match_35 | inferno | 0.238 |
+| sem rótulo | w0nderful | Natus Vincere | match_38 | mirage | 0.238 |
+| sem rótulo | 910 | The MongolZ | match_52 | mirage | 0.222 |
+| sem rótulo | sh1ro | Team Spirit | match_28 | mirage | 0.217 |
+| sem rótulo | w0nderful | Natus Vincere | match_25 | anubis | 0.211 |
+
+**Sua resposta:** os jogadores da fronteira jogaram de AWPer naquelas partidas? piso de AWPer = ____
+
+### Abre o round — `first_contact_share`, piso atual 0.320
+
+430 jogador-partidas profissionais em 43 partidas; 103 líderes de time (empate na liderança conta os dois).
+
+Distribuição -- TODOS (as marcas são os cortes de cada método):
+```
+     0.000-0.029      13 #########   <- vazio (todos)
+     0.029-0.058      20 ##############
+     0.058-0.087      23 #################
+     0.087-0.116      44 ################################
+     0.116-0.146      64 ##############################################
+     0.146-0.175      47 ##################################
+     0.175-0.204      49 ###################################   <- otsu (todos)
+     0.204-0.233      40 #############################
+     0.233-0.262      46 #################################
+     0.262-0.291      20 ##############
+     0.291-0.320      29 #####################   <- atual
+     0.320-0.349      12 #########
+     0.349-0.378      10 #######
+     0.378-0.407       4 ###
+     0.407-0.437       5 ####
+     0.437-0.466       1 #
+     0.466-0.495       0    <- vale (todos)
+     0.495-0.524       3 ##
 ```
 
-Segundo homem (trade_share) -- piso atual 0.35, candidatos 0.26, 0.33, 0.35, 0.39
-  86 lideranças de time em 43 partidas profissionais. Coluna '≥c' = em quantas das partidas que ele liderou o rótulo sai com o corte c.
-┌───────────┬────────┬───────┬───────┬───────┬───────┬───────────────────────┬───────────────┐
-│ name      ┆ lidera ┆ ≥0.26 ┆ ≥0.33 ┆ ≥0.35 ┆ ≥0.39 ┆ mediana quando lidera ┆ time          │
-╞═══════════╪════════╪═══════╪═══════╪═══════╪═══════╪═══════════════════════╪═══════════════╡
-│ FalleN    ┆ 2      ┆ 2     ┆ 1     ┆ 1     ┆ 1     ┆ 0.44                  ┆ FURIA         │
-│ KSCERATO  ┆ 5      ┆ 3     ┆ 2     ┆ 1     ┆ 0     ┆ 0.32                  ┆ FURIA         │
-│ molodoy   ┆ 3      ┆ 2     ┆ 2     ┆ 2     ┆ 2     ┆ 0.62                  ┆ FURIA         │
-│ yuurih    ┆ 5      ┆ 4     ┆ 4     ┆ 2     ┆ 1     ┆ 0.33                  ┆ FURIA         │
-│ NiKo      ┆ 2      ┆ 2     ┆ 1     ┆ 1     ┆ 0     ┆ 0.33                  ┆ Falcons       │
-│ TeSeS     ┆ 4      ┆ 3     ┆ 3     ┆ 2     ┆ 2     ┆ 0.38                  ┆ Falcons       │
-│ m0NESY    ┆ 4      ┆ 1     ┆ 0     ┆ 0     ┆ 0     ┆ 0.25                  ┆ Falcons       │
-│ Brollan   ┆ 2      ┆ 1     ┆ 0     ┆ 0     ┆ 0     ┆ 0.28                  ┆ MOUZ          │
-│ Jimpphat  ┆ 3      ┆ 3     ┆ 3     ┆ 3     ┆ 3     ┆ 0.47                  ┆ MOUZ          │
-│ Spinx     ┆ 2      ┆ 2     ┆ 1     ┆ 1     ┆ 1     ┆ 0.38                  ┆ MOUZ          │
-│ xertioN   ┆ 2      ┆ 2     ┆ 2     ┆ 2     ┆ 1     ┆ 0.43                  ┆ MOUZ          │
-│ Aleksib   ┆ 5      ┆ 3     ┆ 3     ┆ 2     ┆ 1     ┆ 0.33                  ┆ Natus Vincere │
-│ b1t       ┆ 3      ┆ 3     ┆ 2     ┆ 2     ┆ 2     ┆ 0.44                  ┆ Natus Vincere │
-│ jL        ┆ 2      ┆ 1     ┆ 1     ┆ 1     ┆ 1     ┆ 0.35                  ┆ Natus Vincere │
-│ w0nderful ┆ 3      ┆ 3     ┆ 1     ┆ 1     ┆ 1     ┆ 0.31                  ┆ Natus Vincere │
-│ donk      ┆ 4      ┆ 4     ┆ 3     ┆ 1     ┆ 0     ┆ 0.33                  ┆ Spirit        │
-│ sh1ro     ┆ 4      ┆ 1     ┆ 0     ┆ 0     ┆ 0     ┆ 0.25                  ┆ Spirit        │
-│ zont1x    ┆ 2      ┆ 2     ┆ 2     ┆ 1     ┆ 0     ┆ 0.36                  ┆ Spirit        │
-│ apEX      ┆ 3      ┆ 2     ┆ 2     ┆ 2     ┆ 1     ┆ 0.36                  ┆ Vitality      │
-│ flameZ    ┆ 3      ┆ 1     ┆ 1     ┆ 1     ┆ 0     ┆ 0.25                  ┆ Vitality      │
-│ mezii     ┆ 6      ┆ 6     ┆ 3     ┆ 3     ┆ 1     ┆ 0.33                  ┆ Vitality      │
-│ ropz      ┆ 4      ┆ 3     ┆ 3     ┆ 3     ┆ 0     ┆ 0.36                  ┆ Vitality      │
-└───────────┴────────┴───────┴───────┴───────┴───────┴───────────────────────┴───────────────┘
+Distribuição -- LÍDERES (as marcas são os cortes de cada método):
 ```
-**Sua resposta:** piso de Segundo homem = ____
-
-### Principal fragger — hoje `adr >= 85.0`
+     0.206-0.224       9 ########################
+     0.224-0.241       6 ################
+     0.241-0.259      10 ###########################
+     0.259-0.277      11 ##############################
+     0.277-0.294      17 ##############################################
+     0.294-0.312       7 ###################
+     0.312-0.330      11 ##############################   <- atual, otsu (líderes)
+     0.330-0.347       7 ###################
+     0.347-0.365       8 ######################
+     0.365-0.383       5 ##############
+     0.383-0.400       3 ########
+     0.400-0.418       2 #####
+     0.418-0.435       3 ########
+     0.435-0.453       0    <- vazio (líderes)
+     0.453-0.471       1 ###
+     0.471-0.488       0    <- vale (líderes)
+     0.488-0.506       2 #####
+     0.506-0.524       1 ###
 ```
 
-Principal fragger (adr) -- piso atual 85.0, candidatos 85, 94, 105
-  86 lideranças de time em 43 partidas profissionais. Coluna '≥c' = em quantas das partidas que ele liderou o rótulo sai com o corte c.
-┌──────────┬────────┬─────┬─────┬──────┬───────────────────────┬───────────────┐
-│ name     ┆ lidera ┆ ≥85 ┆ ≥94 ┆ ≥105 ┆ mediana quando lidera ┆ time          │
-╞══════════╪════════╪═════╪═════╪══════╪═══════════════════════╪═══════════════╡
-│ KSCERATO ┆ 2      ┆ 2   ┆ 2   ┆ 2    ┆ 112.41                ┆ FURIA         │
-│ YEKINDAR ┆ 6      ┆ 2   ┆ 2   ┆ 1    ┆ 83.89                 ┆ FURIA         │
-│ molodoy  ┆ 3      ┆ 2   ┆ 2   ┆ 1    ┆ 94.06                 ┆ FURIA         │
-│ yuurih   ┆ 5      ┆ 3   ┆ 1   ┆ 0    ┆ 86.31                 ┆ FURIA         │
-│ kyousuke ┆ 5      ┆ 4   ┆ 3   ┆ 1    ┆ 94.0                  ┆ Falcons       │
-│ kyxsan   ┆ 3      ┆ 2   ┆ 2   ┆ 2    ┆ 112.1                 ┆ Falcons       │
-│ m0NESY   ┆ 4      ┆ 3   ┆ 0   ┆ 0    ┆ 90.04                 ┆ Falcons       │
-│ Jimpphat ┆ 4      ┆ 3   ┆ 1   ┆ 0    ┆ 88.31                 ┆ MOUZ          │
-│ Spinx    ┆ 3      ┆ 1   ┆ 1   ┆ 0    ┆ 83.23                 ┆ MOUZ          │
-│ xertioN  ┆ 4      ┆ 3   ┆ 0   ┆ 0    ┆ 87.32                 ┆ MOUZ          │
-│ Aleksib  ┆ 2      ┆ 0   ┆ 0   ┆ 0    ┆ 71.88                 ┆ Natus Vincere │
-│ b1t      ┆ 3      ┆ 3   ┆ 1   ┆ 1    ┆ 85.9                  ┆ Natus Vincere │
-│ iM       ┆ 3      ┆ 3   ┆ 2   ┆ 1    ┆ 94.71                 ┆ Natus Vincere │
-│ jL       ┆ 3      ┆ 3   ┆ 0   ┆ 0    ┆ 85.85                 ┆ Natus Vincere │
-│ makazze  ┆ 2      ┆ 0   ┆ 0   ┆ 0    ┆ 83.55                 ┆ Natus Vincere │
-│ donk     ┆ 10     ┆ 10  ┆ 9   ┆ 5    ┆ 104.08                ┆ Spirit        │
-│ sh1ro    ┆ 2      ┆ 2   ┆ 2   ┆ 0    ┆ 101.72                ┆ Spirit        │
-│ ZywOo    ┆ 14     ┆ 12  ┆ 12  ┆ 6    ┆ 102.72                ┆ Vitality      │
-│ flameZ   ┆ 2      ┆ 2   ┆ 1   ┆ 0    ┆ 94.58                 ┆ Vitality      │
-└──────────┴────────┴─────┴─────┴──────┴───────────────────────┴───────────────┘
+| método | corte | líderes que levam o rótulo |
+|---|---|---|
+| atual | 0.320 | 33 de 103 |
+| vazio (todos) | 0.021 | 103 de 103 |
+| otsu (todos) | 0.197 | 103 de 103 |
+| vale (todos) | 0.476 | 3 de 103 |
+| vazio (líderes) | 0.447 | 4 de 103 |
+| otsu (líderes) | 0.328 | 32 de 103 |
+| vale (líderes) | 0.473 | 3 de 103 |
+
+- todos: espalhamento 4.02 amplitude interquartil (0.113) -> **discordam**
+- líderes: espalhamento 1.99 amplitude interquartil (0.072) -> **discordam**
+
+**Veredito: sem separação clara.** Nenhuma das duas populações tem métodos concordando: a métrica é um contínuo aqui, e o piso é convenção, não corte estatístico. É o caso em que a fronteira do piso ATUAL é tudo o que há para julgar.
+
+**Fronteira do corte atual (0.320)** -- os 5 líderes mais próximos de cada lado:
+
+| lado | jogador | time | partida | mapa | first_contact_share |
+|---|---|---|---|---|---|
+| rótulo | donk | Team Spirit | match_36 | mirage | 0.333 |
+| rótulo | iM | Natus Vincere | match_36 | mirage | 0.333 |
+| rótulo | xertioN | MOUZ | match_33 | dust2 | 0.333 |
+| rótulo | flameZ | Vitality | match_27 | nuke | 0.333 |
+| rótulo | kyxsan | Falcons | match_31 | train | 0.324 |
+| — corte 0.320 — | | | | | |
+| sem rótulo | ZywOo | Team Vitality | match_23 | dust2 | 0.318 |
+| sem rótulo | zont1x | Team Spirit | match_25 | anubis | 0.316 |
+| sem rótulo | zont1x | Team Spirit | match_26 | anubis | 0.316 |
+| sem rótulo | ZywOo | Team Vitality | match_48 | dust2 | 0.316 |
+| sem rótulo | flameZ | Team Vitality | match_48 | dust2 | 0.316 |
+
+**Sua resposta:** os jogadores da fronteira jogaram de Abre o round naquelas partidas? piso de Abre o round = ____
+
+### Suporte de utility — `enemy_blind_seconds`, piso atual 20.0
+
+430 jogador-partidas profissionais em 43 partidas; 86 líderes de time (empate na liderança conta os dois).
+
+Distribuição -- TODOS (as marcas são os cortes de cada método):
 ```
-**Sua resposta:** piso de Principal fragger = ____
+     0.000-8.565      61 ################################
+     8.565-17.130     88 ##############################################
+    17.130-25.695     67 ###################################   <- atual
+    25.695-34.260     54 ############################
+    34.260-42.825     49 ##########################
+    42.825-51.389     35 ##################   <- otsu (todos)
+    51.389-59.954     23 ############
+    59.954-68.519     14 #######
+    68.519-77.084     10 #####
+    77.084-85.649      8 ####   <- vazio (todos), vale (todos)
+    85.649-94.214     10 #####
+    94.214-102.779     3 ##
+   102.779-111.344     2 #
+   111.344-119.909     0 
+   119.909-128.474     2 #
+   128.474-137.039     3 ##
+   137.039-145.604     0 
+   145.604-154.168     1 #
+```
+
+Distribuição -- LÍDERES (as marcas são os cortes de cada método):
+```
+    13.578-21.389      4 ##############   <- atual
+    21.389-29.199      7 #########################
+    29.199-37.010      6 #####################
+    37.010-44.821     13 ##############################################
+    44.821-52.631     12 ##########################################
+    52.631-60.442      7 #########################
+    60.442-68.252      6 #####################
+    68.252-76.063      6 #####################   <- otsu (líderes)
+    76.063-83.873      4 ##############
+    83.873-91.684      6 #####################
+    91.684-99.494      6 #####################
+    99.494-107.305     3 ###########
+   107.305-115.116     0    <- vazio (líderes)
+   115.116-122.926     1 ####
+   122.926-130.737     4 ##############
+   130.737-138.547     0 
+   138.547-146.358     0 
+   146.358-154.168     1 ####
+```
+
+| método | corte | líderes que levam o rótulo |
+|---|---|---|
+| atual | 20.0 | 82 de 86 |
+| vazio (todos) | 82.5 | 21 de 86 |
+| otsu (todos) | 47.1 | 49 de 86 |
+| vale (todos) | 83.9 | 21 de 86 |
+| vazio (líderes) | 113.1 | 6 de 86 |
+| otsu (líderes) | 69.9 | 29 de 86 |
+| vale (líderes) | sem corte (distribuição unimodal) | — |
+
+- todos: espalhamento 1.19 amplitude interquartil (30.8) -> **discordam**
+- líderes: espalhamento 1.06 amplitude interquartil (40.7) -> **discordam**
+
+**Veredito: sem separação clara.** Nenhuma das duas populações tem métodos concordando: a métrica é um contínuo aqui, e o piso é convenção, não corte estatístico. É o caso em que a fronteira do piso ATUAL é tudo o que há para julgar.
+
+**Fronteira do corte atual (20.0)** -- os 5 líderes mais próximos de cada lado:
+
+| lado | jogador | time | partida | mapa | enemy_blind_seconds |
+|---|---|---|---|---|---|
+| rótulo | sh1ro | Team Spirit | match_11 | anubis | 25.3 |
+| rótulo | w0nderful | Natus Vincere | match_10 | dust2 | 25.3 |
+| rótulo | donk | Team Spirit | match_40 | nuke | 24.4 |
+| rótulo | chopper | Team Spirit | match_26 | anubis | 22.7 |
+| rótulo | zont1x | Team Spirit | match_36 | mirage | 22.5 |
+| — corte 20.0 — | | | | | |
+| sem rótulo | xertioN | MOUZ | match_51 | nuke | 19.4 |
+| sem rótulo | torzsi | MOUZ | match_34 | mirage | 18.2 |
+| sem rótulo | flameZ | Team Vitality | match_47 | nuke | 17.8 |
+| sem rótulo | apEX | Vitality | match_27 | nuke | 13.6 |
+
+**Sua resposta:** os jogadores da fronteira jogaram de Suporte de utility naquelas partidas? piso de Suporte de utility = ____
+
+### Lurker — `off_team_share`, piso atual 0.400
+
+429 jogador-partidas profissionais em 43 partidas; 109 líderes de time (empate na liderança conta os dois).
+
+Distribuição -- TODOS (as marcas são os cortes de cada método):
+```
+     0.000-0.056      79 ##############################################   <- vazio (todos)
+     0.056-0.111      24 ##############
+     0.111-0.167      37 ######################
+     0.167-0.222      25 ###############   <- vale (todos)
+     0.222-0.278      31 ##################
+     0.278-0.333      21 ############   <- otsu (todos)
+     0.333-0.389      51 ##############################
+     0.389-0.444      34 ####################   <- atual
+     0.444-0.500      16 #########
+     0.500-0.556      46 ###########################
+     0.556-0.611      28 ################
+     0.611-0.667       9 #####
+     0.667-0.722      12 #######
+     0.722-0.778       4 ##
+     0.778-0.833       6 ###
+     0.833-0.889       3 ##
+     0.889-0.944       0 
+     0.944-1.000       3 ##
+```
+
+Distribuição -- LÍDERES (as marcas são os cortes de cada método):
+```
+     0.000-0.056      15 ######################################
+     0.056-0.111       5 #############
+     0.111-0.167       7 ##################
+     0.167-0.222       4 ##########
+     0.222-0.278       0    <- vazio (líderes), vale (líderes)
+     0.278-0.333       1 ###   <- otsu (líderes)
+     0.333-0.389       3 ########
+     0.389-0.444       7 ##################   <- atual
+     0.444-0.500       4 ##########
+     0.500-0.556      18 ##############################################
+     0.556-0.611      18 ##############################################
+     0.611-0.667       7 ##################
+     0.667-0.722       6 ###############
+     0.722-0.778       2 #####
+     0.778-0.833       6 ###############
+     0.833-0.889       3 ########
+     0.889-0.944       0 
+     0.944-1.000       3 ########
+```
+
+| método | corte | líderes que levam o rótulo |
+|---|---|---|
+| atual | 0.400 | 74 de 109 |
+| vazio (todos) | 0.033 | 94 de 109 |
+| otsu (todos) | 0.321 | 77 de 109 |
+| vale (todos) | 0.215 | 78 de 109 |
+| vazio (líderes) | 0.243 | 78 de 109 |
+| otsu (líderes) | 0.325 | 77 de 109 |
+| vale (líderes) | 0.264 | 78 de 109 |
+
+- todos: espalhamento 0.77 amplitude interquartil (0.375) -> **discordam**
+- líderes: espalhamento 0.19 amplitude interquartil (0.433) -> **CONCORDAM**, mediana 0.264
+
+**Veredito: corte real em 0.264** (métodos concordam entre líderes). Piso atual 0.400: 74 líderes com rótulo; sugerido: 78.
+
+**Fronteira do corte atual (0.400)** -- os 5 líderes mais próximos de cada lado:
+
+| lado | jogador | time | partida | mapa | off_team_share |
+|---|---|---|---|---|---|
+| rótulo | mezii | Team Vitality | match_44 | inferno | 0.400 |
+| rótulo | zont1x | Team Spirit | match_39 | dust2 | 0.400 |
+| rótulo | apEX | Team Vitality | match_33 | dust2 | 0.400 |
+| rótulo | YEKINDAR | FURIA | match_29 | inferno | 0.400 |
+| rótulo | makazze | Natus Vincere | match_15 | mirage | 0.400 |
+| — corte 0.400 — | | | | | |
+| sem rótulo | m0NESY | Falcons | match_20 | mirage | 0.385 |
+| sem rótulo | KSCERATO | FURIA | match_12 | overpass | 0.364 |
+| sem rótulo | xertioN | MOUZ | match_50 | inferno | 0.364 |
+| sem rótulo | YEKINDAR | FURIA | match_44 | inferno | 0.286 |
+| sem rótulo | sh1ro | Team Spirit | match_27 | nuke | 0.200 |
+
+**Fronteira do corte sugerido (0.264)** -- os 5 líderes mais próximos de cada lado:
+
+| lado | jogador | time | partida | mapa | off_team_share |
+|---|---|---|---|---|---|
+| rótulo | makazze | Natus Vincere | match_15 | mirage | 0.400 |
+| rótulo | m0NESY | Falcons | match_20 | mirage | 0.385 |
+| rótulo | xertioN | MOUZ | match_50 | inferno | 0.364 |
+| rótulo | KSCERATO | FURIA | match_12 | overpass | 0.364 |
+| rótulo | YEKINDAR | FURIA | match_44 | inferno | 0.286 |
+| — corte 0.264 — | | | | | |
+| sem rótulo | sh1ro | Team Spirit | match_27 | nuke | 0.200 |
+| sem rótulo | Jimpphat | MOUZ | match_51 | nuke | 0.200 |
+| sem rótulo | kyxsan | Team Falcons | match_51 | nuke | 0.182 |
+| sem rótulo | woxic | Aurora Gaming | match_21 | nuke | 0.167 |
+| sem rótulo | YEKINDAR | FURIA | match_16 | nuke | 0.154 |
+
+**Sua resposta:** os jogadores da fronteira jogaram de Lurker naquelas partidas? piso de Lurker = ____
+
+### Âncora de bomb — `never_left_share`, piso atual 0.800
+
+410 jogador-partidas profissionais em 43 partidas; 124 líderes de time (empate na liderança conta os dois).
+
+Distribuição -- TODOS (as marcas são os cortes de cada método):
+```
+     0.167-0.213       3 ##
+     0.213-0.259       2 #
+     0.259-0.306       2 #
+     0.306-0.352       3 ##
+     0.352-0.398       3 ##
+     0.398-0.444      12 ########
+     0.444-0.491      12 ########
+     0.491-0.537      27 ###################
+     0.537-0.583      10 #######
+     0.583-0.630      27 ###################
+     0.630-0.676      49 ###################################
+     0.676-0.722       8 ######   <- otsu (todos)
+     0.722-0.769      40 ############################
+     0.769-0.815      38 ###########################   <- atual
+     0.815-0.861      65 ##############################################
+     0.861-0.907      19 #############
+     0.907-0.954      43 ##############################
+     0.954-1.000      47 #################################   <- vazio (todos)
+```
+
+Distribuição -- LÍDERES (as marcas são os cortes de cada método):
+```
+     0.727-0.742       1 #
+     0.742-0.758       3 ###
+     0.758-0.773       0 
+     0.773-0.788       7 #######
+     0.788-0.803       2 ##   <- atual
+     0.803-0.818       0 
+     0.818-0.833       7 #######
+     0.833-0.848      13 #############
+     0.848-0.864       5 #####
+     0.864-0.879       3 ###
+     0.879-0.894       4 ####
+     0.894-0.909       1 #   <- otsu (líderes)
+     0.909-0.924      23 #######################
+     0.924-0.939       8 ########
+     0.939-0.955       0    <- vale (líderes)
+     0.955-0.970       0    <- vazio (líderes)
+     0.970-0.985       0 
+     0.985-1.000      47 ##############################################
+```
+
+| método | corte | líderes que levam o rótulo |
+|---|---|---|
+| atual | 0.800 | 113 de 124 |
+| vazio (todos) | 0.967 | 47 de 124 |
+| otsu (todos) | 0.707 | 124 de 124 |
+| vale (todos) | sem corte (distribuição unimodal) | — |
+| vazio (líderes) | 0.967 | 47 de 124 |
+| otsu (líderes) | 0.894 | 79 de 124 |
+| vale (líderes) | 0.952 | 47 de 124 |
+
+- todos: espalhamento 1.09 amplitude interquartil (0.239) -> **discordam**
+- líderes: espalhamento 0.43 amplitude interquartil (0.167) -> **discordam**
+
+**Veredito: sem separação clara.** Nenhuma das duas populações tem métodos concordando: a métrica é um contínuo aqui, e o piso é convenção, não corte estatístico. É o caso em que a fronteira do piso ATUAL é tudo o que há para julgar.
+
+**Fronteira do corte atual (0.800)** -- os 5 líderes mais próximos de cada lado:
+
+| lado | jogador | time | partida | mapa | never_left_share |
+|---|---|---|---|---|---|
+| rótulo | mezii | Team Vitality | match_46 | overpass | 0.818 |
+| rótulo | YEKINDAR | FURIA | match_14 | ancient | 0.818 |
+| rótulo | FalleN | FURIA | match_14 | ancient | 0.818 |
+| rótulo | yuurih | FURIA | match_20 | mirage | 0.800 |
+| rótulo | FalleN | FURIA | match_20 | mirage | 0.800 |
+| — corte 0.800 — | | | | | |
+| sem rótulo | flameZ | Team Vitality | match_12 | overpass | 0.778 |
+| sem rótulo | mezii | Team Vitality | match_12 | overpass | 0.778 |
+| sem rótulo | apEX | Team Vitality | match_35 | inferno | 0.778 |
+| sem rótulo | flameZ | Team Vitality | match_35 | inferno | 0.778 |
+| sem rótulo | ropz | Team Vitality | match_35 | inferno | 0.778 |
+
+**Sua resposta:** os jogadores da fronteira jogaram de Âncora de bomb naquelas partidas? piso de Âncora de bomb = ____
+
+### Segundo homem — `trade_share`, piso atual 0.350
+
+430 jogador-partidas profissionais em 43 partidas; 94 líderes de time (empate na liderança conta os dois).
+
+Distribuição -- TODOS (as marcas são os cortes de cada método):
+```
+     0.000-0.056      37 ####################   <- vazio (todos), vale (todos)
+     0.056-0.111      55 #############################
+     0.111-0.167      70 #####################################
+     0.167-0.222      87 ##############################################   <- otsu (todos)
+     0.222-0.278      81 ###########################################
+     0.278-0.333      40 #####################
+     0.333-0.389      35 ###################   <- atual
+     0.389-0.444       8 ####
+     0.444-0.500       8 ####
+     0.500-0.556       5 ###
+     0.556-0.611       1 #
+     0.611-0.667       1 #
+     0.667-0.722       0 
+     0.722-0.778       1 #
+     0.778-0.833       0 
+     0.833-0.889       0 
+     0.889-0.944       0 
+     0.944-1.000       1 #
+```
+
+Distribuição -- LÍDERES (as marcas são os cortes de cada método):
+```
+     0.167-0.213       4 #########
+     0.213-0.259      21 ##############################################
+     0.259-0.306      14 ###############################
+     0.306-0.352      20 ############################################   <- atual
+     0.352-0.398      14 ###############################
+     0.398-0.444       5 ###########   <- otsu (líderes)
+     0.444-0.491       7 ###############
+     0.491-0.537       5 ###########
+     0.537-0.583       0    <- vazio (líderes), vale (líderes)
+     0.583-0.630       2 ####
+     0.630-0.676       0 
+     0.676-0.722       0 
+     0.722-0.769       1 ##
+     0.769-0.815       0 
+     0.815-0.861       0 
+     0.861-0.907       0 
+     0.907-0.954       0 
+     0.954-1.000       1 ##
+```
+
+| método | corte | líderes que levam o rótulo |
+|---|---|---|
+| atual | 0.350 | 36 de 94 |
+| vazio (todos) | 0.022 | 94 de 94 |
+| otsu (todos) | 0.216 | 90 de 94 |
+| vale (todos) | 0.029 | 94 de 94 |
+| vazio (líderes) | 0.550 | 4 de 94 |
+| otsu (líderes) | 0.403 | 21 de 94 |
+| vale (líderes) | 0.571 | 4 de 94 |
+
+- todos: espalhamento 1.39 amplitude interquartil (0.140) -> **discordam**
+- líderes: espalhamento 1.37 amplitude interquartil (0.123) -> **discordam**
+
+**Veredito: sem separação clara.** Nenhuma das duas populações tem métodos concordando: a métrica é um contínuo aqui, e o piso é convenção, não corte estatístico. É o caso em que a fronteira do piso ATUAL é tudo o que há para julgar.
+
+**Fronteira do corte atual (0.350)** -- os 5 líderes mais próximos de cada lado:
+
+| lado | jogador | time | partida | mapa | trade_share |
+|---|---|---|---|---|---|
+| rótulo | yuurih | FURIA | match_46 | overpass | 0.357 |
+| rótulo | ropz | Team Vitality | match_46 | overpass | 0.357 |
+| rótulo | KSCERATO | FURIA | match_14 | ancient | 0.357 |
+| rótulo | xertioN | MOUZ | match_41 | inferno | 0.353 |
+| rótulo | NiKo | Team Falcons | match_41 | inferno | 0.350 |
+| — corte 0.350 — | | | | | |
+| sem rótulo | zont1x | Team Spirit | match_10 | dust2 | 0.333 |
+| sem rótulo | KSCERATO | FURIA | match_15 | mirage | 0.333 |
+| sem rótulo | molodoy | FURIA | match_15 | mirage | 0.333 |
+| sem rótulo | donk | Team Spirit | match_28 | mirage | 0.333 |
+| sem rótulo | magixx | Team Spirit | match_28 | mirage | 0.333 |
+
+**Sua resposta:** os jogadores da fronteira jogaram de Segundo homem naquelas partidas? piso de Segundo homem = ____
+
+### Principal fragger — `adr`, piso atual 85.0
+
+430 jogador-partidas profissionais em 43 partidas; 86 líderes de time (empate na liderança conta os dois).
+
+Distribuição -- TODOS (as marcas são os cortes de cada método):
+```
+    19.438-26.170      1 #
+    26.170-32.903      3 ##
+    32.903-39.635     12 ########
+    39.635-46.368     19 ############
+    46.368-53.101     34 ######################
+    53.101-59.833     47 ###############################
+    59.833-66.566     51 ##################################
+    66.566-73.299     70 ##############################################
+    73.299-80.031     51 ##################################   <- otsu (todos)
+    80.031-86.764     58 ######################################   <- atual
+    86.764-93.497     25 ################
+    93.497-100.229    27 ##################
+   100.229-106.962    13 #########
+   106.962-113.694     6 ####
+   113.694-120.427     6 ####   <- vazio (todos)
+   120.427-127.160     3 ##
+   127.160-133.892     2 #
+   133.892-140.625     2 #
+```
+
+Distribuição -- LÍDERES (as marcas são os cortes de cada método):
+```
+    60.842-65.274      1 ###
+    65.274-69.707      0 
+    69.707-74.139      5 ##############
+    74.139-78.572      0    <- vazio (líderes)
+    78.572-83.004      7 ###################
+    83.004-87.436     17 ##############################################   <- atual
+    87.436-91.869      9 ########################
+    91.869-96.301     11 ##############################
+    96.301-100.734     9 ########################
+   100.734-105.166     6 ################   <- otsu (líderes)
+   105.166-109.598     6 ################
+   109.598-114.031     3 ########
+   114.031-118.463     2 #####
+   118.463-122.895     4 ###########
+   122.895-127.328     2 #####
+   127.328-131.760     0 
+   131.760-136.193     3 ########
+   136.193-140.625     1 ###
+```
+
+| método | corte | líderes que levam o rótulo |
+|---|---|---|
+| atual | 85.0 | 65 de 86 |
+| vazio (todos) | 114.1 | 12 de 86 |
+| otsu (todos) | 74.3 | 80 de 86 |
+| vale (todos) | sem corte (distribuição unimodal) | — |
+| vazio (líderes) | 75.8 | 80 de 86 |
+| otsu (líderes) | 102.7 | 23 de 86 |
+| vale (líderes) | sem corte (distribuição unimodal) | — |
+
+- todos: espalhamento 1.55 amplitude interquartil (25.7) -> **discordam**
+- líderes: espalhamento 1.42 amplitude interquartil (19.0) -> **discordam**
+
+**Veredito: sem separação clara.** Nenhuma das duas populações tem métodos concordando: a métrica é um contínuo aqui, e o piso é convenção, não corte estatístico. É o caso em que a fronteira do piso ATUAL é tudo o que há para julgar.
+
+**Fronteira do corte atual (85.0)** -- os 5 líderes mais próximos de cada lado:
+
+| lado | jogador | time | partida | mapa | adr |
+|---|---|---|---|---|---|
+| rótulo | jL | Natus Vincere | match_24 | dust2 | 85.8 |
+| rótulo | mo0N | magic | match_23 | dust2 | 85.6 |
+| rótulo | xertioN | MOUZ | match_41 | inferno | 85.3 |
+| rótulo | b1t | Natus Vincere | match_36 | mirage | 85.2 |
+| rótulo | jL | Natus Vincere | match_40 | nuke | 85.2 |
+| — corte 85.0 — | | | | | |
+| sem rótulo | YEKINDAR | FURIA | match_44 | inferno | 84.9 |
+| sem rótulo | yuurih | FURIA | match_43 | mirage | 84.8 |
+| sem rótulo | yuurih | FURIA | match_46 | overpass | 84.3 |
+| sem rótulo | makazze | Natus Vincere | match_22 | mirage | 84.0 |
+| sem rótulo | xertioN | MOUZ | match_49 | mirage | 83.9 |
+
+**Sua resposta:** os jogadores da fronteira jogaram de Principal fragger naquelas partidas? piso de Principal fragger = ____
 
 ## 2. Nomes dos quatro grupos de estilo
 
-A descrição automática é releitura das médias, não nome de função (decisão 8). As sugestões abaixo são só sugestões: quem nomeia é você, em `clustering/cluster_names.json`.
+Gerado por `py -3.12 -m scripts.proposta_grupos`. O KMeans não nomeia (decisão 8): abaixo está o que DEFINE cada grupo e, para cada um, três nomes que se justificam pelos números mostrados. Você escolhe, ajusta ou recusa; o nome vai para `clustering/cluster_names.json`.
 
-### Grupo 0 — descrição automática: "longe do time"
-- **2749 rounds** (24% do corpus); CT 2011, TR 738
-- **O que distingue** (desvios da média geral): avg_distance_from_team 1161.1 contra 709.7 (+1.25); max_distance_from_team 1779.2 contra 1238.9 (+1.09); distinct_places 4.7 contra 6.0 (-0.55); crosshair_score 72.1 contra 68.4 (+0.35)
-- **Quem mais concentra** (fração dos próprios rounds, mínimo de 150 rounds no corpus): TeSeS 124 de 310 (40%), Jimpphat 98 de 279 (35%), ropz 111 de 352 (32%), b1t 95 de 303 (31%), yuurih 114 de 369 (31%)
-- **Rounds representativos** (mais perto do centro do grupo):
-  - match_15 (mirage) round 9, YEKINDAR (ct): 870u do time, 4 regiões, contato 61s, 146 de dano, 2 kills
-  - match_01 (ancient) round 11, xhx (ct): 1262u do time, 3 regiões, contato 32s, 0 de dano, 0 kills
-  - match_38 (mirage) round 19, Aleksib (ct): 1474u do time, 4 regiões, contato 13s, 0 de dano, 0 kills
-  - match_41 (inferno) round 4, m0NESY (ct): 1377u do time, 6 regiões, contato 32s, 100 de dano, 1 kills
-  - match_11 (anubis) round 3, tN1R (t): 963u do time, 4 regiões, contato 66s, 0 de dano, 0 kills
-- **Sugestões:** Segura sozinho · Âncora isolado · Posição fixa
+### Antes de nomear: o modelo ainda não foi ajustado no corpus inteiro
 
-**Sua resposta:** grupo 0 = ____
+O modelo em uso foi ajustado em **1870 jogador-rounds (as 9 partidas de FACEIT)** e aplicado às 52. Reajustado nas 52 (11520 jogador-rounds, sem gravar): índice de Rand ajustado **0.49**, e 79% dos rounds ficam no mesmo grupo. **Os quatro perfis reaparecem** -- são os mesmos quatro jeitos --, mas os NÚMEROS dos grupos trocam, e o maior deles perde parte dos rounds para outro. Por isso os nomes abaixo estão presos ao perfil, não ao número: se o modelo for reajustado, cada nome segue o seu perfil. Reajustar é decisão sua (`py -3.12 -m scripts.fit_global_clusters`); recomendo antes de gravar os nomes.
 
-### Grupo 1 — descrição automática: "joga por baixo"
-- **762 rounds** (7% do corpus); CT 399, TR 363
-- **O que distingue** (desvios da média geral): height_score 0.5 contra 0.9 (-2.69); crosshair_score 50.3 contra 68.4 (-1.71); max_distance_from_team 1007.5 contra 1238.9 (-0.47); frac_entering_fight 0.1 contra 0.1 (+0.33)
-- **Quem mais concentra** (fração dos próprios rounds, mínimo de 150 rounds no corpus): magixx 30 de 260 (12%), iM 34 de 303 (11%), Spinx 24 de 238 (10%), jL 16 de 165 (10%), b1t 29 de 303 (10%)
-- **Rounds representativos** (mais perto do centro do grupo):
-  - match_31 (train) round 2, yuurih (t): 636u do time, 5 regiões, contato 32s, 69 de dano, 1 kills
-  - match_51 (nuke) round 11, kyousuke (t): 339u do time, 7 regiões, contato 52s, 100 de dano, 1 kills
-  - match_21 (nuke) round 18, Wicadia (ct): 735u do time, 8 regiões, contato 12s, 150 de dano, 2 kills
-  - match_30 (nuke) round 8, yuurih (ct): 584u do time, 8 regiões, contato 17s, 0 de dano, 0 kills
-  - match_16 (nuke) round 9, YEKINDAR (ct): 810u do time, 2 regiões, contato 31s, 126 de dano, 1 kills
-- **Sugestões:** Mira fora da altura · Crosshair baixo · —
+| perfil | grupo hoje | vira no reajuste | rounds que ficam juntos |
+|---|---|---|---|
+| longe | 0 | 2 | 2334 de 2749 (85%) |
+| mira | 1 | 0 | 736 de 762 (97%) |
+| roda | 2 | 3 | 3343 de 5276 (63%) |
+| junto | 3 | 1 | 2725 de 2733 (100%) |
 
-**Sua resposta:** grupo 1 = ____
+### Perfil "longe" -- grupo 0 hoje (2749 jogador-rounds, 24% do corpus; CT 2011, TR 738)
 
-### Grupo 2 — descrição automática: "passa por muitas regiões"
-- **5276 rounds** (46% do corpus); CT 2306, TR 2970
-- **O que distingue** (desvios da média geral): distinct_places 7.4 contra 6.0 (+0.61); time_of_first_contact_s 64.9 contra 47.8 (+0.55); frac_entering_fight 0.1 contra 0.1 (-0.35); avg_distance_from_team 634.0 contra 709.7 (-0.21)
-- **Quem mais concentra** (fração dos próprios rounds, mínimo de 150 rounds no corpus): chopper 143 de 225 (64%), w0nderful 191 de 303 (63%), sh1ro 113 de 185 (61%), donk 158 de 260 (61%), zont1x 149 de 260 (57%)
-- **Rounds representativos** (mais perto do centro do grupo):
-  - match_24 (dust2) round 7, magixx (t): 722u do time, 6 regiões, contato 47s, 4 de dano, 0 kills
-  - match_11 (anubis) round 3, iM (ct): 629u do time, 11 regiões, contato 36s, 100 de dano, 1 kills
-  - match_10 (dust2) round 9, sh1ro (t): 418u do time, 6 regiões, contato 98s, 172 de dano, 2 kills
-  - match_39 (dust2) round 14, iM (t): 395u do time, 8 regiões, contato 90s, 46 de dano, 0 kills
-  - match_47 (nuke) round 19, mezii (t): 369u do time, 4 regiões, contato 109s, 0 de dano, 0 kills
-- **Sugestões:** Joga o round inteiro · Rodando com o time · Default paciente
+| feature | média do grupo | média geral | desvio (z) |
+|---|---|---|---|
+| distância média do time **(distingue)** | 1161.14u | 709.70u | +1.25 |
+| maior distância do time no round **(distingue)** | 1779.22u | 1238.95u | +1.09 |
+| regiões diferentes visitadas **(distingue)** | 4.70 | 5.99 | -0.55 |
+| placement da mira (0-100) | 72.06 | 68.39 | +0.35 |
+| mira na altura da cabeça (0-1) | 0.91 | 0.87 | +0.26 |
+| tempo até o 1º contato | 43.76s | 47.84s | -0.13 |
+| fração do tempo entrando em briga | 0.09 | 0.11 | -0.13 |
 
-**Sua resposta:** grupo 2 = ____
+Mapa mais super-representado: inferno (1.3x a fatia do corpus).
 
-### Grupo 3 — descrição automática: "encosta no adversário cedo"
-- **2733 rounds** (24% do corpus); CT 1044, TR 1689
-- **O que distingue** (desvios da média geral): max_distance_from_team 789.2 contra 1238.9 (-0.91); time_of_first_contact_s 21.7 contra 47.8 (-0.85); avg_distance_from_team 433.1 contra 709.7 (-0.77); frac_entering_fight 0.2 contra 0.1 (+0.72)
-- **Quem mais concentra** (fração dos próprios rounds, mínimo de 150 rounds no corpus): donk666 87 de 187 (47%), YEKINDAR 123 de 369 (33%), xertioN 68 de 238 (29%), kyousuke 80 de 310 (26%), NiKo 80 de 310 (26%)
-- **Rounds representativos** (mais perto do centro do grupo):
-  - match_01 (ancient) round 15, 9amaterasu9 (t): 344u do time, 8 regiões, contato 12s, 100 de dano, 1 kills
-  - match_27 (nuke) round 8, ropz (t): 317u do time, 5 regiões, contato 20s, 53 de dano, 0 kills
-  - match_05 (nuke) round 11, gwizdakk (t): 331u do time, 5 regiões, contato 17s, 0 de dano, 0 kills
-  - match_49 (mirage) round 6, xertioN (ct): 396u do time, 5 regiões, contato 39s, 124 de dano, 1 kills
-  - match_41 (inferno) round 15, m0NESY (t): 200u do time, 5 regiões, contato 46s, 174 de dano, 1 kills
-- **Sugestões:** Pressão cedo · Entrada em bloco · Executa junto
+**Nomes candidatos:**
+- **Joga isolado** -- distância média do time 1161u contra 710u (+1.25 desvio)
+- **Segura longe do time** -- maior distância no round 1779u (+1.09) com poucas regiões visitadas (-0.55): fica parado, longe
+- **Posição solitária** -- 73% dos rounds deste grupo são de CT: é o jeito de defender um ponto sozinho
 
-**Sua resposta:** grupo 3 = ____
+**Sua resposta:** perfil "longe" = ____
+
+### Perfil "mira" -- grupo 1 hoje (762 jogador-rounds, 7% do corpus; CT 399, TR 363)
+
+| feature | média do grupo | média geral | desvio (z) |
+|---|---|---|---|
+| mira na altura da cabeça (0-1) **(distingue)** | 0.51 | 0.87 | -2.69 |
+| placement da mira (0-100) **(distingue)** | 50.33 | 68.39 | -1.71 |
+| maior distância do time no round | 1007.53u | 1238.95u | -0.47 |
+| fração do tempo entrando em briga | 0.15 | 0.11 | +0.33 |
+| distância média do time | 597.55u | 709.70u | -0.31 |
+| tempo até o 1º contato | 38.58s | 47.84s | -0.30 |
+| regiões diferentes visitadas | 5.49 | 5.99 | -0.21 |
+
+Mapa mais super-representado: nuke (2.1x a fatia do corpus). **Atenção:** 36% dos rounds deste grupo são em nuke (o corpus tem 17%, 2.1x) -- parte do grupo pode ser efeito do mapa, não estilo.
+
+**Nomes candidatos:**
+- **Mira fora da altura** -- mira na altura da cabeça 0.51 contra 0.87 (-2.69 desvio) -- o traço mais forte de todos os grupos
+- **Crosshair baixo** -- placement 50 contra 68 (-1.71); o resto do perfil fica perto da média
+- **Mira desajustada** -- o grupo é definido só pela mira: posição, tempo e movimento são os da média
+
+**Sua resposta:** perfil "mira" = ____
+
+### Perfil "roda" -- grupo 2 hoje (5276 jogador-rounds, 46% do corpus; CT 2306, TR 2970)
+
+| feature | média do grupo | média geral | desvio (z) |
+|---|---|---|---|
+| regiões diferentes visitadas **(distingue)** | 7.43 | 5.99 | +0.61 |
+| tempo até o 1º contato **(distingue)** | 64.85s | 47.84s | +0.55 |
+| fração do tempo entrando em briga | 0.06 | 0.11 | -0.35 |
+| distância média do time | 633.98u | 709.70u | -0.21 |
+| placement da mira (0-100) | 67.03 | 68.39 | -0.13 |
+| mira na altura da cabeça (0-1) | 0.88 | 0.87 | +0.06 |
+| maior distância do time no round | 1223.85u | 1238.95u | -0.03 |
+
+Mapa mais super-representado: overpass (1.4x a fatia do corpus).
+
+**Nomes candidatos:**
+- **Roda o mapa** -- 7.4 regiões por round contra 6.0 (+0.61 desvio)
+- **Contato tardio** -- primeiro contato aos 65s contra 48s (+0.55)
+- **Joga o relógio** -- chega tarde e evita briga (tempo entrando em briga -0.35 desvio)
+
+**Sua resposta:** perfil "roda" = ____
+
+### Perfil "junto" -- grupo 3 hoje (2733 jogador-rounds, 24% do corpus; CT 1044, TR 1689)
+
+| feature | média do grupo | média geral | desvio (z) |
+|---|---|---|---|
+| maior distância do time no round **(distingue)** | 789.17u | 1238.95u | -0.91 |
+| tempo até o 1º contato **(distingue)** | 21.70s | 47.84s | -0.85 |
+| distância média do time **(distingue)** | 433.06u | 709.70u | -0.77 |
+| fração do tempo entrando em briga **(distingue)** | 0.19 | 0.11 | +0.72 |
+| regiões diferentes visitadas **(distingue)** | 4.64 | 5.99 | -0.57 |
+| placement da mira (0-100) | 72.39 | 68.39 | +0.38 |
+| mira na altura da cabeça (0-1) | 0.92 | 0.87 | +0.36 |
+
+Mapa mais super-representado: ancient (1.9x a fatia do corpus). **Atenção:** 11% dos rounds deste grupo são em ancient (o corpus tem 6%, 1.9x) -- parte do grupo pode ser efeito do mapa, não estilo.
+
+**Nomes candidatos:**
+- **Junto e rápido** -- maior distância do time 789u contra 1239u (-0.91) e contato aos 22s (-0.85)
+- **Entra em bloco** -- entra em briga +0.72 desvio acima da média, colado no time (-0.77)
+- **Execução em grupo** -- 62% dos rounds deste grupo são de TR: é o jeito de executar um bomb junto
+
+**Sua resposta:** perfil "junto" = ____
 
 ## 3. Rótulos de força do arremesso
 

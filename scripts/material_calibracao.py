@@ -58,68 +58,31 @@ FEATURES = ["avg_distance_from_team", "max_distance_from_team", "distinct_places
 
 
 def secao_pisos() -> list[str]:
-    funcoes = carrega("player_roles")
-    man = json.loads((PROJECT_ROOT / "data" / "manifest.json").read_text(encoding="utf-8"))["partidas"]
-    time_de = {(m, n): (v["times"][t]["nome"] or "").removeprefix("Team ")
-               for m, v in man.items() for t in ("A", "B") for n in v["times"][t]["jogadores"]}
-    funcoes = funcoes.with_columns(pl.struct(["match_id", "name"]).map_elements(
-        lambda r: time_de.get((r["match_id"], r["name"])), return_dtype=pl.Utf8).alias("time_real"))
-    out = ["## 1. Pisos de função",
-           "",
-           "O rótulo exige **liderar o próprio time** naquela métrica E passar do piso. "
-           "Por isso a tabela é dos líderes: para cada jogador, em quantas partidas ele liderou o time "
-           "e em quantas levaria o rótulo com cada corte candidato. Os pisos continuam ABSOLUTOS -- "
-           "percentil faria uma fração fixa sempre receber rótulo, e \"nenhum suporte nesta partida\" "
-           "deixaria de poder acontecer.", ""]
-    for t in TRAIT_SPECS:
-        bloco = cortes_com_nomes(funcoes, t)
-        out.append(f"### {t.label} — hoje `{t.column} >= {t.floor}`")
-        out.append("```")
-        out += [b.replace("=== ", "").replace(" ===", "") for b in bloco]
-        out.append("```")
-        out.append(f"**Sua resposta:** piso de {t.label} = ____")
-        out.append("")
+    """Seção 1: distribuição, método declarado e casos de fronteira de cada piso
+    (scripts/proposta_pisos.py). Pedido do Pedro: decidir o corte olhando o
+    raciocínio, não só a lista final."""
+    from scripts import proposta_pisos as pp
+
+    df = pp.carrega()
+    out = ["## 1. Pisos de função", "",
+           "Gerado por `py -3.12 -m scripts.proposta_pisos`. O rótulo exige **liderar o próprio time** na "
+           "métrica E passar do piso; o piso barra o líder que não é destacado. Para cada função: a distribuição "
+           "completa (todos os jogador-partidas e só os líderes), três métodos objetivos -- **maior vazio** entre "
+           "valores consecutivos, **Otsu** (menor variância dentro das duas classes) e **vale da densidade** (KDE) "
+           "--, o veredito de concordância e os líderes mais próximos de cada corte. Métodos que concordam = corte "
+           "real; métodos que discordam = a métrica é um contínuo e o piso é convenção. Os pisos continuam "
+           "ABSOLUTOS. O que é seu: olhar a fronteira e dizer se aquele jogador jogou a função naquela partida.", ""]
+    for t in pp.TRAIT_SPECS:
+        out.append(pp.relata(pp.analisa(df, t)))
     return out
 
 
 def secao_grupos() -> list[str]:
-    man = json.loads((PROJECT_ROOT / "data" / "manifest.json").read_text(encoding="utf-8"))["partidas"]
-    partes = [pl.read_parquet(d / "cluster_assignments.parquet").with_columns(
-        pl.lit(d.name).alias("match_id"), pl.lit(man[d.name]["mapa"].replace("de_", "")).alias("mapa"))
-        for d in sorted(PROCESSED.glob("match_*")) if (d / "cluster_assignments.parquet").exists()]
-    c = com_nome_de_exibicao(pl.concat(partes, how="diagonal_relaxed"))
-    perfil_global = PROJECT_ROOT / "data" / "global_clusters" / "cluster_profiles.parquet"
-    desc = {r["cluster"]: r["titulo"] for r in describe_clusters(pl.read_parquet(perfil_global)).to_dicts()}
-    geral = {f: (c[f].mean(), c[f].std()) for f in FEATURES}
-    tot = c.group_by("steamid", maintain_order=True).agg(pl.col("name").last().alias("name"), pl.len().alias("d"))
-    out = ["## 2. Nomes dos quatro grupos de estilo", "",
-           "A descrição automática é releitura das médias, não nome de função (decisão 8). "
-           "As sugestões abaixo são só sugestões: quem nomeia é você, em `clustering/cluster_names.json`.", ""]
-    for k in sorted(c["cluster"].unique(maintain_order=True)):
-        g = c.filter(pl.col("cluster") == k)
-        titulo = desc.get(k, f"grupo {k}")
-        z = sorted(((f, (g[f].mean() - geral[f][0]) / geral[f][1], g[f].mean(), geral[f][0]) for f in FEATURES),
-                   key=lambda x: -abs(x[1]))[:4]
-        top = (g.group_by("steamid", maintain_order=True).len().join(tot, on="steamid").filter(pl.col("d") >= 150)
-               .with_columns((pl.col("len") / pl.col("d")).alias("fr")).sort("fr", descending=True).head(5))
-        cx, cy = g["pca_1"].mean(), g["pca_2"].mean()
-        ex = (g.with_columns(((pl.col("pca_1") - cx) ** 2 + (pl.col("pca_2") - cy) ** 2).alias("dist"))
-              .sort("dist").unique(["match_id"], keep="first", maintain_order=True).head(5))
-        out += [f"### Grupo {k} — descrição automática: \"{titulo}\"",
-                f"- **{g.height} rounds** ({g.height / c.height:.0%} do corpus); CT {g.filter(pl.col('side') == 'ct').height}, TR {g.filter(pl.col('side') == 't').height}",
-                "- **O que distingue** (desvios da média geral): " + "; ".join(
-                    f"{f} {m:.1f} contra {mg:.1f} ({zz:+.2f})" for f, zz, m, mg in z),
-                "- **Quem mais concentra** (fração dos próprios rounds, mínimo de 150 rounds no corpus): " + ", ".join(
-                    f"{r['name']} {r['len']} de {r['d']} ({r['fr']:.0%})" for r in top.iter_rows(named=True)),
-                "- **Rounds representativos** (mais perto do centro do grupo):"]
-        for r in ex.iter_rows(named=True):
-            contato = "-" if r["time_of_first_contact_s"] is None else f"{r['time_of_first_contact_s']:.0f}s"
-            out.append(f"  - {r['match_id']} ({r['mapa']}) round {r['round_num']}, {r['name']} ({r['side']}): "
-                       f"{r['avg_distance_from_team']:.0f}u do time, {r['distinct_places']} regiões, contato {contato}, "
-                       f"{r['damage']} de dano, {r['kills']} kills")
-        s = SUGESTOES.get(titulo, ("—", "—", "—"))
-        out += [f"- **Sugestões:** {s[0]} · {s[1]} · {s[2]}", "", f"**Sua resposta:** grupo {k} = ____", ""]
-    return out
+    """Seção 2: perfil de cada grupo, estabilidade ao reajuste e nomes candidatos
+    presos ao perfil (scripts/proposta_grupos.py)."""
+    from scripts.proposta_grupos import proposta_md
+
+    return proposta_md() + [""]
 
 
 def secao_forca() -> list[str]:
