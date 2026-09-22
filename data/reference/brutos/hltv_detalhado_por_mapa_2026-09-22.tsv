@@ -1,0 +1,75 @@
+# Detailed stats OFICIAIS da HLTV, POR MAPA, transcritos do que o Pedro colou em 2026-09-21 e 2026-09-22.
+# Uma linha por jogador e mapa, na ordem da página. Colunas: Op. K-D (op_k, op_d), MKs, KAST, 1vsX,
+# K (hs), A (f), D (t), ADR, Swing, Rating 3.0. O casamento com a partida do corpus NÃO usa estes
+# números: sai de mapa + elenco + número de rounds (ver scripts/importa_detalhado_mapas.py).
+serie	mapa	time	jogador	op_k	op_d	mk	kast_pct	clutches	kills	hs	assist	assist_flash	mortes	trocadas	adr	swing	rating
+navi-spirit-katowice-2025-02-03	mirage	Natus Vincere	iM	4	3	4	76.2	0	19	11	6	1	13	4	94.7	4.28	1.54
+navi-spirit-katowice-2025-02-03	mirage	Natus Vincere	b1t	2	1	4	71.4	1	16	14	6	0	14	4	87.6	6.49	1.39
+navi-spirit-katowice-2025-02-03	mirage	Natus Vincere	jL	2	2	4	76.2	0	15	10	6	1	14	4	88.9	0.98	1.19
+navi-spirit-katowice-2025-02-03	mirage	Natus Vincere	w0nderful	1	1	4	66.7	0	12	4	2	1	12	1	55.6	0.69	0.93
+navi-spirit-katowice-2025-02-03	mirage	Natus Vincere	Aleksib	2	3	3	61.9	1	12	3	6	2	15	3	52.3	-3.88	0.80
+navi-spirit-katowice-2025-02-03	mirage	Spirit	zont1x	2	0	5	76.2	0	18	5	3	0	15	3	96.7	4.01	1.53
+navi-spirit-katowice-2025-02-03	mirage	Spirit	donk	1	1	3	76.2	1	17	11	8	0	15	4	98.3	4.03	1.43
+navi-spirit-katowice-2025-02-03	mirage	Spirit	sh1ro	2	1	3	61.9	0	13	4	1	1	11	0	65.9	1.88	1.02
+navi-spirit-katowice-2025-02-03	mirage	Spirit	magixx	2	3	3	61.9	0	13	6	3	1	16	4	68.8	-10.24	0.68
+navi-spirit-katowice-2025-02-03	mirage	Spirit	chopper	3	6	1	52.4	0	7	6	5	0	17	2	48.1	-8.25	0.50
+navi-spirit-katowice-2025-02-03	dust2	Natus Vincere	jL	4	2	5	79.2	0	20	16	5	0	17	8	92.7	7.55	1.61
+navi-spirit-katowice-2025-02-03	dust2	Natus Vincere	w0nderful	4	1	2	79.2	0	13	3	5	1	14	1	79.4	-1.44	0.97
+navi-spirit-katowice-2025-02-03	dust2	Natus Vincere	b1t	4	2	5	75.0	0	15	7	6	1	16	2	69.0	-2.67	0.92
+navi-spirit-katowice-2025-02-03	dust2	Natus Vincere	Aleksib	0	1	1	79.2	0	11	4	7	3	14	3	40.0	-1.94	0.86
+navi-spirit-katowice-2025-02-03	dust2	Natus Vincere	iM	0	6	4	50.0	0	11	4	3	0	14	1	46.2	-4.77	0.65
+navi-spirit-katowice-2025-02-03	dust2	Spirit	donk	4	2	8	70.8	1	24	14	2	0	13	2	110.3	8.95	1.78
+navi-spirit-katowice-2025-02-03	dust2	Spirit	sh1ro	4	1	6	79.2	0	20	8	9	3	13	4	92.9	3.83	1.37
+navi-spirit-katowice-2025-02-03	dust2	Spirit	chopper	4	1	2	79.2	2	15	7	5	0	15	4	61.0	0.65	1.04
+navi-spirit-katowice-2025-02-03	dust2	Spirit	zont1x	0	4	4	50.0	0	10	5	2	2	14	1	37.8	-4.79	0.67
+navi-spirit-katowice-2025-02-03	dust2	Spirit	magixx	0	4	1	70.8	0	6	3	6	2	15	5	38.3	-5.37	0.60
+navi-spirit-katowice-2025-02-03	nuke	Natus Vincere	iM	3	3	4	76.7	0	23	11	6	1	22	4	83.0	2.57	1.28
+navi-spirit-katowice-2025-02-03	nuke	Natus Vincere	jL	1	1	9	70.0	1	25	19	5	0	19	3	85.2	3.25	1.25
+navi-spirit-katowice-2025-02-03	nuke	Natus Vincere	w0nderful	1	2	4	63.3	0	20	14	9	4	17	1	65.2	1.38	1.13
+navi-spirit-katowice-2025-02-03	nuke	Natus Vincere	b1t	7	5	3	73.3	0	19	12	6	1	21	3	74.5	0.35	1.02
+navi-spirit-katowice-2025-02-03	nuke	Natus Vincere	Aleksib	3	4	4	66.7	1	17	9	5	1	23	5	67.0	-3.38	0.85
+navi-spirit-katowice-2025-02-03	nuke	Spirit	donk	4	3	9	66.7	0	30	17	6	0	21	1	102.0	2.71	1.38
+navi-spirit-katowice-2025-02-03	nuke	Spirit	zont1x	4	4	8	60.0	1	25	10	2	0	19	1	67.2	2.58	1.17
+navi-spirit-katowice-2025-02-03	nuke	Spirit	sh1ro	1	1	2	73.3	1	17	2	5	0	22	6	68.2	1.21	0.93
+navi-spirit-katowice-2025-02-03	nuke	Spirit	chopper	4	5	4	70.0	0	17	8	9	0	24	6	72.6	-5.27	0.77
+navi-spirit-katowice-2025-02-03	nuke	Spirit	magixx	2	2	2	70.0	0	13	8	7	0	19	5	62.6	-5.41	0.74
+navi-aurora-starseries-fall-2026	mirage	Natus Vincere	w0nderful	4	1	5	70.0	1	14	8	2	0	14	2	77.0	3.01	1.32
+navi-aurora-starseries-fall-2026	mirage	Natus Vincere	iM	1	3	4	70.0	0	15	7	4	2	17	2	81.8	-1.80	1.13
+navi-aurora-starseries-fall-2026	mirage	Natus Vincere	makazze	1	1	5	65.0	0	16	10	3	1	14	2	84.0	-2.92	1.08
+navi-aurora-starseries-fall-2026	mirage	Natus Vincere	Aleksib	1	3	1	75.0	0	9	5	6	3	14	6	58.9	-0.12	0.93
+navi-aurora-starseries-fall-2026	mirage	Natus Vincere	b1t	2	3	2	80.0	0	10	5	5	0	17	5	48.1	-5.96	0.78
+navi-aurora-starseries-fall-2026	mirage	Aurora	kyxsan	4	0	6	75.0	1	21	14	5	0	16	8	112.1	9.16	1.77
+navi-aurora-starseries-fall-2026	mirage	Aurora	woxic	2	1	5	80.0	0	18	9	2	2	10	1	67.2	-0.49	1.04
+navi-aurora-starseries-fall-2026	mirage	Aurora	Wicadia	0	4	3	70.0	1	11	8	6	1	12	4	75.8	1.01	1.04
+navi-aurora-starseries-fall-2026	mirage	Aurora	Jimpphat	4	0	5	75.0	0	15	8	4	0	12	2	69.4	-1.29	1.01
+navi-aurora-starseries-fall-2026	mirage	Aurora	XANTARES	1	4	4	65.0	0	11	4	6	0	14	3	74.7	-0.61	0.93
+navi-aurora-starseries-fall-2026	nuke	Natus Vincere	b1t	3	4	5	76.2	0	18	9	3	0	15	3	85.9	0.39	1.25
+navi-aurora-starseries-fall-2026	nuke	Natus Vincere	makazze	2	4	7	71.4	0	16	8	3	0	16	6	84.0	-0.12	1.16
+navi-aurora-starseries-fall-2026	nuke	Natus Vincere	iM	2	2	3	61.9	1	14	7	2	0	15	5	76.8	-0.30	1.06
+navi-aurora-starseries-fall-2026	nuke	Natus Vincere	Aleksib	1	1	2	66.7	0	11	6	3	1	16	3	57.0	-3.49	0.81
+navi-aurora-starseries-fall-2026	nuke	Natus Vincere	w0nderful	2	0	0	61.9	0	7	3	4	1	14	1	34.0	-4.31	0.64
+navi-aurora-starseries-fall-2026	nuke	Aurora	Jimpphat	2	1	6	76.2	0	23	18	2	0	11	2	102.2	9.56	1.94
+navi-aurora-starseries-fall-2026	nuke	Aurora	Wicadia	1	0	4	71.4	0	16	9	4	0	14	2	70.9	-0.65	1.04
+navi-aurora-starseries-fall-2026	nuke	Aurora	XANTARES	2	4	2	66.7	0	12	7	6	0	14	4	69.3	0.28	0.97
+navi-aurora-starseries-fall-2026	nuke	Aurora	kyxsan	3	4	2	76.2	0	11	5	4	0	14	4	59.0	-0.40	0.95
+navi-aurora-starseries-fall-2026	nuke	Aurora	woxic	3	1	3	71.4	0	14	2	4	0	13	1	72.1	-0.94	0.87
+vitality-mongolz-budapest-major-2025	mirage	Vitality	ZywOo	3	1	7	83.3	2	25	6	4	1	8	2	135.3	17.54	2.47
+vitality-mongolz-budapest-major-2025	mirage	Vitality	mezii	3	1	5	83.3	0	18	11	3	0	11	5	105.2	5.21	1.60
+vitality-mongolz-budapest-major-2025	mirage	Vitality	flameZ	1	1	4	72.2	0	15	10	3	1	12	3	84.0	3.87	1.32
+vitality-mongolz-budapest-major-2025	mirage	Vitality	ropz	2	1	2	94.4	1	11	6	5	0	9	2	75.7	1.42	1.17
+vitality-mongolz-budapest-major-2025	mirage	Vitality	apEX	1	4	1	50.0	0	5	2	5	2	12	0	41.3	-11.43	0.39
+vitality-mongolz-budapest-major-2025	mirage	The MongolZ	mzinho	3	1	3	66.7	1	14	10	3	0	14	0	86.0	2.42	1.26
+vitality-mongolz-budapest-major-2025	mirage	The MongolZ	bLitz	2	1	2	66.7	0	11	6	5	0	15	1	93.9	-2.34	1.02
+vitality-mongolz-budapest-major-2025	mirage	The MongolZ	Techno	1	2	2	66.7	0	12	7	3	0	14	2	61.3	-1.73	0.97
+vitality-mongolz-budapest-major-2025	mirage	The MongolZ	910	1	1	1	55.6	0	9	2	3	1	16	2	51.4	-7.58	0.56
+vitality-mongolz-budapest-major-2025	mirage	The MongolZ	controlez	1	5	2	44.4	0	6	5	3	0	15	1	43.4	-7.38	0.53
+vitality-mongolz-budapest-major-2025	dust2	Vitality	ropz	2	0	4	88.2	1	18	13	3	0	8	2	97.5	8.96	1.93
+vitality-mongolz-budapest-major-2025	dust2	Vitality	ZywOo	3	0	5	94.1	0	21	3	5	0	10	1	126.4	8.12	1.74
+vitality-mongolz-budapest-major-2025	dust2	Vitality	flameZ	2	3	2	76.5	0	11	5	7	1	11	2	84.1	3.44	1.26
+vitality-mongolz-budapest-major-2025	dust2	Vitality	mezii	2	3	3	88.2	1	12	11	6	2	10	2	69.4	-0.27	1.02
+vitality-mongolz-budapest-major-2025	dust2	Vitality	apEX	0	2	1	76.5	0	9	7	4	2	11	2	48.2	-2.58	0.84
+vitality-mongolz-budapest-major-2025	dust2	The MongolZ	910	2	1	2	76.5	0	14	8	2	0	14	3	75.2	0.22	1.29
+vitality-mongolz-budapest-major-2025	dust2	The MongolZ	mzinho	4	5	3	58.8	0	15	8	2	0	14	3	87.7	0.28	1.28
+vitality-mongolz-budapest-major-2025	dust2	The MongolZ	bLitz	2	2	0	58.8	0	7	2	6	1	16	2	64.0	-1.44	0.73
+vitality-mongolz-budapest-major-2025	dust2	The MongolZ	Techno	0	1	2	64.7	0	7	5	3	0	13	1	48.6	-6.26	0.67
+vitality-mongolz-budapest-major-2025	dust2	The MongolZ	controlez	0	0	2	41.2	0	6	2	2	1	14	1	42.5	-10.48	0.45

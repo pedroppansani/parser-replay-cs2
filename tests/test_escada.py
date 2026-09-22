@@ -59,6 +59,23 @@ def test_aberturas_multikills_e_headshots_batem_exato_com_a_hltv():
     d = detalhado()
     if d.height == 0:
         pytest.skip("sem data/reference/hltv_detalhado.json")
-    # o clutch ainda não é exato (41/50, ver CLAUDE.md 22j): fica fora desta trava
+    # o clutch ainda não é exato (67/80, ver CLAUDE.md 22j): fica fora desta trava
     errados = d.filter((pl.col("campo") != "clutches") & (pl.col("nosso") != pl.col("oficial")))
     assert errados.height == 0, errados
+
+
+def test_transcricao_por_mapa_confere_sem_usar_o_nosso_numero():
+    """Os Detailed stats por mapa (data/reference/brutos/) passam nas três
+    conferências do importador: aberturas fecham por mapa, cada mapa casa com
+    UMA partida por mapa + elenco + rounds, e o rating colado é o registrado.
+    Uma transcrição nova com erro de digitação falha aqui antes de virar gabarito."""
+    from scripts import importa_detalhado_mapas as imp
+
+    d = imp.le_brutos()
+    if d.height == 0:
+        pytest.skip("sem transcrição por mapa")
+    assert imp.confere_transcricao(d) == []
+    casamento, erros = imp.casa_com_o_corpus(d)
+    assert erros == []
+    assert len(casamento) == d.select("serie", "mapa").unique().height
+    assert imp.confere_rating(d, casamento) == []

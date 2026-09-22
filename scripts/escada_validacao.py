@@ -17,7 +17,7 @@ na partida seguinte.
 
 Fontes oficiais, todas transcritas dos prints da HLTV:
   data/reference/hltv_placar.json      K, D, ADR (410 jogadores, 41 partidas)
-  data/reference/hltv_componentes.json KAST e Swing (310 jogadores, 31 partidas)
+  data/reference/hltv_componentes.json KAST e Swing (330 jogadores, 33 partidas)
   data/reference/hltv_ratings.json     rating (430 jogadores, 43 partidas)
   data/reference/hltv_detalhado.json   Detailed stats por série (50 jogadores, 5 séries)
 """

@@ -332,7 +332,10 @@ testada e estava errada.
    menos não explica excesso --, e dos 21 abaixo só 1 fecha com flash assist.
    Assistência por dano (quem feriu a vítima que um companheiro matou) com
    limite de 41 dá os mesmos 230 (41 é o limite do próprio jogo); sem limite,
-   129. Caso isolado sem explicação: SH1R0 na match_38, 13 contra 16 oficial.
+   129. O "caso isolado sem explicação" que estava aqui (SH1R0 na match_38, 13 contra 16
+   oficial) era ERRO DE TRANSCRIÇÃO no gabarito, não no código: o 76,2% era o KAST do
+   donk, duas linhas acima no mesmo print. O Detailed stats colado pelo Pedro em
+   2026-09-22 dá 61,9% (13) nos dois formatos, com o mesmo Swing; corrigido.
 
 8h. **Cegueira por flash é RECONSTRUÍDA nas demos de campeonato** (elas não
    gravam `player_blind`; só as de FACEIT gravam). `parsing/cegueira.py`:
@@ -792,7 +795,8 @@ testada e estava errada.
 22g. **Escada de validação: contagem exata antes de olhar o rating**
     (`scripts/escada_validacao.py`, K-D-ADR oficiais de 410 jogadores em
     `data/reference/hltv_placar.json`; `tests/test_escada.py` trava os degraus 1
-    e 2). Rounds 41/41, kills e mortes 410/410, ADR 401/410, KAST 230/310.
+    e 2). Rounds 41/41, kills e mortes 410/410, ADR 401/410, KAST 247/330 (era
+    230/310 até 2026-09-22: +20 KASTs de match_21/22 e a correção do SH1R0).
     Multi-kills e aberturas sem dado oficial ainda. Cada print foi casado com a
     partida pelo RATING, não pelo K-D, para o degrau 1 não ser circular.
 22l. **Os detalhes estruturais do Rating 2.0/3.0, aplicados um a um e medidos**
@@ -846,9 +850,16 @@ testada e estava errada.
     `xfail(strict=True)` -- quando voltar a passar, o pytest acusa e obriga a
     tirar a marca.
 22j. **Degrau 4 pela página "Detailed stats" da HLTV** (`data/reference/
-    hltv_detalhado.json`, POR SÉRIE -- os nossos mapas são somados; 5 séries
-    inteiras no corpus, 50 jogadores). Aberturas feitas e sofridas, rounds de
-    multi-kill, kills, headshots e mortes: 50/50 exatos (travado em teste).
+    hltv_detalhado.json`, POR SÉRIE -- os nossos mapas são somados; **8 séries
+    inteiras no corpus, 80 jogadores**). Aberturas feitas e sofridas, rounds de
+    multi-kill, kills, headshots e mortes: 80/80 exatos (travado em teste).
+    As 3 séries acrescentadas em 2026-09-22 (NaVi x Spirit Katowice 03/02, NaVi x
+    Aurora StarSeries, Vitality x MongolZ Budapest) vieram POR MAPA
+    (`data/reference/brutos/hltv_detalhado_por_mapa_*.tsv`, importadas por
+    `scripts/importa_detalhado_mapas.py`, que confere a transcrição pelas
+    aberturas, casa o mapa por mapa + elenco + rounds -- nunca pelo K-D -- e
+    confere o rating contra o já registrado: 70/70). Elas foram a validação FORA
+    DA AMOSTRA das regras de contagem: 30/30 nos quatro campos, sem ajuste.
     Abertura = primeira kill em INIMIGO do round; as da HLTV somam exatamente um
     por round. O que ainda não bate, medido:
     - clutch (1vsX vencido): 32/50 com o antigo "último vivo contra 2+"; 41/50
@@ -859,8 +870,11 @@ testada e estava errada.
       papel é sobre o quase-clutch difícil, não sobre perder duelo; e no round
       mais impressionante o clutch só pontua de 1v2 para cima
       (`MIN_INIMIGOS_CLUTCH_ESPETACULO`). Nos cards, contagem e conversão
-      aparecem sempre juntas, com a quebra por X ("1v1: 1/3, 1v2: 0/2"). Os 9
-      que ainda não batem ficam em aberto.
+      aparecem sempre juntas, com a quebra por X ("1v1: 1/3, 1v2: 0/2"). Com 80
+      jogadores: 67/80. As 13 divergências NÃO são espalhadas: 11 são +1 nosso,
+      1 é +2 e 1 é -1 -- contamos clutch vencido que a HLTV não conta. Divergência
+      concentrada é diagnóstico (há uma regra deles que não temos), não ruído;
+      fica em aberto, sem ajuste.
     - assistência: 19/50, faltando 44 no total, 41 delas de FLASH. O evento de
       kill do jogo guarda UM assistente; a HLTV conta a flash à parte. Pela
       cegueira reconstruída, "cegou e a vítima morreu ainda cega para um
