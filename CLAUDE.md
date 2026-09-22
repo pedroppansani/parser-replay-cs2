@@ -1018,9 +1018,26 @@ testada e estava errada.
     entrada, deu flameZ entry 4x/lurker 1x, molodoy suporte 3x/lurker 2x,
     xertioN entry 4x/lurker 1x. Nos três, a "dominante" é um EMPATE de 4 vias
     com 1 round cada, desempatado pela pontuação média -- que variava porque
-    vinha de `.first()` sobre grupos em ordem de hash. Agora é reprodutível;
-    se um empate assim deveria virar "sem função dominante" é decisão do Pedro
-    (`resume_por_lado` não trata empate na contagem).
+    vinha de `.first()` sobre grupos em ordem de hash. Agora é reprodutível.
+    EMPATE NA FUNÇÃO DOMINANTE (decisão do Pedro, 2026-09-22): a mesma regra do
+    round decisivo e do card de destaque -- proximidade dentro do ruído é empate
+    declarado. `structural_roles.MARGEM_EMPATE_FUNCAO_ROUNDS` = 0 (só empate
+    exato, o único valor sem parâmetro livre); no empate a função fica nula, as
+    empatadas vão junto e o texto sai do Python ("sem função dominante: AWPer
+    50% (6 de 12) vs Coringa 50% (6 de 12)"). A margem é em ROUNDS: com ~12 por
+    lado, 1 round = 8,3 p.p., e qualquer limiar menor é o empate exato. Curva em
+    1.031 jogador-lados: 0 round 145 (14%), 1 round 372 (36%), < 1 desvio do
+    ruído 438 (42%), 2 rounds 520 (50%) -- sem patamar; estender é do Pedro.
+    Efeito medido: 145 jogador-lados sem função dominante, rating e escada
+    idênticos, 3 cards de MVP passaram a declarar o empate. O card do MVP usa o
+    lado mais forte INCLUINDO o empate: antes caía para o outro lado, e o ZywOo
+    (match_47) aparecia como "Trader, 3 de 8".
+    ACHADO PARA O PEDRO: 30 dos 145 empates têm o AWPer entre as empatadas
+    (ZywOo 6x6, w0nderful 6x6 de CT). AWPer é função de EQUIPAMENTO disputando
+    a contagem com funções de POSIÇÃO -- nos rounds sem AWP (eco, força) o
+    jogador recebe uma função posicional. Não é ruído de amostra, é uma
+    categoria competindo com outra. Se o AWPer deve vencer o empate por
+    prioridade (como já vence em `player_roles.TRAIT_SPECS`) é decisão dele.
     As 52 partidas registram `parser 1, métricas 2`, o commit `56742b2` e
     `sujo: false`; o manifesto passou de 52 "desconhecidas" para 52 em dia.
 

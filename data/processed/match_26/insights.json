@@ -539,7 +539,7 @@
     "steamid": 76561198386265483,
     "name": "donk",
     "team": "B",
-    "funcao": "Rotativo",
+    "funcao": "sem função dominante: Rotativo 25% (3 de 12) vs Âncora 25% (3 de 12)",
     "indice": 0.74,
     "vice_nome": "flameZ",
     "vice_indice": 0.7240314926660915,
@@ -3731,7 +3731,7 @@
   "narrative": {
     "decisive": "Partida sem round decisivo: a diferença se construiu ao longo do jogo, e o placar terminou em 13-6. O round de maior peso moveu 9% da chance de vitória, abaixo dos 12% que o modelo exige para chamar um round de decisivo.",
     "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário.",
-    "mvp_card": "donk foi o MVP com 91,1 de ADR contra 87,5 de flameZ, jogando de rotativo.",
+    "mvp_card": "donk foi o MVP com 91,1 de ADR contra 87,5 de flameZ, jogando de sem função dominante: rotativo 25% (3 de 12) vs âncora 25% (3 de 12).",
     "highlight_card": "flameZ: 7 de 7 rounds como Coringa no lado CT. mezii pontuou praticamente o mesmo como repick: houve mais de um destaque equivalente nesta partida.",
     "spectacle": "Round 10: clutch de apEX em 1v2 e 3K de apEX. Não foi o round decisivo porque esta partida não teve um -- a diferença se construiu ao longo do jogo.",
     "economy": null,

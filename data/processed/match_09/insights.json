@@ -686,7 +686,7 @@
     "steamid": 76561198372023214,
     "name": "Magnojezzz",
     "team": "B",
-    "funcao": "AWPer",
+    "funcao": "sem função dominante: AWPer 42% (5 de 12) vs Rotativo 42% (5 de 12)",
     "indice": 0.85,
     "vice_nome": "donk666",
     "vice_indice": 0.6161290322580646,
@@ -3977,7 +3977,7 @@
   "narrative": {
     "decisive": "Levou o Time B de 50% para 75% de chance de vencer a partida, a partir de um empate em 11-11, com o 1v3 de Magnojezzz e o round terminou com os CTs eliminados.",
     "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 24 moveu praticamente o mesmo (25% contra 25%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
-    "mvp_card": "Magnojezzz foi o MVP com 109,7 de ADR contra 98,3 de wh1temink e 5 aberturas de round contra 4 de donk666, jogando de awper.",
+    "mvp_card": "Magnojezzz foi o MVP com 109,7 de ADR contra 98,3 de wh1temink e 5 aberturas de round contra 4 de donk666, jogando de sem função dominante: awper 42% (5 de 12) vs rotativo 42% (5 de 12).",
     "highlight_card": "tezeuts-: 4,3 regiões por round, contra 5,3 de mediana dos outros. newnickname7 pontuou praticamente o mesmo como camper: houve mais de um destaque equivalente nesta partida.",
     "spectacle": "Round 23: clutch de Magnojezzz em 1v3, 5K de Magnojezzz e virou com 2 jogadores a menos. Foi também o round que mais moveu a partida.",
     "economy": "Equipamento médio no round: 4.130$ de quem venceu contra 3.920$ de quem perdeu.",
