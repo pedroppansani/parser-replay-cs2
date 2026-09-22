@@ -438,3 +438,53 @@ def test_candidatos_a_igl_nao_escrevem_nada():
     corpo = codigo.split('"""', 2)[-1]  # fora da docstring do módulo
     for proibido in ("write_text", "write_parquet", ".write(", "open(", "ROLES_MANUAL", "json.dump"):
         assert proibido not in corpo, proibido
+
+
+# --- empate na função dominante ---------------------------------------------
+
+def _por_round_sintetico(contagens: dict[str, int], n: int = 12) -> pl.DataFrame:
+    """Um jogador, um lado: `contagens` rounds em cada função, o resto sem função."""
+    linhas, r = [], 1
+    for funcao, k in contagens.items():
+        for _ in range(k):
+            linhas.append({"round_num": r, "steamid": 1, "name": "x", "side": "t",
+                           "funcao": funcao, "pontuacao": 0.5 + 0.01 * r})
+            r += 1
+    while r <= n:
+        linhas.append({"round_num": r, "steamid": 1, "name": "x", "side": "t", "funcao": None, "pontuacao": None})
+        r += 1
+    return pl.DataFrame(linhas, schema_overrides={"funcao": pl.String, "pontuacao": pl.Float64})
+
+
+def test_empate_na_contagem_e_sem_funcao_dominante_com_todas_as_empatadas():
+    """REGRESSÃO (match_44 flameZ, decisão 28): entry, lurker, suporte e trader
+    com 1 round cada. A "dominante" saía da pontuação média, que variava com a
+    ordem de hash -- entry numa execução, lurker na outra. Empate declarado."""
+    from metrics.structural_roles import resume_por_lado, texto_empate
+
+    r = resume_por_lado(_por_round_sintetico({"entry": 1, "lurker": 1, "suporte": 1, "trader": 1})).row(0, named=True)
+    assert r["funcao"] is None
+    assert r["empate_funcao"] is True
+    assert sorted(r["funcoes_empatadas"]) == ["entry", "lurker", "suporte", "trader"]
+    assert r["rounds_empatadas"] == [1, 1, 1, 1]
+    t = texto_empate(r)
+    assert t.startswith("sem função dominante:") and "Lurker 8% (1 de 12)" in t and " vs " in t
+
+
+def test_um_round_de_diferenca_ainda_define_a_funcao_com_margem_zero():
+    from metrics.structural_roles import MARGEM_EMPATE_FUNCAO_ROUNDS, resume_por_lado, texto_empate
+
+    assert MARGEM_EMPATE_FUNCAO_ROUNDS == 0
+    r = resume_por_lado(_por_round_sintetico({"entry": 5, "lurker": 4})).row(0, named=True)
+    assert r["funcao"] == "entry" and r["empate_funcao"] is False
+    assert r["funcoes_empatadas"] is None and texto_empate(r) == ""
+
+
+def test_a_margem_estende_o_empate_quando_for_decidida(monkeypatch):
+    """A constante é o botão: com margem de 1 round, 5 contra 4 vira empate."""
+    import metrics.structural_roles as sr
+
+    monkeypatch.setattr(sr, "MARGEM_EMPATE_FUNCAO_ROUNDS", 1)
+    r = sr.resume_por_lado(_por_round_sintetico({"entry": 5, "lurker": 4})).row(0, named=True)
+    assert r["funcao"] is None and r["funcoes_empatadas"] == ["entry", "lurker"]
+    assert "Entry fragger 42% (5 de 12) vs Lurker 33% (4 de 12)" in sr.texto_empate(r)

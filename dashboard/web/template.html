@@ -3064,6 +3064,11 @@
       return ["ct", "t"].map(function (lado) {
         var r = f[lado];
         var rot = lado === "ct" ? "CT" : "TR";
+        if (r && r.texto_empate) {
+          // empate na função dominante: o texto (com as concentrações lado a lado)
+          // vem pronto do Python -- metrics/structural_roles.texto_empate
+          return "<span class='fnlado'><i>" + rot + "</i> " + r.texto_empate + "</span>";
+        }
         if (!r || !r.funcao) {
           return "<span class='fnlado'><i>" + rot + "</i> sem função definida</span>";
         }

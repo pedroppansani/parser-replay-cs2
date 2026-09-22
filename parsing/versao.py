@@ -46,12 +46,15 @@ RAIZ = Path(__file__).resolve().parent.parent
 #   -- afirmar retroativamente que ela rodou na versão 1 seria inventar.
 VERSAO_DO_PARSER = 1
 
+# 3 (2026-09-22) empate na função dominante (structural_roles.
+#   MARGEM_EMPATE_FUNCAO_ROUNDS = 0): quem tem duas ou mais funções com a mesma
+#   contagem de rounds num lado fica "sem função dominante", com as empatadas.
 # 2 (2026-09-21) processamento determinístico (decisão 28 do CLAUDE.md): empate
 #   no corte do card de estilo entra inteiro, mode() desempata pelo menor valor
 #   (inclui a classe de economia do jogador no rating), unique com subset fica
 #   com a primeira linha. Antes, esses três casos dependiam da ordem de hash.
 # 1 (2026-09-20) primeira versão declarada, mesmo raciocínio acima.
-VERSAO_DAS_METRICAS = 2
+VERSAO_DAS_METRICAS = 3
 
 # Pastas cujo estado define o NÚMERO. `sujo` olha só estas: olhar o repositório
 # inteiro marcava todo reprocessamento como sujo, porque o próprio

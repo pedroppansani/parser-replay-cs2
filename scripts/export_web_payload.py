@@ -18,7 +18,7 @@ import polars as pl
 
 from clustering.playstyle import describe_clusters, load_cluster_names
 from metrics.player_profile import cards_de_estilo
-from metrics.structural_roles import FUNCOES
+from metrics.structural_roles import FUNCOES, texto_empate
 from scripts.narrative import descreve_jogador
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -117,10 +117,14 @@ def build(match_id: str) -> Path:
     # Função estrutural por lado. Vai junto do perfil comportamental de
     # propósito: são duas leituras independentes do mesmo jogador -- o que ele
     # FAZ no round (aqui) e COMO ele faz (o perfil). Ver metrics/structural_roles.py.
-    funcoes = rd("structural_roles_summary").select(
+    resumo_funcoes = rd("structural_roles_summary")
+    # Empate na função dominante (structural_roles.MARGEM_EMPATE_FUNCAO_ROUNDS):
+    # o texto com as concentrações lado a lado sai pronto do Python (decisão 18).
+    funcoes = resumo_funcoes.select(
         ["steamid", "name", "side", "funcao", "rounds_na_funcao", "rounds_no_lado",
          "concentracao", "amostra_fraca"]
-    )
+    ).with_columns(pl.Series("texto_empate", [texto_empate(r) for r in resumo_funcoes.iter_rows(named=True)],
+                             dtype=pl.String))
 
     def com_descricao(linhas: list[dict]) -> list[dict]:
         """Anexa a leitura em português de cada perfil.

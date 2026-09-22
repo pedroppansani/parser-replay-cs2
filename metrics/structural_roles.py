@@ -122,6 +122,21 @@ PISO_PONTUACAO = 0.45
 # perfil sai marcado como amostra insuficiente em vez de afirmar.
 MIN_ROUNDS_POR_LADO = 6
 
+# Diferença máxima, EM ROUNDS, entre a função mais frequente e a seguinte para
+# que as duas sejam declaradas empatadas -- e o jogador fique "sem função
+# dominante" naquele lado, com as concentrações mostradas lado a lado. Mesma
+# regra do round decisivo (LIMIAR_EMPATE_WPA) e do card de destaque: proximidade
+# dentro do ruído é empate declarado, não desempate por pontuação.
+# Em ROUNDS e não em pontos percentuais porque a concentração anda de round em
+# round: com ~12 rounds por lado (mediana do corpus), 1 round = 8,3 p.p., e
+# qualquer limiar abaixo disso é idêntico ao empate exato.
+# 0 = só empate exato. É o único valor sem parâmetro livre, e resolve os três
+# casos que eram cara ou coroa (decisão 28). Medido em 1.031 jogador-lados
+# (2026-09-22), quantos ficam sem função dominante: 0 round 145 (14%), 1 round
+# 372 (36%), diferença < 1 desvio do ruído 438 (42%), 2 rounds 520 (50%) -- a
+# curva sobe sem patamar. Estender é decisão do Pedro em cima dessa curva.
+MARGEM_EMPATE_FUNCAO_ROUNDS = 0
+
 # Funções e em que lado cada uma existe. AWPer vale nos dois.
 FUNCOES = {
     "awper": ("AWPer", None),
@@ -913,6 +928,9 @@ def resume_por_lado(por_round: pl.DataFrame, match_id: str = "") -> pl.DataFrame
         return total.with_columns(
             pl.lit(None, dtype=pl.String).alias("funcao"),
             pl.lit(0, dtype=pl.UInt32).alias("rounds_na_funcao"),
+            pl.lit(False).alias("empate_funcao"),
+            pl.lit(None, dtype=pl.List(pl.String)).alias("funcoes_empatadas"),
+            pl.lit(None, dtype=pl.List(pl.UInt32)).alias("rounds_empatadas"),
             pl.lit(None, dtype=pl.Float64).alias("concentracao"),
             pl.lit(True).alias("amostra_fraca"),
             pl.lit(match_id).alias("match_id"),
@@ -923,22 +941,59 @@ def resume_por_lado(por_round: pl.DataFrame, match_id: str = "") -> pl.DataFrame
         pl.col("pontuacao").mean().alias("pontuacao_media"),
     )
 
-    dominante = (
-        por_funcao.sort(["rounds_na_funcao", "pontuacao_media"], descending=[True, True])
+    # Ordem estável: rounds, depois pontuação média, depois o nome da função --
+    # o último só para a LISTA de empatadas sair sempre na mesma ordem.
+    ordenado = por_funcao.sort(["rounds_na_funcao", "pontuacao_media", "funcao"],
+                               descending=[True, True, False])
+    lider = ordenado.group_by(["steamid", "side"], maintain_order=True).agg(
+        pl.col("rounds_na_funcao").first().alias("k1"))
+    empatadas = (
+        ordenado.join(lider, on=["steamid", "side"])
+        .filter(pl.col("rounds_na_funcao") >= pl.col("k1") - MARGEM_EMPATE_FUNCAO_ROUNDS)
         .group_by(["steamid", "side"], maintain_order=True)
-        .first()
+        .agg(pl.col("funcao").alias("funcoes_empatadas"),
+             pl.col("rounds_na_funcao").alias("rounds_empatadas"))
+        .with_columns((pl.col("funcoes_empatadas").list.len() >= 2).alias("empate_funcao"))
+    )
+    dominante = (
+        ordenado.group_by(["steamid", "side"], maintain_order=True).first()
+        .join(empatadas, on=["steamid", "side"])
+        # no empate não há função dominante: a lista das empatadas vai junto, e a
+        # contagem continua sendo a da mais frequente (é a concentração que os
+        # outros cards comparam)
+        .with_columns(pl.when(pl.col("empate_funcao")).then(None).otherwise(pl.col("funcao")).alias("funcao"),
+                      pl.when(pl.col("empate_funcao")).then(pl.col("funcoes_empatadas"))
+                      .otherwise(None).alias("funcoes_empatadas"),
+                      pl.when(pl.col("empate_funcao")).then(pl.col("rounds_empatadas"))
+                      .otherwise(None).alias("rounds_empatadas"))
     )
 
     return (
         total.join(dominante.drop("name"), on=["steamid", "side"], how="left")
         .with_columns(
             pl.col("rounds_na_funcao").fill_null(0),
+            pl.col("empate_funcao").fill_null(False),
             (pl.col("rounds_na_funcao") / pl.col("rounds_no_lado")).alias("concentracao"),
             (pl.col("rounds_no_lado") < MIN_ROUNDS_POR_LADO).alias("amostra_fraca"),
             pl.lit(match_id).alias("match_id"),
         )
         .sort(["name", "side"])
     )
+
+
+def texto_empate(linha: dict) -> str:
+    """"sem função dominante: Entry fragger 8% (1 de 12) vs Lurker 8% (1 de 12)".
+
+    As concentrações vão lado a lado, sempre com o bruto: com 12 rounds, a
+    porcentagem sozinha inventa precisão (decisão 7a). Linha sem empate devolve
+    string vazia -- a interface mostra a função normal.
+    """
+    if not linha.get("empate_funcao"):
+        return ""
+    n = linha["rounds_no_lado"]
+    partes = [f"{FUNCOES.get(f, (f,))[0]} {round(100 * k / n)}% ({k} de {n})"
+              for f, k in zip(linha["funcoes_empatadas"], linha["rounds_empatadas"])]
+    return "sem função dominante: " + " vs ".join(partes)
 
 
 def structural_roles(
