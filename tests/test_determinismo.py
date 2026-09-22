@@ -63,8 +63,12 @@ def _fecha(texto: str, i: int) -> int:
 
 
 def _chamadas(nome: str):
-    """(arquivo, linha, argumentos) de toda chamada `.nome(...)` do código do projeto."""
-    padrao = re.compile(r"\." + nome + r"\(")
+    """(arquivo, linha, argumentos) de toda chamada `.nome(...)` do código do projeto.
+
+    `np.unique` fica de fora: o do NumPy devolve os valores ORDENADOS por
+    definição, e não aceita `maintain_order` -- o problema é só o do Polars.
+    """
+    padrao = re.compile(r"(?<!np)\." + nome + r"\(")
     for pasta in PASTAS:
         for arq in sorted((RAIZ / pasta).rglob("*.py")):
             texto = arq.read_text(encoding="utf-8")
