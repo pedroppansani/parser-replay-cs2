@@ -48,6 +48,15 @@ import polars as pl
 # Rounds por metade (MR12): o lado troca, o time não.
 HALFTIME_ROUND = 12
 
+# Rounds em que O TIME teve AWP mínimos para confiar na taxa "a AWP do time era
+# dele". É o DENOMINADOR da métrica, e por isso não reusa o MIN_AWP_ROUNDS de
+# metrics/archetypes.py: aquele mede os rounds com a AWP na mão DELE (o
+# numerador) e existe para dizer se o papel de AWPer existe -- "abaixo disso é
+# AWP de round de força". Mesmo valor, finalidade diferente. Medido: 40 dos 430
+# jogador-partidas profissionais têm menos de 5 rounds de AWP no time, e é ali
+# que a taxa vira 0 ou 1 com três rounds (decisão do Pedro, 2026-09-24).
+MIN_ROUNDS_AWP_DO_TIME = 4
+
 # Quanto o jogador precisa estar ACIMA do esperado da função para ser lurker.
 # 1,5x é o mesmo fator com que o projeto ancora outros pisos ao acaso ou ao
 # ruído (round decisivo 1,5x o round mais barato, bottom frag 1,5 desvios
@@ -114,9 +123,15 @@ TRAIT_SPECS: list[Trait] = [
         label="AWPer",
         column="awp_share",
         high_is=True,
-        floor=0.25,  # abaixo disso é AWP eventual de round de força, não função
+        floor=0.25,  # PISO NA ESCALA ANTIGA -- recalibrar (os métodos sugerem ~0,55)
         priority=1,
-        phrase=lambda v: f"AWP na mão em {v * 100:.0f}% dos rounds",
+        phrase=lambda v: f"a AWP do time era dele em {v * 100:.0f}% dos rounds com AWP",
+        coluna_amostra="awp_rounds_do_time",
+        minimo_amostra=MIN_ROUNDS_AWP_DO_TIME,
+        evidencia=lambda r: (
+            f"a AWP do time era dele em {r['awp_share'] * 100:.0f}% dos rounds com AWP "
+            f"({round(r['awp_share'] * r['awp_rounds_do_time'])} de {r['awp_rounds_do_time']})"
+        ),
     ),
     # Entra primeiro: em que fração dos rounds ele foi o PRIMEIRO do time a
     # tomar contato.
@@ -263,6 +278,44 @@ def resolve_teams(ticks: pl.DataFrame) -> tuple[dict[int, str], dict[str, list[s
         team_of_player[row["steamid"]] = team
         rosters[team].append(row["name"])
     return team_of_player, rosters
+
+
+def awp_do_time(outputs: dict[str, pl.DataFrame], times: pl.DataFrame) -> pl.DataFrame:
+    """Dos rounds em que O TIME teve AWP, em quantos ela era dele.
+
+    Devolve (steamid, awp_rounds_do_time, awp_share). `times` é (steamid, team).
+
+    POR QUE O DENOMINADOR É ESTE (decisão do Pedro, 2026-09-24): "AWP na mão /
+    TODOS os rounds" contava round de save, força e pistola como falha do
+    AWPer -- e nem todo round o time tem dinheiro para AWP, mesmo com um AWPer
+    titular. Aqui o round de eco simplesmente não entra: se ninguém do time teve
+    AWP, o round não faz parte da pergunta. Testadas e descartadas as formas com
+    denominador por DINHEIRO (rounds em que ele, ou o time, podia comprar): elas
+    contam como falha o round em que o time TINHA dinheiro e escolheu não
+    comprar AWP, e nenhuma separa a distribuição (espalhamento dos três métodos
+    1,2 a 2,0 contra 0,13 desta, e 0,42 a 0,50 com encolhimento em qualquer K).
+    """
+    vazio = pl.DataFrame(schema={"steamid": times.schema["steamid"],
+                                 "awp_rounds_do_time": pl.UInt32, "awp_share": pl.Float64})
+    awp = outputs.get("awp_per_round")
+    if awp is None or awp.height == 0 or times.height == 0:
+        return vazio
+    com_awp = (awp.select("round_num", "steamid").unique(maintain_order=True, keep="first")
+               .join(times, on="steamid", how="left"))
+    # (round, time) em que alguém do time estava com AWP
+    rounds_do_time = com_awp.select("round_num", "team").unique(maintain_order=True, keep="first")
+    denominador = (rounds_do_time.group_by("team", maintain_order=True)
+                   .agg(pl.len().cast(pl.UInt32).alias("awp_rounds_do_time")))
+    numerador = (com_awp.group_by("steamid", maintain_order=True)
+                 .agg(pl.len().cast(pl.UInt32).alias("awp_rounds_dele")))
+    return (times.join(denominador, on="team", how="left")
+            .join(numerador, on="steamid", how="left")
+            .with_columns(pl.col("awp_rounds_dele").fill_null(0),
+                          pl.col("awp_rounds_do_time").fill_null(0))
+            .with_columns(pl.when(pl.col("awp_rounds_do_time") > 0)
+                          .then(pl.col("awp_rounds_dele") / pl.col("awp_rounds_do_time"))
+                          .otherwise(0.0).alias("awp_share"))
+            .select("steamid", "awp_rounds_do_time", "awp_share"))
 
 
 def lurk_relativo(outputs: dict[str, pl.DataFrame]) -> pl.DataFrame:
@@ -413,9 +466,24 @@ def build_signals(
             .otherwise(0.0)
             .alias("trade_share"),
         )
-        .with_columns((pl.col("awp_rounds") / rounds_played).alias("awp_share"))
+        # a forma antiga (AWP na mão / todos os rounds) continua na tabela como
+        # informação, mas não é mais o que define a função -- ela dilui o AWPer
+        # com round de eco (ver awp_do_time)
+        .with_columns((pl.col("awp_rounds") / rounds_played).alias("awp_share_todos_rounds"))
+        .join(awp_do_time(outputs, per_player.select("steamid", "team")), on="steamid", how="left")
+        .with_columns(pl.col("awp_share").fill_null(0.0),
+                      pl.col("awp_rounds_do_time").fill_null(0))
         .sort(["team", "name"])
     )
+
+
+def _evidencia(spec: Trait, linha: dict) -> str:
+    if spec.evidencia is not None:
+        try:
+            return spec.evidencia(linha)
+        except KeyError:
+            pass
+    return spec.phrase(float(linha[spec.column]))
 
 
 def assign_traits(signals: pl.DataFrame) -> pl.DataFrame:
@@ -459,8 +527,11 @@ def assign_traits(signals: pl.DataFrame) -> pl.DataFrame:
                     "label": spec.label,
                     "priority": spec.priority,
                     "value": float(row[spec.column]),
-                    "evidence": (spec.evidencia(row) if spec.evidencia
-                                 else spec.phrase(float(row[spec.column]))),
+                    # A evidência detalhada usa colunas auxiliares (o bruto da
+                    # taxa). Num frame que não as tem -- métrica de origem
+                    # ausente nesta partida --, cai na frase simples em vez de
+                    # quebrar: a função continua atribuída, só com menos detalhe.
+                    "evidence": _evidencia(spec, row),
                 }
             )
 

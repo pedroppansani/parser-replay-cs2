@@ -108,3 +108,43 @@ def test_a_evidencia_traz_o_bruto_junto_da_taxa():
     """Decisão 7a: taxa sempre com o bruto."""
     t = assign_traits(_sinais(rel=2.0, n=12)).filter(pl.col("trait") == "lurk").row(0, named=True)
     assert "6 de 12" in t["evidence"] and "2.0x" in t["evidence"].replace(",", ".")
+
+
+# --- o denominador do AWPer -------------------------------------------------
+
+def test_awp_do_time_conta_so_os_rounds_em_que_alguem_do_time_teve_awp():
+    """Decisão do Pedro (2026-09-24): round de eco não é falha do AWPer.
+
+    Nem todo round o time tem dinheiro para AWP, mesmo com AWPer titular. Se
+    ninguém do time teve AWP no round, o round não faz parte da pergunta.
+    """
+    from metrics.player_roles import awp_do_time
+
+    times = pl.DataFrame({"steamid": [1, 2, 3], "team": ["A", "A", "B"]})
+    # rounds 1-3: o jogador 1 com AWP; round 4: o companheiro 2; rounds 5-10: ninguém do time A
+    awp = pl.DataFrame({"round_num": [1, 2, 3, 4, 5], "steamid": [1, 1, 1, 2, 3]},
+                       schema={"round_num": pl.UInt32, "steamid": pl.Int64})
+    r = awp_do_time({"awp_per_round": awp}, times).sort("steamid")
+    assert r.row(0, named=True)["awp_rounds_do_time"] == 4, "o denominador deixou de ser os rounds de AWP do time"
+    assert r.row(0, named=True)["awp_share"] == pytest.approx(3 / 4)
+    # quem nunca pegou a AWP fica em 0, e não em nulo
+    assert r.row(1, named=True)["awp_share"] == pytest.approx(1 / 4)
+    # time sem AWP nenhum: denominador zero, share zero (e a amostra mínima barra)
+    r2 = awp_do_time({"awp_per_round": awp.head(0)}, times)
+    assert r2.height == 0 or r2["awp_share"].to_list() == [0.0] * r2.height
+
+
+def test_amostra_minima_do_awp_e_o_denominador_nao_o_numerador():
+    """MIN_ROUNDS_AWP_DO_TIME não é o MIN_AWP_ROUNDS dos papéis: lá o mínimo é
+    de rounds com a AWP na mão DELE (numerador), para dizer se o papel existe;
+    aqui é o denominador, para confiar na taxa."""
+    from metrics.archetypes import MIN_AWP_ROUNDS
+    from metrics.player_roles import MIN_ROUNDS_AWP_DO_TIME, assign_traits
+
+    assert MIN_ROUNDS_AWP_DO_TIME == MIN_AWP_ROUNDS == 4  # mesmo valor, origens diferentes
+    sinais = pl.DataFrame({
+        "steamid": [1, 2], "name": ["lider", "outro"], "team": ["A", "A"],
+        "awp_share": [1.0, 0.0], "awp_rounds_do_time": [3, 3],
+    })
+    assert assign_traits(sinais).height == 0, "3 rounds de AWP no time não sustentam a taxa"
+    assert assign_traits(sinais.with_columns(pl.lit(4).alias("awp_rounds_do_time"))).height == 1
