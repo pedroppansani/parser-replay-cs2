@@ -5,8 +5,8 @@
   "source_dem": "C:\\Users\\User\\Desktop\\Projetos Claude\\01 - Parser de Replay CS2\\demos\\blast-open-lisbon-2025-vitality-vs-spirit-bo3-IHUpdxSUx1reCpZRn_v9H9\\vitality-vs-spirit-m2-nuke.dem",
   "pca": {
     "explained_variance_ratio": [
-      0.3177372062661366,
-      0.23892554537865607
+      0.31078943390577846,
+      0.24719487150790692
     ],
     "feature_columns": [
       "avg_distance_from_team",
@@ -19,13 +19,13 @@
     ],
     "n_clusters": 4,
     "fitted_on": "global",
-    "n_player_rounds_global": 1870
+    "n_player_rounds_global": 11520
   },
   "source_fingerprint": "60e74ae612b3de3aa582",
   "versao": {
     "parser": 1,
     "metricas": 3,
-    "commit": "57bbf5515241",
+    "commit": "d473e1919d24",
     "sujo": true,
     "awpy": "2.0.2",
     "demoparser2": "0.42.0"

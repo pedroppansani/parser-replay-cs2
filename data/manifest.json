@@ -51,11 +51,11 @@
           "sha256": "796b51156e56985d3ddcbeddd19177af49f32635b8cff51796107adf5add41a9"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -117,11 +117,11 @@
           "sha256": "698bf3f2f4adbf061f6fffc3913db5e83f51d2194a87345d9ae7ec741b938e6b"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -183,11 +183,11 @@
           "sha256": "522d50f86f5298d4c0f5a6ee635a9f5fe5d512c31d0dc83b4bbdba8c17635dab"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -249,11 +249,11 @@
           "sha256": "8335d600fc7d2771146ccf131a5feae09b989daf6837dd5bbfb6f055791c8454"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -315,11 +315,11 @@
           "sha256": "b371cd555eefa72a86b9a8848054fccd138fdd856b6192a705478a48b364a3c2"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -381,11 +381,11 @@
           "sha256": "7b8894a2ffc2364679ead62b395e82f4a32f73334b617f03d5d7e17033f82ce5"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -447,11 +447,11 @@
           "sha256": "eb8853783b98a7899ab772eb75efb14729b9c628bb050aec3a37339f7638b8b1"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -513,11 +513,11 @@
           "sha256": "d280be30ec5469dc76c36a978186e7901b9466e218b769531917fc3f0c413b66"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -579,11 +579,11 @@
           "sha256": "d73e40ae595453e9ed92eaada04a51df650ea5120078dff5acfe9200494d7d5c"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -648,11 +648,11 @@
           "sha256": "00bdd0bfd427775a3cd1844a726c84353dad37517b89a887597a895ba4fc88ff"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -717,11 +717,11 @@
           "sha256": "8ae575cacb202bbcf13b26ccd6984c01bd95eeb0243a74daa74fa53e15321db2"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -794,11 +794,11 @@
           "sha256": "214cd0f09b4a347592e340645e6dff1e75c60d76b6a04b2086a06b20e504f0b9"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -864,11 +864,11 @@
           "sha256": "a423d8fa9bcd7724118cccdde81bc99dac9b0de37ec3692822bc4427d638a2ae"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -933,11 +933,11 @@
           "sha256": "1bfb43118089c78331bd7b517e849fe12941a0ce9f1619b34b7b1c91c47dfa6d"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -1002,11 +1002,11 @@
           "sha256": "87356d11bdeb8616cf13b148e8f3db69554383440bc29ca4826be4522fbb91d6"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -1071,11 +1071,11 @@
           "sha256": "bc517609cf2e20861613bfe1cedb1e7ecfda12b744f2f6a22b08f91c8334cf3d"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -1140,11 +1140,11 @@
           "sha256": "42aa5f5826231e0141ba712a0a6b6aa30d360f333a87fecf8eda0d8bfcd6905f"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -1209,11 +1209,11 @@
           "sha256": "c358451d9f613becab0966efbbe113ab805d236f1a898020f3f16327777cc974"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -1278,11 +1278,11 @@
           "sha256": "3ada17dbeb8b7122f1e96f8041cdd0db60728885c43c217ef82047421884b39b"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -1344,11 +1344,11 @@
           "sha256": "d84b02b61af2e213acd9d120e0e556c9f26556f54961bd48aa96db3b380a27b6"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -1410,11 +1410,11 @@
           "sha256": "067680a00c73c69dbc79218c5d799940c8573b56ed172dccc095090a2ec05fbb"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -1480,11 +1480,11 @@
           "caminho_anterior": "demos/starladder-starseries-fall-2026-vitality-vs-magic-bo3-qBHOW2KPqxQBIay8cnoYpu/vitality-vs-magic-m2-dust2.dem"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -1546,11 +1546,11 @@
           "sha256": "51ced3a89c8e8bba07999c7ae55c6b0190ccf46abe8d51a17c6018b3b003277f"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -1612,11 +1612,11 @@
           "sha256": "b9a4b505d1c079ba16ca246b359a44a862575aff8e066981c3edf4daa9407d02"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -1678,11 +1678,11 @@
           "sha256": "3b2169c84d3d647345a4edd318313cd288768bf2df822fea49e83f98f01501bc"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -1744,11 +1744,11 @@
           "sha256": "de0b5de35e98b352217d8eedd25401684240bf0ac169941f39922dc14eeadb2d"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -1810,11 +1810,11 @@
           "sha256": "cf8a96f821b87aee6851c04f1f15232c73e8ba66a4648facd882e63cd3cb3bdc"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -1876,11 +1876,11 @@
           "sha256": "ea651630d1bcd20613b11c6d36fa8d6a7a59f3640d7b733eb4f8cd155f293cdc"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -1942,11 +1942,11 @@
           "sha256": "91d445ca120fb4fc7b63e37dfe9d9632d713aa8ab6910ee8f5b3bcffadb53a05"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -2008,11 +2008,11 @@
           "sha256": "2735218148a4a12a15e43bbbdf33076313469c6a3ce7370a774fefc28347cb92"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -2074,11 +2074,11 @@
           "sha256": "c20f551ef270bd343dd359e671d1c2349eb767b7535a8a4bb2d273b886ea2652"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -2140,11 +2140,11 @@
           "sha256": "372557cd3b27fbda9e631717ea1ae82c5288319accb827dba42c8252a9c1bb25"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -2206,11 +2206,11 @@
           "sha256": "6ed3d0ed29588b080bef669fb819c5077933da8f99fbba14c09b9a93330179e1"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -2272,11 +2272,11 @@
           "sha256": "617673668137ac4f7c533fe191f24dce541d5268676b811ea02f3673d185e276"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -2338,11 +2338,11 @@
           "sha256": "a4e69281dfacf9f2b6a6f5836e0937ecdaa7d9189c5172e4ad65c06a12cd5c58"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -2404,11 +2404,11 @@
           "sha256": "077731a93eebecf68085894ba5660255ad7e89cff0235e5613fb832ccd0f9af3"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -2470,11 +2470,11 @@
           "sha256": "0b170f4706cc446f6cf637979155638e29b205ade957a1f9fbf53bbe3f542b88"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -2552,11 +2552,11 @@
           "sha256": "dc0f8c4bfdeed063b31c89b457a872edd5fe614622b8a5f30e6244e0fc5868a2"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -2620,11 +2620,11 @@
           "sha256": "ff92283d6a9c6c8e9ea73d498088ef9d2237c4b0aeb86d1b5848e506bf90e59e"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -2697,11 +2697,11 @@
           "sha256": "4164738a697e23005ccda4c6ebc2c2a5f59bd2fdfc39de4da59a85e74d9d37dd"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -2767,11 +2767,11 @@
           "sha256": "0a3129ba726a10239fdbcc0da9050c5aad02a17d975ee5cb0f658b75ba0895f4"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -2833,11 +2833,11 @@
           "sha256": "9019e9ee6cdeee54d93a73625620f3372ee55b8560240b6381f67fdb84676cbb"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -2899,11 +2899,11 @@
           "sha256": "affd22a7fb10a99d149cd343ebe29b83457a40862244a398de3cb48930110907"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -2965,11 +2965,11 @@
           "sha256": "2b2f6f3ceeb869dccc3078c300918a1deb8b495f384ee3809d577dcb5d7da582"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -3031,11 +3031,11 @@
           "sha256": "24370e1f72c2f2ca33108f786d9c08f175c3c821c4213641e782080a869c3640"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -3097,11 +3097,11 @@
           "sha256": "061cb84a8f2848158a763fef2d82ceaa2c2dd0613c372c50a288a71b67778c5e"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -3163,11 +3163,11 @@
           "sha256": "c33d48b9dbb8f0797e471f98bf0242b6ac781e7be70d0cbc76d21f7324ecbfa1"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -3229,11 +3229,11 @@
           "sha256": "80e8b0f338d0294de3f87e56e8a4bebcc40330c3b04c2879d25f8e7c81beb078"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -3295,11 +3295,11 @@
           "sha256": "bcda5d9d0dfdee6a043a038e9a99e64780becfdb99ad491775dad559649482b2"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -3361,11 +3361,11 @@
           "sha256": "daf6611302cc68dbcce1be3050be155b9eea7cc16d0fc958325e3d82d48bd438"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -3427,11 +3427,11 @@
           "sha256": "3433a2ab957a174fe18e09297ba0fecbb35bec7e71b5d55cc90c47de6ace090f"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
@@ -3493,11 +3493,11 @@
           "sha256": "9c2f1d0d9ad881dfc3da86e98844843ed6d7dc68afe99b1198d97632b5152fc6"
         }
       ],
-      "processado_em": "2026-09-22T12:22",
+      "processado_em": "2026-09-24T11:53",
       "versao": {
         "parser": 1,
         "metricas": 3,
-        "commit": "57bbf5515241",
+        "commit": "d473e1919d24",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"
