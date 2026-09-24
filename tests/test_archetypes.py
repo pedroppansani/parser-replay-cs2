@@ -330,11 +330,18 @@ def test_esforco_sem_beneficio_ao_time_nao_e_carrega_piano():
 def _com_eixo(sacrificio: float, isca: float) -> pl.DataFrame:
     """Alvo contra dois neutros, para o percentil dentro da partida ter escala.
 
-    `isca` é a isca RELATIVA à função (1,0 = exatamente o esperado de quem joga
-    aquela função), não a contagem crua.
+    Os DOIS valores são RELATIVOS à função estrutural (1,0 = exatamente o
+    esperado de quem joga aquela função), não as contagens cruas -- é a opção (a)
+    do Pedro: os dois braços do eixo normalizados dentro da função. O absoluto
+    (`sacrificio_share`) continua na tabela, só não é o que decide o eixo.
     """
     base = _componentes(bait_untraded_per_round=isca)
+    # os dois braços em unidade ABSOLUTA (fração de rounds), que é o que o eixo
+    # compara dentro da população da função; os relativos ficam junto porque
+    # continuam na tabela e nos cards
     base = base.with_columns(pl.Series("sacrificio_share", [sacrificio, 0.2]),
+                             pl.Series("sacrificio_relativo", [sacrificio, 0.2]),
+                             pl.Series("isca_share", [isca, 0.3]),
                              pl.Series("isca_relativa", [isca, 1.0]))
     neutros = base.filter(pl.col("name") == "neutro")
     return pl.concat([base, neutros.with_columns(pl.lit(3, dtype=base.schema["steamid"]).alias("steamid"), pl.lit("neutro2").alias("name"))])
@@ -644,3 +651,30 @@ def test_morte_por_utility_e_desfecho_proprio_e_nao_desfaz_o_repick():
     r = marca_repick(styles, ticks, kills, damages, None, tickrate=64)
     assert r["repick"][0] is True
     assert r["desfecho"][0] == "morreu para utility"
+
+
+def test_awper_que_paga_pouco_mas_o_normal_da_funcao_nao_e_baiter():
+    """O caso que motivou a opção (a) (decisão do Pedro, 2026-09-24).
+
+    O AWPer paga a conta menos que a média do elenco porque o trabalho dele é
+    jogar de trás. Contra a régua do elenco inteiro isso o empurrava para a ponta
+    do baiter -- medido no corpus: AWPers eram 16% dos jogador-partidas e 57% dos
+    baiters. Comparado DENTRO da função (sacrifício e isca relativos, ambos 1,0 =
+    o esperado), ele fica no meio do eixo, sem rótulo nenhum.
+    """
+    idx = archetype_indices(_com_eixo(sacrificio=1.0, isca=1.0), reference=None)
+    alvo = idx.filter(pl.col("name") == "alvo").row(0, named=True)
+    assert alvo["idx_baiter"] == 0.0, "o esperado da função virou rótulo de baiter"
+    assert alvo["idx_carrega_piano"] == 0.0
+
+
+def test_o_eixo_le_o_relativo_e_nao_o_absoluto():
+    """Mesma fração absoluta de sacrifício, funções com expectativas diferentes:
+    quem paga MENOS que o esperado da função dele é que vai para a ponta do
+    baiter."""
+    # os neutros do auxiliar ficam em 0,2; o alvo entra abaixo e acima deles
+    baixo = _com_eixo(sacrificio=0.1, isca=1.0)   # paga menos que o esperado
+    alto = _com_eixo(sacrificio=0.4, isca=1.0)    # paga mais que o esperado
+    a = archetype_indices(baixo, reference=None).filter(pl.col("name") == "alvo").row(0, named=True)
+    b = archetype_indices(alto, reference=None).filter(pl.col("name") == "alvo").row(0, named=True)
+    assert a["sacrifice_index"] < b["sacrifice_index"]

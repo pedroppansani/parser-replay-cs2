@@ -113,6 +113,16 @@ SEGUNDOS_FLASH_RETORNO = 3.0
 # comparação é ROUND A ROUND pelo contexto daquele round: quem puxa AWP em
 # alguns rounds é comparado como AWPer só neles.
 MIN_ROUNDS_FUNCAO_NA_REFERENCIA = 100
+
+# Jogador-partidas mínimos de uma função para ela ter distribuição própria na
+# referência do eixo. Abaixo disso a distribuição da função é mais ruído que
+# régua, e o percentil cai no geral.
+MIN_JOGADOR_PARTIDAS_NA_FUNCAO = 30
+
+# Os dois braços do eixo carrega piano <-> baiter, em unidade ABSOLUTA (fração
+# de rounds). São eles que ganham quantis por função: o percentil de cada um é
+# tirado entre quem faz a mesma função.
+COMPONENTES_DO_EIXO = ("sacrificio_share", "isca_share")
 CONTEXTO_SEM_FUNCAO = "sem_funcao"
 
 # Pisos do eixo. 0,5 = meia distribuição de diferença entre as duas pontas (por
@@ -608,7 +618,7 @@ COMPONENTES = [
     "awp_round_share", "awp_conversion", "awp_opening_picks",
     "bait_no_trade_share", "bait_untraded_per_round", "bait_return_per_opp", "survival_rate",
     "clutch_attempts", "clutch_conversion", "clutch_damage_per_attempt",
-    "sacrificio_share", "clutch_peso", "isca_relativa",
+    "sacrificio_share", "sacrificio_relativo", "isca_share", "clutch_peso", "isca_relativa",
 ]
 
 
@@ -624,6 +634,7 @@ def player_components(
     flash_conv: pl.DataFrame | None = None,
     funcoes_round: pl.DataFrame | None = None,
     isca_por_funcao: dict | None = None,
+    sacrificio_por_funcao: dict | None = None,
 ) -> tuple[pl.DataFrame, pl.DataFrame]:
     """Devolve (per_round, componentes): os fatos round a round e o agregado.
 
@@ -703,12 +714,20 @@ def player_components(
     per_round = per_round.with_columns(
         pl.col("isca_no_round").fill_null(0) if "isca_no_round" in per_round.columns
         else pl.lit(0).alias("isca_no_round"))
-    # o esperado daquele contexto; sem referência, 1,0 (a isca relativa vira a crua)
-    esperado = (isca_por_funcao or {})
+    # O esperado daquele contexto, para os DOIS braços do eixo (decisão do Pedro,
+    # opção (a), 2026-09-24): sem referência, o esperado é 0 e o relativo vira o
+    # cru. O AWPer é comparado com a população de AWPers pelo CONTEXTO DO ROUND
+    # -- quem puxa AWP em alguns rounds é comparado como AWPer só neles --, e por
+    # isso a função de lado não entra duas vezes na conta.
+    esperado_isca = (isca_por_funcao or {})
+    esperado_sac = (sacrificio_por_funcao or {})
     per_round = per_round.with_columns(
         pl.col("funcao_do_round").map_elements(
-            lambda f: float(esperado.get(f, esperado.get("_geral", 0.0)) or 0.0),
-            return_dtype=pl.Float64).alias("isca_esperada_do_round"))
+            lambda f: float(esperado_isca.get(f, esperado_isca.get("_geral", 0.0)) or 0.0),
+            return_dtype=pl.Float64).alias("isca_esperada_do_round"),
+        pl.col("funcao_do_round").map_elements(
+            lambda f: float(esperado_sac.get(f, esperado_sac.get("_geral", 0.0)) or 0.0),
+            return_dtype=pl.Float64).alias("sacrificio_esperado_do_round"))
 
     rounds_por_lado = per_round.group_by(["steamid", "side"], maintain_order=True).agg(pl.len().alias("n"))
     t_rounds = rounds_por_lado.filter(pl.col("side") == "t").select(
@@ -741,6 +760,19 @@ def player_components(
         (pl.col("sacrificio") & pl.col("flash_convertida")).sum().alias("sacrificio_com_flash_rounds"),
         pl.col("isca_no_round").sum().alias("isca_observada"),
         pl.col("isca_esperada_do_round").sum().alias("isca_esperada"),
+        pl.col("sacrificio_esperado_do_round").sum().alias("sacrificio_esperado"),
+        pl.col("isca_no_round").mean().alias("isca_share"),
+        # A FUNÇÃO DO JOGADOR-PARTIDA: a mais frequente nos rounds dele. É ela
+        # que escolhe a população com que ele é comparado nos dois braços do
+        # eixo -- "o AWPer usa a população de AWPers" (opção (a) do Pedro).
+        # Desempate pelo nome, para não depender de ordem.
+        # os rounds SEM função reconhecida ficam de fora da moda: eles são a
+        # maioria (o corpus reconhece função em ~40% dos rounds), e com eles
+        # dentro a "função dominante" saía "sem_funcao" para os 520
+        # jogador-partidas -- todo mundo na mesma população, que é o mesmo que
+        # não comparar dentro da função
+        pl.col("funcao_do_round").filter(pl.col("funcao_do_round") != CONTEXTO_SEM_FUNCAO)
+        .mode().sort().first().fill_null(CONTEXTO_SEM_FUNCAO).alias("funcao_dominante"),
     )
 
     # Fatias do time: dano e kills do jogador sobre o total do próprio time. E a
@@ -779,7 +811,17 @@ def player_components(
         pl.when(pl.col("isca_esperada") > 0)
         .then(pl.col("isca_observada") / pl.col("isca_esperada"))
         .otherwise(1.0)
-        .alias("isca_relativa")
+        .alias("isca_relativa"),
+        # O braço do SACRIFÍCIO também comparado dentro da função (opção (a)):
+        # o AWPer paga a conta menos que a média geral porque é o trabalho dele
+        # jogar de trás, e contra a régua do elenco inteiro isso o empurrava para
+        # a ponta do baiter. Medido antes da correção: AWPers eram 16% dos
+        # jogador-partidas e 57% dos baiters. O absoluto (`sacrificio_share`)
+        # continua na tabela e nos cards, ao lado do relativo.
+        pl.when(pl.col("sacrificio_esperado") > 0)
+        .then(pl.col("sacrificio_rounds") / pl.col("sacrificio_esperado"))
+        .otherwise(pl.col("sacrificio_share"))
+        .alias("sacrificio_relativo"),
     )
     comp = _junta_repick(comp, repick)
     comp = _junta_bait(comp, bait)
@@ -1027,6 +1069,23 @@ def archetype_indices(
         for nome in COMPONENTES
         if nome in components.columns
     }
+    # Os dois braços do eixo saem do percentil DENTRO DA FUNÇÃO (opção (a)).
+    # Sem referência por função -- corpus pequeno, função rara --, cai no
+    # percentil geral, que é o comportamento antigo.
+    por_funcao = (reference or {}).get("quantis_por_funcao", {})
+    funcoes = (components["funcao_dominante"].to_list()
+               if "funcao_dominante" in components.columns else [None] * components.height)
+    pct_no_grupo = {}
+    for nome in COMPONENTES_DO_EIXO:
+        if nome not in components.columns:
+            continue
+        valores = components[nome].to_list()
+        geral = pct.get(nome) or _percentis(valores, quantis.get(nome))
+        saida = []
+        for i, (v, f) in enumerate(zip(valores, funcoes)):
+            q = (por_funcao.get(str(f)) or {}).get(nome)
+            saida.append(_percentis([v], q)[0] if q else geral[i])
+        pct_no_grupo[nome] = saida
 
     zeros = [0.0] * components.height
 
@@ -1053,7 +1112,17 @@ def archetype_indices(
     # Eixo único carrega piano <-> baiter (ver PISO_CARREGA_PIANO). Cada ponta só
     # recebe índice além do próprio piso, então os dois rótulos nunca caem no
     # mesmo jogador -- por construção, não por desempate.
-    eixo = [s - b for s, b in zip(p("sacrificio_share"), p("isca_relativa"))]
+    # Os DOIS braços comparados DENTRO DA POPULAÇÃO DA FUNÇÃO (opção (a) do
+    # Pedro): o percentil do sacrifício e o da isca saem da distribuição dos
+    # jogadores que fazem a MESMA função, não do elenco inteiro nem da mistura
+    # de contextos de round. Sem isso, o AWPer -- que paga a conta 3x menos que
+    # a média porque o trabalho dele é jogar de trás (0,071 contra 0,200 por
+    # round) -- era empurrado para a ponta do baiter: medido, 16% dos
+    # jogador-partidas e 57% dos baiters.
+    def pf(nome: str) -> list[float]:
+        return pct_no_grupo.get(nome) or p(nome)
+
+    eixo = [s - b for s, b in zip(pf("sacrificio_share"), pf("isca_share"))]
     piano = [e if e >= PISO_CARREGA_PIANO else 0.0 for e in eixo]
     baiter = [-e if e <= PISO_BAITER else 0.0 for e in eixo]
 
@@ -1158,8 +1227,14 @@ def evidencia(papel: str, row: dict) -> str:
             )
         # o retorno é o que separa carrega piano de quem só morreu cedo
         if row.get("pagou_rounds"):
-            pedacos.append(f"o time colheu em {int(row.get('sacrificio_rounds') or 0)} dos "
-                           + _plural(row["pagou_rounds"], "round em que ele pagou", "rounds em que ele pagou"))
+            # normalizado E absoluto lado a lado (pedido do Pedro): a fração crua
+            # sozinha esconde que a régua é a da função dele
+            relativo = row.get("sacrificio_relativo")
+            texto = (f"o time colheu em {int(row.get('sacrificio_rounds') or 0)} dos "
+                     + _plural(row["pagou_rounds"], "round em que ele pagou", "rounds em que ele pagou"))
+            if relativo:
+                texto += f" ({relativo:.1f}x o esperado da função dele)"
+            pedacos.append(texto)
         if row.get("traded_death_share"):
             pedacos.append(f"{row['traded_death_share'] * 100:.0f}% das mortes dele foram trocadas")
 
@@ -1346,6 +1421,7 @@ def compute_for_match(
         facts, eco, solo, bait, repick, clutch_round, outputs.get("awp_summary"), team_of, flash,
         funcoes_round=outputs.get("structural_roles"),
         isca_por_funcao=(reference or {}).get("isca_por_funcao"),
+        sacrificio_por_funcao=(reference or {}).get("sacrificio_por_funcao"),
     )
     summary = archetype_indices(comp, reference)
     return per_round, summary
@@ -1369,8 +1445,29 @@ def build_reference(componentes: pl.DataFrame, n_quantis: int = 100) -> dict:
             continue
         quantis[nome] = [float(serie.quantile(q) or 0.0) for q in passos]
 
+    # Quantis POR FUNÇÃO para os dois braços do eixo (opção (a) do Pedro): o
+    # AWPer é comparado com a população de AWPers, o âncora com a de âncoras.
+    # Função com menos de MIN_JOGADOR_PARTIDAS_NA_FUNCAO no corpus não sustenta
+    # distribuição própria e cai na geral -- é o mesmo critério que a referência
+    # de isca já usa para os rounds.
+    por_funcao: dict[str, dict[str, list[float]]] = {}
+    if "funcao_dominante" in componentes.columns:
+        for (funcao,), g in componentes.group_by("funcao_dominante", maintain_order=True):
+            if funcao is None or g.height < MIN_JOGADOR_PARTIDAS_NA_FUNCAO:
+                continue
+            dela = {}
+            for nome in COMPONENTES_DO_EIXO:
+                if nome not in g.columns:
+                    continue
+                serie = g[nome].drop_nulls()
+                if serie.len():
+                    dela[nome] = [float(serie.quantile(q) or 0.0) for q in passos]
+            if dela:
+                por_funcao[str(funcao)] = dela
+
     return {
-        "versao": 1,
+        "versao": 2,
         "n_jogador_partidas": int(componentes.height),
         "quantis": quantis,
+        "quantis_por_funcao": por_funcao,
     }

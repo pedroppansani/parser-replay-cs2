@@ -452,11 +452,18 @@ def build(match_id: str) -> Path:
         "rounds": rounds,
         "damages": eventos_do_round_jogado(dano_real_no_mesmo_tick(pl.read_parquet(interim / "damages.parquet")), rounds),
     }
+    # REGRESSÃO (achada em 2026-09-24): `structural_roles` não estava aqui, e sem
+    # ela os papéis comportamentais rodavam SEM a função do round -- a decisão
+    # 15c ("a isca é comparada dentro da função") valia no ajuste da referência e
+    # não valia no número que ia para a página. As duas escalas eram diferentes.
+    caminho_funcoes_round = processed / "structural_roles.parquet"
     saidas = {
         "cluster_features": features,
         "grenades_per_round": pl.read_parquet(processed / "grenades_per_round.parquet"),
         "awp_summary": pl.read_parquet(processed / "awp_summary.parquet"),
     }
+    if caminho_funcoes_round.exists():
+        saidas["structural_roles"] = pl.read_parquet(caminho_funcoes_round)
     areas_path = processed / "player_round_areas.parquet"
     areas = pl.read_parquet(areas_path) if areas_path.exists() else pl.DataFrame()
     positions = position_samples(ticks, rounds)

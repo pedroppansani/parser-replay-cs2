@@ -103,7 +103,7 @@ def main() -> None:
         per_round, _ = compute_for_match(
             tables, outputs, positions, areas, team_of, winners, reference=None
         )
-        rounds_de_isca.append(per_round.select("funcao_do_round", "isca_no_round"))
+        rounds_de_isca.append(per_round.select("funcao_do_round", "isca_no_round", "sacrificio"))
 
     isca = pl.concat(rounds_de_isca, how="diagonal")
     geral = float(isca["isca_no_round"].mean())
@@ -124,12 +124,28 @@ def main() -> None:
     if fracas:
         print("  amostra fraca, caem na média geral:", ", ".join(f"{f} ({n})" for f, n in fracas))
 
+    # O mesmo para o braco do SACRIFICIO (opcao (a) do Pedro, 2026-09-24): os
+    # DOIS bracos do eixo carrega piano <-> baiter sao normalizados dentro da
+    # funcao estrutural. Sem isto, o AWPer -- que paga a conta menos que a media
+    # geral porque o trabalho dele e jogar de tras -- era empurrado para a ponta
+    # do baiter: 16% dos jogador-partidas e 57% dos baiters.
+    sac_por_funcao = {"_geral": float(isca["sacrificio"].mean())}
+    sac_funcao = isca.group_by("funcao_do_round", maintain_order=True).agg(
+        pl.len().alias("rounds"), pl.col("sacrificio").mean().alias("media"))
+    for r in sac_funcao.iter_rows(named=True):
+        if r["rounds"] >= MIN_ROUNDS_FUNCAO_NA_REFERENCIA:
+            sac_por_funcao[r["funcao_do_round"]] = float(r["media"])
+    print("\nsacrificio esperado por funcao (pagou a conta E o time colheu, por round):")
+    for nome_f, v in sorted(sac_por_funcao.items(), key=lambda kv: -kv[1]):
+        print(f"  {nome_f:<14} {v:.3f}")
+
     # PASSO 2: os componentes já com a isca comparada dentro da função
     pedacos = []
     for match_id, (tables, outputs, positions, areas, team_of, winners) in carregadas.items():
         _, resumo = compute_for_match(
             tables, outputs, positions, areas, team_of, winners,
-            reference={"isca_por_funcao": isca_por_funcao},
+            reference={"isca_por_funcao": isca_por_funcao,
+                       "sacrificio_por_funcao": sac_por_funcao},
         )
         pedacos.append(resumo.with_columns(pl.lit(match_id).alias("match_id")))
         print(f"  {match_id}: {resumo.height} jogadores")
@@ -137,6 +153,7 @@ def main() -> None:
     componentes = pl.concat(pedacos, how="diagonal")
     referencia = build_reference(componentes)
     referencia["isca_por_funcao"] = isca_por_funcao
+    referencia["sacrificio_por_funcao"] = sac_por_funcao
 
     print(f"\n{componentes.height} jogador-partidas, {len(referencia['quantis'])} componentes")
     print("\nmediana de cada componente no conjunto:")
