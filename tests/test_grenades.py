@@ -276,8 +276,11 @@ def test_role_requires_passing_the_floor_not_just_leading_the_team():
 
 
 def test_role_is_assigned_when_leader_passes_floor():
+    # `awp_share` é "dos rounds em que o TIME teve AWP, em quantos ela era dele"
+    # (decisão do Pedro, 2026-09-24): 0,80 é o AWPer do time, 0,40 não é mais --
+    # na escala antiga (AWP / todos os rounds) 0,40 passava do piso de 0,25.
     signals = _signals([
-        {"steamid": 1, "name": "A", "team": "A", "awp_share": 0.40},
+        {"steamid": 1, "name": "A", "team": "A", "awp_share": 0.80},
         {"steamid": 2, "name": "B", "team": "A", "awp_share": 0.10},
     ])
     traits = assign_traits(signals).filter(pl.col("trait") == "awp")

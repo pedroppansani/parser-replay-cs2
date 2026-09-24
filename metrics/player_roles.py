@@ -123,7 +123,17 @@ TRAIT_SPECS: list[Trait] = [
         label="AWPer",
         column="awp_share",
         high_is=True,
-        floor=0.25,  # PISO NA ESCALA ANTIGA -- recalibrar (os métodos sugerem ~0,55)
+        # Piso na escala NOVA (a AWP do time era dele), recalibrado em 2026-09-24
+        # com os três métodos de scripts/proposta_pisos.py: maior vazio 0,533,
+        # Otsu 0,533 e vale da densidade 0,577 sobre os 430 jogador-partidas
+        # profissionais -- espalhamento 0,13 amplitude interquartil, dentro do
+        # limite de 0,25. Mediana dos três.
+        # EFEITO MEDIDO HOJE: NENHUM. Os 94 rótulos são os mesmos com 0,25 e com
+        # 0,533, porque quem lidera a AWP do time com pelo menos 4 rounds de AWP
+        # já fica acima de 53% em todas as 52 partidas. O piso é GUARDA para o
+        # caso que ainda não apareceu: time que divide a AWP entre dois
+        # jogadores, em que o "líder" tem 45% e não é o AWPer de ninguém.
+        floor=0.533,
         priority=1,
         phrase=lambda v: f"a AWP do time era dele em {v * 100:.0f}% dos rounds com AWP",
         coluna_amostra="awp_rounds_do_time",
