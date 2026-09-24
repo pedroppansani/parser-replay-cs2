@@ -46,6 +46,8 @@ RAIZ = Path(__file__).resolve().parent.parent
 #   -- afirmar retroativamente que ela rodou na versão 1 seria inventar.
 VERSAO_DO_PARSER = 1
 
+# 4 (2026-09-24) lurker medido sem os rounds com AWP, relativo à função
+#   estrutural (piso 1,5x o esperado) e com amostra mínima de 8 rounds sem AWP.
 # 3 (2026-09-22) empate na função dominante (structural_roles.
 #   MARGEM_EMPATE_FUNCAO_ROUNDS = 0): quem tem duas ou mais funções com a mesma
 #   contagem de rounds num lado fica "sem função dominante", com as empatadas.
@@ -54,7 +56,7 @@ VERSAO_DO_PARSER = 1
 #   (inclui a classe de economia do jogador no rating), unique com subset fica
 #   com a primeira linha. Antes, esses três casos dependiam da ordem de hash.
 # 1 (2026-09-20) primeira versão declarada, mesmo raciocínio acima.
-VERSAO_DAS_METRICAS = 3
+VERSAO_DAS_METRICAS = 4
 
 # Pastas cujo estado define o NÚMERO. `sujo` olha só estas: olhar o repositório
 # inteiro marcava todo reprocessamento como sujo, porque o próprio

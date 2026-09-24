@@ -48,6 +48,28 @@ import polars as pl
 # Rounds por metade (MR12): o lado troca, o time não.
 HALFTIME_ROUND = 12
 
+# Quanto o jogador precisa estar ACIMA do esperado da função para ser lurker.
+# 1,5x é o mesmo fator com que o projeto ancora outros pisos ao acaso ou ao
+# ruído (round decisivo 1,5x o round mais barato, bottom frag 1,5 desvios
+# medianos, entry 1,5x o acaso). Medido nas 43 profissionais: 94 -> 42 rótulos,
+# 4 novos; dos 64 rótulos de líderes de hoje, 22 saem por amostra e 4 por
+# ficarem abaixo de 1,5x.
+PISO_LURK_RELATIVO = 1.5
+
+# Rounds SEM AWP mínimos para afirmar lurk. 8 é o mesmo mínimo que o projeto já
+# usa para afirmar uma taxa de jogador (player_profile.MIN_ROUNDS_PARA_TAXA);
+# abaixo disso a linha sai como dado insuficiente. O m0NESY da match_20 tem 6.
+MIN_ROUNDS_SEM_AWP = 8
+
+# Taxa ESPERADA de "fora da área do time" por função estrutural, nos rounds sem
+# AWP. Medida no corpus (43 partidas profissionais, 2026-09-24); função com
+# menos de 100 rounds e round sem função reconhecida caem no padrão. Refazer
+# quando o corpus crescer -- `py -3.12 -m scripts.proposta_pisos` mostra a
+# distribuição, e há teste que recalcula e falha se a tabela envelhecer.
+OFF_TEAM_ESPERADO_POR_FUNCAO = {"trader": 0.175, "suporte": 0.203, "entry": 0.291}
+OFF_TEAM_ESPERADO_SEM_FUNCAO = 0.232
+OFF_TEAM_ESPERADO_PADRAO = 0.302
+
 # Override manual: o julgamento do Pedro tem prioridade sobre o limiar, igual ao
 # MANUAL_ENTRY_ANGLES em metrics/map_angles.py. Chave = nome do jogador no demo,
 # valor = função. Preencher só quando o número disser uma coisa e a partida
@@ -64,6 +86,12 @@ class Trait:
     floor       piso absoluto: sem isso, liderar o time não significa nada
                 (o menos ruim de um time que não usa AWP não é um AWPer)
     priority    menor = mais definidor; decide qual rótulo vira o título
+    coluna_amostra  coluna com o tamanho da amostra que sustenta a métrica
+    minimo_amostra  abaixo disso a função não é afirmada -- é DADO INSUFICIENTE,
+                não "não qualifica" (a diferença importa: o primeiro é silêncio
+                por falta de base, o segundo é uma medição que disse não)
+    evidencia   frase a partir da linha inteira, quando a taxa sozinha não conta
+                a história (decisão 7a: taxa sempre com o bruto)
     """
 
     key: str
@@ -73,6 +101,9 @@ class Trait:
     floor: float
     priority: int
     phrase: Callable[[float], str]
+    coluna_amostra: str | None = None
+    minimo_amostra: int = 0
+    evidencia: Callable[[dict], str] | None = None
 
 
 TRAIT_SPECS: list[Trait] = [
@@ -131,14 +162,36 @@ TRAIT_SPECS: list[Trait] = [
     # estar sozinho na área. A comparação é com o resto do time, round a round
     # (ver metrics/site_roles.py). A distância média continua na tabela como
     # informação, só não define mais a função.
+    # O lurker é medido em DOIS consertos (decisão do Pedro, 2026-09-24):
+    #
+    # 1. SEM os rounds em que ele carregava a AWP. Segurar um ângulo longe do
+    #    time com a AWP é o trabalho do AWPer, não lurk -- era assim que o
+    #    m0NESY, cujo título é "AWPer, AWP na mão em 63% dos rounds", ganhava
+    #    "Lurker" como característica secundária (match_32).
+    # 2. RELATIVO à função estrutural daqueles rounds, não à média do elenco
+    #    (princípio da decisão 15c). Entry e suporte jogam fora da área do time
+    #    com frequências diferentes, e comparar todo mundo contra a mesma régua
+    #    transforma função em atitude.
+    #
+    # A régua NÃO usa a própria função "lurker" como referência: ela é definida
+    # por jogar em outra área (decisão 12), tem taxa esperada 0,97, e dividir um
+    # lurker de verdade por 0,97 faria ele perder o rótulo. Rounds classificados
+    # como lurker caem na taxa geral.
     Trait(
         key="lurk",
         label="Lurker",
-        column="off_team_share",
+        column="off_team_relativo",
         high_is=True,
-        floor=0.40,
+        floor=PISO_LURK_RELATIVO,
         priority=4,
-        phrase=lambda v: f"jogou fora da área do time em {v * 100:.0f}% dos rounds de T",
+        phrase=lambda v: f"jogou fora da área do time {v:.1f}x o esperado da função",
+        coluna_amostra="n_rounds_sem_awp",
+        minimo_amostra=MIN_ROUNDS_SEM_AWP,
+        evidencia=lambda r: (
+            f"fora da área do time em {r['off_team_share_sem_awp'] * 100:.0f}% dos rounds sem AWP "
+            f"({round(r['off_team_share_sem_awp'] * r['n_rounds_sem_awp'])} de {r['n_rounds_sem_awp']}), "
+            f"{r['off_team_relativo']:.1f}x o esperado da função"
+        ),
     ),
     # Âncora é ficar fixo no mesmo bombsite, inclusive quando os T indicam o
     # outro lado. Antes isto era contato tardio, que mede o round demorar e não o
@@ -210,6 +263,53 @@ def resolve_teams(ticks: pl.DataFrame) -> tuple[dict[int, str], dict[str, list[s
         team_of_player[row["steamid"]] = team
         rosters[team].append(row["name"])
     return team_of_player, rosters
+
+
+def lurk_relativo(outputs: dict[str, pl.DataFrame]) -> pl.DataFrame:
+    """Lurk medido SEM os rounds com AWP e RELATIVO à função estrutural.
+
+    Devolve (steamid, off_team_share_sem_awp, n_rounds_sem_awp,
+    off_team_esperado, off_team_relativo). Sem alguma das tabelas de origem,
+    devolve vazio -- e a função simplesmente não é atribuída, como já acontece
+    quando o mapa não permite localizar os bombsites.
+    """
+    lurk = outputs.get("lurk_per_round")
+    if lurk is None or lurk.height == 0 or "off_team" not in lurk.columns:
+        return pl.DataFrame(schema={"steamid": pl.UInt64, "off_team_share_sem_awp": pl.Float64,
+                                    "n_rounds_sem_awp": pl.UInt32, "off_team_esperado": pl.Float64,
+                                    "off_team_relativo": pl.Float64})
+    awp = outputs.get("awp_per_round")
+    com_awp = (awp.select("round_num", "steamid").unique(maintain_order=True, keep="first")
+               .with_columns(pl.lit(True).alias("com_awp"))
+               if awp is not None and awp.height else
+               pl.DataFrame(schema={"round_num": lurk.schema["round_num"], "steamid": lurk.schema["steamid"],
+                                    "com_awp": pl.Boolean}))
+    est = outputs.get("structural_roles")
+    funcoes = (est.select("round_num", "steamid", "funcao")
+               if est is not None and "funcao" in est.columns else
+               pl.DataFrame(schema={"round_num": lurk.schema["round_num"], "steamid": lurk.schema["steamid"],
+                                    "funcao": pl.String}))
+    base = (lurk.select("round_num", "steamid", "off_team")
+            .join(com_awp, on=["round_num", "steamid"], how="left")
+            .with_columns(pl.col("com_awp").fill_null(False))
+            .join(funcoes, on=["round_num", "steamid"], how="left")
+            .filter(~pl.col("com_awp") & pl.col("off_team").is_not_null()))
+    if base.height == 0:
+        return lurk.select("steamid").unique(maintain_order=True, keep="first").with_columns(
+            pl.lit(None, dtype=pl.Float64).alias("off_team_share_sem_awp"),
+            pl.lit(0, dtype=pl.UInt32).alias("n_rounds_sem_awp"),
+            pl.lit(None, dtype=pl.Float64).alias("off_team_esperado"),
+            pl.lit(None, dtype=pl.Float64).alias("off_team_relativo"))
+    esperado = (pl.when(pl.col("funcao").is_null()).then(pl.lit(OFF_TEAM_ESPERADO_SEM_FUNCAO))
+                .otherwise(pl.col("funcao").replace_strict(OFF_TEAM_ESPERADO_POR_FUNCAO,
+                                                           default=OFF_TEAM_ESPERADO_PADRAO,
+                                                           return_dtype=pl.Float64)))
+    return (base.with_columns(esperado.alias("esp"))
+            .group_by("steamid", maintain_order=True)
+            .agg(pl.col("off_team").mean().alias("off_team_share_sem_awp"),
+                 pl.len().cast(pl.UInt32).alias("n_rounds_sem_awp"),
+                 pl.col("esp").mean().alias("off_team_esperado"))
+            .with_columns((pl.col("off_team_share_sem_awp") / pl.col("off_team_esperado")).alias("off_team_relativo")))
 
 
 def build_signals(
@@ -304,6 +404,7 @@ def build_signals(
         .join(awp_sel, on="steamid", how="left")
         .join(anchor, on="steamid", how="left")
         .join(lurk, on="steamid", how="left")
+        .join(lurk_relativo(outputs), on="steamid", how="left")
         .with_columns(
             pl.col("awp_rounds").fill_null(0),
             pl.col("first_contact_share").fill_null(0.0),
@@ -342,6 +443,12 @@ def assign_traits(signals: pl.DataFrame) -> pl.DataFrame:
             & pl.col(spec.column).is_not_null()
             & (pl.col(spec.column) >= spec.floor if spec.high_is else pl.col(spec.column) <= spec.floor)
         )
+        # Amostra mínima: abaixo dela a função não é afirmada por DADO
+        # INSUFICIENTE. Não é o mesmo que não qualificar -- e é por isso que o
+        # corte vem depois do piso, não dentro dele.
+        if spec.coluna_amostra and spec.coluna_amostra in qualified.columns:
+            qualified = qualified.filter(
+                pl.col(spec.coluna_amostra).fill_null(0) >= spec.minimo_amostra)
         for row in qualified.iter_rows(named=True):
             rows.append(
                 {
@@ -352,7 +459,8 @@ def assign_traits(signals: pl.DataFrame) -> pl.DataFrame:
                     "label": spec.label,
                     "priority": spec.priority,
                     "value": float(row[spec.column]),
-                    "evidence": spec.phrase(float(row[spec.column])),
+                    "evidence": (spec.evidencia(row) if spec.evidencia
+                                 else spec.phrase(float(row[spec.column]))),
                 }
             )
 
