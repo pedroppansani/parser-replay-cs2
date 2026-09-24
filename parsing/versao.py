@@ -46,6 +46,9 @@ RAIZ = Path(__file__).resolve().parent.parent
 #   -- afirmar retroativamente que ela rodou na versão 1 seria inventar.
 VERSAO_DO_PARSER = 1
 
+# 6 (2026-09-24) a régua do perfil passa a ser a mediana do CORPUS
+#   (metrics/perfil_reference.json, anônima) no lugar da mediana dos outros
+#   jogadores da mesma partida; a origem da régua vai no perfil.
 # 5 (2026-09-24) AWPer medido como "dos rounds em que o TIME teve AWP, em
 #   quantos ela era dele", com mínimo de 4 rounds de AWP no time. O denominador
 #   antigo (todos os rounds) contava save e força como falha do AWPer.
@@ -59,7 +62,7 @@ VERSAO_DO_PARSER = 1
 #   (inclui a classe de economia do jogador no rating), unique com subset fica
 #   com a primeira linha. Antes, esses três casos dependiam da ordem de hash.
 # 1 (2026-09-20) primeira versão declarada, mesmo raciocínio acima.
-VERSAO_DAS_METRICAS = 5
+VERSAO_DAS_METRICAS = 6
 
 # Pastas cujo estado define o NÚMERO. `sujo` olha só estas: olhar o repositório
 # inteiro marcava todo reprocessamento como sujo, porque o próprio

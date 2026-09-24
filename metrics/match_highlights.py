@@ -396,7 +396,10 @@ def _evidencia_obrigatoria(cand: dict, archetypes: pl.DataFrame) -> dict | None:
         "valor": fmt(float(valor)),
         "referencia": fmt(ref),
         "referencia_nome": None,
-        "referencia_rotulo": "mediana dos outros",
+        # Aqui a referência é mesmo DENTRO da partida (o card compara o jogador
+        # com quem estava em quadra), diferente da régua do perfil, que é o
+        # corpus (decisão 30). O rótulo diz qual das duas é, para não confundir.
+        "referencia_rotulo": "mediana dos outros desta partida",
     }
 
 

@@ -1138,19 +1138,14 @@
       A aba Estilos agrupa <b>rounds</b>: as médias de um grupo descrevem o grupo, não uma pessoa —
       os rounds de um mesmo jogador se espalham por todos eles. Aqui o mesmo dado é olhado pelo
       outro lado: <b>em que fração dos rounds dele</b> cada comportamento aconteceu. Toda taxa vem
-      com o bruto ao lado e com a mediana dos outros jogadores, porque 41% em 22 rounds e 50% em
+      com o bruto ao lado e com a régua do corpus, porque 41% em 22 rounds e 50% em
       22 rounds são, na prática, o mesmo número.
     </p>
 
     <div id="pf-botoes" class="pfbotoes"></div>
     <div class="pfbar">
       <label>Comparar com <select id="pf-b"></select></label>
-      <label>Base
-        <select id="pf-escopo">
-          <option value="match">só esta partida</option>
-          <option value="all">todas as partidas processadas</option>
-        </select>
-      </label>
+      <span id="pf-regua" class="pfregua"></span>
     </div>
     <div id="pf-leitura" class="pfleitura"></div>
     <div id="pf-head" class="pfhead"></div>
@@ -2952,17 +2947,37 @@
     // ser destacado. Abaixo disso, destacar seria transformar ruido em achado.
     var MARGEM_DESTAQUE = 0.15;
 
+    // Os números do jogador são SÓ desta partida (regra dos três níveis). Não
+    // existe seletor de base: o que vem do corpus é a régua de comparação, e ela
+    // é anônima. O texto do aviso é montado aqui porque o payload traz só os
+    // números -- nenhuma frase fica escrita no template (decisão 18).
     var daPartida = D.player_profile || [];
-    var acumulado = D.player_profile_summary || [];
     if (!daPartida.length) return;
+    // Rótulo da régua, usado no card, na tabela e no aviso -- um lugar só, para
+    // as três telas não contarem histórias diferentes sobre a mesma comparação.
+    var REGUA = (D.perfil_regua || {});
+    var REGUA_ROTULO = (REGUA.origem === "corpus" && REGUA.partidas > 1)
+      ? "mediana do corpus" : "mediana dos outros desta partida";
+    (function avisoDaRegua() {
+      var r = D.perfil_regua || {};
+      var el = document.getElementById("pf-regua");
+      if (!el) return;
+      if (r.origem === "corpus" && r.partidas > 1) {
+        el.textContent = "comparado com " + r.jogador_partidas + " jogador-partidas de " +
+          r.partidas + " partidas";
+        el.className = "pfregua";
+      } else {
+        el.textContent = "comparado só com os outros jogadores desta partida — amostra fraca";
+        el.className = "pfregua fraca";
+      }
+    })();
 
     var botoes = document.getElementById("pf-botoes");
     var selB = document.getElementById("pf-b");
-    var selE = document.getElementById("pf-escopo");
     var escolhido = null;
 
     function base() {
-      return selE.value === "all" && acumulado.length ? acumulado : daPartida;
+      return daPartida;
     }
     function acha(nome) {
       var b = base();
@@ -3097,7 +3112,7 @@
           "<b>" + c.texto + "</b>" +
           "<span>" + Math.round(c.taxa * 100) + "% · " + c.n + " de " + c.d + " " +
           (c.unidade || "rounds") +
-          " · mediana dos outros " + Math.round(c.ref * 100) + "%</span></div>";
+          " · " + REGUA_ROTULO + " " + Math.round(c.ref * 100) + "%</span></div>";
       }).join("");
       return "<div class='quem'>Como " + p.name + " joga</div>" +
         "<h3>" + d.titulo + "</h3>" +
@@ -3128,7 +3143,7 @@
         html += "<div class='pfcat'><h3>" + cat + "</h3><table class='pf'>" +
           "<tr><th>Comportamento</th><th>" + (a ? a.name : "") + "</th>" +
           (b ? "<th>" + b.name + "</th>" : "") +
-          "<th>mediana dos outros</th></tr>" + linhas + "</table></div>";
+          "<th>" + REGUA_ROTULO + "</th></tr>" + linhas + "</table></div>";
       });
 
       // O tempo mediano não é taxa: entra como número solto, sem barra nem
@@ -3172,9 +3187,6 @@
     preencheSelects();
     montaBotoes();
     selB.addEventListener("change", desenha);
-    selE.addEventListener("change", function () {
-      preencheSelects(); montaBotoes(); desenha();
-    });
     desenha();
   })();
 

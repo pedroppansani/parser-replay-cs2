@@ -8,6 +8,8 @@ de o painel mentir sem errar conta nenhuma.
 """
 from __future__ import annotations
 
+from pathlib import Path
+
 import polars as pl
 import pytest
 
@@ -188,14 +190,43 @@ def test_toda_taxa_vem_com_numerador_e_denominador():
         assert f"{taxa}_fraco" in perfil.columns, f"{taxa}_fraco"
 
 
-def test_referencia_exclui_o_proprio_jogador():
-    """Mediana que inclui o jogador puxa a referência na direção dele."""
+def test_sem_regua_de_corpus_a_referencia_exclui_o_proprio_jogador(monkeypatch):
+    """Nível 3 da regra dos três níveis: sem régua de corpus, cai na mediana dos
+    outros jogadores DESTA partida -- e mediana que inclui o próprio jogador
+    puxaria a referência na direção dele."""
+    import metrics.player_profile as pp
+
+    monkeypatch.setattr(pp, "REGUA_FILE", Path("nao-existe-perfil_reference.json"))
     perfil, _ = _perfil(distancia_do_alvo=RAIO_COMPANHEIRO + 400)
     alvo = perfil.filter(pl.col("name") == "p1").row(0, named=True)
 
     # o alvo é o único isolado; a mediana dos OUTROS quatro tem que ser 0
     assert alvo["pct_rounds_isolado"] == 1.0
     assert alvo["pct_rounds_isolado_ref"] == 0.0
+    assert alvo["regua_origem"] == "partida", "sem régua de corpus, a origem tem de estar marcada"
+
+
+def test_com_regua_de_corpus_a_referencia_nao_depende_de_quem_jogou_a_partida(monkeypatch, tmp_path):
+    """Nível 2: a régua é a distribuição agregada e ANÔNIMA do corpus.
+
+    A mediana dos outros nove responde "ele está acima dos adversários de hoje",
+    e o mesmo 100% vira destaque ou banalidade conforme quem entrou em quadra.
+    """
+    import json
+
+    import metrics.player_profile as pp
+
+    arq = tmp_path / "perfil_reference.json"
+    arq.write_text(json.dumps({"n_partidas": 52, "n_jogador_partidas": 520,
+                               "medianas": {"pct_rounds_isolado": 0.42}}), encoding="utf-8")
+    monkeypatch.setattr(pp, "REGUA_FILE", arq)
+    perfil, _ = _perfil(distancia_do_alvo=RAIO_COMPANHEIRO + 400)
+    alvo = perfil.filter(pl.col("name") == "p1").row(0, named=True)
+
+    assert alvo["pct_rounds_isolado_ref"] == 0.42, "a régua do corpus não foi usada"
+    assert alvo["regua_partidas"] == 52 and alvo["regua_jogador_partidas"] == 520
+    # e a régua NÃO é o número do jogador: o dele continua vindo só desta partida
+    assert alvo["pct_rounds_isolado"] == 1.0
 
 
 # --- Grupos comportamentais -------------------------------------------------

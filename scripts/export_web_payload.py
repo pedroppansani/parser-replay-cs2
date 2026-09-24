@@ -24,23 +24,6 @@ from scripts.narrative import descreve_jogador
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
-def _perfil_acumulado(steamids: list[int]) -> list[dict]:
-    """Perfil somado de todas as partidas, só para quem jogou ESTA partida.
-
-    O recorte existe por peso: são 73 jogadores no conjunto e ~160 colunas por
-    jogador, e mandar todos em cada página somava 400KB de gente que aquela
-    página nunca mostra.
-
-    Ausente é caso legítimo: numa primeira partida processada o acumulado ainda
-    não existe, e a interface cai para o perfil da partida. Ver
-    scripts/build_player_profiles.py.
-    """
-    caminho = PROJECT_ROOT / "data" / "player_profiles" / "summary.parquet"
-    if not caminho.exists():
-        return []
-    return pl.read_parquet(caminho).filter(pl.col("steamid").is_in(steamids)).to_dicts()
-
-
 def build(match_id: str) -> Path:
     processed = PROJECT_ROOT / "data" / "processed" / match_id
     insights = json.loads((processed / "insights.json").read_text(encoding="utf-8"))
@@ -156,15 +139,18 @@ def build(match_id: str) -> Path:
         # Quem joga em cada grupo: top 3 por fração dos próprios rounds, com o
         # bruto ("7 de 22 rounds — 32%"), e quem não tem grupo dominante.
         "cards_de_estilo": cards_de_estilo(rd("cluster_assignments")),
-        # Perfil acumulado do jogador em TODAS as partidas processadas. Vai junto
-        # do perfil desta partida porque a interface precisa deixar claro sobre
-        # quantas partidas e quantos rounds cada taxa foi montada -- 40% em 22
-        # rounds e 40% em 180 não são a mesma afirmação.
         "structural_roles": funcoes.to_dicts(),
         "structural_role_labels": {k: v[0] for k, v in FUNCOES.items()},
-        "player_profile_summary": com_descricao(
-            _perfil_acumulado(perfil["steamid"].to_list())
-        ),
+        # O perfil ACUMULADO do jogador (todas as partidas) NÃO entra aqui:
+        # regra dos três níveis (decisão do Pedro, 2026-09-24) -- os números do
+        # jogador nesta página são só desta partida. O que vem do corpus é a
+        # RÉGUA, e ela é anônima (metrics/perfil_reference.json).
+        "perfil_regua": {
+            "origem": (perfil["regua_origem"][0] if "regua_origem" in perfil.columns and perfil.height else "partida"),
+            "partidas": (int(perfil["regua_partidas"][0]) if "regua_partidas" in perfil.columns and perfil.height else 0),
+            "jogador_partidas": (int(perfil["regua_jogador_partidas"][0])
+                                 if "regua_jogador_partidas" in perfil.columns and perfil.height else 0),
+        },
         "crosshair": crosshair.to_dicts(),
         "awp": awp.to_dicts(),
         "awp_rounds": awp_rounds.to_dicts(),

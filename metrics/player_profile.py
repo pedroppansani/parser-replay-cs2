@@ -39,6 +39,9 @@ tabela round a round, que é onde a validação manual acontece, sai por
 """
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import polars as pl
 
 from metrics.timing import detect_tickrate
@@ -82,6 +85,10 @@ FRACAO_TIME_DE_RIFLE = 0.60
 # interface mostra o bruto e marca amostra fraca. 8 rounds é o ponto em que um
 # evento a mais ou a menos deixa de mover a taxa em mais de 12 pontos.
 MIN_ROUNDS_PARA_TAXA = 8
+
+# A régua do perfil (mediana de cada taxa no corpus), ajustada por
+# scripts/fit_perfil_reference.py. Mesmo padrão do archetype_reference.json.
+REGUA_FILE = Path(__file__).resolve().parent / "perfil_reference.json"
 
 # Eventos mínimos para taxas cujo denominador não é "rounds jogados" (kills de
 # AWP, mortes trocadas, conversão de clutch). 4 é baixo de propósito: clutch tem
@@ -588,19 +595,52 @@ def _por_lado(flags: pl.DataFrame) -> pl.DataFrame:
     return saida
 
 
-def _com_referencia(df: pl.DataFrame, colunas: list[str]) -> pl.DataFrame:
-    """Para cada taxa, a mediana dos OUTROS jogadores do mesmo recorte.
+def carrega_regua(caminho: Path | None = None) -> dict:
+    """A régua do perfil: mediana de cada taxa no CORPUS, agregada e anônima.
 
-    Leave-one-out de propósito: comparar o jogador com uma mediana que inclui ele
-    próprio puxa a referência na direção dele, e num grupo de 10 isso não é
-    desprezível. Sem referência, "60% longe do time" não diz se é muito ou pouco.
+    Sem o arquivo devolve vazio, e a referência cai na mediana dos outros
+    jogadores da própria partida -- que é o nível 3 da regra: sem seletor, com
+    aviso de que a régua é fraca (`regua_origem`).
     """
+    # o caminho é resolvido na CHAMADA, não na definição: como valor padrão do
+    # parâmetro ele congelaria o arquivo e nenhum teste conseguiria trocá-lo
+    caminho = caminho or REGUA_FILE
+    if not caminho.exists():
+        return {}
+    try:
+        return json.loads(caminho.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def _com_referencia(df: pl.DataFrame, colunas: list[str], regua: dict | None = None) -> pl.DataFrame:
+    """Para cada taxa, a régua: a mediana do CORPUS quando existe, senão a dos
+    OUTROS jogadores desta partida.
+
+    POR QUE A RÉGUA É O CORPUS (regra dos três níveis, decisão do Pedro,
+    2026-09-24): a mediana dos outros nove responde "ele está acima dos
+    companheiros e adversários DE HOJE" -- o mesmo 40% vira destaque ou
+    banalidade dependendo de quem entrou em quadra. A régua do corpus é estável e
+    ANÔNIMA (`metrics/perfil_reference.json` só tem números). Os NÚMEROS DO
+    JOGADOR continuam saindo só da partida aberta: o que vem do corpus é a régua.
+
+    Quando não há régua de corpus, o leave-one-out continua: comparar o jogador
+    com uma mediana que inclui ele próprio puxa a referência na direção dele, e
+    num grupo de 10 isso não é desprezível.
+    """
+    medianas = (regua or {}).get("medianas", {})
     ids = df["steamid"].to_list()
     novas: dict[str, list[float | None]] = {}
+    origem: dict[str, str] = {}
 
     for col in colunas:
         if col not in df.columns:
             continue
+        if col in medianas:
+            novas[f"{col}_ref"] = [float(medianas[col])] * len(ids)
+            origem[col] = "corpus"
+            continue
+        origem[col] = "partida"
         valores = df[col].to_list()
         ref: list[float | None] = []
         for i in range(len(ids)):
@@ -615,7 +655,16 @@ def _com_referencia(df: pl.DataFrame, colunas: list[str]) -> pl.DataFrame:
             )
         novas[f"{col}_ref"] = ref
 
-    return df.with_columns([pl.Series(k, v) for k, v in novas.items()]) if novas else df
+    df = df.with_columns([pl.Series(k, v) for k, v in novas.items()]) if novas else df
+    # de onde veio a régua de CADA taxa, para a página poder avisar em vez de
+    # afirmar com a régua fraca
+    do_corpus = sum(1 for v in origem.values() if v == "corpus")
+    return df.with_columns(
+        pl.lit("corpus" if do_corpus and do_corpus == len(origem) else
+               ("misto" if do_corpus else "partida")).alias("regua_origem"),
+        pl.lit((regua or {}).get("n_partidas", 0), dtype=pl.UInt32).alias("regua_partidas"),
+        pl.lit((regua or {}).get("n_jogador_partidas", 0), dtype=pl.UInt32).alias("regua_jogador_partidas"),
+    )
 
 
 def _marca_amostra_fraca(df: pl.DataFrame, colunas: list[str]) -> pl.DataFrame:
@@ -786,7 +835,7 @@ def player_profile(
     sensiveis = [c for c, _, por_l in TAXAS_POR_ROUND if por_l]
     colunas_ref = TAXAS_TODAS + [f"{c}_{lado}" for c in sensiveis for lado in ("ct", "t")]
 
-    perfil = _com_referencia(perfil, colunas_ref)
+    perfil = _com_referencia(perfil, colunas_ref, carrega_regua())
     perfil = _marca_amostra_fraca(perfil, TAXAS_TODAS)
     perfil = perfil.with_columns(
         pl.lit(match_id).alias("match_id"),
