@@ -45,18 +45,21 @@ metrics/      geometry, basic_metrics, awp_metrics, crosshair, map_angles,
               positioning, grenades, map_areas, site_roles, player_roles,
               clutch, archetypes (+ archetype_reference.json), player_profile,
               structural_roles, formatting, win_probability, round_spectacle,
-              match_highlights, grenade_throws, rating (+ rating_reference.json)
+              match_highlights, grenade_throws, rating (+ rating_reference.json),
+              tactics (modelo da prancheta tática)
 clustering/   playstyle (PCA + KMeans), global_model.json e cluster_names.json
 dashboard/    app Streamlit + theme + web/
 scripts/      process_demo (CLI), reprocessa (corpus inteiro a partir do interim,
               em paralelo), fit_global_clusters, fit_archetype_reference,
               build_player_profiles, show_derived_angles e show_map_areas
-              (calibração), narrative, build_site, manifest, clean_match
-tests/        ~725 testes (os de navegador usam Playwright + Chrome; sem eles, pulados)
+              (calibração), narrative, build_site, manifest, clean_match,
+              build_lineups e build_tactics_page (prancheta)
+tests/        ~900 testes (os de navegador usam Playwright + Chrome; sem eles, pulados)
 demos/       .dem originais (gitignored)
 data/manifest.json origem de cada partida (versionado; scripts/manifest.py)
 data/interim/ tabelas brutas em parquet (gitignored, ticks tem 1M+ linhas)
 data/processed/ métricas calculadas (versionadas — é o que o dashboard usa)
+data/lineups/ biblioteca de arremessos reais por mapa (versionada; build_lineups)
 docs/         site GERADO por build_site.py (NÃO versionado; ver decisão 24)
 .github/workflows/pages.yml  publica o site no Pages a cada push
 data/global_clusters/ clustering ajustado no conjunto das partidas
@@ -1246,6 +1249,43 @@ testada e estava errada.
     O Lurker é medido por `off_team_relativo` (decisão 29), que SUBSTITUIU a
     taxa absoluta `off_team_share` (escala 0-1, piso antigo 0,40) como métrica
     que define o rótulo; a taxa absoluta continua na tabela só como informação.
+
+32. **Prancheta tática: a tática é um LOG DE OPERAÇÕES, pronto para mais de um
+    usuário** (Fase I, 2026-09-26). Página por mapa (`prancheta_<mapa>.html`
+    no site; `dashboard/web/tactics.html` + `tactics.js`), mapa vazio, peças
+    arrastáveis do banco, granadas com origem e destino, passos numerados.
+    - **Estrutura multiusuário, sem servidor ainda** (`metrics/tactics.py`, com
+      o PORQUÊ no cabeçalho): o arquivo guarda operações, não estado. Cada
+      operação tem **id estável** (uuid), **autor**, **número de ordem** (`seq`,
+      contador que só sobe -- relógio de Lamport) e data; o estado é aplicar o
+      log na ordem (seq, autor, id), total e igual em qualquer máquina. Mesclar
+      duas cópias é a UNIÃO dos logs por id: as duas pontas convergem (teste).
+      Conflito (dois moveram a mesma peça no mesmo passo) vence o maior
+      (seq, autor, id), e as duas operações ficam no log.
+    - **Persistência atrás de interface**: a página só fala com `Armazem`
+      (`lista`, `carrega`, `grava`, `apaga`). Hoje é o navegador
+      (localStorage); um servidor entra implementando os mesmos métodos. A
+      interface não supõe usuário único: campo de autor, índice com a lista de
+      autores de cada tática, importar a MESMA tática mescla em vez de
+      sobrescrever.
+    - **Arquivo versionado**: `formato: "prancheta-cs2"`, `versao: 1`, com a
+      impressão da calibração do radar (tática de outra calibração é recusada,
+      mesmo motivo das anotações). O Python valida o arquivo exportado e há
+      teste de que JS e Python chegam ao MESMO estado para o mesmo log.
+    - **Prioridade: granada com arremesso REAL.** "Buscar arremesso" + clique
+      onde a granada deve cair lista os arremessos do corpus que caem ali
+      (raio ajustável na tela), e a granada escolhida carrega posição, ângulo,
+      força/botão, postura, movimento e o comando `setpos`/`setang`
+      (`grenade_throws.comando_de_console`, o mesmo do material de
+      calibração). Arremesso correndo ou no ar sai com aviso (o comando não
+      reproduz o movimento); o filtro "só parados" restringe a busca.
+      Enquanto `COMANDO_CONFERIDO_NO_JOGO` for falso (decisão 21b), toda ficha
+      avisa que o comando ainda não foi conferido no jogo. Arrastar a granada
+      à mão desfaz o arremesso real (o comando deixaria de ser verdade).
+    - A biblioteca (`data/lineups/<mapa>.json`, ~9 MB nos 8 mapas) é gerada
+      LOCALMENTE por `py -3.12 -m scripts.build_lineups`, porque depende do
+      interim, que não vai para o git nem para o CI. Só entra arremesso com
+      reprodução exata. Regerar depois de mudar `metrics/grenade_throws.py`.
 
 ## Pontos de calibração — pertencem ao Pedro, não ao código
 

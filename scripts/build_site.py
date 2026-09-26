@@ -24,6 +24,8 @@ from pathlib import Path
 
 import polars as pl
 
+from scripts.build_tactics_page import arquivo_da_pagina, mapas_disponiveis
+from scripts.build_tactics_page import build_html as build_prancheta
 from scripts.build_web_page import build_html
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -94,7 +96,7 @@ def utility_highlight(match_id: str) -> str | None:
     return f"{top['name']} impôs {top['enemy_blind_seconds']:.0f}s de cegueira"
 
 
-def build_index(matches: list[dict], repo_url: str) -> str:
+def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | None = None) -> str:
     cards = "\n".join(
         f"""      <a class="mcard" href="{m['file']}">
         <div class="mtop"><span class="mmap">{m['map_label']}</span>
@@ -107,6 +109,16 @@ def build_index(matches: list[dict], repo_url: str) -> str:
       </a>"""
         for m in matches
     )
+
+    links = " · ".join(f'<a href="{p["file"]}">{p["label"]}</a>' for p in (pranchetas or []))
+    bloco_prancheta = (f"""
+  <section class="box">
+    <h2>Prancheta tática</h2>
+    <p>Monte uma jogada no mapa vazio: peças, passos e granadas. Clique onde a granada deve cair e a
+      prancheta mostra os arremessos reais do corpus que caem ali, com o comando de console que os
+      reproduz. {links}</p>
+  </section>
+""" if links else "")
 
     return f"""<!DOCTYPE html>
 <html lang="pt-BR">
@@ -188,7 +200,7 @@ def build_index(matches: list[dict], repo_url: str) -> str:
   <div class="grid">
 {cards}
   </div>
-
+{bloco_prancheta}
   <section class="box">
     <h2>Adicionar a sua própria demo</h2>
     <p>
@@ -254,7 +266,15 @@ def build(repo_url: str) -> Path:
         (DOCS_DIR / m["file"]).write_text(html, encoding="utf-8")
         print(f"  {m['file']}  ({len(html) / 1024:.0f} KB)  {m['map_label']} {m['score_a']}-{m['score_b']}")
 
-    (DOCS_DIR / "index.html").write_text(build_index(matches, repo_url), encoding="utf-8")
+    # prancheta tática: uma página por mapa com radar e biblioteca de arremessos
+    pranchetas = []
+    for mapa in mapas_disponiveis():
+        html = build_prancheta(mapa, MAP_LABEL)
+        (DOCS_DIR / arquivo_da_pagina(mapa)).write_text(html, encoding="utf-8")
+        pranchetas.append({"mapa": mapa, "file": arquivo_da_pagina(mapa), "label": MAP_LABEL.get(mapa, mapa)})
+        print(f"  {arquivo_da_pagina(mapa)}  ({len(html) / 1024:.0f} KB)  prancheta")
+
+    (DOCS_DIR / "index.html").write_text(build_index(matches, repo_url, pranchetas), encoding="utf-8")
 
     # o GitHub Pages passa o conteúdo pelo Jekyll por padrão, que ignora arquivos
     # e pastas começando com underscore; .nojekyll desliga isso

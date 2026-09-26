@@ -29,7 +29,8 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from clustering.playstyle import describe_clusters  # noqa: E402
 from metrics.identidade import com_nome_de_exibicao  # noqa: E402
-from metrics.grenade_throws import grenade_throws, grupos_de_forca, rotula_forca, trajetorias  # noqa: E402
+from metrics.grenade_throws import (  # noqa: E402
+    comando_de_console, grenade_throws, grupos_de_forca, rotula_forca, trajetorias)
 from metrics.player_roles import TRAIT_SPECS  # noqa: E402
 from parsing.parser import load_interim  # noqa: E402
 from scripts.calibration_report import carrega, cortes_com_nomes  # noqa: E402
@@ -147,7 +148,7 @@ def secao_console() -> list[str]:
             "```", "",
             "2. Com a smoke na mão, sem se mover:", "",
             "```",
-            f"setpos {r['x']:.2f} {r['y']:.2f} {r['z']:.2f}; setang {r['pitch']:.2f} {r['yaw']:.2f} 0",
+            comando_de_console(r["x"], r["y"], r["z"], r["pitch"], r["yaw"]),
             "```", "",
             "3. Solte com o **botão esquerdo** (arremesso cheio), em pé, parado.", "",
             f"**Certo:** a smoke para em ({fim['X']:.0f}, {fim['Y']:.0f}, {fim['Z']:.0f}). "

@@ -537,6 +537,26 @@ def grupos_de_forca(velocidades: np.ndarray) -> list[tuple[float, int]]:
 ROTULOS_FORCA = ("curto", "médio", "longo")
 FORCA_CONFIRMADA = True
 
+# Como soltar cada força no CS2 -- a correspondência do comentário acima, na
+# forma que vai para a ficha do arremesso.
+BOTAO_DA_FORCA = {"curto": "botão direito", "médio": "os dois botões", "longo": "botão esquerdo"}
+
+# Decisão 21b: o comando de console só é afirmado depois que o Pedro rodar o
+# teste no jogo (setpos + setang + soltar, e a granada cair onde a ficha diz).
+# Até lá, toda ficha sai com o aviso de comando não conferido.
+COMANDO_CONFERIDO_NO_JOGO = False
+
+
+def comando_de_console(x: float, y: float, z: float, pitch: float, yaw: float) -> str:
+    """O comando que põe o jogador na posição e no ângulo da soltura.
+
+    `setpos` recebe a posição dos PÉS (a origem do jogador, que é o que a demo
+    grava) e `setang` recebe pitch e yaw na convenção do jogo (decisão 9). Duas
+    casas decimais: um centésimo de unidade e de grau está muito abaixo do que
+    muda onde a granada cai.
+    """
+    return f"setpos {x:.2f} {y:.2f} {z:.2f}; setang {pitch:.2f} {yaw:.2f} 0"
+
 
 def rotula_forca(velocidade: float | None, grupos: list[tuple[float, int]]) -> str | None:
     """Qual grupo de força aquela velocidade pertence.
@@ -791,6 +811,11 @@ def grenade_throws(
             "n_colisoes": len(bate),
             "colisoes": bate,
             "n_samples": int(a["traj"].shape[0]),
+            # onde o projétil parou de ser observado: é onde a smoke abre, a
+            # molotov queima e a flash/HE explode (o projétil some na detonação)
+            "x_final": float(a["traj"][-1][0]),
+            "y_final": float(a["traj"][-1][1]),
+            "z_final": float(a["traj"][-1][2]),
         })
 
     for linha in linhas:
