@@ -31,7 +31,9 @@
 
    Este arquivo é separado do template de propósito: o template já está grande
    demais, e a camada de desenho não tem nada a ver com o resto da página. O CSS
-   dela está em annotations.css.
+   dela está em annotations.css. Projeção, zoom, tamanho interno, armazenamento,
+   traço e seletor de cor vêm de map_core.js (MapCore), compartilhados com o
+   replay e a prancheta.
    ========================================================================= */
 window.MapAnnotations = (function () {
   "use strict";
@@ -82,12 +84,7 @@ window.MapAnnotations = (function () {
   // tempo de mirar um botão.
   var MS_ATE_RECUAR = 2600;
 
-  // Teto da resolução interna do canvas. Numa tela 4K com densidade 2, o mapa
-  // em tela cheia passaria de 4000px de lado, e redesenhar isso a cada quadro
-  // custa mais do que a nitidez extra devolve.
-  var MAX_LADO_INTERNO = 4096;
-
-  var ZOOM_MIN = 1, ZOOM_MAX = 6, ZOOM_PASSO = 1.18;
+  var ZOOM_PASSO = MapCore.ZOOM_PASSO;
 
   var PREFIXO = "anot:v" + FORMATO + ":";
   var CHAVE_RECENTES = "anot:cores-recentes";
@@ -124,61 +121,28 @@ window.MapAnnotations = (function () {
      try/catch: até ler `window.localStorage` pode lançar erro (arquivo local
      com cookies bloqueados, aba anônima de alguns navegadores).
      --------------------------------------------------------------------- */
-  function armazem(qual) {
-    try { return window[qual] || null; } catch (err) { falhouArmazem(); return null; }
-  }
-  function le(qual, chave) {
-    try { var a = armazem(qual); return a ? a.getItem(chave) : null; }
-    catch (err) { falhouArmazem(); return null; }
-  }
-  function grava(qual, chave, valor) {
-    try { var a = armazem(qual); if (!a) return false; a.setItem(chave, valor); return true; }
-    catch (err) { falhouArmazem(); return false; }
-  }
-  function remove(qual, chave) {
-    try { var a = armazem(qual); if (a) a.removeItem(chave); }
-    catch (err) { falhouArmazem(); }
-  }
-  function chaves(qual) {
-    try {
-      var a = armazem(qual), out = [];
-      if (!a) return out;
-      for (var i = 0; i < a.length; i++) out.push(a.key(i));
-      return out;
-    } catch (err) { falhouArmazem(); return []; }
-  }
+  var armazenamento = MapCore.criaArmazem(function () { falhouArmazem(); });
+  function le(qual, chave) { return armazenamento.le(qual, chave); }
+  function grava(qual, chave, valor) { return armazenamento.grava(qual, chave, valor); }
+  function remove(qual, chave) { armazenamento.remove(qual, chave); }
+  function chaves(qual) { return armazenamento.chaves(qual); }
   function falhouArmazem() {
     if (!S.armazemOk) return;
     S.armazemOk = false;
     avisa("Este navegador não deixou salvar as anotações: use Exportar para guardá-las.");
   }
 
-  function lerJson(texto) {
-    if (!texto) return null;
-    try { return JSON.parse(texto); } catch (err) { return null; }
-  }
+  var lerJson = MapCore.lerJson;
 
   /* ---------------------------------------------------------------------
      Projeção. A mesma conta do resto do projeto, nos dois sentidos.
      --------------------------------------------------------------------- */
-  function jogoParaPixel(x, y) {
-    var r = opts.radar;
-    return [(x - r.origin_x) * r.scale_px_per_unit, (r.origin_y - y) * r.scale_px_per_unit];
-  }
-  function pixelParaJogo(px, py) {
-    var r = opts.radar;
-    return [px / r.scale_px_per_unit + r.origin_x, r.origin_y - py / r.scale_px_per_unit];
-  }
+  function jogoParaPixel(x, y) { return MapCore.jogoParaPixel(opts.radar, x, y); }
+  function pixelParaJogo(px, py) { return MapCore.pixelParaJogo(opts.radar, px, py); }
 
   /** Ponteiro na tela -> pixel do radar, desfazendo o tamanho na tela, o zoom e
       o pan. A caixa é a do MAPA: a camada é posicionada exatamente sobre ela. */
-  function eventoParaPixel(e) {
-    var caixa = cv.getBoundingClientRect();
-    var k = opts.radar.width / caixa.width;
-    var px = (e.clientX - caixa.left) * k;
-    var py = (e.clientY - caixa.top) * k;
-    return [(px - S.view.panX) / S.view.zoom, (py - S.view.panY) / S.view.zoom];
-  }
+  function eventoParaPixel(e) { return MapCore.eventoParaPixel(cv, opts.radar, e, S.view); }
 
   // Uma casa decimal de unidade de jogo: 0,1u é muito abaixo de um pixel do
   // radar, e o arquivo exportado fica com metade do tamanho.
@@ -197,11 +161,7 @@ window.MapAnnotations = (function () {
       O desenho acontece sempre em pixels do RADAR; a escala até a resolução
       interna do canvas entra aqui. É isso que deixa a resolução do canvas
       acompanhar a tela sem que nada no template precise saber disso. */
-  function applyView(ctx) {
-    var base = opts ? ctx.canvas.width / opts.radar.width : 1;
-    var z = base * S.view.zoom;
-    ctx.setTransform(z, 0, 0, z, base * S.view.panX, base * S.view.panY);
-  }
+  function applyView(ctx) { MapCore.applyView(ctx, opts ? opts.radar : null, S.view); }
 
   /* ---------------------------------------------------------------------
      Modelo e persistência
@@ -362,69 +322,7 @@ window.MapAnnotations = (function () {
   /* ---------------------------------------------------------------------
      Desenho
      --------------------------------------------------------------------- */
-  function caminhoDoTraco(ctx, t) {
-    var p = t.pontos.map(function (g) { return jogoParaPixel(g[0], g[1]); });
-    ctx.lineWidth = t.espessura;
-    ctx.strokeStyle = t.cor;
-    ctx.fillStyle = t.cor;
-    ctx.lineJoin = "round";
-    ctx.lineCap = "round";
-
-    if (t.ferramenta === "texto") {
-      ctx.font = (t.espessura * 5 + 10) + "px 'DM Sans', system-ui, sans-serif";
-      ctx.textBaseline = "middle";
-      ctx.fillText(t.texto || "", p[0][0], p[0][1]);
-      return;
-    }
-
-    var a = p[0], b = p[p.length - 1];
-    ctx.beginPath();
-    if (t.ferramenta === "caneta") {
-      if (p.length === 1) {
-        // clique seco com a caneta é um ponto, e ponto também é anotação
-        ctx.arc(a[0], a[1], t.espessura / 2, 0, Math.PI * 2);
-        ctx.fill();
-        return;
-      }
-      // Curva pelos pontos médios: a mão livre sai lisa, sem o serrilhado de
-      // ligar amostra com amostra em linha reta.
-      ctx.moveTo(p[0][0], p[0][1]);
-      for (var i = 1; i < p.length - 1; i++) {
-        var mx = (p[i][0] + p[i + 1][0]) / 2, my = (p[i][1] + p[i + 1][1]) / 2;
-        ctx.quadraticCurveTo(p[i][0], p[i][1], mx, my);
-      }
-      ctx.lineTo(b[0], b[1]);
-      ctx.stroke();
-      return;
-    }
-    if (p.length < 2) return;
-    if (t.ferramenta === "linha") {
-      ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
-    } else if (t.ferramenta === "seta") {
-      desenhaSeta(ctx, a, b, t.espessura);
-    } else if (t.ferramenta === "retangulo") {
-      ctx.rect(a[0], a[1], b[0] - a[0], b[1] - a[1]); ctx.stroke();
-    } else if (t.ferramenta === "elipse") {
-      var cx = (a[0] + b[0]) / 2, cy = (a[1] + b[1]) / 2;
-      ctx.ellipse(cx, cy, Math.abs(b[0] - a[0]) / 2, Math.abs(b[1] - a[1]) / 2, 0, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-  }
-
-  /** A seta é ferramenta de primeira classe, não linha com enfeite: a cabeça
-      cresce com a espessura e fica sólida, para a leitura funcionar de longe. */
-  function desenhaSeta(ctx, a, b, esp) {
-    var ang = Math.atan2(b[1] - a[1], b[0] - a[0]);
-    var cab = Math.max(11, esp * 3.4);
-    var fim = [b[0] - Math.cos(ang) * cab * 0.55, b[1] - Math.sin(ang) * cab * 0.55];
-    ctx.moveTo(a[0], a[1]); ctx.lineTo(fim[0], fim[1]); ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(b[0], b[1]);
-    ctx.lineTo(b[0] - Math.cos(ang - 0.42) * cab, b[1] - Math.sin(ang - 0.42) * cab);
-    ctx.lineTo(b[0] - Math.cos(ang + 0.42) * cab, b[1] - Math.sin(ang + 0.42) * cab);
-    ctx.closePath();
-    ctx.fill();
-  }
+  function caminhoDoTraco(ctx, t) { MapCore.caminhoDoTraco(ctx, t, opts.radar); }
 
   function visiveis() {
     return tracosDoRound().filter(function (t) {
@@ -615,11 +513,7 @@ window.MapAnnotations = (function () {
       neste projeto (dado em retrato num canvas em paisagem), e esticar é
       exatamente o que produz aquilo. Mesma conta de
       metrics/annotations.caixa_do_mapa. */
-  function caixaDoMapa(dispW, dispH) {
-    var w = opts.radar.width, h = opts.radar.height;
-    var escala = Math.min(dispW / w, dispH / h);
-    return { largura: w * escala, altura: h * escala, escala: escala };
-  }
+  function caixaDoMapa(dispW, dispH) { return MapCore.caixaDoMapa(opts.radar, dispW, dispH); }
 
   /** Reprojeta e redesenha TUDO.
 
@@ -630,7 +524,6 @@ window.MapAnnotations = (function () {
       próximo quadro que, com o replay pausado, não vem nunca. */
   function reprojetaTudo() {
     if (!S.pronto) return;
-    var RW = opts.radar.width, RH = opts.radar.height;
 
     // Em tela cheia o tamanho na tela é decidido aqui, pela caixa que preserva
     // a proporção; fora dela, o CSS da página decide.
@@ -649,12 +542,11 @@ window.MapAnnotations = (function () {
     // novo quando ela aparecer.
     if (!larguraCss || !alturaCss) return;
 
-    // Resolução INTERNA = tamanho na tela x densidade de pixels, senão mapa e
-    // traços saem borrados em tela de alta densidade -- e o traço fino é o
-    // primeiro a sofrer. A altura sai da largura para a proporção ser exata.
+    // Resolução INTERNA = tamanho na tela x densidade de pixels, com teto
+    // (MapCore.tamanhoInterno).
     var dpr = window.devicePixelRatio || 1;
-    var w = Math.max(1, Math.min(MAX_LADO_INTERNO, Math.round(larguraCss * dpr)));
-    var h = Math.max(1, Math.round(w * RH / RW));
+    var tam = MapCore.tamanhoInterno(opts.radar, larguraCss, dpr);
+    var w = tam.w, h = tam.h;
     [cv, camada, rascunho].forEach(function (c) {
       if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
     });
@@ -680,12 +572,8 @@ window.MapAnnotations = (function () {
 
   // Vários gatilhos podem disparar no mesmo quadro (resize + observador de
   // tamanho + tela cheia); junta todos numa reprojeção só, depois do layout.
-  var reprojecaoPedida = false;
-  function pedeReprojecao() {
-    if (reprojecaoPedida) return;
-    reprojecaoPedida = true;
-    requestAnimationFrame(function () { reprojecaoPedida = false; reprojetaTudo(); });
-  }
+  var reprojecaoAgrupada = MapCore.agrupaPorQuadro(function () { reprojetaTudo(); });
+  function pedeReprojecao() { reprojecaoAgrupada(); }
 
   /** Mudança de densidade de pixel (arrastar a janela para outro monitor, zoom
       do navegador) não dispara `resize` em todo navegador. A media query da
@@ -707,24 +595,10 @@ window.MapAnnotations = (function () {
      Zoom e pan
      --------------------------------------------------------------------- */
   function aplicaZoom(novo, centroX, centroY) {
-    var z0 = S.view.zoom;
-    var z = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, novo));
-    if (z === z0) return;
-    // mantém o ponto sob o cursor parado enquanto o zoom muda
-    S.view.panX = centroX - (centroX - S.view.panX) * (z / z0);
-    S.view.panY = centroY - (centroY - S.view.panY) * (z / z0);
-    S.view.zoom = z;
-    limitaPan();
-    pedeRedesenho();
+    if (MapCore.aplicaZoom(S.view, opts.radar, novo, centroX, centroY)) pedeRedesenho();
   }
 
-  /** Impede que o mapa escape da área visível. Sem isso dá para arrastar o
-      mapa para fora e ficar olhando para o vazio sem saber como voltar. */
-  function limitaPan() {
-    var W = opts.radar.width, H = opts.radar.height;
-    S.view.panX = Math.min(0, Math.max(W - W * S.view.zoom, S.view.panX));
-    S.view.panY = Math.min(0, Math.max(H - H * S.view.zoom, S.view.panY));
-  }
+  function limitaPan() { MapCore.limitaPan(S.view, opts.radar); }
 
   /** Zoom e pan não mudam tamanho de canvas, só a transformação: basta
       redesenhar, sem reprojetar. */
@@ -783,19 +657,9 @@ window.MapAnnotations = (function () {
   /* ---------------------------------------------------------------------
      Tela cheia
      --------------------------------------------------------------------- */
-  function emTelaCheia() {
-    return !!opts && (document.fullscreenElement === opts.palco ||
-                      document.webkitFullscreenElement === opts.palco);
-  }
+  function emTelaCheia() { return !!opts && MapCore.emTelaCheia(opts.palco); }
 
-  function alternaTelaCheia() {
-    if (emTelaCheia()) {
-      (document.exitFullscreen || document.webkitExitFullscreen).call(document);
-    } else {
-      var el = opts.palco;
-      (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
-    }
-  }
+  function alternaTelaCheia() { MapCore.alternaTelaCheia(opts.palco); }
 
   var timerRecuo = null;
   function acordaControles() {
@@ -862,317 +726,30 @@ window.MapAnnotations = (function () {
      Cor: bolinha com a cor atual, setinha que abre o seletor, recentes.
      --------------------------------------------------------------------- */
 
-  /** Hex (#rgb, #rrggbb, com ou sem #) ou rgb(r, g, b) -> "#rrggbb", ou null. */
-  function normalizaCor(texto) {
-    var s = String(texto || "").trim().toLowerCase();
-    var m = s.match(/^rgb\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/);
-    if (m) return deRgb(Number(m[1]), Number(m[2]), Number(m[3]));
-    if (s.charAt(0) === "#") s = s.slice(1);
-    if (/^[0-9a-f]{3}$/.test(s)) s = s.charAt(0) + s.charAt(0) + s.charAt(1) + s.charAt(1) + s.charAt(2) + s.charAt(2);
-    return /^[0-9a-f]{6}$/.test(s) ? "#" + s : null;
-  }
-  function deRgb(r, g, b) {
-    if ([r, g, b].some(function (v) { return !isFinite(v) || v < 0 || v > 255 || v !== Math.floor(v); })) return null;
-    return "#" + [r, g, b].map(function (v) { return (v < 16 ? "0" : "") + v.toString(16); }).join("");
-  }
-  function paraRgb(hex) {
-    return [1, 3, 5].map(function (i) { return parseInt(hex.slice(i, i + 2), 16); });
-  }
+  var normalizaCor = MapCore.normalizaCor;
+  var botao = MapCore.botao;
 
-  /** HSV é o espaço do seletor visual: a matiz é a barra do arco-íris, e
-      saturação x brilho é o quadrado. h em graus, s e v de 0 a 1. */
-  function deHsv(h, sat, v) {
-    var f = function (n) {
-      var k = (n + h / 60) % 6;
-      return v - v * sat * Math.max(0, Math.min(k, 4 - k, 1));
-    };
-    return deRgb(Math.round(f(5) * 255), Math.round(f(3) * 255), Math.round(f(1) * 255));
-  }
-  function paraHsv(hex) {
-    var c = paraRgb(hex).map(function (x) { return x / 255; });
-    var max = Math.max(c[0], c[1], c[2]), min = Math.min(c[0], c[1], c[2]), d = max - min;
-    var h = 0;
-    if (d) {
-      if (max === c[0]) h = ((c[1] - c[2]) / d) % 6;
-      else if (max === c[1]) h = (c[2] - c[0]) / d + 2;
-      else h = (c[0] - c[1]) / d + 4;
-      h = (h * 60 + 360) % 360;
+  // O seletor escreve direto no S desta camada (cor, recentes, corPendente,
+  // hsv): é o mesmo estado que a barra e os traços leem.
+  var seletor = null;
+  function cores() {
+    if (!seletor) {
+      seletor = MapCore.seletorDeCor({
+        estado: S, armazem: armazenamento, chaveRecentes: CHAVE_RECENTES,
+        maxRecentes: MAX_RECENTES, palco: function () { return opts.palco; },
+        aoMudar: function () { atualizaBotoes(); }
+      });
     }
-    return { h: h, s: max ? d / max : 0, v: max };
+    return seletor;
   }
-
-  function aplicaCor(hex) {
-    var cor = normalizaCor(hex);
-    if (!cor) return;
-    S.cor = cor;
-    S.recentes = [cor].concat(S.recentes.filter(function (c) { return c !== cor; })).slice(0, MAX_RECENTES);
-    grava("localStorage", CHAVE_RECENTES, JSON.stringify(S.recentes));
-    atualizaBotoes();
-  }
-
-  function seletorAberto() {
-    var pop = document.getElementById("anot-seletor");
-    return !!pop && !pop.hidden;
-  }
-
-  function abreSeletor() {
-    var pop = document.getElementById("anot-seletor");
-    S.corPendente = S.cor;
-    sincronizaSeletor(null);
-    pop.hidden = false;
-    posicionaSeletor(pop);
-    document.getElementById("anot-cor-seta").setAttribute("aria-expanded", "true");
-    // sem rolar: o painel tem overflow escondido, e focar algo que passa da
-    // borda faria o navegador deslizar a barra inteira para o lado
-    document.getElementById("anot-cor-sv").focus({ preventScroll: true });
-  }
-
-  /** O seletor abre para baixo da bolinha, mas nunca para fora do painel: a
-      bolinha pode estar perto da borda direita dependendo da largura da tela. */
-  function posicionaSeletor(pop) {
-    var MARGEM = 8;
-    pop.style.left = "0px";
-    var r = pop.getBoundingClientRect(), lim = opts.palco.getBoundingClientRect();
-    var desloca = 0;
-    if (r.right > lim.right - MARGEM) desloca = lim.right - MARGEM - r.right;
-    if (r.left + desloca < lim.left + MARGEM) desloca = lim.left + MARGEM - r.left;
-    pop.style.left = desloca + "px";
-  }
-
-  /** Fechar o seletor APLICA a cor escolhida: à bolinha e aos PRÓXIMOS traços.
-      Traço já feito guarda a própria cor e não muda. */
-  function fechaSeletor() {
-    if (!seletorAberto()) return;
-    document.getElementById("anot-seletor").hidden = true;
-    document.getElementById("anot-cor-seta").setAttribute("aria-expanded", "false");
-    if (S.corPendente) aplicaCor(S.corPendente);
-    S.corPendente = null;
-  }
-
-  /** Mantém o seletor igual à cor pendente. `origem` diz de onde veio a
-      mudança: o campo que o usuário está digitando não é reescrito (senão o
-      cursor pula), e a posição HSV não é recalculada a partir do hex quando foi
-      ela que mudou -- num cinza a matiz não existe no hex, e a barra pularia
-      para o vermelho. */
-  function sincronizaSeletor(origem) {
-    var cor = S.corPendente || S.cor;
-    if (origem !== "sv" && origem !== "matiz") S.hsv = paraHsv(cor);
-    var hsv = S.hsv;
-
-    var sv = document.getElementById("anot-cor-sv");
-    sv.style.backgroundColor = deHsv(hsv.h, 1, 1);
-    var alca = document.getElementById("anot-cor-sv-alca");
-    alca.style.left = (hsv.s * 100) + "%";
-    alca.style.top = ((1 - hsv.v) * 100) + "%";
-    alca.style.background = cor;
-    sv.setAttribute("aria-valuetext", "saturação " + Math.round(hsv.s * 100) +
-                    "%, brilho " + Math.round(hsv.v * 100) + "%");
-    var matiz = document.getElementById("anot-cor-matiz");
-    document.getElementById("anot-cor-matiz-alca").style.left = (hsv.h / 360 * 100) + "%";
-    matiz.setAttribute("aria-valuenow", String(Math.round(hsv.h)));
-
-    document.getElementById("anot-cor-amostra").style.background = cor;
-    var hex = document.getElementById("anot-cor-hex");
-    if (origem !== "hex") { hex.value = cor; hex.removeAttribute("aria-invalid"); }
-  }
-
-  /** Arrastar dentro de uma área (quadrado ou barra) com o mesmo código para
-      mouse, toque e caneta. `aoMover` recebe a posição relativa, de 0 a 1. */
-  function arrastavel(el, aoMover) {
-    var ativo = false;
-    function posicao(e) {
-      var r = el.getBoundingClientRect();
-      aoMover(Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)),
-              Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)));
-    }
-    el.addEventListener("pointerdown", function (e) {
-      ativo = true;
-      el.setPointerCapture(e.pointerId);
-      posicao(e);
-      e.preventDefault();
-    });
-    el.addEventListener("pointermove", function (e) { if (ativo) posicao(e); });
-    el.addEventListener("pointerup", function () { ativo = false; });
-    el.addEventListener("pointercancel", function () { ativo = false; });
-  }
-
-  function montaCor() {
-    var grupo = document.createElement("div");
-    grupo.className = "anot-grupo anot-cor";
-    grupo.id = "anot-cor";
-
-    var bolinha = botao("", "Cor atual (clique para escolher outra)", function () {
-      if (seletorAberto()) fechaSeletor(); else abreSeletor();
-    }, "anot-bolinha");
-    bolinha.className = "anot-bolinha";
-    bolinha.id = "anot-cor-atual";
-    grupo.appendChild(bolinha);
-
-    var seta = botao("▾", "Escolher cor", function () {
-      if (seletorAberto()) fechaSeletor(); else abreSeletor();
-    }, "anot-seta");
-    seta.id = "anot-cor-seta";
-    seta.setAttribute("aria-haspopup", "dialog");
-    seta.setAttribute("aria-expanded", "false");
-    grupo.appendChild(seta);
-
-    var recentes = document.createElement("div");
-    recentes.className = "anot-recentes";
-    recentes.id = "anot-recentes";
-    recentes.setAttribute("role", "group");
-    recentes.setAttribute("aria-label", "Cores usadas recentemente");
-    grupo.appendChild(recentes);
-
-    var pop = document.createElement("div");
-    pop.className = "anot-seletor";
-    pop.id = "anot-seletor";
-    pop.hidden = true;
-    pop.setAttribute("role", "dialog");
-    pop.setAttribute("aria-label", "Escolher cor");
-
-    function entrada(tipo, id) {
-      var i = document.createElement("input");
-      i.type = tipo;
-      i.id = id;
-      i.spellcheck = false;
-      i.autocomplete = "off";
-      return i;
-    }
-
-    // O ESPECTRO é o seletor: um quadrado de saturação x brilho sobre a matiz
-    // escolhida na barra do arco-íris. Clicar ou arrastar escolhe a cor vendo a
-    // cor -- o código hex fica embaixo, só para quem quiser colar um valor.
-    function mudaHsv(origem) {
-      S.corPendente = deHsv(S.hsv.h, S.hsv.s, S.hsv.v);
-      sincronizaSeletor(origem);
-    }
-
-    var sv = document.createElement("div");
-    sv.className = "anot-sv";
-    sv.id = "anot-cor-sv";
-    sv.tabIndex = 0;
-    sv.setAttribute("role", "slider");
-    sv.setAttribute("aria-label", "Saturação e brilho");
-    var svAlca = document.createElement("div");
-    svAlca.className = "anot-sv-alca";
-    svAlca.id = "anot-cor-sv-alca";
-    sv.appendChild(svAlca);
-    arrastavel(sv, function (x, y) { S.hsv.s = x; S.hsv.v = 1 - y; mudaHsv("sv"); });
-    sv.addEventListener("keydown", function (e) {
-      var passo = e.shiftKey ? 0.1 : 0.02;
-      var d = { ArrowLeft: [-passo, 0], ArrowRight: [passo, 0], ArrowUp: [0, passo], ArrowDown: [0, -passo] }[e.key];
-      if (!d) return;
-      e.preventDefault();
-      S.hsv.s = Math.min(1, Math.max(0, S.hsv.s + d[0]));
-      S.hsv.v = Math.min(1, Math.max(0, S.hsv.v + d[1]));
-      mudaHsv("sv");
-    });
-    pop.appendChild(sv);
-
-    var matiz = document.createElement("div");
-    matiz.className = "anot-matiz";
-    matiz.id = "anot-cor-matiz";
-    matiz.tabIndex = 0;
-    matiz.setAttribute("role", "slider");
-    matiz.setAttribute("aria-label", "Matiz");
-    matiz.setAttribute("aria-valuemin", "0");
-    matiz.setAttribute("aria-valuemax", "360");
-    var matizAlca = document.createElement("div");
-    matizAlca.className = "anot-matiz-alca";
-    matizAlca.id = "anot-cor-matiz-alca";
-    matiz.appendChild(matizAlca);
-    arrastavel(matiz, function (x) {
-      S.hsv.h = Math.min(359.9, x * 360);
-      // escolher a matiz num cinza não mostraria cor nenhuma: leva para a
-      // cor cheia, que é o que quem clicou no arco-íris quer ver
-      if (S.hsv.s < 0.05 || S.hsv.v < 0.05) { S.hsv.s = 1; S.hsv.v = 1; }
-      mudaHsv("matiz");
-    });
-    matiz.addEventListener("keydown", function (e) {
-      var d = { ArrowLeft: -1, ArrowRight: 1 }[e.key];
-      if (!d) return;
-      e.preventDefault();
-      S.hsv.h = (S.hsv.h + d * (e.shiftKey ? 30 : 5) + 360) % 360;
-      mudaHsv("matiz");
-    });
-    pop.appendChild(matiz);
-
-    var linha = document.createElement("div");
-    linha.className = "anot-cor-linha";
-    var amostra = document.createElement("span");
-    amostra.className = "anot-amostra";
-    amostra.id = "anot-cor-amostra";
-    amostra.setAttribute("aria-hidden", "true");
-    linha.appendChild(amostra);
-    var hex = entrada("text", "anot-cor-hex");
-    hex.maxLength = 22;
-    hex.setAttribute("aria-label", "Código da cor (hex ou rgb)");
-    hex.placeholder = "#eb6834";
-    hex.addEventListener("input", function () {
-      var cor = normalizaCor(hex.value);
-      if (!cor) { hex.setAttribute("aria-invalid", "true"); return; }
-      hex.removeAttribute("aria-invalid");
-      S.corPendente = cor;
-      sincronizaSeletor("hex");
-    });
-    linha.appendChild(hex);
-    pop.appendChild(linha);
-
-    var ok = botao("Aplicar", "Aplicar a cor e fechar", fechaSeletor, "principal");
-    pop.appendChild(ok);
-
-    // Enter em qualquer campo fecha e aplica, como o botão
-    pop.addEventListener("keydown", function (e) {
-      if (e.key === "Enter") { e.preventDefault(); fechaSeletor(); }
-    });
-    grupo.appendChild(pop);
-
-    // Clique fora do seletor fecha (e aplica). Em captura, para funcionar
-    // mesmo quando o clique cai num elemento que interrompe a propagação.
-    document.addEventListener("pointerdown", function (e) {
-      if (seletorAberto() && !grupo.contains(e.target)) fechaSeletor();
-    }, true);
-
-    return grupo;
-  }
-
-  function atualizaCores() {
-    var atual = document.getElementById("anot-cor-atual");
-    if (atual) {
-      atual.style.background = S.cor;
-      atual.dataset.cor = S.cor;
-      atual.setAttribute("aria-label", "Cor atual " + S.cor + " (clique para escolher outra)");
-    }
-    var host = document.getElementById("anot-recentes");
-    if (!host) return;
-    // só redesenha a fileira se ela mudou, para não perder o foco do teclado
-    var assinatura = S.recentes.join(",");
-    if (host.dataset.assinatura === assinatura) return;
-    host.dataset.assinatura = assinatura;
-    host.innerHTML = "";
-    S.recentes.forEach(function (cor) {
-      var b = botao("", "Usar " + cor, function () { aplicaCor(cor); }, "anot-recente");
-      b.className = "anot-recente";
-      b.style.background = cor;
-      b.dataset.recente = cor;
-      host.appendChild(b);
-    });
-  }
+  function seletorAberto() { return cores().seletorAberto(); }
+  function fechaSeletor() { cores().fechaSeletor(); }
+  function montaCor() { return cores().montaCor(); }
+  function atualizaCores() { cores().atualizaCores(); }
 
   /* ---------------------------------------------------------------------
      Barra de ferramentas
      --------------------------------------------------------------------- */
-  function botao(texto, titulo, aoClicar, classe) {
-    var b = document.createElement("button");
-    b.type = "button";
-    b.className = "anot-b" + (classe ? " " + classe : "");
-    b.textContent = texto;
-    b.title = titulo;
-    b.setAttribute("aria-label", titulo);
-    b.addEventListener("click", aoClicar);
-    return b;
-  }
-
   function grupo(id, sempre) {
     var g = document.createElement("div");
     g.className = "anot-grupo" + (sempre ? " sempre" : "");

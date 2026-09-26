@@ -1175,6 +1175,10 @@
 <script id="replay" type="application/json">/*__REPLAY__*/</script>
 <script id="breakdown" type="application/json">/*__BREAKDOWN__*/</script>
 <script>window.__RADAR__ = /*__RADAR__*/null;</script>
+<!-- dashboard/web/map_core.js, injetado pelo build: projecao, zoom, simbolo
+     de granada e desenho do jogador, compartilhados com a anotacao e a
+     prancheta. -->
+<script>/*__MAP_CORE__*/</script>
 <!-- dashboard/web/annotations.js, injetado pelo build. Fica em arquivo
      separado no repositorio: o template ja esta grande demais e a camada de
      desenho nao tem nada a ver com o resto da pagina. -->
@@ -1348,7 +1352,7 @@
     }
   }
 
-  var NADE_COLOR = { smoke: "#9fb0c2", molotov: "#eb6834", he: "#d1495b", flash: "#e8b53a", decoy: "#7d8a99" };
+  var NADE_COLOR = MapCore.NADE_COLOR;
 
   // Quadros que a marca de detonação leva pra abrir e sumir (4 Hz -> 1,5s).
   var POP_FRAMES = 6;
@@ -1357,98 +1361,9 @@
   // Estouro (POP_FRAMES) + cicatriz, que fica depois pra você achar o lugar.
   var POP_TOTAL = POP_FRAMES + 12;
 
-  // Símbolo de cada tipo de granada. A forma é o que permite ler o mapa sem
-  // consultar a legenda, e é o que sobrevive a daltonismo — cor sozinha não é.
-  // Cada forma remete ao efeito: smoke é a área que ela vira, flash é o estouro,
-  // HE é o fragmento, molotov é a gota que espalha fogo.
-  // `ang` gira o símbolo na direção do voo. Só é usado nos que têm frente
-  // (molotov e HE); estrela e nuvem não têm, e girá-las só criaria tremor.
-  function nadeGlyph(ctx, kind, x, y, r, col, ang) {
-    ctx.save();
-    ctx.translate(x, y);
-
-    // Contorno escuro por baixo do claro: o radar tem áreas claras E escuras, e
-    // um traço branco sozinho sumia sobre o concreto claro da Mirage.
-    ctx.shadowColor = "rgba(10,16,24,0.55)";
-    ctx.shadowBlur = 3;
-    ctx.fillStyle = col;
-    ctx.strokeStyle = "rgba(255,255,255,0.95)";
-    ctx.lineWidth = 1.2;
-    ctx.lineJoin = "round";
-
-    if (kind === "flash") {
-      // Estrela de quatro pontas com um núcleo claro: o estouro tem centro, e o
-      // núcleo é o que a distingue do serrilhado da HE quando as duas estão
-      // pequenas na tela.
-      ctx.beginPath();
-      for (var i = 0; i < 8; i++) {
-        var a1 = (Math.PI / 4) * i - Math.PI / 2;
-        var rad = i % 2 === 0 ? r * 1.55 : r * 0.42;
-        var px = Math.cos(a1) * rad, py = Math.sin(a1) * rad;
-        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-      }
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-      ctx.beginPath();
-      ctx.arc(0, 0, r * 0.3, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(255,255,255,0.95)";
-      ctx.fill();
-    } else if (kind === "he") {
-      // Anel serrilhado, VAZADO. Cheio virava uma bolota no tamanho em que ela
-      // aparece; vazado lê como fragmento e deixa o mapa aparecer por dentro.
-      ctx.beginPath();
-      for (var j = 0; j < 14; j++) {
-        var a2 = (Math.PI / 7) * j - Math.PI / 2 + (ang || 0);
-        var r2 = j % 2 === 0 ? r * 1.2 : r * 0.72;
-        var qx = Math.cos(a2) * r2, qy = Math.sin(a2) * r2;
-        if (j === 0) ctx.moveTo(qx, qy); else ctx.lineTo(qx, qy);
-      }
-      ctx.closePath();
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = col;
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-      ctx.lineWidth = 0.9;
-      ctx.strokeStyle = "rgba(255,255,255,0.85)";
-      ctx.stroke();
-    } else if (kind === "molotov") {
-      // Gota com a ponta na direção do voo: é o único tipo em que a orientação
-      // diz alguma coisa, porque ele espalha fogo para onde caiu.
-      ctx.rotate((ang || 0) + Math.PI / 2);
-      ctx.beginPath();
-      ctx.moveTo(0, -r * 1.5);
-      ctx.quadraticCurveTo(r * 0.95, -r * 0.15, 0, r * 1.0);
-      ctx.quadraticCurveTo(-r * 0.95, -r * 0.15, 0, -r * 1.5);
-      ctx.fill();
-      ctx.stroke();
-    } else if (kind === "decoy") {
-      // Quadrado vazado com um ponto no meio: é o único que não faz nada, e o
-      // "oco com miolo" lê como imitação de granada.
-      ctx.beginPath();
-      ctx.rect(-r * 0.82, -r * 0.82, r * 1.64, r * 1.64);
-      ctx.lineWidth = 1.8;
-      ctx.strokeStyle = col;
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-      ctx.beginPath();
-      ctx.arc(0, 0, r * 0.26, 0, Math.PI * 2);
-      ctx.fillStyle = col;
-      ctx.fill();
-    } else {
-      // Smoke: silhueta de nuvem, três arcos. O círculo de antes era a mesma
-      // forma do vulto do jogador, e num mapa cheio os dois se confundiam.
-      ctx.beginPath();
-      ctx.arc(-r * 0.52, r * 0.12, r * 0.62, 0, Math.PI * 2);
-      ctx.arc(r * 0.52, r * 0.12, r * 0.62, 0, Math.PI * 2);
-      ctx.arc(0, -r * 0.3, r * 0.78, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-    }
-
-    ctx.restore();
-  }
+  // Símbolo de cada tipo de granada: vive em map_core.js, que a prancheta
+  // também usa.
+  var nadeGlyph = MapCore.nadeGlyph;
 
   var rounds = R.rounds;
   var cur = rounds[0];
@@ -1900,10 +1815,10 @@
     ctx.drawImage(plates[lvNow] || plates[0], 0, 0);
 
     // Smoke e Molotov ocupam área, então são desenhados como zona e não como
-    // ponto. O raio segue o raio real de efeito no jogo, convertido pela mesma
-    // escala do radar.
-    var SMOKE_R = 144 * RAD.scale_px_per_unit;
-    var FIRE_R = 120 * RAD.scale_px_per_unit;
+    // ponto. O raio segue o raio real de efeito no jogo (constantes do
+    // map_core.js), convertido pela mesma escala do radar.
+    var SMOKE_R = MapCore.RAIO_SMOKE_UNIDADES * RAD.scale_px_per_unit;
+    var FIRE_R = MapCore.RAIO_MOLOTOV_UNIDADES * RAD.scale_px_per_unit;
 
     cur.smokes.forEach(function (z) {
       if (pos < z.f0 || pos > z.f1) return;
@@ -2151,79 +2066,17 @@
       var X = mx(sp[0]);
       var Y = my(sp[1]);
       var color = p.side === "ct" ? C.ct : C.t;
-
-      if (!alive) {
-        ctx.globalAlpha = 0.5;
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 1.6;
-        ctx.beginPath();
-        ctx.moveTo(X - 3.5, Y - 3.5); ctx.lineTo(X + 3.5, Y + 3.5);
-        ctx.moveTo(X + 3.5, Y - 3.5); ctx.lineTo(X - 3.5, Y + 3.5);
-        ctx.stroke();
-        ctx.globalAlpha = 1;
-        return;
-      }
-
-      // Jogador em outro andar. Sem essa distinção, na Nuke um CT no B e um T
-      // no A aparecem colados no mesmo ponto do mapa 2D, como se estivessem se
-      // olhando — quando na verdade há uma laje entre os dois.
+      // Morto, em outro andar ou vivo: o desenho de cada caso está em
+      // MapCore.desenhaJogador (a prancheta usa o mesmo).
       var pLv = p.lv ? p.lv[i0] : 0;
-      if (pLv !== lvNow) {
-        ctx.globalAlpha = 0.5;
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.arc(X, Y, 5.5, 0, Math.PI * 2); ctx.stroke();
-        // seta indicando se está acima ou abaixo do andar mostrado
-        ctx.fillStyle = color;
-        ctx.font = "700 9px 'DM Mono', ui-monospace, monospace";
-        ctx.textAlign = "center";
-        ctx.fillText(pLv > lvNow ? "▼" : "▲", X, Y + 3);
-        ctx.globalAlpha = 1;
-        return;
-      }
-
-      ctx.save();
-      ctx.shadowColor = "rgba(8,12,18,0.55)";
-      ctx.shadowBlur = 6;
-      ctx.shadowOffsetY = 1;
-      ctx.fillStyle = "#fff";
-      ctx.beginPath(); ctx.arc(X, Y, 8.2, 0, Math.PI * 2); ctx.fill();
-      ctx.restore();
-
-      ctx.fillStyle = color;
-      ctx.beginPath(); ctx.arc(X, Y, 6, 0, Math.PI * 2); ctx.fill();
-
-      // Cegueira: é o estado que explica por que um jogador parou de mirar, ou
-      // andou pra frente sem reagir. Sem marcar isso no mapa, a sequência mais
-      // comum do CS (flash entra, time entra atrás) fica sem causa visível.
-      var bl = blindLeft(p.name, i0);
-      if (bl > 0) {
-        ctx.strokeStyle = NADE_COLOR.flash;
-        ctx.globalAlpha = 0.9;
-        ctx.lineWidth = 2.2;
-        ctx.setLineDash([3, 3]);
-        ctx.beginPath(); ctx.arc(X, Y, 12.5, 0, Math.PI * 2); ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.globalAlpha = 1;
-      }
-
-      // anel de vida: encolhe conforme o jogador toma dano
-      var hp = Math.max(0, Math.min(100, p.hp[i0])) / 100;
-      if (hp < 1) {
-        ctx.strokeStyle = "#fff";
-        ctx.lineWidth = 2.4;
-        ctx.beginPath();
-        ctx.arc(X, Y, 10.4, -Math.PI / 2, -Math.PI / 2 + hp * Math.PI * 2);
-        ctx.stroke();
-      }
-
-      ctx.font = "500 12px 'DM Mono', ui-monospace, monospace";
-      ctx.textAlign = "center";
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = "rgba(14,20,27,0.85)";
-      ctx.strokeText(p.name.slice(0, 9), X, Y - 14);
-      ctx.fillStyle = "#eef2f7";
-      ctx.fillText(p.name.slice(0, 9), X, Y - 14);
+      MapCore.desenhaJogador(ctx, X, Y, {
+        cor: color,
+        estado: !alive ? "morto" : (pLv !== lvNow ? "outro_andar" : "vivo"),
+        acima: pLv > lvNow,
+        cego: alive && pLv === lvNow && blindLeft(p.name, i0) > 0,
+        hp: p.hp[i0],
+        nome: p.name
+      });
     });
 
     // estado da interface

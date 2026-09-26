@@ -1,0 +1,93 @@
+{
+ "titulo": "Fixture v1: execução B",
+ "passos": [
+  {
+   "passo": "d8e4a52b9ab94754aec551bd01b5da39",
+   "titulo": "posições"
+  },
+  {
+   "passo": "f6bde6cf7cda45b7b5b7e007d5a7d5a8",
+   "titulo": "entrada"
+  }
+ ],
+ "pecas": {
+  "e1df90422da94cfdb0b21044e81420b4": {
+   "lado": "ct",
+   "rotulo": "1",
+   "posicoes": {
+    "d8e4a52b9ab94754aec551bd01b5da39": [
+     -55.59988839285734,
+     -1973.3999720982142
+    ],
+    "f6bde6cf7cda45b7b5b7e007d5a7d5a8": [
+     -414.0000697544647,
+     -1358.9998604910716
+    ]
+   }
+  },
+  "b615c40342d4419a86e37585d4e61138": {
+   "lado": "t",
+   "rotulo": "1",
+   "posicoes": {
+    "d8e4a52b9ab94754aec551bd01b5da39": [
+     -1437.999965122768,
+     177.00006975446422
+    ]
+   }
+  }
+ },
+ "granadas": {
+  "fd05f052c61e44df89b298cfb50a4b14": {
+   "arma": "smoke",
+   "passo": "f6bde6cf7cda45b7b5b7e007d5a7d5a8",
+   "origem": [
+    -511.3,
+    -668.95
+   ],
+   "destino": [
+    -726.7,
+    -957.4
+   ],
+   "arremesso": {
+    "id": "match_20:5:356",
+    "arma": "smoke",
+    "origem": [
+     -511.3,
+     -668.95,
+     -272.17
+    ],
+    "destino": [
+     -726.7,
+     -957.4,
+     -214.2
+    ],
+    "pitch": 4.59,
+    "yaw": -127.12,
+    "comando": "setpos -511.30 -668.95 -272.17; setang 4.59 -127.12 0",
+    "forca": "força D",
+    "botao": null,
+    "velocidade": 674,
+    "postura": "em pé",
+    "movimento": "correndo",
+    "no_ar": false,
+    "jogador": "kyxsan",
+    "partida": "match_20",
+    "round": 5,
+    "segundos_no_round": 69.6
+   }
+  },
+  "75e4fff6566c439380ad12902d7f695f": {
+   "arma": "smoke",
+   "passo": "f6bde6cf7cda45b7b5b7e007d5a7d5a8",
+   "origem": [
+    -1437.999965122768,
+    177.00006975446422
+   ],
+   "destino": [
+    -670,
+    -334.99996512276766
+   ],
+   "arremesso": null
+  }
+ }
+}

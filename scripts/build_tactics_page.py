@@ -34,7 +34,7 @@ def mapas_disponiveis() -> list[str]:
 
 def _js(valor) -> str:
     # `</` fechando o <script> no meio de um nome de jogador quebraria a página
-    return json.dumps(valor, ensure_ascii=False, separators=(",", ":")).replace("</", "<\/")
+    return json.dumps(valor, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
 
 
 def build_html(mapa: str, rotulos: dict[str, str] | None = None) -> str:
@@ -47,6 +47,7 @@ def build_html(mapa: str, rotulos: dict[str, str] | None = None) -> str:
     mapas = [{"mapa": m, "nome": rotulos.get(m, m), "arquivo": arquivo_da_pagina(m)} for m in mapas_disponiveis()]
     return (
         (WEB / "tactics.html").read_text(encoding="utf-8")
+        .replace("/*__MAP_CORE__*/", (WEB / "map_core.js").read_text(encoding="utf-8"))
         .replace("/*__TACTICS_JS__*/", (WEB / "tactics.js").read_text(encoding="utf-8"))
         .replace("/*__MAPA__*/null", _js(mapa))
         .replace("/*__RADAR__*/null", _js(radar))

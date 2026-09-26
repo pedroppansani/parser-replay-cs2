@@ -1,0 +1,265 @@
+{
+ "formato": "prancheta-cs2",
+ "versao": 1,
+ "id": "3d9889367655426dbc09871d04c462d3",
+ "mapa": "de_mirage",
+ "criada_por": "anônimo",
+ "criada_em": "2026-09-26T18:14:44.520Z",
+ "calibracao": "2ee75d404e49",
+ "contador": 19,
+ "operacoes": [
+  {
+   "id": "d5e5a675d07a4328b17b09fef05e3c19",
+   "seq": 1,
+   "autor": "anônimo",
+   "em": "2026-09-26T18:14:44.520Z",
+   "tipo": "renomeia",
+   "titulo": "Nova tática"
+  },
+  {
+   "id": "a71942235dc240f4aea585617d3ad0b2",
+   "seq": 2,
+   "autor": "anônimo",
+   "em": "2026-09-26T18:14:44.520Z",
+   "tipo": "cria_passo",
+   "passo": "d8e4a52b9ab94754aec551bd01b5da39",
+   "titulo": ""
+  },
+  {
+   "id": "94add7b887c94437aa0f0c2cf2c51ed5",
+   "seq": 3,
+   "autor": "pedro",
+   "em": "2026-09-26T18:14:44.647Z",
+   "tipo": "renomeia",
+   "titulo": "Fixture v1: execução B"
+  },
+  {
+   "id": "95a6326ca6404a04a60529b25ba68a4d",
+   "seq": 4,
+   "autor": "pedro",
+   "em": "2026-09-26T18:14:44.700Z",
+   "tipo": "cria_peca",
+   "peca": "e1df90422da94cfdb0b21044e81420b4",
+   "lado": "ct",
+   "rotulo": "1",
+   "passo": "d8e4a52b9ab94754aec551bd01b5da39",
+   "x": -55.59988839285734,
+   "y": -1973.3999720982142
+  },
+  {
+   "id": "7e24b876e9044e0f8ca87f826e9953fd",
+   "seq": 5,
+   "autor": "pedro",
+   "em": "2026-09-26T18:14:44.756Z",
+   "tipo": "cria_peca",
+   "peca": "b615c40342d4419a86e37585d4e61138",
+   "lado": "t",
+   "rotulo": "1",
+   "passo": "d8e4a52b9ab94754aec551bd01b5da39",
+   "x": -1437.999965122768,
+   "y": 177.00006975446422
+  },
+  {
+   "id": "26d884f7d6df448ba94c39e3f5695ca2",
+   "seq": 6,
+   "autor": "pedro",
+   "em": "2026-09-26T18:14:44.811Z",
+   "tipo": "cria_peca",
+   "peca": "9db47df631034a34bd469b52a0107390",
+   "lado": "t",
+   "rotulo": "2",
+   "passo": "d8e4a52b9ab94754aec551bd01b5da39",
+   "x": -1694.0000697544642,
+   "y": -334.99996512276766
+  },
+  {
+   "id": "01702a3c4a2646fe9ede4405c162326d",
+   "seq": 7,
+   "autor": "pedro",
+   "em": "2026-09-26T18:14:44.818Z",
+   "tipo": "renomeia_passo",
+   "passo": "d8e4a52b9ab94754aec551bd01b5da39",
+   "titulo": "posições"
+  },
+  {
+   "id": "7f5a99492b8f403c83518b9739f59164",
+   "seq": 8,
+   "autor": "pedro",
+   "em": "2026-09-26T18:14:44.833Z",
+   "tipo": "cria_passo",
+   "passo": "f6bde6cf7cda45b7b5b7e007d5a7d5a8",
+   "titulo": ""
+  },
+  {
+   "id": "c27c890b97a74b1a93ab4c8f2ddd1297",
+   "seq": 9,
+   "autor": "pedro",
+   "em": "2026-09-26T18:14:44.844Z",
+   "tipo": "renomeia_passo",
+   "passo": "f6bde6cf7cda45b7b5b7e007d5a7d5a8",
+   "titulo": "entrada"
+  },
+  {
+   "id": "bbc0696bd7f345d987d8c22d1c410730",
+   "seq": 10,
+   "autor": "pedro",
+   "em": "2026-09-26T18:14:44.894Z",
+   "tipo": "move_peca",
+   "peca": "e1df90422da94cfdb0b21044e81420b4",
+   "passo": "f6bde6cf7cda45b7b5b7e007d5a7d5a8",
+   "x": -414.0000697544647,
+   "y": -1358.9998604910716
+  },
+  {
+   "id": "1904a6ebd53e4f2abe910f1c16c5e0ab",
+   "seq": 11,
+   "autor": "pedro",
+   "em": "2026-09-26T18:14:44.944Z",
+   "tipo": "cria_granada",
+   "granada": "fd05f052c61e44df89b298cfb50a4b14",
+   "arma": "smoke",
+   "passo": "f6bde6cf7cda45b7b5b7e007d5a7d5a8",
+   "origem": [
+    -511.3,
+    -668.95
+   ],
+   "destino": [
+    -726.7,
+    -957.4
+   ],
+   "arremesso": {
+    "id": "match_20:5:356",
+    "arma": "smoke",
+    "origem": [
+     -511.3,
+     -668.95,
+     -272.17
+    ],
+    "destino": [
+     -726.7,
+     -957.4,
+     -214.2
+    ],
+    "pitch": 4.59,
+    "yaw": -127.12,
+    "comando": "setpos -511.30 -668.95 -272.17; setang 4.59 -127.12 0",
+    "forca": "força D",
+    "botao": null,
+    "velocidade": 674,
+    "postura": "em pé",
+    "movimento": "correndo",
+    "no_ar": false,
+    "jogador": "kyxsan",
+    "partida": "match_20",
+    "round": 5,
+    "segundos_no_round": 69.6
+   }
+  },
+  {
+   "id": "d4ea878e3e274ac885646240ba8d58b1",
+   "seq": 12,
+   "autor": "pedro",
+   "em": "2026-09-26T18:14:44.982Z",
+   "tipo": "cria_granada",
+   "granada": "75e4fff6566c439380ad12902d7f695f",
+   "arma": "smoke",
+   "passo": "f6bde6cf7cda45b7b5b7e007d5a7d5a8",
+   "origem": [
+    -1437.999965122768,
+    177.00006975446422
+   ],
+   "destino": [
+    -925.9999302455358,
+    -591.0000697544642
+   ],
+   "arremesso": null
+  },
+  {
+   "id": "520f90f0913b4698a80490a8aa78a5a1",
+   "seq": 13,
+   "autor": "pedro",
+   "em": "2026-09-26T18:14:45.047Z",
+   "tipo": "move_granada",
+   "granada": "75e4fff6566c439380ad12902d7f695f",
+   "origem": [
+    -1437.999965122768,
+    177.00006975446422
+   ],
+   "destino": [
+    -670,
+    -334.99996512276766
+   ]
+  },
+  {
+   "id": "f6bf896999bb410191351eb63036523c",
+   "seq": 14,
+   "autor": "pedro",
+   "em": "2026-09-26T18:14:45.078Z",
+   "tipo": "cria_granada",
+   "granada": "6b6ca26d8c82499086411116f044e5da",
+   "arma": "he",
+   "passo": "f6bde6cf7cda45b7b5b7e007d5a7d5a8",
+   "origem": [
+    -1694.0000697544642,
+    -334.99996512276766
+   ],
+   "destino": [
+    -1182.0000348772323,
+    -1102.9999302455353
+   ],
+   "arremesso": null
+  },
+  {
+   "id": "5bd5ad448d10438eaa2ea81a4b443e53",
+   "seq": 15,
+   "autor": "pedro",
+   "em": "2026-09-26T18:14:45.112Z",
+   "tipo": "remove_granada",
+   "granada": "6b6ca26d8c82499086411116f044e5da"
+  },
+  {
+   "id": "8b350d87637a4aa2be7d3725ba3b0bff",
+   "seq": 16,
+   "autor": "pedro",
+   "em": "2026-09-26T18:14:45.130Z",
+   "tipo": "remove_peca",
+   "peca": "9db47df631034a34bd469b52a0107390"
+  },
+  {
+   "id": "d5b699ec634a4d9cb84936239a9bdd3d",
+   "seq": 17,
+   "autor": "pedro",
+   "em": "2026-09-26T18:14:45.144Z",
+   "tipo": "cria_passo",
+   "passo": "100aebae0f1c43ac953ada57685b91fd",
+   "titulo": ""
+  },
+  {
+   "id": "ac89181352c4466db0fcdc6ddc528303",
+   "seq": 18,
+   "autor": "pedro",
+   "em": "2026-09-26T18:14:45.175Z",
+   "tipo": "cria_granada",
+   "granada": "e86918557c4a4c9287374142d47275f9",
+   "arma": "flash",
+   "passo": "100aebae0f1c43ac953ada57685b91fd",
+   "origem": [
+    -414.0000697544647,
+    -1358.9998604910716
+   ],
+   "destino": [
+    -158.00013950892844,
+    -847
+   ],
+   "arremesso": null
+  },
+  {
+   "id": "3e0d0e0e9a5447ccbb3f27b493367c36",
+   "seq": 19,
+   "autor": "pedro",
+   "em": "2026-09-26T18:14:45.207Z",
+   "tipo": "remove_passo",
+   "passo": "100aebae0f1c43ac953ada57685b91fd"
+  }
+ ]
+}

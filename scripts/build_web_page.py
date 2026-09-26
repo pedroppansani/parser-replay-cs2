@@ -31,6 +31,9 @@ def build_html(match_id: str, site: dict | None = None) -> str:
     # A camada de desenho vive em arquivo separado no repositorio (o template ja
     # esta grande demais) e e injetada aqui, para a pagina continuar sendo um
     # arquivo unico que abre offline.
+    # O núcleo compartilhado do mapa (map_core.js) vai antes: a anotação e o
+    # replay usam o MapCore.
+    map_core = (TEMPLATE.parent / "map_core.js").read_text(encoding="utf-8")
     annotations = (TEMPLATE.parent / "annotations.js").read_text(encoding="utf-8")
     annotations_css = (TEMPLATE.parent / "annotations.css").read_text(encoding="utf-8")
 
@@ -39,6 +42,7 @@ def build_html(match_id: str, site: dict | None = None) -> str:
         .replace("/*__DATA__*/", payload)
         .replace("/*__REPLAY__*/", replay)
         .replace("/*__BREAKDOWN__*/", breakdown)
+        .replace("/*__MAP_CORE__*/", map_core)
         .replace("/*__ANNOTATIONS__*/", annotations)
         .replace("/*__ANNOTATIONS_CSS__*/", annotations_css)
     )

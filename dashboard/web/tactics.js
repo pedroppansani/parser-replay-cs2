@@ -140,17 +140,10 @@ var Prancheta = (function () {
        apaga(id)    -> true se apagou
      --------------------------------------------------------------------- */
   function ArmazemDoNavegador(prefixo) {
-    function ls() {
-      try { return window.localStorage; } catch (e) { return null; }
-    }
-    function le(chave) {
-      var s = ls(); if (!s) return null;
-      try { var v = s.getItem(prefixo + chave); return v ? JSON.parse(v) : null; } catch (e) { return null; }
-    }
-    function escreve(chave, valor) {
-      var s = ls(); if (!s) return false;
-      try { s.setItem(prefixo + chave, JSON.stringify(valor)); return true; } catch (e) { return false; }
-    }
+    // o acesso seguro (try/catch em tudo) é o do MapCore, o mesmo da anotação
+    var A = MapCore.criaArmazem();
+    function le(chave) { return MapCore.lerJson(A.le("localStorage", prefixo + chave)); }
+    function escreve(chave, valor) { return A.grava("localStorage", prefixo + chave, JSON.stringify(valor)); }
     function indice() { return le("indice") || {}; }
     return {
       tipo: "navegador",
@@ -171,8 +164,7 @@ var Prancheta = (function () {
         return escreve("indice", ind);
       },
       apaga: function (id) {
-        var s = ls(); if (!s) return false;
-        try { s.removeItem(prefixo + "tatica:" + id); } catch (e) { return false; }
+        if (!A.remove("localStorage", prefixo + "tatica:" + id)) return false;
         var ind = indice(); delete ind[id];
         return escreve("indice", ind);
       },
@@ -253,21 +245,11 @@ var Prancheta = (function () {
   }
 
   /* ---------------------------------------------------------------------
-     Projeção -- a mesma de metrics/annotations.py e annotations.js
+     Projeção -- a do MapCore (map_core.js), a mesma de metrics/annotations.py
      --------------------------------------------------------------------- */
-  function jogoParaPixel(x, y) {
-    var r = cfg.radar;
-    return [(x - r.origin_x) * r.scale_px_per_unit, (r.origin_y - y) * r.scale_px_per_unit];
-  }
-  function pixelParaJogo(px, py) {
-    var r = cfg.radar;
-    return [px / r.scale_px_per_unit + r.origin_x, r.origin_y - py / r.scale_px_per_unit];
-  }
-  function eventoParaPixel(e) {
-    var c = cv.getBoundingClientRect();
-    return [(e.clientX - c.left) * cfg.radar.width / c.width,
-            (e.clientY - c.top) * cfg.radar.height / c.height];
-  }
+  function jogoParaPixel(x, y) { return MapCore.jogoParaPixel(cfg.radar, x, y); }
+  function pixelParaJogo(px, py) { return MapCore.pixelParaJogo(cfg.radar, px, py); }
+  function eventoParaPixel(e) { return MapCore.eventoParaPixel(cv, cfg.radar, e, null); }
 
   /* ---------------------------------------------------------------------
      Desenho
@@ -282,9 +264,9 @@ var Prancheta = (function () {
     var palco = cv.parentNode, est = getComputedStyle(palco);
     var util = palco.clientWidth - parseFloat(est.paddingLeft) - parseFloat(est.paddingRight);
     var lado = Math.max(200, Math.floor(Math.min(util, window.innerHeight - 40)));
-    var dpr = window.devicePixelRatio || 1;
+    var tam = MapCore.tamanhoInterno(cfg.radar, lado, window.devicePixelRatio || 1);
     cv.style.width = lado + "px"; cv.style.height = lado + "px";
-    cv.width = Math.round(lado * dpr); cv.height = Math.round(lado * dpr);
+    cv.width = tam.w; cv.height = tam.h;
     desenha();
   }
 
