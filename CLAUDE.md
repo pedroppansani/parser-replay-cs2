@@ -1239,9 +1239,15 @@ testada e estava errada.
 
 Não "resolva" nenhum destes automaticamente; pergunte.
 
-- Nomear os clusters (`clustering/cluster_names.json`). Rode
-  `py -3.12 -m scripts.fit_global_clusters --dry-run` para ver o perfil de cada
-  um e os rounds representativos.
+- Nomes dos clusters (`clustering/cluster_names.json`): **gravados pelo Pedro em
+  2026-09-26**, depois de reajustar o modelo nas 52 partidas (11.520
+  player-rounds; ARI 1,00 contra o modelo anterior, 100% dos rounds no mesmo
+  grupo): 0 "Mira fora da altura", 1 "Entra em bloco", 2 "Segura longe do
+  time", 3 "Roda o mapa". A concentração da Nuke em "mira" (34% dos rounds
+  contra 17% no corpus) é estilo real: o desvio de mira é mais forte FORA da
+  Nuke (-2,47) que dentro (-1,67). Todo reajuste que renumerar os grupos exige
+  conferir os nomes de novo (`py -3.12 -m scripts.fit_global_clusters
+  --dry-run`).
 - Revisar a partição A/Mid/B dos mapas (`MANUAL_PLACE_AREAS` em
   `metrics/map_areas.py`). Rode `py -3.12 -m scripts.show_map_areas`. A Nuke é a
   mais frágil: os dois sites ficam empilhados na vertical.
