@@ -2,6 +2,7 @@
 
 Só reproduz a fixture num checkout da tag `baseline-antes-tatica` (e5a01a8): depois
 dela a prancheta passa a exportar o formato 2. Uso: py -3.12 gera_tatica_v1.py <pasta_temporária>
+"""
 import json, sys
 from pathlib import Path
 from playwright.sync_api import sync_playwright
