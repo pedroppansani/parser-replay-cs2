@@ -2055,6 +2055,8 @@
 
     // jogadores — posição interpolada entre os quadros amostrados, senão o
     // movimento fica em saltos de 250ms
+    var comDirecao = !window.MapAnnotations || !MapAnnotations.direcaoLigada ||
+      MapAnnotations.direcaoLigada();
     cur.players.forEach(function (p) {
       var alive = p.alive[i0];
       // Suaviza em coordenada de JOGO e só depois converte pra pixel: a
@@ -2066,6 +2068,16 @@
       var X = mx(sp[0]);
       var Y = my(sp[1]);
       var color = p.side === "ct" ? C.ct : C.t;
+      // Direção do olhar (array `d`, graus, no mesmo índice da posição).
+      // Interpola pelo caminho mais curto entre i0 e i1 só quando o trecho é
+      // interpolável: vivo nos dois quadros e sem salto (as guardas do
+      // smoothPos para o par). Fora disso, o yaw do quadro atual. Sem Catmull-
+      // Rom no ângulo: a mira muda aos saltos.
+      var yaw = null;
+      if (p.d && comDirecao) {
+        yaw = (canLerp && !farApart(p.x[i0], p.y[i0], p.x[i1], p.y[i1]))
+          ? MapCore.interpolaAngulo(p.d[i0], p.d[i1], tt) : p.d[i0];
+      }
       // Morto, em outro andar ou vivo: o desenho de cada caso está em
       // MapCore.desenhaJogador (a prancheta usa o mesmo).
       var pLv = p.lv ? p.lv[i0] : 0;
@@ -2075,7 +2087,8 @@
         acima: pLv > lvNow,
         cego: alive && pLv === lvNow && blindLeft(p.name, i0) > 0,
         hp: p.hp[i0],
-        nome: p.name
+        nome: p.name,
+        yaw: yaw
       });
     });
 

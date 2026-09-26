@@ -70,9 +70,12 @@ QUADRO_PRANCHETA = "prancheta_fixture_p2"
 MAPA_PRANCHETA = "de_mirage"
 FIXTURE = PROJECT_ROOT / "tests" / "fixtures" / "tatica_v1.json"
 
-# Vizinhança de um jogador, em pixels do RADAR: a ponta da direção vai a 14
-# do centro, o anel de cegueira a 12,5, e a sombra do halo espalha ~6.
-RAIO_VIZINHANCA_PADRAO = 24
+# Vizinhança de um jogador, em pixels do RADAR. O que manda é o NOME, não a
+# ponta (14) nem o anel de cegueira (12,5): 9 letras de 12px em DM Mono têm
+# ~33 de meia largura, a 19 acima do centro com a direção ligada -- o canto do
+# nome fica a ~45 do centro. Medido na etapa 1: com 40 sobravam 35 pixels
+# (pontas de nomes longos), com 48 nenhum.
+RAIO_VIZINHANCA_PADRAO = 48
 
 VALOR_DIRECAO = {"ligada": "1", "desligada": "0"}
 

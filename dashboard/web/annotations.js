@@ -90,6 +90,11 @@ window.MapAnnotations = (function () {
   var CHAVE_RECENTES = "anot:cores-recentes";
   var CHAVE_FERRAMENTA = "anot:ultima-ferramenta";
 
+  // Mostrar para onde cada jogador olha (a ponta do jogador no replay). Ligado
+  // por padrão; "0" guardado = desligado. A chave é do replay, não da anotação:
+  // o botão só mora nesta barra porque ela é a barra de controles do mapa.
+  var CHAVE_DIRECAO = "replay:direcao";
+
   var S = {
     pronto: false,
     ligado: false,          // modo de desenho
@@ -108,6 +113,7 @@ window.MapAnnotations = (function () {
     view: { zoom: 1, panX: 0, panY: 0 },   // pan em pixels do radar
     espaco: false,          // barra de espaço segurada: o arrasto vira pan
     sobreMapa: false,       // ponteiro sobre o palco (só aí o espaço é nosso)
+    direcao: true,          // desenhar a ponta da direção do olhar no replay
     visiveisAntes: -1,
     armazemOk: true,
     aviso: "",
@@ -825,6 +831,14 @@ window.MapAnnotations = (function () {
     vista.appendChild(botao("+", "Aumentar o zoom", function () {
       aplicaZoom(S.view.zoom * ZOOM_PASSO, opts.radar.width / 2, opts.radar.height / 2);
     }));
+    var dir = botao("Direção", "Mostrar ou esconder para onde cada jogador olha", function () {
+      S.direcao = !S.direcao;
+      grava("localStorage", CHAVE_DIRECAO, S.direcao ? "1" : "0");
+      atualizaBotoes();
+      if (opts.redraw) opts.redraw();
+    });
+    dir.id = "anot-direcao";
+    vista.appendChild(dir);
     var fs = botao("Tela cheia", "Mapa em tela cheia (F)", alternaTelaCheia);
     fs.id = "anot-fs";
     vista.appendChild(fs);
@@ -867,6 +881,11 @@ window.MapAnnotations = (function () {
 
     var sd = document.getElementById("anot-sodepois");
     if (sd) sd.classList.toggle("on", S.soDepois);
+    var dir = document.getElementById("anot-direcao");
+    if (dir) {
+      dir.classList.toggle("on", S.direcao);
+      dir.setAttribute("aria-pressed", S.direcao ? "true" : "false");
+    }
     var z = document.getElementById("anot-zoom");
     if (z) z.textContent = Math.round(S.view.zoom * 100) + "%";
     var d = document.getElementById("anot-desfazer");
@@ -915,6 +934,7 @@ window.MapAnnotations = (function () {
     var recentes = lerJson(le("localStorage", CHAVE_RECENTES));
     if (Array.isArray(recentes)) S.recentes = recentes.map(normalizaCor).filter(Boolean).slice(0, MAX_RECENTES);
     if (S.recentes.length) S.cor = S.recentes[0];
+    S.direcao = le("localStorage", CHAVE_DIRECAO) !== "0";
 
     opts.palco.insertBefore(montaBarra(), opts.palco.firstChild);
 
@@ -1001,6 +1021,8 @@ window.MapAnnotations = (function () {
   return {
     init: init,
     applyView: applyView,
+    /** O replay pergunta a cada quadro se desenha a ponta da direção. */
+    direcaoLigada: function () { return S.direcao; },
     /** O template chama a cada quadro. Só repinta quando o conjunto VISÍVEL
         muda -- o mapa se movendo não pode forçar redesenho dos traços. */
     onFrame: function (pos) {

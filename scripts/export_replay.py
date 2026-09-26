@@ -165,7 +165,7 @@ def build(match_id: str) -> Path:
         rt = ticks.filter(
             (pl.col("round_num") == rn) & (pl.col("tick") >= t0) & (pl.col("tick") <= t1)
         ).select(
-            ["tick", "steamid", "name", "side", "X", "Y", "Z", "is_alive", "health",
+            ["tick", "steamid", "name", "side", "X", "Y", "Z", "yaw", "is_alive", "health",
              "active_weapon_name", "place"]
         )
 
@@ -191,12 +191,13 @@ def build(match_id: str) -> Path:
             gx = g["X"].to_list()
             gy = g["Y"].to_list()
             gz = g["Z"].to_list()
+            gd = g["yaw"].to_list()
             ga = g["is_alive"].to_list()
             gh = g["health"].to_list()
             gw = g["active_weapon_name"].to_list()
             gp = g["place"].to_list()
 
-            xs, ys, alive, hp, wp, where, lv = [], [], [], [], [], [], []
+            xs, ys, ds, alive, hp, wp, where, lv = [], [], [], [], [], [], [], []
             j = 0
             for f in frames:
                 # avança até a amostra mais próxima sem passar do frame
@@ -204,6 +205,12 @@ def build(match_id: str) -> Path:
                     j += 1
                 xs.append(int(round(gx[j])))
                 ys.append(int(round(gy[j])))
+                # Direção do olhar no MESMO índice j da posição (não há segunda
+                # regra de amostragem). Convenção do CS2 (decisão 9): 0° = +X,
+                # crescendo no anti-horário. O demo dá [-180, 180); arredonda
+                # para grau inteiro e só DEPOIS leva para [0, 360) -- ao
+                # contrário, 359,6° arredondaria para 360, fora do intervalo.
+                ds.append(int(round(gd[j])) % 360)
                 alive.append(1 if ga[j] else 0)
                 hp.append(int(gh[j]) if gh[j] is not None else 0)
                 wp.append(interned(gw[j], weapon_names, weapon_idx))
@@ -218,6 +225,7 @@ def build(match_id: str) -> Path:
                 "team": team_of_side(side, rn),
                 "x": xs,
                 "y": ys,
+                "d": ds,
                 "alive": alive,
                 "hp": hp,
                 "w": wp,

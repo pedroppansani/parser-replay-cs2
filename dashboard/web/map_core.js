@@ -36,6 +36,22 @@ window.MapCore = (function () {
   var RAIO_SMOKE_UNIDADES = 144;
   var RAIO_MOLOTOV_UNIDADES = 120;
 
+  // Ponta da direção do olhar, em pixels do RADAR antes do zoom (convenção
+  // visual). O halo branco do jogador (raio 8,2) vira uma gota: a ponta fica a
+  // PONTA_DISTANCIA do centro, e os dois lados da ponta são TANGENTES ao halo --
+  // a largura da base sai da geometria (8,2 * sen(acos(8,2 / 14)) = 6,6), não
+  // de uma segunda constante. Tangente é o que faz a silhueta ler como uma peça
+  // só, e não como um círculo com um triângulo espetado.
+  var PONTA_DISTANCIA = 14;
+
+  // Distância do nome acima do centro do jogador. Com a ponta, o nome sobe:
+  // olhando para cima, a ponta chega a 14 do centro, exatamente onde o nome
+  // tinha a base, e encostava nas letras (conferido na captura). Fixo enquanto
+  // a direção está ligada -- variar com o ângulo faria o nome pular quando o
+  // jogador gira. (Convenção visual.)
+  var NOME_ACIMA = 14;
+  var NOME_ACIMA_COM_DIRECAO = 19;
+
   // Cor de cada tipo de granada no replay: a paleta validada para daltonismo e
   // contraste da página da partida (decisão 10).
   var NADE_COLOR = { smoke: "#9fb0c2", molotov: "#eb6834", he: "#d1495b", flash: "#e8b53a", decoy: "#7d8a99" };
@@ -61,6 +77,33 @@ window.MapCore = (function () {
     var py = (e.clientY - caixa.top) * k;
     if (!view) return [px, py];
     return [(px - view.panX) / view.zoom, (py - view.panY) / view.zoom];
+  }
+
+  /* ---------------------------------------------------------------------
+     Ângulo
+     --------------------------------------------------------------------- */
+
+  /** Yaw do CS2 (graus) -> ângulo de TELA (radianos), na convenção do canvas.
+
+      É a ÚNICA função que faz esta conta. A derivação: no jogo o yaw 0° aponta
+      para +X e cresce no sentido anti-horário (decisão 9), então a direção é
+      (cos yaw, sin yaw). O radar inverte o Y (my(y) = (origin_y - y) * escala),
+      e a mesma direção vira o deslocamento em pixel (cos yaw, -sin yaw) =
+      (cos(-yaw), sin(-yaw)). Logo θ = -yaw. Não se ajusta sinal "até parecer
+      certo": o teste confere 0° -> direita, 90° -> cima, 180° -> esquerda, e o
+      matador apontando para a vítima no dado real. */
+  function anguloDeTela(yawGraus) {
+    return -yawGraus * Math.PI / 180;
+  }
+
+  /** Interpola dois yaws (graus) pelo caminho MAIS CURTO e devolve em [0, 360).
+      De 359° para 1° o caminho é +2°, não -358°: sem isso a ponta daria uma
+      volta inteira na tela. Linear de propósito -- a mira muda por saltos, e
+      suavizar (Catmull-Rom, como na posição) inventaria rotação. */
+  function interpolaAngulo(a, b, t) {
+    var delta = ((b - a + 540) % 360) - 180;
+    var v = a + delta * t;
+    return ((v % 360) + 360) % 360;
   }
 
   /* ---------------------------------------------------------------------
@@ -384,6 +427,11 @@ window.MapCore = (function () {
       o.hp       vida de 0 a 100; abaixo de 100 desenha o anel que encolhe
       o.cego     true desenha o anel tracejado de cegueira
       o.nome     texto acima do jogador (até 9 caracteres)
+      o.yaw      direção do olhar em graus (convenção do CS2); ausente ou null =
+                 sem ponta, e o jogador sai exatamente como antes da direção
+      o.escala   fator de tamanho (padrão 1). A peça da prancheta é maior que o
+                 jogador do replay para dar para pegar com o mouse: mesma forma,
+                 outro tamanho. Tudo escala junto, inclusive traço e fonte.
 
       ATENÇÃO -- EFEITO COLATERAL DE PROPÓSITO: a função altera fillStyle,
       strokeStyle, lineWidth, font, textAlign e globalAlpha do contexto e NÃO
@@ -395,14 +443,16 @@ window.MapCore = (function () {
       ninguém perceber. Quem chamar e depender do estado anterior, salve antes. */
   function desenhaJogador(ctx, X, Y, o) {
     var color = o.cor;
+    var e = o.escala || 1;
+    var comDirecao = o.yaw !== undefined && o.yaw !== null;
 
     if (o.estado === "morto") {
       ctx.globalAlpha = 0.5;
       ctx.strokeStyle = color;
-      ctx.lineWidth = 1.6;
+      ctx.lineWidth = 1.6 * e;
       ctx.beginPath();
-      ctx.moveTo(X - 3.5, Y - 3.5); ctx.lineTo(X + 3.5, Y + 3.5);
-      ctx.moveTo(X + 3.5, Y - 3.5); ctx.lineTo(X - 3.5, Y + 3.5);
+      ctx.moveTo(X - 3.5 * e, Y - 3.5 * e); ctx.lineTo(X + 3.5 * e, Y + 3.5 * e);
+      ctx.moveTo(X + 3.5 * e, Y - 3.5 * e); ctx.lineTo(X - 3.5 * e, Y + 3.5 * e);
       ctx.stroke();
       ctx.globalAlpha = 1;
       return;
@@ -414,27 +464,32 @@ window.MapCore = (function () {
     if (o.estado === "outro_andar") {
       ctx.globalAlpha = 0.5;
       ctx.strokeStyle = color;
-      ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(X, Y, 5.5, 0, Math.PI * 2); ctx.stroke();
+      ctx.lineWidth = 2 * e;
+      ctx.beginPath(); ctx.arc(X, Y, 5.5 * e, 0, Math.PI * 2); ctx.stroke();
       // seta indicando se está acima ou abaixo do andar mostrado
       ctx.fillStyle = color;
-      ctx.font = "700 9px 'DM Mono', ui-monospace, monospace";
+      ctx.font = "700 " + (9 * e) + "px 'DM Mono', ui-monospace, monospace";
       ctx.textAlign = "center";
-      ctx.fillText(o.acima ? "▼" : "▲", X, Y + 3);
+      ctx.fillText(o.acima ? "▼" : "▲", X, Y + 3 * e);
       ctx.globalAlpha = 1;
       return;
     }
 
+    // Halo branco. Com a direção, ele vira a gota (morto e outro andar já
+    // saíram acima, sem ponta).
     ctx.save();
     ctx.shadowColor = "rgba(8,12,18,0.55)";
-    ctx.shadowBlur = 6;
-    ctx.shadowOffsetY = 1;
+    ctx.shadowBlur = 6 * e;
+    ctx.shadowOffsetY = 1 * e;
     ctx.fillStyle = "#fff";
-    ctx.beginPath(); ctx.arc(X, Y, 8.2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath();
+    if (comDirecao) caminhoDaGota(ctx, X, Y, 8.2 * e, PONTA_DISTANCIA * e, anguloDeTela(o.yaw));
+    else ctx.arc(X, Y, 8.2 * e, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
 
     ctx.fillStyle = color;
-    ctx.beginPath(); ctx.arc(X, Y, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(X, Y, 6 * e, 0, Math.PI * 2); ctx.fill();
 
     // Cegueira: é o estado que explica por que um jogador parou de mirar, ou
     // andou pra frente sem reagir. Sem marcar isso no mapa, a sequência mais
@@ -442,9 +497,9 @@ window.MapCore = (function () {
     if (o.cego) {
       ctx.strokeStyle = NADE_COLOR.flash;
       ctx.globalAlpha = 0.9;
-      ctx.lineWidth = 2.2;
-      ctx.setLineDash([3, 3]);
-      ctx.beginPath(); ctx.arc(X, Y, 12.5, 0, Math.PI * 2); ctx.stroke();
+      ctx.lineWidth = 2.2 * e;
+      ctx.setLineDash([3 * e, 3 * e]);
+      ctx.beginPath(); ctx.arc(X, Y, 12.5 * e, 0, Math.PI * 2); ctx.stroke();
       ctx.setLineDash([]);
       ctx.globalAlpha = 1;
     }
@@ -453,19 +508,32 @@ window.MapCore = (function () {
     var hp = Math.max(0, Math.min(100, o.hp)) / 100;
     if (hp < 1) {
       ctx.strokeStyle = "#fff";
-      ctx.lineWidth = 2.4;
+      ctx.lineWidth = 2.4 * e;
       ctx.beginPath();
-      ctx.arc(X, Y, 10.4, -Math.PI / 2, -Math.PI / 2 + hp * Math.PI * 2);
+      ctx.arc(X, Y, 10.4 * e, -Math.PI / 2, -Math.PI / 2 + hp * Math.PI * 2);
       ctx.stroke();
     }
 
-    ctx.font = "500 12px 'DM Mono', ui-monospace, monospace";
+    var yNome = Y - (comDirecao ? NOME_ACIMA_COM_DIRECAO : NOME_ACIMA) * e;
+    ctx.font = "500 " + (12 * e) + "px 'DM Mono', ui-monospace, monospace";
     ctx.textAlign = "center";
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 3 * e;
     ctx.strokeStyle = "rgba(14,20,27,0.85)";
-    ctx.strokeText(o.nome.slice(0, 9), X, Y - 14);
+    ctx.strokeText(o.nome.slice(0, 9), X, yNome);
     ctx.fillStyle = "#eef2f7";
-    ctx.fillText(o.nome.slice(0, 9), X, Y - 14);
+    ctx.fillText(o.nome.slice(0, 9), X, yNome);
+  }
+
+  /** Gota: círculo de raio r com uma ponta a `dist` do centro, no ângulo de
+      tela θ. Os lados da ponta são tangentes ao círculo (ângulo α = acos(r/dist)
+      de cada lado), e o arco dá a volta por trás. Só o caminho: quem chama
+      preenche. */
+  function caminhoDaGota(ctx, X, Y, r, dist, theta) {
+    var alfa = Math.acos(r / dist);
+    ctx.moveTo(X + Math.cos(theta) * dist, Y + Math.sin(theta) * dist);
+    ctx.lineTo(X + Math.cos(theta + alfa) * r, Y + Math.sin(theta + alfa) * r);
+    ctx.arc(X, Y, r, theta + alfa, theta - alfa + Math.PI * 2);
+    ctx.closePath();
   }
 
   /* ---------------------------------------------------------------------
@@ -827,6 +895,10 @@ window.MapCore = (function () {
     caminhoDoTraco: caminhoDoTraco,
     desenhaSeta: desenhaSeta,
     nadeGlyph: nadeGlyph,
+    PONTA_DISTANCIA: PONTA_DISTANCIA,
+    NOME_ACIMA_COM_DIRECAO: NOME_ACIMA_COM_DIRECAO,
+    anguloDeTela: anguloDeTela,
+    interpolaAngulo: interpolaAngulo,
     desenhaJogador: desenhaJogador,
     normalizaCor: normalizaCor,
     botao: botao,
