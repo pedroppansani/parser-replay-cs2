@@ -1126,8 +1126,9 @@ testada e estava errada.
       0,232 sem função reconhecida. A própria função "lurker" FICA DE FORA da
       régua: ela é definida por jogar em outra área (decisão 12) e tem taxa
       esperada 0,97 -- normalizar por ela faria um lurker de verdade perder o
-      rótulo. Piso: `PISO_LURK_RELATIVO` = 1,5x o esperado, o mesmo fator com
-      que o projeto ancora outros pisos ao acaso;
+      rótulo. Piso: `PISO_LURK_RELATIVO`, nascido 1,5x o esperado (o fator com
+      que o projeto ancora outros pisos ao acaso) e trocado em 2026-09-26 pelo
+      corte estatístico 1,284 (decisão 31);
     - **amostra**: `MIN_ROUNDS_SEM_AWP` = 8, o mesmo mínimo que o projeto já usa
       para afirmar uma taxa de jogador (`player_profile.MIN_ROUNDS_PARA_TAXA`).
       Abaixo disso é DADO INSUFICIENTE, não "não qualifica" -- a distinção está
@@ -1136,7 +1137,8 @@ testada e estava errada.
     dos 64 rótulos de líderes, 22 saíram por amostra e 4 por ficarem abaixo de
     1,5x. Nenhuma outra característica mudou. 35 títulos mudaram, todos de
     "Lurker" para âncora, principal fragger ou nenhum. **m0NESY: zero rótulos de
-    Lurker em 17 jogador-partidas.**
+    Lurker em 12 jogador-partidas.** (Corrigido em 2026-09-26: são 12 pelo
+    steamid, não 17.)
     O PISO ABSOLUTO ANTIGO (0,40) foi mantido como referência histórica no
     material de calibração: a proposta estatística de baixá-lo para 0,264 foi
     REFUTADA pelo julgamento de jogo do Pedro -- naquele corte, um AWPer com
@@ -1209,6 +1211,29 @@ testada e estava errada.
     histórico) e `web_payload.json` (16 MB) em `data/processed/`. O replay sai
     do interim, que não é versionado, então sem ele um clone não reconstrói o
     replay.
+
+31. **Registro dos pisos de função** (`metrics/player_roles.py`, TRAIT_SPECS;
+    revisão do Pedro em 2026-09-26 sobre 52 partidas, 430 jogador-partidas
+    profissionais em 43 partidas, via `scripts/proposta_pisos.py`):
+    | função | piso | origem |
+    |---|---|---|
+    | AWPer (`awp_share`) | 0,533 | corte estatístico (os três métodos concordam) |
+    | Lurker (`off_team_relativo`) | 1,284 | corte estatístico (vazio e Otsu entre líderes) |
+    | Abre o round (`first_contact_share`) | 0,320 | convenção validada pela fronteira |
+    | Suporte de utility (`enemy_blind_seconds`) | 20,0 | convenção validada pela fronteira |
+    | Âncora de bomb | 0,800 | convenção validada pela fronteira |
+    | Segundo homem (`trade_share`) | 0,350 | convenção validada pela fronteira |
+    | Principal fragger (`adr`) | 85,0 | convenção validada pela fronteira |
+    "Validada pela fronteira" = os métodos não concordam, e o Pedro conferiu os
+    jogadores dos dois lados do corte: ZywOo fora do entry nas duas partidas
+    (0,316-0,318); sh1ro e chopper acima do suporte, apEX (13,6) longe abaixo;
+    FalleN acima da âncora; ropz e KSCERATO acima do segundo homem, donk fora.
+    **Fronteira mais apertada das cinco**: YEKINDAR fica fora do principal
+    fragger por 0,1 de ADR (84,9, match_44) -- ruído puro, mas não é evidência
+    para mover um piso que é convenção.
+    O Lurker é medido por `off_team_relativo` (decisão 29), que SUBSTITUIU a
+    taxa absoluta `off_team_share` (escala 0-1, piso antigo 0,40) como métrica
+    que define o rótulo; a taxa absoluta continua na tabela só como informação.
 
 ## Pontos de calibração — pertencem ao Pedro, não ao código
 

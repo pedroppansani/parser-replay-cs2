@@ -46,6 +46,8 @@ RAIZ = Path(__file__).resolve().parent.parent
 #   -- afirmar retroativamente que ela rodou na versão 1 seria inventar.
 VERSAO_DO_PARSER = 1
 
+# 8 (2026-09-26) piso do lurker relativo 1,5 -> 1,284 (corte estatístico,
+#   decisão 31).
 # 7 (2026-09-24) eixo carrega piano <-> baiter com os DOIS braços comparados
 #   dentro da POPULAÇÃO da função estrutural (opção (a)), e a correção da
 #   regressão que fazia o pipeline rodar os papéis SEM a função do round.
@@ -65,7 +67,7 @@ VERSAO_DO_PARSER = 1
 #   (inclui a classe de economia do jogador no rating), unique com subset fica
 #   com a primeira linha. Antes, esses três casos dependiam da ordem de hash.
 # 1 (2026-09-20) primeira versão declarada, mesmo raciocínio acima.
-VERSAO_DAS_METRICAS = 7
+VERSAO_DAS_METRICAS = 8
 
 # Pastas cujo estado define o NÚMERO. `sujo` olha só estas: olhar o repositório
 # inteiro marcava todo reprocessamento como sujo, porque o próprio

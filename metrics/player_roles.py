@@ -58,12 +58,15 @@ HALFTIME_ROUND = 12
 MIN_ROUNDS_AWP_DO_TIME = 4
 
 # Quanto o jogador precisa estar ACIMA do esperado da função para ser lurker.
-# 1,5x é o mesmo fator com que o projeto ancora outros pisos ao acaso ou ao
-# ruído (round decisivo 1,5x o round mais barato, bottom frag 1,5 desvios
-# medianos, entry 1,5x o acaso). Medido nas 43 profissionais: 94 -> 42 rótulos,
-# 4 novos; dos 64 rótulos de líderes de hoje, 22 saem por amostra e 4 por
-# ficarem abaixo de 1,5x.
-PISO_LURK_RELATIVO = 1.5
+# CORTE ESTATÍSTICO (decisão do Pedro, 2026-09-26): entre os 102 líderes de time
+# das 43 partidas profissionais, maior vazio e Otsu caem os dois em 1,284 e o
+# vale da densidade em 1,028 -- espalhamento 0,14 amplitude interquartil,
+# dentro do limite de 0,25 (scripts/proposta_pisos.py). Mesmo critério do AWPer:
+# quando os métodos concordam, vale o corte. Substituiu o 1,5x de convenção.
+# Efeito medido nas 52: característica Lurker 55 -> 56, um título muda
+# (Jimpphat, match_41, 1,494x: Âncora -> Lurker); m0NESY segue com 0 rótulos
+# de Lurker nos 12 jogador-partidas dele.
+PISO_LURK_RELATIVO = 1.284
 
 # Rounds SEM AWP mínimos para afirmar lurk. 8 é o mesmo mínimo que o projeto já
 # usa para afirmar uma taxa de jogador (player_profile.MIN_ROUNDS_PARA_TAXA);
