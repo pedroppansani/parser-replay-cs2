@@ -109,6 +109,8 @@ window.MapAnnotations = (function () {
     refazer: [],
     tracando: null,
     view: { zoom: 1, panX: 0, panY: 0 },   // pan em pixels do radar
+    espaco: false,          // barra de espaço segurada: o arrasto vira pan
+    sobreMapa: false,       // ponteiro sobre o palco (só aí o espaço é nosso)
     visiveisAntes: -1,
     armazemOk: true,
     aviso: "",
@@ -455,7 +457,9 @@ window.MapAnnotations = (function () {
      Entrada por ponteiro (mouse, toque e caneta com o mesmo código)
      --------------------------------------------------------------------- */
   function comecou(e) {
-    if (!S.ligado || e.button !== 0) return;
+    // Com o espaço segurado o arrasto é PAN, nunca traço -- o mesmo gesto dos
+    // editores de imagem, e o único jeito de mover o mapa sem sair do desenho.
+    if (!S.ligado || e.button !== 0 || S.espaco) return;
     camada.setPointerCapture(e.pointerId);
     // Ninguém consegue desenhar em cima de boneco andando.
     if (opts.pause) opts.pause();
@@ -743,10 +747,11 @@ window.MapAnnotations = (function () {
   var arrastando = null;
   function panComeca(e) {
     // Com o modo de desenho LIGADO o ponteiro desenha; o pan fica no botão do
-    // meio, para não existir gesto que faz duas coisas.
-    if (S.ligado && e.button !== 1) return;
+    // meio ou no espaço + arrastar, para não existir gesto que faz duas coisas.
+    if (S.ligado && e.button !== 1 && !S.espaco) return;
     if (S.view.zoom <= 1) return;
     arrastando = { x: e.clientX, y: e.clientY, panX: S.view.panX, panY: S.view.panY };
+    opts.palco.classList.add("anot-arrastando");
     e.currentTarget.setPointerCapture(e.pointerId);
   }
   function panMove(e) {
@@ -757,7 +762,18 @@ window.MapAnnotations = (function () {
     limitaPan();
     pedeRedesenho();
   }
-  function panTermina() { arrastando = null; }
+  function panTermina() {
+    arrastando = null;
+    if (opts) opts.palco.classList.remove("anot-arrastando");
+  }
+
+  /** Espaço segurado = modo de pan. Solto (ou a janela perde o foco no meio),
+      o ponteiro volta a desenhar. */
+  function modoPan(ligado) {
+    S.espaco = ligado;
+    opts.palco.classList.toggle("anot-pan", ligado);
+    if (!ligado) panTermina();
+  }
 
   function reseta() {
     S.view = { zoom: 1, panX: 0, panY: 0 };
@@ -1242,7 +1258,7 @@ window.MapAnnotations = (function () {
     vista.appendChild(botao("−", "Diminuir o zoom", function () {
       aplicaZoom(S.view.zoom / ZOOM_PASSO, opts.radar.width / 2, opts.radar.height / 2);
     }));
-    var lupa = botao("100%", "Voltar ao tamanho original (0)", reseta);
+    var lupa = botao("100%", "Voltar ao tamanho original (0). Com zoom, segure espaço e arraste para mover o mapa", reseta);
     lupa.id = "anot-zoom";
     vista.appendChild(lupa);
     vista.appendChild(botao("+", "Aumentar o zoom", function () {
@@ -1379,6 +1395,12 @@ window.MapAnnotations = (function () {
     opts.palco.addEventListener("pointermove", function () {
       if (emTelaCheia()) acordaControles();
     });
+    opts.palco.addEventListener("pointerenter", function () { S.sobreMapa = true; });
+    opts.palco.addEventListener("pointerleave", function () { S.sobreMapa = false; });
+    document.addEventListener("keyup", function (e) {
+      if (e.code === "Space" && S.espaco) modoPan(false);
+    });
+    window.addEventListener("blur", function () { if (S.espaco) modoPan(false); });
 
     document.addEventListener("keydown", function (e) {
       var editando = /^(INPUT|TEXTAREA|SELECT)$/.test((e.target || {}).tagName || "");
@@ -1388,6 +1410,13 @@ window.MapAnnotations = (function () {
         return;
       }
       if (editando) return;
+      // Espaço só é nosso com o ponteiro sobre o mapa; fora dele continua
+      // rolando a página, como o navegador faz.
+      if (e.code === "Space" && (S.sobreMapa || S.espaco)) {
+        e.preventDefault();
+        if (!S.espaco) modoPan(true);
+        return;
+      }
       var k = e.key.toLowerCase();
       if ((e.ctrlKey || e.metaKey) && k === "z") {
         e.preventDefault();
@@ -1437,6 +1466,7 @@ window.MapAnnotations = (function () {
       tracosDoRound: tracosDoRound, visiveis: visiveis,
       documento: documento, importaTexto: importaTexto,
       reprojetaTudo: reprojetaTudo, gravaPendentes: gravaPendentes,
+      aplicaZoom: aplicaZoom, reseta: reseta,
       normalizaCor: normalizaCor,
       radar: function () { return opts.radar; }
     }

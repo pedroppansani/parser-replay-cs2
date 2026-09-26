@@ -514,3 +514,76 @@ def test_cor_invalida_nao_e_aplicada(contexto, partida):
     assert pg.get_attribute("#anot-cor-hex", "aria-invalid") == "true"
     pg.keyboard.press("Escape")
     assert estado(pg, "cor") == "#eb6834"
+
+
+# --- Fase H: pan com espaço e desenho sob zoom -----------------------------------
+
+def _zoom(pg, z):
+    """Zoom centrado no meio do radar, pelo mesmo caminho da roda do mouse."""
+    pg.evaluate(f"""() => {{ const I = MapAnnotations._interno, r = I.radar();
+        I.aplicaZoom({z}, r.width / 2, r.height / 2); }}""")
+    assert abs(estado(pg, "view.zoom") - z) < 1e-9
+
+
+def test_desenho_feito_com_zoom_3x_nao_muda_ao_voltar_para_1x(contexto, partida):
+    """O traço é guardado em coordenada de JOGO: o zoom é só a vista. Desenhado
+    a 3x, o modelo é o mesmo a 1x, e o traço continua sobre o mesmo ponto do
+    mapa na tela."""
+    pg = abre(contexto, partida)
+    liga(pg)
+    _zoom(pg, 3)
+    desenha_arco(pg)
+    a3 = modelo(pg)
+    (traco,) = [t for lista in a3["rounds"].values() for t in lista]
+    g = meio_do_traco(traco)
+    assert traco_na_tela(pg, g, COR_PADRAO)
+
+    pg.keyboard.press("0")                     # volta a 1x
+    assert estado(pg, "view.zoom") == 1
+    assert modelo(pg) == a3                    # coordenada guardada idêntica
+    assert traco_na_tela(pg, g, COR_PADRAO)    # e na tela, no mesmo ponto do mapa
+
+    # o arco a 3x cobre um terço do que cobriria a 1x: prova que o zoom entrou
+    # na conversão ponteiro -> jogo, em vez de o traço ter sido gravado em pixel
+    _zoom(pg, 1)
+    desenha_arco(pg)
+    (t1,) = [t for lista in modelo(pg)["rounds"].values() for t in lista if t is not None and t != traco]
+    ext = lambda t: max(p[0] for p in t["pontos"]) - min(p[0] for p in t["pontos"])
+    assert abs(ext(traco) / ext(t1) - 1 / 3) < 0.05
+
+
+def test_espaco_mais_arrastar_move_o_mapa_sem_desenhar(contexto, partida):
+    pg = abre(contexto, partida)
+    liga(pg)
+    _zoom(pg, 3)
+    na_vista(pg)
+    c = pg.locator("#map").bounding_box()
+    cx, cy = c["x"] + c["width"] / 2, c["y"] + c["height"] / 2
+    pan0 = (estado(pg, "view.panX"), estado(pg, "view.panY"))
+
+    pg.mouse.move(cx, cy)
+    pg.keyboard.down("Space")
+    assert estado(pg, "espaco") is True
+    pg.mouse.down()
+    pg.mouse.move(cx + 120, cy + 80, steps=6)
+    pg.mouse.up()
+    pg.keyboard.up("Space")
+
+    pan1 = (estado(pg, "view.panX"), estado(pg, "view.panY"))
+    assert pan1[0] > pan0[0] and pan1[1] > pan0[1], f"o mapa não andou: {pan0} -> {pan1}"
+    assert sum(len(v) for v in modelo(pg)["rounds"].values()) == 0, "o pan desenhou"
+    assert estado(pg, "espaco") is False
+
+    # solto o espaço, o mesmo arrasto volta a desenhar
+    desenha_arco(pg)
+    assert sum(len(v) for v in modelo(pg)["rounds"].values()) == 1
+
+
+def test_espaco_fora_do_mapa_continua_rolando_a_pagina(contexto, partida):
+    """O espaço só é do mapa com o ponteiro sobre ele."""
+    pg = abre(contexto, partida)
+    pg.mouse.move(2, 2)
+    pg.evaluate("() => { MapAnnotations._interno.S.sobreMapa = false; }")
+    pg.keyboard.down("Space")
+    assert estado(pg, "espaco") is False
+    pg.keyboard.up("Space")

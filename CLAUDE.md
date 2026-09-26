@@ -1199,6 +1199,13 @@ testada e estava errada.
       (`tests/test_annotations_browser.py`, Playwright); sem navegador eles são
       pulados, e os estruturais de `test_annotations.py` ficam como rede de
       segurança.
+    - **Pan com espaço + arrastar** (Fase H, 2026-09-26): com o espaço
+      segurado o arrasto move o mapa, com qualquer botão e mesmo no modo de
+      desenho, e NUNCA começa traço. O espaço só é capturado com o ponteiro
+      sobre o mapa; fora dele a página rola como sempre. Soltar o espaço ou a
+      janela perder o foco devolve o ponteiro ao desenho. Teste de aceitação:
+      traço feito com zoom 3x tem o modelo IDÊNTICO depois de voltar a 1x e
+      continua sobre o mesmo ponto do mapa na tela.
 
 24. **Saída gerada não vai para o repositório.** O que se versiona é o que gera a
     saída (código e `data/processed/`), não a saída. O site em `docs/` era 54% do

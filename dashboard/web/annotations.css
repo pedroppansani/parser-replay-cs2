@@ -29,6 +29,11 @@
   touch-action: none;
 }
 .board .anot-rascunho { pointer-events: none !important; }
+/* Espaço segurado: a mão aberta avisa que o arrasto move o mapa, não desenha.
+   Com o desenho desligado a camada segue sem ponteiro, e o pan acontece no
+   próprio mapa, por baixo dela. */
+.anot-pan .anot-camada, .anot-pan canvas { cursor: grab !important; }
+.anot-pan.anot-arrastando .anot-camada, .anot-pan.anot-arrastando canvas { cursor: grabbing !important; }
 
 .anot-barra {
   display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
