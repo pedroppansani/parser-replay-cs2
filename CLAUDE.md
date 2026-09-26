@@ -746,6 +746,34 @@ testada e estava errada.
     empate é desfeito pelo tick mais próximo do projétil -- sem isso, 312 dos
     3.020 saíam com soltura ANTES do clique.
 
+21c. **Quando a demo traz o evento `grenade_thrown`, o tick dele É a soltura; a
+    ancoragem vira validação** (Fase G, 2026-09-26, decisão do Pedro). Roda em
+    paralelo e grava `tick_soltura_ancoragem`, `delta_ancoragem_ticks` e
+    `fonte_tick`. Medido em 20.863 arremessos de 43 partidas (99,9% casam com o
+    evento): o primeiro sample do projétil cai no tick do evento em 100%; a
+    ancoragem acerta o tick exato em 39,7%, +-1 em 87,9%, +-4 em 94,8%, com viés
+    de +1 (9.353 casos) e cauda até -8.
+    Com o tick dado, o deslocamento olhos -> projétil sai POR ARREMESSO
+    (`avanco_na_mira`): no tick oficial ele fica todo na direção da mira
+    (perpendicular p50 0,01u, p90 0,26u) e cresce com a força (17u a 100 u/s,
+    34u a 900 u/s). O offset global transformava isso em resíduo falso (p50
+    3,4u, 5,9% marcados "aproximado") e em erro de altura. Com tick oficial,
+    `residuo` é o PERPENDICULAR; reprodução exata foi de 94,1% para 99,3%.
+    **Altura dos olhos, divergência declarada, NÃO ajustada**: em pé 63,1-63,8u
+    no corpus (esperado 64); em match_23, contra a postura real da demo
+    (`duck_amount`), 62,6u em pé e 46,1u agachado (esperado 46), diferença 16,5
+    contra 18. `ALTURA_OLHOS_EM_PE` e `OFFSET_VERTICAL_SOLTURA` seguem como
+    estavam até o Pedro decidir.
+    **Postura**: `user_ducking` do evento é a TRANSIÇÃO de agachar (trechos de
+    ~12 ticks, sem correlação com a altura: 66,3 x 66,2u), não a postura -- vai
+    para a tabela como `em_transicao_de_agachar`, e a postura segue saindo da
+    altura. Contra a verdade de match_23 (434 arremessos, 23 agachados), o corte
+    de 55u acerta 23/23 agachados mas marca 67 falsos agachados (84,6%); os
+    arremessos com duck_amount = 0 têm desvio de 5u e p5 de 51,6u, e a origem
+    dessa altura baixa ainda não foi achada. A postura de verdade (`ducked`,
+    concorda 100% com duck_amount >= 0,99) existe na demo mas o parser não a
+    grava: gravar exige subir `VERSAO_DO_PARSER` e só vale para demos novas.
+
 21a. **A força do arremesso é inferida da velocidade RELATIVA ao jogador.** Sem
     descontar a velocidade de quem arremessou, todo run-throw curto vira
     arremesso longo. O desconto é vetorial (projetar o módulo na direção da
@@ -756,9 +784,15 @@ testada e estava errada.
     correndo saiu de 674 x 727 u/s para 672,0 x 672,7.
 
     Os três grupos saem por moda (decisão 5, nada de bin fixo): 201, 440 e 674
-    u/s. **Os rótulos curto/médio/longo são do Pedro** -- o código mostra
-    "força A/B/C" com a velocidade ao lado até ele confirmar, mesmo princípio da
-    decisão 8.
+    u/s. **Rótulos confirmados pelo Pedro em 2026-09-26: curto/médio/longo pela
+    ordem** (`FORCA_CONFIRMADA = True`). Só se aplicam com exatamente três
+    grupos; com outro número o rótulo continua neutro ("força A/B/...").
+    Com tick oficial, no corpus de 43 partidas: 203 (868), 444 (957) e 677
+    (18.764) u/s, mais quatro grupos pequenos que passam do mínimo absoluto de
+    20 (331: 33, 608: 65, 788: 137, 916: 23) -- no corpus inteiro saem 7 grupos
+    e o rótulo fica neutro; por partida saem 1 a 3 grupos (3 em 10 das 43).
+    Pendente do Pedro: mínimo por grupo relativo ao tamanho da amostra, ou
+    rotular pelo centro mais próximo dos três confirmados.
 
 21b. **A reprodução por console depende de validação prática do Pedro, não do
     código.** Origem do `setpos`, sinal do `setang` e pré-requisitos de servidor
@@ -1216,8 +1250,11 @@ Não "resolva" nenhum destes automaticamente; pergunte.
   continuam do Pedro.
   `py -3.12 -m scripts.fit_rating --fit-pesos` mostra os pesos ajustados ao
   lado dos atuais, com erro fora da amostra.
-- Rótulos dos três grupos de força de arremesso (201 / 440 / 674 u/s): confirmar
-  se A/B/C são curto/médio/longo. Rode o diagnóstico de `metrics/grenade_throws`.
+- Altura dos olhos em pé medida com tick oficial (63,1-63,8u contra 64) e
+  diferença em pé - agachado (16,5 contra 18): manter as constantes ou medir de
+  novo com `duck_amount` gravado pelo parser (decisão 21c).
+- Força do arremesso: mínimo por grupo absoluto (20) gera 7 grupos no corpus
+  inteiro (decisão 21a).
 - Limiares do card de destaque (`metrics/match_highlights.py`): piso de evidência
   (0,70), limiar de empate (0,05) e as dispersões do bottom frag (1,5 a 3,0).
 - Limiares do round decisivo e do impressionante: o fator do piso de

@@ -29,6 +29,18 @@ na vertical. Então o ajuste horizontal determina `d` e o tick SEM precisar sabe
 `h`, e `h` cai depois como MEDIÇÃO por arremesso -- não como parâmetro ajustado.
 É isso que mantém o resíduo horizontal honesto como medida de confiança: nenhum
 parâmetro livre por arremesso foi absorvido nele.
+
+O tick OFICIAL (Fase G, decisão do Pedro)
+-----------------------------------------
+Quando a demo traz o evento `grenade_thrown`, o tick dele É a soltura, e a
+ancoragem vira VALIDAÇÃO: roda em paralelo e a diferença fica gravada
+(`tick_soltura_ancoragem`, `delta_ancoragem_ticks`). Isso mede o método para o
+dia em que um dado não trouxer o evento -- que é exatamente o que aconteceu com a
+cegueira (decisão 8h). Medido em 20.863 arremessos de 43 partidas: o primeiro
+sample do projétil cai no MESMO tick do evento em 100% deles, e a ancoragem
+acerta o tick exato em 39,7%, a +-1 tick em 87,9% e a +-4 em 94,8%, com viés de
++1 (escolhe um tick depois mais vezes que o exato).
+Com o tick fixado, a altura dos olhos deixa de ser degenerada e sai medida.
 """
 from __future__ import annotations
 
@@ -426,9 +438,12 @@ def _estado_do_jogador(tk: _Ticks, steamid: int, tick: int, tickrate: int) -> di
 def classifica_postura(altura_olhos: float | None) -> str | None:
     """Agachado ou em pé, pela altura dos olhos MEDIDA.
 
-    A flag `is_ducking` não existe nas tabelas deste projeto (ver o cabeçalho do
-    resumo), então a postura vem da mesma ancoragem que deu o tick -- o que tem
-    a vantagem de ser uma medição e não uma flag copiada.
+    Por que não a flag do evento oficial: `user_ducking` do `grenade_thrown` é a
+    TRANSIÇÃO de agachar, não a postura. Medido no corpus, ela fica ligada em
+    trechos de ~12 ticks (190 ms) e não se correlaciona com a altura (66,3u com
+    ela, 66,2u sem). Os campos de postura de verdade (`ducked`, `duck_amount`)
+    existem na demo, mas o parser não os grava hoje -- em match_23 eles
+    confirmam o agachado a 46u. Até lá, a postura vem da altura MEDIDA.
     """
     if altura_olhos is None or not (ALTURA_OLHOS_MIN <= altura_olhos <= ALTURA_OLHOS_MAX):
         return None
@@ -518,10 +533,9 @@ def grupos_de_forca(velocidades: np.ndarray) -> list[tuple[float, int]]:
 # Rótulos dos grupos de força, do mais fraco para o mais forte. A ordem não é
 # ambígua (menor velocidade = arremesso curto) e bate com os três jeitos de soltar
 # a granada no CS2: botão direito (lob), os dois botões (médio), botão esquerdo
-# (cheio). PENDENTE DE CONFIRMAÇÃO DO PEDRO: até ele conferir a distribuição, o
-# rótulo sai com "(a confirmar)". Confirmado, é trocar FORCA_CONFIRMADA.
+# (cheio). Confirmado pelo Pedro em 2026-09-26 (decisão 21a).
 ROTULOS_FORCA = ("curto", "médio", "longo")
-FORCA_CONFIRMADA = False
+FORCA_CONFIRMADA = True
 
 
 def rotula_forca(velocidade: float | None, grupos: list[tuple[float, int]]) -> str | None:
@@ -609,6 +623,109 @@ def _lancamentos_crus(traj: pl.DataFrame, eventos: pl.DataFrame) -> list[dict]:
     return out
 
 
+# Janela para casar um projétil com o evento oficial de arremesso: o evento vem
+# antes (ou no mesmo tick) do primeiro sample. 1,5 s é a mesma janela máxima da
+# ancoragem; medido, o evento cai no tick do primeiro sample em 100% dos casos.
+JANELA_EVENTO_OFICIAL_S = 1.5
+
+# Nome da arma no evento oficial -> tipo de granada do projeto.
+ARMA_DO_EVENTO = {"smokegrenade": "smoke", "flashbang": "flash", "hegrenade": "he",
+                  "molotov": "molotov", "incgrenade": "molotov", "decoy": "decoy"}
+
+
+def aplica_tick_oficial(
+    ancorados: list[dict], oficial: pl.DataFrame | None, tickrate: int
+) -> tuple[list[dict], float | None]:
+    """Troca o tick da ancoragem pelo tick do evento `grenade_thrown`, quando há.
+
+    A geometria da soltura (posição dos pés, pitch e yaw) sai do PRÓPRIO evento,
+    que a grava no tick oficial.
+
+    Com o tick fixado, o deslocamento entre olhos e primeiro ponto do projétil é
+    medido POR ARREMESSO (`avanco_na_mira`), não global. Medido no corpus: no
+    tick oficial o deslocamento fica TODO na direção da mira (resíduo
+    perpendicular mediano de 0,01u, p90 0,28u) e o tamanho dele cresce com a
+    força do arremesso (17u a 100 u/s, 34u a 900 u/s) -- a granada já andou um
+    pedaço quando aparece. Um offset global transformava essa variação em
+    "resíduo" e em erro de altura. Não é parâmetro livre escondendo erro: a
+    ancoragem precisava do offset global porque o tick era a incógnita; aqui o
+    tick é dado, e a direção é a verificação.
+
+    Por isso, com tick oficial, `residuo` é a distância PERPENDICULAR à mira: é
+    ela que diz se pitch/yaw do evento explicam o ponto observado.
+
+    Devolve os arremessos e a mediana do avanço na mira (None se a demo não tem o
+    evento), que substitui o offset global no resumo.
+    """
+    if oficial is None or oficial.height == 0 or "user_steamid" not in oficial.columns:
+        return [{**a, "fonte_tick": "ancoragem"} for a in ancorados], None
+
+    ofi = oficial.with_columns(
+        pl.col("weapon").replace_strict(ARMA_DO_EVENTO, default=None).alias("kind"))
+    por_jog: dict[tuple[int, str], list[dict]] = {}
+    for e in ofi.iter_rows(named=True):
+        if e["kind"] is not None and e["user_steamid"] is not None:
+            por_jog.setdefault((int(e["user_steamid"]), e["kind"]), []).append(e)
+
+    janela = int(JANELA_EVENTO_OFICIAL_S * tickrate)
+    usados: set[int] = set()
+    casados = []  # (índice do arremesso, evento, w, u)
+    for i, a in enumerate(ancorados):
+        cands = [e for e in por_jog.get((int(a["steamid"]), a["kind"]), [])
+                 if 0 <= a["tick_primeiro"] - int(e["tick"]) <= janela and id(e) not in usados]
+        if not cands:
+            continue
+        e = max(cands, key=lambda x: int(x["tick"]))  # o último arremesso antes do projétil
+        usados.add(id(e))
+        # o projétil é levado de volta até o tick oficial pela velocidade inicial
+        # (medido: 0 tick de distância em 100% dos casos, então isto é seguro, não
+        # uma correção que muda número)
+        dt = (a["tick_primeiro"] - int(e["tick"])) / tickrate
+        p0 = a["p0"]
+        if dt and len(a["ticks"]) >= 2:
+            v0 = (a["traj"][1] - a["traj"][0]) / ((a["ticks"][1] - a["ticks"][0]) / tickrate)
+            p0 = p0 - v0 * dt
+        pes = np.array([e["user_X"], e["user_Y"], e["user_Z"]], dtype=float)
+        u = direcao_da_mira(np.array([float(e["user_pitch"])]), np.array([float(e["user_yaw"])]))[0]
+        casados.append((i, e, p0 - pes, u, pes))
+
+    if not casados:
+        return [{**a, "fonte_tick": "ancoragem"} for a in ancorados], None
+
+    saida = [{**a, "fonte_tick": "ancoragem"} for a in ancorados]
+    avancos = []
+    for i, e, w, u, pes in casados:
+        a = saida[i]
+        norma = float(np.linalg.norm(u[:2]))
+        if norma < 1e-6:  # mira na vertical: a projeção horizontal não diz nada
+            continue
+        avanco = float(w[:2] @ u[:2]) / norma ** 2
+        avancos.append(avanco)
+        residuo = float(np.linalg.norm(w[:2] - avanco * u[:2]))
+        saida[i] = {
+            **a,
+            "tick_soltura_ancoragem": a.get("tick_soltura"),
+            "delta_ancoragem_ticks": (None if a.get("tick_soltura") is None
+                                      else int(a["tick_soltura"]) - int(e["tick"])),
+            "tick_soltura": int(e["tick"]),
+            "residuo": residuo,
+            "altura_olhos": float(w[2] - avanco * u[2] - OFFSET_VERTICAL_SOLTURA),
+            "avanco_na_mira": avanco,
+            "pos_soltura": pes,
+            "pitch": float(e["user_pitch"]),
+            "yaw": float(e["user_yaw"]),
+            # a flag `ducking` do evento marca a TRANSIÇÃO de agachar (dura
+            # ~190 ms), não a postura: medido, fica ligada em 6-9% dos arremessos
+            # em qualquer faixa de altura. Vai para a tabela como informação, e a
+            # postura continua saindo da altura medida.
+            "em_transicao_de_agachar": bool(e.get("user_ducking")),
+            "atraso_animacao_ticks": (None if a.get("tick_clique") is None
+                                      else int(e["tick"]) - int(a["tick_clique"])),
+            "fonte_tick": "oficial",
+        }
+    return saida, (float(np.median(avancos)) if avancos else None)
+
+
 def grenade_throws(
     tables: dict[str, pl.DataFrame], tickrate: int
 ) -> tuple[pl.DataFrame, dict]:
@@ -627,6 +744,7 @@ def grenade_throws(
     tk = _Ticks(tables["ticks"])
     crus = _lancamentos_crus(traj, eventos)
     ancorados, offset = ancora_arremessos(crus, tk, tickrate)
+    ancorados, offset_oficial = aplica_tick_oficial(ancorados, tables.get("grenade_thrown"), tickrate)
 
     linhas = []
     for a in ancorados:
@@ -645,6 +763,11 @@ def grenade_throws(
             "kind": a["kind"],
             "tick_clique": a["tick_clique"],
             "tick_soltura": a["tick_soltura"],
+            "fonte_tick": a.get("fonte_tick"),
+            "tick_soltura_ancoragem": a.get("tick_soltura_ancoragem"),
+            "delta_ancoragem_ticks": a.get("delta_ancoragem_ticks"),
+            "avanco_na_mira": a.get("avanco_na_mira"),
+            "em_transicao_de_agachar": a.get("em_transicao_de_agachar"),
             "atraso_animacao_ticks": a.get("atraso_animacao_ticks"),
             "residuo": a["residuo"],
             "altura_olhos": a["altura_olhos"],
@@ -676,7 +799,7 @@ def grenade_throws(
         linha["reproducao_exata"] = motivo is None
 
     per_round = pl.DataFrame(linhas, infer_schema_length=None).sort(["round_num", "tick_soltura"])
-    return per_round, resumo_de_ancoragem(per_round, offset)
+    return per_round, resumo_de_ancoragem(per_round, offset, offset_oficial)
 
 
 def motivo_aproximado(linha: dict) -> str | None:
@@ -690,6 +813,8 @@ def motivo_aproximado(linha: dict) -> str | None:
         return "não foi possível ancorar o tick da soltura"
     r = linha.get("residuo")
     if r is not None and r > MAX_RESIDUO_ANCORAGEM:
+        if linha.get("fonte_tick") == "oficial":
+            return f"a mira do evento oficial passa a {r:.1f}u do ponto observado da granada"
         return f"a ancoragem ficou a {r:.1f}u do ponto observado da granada"
     g = linha.get("giro_na_soltura")
     if g is not None and g > MAX_GIRO_NA_SOLTURA:
@@ -700,8 +825,13 @@ def motivo_aproximado(linha: dict) -> str | None:
     return None
 
 
-def resumo_de_ancoragem(per_round: pl.DataFrame, offset_mao: float) -> dict:
-    """O que a ancoragem mediu -- é este resumo que decide se dá para confiar."""
+def resumo_de_ancoragem(per_round: pl.DataFrame, offset_mao: float,
+                        offset_mao_oficial: float | None = None) -> dict:
+    """O que a ancoragem mediu -- é este resumo que decide se dá para confiar.
+
+    Com o evento oficial, inclui a qualidade da ancoragem CONTRA ele: é a medida
+    do método para o dia em que uma demo não trouxer o evento.
+    """
     if per_round.height == 0:
         return {"arremessos": 0}
 
@@ -729,4 +859,22 @@ def resumo_de_ancoragem(per_round: pl.DataFrame, offset_mao: float) -> dict:
         "grupos_de_forca": grupos_de_forca(vel),
         "reproducao_exata": int(per_round["reproducao_exata"].sum()),
         "aproximados": int((~per_round["reproducao_exata"]).sum()),
+        "avanco_na_mira_mediano": offset_mao_oficial,
+        "ancoragem_vs_oficial": _ancoragem_vs_oficial(per_round),
+    }
+
+
+def _ancoragem_vs_oficial(per_round: pl.DataFrame) -> dict | None:
+    """Quantos ticks a ancoragem erra, onde há tick oficial para comparar."""
+    if "delta_ancoragem_ticks" not in per_round.columns:
+        return None
+    d = per_round["delta_ancoragem_ticks"].drop_nulls().to_numpy()
+    if d.size == 0:
+        return None
+    return {
+        "n": int(d.size),
+        "exato": float((d == 0).mean()),
+        "ate_1_tick": float((np.abs(d) <= 1).mean()),
+        "ate_4_ticks": float((np.abs(d) <= 4).mean()),
+        "mediana": float(np.median(d)),
     }

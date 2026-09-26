@@ -368,3 +368,96 @@ def test_tres_grupos_recebem_curto_medio_longo_pela_ordem_a_confirmar():
     sufixo = "" if FORCA_CONFIRMADA else " (a confirmar)"
     assert [rotula_forca(c, grupos) for c, _ in grupos] == [
         "curto" + sufixo, "médio" + sufixo, "longo" + sufixo]
+
+
+# --- G) Tick oficial (grenade_thrown) -----------------------------------------
+
+def _evento_oficial(tab: dict, t_evento: int, steamid: int, pitch: float, yaw: float,
+                    arma: str = "smokegrenade", ducking: bool = False,
+                    pes: tuple = (0.0, 0.0, 0.0)) -> dict:
+    """Acrescenta ao cenário o evento `grenade_thrown`, com as colunas do parser."""
+    return {**tab, "grenade_thrown": pl.DataFrame({
+        "tick": [t_evento], "user_X": [pes[0]], "user_Y": [pes[1]], "user_Z": [pes[2]],
+        "user_pitch": [pitch], "user_yaw": [yaw], "user_ducking": [ducking],
+        "user_steamid": [steamid], "weapon": [arma], "round_num": [1],
+    })}
+
+
+def test_o_tick_oficial_e_a_verdade_e_a_ancoragem_fica_como_validacao():
+    """Fase G: com o evento, o tick da soltura é o dele, e a ancoragem vai ao lado.
+
+    Jogador PARADO de propósito: a ancoragem fica indeterminada (resíduo plano
+    na janela) e escolhe um tick qualquer -- o oficial não depende disso. O
+    evento cai no tick do primeiro sample, como no corpus (100% dos casos).
+    """
+    tab = _cenario([_um(pitch=35.0)])
+    t_primeiro = int(tab["grenades"]["tick"].min())
+    pr, resumo = grenade_throws(_evento_oficial(tab, t_primeiro, 100, 35.0, 45.0), TICKRATE)
+
+    assert pr["fonte_tick"][0] == "oficial"
+    assert pr["tick_soltura"][0] == t_primeiro
+    assert pr["delta_ancoragem_ticks"][0] == pr["tick_soltura_ancoragem"][0] - t_primeiro
+    # com o tick certo, a altura sai medida em cima dos 64 do sintético
+    assert abs(pr["altura_olhos"][0] - ALTURA_OLHOS_EM_PE) < 0.5
+    assert abs(resumo["avanco_na_mira_mediano"] - OFFSET_MAO) < 0.5
+    assert pr["residuo"][0] < 0.5  # perpendicular: a mira do evento explica o ponto
+    assert resumo["ancoragem_vs_oficial"]["n"] == 1
+
+
+def test_sem_evento_oficial_a_ancoragem_continua_valendo():
+    """Demo sem `grenade_thrown` (ou evento de outra granada): nada muda."""
+    tab = _cenario([_um()])
+    t_primeiro = int(tab["grenades"]["tick"].min())
+    pr, resumo = grenade_throws(_evento_oficial(tab, t_primeiro, 100, -10.0, 45.0,
+                                                arma="flashbang"), TICKRATE)
+    assert pr["fonte_tick"][0] == "ancoragem"
+    assert pr["delta_ancoragem_ticks"][0] is None
+    assert resumo["avanco_na_mira_mediano"] is None
+
+    pr_sem, _ = grenade_throws(tab, TICKRATE)
+    assert pr_sem["fonte_tick"][0] == "ancoragem"
+
+
+def test_evento_depois_do_projetil_nao_e_casado():
+    """O evento vem ANTES (ou junto) do primeiro sample; depois é outro arremesso."""
+    tab = _cenario([_um()])
+    t_primeiro = int(tab["grenades"]["tick"].min())
+    pr, _ = grenade_throws(_evento_oficial(tab, t_primeiro + 3, 100, -10.0, 45.0), TICKRATE)
+    assert pr["fonte_tick"][0] == "ancoragem"
+
+
+def test_a_flag_ducking_do_evento_nao_decide_a_postura():
+    """`user_ducking` é a TRANSIÇÃO de agachar (~190 ms), não a postura: medido,
+    não se correlaciona com a altura. Em pé com a flag ligada continua em pé."""
+    tab = _cenario([_um(agachado=False)])
+    t_primeiro = int(tab["grenades"]["tick"].min())
+    pr, _ = grenade_throws(_evento_oficial(tab, t_primeiro, 100, -10.0, 45.0, ducking=True),
+                           TICKRATE)
+    assert pr["em_transicao_de_agachar"][0] is True
+    assert pr["postura"][0] == "em pé"
+
+
+@pytest.mark.parametrize("match_id", ["match_10", "match_23"])
+def test_o_evento_oficial_casa_com_quase_todo_arremesso_no_dado_real(match_id):
+    """Trava a Fase G no dado real: o evento existe e casa com os projéteis.
+
+    Medido nas 43 partidas com o evento: 20.863 arremessos casados, e a
+    ancoragem acerta o tick a +-1 em 87,9%. Os pisos aqui pegam regressão
+    (casamento quebrado, convenção trocada), não são apertados.
+    """
+    processed = Path("data/processed") / match_id
+    interim = Path("data/interim") / match_id
+    if not (interim / "grenade_thrown.parquet").exists():
+        pytest.skip(f"{match_id} sem o evento oficial no interim")
+
+    tabelas = {
+        "rounds": pl.read_parquet(processed / "rounds.parquet"),
+        "ticks": pl.read_parquet(interim / "ticks.parquet"),
+        "grenades": pl.read_parquet(interim / "grenades.parquet"),
+        "shots": pl.read_parquet(interim / "shots.parquet"),
+        "grenade_thrown": pl.read_parquet(interim / "grenade_thrown.parquet"),
+    }
+    pr, resumo = grenade_throws(tabelas, TICKRATE)
+    assert (pr["fonte_tick"] == "oficial").mean() >= 0.95
+    assert resumo["ancoragem_vs_oficial"]["ate_1_tick"] >= 0.75
+    assert ALTURA_OLHOS_MIN < resumo["altura_olhos_em_pe"] < ALTURA_OLHOS_MAX
