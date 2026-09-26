@@ -39,9 +39,12 @@ sem refazê-los marcaria `pesos_desatualizados` em todas as páginas.
 PARALELO = SEQUENCIAL, e isso é conferido
 -----------------------------------------
 Cada partida escreve só na própria pasta, e os passos de corpus são barreiras.
-`--sequencial` roda a mesma coisa num processo só; o teste
-`tests/test_reprocessa.py` e a conferência registrada no CLAUDE.md comparam os
-dois arquivo a arquivo.
+`--sequencial` roda a mesma coisa num processo só. A comparação arquivo a
+arquivo dos dois modos foi feita no corpus inteiro e está registrada na decisão
+28 do CLAUDE.md (2.395/2.395 idênticos); ela é cara demais para rodar a cada
+teste. O que fica em teste é a CAUSA da diferença que existia antes:
+`tests/test_determinismo.py` falha se aparecer `group_by`/`unique` sem ordem
+declarada ou `mode()` sem desempate.
 """
 from __future__ import annotations
 

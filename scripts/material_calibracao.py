@@ -158,12 +158,104 @@ def secao_console() -> list[str]:
             "**Sua resposta:** funcionou? ____", ""]
 
 
+# Direção no radar a partir do yaw do CS2: 0° aponta para +X (direita do
+# radar), 90° para +Y (cima), e o ângulo cresce no sentido anti-horário.
+_DIRECOES = ["direita", "direita-cima", "cima", "esquerda-cima",
+             "esquerda", "esquerda-baixo", "baixo", "direita-baixo"]
+
+
+def _direcao(yaw: float) -> str:
+    return _DIRECOES[int(((yaw % 360) + 22.5) // 45) % 8]
+
+
+def angulos_distintos(mapa: str) -> tuple[pl.DataFrame, int, int]:
+    """Ângulos de entrada de um mapa, juntando o mesmo ângulo que reaparece em
+    partidas diferentes.
+
+    O pipeline deriva os ângulos POR PARTIDA (`derive_entry_angles`, moda circular
+    do yaw do atacante, mínimo de 4 kills). A mesma região costuma produzir o
+    mesmo ângulo em várias partidas; juntá-los pelo mesmo raio da derivação dá o
+    ângulo distinto e duas medidas de sustentação: em QUANTAS PARTIDAS ele
+    aparece e quantas kills somam. Seis kills vindas de uma partida só são mais
+    frágeis que seis vindas de cinco -- podem ser o hábito de um time, não do
+    mapa. Devolve (ângulos, ângulos por partida, número de partidas).
+    """
+    from metrics.map_angles import YAW_CLUSTER_RADIUS_DEG, _circular_mean, derive_entry_angles
+    from parsing.parser import kills_do_round_jogado
+
+    man = json.loads((PROJECT_ROOT / "data" / "manifest.json").read_text(encoding="utf-8"))["partidas"]
+    partidas = [m for m, v in man.items() if v.get("mapa") == mapa
+                and (PROJECT_ROOT / "data" / "interim" / m / "kills.parquet").exists()]
+    por_partida = []
+    for m in partidas:
+        rounds = pl.read_parquet(PROCESSED / m / "rounds.parquet")
+        kills = kills_do_round_jogado(pl.read_parquet(PROJECT_ROOT / "data" / "interim" / m / "kills.parquet"), rounds)
+        por_partida.append(derive_entry_angles(kills).with_columns(pl.lit(m).alias("match_id")))
+    if not por_partida:
+        return pl.DataFrame(), 0, 0
+    a = pl.concat(por_partida)
+
+    def distancia(x: float, y: float) -> float:
+        d = abs(x - y) % 360
+        return min(d, 360 - d)
+
+    grupos = []
+    for (place, side), g in a.group_by("place", "side", maintain_order=True):
+        linhas = sorted(g.iter_rows(named=True), key=lambda r: (-r["n_kills"], r["match_id"]))
+        usados = [False] * len(linhas)
+        for i, r in enumerate(linhas):
+            if usados[i]:
+                continue
+            membros = [r]
+            usados[i] = True
+            for j in range(i + 1, len(linhas)):
+                if not usados[j] and distancia(linhas[j]["yaw"], r["yaw"]) <= YAW_CLUSTER_RADIUS_DEG:
+                    membros.append(linhas[j])
+                    usados[j] = True
+            grupos.append({
+                "place": place, "side": side,
+                "yaw": float(_circular_mean(np.array([x["yaw"] for x in membros]))),
+                "partidas": len({x["match_id"] for x in membros}),
+                "kills": sum(x["n_kills"] for x in membros),
+            })
+    ordem = pl.DataFrame(grupos).sort(["partidas", "kills", "place", "side"])
+    return ordem, a.height, len(partidas)
+
+
+def secao_angulos_nuke() -> list[str]:
+    angulos, n_por_partida, n_partidas = angulos_distintos("de_nuke")
+    out = ["## 5. Ângulos de entrada da Nuke, do menos sustentado para o mais", ""]
+    if angulos.height == 0:
+        return out + ["Sem partidas de Nuke com interim no disco.", ""]
+    uma = angulos.filter(pl.col("partidas") == 1).height
+    out += [
+        f"{angulos.height} ângulos distintos, juntando os {n_por_partida} que o pipeline deriva partida a partida "
+        f"nas {n_partidas} Nuke do corpus (mesmo ângulo em partidas diferentes = mesma região, mesmo lado, yaw "
+        f"a menos de 20°). **{uma} aparecem numa partida só** -- podem ser hábito de um time naquele dia, não "
+        "ângulo do mapa. A Nuke é o mapa de partição menos confiável do projeto (os dois sites empilhados "
+        "na vertical), então é aqui que o julgamento humano mais vale.",
+        "",
+        "Yaw na convenção do CS2: 0° para a direita do radar, 90° para cima, crescendo no sentido anti-horário. "
+        "O que você confirmar ou corrigir vira `MANUAL_ENTRY_ANGLES` em `metrics/map_angles.py`, que tem "
+        "prioridade sobre o derivado.",
+        "",
+        "| # | região | lado | yaw | direção no radar | partidas | kills | sua resposta |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
+    for i, r in enumerate(angulos.iter_rows(named=True), 1):
+        out.append(f"| {i} | {r['place']} | {r['side'].upper()} | {r['yaw']:.0f}° | {_direcao(r['yaw'])} | "
+                   f"{r['partidas']} | {r['kills']} | ____ |")
+    out += ["", "**Sua resposta:** para cada linha, *confirma*, *descarta* (não é ângulo de verdade) ou "
+                "*corrige* o yaw.", ""]
+    return out
+
+
 def main() -> None:
     partes = ["# Material de calibração", "",
               "Gerado por `py -3.12 -m scripts.material_calibracao`. Cada seção termina com a "
               "pergunta que só você responde; as respostas viram constante com data e tamanho de "
               "corpus no CLAUDE.md.", ""]
-    partes += secao_pisos() + secao_grupos() + secao_forca() + secao_console()
+    partes += secao_pisos() + secao_grupos() + secao_forca() + secao_console() + secao_angulos_nuke()
     SAIDA.write_text("\n".join(partes), encoding="utf-8")
     print(f"Gravado em {SAIDA.relative_to(PROJECT_ROOT)} ({SAIDA.stat().st_size / 1024:.0f} KB)")
 

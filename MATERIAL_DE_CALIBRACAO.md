@@ -6,100 +6,90 @@ Gerado por `py -3.12 -m scripts.material_calibracao`. Cada seção termina com a
 
 Gerado por `py -3.12 -m scripts.proposta_pisos`. O rótulo exige **liderar o próprio time** na métrica E passar do piso; o piso barra o líder que não é destacado. Para cada função: a distribuição completa (todos os jogador-partidas e só os líderes), três métodos objetivos -- **maior vazio** entre valores consecutivos, **Otsu** (menor variância dentro das duas classes) e **vale da densidade** (KDE) --, o veredito de concordância e os líderes mais próximos de cada corte. Métodos que concordam = corte real; métodos que discordam = a métrica é um contínuo e o piso é convenção. Os pisos continuam ABSOLUTOS. O que é seu: olhar a fronteira e dizer se aquele jogador jogou a função naquela partida.
 
-### AWPer — `awp_share`, piso atual 0.250
+### AWPer — `awp_share`, piso atual 0.533
 
 430 jogador-partidas profissionais em 43 partidas; 86 líderes de time (empate na liderança conta os dois).
 
 Distribuição -- TODOS (as marcas são os cortes de cada método):
 ```
-     0.000-0.042     167 ##############################################
-     0.042-0.083      84 #######################
-     0.083-0.125      48 #############
-     0.125-0.167      29 ########
-     0.167-0.208      12 ###
-     0.208-0.250      11 ###
-     0.250-0.292       5 #   <- atual, vazio (todos), otsu (todos), vale (todos)
-     0.292-0.333       3 #
-     0.333-0.375       9 ##
-     0.375-0.417       5 #
-     0.417-0.458       6 ##
-     0.458-0.500      10 ###
-     0.500-0.542      12 ###
-     0.542-0.583       7 ##
-     0.583-0.625      10 ###
-     0.625-0.667       6 ##
-     0.667-0.708       3 #
-     0.708-0.750       3 #
+     0.000-0.056     161 ##############################################
+     0.056-0.111      49 ##############
+     0.111-0.167      47 #############
+     0.167-0.222      31 #########
+     0.222-0.278      28 ########
+     0.278-0.333       3 #
+     0.333-0.389      15 ####
+     0.389-0.444       3 #
+     0.444-0.500       4 #
+     0.500-0.556       0    <- atual, vazio (todos), otsu (todos)
+     0.556-0.611       2 #   <- vale (todos)
+     0.611-0.667       0 
+     0.667-0.722       2 #
+     0.722-0.778       1 
+     0.778-0.833       2 #
+     0.833-0.889       9 ###
+     0.889-0.944      17 #####
+     0.944-1.000      56 ################
 ```
 
 Distribuição -- LÍDERES (as marcas são os cortes de cada método):
 ```
-     0.056-0.094       2 ######
-     0.094-0.133       1 ###
-     0.133-0.171       2 ######   <- vazio (líderes)
-     0.171-0.210       3 #########
-     0.210-0.248       5 ###############
-     0.248-0.287       1 ###   <- atual
-     0.287-0.326       2 ######
-     0.326-0.364       7 #####################
-     0.364-0.403       6 ##################
-     0.403-0.441       1 ###   <- otsu (líderes)
-     0.441-0.480      15 ##############################################
-     0.480-0.519       6 ##################
-     0.519-0.557       8 #########################
-     0.557-0.596       8 #########################
-     0.596-0.634      10 ###############################
-     0.634-0.673       4 ############
-     0.673-0.711       3 #########
-     0.711-0.750       2 ######
+     0.667-0.685       1 #
+     0.685-0.704       0 
+     0.704-0.722       0 
+     0.722-0.741       1 #
+     0.741-0.759       0 
+     0.759-0.778       0 
+     0.778-0.796       0 
+     0.796-0.815       2 ##
+     0.815-0.833       0 
+     0.833-0.852       3 ###
+     0.852-0.870       1 #
+     0.870-0.889       5 ####
+     0.889-0.907       9 ########
+     0.907-0.926       4 ####
+     0.926-0.944       4 ####   <- otsu (líderes), vale (líderes)
+     0.944-0.963       3 ###
+     0.963-0.981       1 #
+     0.981-1.000      52 ##############################################   <- vazio (líderes)
 ```
 
 | método | corte | líderes que levam o rótulo |
 |---|---|---|
-| atual | 0.250 | 73 de 86 |
-| vazio (todos) | 0.271 | 73 de 86 |
-| otsu (todos) | 0.271 | 73 de 86 |
-| vale (todos) | 0.289 | 72 de 86 |
-| vazio (líderes) | 0.158 | 81 de 86 |
-| otsu (líderes) | 0.414 | 57 de 86 |
-| vale (líderes) | sem corte (distribuição unimodal) | — |
+| atual | 0.533 | 86 de 86 |
+| vazio (todos) | 0.533 | 86 de 86 |
+| otsu (todos) | 0.533 | 86 de 86 |
+| vale (todos) | 0.577 | 86 de 86 |
+| vazio (líderes) | 0.982 | 52 de 86 |
+| otsu (líderes) | 0.931 | 58 de 86 |
+| vale (líderes) | 0.934 | 56 de 86 |
 
-- todos: espalhamento 0.12 amplitude interquartil (0.143) -> **CONCORDAM**, mediana 0.271
-- líderes: espalhamento 1.13 amplitude interquartil (0.227) -> **discordam**
+- todos: espalhamento 0.13 amplitude interquartil (0.333) -> **CONCORDAM**, mediana 0.533
+- líderes: espalhamento 0.52 amplitude interquartil (0.098) -> **discordam**
 
-**Veredito: corte real em 0.271** (métodos concordam entre todos). Piso atual 0.250: 73 líderes com rótulo; sugerido: 73.
+**Veredito: corte real em 0.533** (métodos concordam entre todos). Piso atual 0.533: 86 líderes com rótulo; sugerido: 86.
 
-**Fronteira do corte atual (0.250)** -- os 5 líderes mais próximos de cada lado:
-
-| lado | jogador | time | partida | mapa | awp_share |
-|---|---|---|---|---|---|
-| rótulo | ZywOo | Team Vitality | match_43 | mirage | 0.333 |
-| rótulo | sh1ro | Team Spirit | match_27 | nuke | 0.333 |
-| rótulo | w0nderful | Natus Vincere | match_15 | mirage | 0.312 |
-| rótulo | ZywOo | Team Vitality | match_14 | ancient | 0.304 |
-| rótulo | torzsi | MOUZ | match_35 | inferno | 0.286 |
-| — corte 0.250 — | | | | | |
-| sem rótulo | ZywOo | Team Vitality | match_35 | inferno | 0.238 |
-| sem rótulo | w0nderful | Natus Vincere | match_38 | mirage | 0.238 |
-| sem rótulo | 910 | The MongolZ | match_52 | mirage | 0.222 |
-| sem rótulo | sh1ro | Team Spirit | match_28 | mirage | 0.217 |
-| sem rótulo | w0nderful | Natus Vincere | match_25 | anubis | 0.211 |
-
-**Fronteira do corte sugerido (0.271)** -- os 5 líderes mais próximos de cada lado:
+**Fronteira do corte atual (0.533)** -- os 5 líderes mais próximos de cada lado:
 
 | lado | jogador | time | partida | mapa | awp_share |
 |---|---|---|---|---|---|
-| rótulo | ZywOo | Team Vitality | match_43 | mirage | 0.333 |
-| rótulo | sh1ro | Team Spirit | match_27 | nuke | 0.333 |
-| rótulo | w0nderful | Natus Vincere | match_15 | mirage | 0.312 |
-| rótulo | ZywOo | Team Vitality | match_14 | ancient | 0.304 |
-| rótulo | torzsi | MOUZ | match_35 | inferno | 0.286 |
-| — corte 0.271 — | | | | | |
-| sem rótulo | ZywOo | Team Vitality | match_35 | inferno | 0.238 |
-| sem rótulo | w0nderful | Natus Vincere | match_38 | mirage | 0.238 |
-| sem rótulo | 910 | The MongolZ | match_52 | mirage | 0.222 |
-| sem rótulo | sh1ro | Team Spirit | match_28 | mirage | 0.217 |
-| sem rótulo | w0nderful | Natus Vincere | match_25 | anubis | 0.211 |
+| rótulo | ZywOo | Team Vitality | match_35 | inferno | 0.833 |
+| rótulo | w0nderful | Natus Vincere | match_40 | nuke | 0.800 |
+| rótulo | ZywOo | Team Vitality | match_34 | mirage | 0.800 |
+| rótulo | m0NESY | Falcons | match_30 | nuke | 0.727 |
+| rótulo | molodoy | FURIA | match_45 | nuke | 0.667 |
+| — corte 0.533 — | | | | | |
+
+**Fronteira do corte sugerido (0.533)** -- os 5 líderes mais próximos de cada lado:
+
+| lado | jogador | time | partida | mapa | awp_share |
+|---|---|---|---|---|---|
+| rótulo | ZywOo | Team Vitality | match_35 | inferno | 0.833 |
+| rótulo | w0nderful | Natus Vincere | match_40 | nuke | 0.800 |
+| rótulo | ZywOo | Team Vitality | match_34 | mirage | 0.800 |
+| rótulo | m0NESY | Falcons | match_30 | nuke | 0.727 |
+| rótulo | molodoy | FURIA | match_45 | nuke | 0.667 |
+| — corte 0.533 — | | | | | |
 
 **Sua resposta:** os jogadores da fronteira jogaram de AWPer naquelas partidas? piso de AWPer = ____
 
@@ -264,100 +254,100 @@ Distribuição -- LÍDERES (as marcas são os cortes de cada método):
 
 **Sua resposta:** os jogadores da fronteira jogaram de Suporte de utility naquelas partidas? piso de Suporte de utility = ____
 
-### Lurker — `off_team_share`, piso atual 0.400
+### Lurker — `off_team_relativo`, piso atual 1.500
 
-429 jogador-partidas profissionais em 43 partidas; 109 líderes de time (empate na liderança conta os dois).
+429 jogador-partidas profissionais em 43 partidas; 102 líderes de time (empate na liderança conta os dois).
 
 Distribuição -- TODOS (as marcas são os cortes de cada método):
 ```
-     0.000-0.056      79 ##############################################   <- vazio (todos)
-     0.056-0.111      24 ##############
-     0.111-0.167      37 ######################
-     0.167-0.222      25 ###############   <- vale (todos)
-     0.222-0.278      31 ##################
-     0.278-0.333      21 ############   <- otsu (todos)
-     0.333-0.389      51 ##############################
-     0.389-0.444      34 ####################   <- atual
-     0.444-0.500      16 #########
-     0.500-0.556      46 ###########################
-     0.556-0.611      28 ################
-     0.611-0.667       9 #####
-     0.667-0.722      12 #######
-     0.722-0.778       4 ##
-     0.778-0.833       6 ###
-     0.833-0.889       3 ##
-     0.889-0.944       0 
-     0.944-1.000       3 ##
+     0.000-0.226      92 ##############################################   <- vazio (todos)
+     0.226-0.452      19 ##########
+     0.452-0.678      34 #################   <- vale (todos)
+     0.678-0.905      19 ##########
+     0.905-1.131      27 ##############
+     1.131-1.357      44 ######################   <- otsu (todos)
+     1.357-1.583      29 ##############   <- atual
+     1.583-1.809      36 ##################
+     1.809-2.035      34 #################
+     2.035-2.261      40 ####################
+     2.261-2.488      18 #########
+     2.488-2.714      14 #######
+     2.714-2.940       4 ##
+     2.940-3.166       9 ####
+     3.166-3.392       3 ##
+     3.392-3.618       2 #
+     3.618-3.844       4 ##
+     3.844-4.071       1 
 ```
 
 Distribuição -- LÍDERES (as marcas são os cortes de cada método):
 ```
-     0.000-0.056      15 ######################################
-     0.056-0.111       5 #############
-     0.111-0.167       7 ##################
-     0.167-0.222       4 ##########
-     0.222-0.278       0    <- vazio (líderes), vale (líderes)
-     0.278-0.333       1 ###   <- otsu (líderes)
-     0.333-0.389       3 ########
-     0.389-0.444       7 ##################   <- atual
-     0.444-0.500       4 ##########
-     0.500-0.556      18 ##############################################
-     0.556-0.611      18 ##############################################
-     0.611-0.667       7 ##################
-     0.667-0.722       6 ###############
-     0.722-0.778       2 #####
-     0.778-0.833       6 ###############
-     0.833-0.889       3 ########
-     0.889-0.944       0 
-     0.944-1.000       3 ########
+     0.000-0.226      20 ##############################################
+     0.226-0.452       4 #########
+     0.452-0.678       4 #########
+     0.678-0.905       2 #####
+     0.905-1.131       4 #########   <- vale (líderes)
+     1.131-1.357       0    <- vazio (líderes), otsu (líderes)
+     1.357-1.583       4 #########   <- atual
+     1.583-1.809       9 #####################
+     1.809-2.035       7 ################
+     2.035-2.261      15 ##################################
+     2.261-2.488      10 #######################
+     2.488-2.714       7 ################
+     2.714-2.940       2 #####
+     2.940-3.166       5 ############
+     3.166-3.392       3 #######
+     3.392-3.618       2 #####
+     3.618-3.844       3 #######
+     3.844-4.071       1 ##
 ```
 
 | método | corte | líderes que levam o rótulo |
 |---|---|---|
-| atual | 0.400 | 74 de 109 |
-| vazio (todos) | 0.033 | 94 de 109 |
-| otsu (todos) | 0.321 | 77 de 109 |
-| vale (todos) | 0.215 | 78 de 109 |
-| vazio (líderes) | 0.243 | 78 de 109 |
-| otsu (líderes) | 0.325 | 77 de 109 |
-| vale (líderes) | 0.264 | 78 de 109 |
+| atual | 1.500 | 67 de 102 |
+| vazio (todos) | 0.142 | 82 de 102 |
+| otsu (todos) | 1.261 | 68 de 102 |
+| vale (todos) | 0.550 | 78 de 102 |
+| vazio (líderes) | 1.284 | 68 de 102 |
+| otsu (líderes) | 1.284 | 68 de 102 |
+| vale (líderes) | 1.028 | 69 de 102 |
 
-- todos: espalhamento 0.77 amplitude interquartil (0.375) -> **discordam**
-- líderes: espalhamento 0.19 amplitude interquartil (0.433) -> **CONCORDAM**, mediana 0.264
+- todos: espalhamento 0.72 amplitude interquartil (1.547) -> **discordam**
+- líderes: espalhamento 0.14 amplitude interquartil (1.864) -> **CONCORDAM**, mediana 1.284
 
-**Veredito: corte real em 0.264** (métodos concordam entre líderes). Piso atual 0.400: 74 líderes com rótulo; sugerido: 78.
+**Veredito: corte real em 1.284** (métodos concordam entre líderes). Piso atual 1.500: 67 líderes com rótulo; sugerido: 68.
 
-**Fronteira do corte atual (0.400)** -- os 5 líderes mais próximos de cada lado:
+**Fronteira do corte atual (1.500)** -- os 5 líderes mais próximos de cada lado:
 
-| lado | jogador | time | partida | mapa | off_team_share |
+| lado | jogador | time | partida | mapa | off_team_relativo |
 |---|---|---|---|---|---|
-| rótulo | mezii | Team Vitality | match_44 | inferno | 0.400 |
-| rótulo | zont1x | Team Spirit | match_39 | dust2 | 0.400 |
-| rótulo | apEX | Team Vitality | match_33 | dust2 | 0.400 |
-| rótulo | YEKINDAR | FURIA | match_29 | inferno | 0.400 |
-| rótulo | makazze | Natus Vincere | match_15 | mirage | 0.400 |
-| — corte 0.400 — | | | | | |
-| sem rótulo | m0NESY | Falcons | match_20 | mirage | 0.385 |
-| sem rótulo | KSCERATO | FURIA | match_12 | overpass | 0.364 |
-| sem rótulo | xertioN | MOUZ | match_50 | inferno | 0.364 |
-| sem rótulo | YEKINDAR | FURIA | match_44 | inferno | 0.286 |
-| sem rótulo | sh1ro | Team Spirit | match_27 | nuke | 0.200 |
+| rótulo | b1t | Natus Vincere | match_10 | dust2 | 1.656 |
+| rótulo | makazze | Natus Vincere | match_15 | mirage | 1.612 |
+| rótulo | apEX | Team Vitality | match_33 | dust2 | 1.580 |
+| rótulo | kyousuke | Falcons | match_20 | mirage | 1.528 |
+| rótulo | xertioN | MOUZ | match_50 | inferno | 1.520 |
+| — corte 1.500 — | | | | | |
+| sem rótulo | Jimpphat | MOUZ | match_41 | inferno | 1.494 |
+| sem rótulo | YEKINDAR | FURIA | match_44 | inferno | 1.074 |
+| sem rótulo | sh1ro | Team Spirit | match_27 | nuke | 0.983 |
+| sem rótulo | Jimpphat | MOUZ | match_51 | nuke | 0.920 |
+| sem rótulo | kyxsan | Team Falcons | match_51 | nuke | 0.919 |
 
-**Fronteira do corte sugerido (0.264)** -- os 5 líderes mais próximos de cada lado:
+**Fronteira do corte sugerido (1.284)** -- os 5 líderes mais próximos de cada lado:
 
-| lado | jogador | time | partida | mapa | off_team_share |
+| lado | jogador | time | partida | mapa | off_team_relativo |
 |---|---|---|---|---|---|
-| rótulo | makazze | Natus Vincere | match_15 | mirage | 0.400 |
-| rótulo | m0NESY | Falcons | match_20 | mirage | 0.385 |
-| rótulo | xertioN | MOUZ | match_50 | inferno | 0.364 |
-| rótulo | KSCERATO | FURIA | match_12 | overpass | 0.364 |
-| rótulo | YEKINDAR | FURIA | match_44 | inferno | 0.286 |
-| — corte 0.264 — | | | | | |
-| sem rótulo | sh1ro | Team Spirit | match_27 | nuke | 0.200 |
-| sem rótulo | Jimpphat | MOUZ | match_51 | nuke | 0.200 |
-| sem rótulo | kyxsan | Team Falcons | match_51 | nuke | 0.182 |
-| sem rótulo | woxic | Aurora Gaming | match_21 | nuke | 0.167 |
-| sem rótulo | YEKINDAR | FURIA | match_16 | nuke | 0.154 |
+| rótulo | makazze | Natus Vincere | match_15 | mirage | 1.612 |
+| rótulo | apEX | Team Vitality | match_33 | dust2 | 1.580 |
+| rótulo | kyousuke | Falcons | match_20 | mirage | 1.528 |
+| rótulo | xertioN | MOUZ | match_50 | inferno | 1.520 |
+| rótulo | Jimpphat | MOUZ | match_41 | inferno | 1.494 |
+| — corte 1.284 — | | | | | |
+| sem rótulo | YEKINDAR | FURIA | match_44 | inferno | 1.074 |
+| sem rótulo | sh1ro | Team Spirit | match_27 | nuke | 0.983 |
+| sem rótulo | Jimpphat | MOUZ | match_51 | nuke | 0.920 |
+| sem rótulo | kyxsan | Team Falcons | match_51 | nuke | 0.919 |
+| sem rótulo | molodoy | FURIA | match_16 | nuke | 0.733 |
 
 **Sua resposta:** os jogadores da fronteira jogaram de Lurker naquelas partidas? piso de Lurker = ____
 
@@ -610,98 +600,98 @@ Gerado por `py -3.12 -m scripts.proposta_grupos`. O KMeans não nomeia (decisão
 
 ### Antes de nomear: o modelo ainda não foi ajustado no corpus inteiro
 
-O modelo em uso foi ajustado em **1870 jogador-rounds (as 9 partidas de FACEIT)** e aplicado às 52. Reajustado nas 52 (11520 jogador-rounds, sem gravar): índice de Rand ajustado **0.49**, e 79% dos rounds ficam no mesmo grupo. **Os quatro perfis reaparecem** -- são os mesmos quatro jeitos --, mas os NÚMEROS dos grupos trocam, e o maior deles perde parte dos rounds para outro. Por isso os nomes abaixo estão presos ao perfil, não ao número: se o modelo for reajustado, cada nome segue o seu perfil. Reajustar é decisão sua (`py -3.12 -m scripts.fit_global_clusters`); recomendo antes de gravar os nomes.
+O modelo em uso foi ajustado em **11520 jogador-rounds (as 9 partidas de FACEIT)** e aplicado às 52. Reajustado nas 52 (11520 jogador-rounds, sem gravar): índice de Rand ajustado **1.00**, e 100% dos rounds ficam no mesmo grupo. **Os quatro perfis reaparecem** -- são os mesmos quatro jeitos --, mas os NÚMEROS dos grupos trocam, e o maior deles perde parte dos rounds para outro. Por isso os nomes abaixo estão presos ao perfil, não ao número: se o modelo for reajustado, cada nome segue o seu perfil. Reajustar é decisão sua (`py -3.12 -m scripts.fit_global_clusters`); recomendo antes de gravar os nomes.
 
 | perfil | grupo hoje | vira no reajuste | rounds que ficam juntos |
 |---|---|---|---|
-| longe | 0 | 2 | 2334 de 2749 (85%) |
-| mira | 1 | 0 | 736 de 762 (97%) |
-| roda | 2 | 3 | 3343 de 5276 (63%) |
-| junto | 3 | 1 | 2725 de 2733 (100%) |
+| mira | 0 | 0 | 1110 de 1110 (100%) |
+| junto | 1 | 1 | 4037 de 4037 (100%) |
+| longe | 2 | 2 | 3030 de 3030 (100%) |
+| roda | 3 | 3 | 3343 de 3343 (100%) |
 
-### Perfil "longe" -- grupo 0 hoje (2749 jogador-rounds, 24% do corpus; CT 2011, TR 738)
-
-| feature | média do grupo | média geral | desvio (z) |
-|---|---|---|---|
-| distância média do time **(distingue)** | 1161.14u | 709.70u | +1.25 |
-| maior distância do time no round **(distingue)** | 1779.22u | 1238.95u | +1.09 |
-| regiões diferentes visitadas **(distingue)** | 4.70 | 5.99 | -0.55 |
-| placement da mira (0-100) | 72.06 | 68.39 | +0.35 |
-| mira na altura da cabeça (0-1) | 0.91 | 0.87 | +0.26 |
-| tempo até o 1º contato | 43.76s | 47.84s | -0.13 |
-| fração do tempo entrando em briga | 0.09 | 0.11 | -0.13 |
-
-Mapa mais super-representado: inferno (1.3x a fatia do corpus).
-
-**Nomes candidatos:**
-- **Joga isolado** -- distância média do time 1161u contra 710u (+1.25 desvio)
-- **Segura longe do time** -- maior distância no round 1779u (+1.09) com poucas regiões visitadas (-0.55): fica parado, longe
-- **Posição solitária** -- 73% dos rounds deste grupo são de CT: é o jeito de defender um ponto sozinho
-
-**Sua resposta:** perfil "longe" = ____
-
-### Perfil "mira" -- grupo 1 hoje (762 jogador-rounds, 7% do corpus; CT 399, TR 363)
+### Perfil "mira" -- grupo 0 hoje (1110 jogador-rounds, 10% do corpus; CT 565, TR 545)
 
 | feature | média do grupo | média geral | desvio (z) |
 |---|---|---|---|
-| mira na altura da cabeça (0-1) **(distingue)** | 0.51 | 0.87 | -2.69 |
-| placement da mira (0-100) **(distingue)** | 50.33 | 68.39 | -1.71 |
-| maior distância do time no round | 1007.53u | 1238.95u | -0.47 |
-| fração do tempo entrando em briga | 0.15 | 0.11 | +0.33 |
-| distância média do time | 597.55u | 709.70u | -0.31 |
-| tempo até o 1º contato | 38.58s | 47.84s | -0.30 |
-| regiões diferentes visitadas | 5.49 | 5.99 | -0.21 |
+| mira na altura da cabeça (0-1) **(distingue)** | 0.56 | 0.87 | -2.30 |
+| placement da mira (0-100) **(distingue)** | 52.02 | 68.39 | -1.55 |
+| maior distância do time no round | 1100.56u | 1238.95u | -0.28 |
+| distância média do time | 639.92u | 709.70u | -0.19 |
+| tempo até o 1º contato | 42.99s | 47.84s | -0.16 |
+| fração do tempo entrando em briga | 0.11 | 0.11 | +0.05 |
+| regiões diferentes visitadas | 6.01 | 5.99 | +0.01 |
 
-Mapa mais super-representado: nuke (2.1x a fatia do corpus). **Atenção:** 36% dos rounds deste grupo são em nuke (o corpus tem 17%, 2.1x) -- parte do grupo pode ser efeito do mapa, não estilo.
+Mapa mais super-representado: nuke (2.0x a fatia do corpus). **Atenção:** 34% dos rounds deste grupo são em nuke (o corpus tem 17%, 2.0x) -- parte do grupo pode ser efeito do mapa, não estilo.
 
 **Nomes candidatos:**
-- **Mira fora da altura** -- mira na altura da cabeça 0.51 contra 0.87 (-2.69 desvio) -- o traço mais forte de todos os grupos
-- **Crosshair baixo** -- placement 50 contra 68 (-1.71); o resto do perfil fica perto da média
+- **Mira fora da altura** -- mira na altura da cabeça 0.56 contra 0.87 (-2.30 desvio) -- o traço mais forte de todos os grupos
+- **Crosshair baixo** -- placement 52 contra 68 (-1.55); o resto do perfil fica perto da média
 - **Mira desajustada** -- o grupo é definido só pela mira: posição, tempo e movimento são os da média
 
 **Sua resposta:** perfil "mira" = ____
 
-### Perfil "roda" -- grupo 2 hoje (5276 jogador-rounds, 46% do corpus; CT 2306, TR 2970)
+### Perfil "junto" -- grupo 1 hoje (4037 jogador-rounds, 35% do corpus; CT 1623, TR 2414)
 
 | feature | média do grupo | média geral | desvio (z) |
 |---|---|---|---|
-| regiões diferentes visitadas **(distingue)** | 7.43 | 5.99 | +0.61 |
-| tempo até o 1º contato **(distingue)** | 64.85s | 47.84s | +0.55 |
-| fração do tempo entrando em briga | 0.06 | 0.11 | -0.35 |
-| distância média do time | 633.98u | 709.70u | -0.21 |
-| placement da mira (0-100) | 67.03 | 68.39 | -0.13 |
-| mira na altura da cabeça (0-1) | 0.88 | 0.87 | +0.06 |
-| maior distância do time no round | 1223.85u | 1238.95u | -0.03 |
+| maior distância do time no round **(distingue)** | 870.86u | 1238.95u | -0.74 |
+| tempo até o 1º contato **(distingue)** | 26.80s | 47.84s | -0.69 |
+| distância média do time **(distingue)** | 478.12u | 709.70u | -0.64 |
+| fração do tempo entrando em briga **(distingue)** | 0.17 | 0.11 | +0.55 |
+| regiões diferentes visitadas | 4.90 | 5.99 | -0.46 |
+| mira na altura da cabeça (0-1) | 0.92 | 0.87 | +0.35 |
+| placement da mira (0-100) | 71.75 | 68.39 | +0.32 |
 
-Mapa mais super-representado: overpass (1.4x a fatia do corpus).
-
-**Nomes candidatos:**
-- **Roda o mapa** -- 7.4 regiões por round contra 6.0 (+0.61 desvio)
-- **Contato tardio** -- primeiro contato aos 65s contra 48s (+0.55)
-- **Joga o relógio** -- chega tarde e evita briga (tempo entrando em briga -0.35 desvio)
-
-**Sua resposta:** perfil "roda" = ____
-
-### Perfil "junto" -- grupo 3 hoje (2733 jogador-rounds, 24% do corpus; CT 1044, TR 1689)
-
-| feature | média do grupo | média geral | desvio (z) |
-|---|---|---|---|
-| maior distância do time no round **(distingue)** | 789.17u | 1238.95u | -0.91 |
-| tempo até o 1º contato **(distingue)** | 21.70s | 47.84s | -0.85 |
-| distância média do time **(distingue)** | 433.06u | 709.70u | -0.77 |
-| fração do tempo entrando em briga **(distingue)** | 0.19 | 0.11 | +0.72 |
-| regiões diferentes visitadas **(distingue)** | 4.64 | 5.99 | -0.57 |
-| placement da mira (0-100) | 72.39 | 68.39 | +0.38 |
-| mira na altura da cabeça (0-1) | 0.92 | 0.87 | +0.36 |
-
-Mapa mais super-representado: ancient (1.9x a fatia do corpus). **Atenção:** 11% dos rounds deste grupo são em ancient (o corpus tem 6%, 1.9x) -- parte do grupo pode ser efeito do mapa, não estilo.
+Mapa mais super-representado: ancient (1.7x a fatia do corpus).
 
 **Nomes candidatos:**
-- **Junto e rápido** -- maior distância do time 789u contra 1239u (-0.91) e contato aos 22s (-0.85)
-- **Entra em bloco** -- entra em briga +0.72 desvio acima da média, colado no time (-0.77)
-- **Execução em grupo** -- 62% dos rounds deste grupo são de TR: é o jeito de executar um bomb junto
+- **Junto e rápido** -- maior distância do time 871u contra 1239u (-0.74) e contato aos 27s (-0.69)
+- **Entra em bloco** -- entra em briga +0.55 desvio acima da média, colado no time (-0.64)
+- **Execução em grupo** -- 60% dos rounds deste grupo são de TR: é o jeito de executar um bomb junto
 
 **Sua resposta:** perfil "junto" = ____
+
+### Perfil "longe" -- grupo 2 hoje (3030 jogador-rounds, 26% do corpus; CT 2222, TR 808)
+
+| feature | média do grupo | média geral | desvio (z) |
+|---|---|---|---|
+| distância média do time **(distingue)** | 1162.43u | 709.70u | +1.25 |
+| maior distância do time no round **(distingue)** | 1819.83u | 1238.95u | +1.17 |
+| regiões diferentes visitadas | 5.17 | 5.99 | -0.35 |
+| placement da mira (0-100) | 71.81 | 68.39 | +0.32 |
+| fração do tempo entrando em briga | 0.07 | 0.11 | -0.28 |
+| mira na altura da cabeça (0-1) | 0.91 | 0.87 | +0.28 |
+| tempo até o 1º contato | 54.14s | 47.84s | +0.21 |
+
+Mapa mais super-representado: dust2 (1.4x a fatia do corpus).
+
+**Nomes candidatos:**
+- **Joga isolado** -- distância média do time 1162u contra 710u (+1.25 desvio)
+- **Segura longe do time** -- maior distância no round 1820u (+1.17) com poucas regiões visitadas (-0.35): fica parado, longe
+- **Posição solitária** -- 73% dos rounds deste grupo são de CT: é o jeito de defender um ponto sozinho
+
+**Sua resposta:** perfil "longe" = ____
+
+### Perfil "roda" -- grupo 3 hoje (3343 jogador-rounds, 29% do corpus; CT 1350, TR 1993)
+
+| feature | média do grupo | média geral | desvio (z) |
+|---|---|---|---|
+| regiões diferentes visitadas **(distingue)** | 8.04 | 5.99 | +0.87 |
+| tempo até o 1º contato **(distingue)** | 69.16s | 47.84s | +0.69 |
+| fração do tempo entrando em briga | 0.05 | 0.11 | -0.43 |
+| distância média do time | 602.18u | 709.70u | -0.30 |
+| placement da mira (0-100) | 66.68 | 68.39 | -0.16 |
+| mira na altura da cabeça (0-1) | 0.88 | 0.87 | +0.09 |
+| maior distância do time no round | 1202.90u | 1238.95u | -0.07 |
+
+Mapa mais super-representado: overpass (1.5x a fatia do corpus).
+
+**Nomes candidatos:**
+- **Roda o mapa** -- 8.0 regiões por round contra 6.0 (+0.87 desvio)
+- **Contato tardio** -- primeiro contato aos 69s contra 48s (+0.69)
+- **Joga o relógio** -- chega tarde e evita briga (tempo entrando em briga -0.43 desvio)
+
+**Sua resposta:** perfil "roda" = ____
 
 ## 3. Rótulos de força do arremesso
 
@@ -758,3 +748,52 @@ setpos -722.82 -2186.60 -179.97; setang -2.27 86.24 0
 **Se errar, me mande:** a saída do `getpos` logo depois do `setpos`; onde a smoke caiu (nome do lugar); e se o erro foi de DISTÂNCIA (curta ou longa demais -> altura ou pitch) ou de LADO (esquerda ou direita -> yaw).
 
 **Sua resposta:** funcionou? ____
+
+## 5. Ângulos de entrada da Nuke, do menos sustentado para o mais
+
+38 ângulos distintos, juntando os 70 que o pipeline deriva partida a partida nas 9 Nuke do corpus (mesmo ângulo em partidas diferentes = mesma região, mesmo lado, yaw a menos de 20°). **19 aparecem numa partida só** -- podem ser hábito de um time naquele dia, não ângulo do mapa. A Nuke é o mapa de partição menos confiável do projeto (os dois sites empilhados na vertical), então é aqui que o julgamento humano mais vale.
+
+Yaw na convenção do CS2: 0° para a direita do radar, 90° para cima, crescendo no sentido anti-horário. O que você confirmar ou corrigir vira `MANUAL_ENTRY_ANGLES` em `metrics/map_angles.py`, que tem prioridade sobre o derivado.
+
+| # | região | lado | yaw | direção no radar | partidas | kills | sua resposta |
+|---|---|---|---|---|---|---|---|
+| 1 | BombsiteA | CT | 90° | cima | 1 | 4 | ____ |
+| 2 | BombsiteA | T | 77° | cima | 1 | 4 | ____ |
+| 3 | BombsiteB | CT | -100° | baixo | 1 | 4 | ____ |
+| 4 | BombsiteB | T | -99° | baixo | 1 | 4 | ____ |
+| 5 | Catwalk | CT | -103° | baixo | 1 | 4 | ____ |
+| 6 | Garage | CT | 177° | esquerda | 1 | 4 | ____ |
+| 7 | Heaven | CT | -118° | esquerda-baixo | 1 | 4 | ____ |
+| 8 | Lobby | T | -24° | direita-baixo | 1 | 4 | ____ |
+| 9 | LockerRoom | CT | -87° | baixo | 1 | 4 | ____ |
+| 10 | Outside | CT | 169° | esquerda | 1 | 4 | ____ |
+| 11 | Outside | CT | -163° | esquerda | 1 | 4 | ____ |
+| 12 | Rafters | CT | -132° | esquerda-baixo | 1 | 4 | ____ |
+| 13 | Ramp | CT | -117° | esquerda-baixo | 1 | 4 | ____ |
+| 14 | Ramp | T | -72° | baixo | 1 | 4 | ____ |
+| 15 | Tunnels | CT | 98° | cima | 1 | 4 | ____ |
+| 16 | Vending | CT | -99° | baixo | 1 | 4 | ____ |
+| 17 | BombsiteA | T | 147° | esquerda-cima | 1 | 5 | ____ |
+| 18 | Tunnels | T | 82° | cima | 1 | 5 | ____ |
+| 19 | Mini | CT | 94° | cima | 1 | 6 | ____ |
+| 20 | BombsiteA | T | -83° | baixo | 2 | 8 | ____ |
+| 21 | BombsiteB | T | 38° | direita-cima | 2 | 8 | ____ |
+| 22 | BombsiteB | T | 100° | cima | 2 | 9 | ____ |
+| 23 | BombsiteA | CT | 168° | esquerda | 2 | 10 | ____ |
+| 24 | BombsiteA | T | 55° | direita-cima | 2 | 11 | ____ |
+| 25 | Control | T | -6° | direita | 2 | 11 | ____ |
+| 26 | Ramp | CT | -69° | baixo | 2 | 11 | ____ |
+| 27 | BombsiteA | CT | -59° | direita-baixo | 2 | 12 | ____ |
+| 28 | BombsiteA | CT | -98° | baixo | 2 | 13 | ____ |
+| 29 | Outside | CT | -134° | esquerda-baixo | 2 | 13 | ____ |
+| 30 | Outside | T | 90° | cima | 2 | 13 | ____ |
+| 31 | Ramp | CT | 161° | esquerda | 2 | 13 | ____ |
+| 32 | Ramp | CT | -139° | esquerda-baixo | 3 | 12 | ____ |
+| 33 | Ramp | CT | -91° | baixo | 3 | 15 | ____ |
+| 34 | Outside | T | 68° | cima | 3 | 16 | ____ |
+| 35 | BombsiteB | CT | 96° | cima | 4 | 17 | ____ |
+| 36 | Admin | CT | 178° | esquerda | 4 | 18 | ____ |
+| 37 | Outside | T | 16° | direita | 4 | 18 | ____ |
+| 38 | BombsiteA | CT | -135° | esquerda-baixo | 6 | 32 | ____ |
+
+**Sua resposta:** para cada linha, *confirma*, *descarta* (não é ângulo de verdade) ou *corrige* o yaw.
