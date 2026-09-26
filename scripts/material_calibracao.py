@@ -103,8 +103,8 @@ def secao_forca() -> list[str]:
         lambda x: rotula_forca(x, g), return_dtype=pl.Utf8).alias("forca"))
     out = ["## 3. Rótulos de força do arremesso", "",
            f"{d.height} arremessos em {d['match_id'].n_unique()} partidas. Os grupos saem por moda "
-           "(decisão 5); os rótulos foram aplicados PELA ORDEM (mais lento = curto) e estão marcados "
-           "\"(a confirmar)\" no código até você responder.", "",
+           "(decisão 5); os rótulos saem PELA ORDEM (mais lento = curto), confirmados por você em "
+           "2026-09-26 -- e só quando há exatamente três grupos (decisão 21a).", "",
            "| Grupo | Centro | Arremessos | Exemplo |", "|---|---|---|---|"]
     for (rot,), grp in d.group_by("forca", maintain_order=True):
         e = grp.filter(pl.col("reproducao_exata") & (pl.col("movimento") == "parado"))
@@ -119,7 +119,7 @@ def secao_forca() -> list[str]:
     for i, n in enumerate(cont):
         out.append(f"{bordas[i]:>4}-{bordas[i + 1]:<4} u/s | {'#' * int(50 * n / max(cont.max(), 1)):<50} {n:>4}"
                    f"  {rotula_forca(float(bordas[i] + 25), g)}")
-    out += ["```", "", "**Sua resposta:** curto/médio/longo pela ordem está certo? ____", ""]
+    out += ["```", "", "**Respondido (2026-09-26):** curto/médio/longo pela ordem está certo.", ""]
     return out
 
 
@@ -223,6 +223,8 @@ def angulos_distintos(mapa: str) -> tuple[pl.DataFrame, int, int]:
 
 
 def secao_angulos_nuke() -> list[str]:
+    from metrics.map_angles import MIN_PARTIDAS_ANGULO_CONFIAVEL
+
     angulos, n_por_partida, n_partidas = angulos_distintos("de_nuke")
     out = ["## 5. Ângulos de entrada da Nuke, do menos sustentado para o mais", ""]
     if angulos.height == 0:
@@ -239,12 +241,18 @@ def secao_angulos_nuke() -> list[str]:
         "O que você confirmar ou corrigir vira `MANUAL_ENTRY_ANGLES` em `metrics/map_angles.py`, que tem "
         "prioridade sobre o derivado.",
         "",
-        "| # | região | lado | yaw | direção no radar | partidas | kills | sua resposta |",
-        "|---|---|---|---|---|---|---|---|",
+        f"Até você revisar: nada entra em `MANUAL_ENTRY_ANGLES`, e o ângulo visto em menos de "
+        f"{MIN_PARTIDAS_ANGULO_CONFIAVEL} partidas sai marcado como **baixa confiança** "
+        "(`MIN_PARTIDAS_ANGULO_CONFIAVEL`).",
+        "",
+        "| # | região | lado | yaw | direção no radar | partidas | kills | confiança do derivado | sua resposta |",
+        "|---|---|---|---|---|---|---|---|---|",
     ]
     for i, r in enumerate(angulos.iter_rows(named=True), 1):
+        conf = (f"baixa ({r['partidas']} partida)" if r["partidas"] < MIN_PARTIDAS_ANGULO_CONFIAVEL
+                else "—")
         out.append(f"| {i} | {r['place']} | {r['side'].upper()} | {r['yaw']:.0f}° | {_direcao(r['yaw'])} | "
-                   f"{r['partidas']} | {r['kills']} | ____ |")
+                   f"{r['partidas']} | {r['kills']} | {conf} | ____ |")
     out += ["", "**Sua resposta:** para cada linha, *confirma*, *descarta* (não é ângulo de verdade) ou "
                 "*corrige* o yaw.", ""]
     return out

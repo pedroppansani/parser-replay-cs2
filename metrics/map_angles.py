@@ -39,6 +39,13 @@ DEFAULT_ANGLE_TOLERANCE_DEG = 25.0
 # cada região. Dois kills com yaw dentro desse raio contam como o mesmo ângulo.
 YAW_CLUSTER_RADIUS_DEG = 20.0
 
+# Em quantas partidas DIFERENTES um ângulo derivado precisa aparecer para não
+# ser marcado como baixa confiança. Regra provisória do Pedro (2026-09-26): um
+# ângulo visto numa partida só pode ser hábito de um time naquele dia, não
+# ângulo do mapa. A marca é só informação -- não mexe no placement -- até ele
+# revisar os ângulos no jogo.
+MIN_PARTIDAS_ANGULO_CONFIAVEL = 2
+
 
 # ---------------------------------------------------------------------------
 # Override manual -- PREENCHER COM CONHECIMENTO DE JOGO

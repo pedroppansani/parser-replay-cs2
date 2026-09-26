@@ -254,7 +254,7 @@ Distribuição -- LÍDERES (as marcas são os cortes de cada método):
 
 **Sua resposta:** os jogadores da fronteira jogaram de Suporte de utility naquelas partidas? piso de Suporte de utility = ____
 
-### Lurker — `off_team_relativo`, piso atual 1.500
+### Lurker — `off_team_relativo`, piso atual 1.284
 
 429 jogador-partidas profissionais em 43 partidas; 102 líderes de time (empate na liderança conta os dois).
 
@@ -265,8 +265,8 @@ Distribuição -- TODOS (as marcas são os cortes de cada método):
      0.452-0.678      34 #################   <- vale (todos)
      0.678-0.905      19 ##########
      0.905-1.131      27 ##############
-     1.131-1.357      44 ######################   <- otsu (todos)
-     1.357-1.583      29 ##############   <- atual
+     1.131-1.357      44 ######################   <- atual, otsu (todos)
+     1.357-1.583      29 ##############
      1.583-1.809      36 ##################
      1.809-2.035      34 #################
      2.035-2.261      40 ####################
@@ -287,8 +287,8 @@ Distribuição -- LÍDERES (as marcas são os cortes de cada método):
      0.452-0.678       4 #########
      0.678-0.905       2 #####
      0.905-1.131       4 #########   <- vale (líderes)
-     1.131-1.357       0    <- vazio (líderes), otsu (líderes)
-     1.357-1.583       4 #########   <- atual
+     1.131-1.357       0    <- atual, vazio (líderes), otsu (líderes)
+     1.357-1.583       4 #########
      1.583-1.809       9 #####################
      1.809-2.035       7 ################
      2.035-2.261      15 ##################################
@@ -304,7 +304,7 @@ Distribuição -- LÍDERES (as marcas são os cortes de cada método):
 
 | método | corte | líderes que levam o rótulo |
 |---|---|---|
-| atual | 1.500 | 67 de 102 |
+| atual | 1.284 | 68 de 102 |
 | vazio (todos) | 0.142 | 82 de 102 |
 | otsu (todos) | 1.261 | 68 de 102 |
 | vale (todos) | 0.550 | 78 de 102 |
@@ -315,23 +315,23 @@ Distribuição -- LÍDERES (as marcas são os cortes de cada método):
 - todos: espalhamento 0.72 amplitude interquartil (1.547) -> **discordam**
 - líderes: espalhamento 0.14 amplitude interquartil (1.864) -> **CONCORDAM**, mediana 1.284
 
-**Veredito: corte real em 1.284** (métodos concordam entre líderes). Piso atual 1.500: 67 líderes com rótulo; sugerido: 68.
+**Veredito: corte real em 1.284** (métodos concordam entre líderes). Piso atual 1.284: 68 líderes com rótulo; sugerido: 68.
 
-**Fronteira do corte atual (1.500)** -- os 5 líderes mais próximos de cada lado:
+**Fronteira do corte atual (1.284)** -- os 5 líderes mais próximos de cada lado:
 
 | lado | jogador | time | partida | mapa | off_team_relativo |
 |---|---|---|---|---|---|
-| rótulo | b1t | Natus Vincere | match_10 | dust2 | 1.656 |
 | rótulo | makazze | Natus Vincere | match_15 | mirage | 1.612 |
 | rótulo | apEX | Team Vitality | match_33 | dust2 | 1.580 |
 | rótulo | kyousuke | Falcons | match_20 | mirage | 1.528 |
 | rótulo | xertioN | MOUZ | match_50 | inferno | 1.520 |
-| — corte 1.500 — | | | | | |
-| sem rótulo | Jimpphat | MOUZ | match_41 | inferno | 1.494 |
+| rótulo | Jimpphat | MOUZ | match_41 | inferno | 1.494 |
+| — corte 1.284 — | | | | | |
 | sem rótulo | YEKINDAR | FURIA | match_44 | inferno | 1.074 |
 | sem rótulo | sh1ro | Team Spirit | match_27 | nuke | 0.983 |
 | sem rótulo | Jimpphat | MOUZ | match_51 | nuke | 0.920 |
 | sem rótulo | kyxsan | Team Falcons | match_51 | nuke | 0.919 |
+| sem rótulo | molodoy | FURIA | match_16 | nuke | 0.733 |
 
 **Fronteira do corte sugerido (1.284)** -- os 5 líderes mais próximos de cada lado:
 
@@ -695,39 +695,40 @@ Mapa mais super-representado: overpass (1.5x a fatia do corpus).
 
 ## 3. Rótulos de força do arremesso
 
-2268 arremessos em 6 partidas. Os grupos saem por moda (decisão 5); os rótulos foram aplicados PELA ORDEM (mais lento = curto) e estão marcados "(a confirmar)" no código até você responder.
+2268 arremessos em 6 partidas. Os grupos saem por moda (decisão 5); os rótulos saem PELA ORDEM (mais lento = curto), confirmados por você em 2026-09-26 -- e só quando há exatamente três grupos (decisão 21a).
 
 | Grupo | Centro | Arremessos | Exemplo |
 |---|---|---|---|
-| longo (a confirmar) | 675 u/s | 2066 | iM, flash, match_38 round 20 (0:26), agachado, parado |
-| médio (a confirmar) | 443 u/s | 100 | YEKINDAR, he, match_43 round 20 (1:15), em pé, parado |
-| curto (a confirmar) | 198 u/s | 102 | SH1R0, he, match_38 round 7 (0:24), agachado, parado |
+| força D | 758 u/s | 67 | w0nderful, smoke, match_38 round 10 (0:06), agachado, parado |
+| força C | 676 u/s | 1998 | donk666, he, match_05 round 3 (0:11), em pé, parado |
+| força B | 443 u/s | 101 | flameZ, smoke, match_43 round 6 (0:13), em pé, parado |
+| força A | 204 u/s | 102 | molodoy, he, match_43 round 23 (0:10), agachado, parado |
 
 ```
-   0-50   u/s |                                                       1  curto (a confirmar)
-  50-100  u/s |                                                       1  curto (a confirmar)
- 100-150  u/s |                                                       4  curto (a confirmar)
- 150-200  u/s | #                                                    43  curto (a confirmar)
- 200-250  u/s | #                                                    51  curto (a confirmar)
- 250-300  u/s |                                                       1  curto (a confirmar)
- 300-350  u/s |                                                       1  médio (a confirmar)
- 350-400  u/s |                                                       0  médio (a confirmar)
- 400-450  u/s | ##                                                   83  médio (a confirmar)
- 450-500  u/s |                                                      14  médio (a confirmar)
- 500-550  u/s |                                                       3  médio (a confirmar)
- 550-600  u/s |                                                       4  longo (a confirmar)
- 600-650  u/s | #                                                    49  longo (a confirmar)
- 650-700  u/s | ################################################## 1920  longo (a confirmar)
- 700-750  u/s | ##                                                   84  longo (a confirmar)
- 750-800  u/s |                                                       8  longo (a confirmar)
- 800-850  u/s |                                                       1  longo (a confirmar)
+   0-50   u/s |                                                       1  força A
+  50-100  u/s |                                                       1  força A
+ 100-150  u/s |                                                       1  força A
+ 150-200  u/s |                                                      31  força A
+ 200-250  u/s | #                                                    63  força A
+ 250-300  u/s |                                                       4  força A
+ 300-350  u/s |                                                       1  força B
+ 350-400  u/s |                                                       0  força B
+ 400-450  u/s | ##                                                   89  força B
+ 450-500  u/s |                                                       8  força B
+ 500-550  u/s |                                                       3  força B
+ 550-600  u/s |                                                       4  força C
+ 600-650  u/s | #                                                    39  força C
+ 650-700  u/s | ################################################## 1862  força C
+ 700-750  u/s | ###                                                 131  força C
+ 750-800  u/s |                                                      22  força D
+ 800-850  u/s |                                                       5  força D
 ```
 
-**Sua resposta:** curto/médio/longo pela ordem está certo? ____
+**Respondido (2026-09-26):** curto/médio/longo pela ordem está certo.
 
 ## 4. Teste do comando de console
 
-Arremesso: **jL**, smoke, **match_38** (de_mirage) round 2, 0:33 do round (tick 9288). Ancoragem com resíduo de 0.02u, em pé, parado.
+Arremesso: **jL**, smoke, **match_38** (de_mirage) round 2, 0:33 do round (tick 9288). Ancoragem com resíduo de 0.12u, em pé, parado.
 
 1. Servidor local no mapa, com:
 
@@ -738,7 +739,7 @@ sv_cheats 1; mp_warmup_end; mp_freezetime 0; sv_infinite_ammo 1; sv_grenade_traj
 2. Com a smoke na mão, sem se mover:
 
 ```
-setpos -722.82 -2186.60 -179.97; setang -2.27 86.24 0
+setpos -722.82 -2186.60 -179.97; setang -2.99 85.99 0
 ```
 
 3. Solte com o **botão esquerdo** (arremesso cheio), em pé, parado.
@@ -755,45 +756,47 @@ setpos -722.82 -2186.60 -179.97; setang -2.27 86.24 0
 
 Yaw na convenção do CS2: 0° para a direita do radar, 90° para cima, crescendo no sentido anti-horário. O que você confirmar ou corrigir vira `MANUAL_ENTRY_ANGLES` em `metrics/map_angles.py`, que tem prioridade sobre o derivado.
 
-| # | região | lado | yaw | direção no radar | partidas | kills | sua resposta |
-|---|---|---|---|---|---|---|---|
-| 1 | BombsiteA | CT | 90° | cima | 1 | 4 | ____ |
-| 2 | BombsiteA | T | 77° | cima | 1 | 4 | ____ |
-| 3 | BombsiteB | CT | -100° | baixo | 1 | 4 | ____ |
-| 4 | BombsiteB | T | -99° | baixo | 1 | 4 | ____ |
-| 5 | Catwalk | CT | -103° | baixo | 1 | 4 | ____ |
-| 6 | Garage | CT | 177° | esquerda | 1 | 4 | ____ |
-| 7 | Heaven | CT | -118° | esquerda-baixo | 1 | 4 | ____ |
-| 8 | Lobby | T | -24° | direita-baixo | 1 | 4 | ____ |
-| 9 | LockerRoom | CT | -87° | baixo | 1 | 4 | ____ |
-| 10 | Outside | CT | 169° | esquerda | 1 | 4 | ____ |
-| 11 | Outside | CT | -163° | esquerda | 1 | 4 | ____ |
-| 12 | Rafters | CT | -132° | esquerda-baixo | 1 | 4 | ____ |
-| 13 | Ramp | CT | -117° | esquerda-baixo | 1 | 4 | ____ |
-| 14 | Ramp | T | -72° | baixo | 1 | 4 | ____ |
-| 15 | Tunnels | CT | 98° | cima | 1 | 4 | ____ |
-| 16 | Vending | CT | -99° | baixo | 1 | 4 | ____ |
-| 17 | BombsiteA | T | 147° | esquerda-cima | 1 | 5 | ____ |
-| 18 | Tunnels | T | 82° | cima | 1 | 5 | ____ |
-| 19 | Mini | CT | 94° | cima | 1 | 6 | ____ |
-| 20 | BombsiteA | T | -83° | baixo | 2 | 8 | ____ |
-| 21 | BombsiteB | T | 38° | direita-cima | 2 | 8 | ____ |
-| 22 | BombsiteB | T | 100° | cima | 2 | 9 | ____ |
-| 23 | BombsiteA | CT | 168° | esquerda | 2 | 10 | ____ |
-| 24 | BombsiteA | T | 55° | direita-cima | 2 | 11 | ____ |
-| 25 | Control | T | -6° | direita | 2 | 11 | ____ |
-| 26 | Ramp | CT | -69° | baixo | 2 | 11 | ____ |
-| 27 | BombsiteA | CT | -59° | direita-baixo | 2 | 12 | ____ |
-| 28 | BombsiteA | CT | -98° | baixo | 2 | 13 | ____ |
-| 29 | Outside | CT | -134° | esquerda-baixo | 2 | 13 | ____ |
-| 30 | Outside | T | 90° | cima | 2 | 13 | ____ |
-| 31 | Ramp | CT | 161° | esquerda | 2 | 13 | ____ |
-| 32 | Ramp | CT | -139° | esquerda-baixo | 3 | 12 | ____ |
-| 33 | Ramp | CT | -91° | baixo | 3 | 15 | ____ |
-| 34 | Outside | T | 68° | cima | 3 | 16 | ____ |
-| 35 | BombsiteB | CT | 96° | cima | 4 | 17 | ____ |
-| 36 | Admin | CT | 178° | esquerda | 4 | 18 | ____ |
-| 37 | Outside | T | 16° | direita | 4 | 18 | ____ |
-| 38 | BombsiteA | CT | -135° | esquerda-baixo | 6 | 32 | ____ |
+Até você revisar: nada entra em `MANUAL_ENTRY_ANGLES`, e o ângulo visto em menos de 2 partidas sai marcado como **baixa confiança** (`MIN_PARTIDAS_ANGULO_CONFIAVEL`).
+
+| # | região | lado | yaw | direção no radar | partidas | kills | confiança do derivado | sua resposta |
+|---|---|---|---|---|---|---|---|---|
+| 1 | BombsiteA | CT | 90° | cima | 1 | 4 | baixa (1 partida) | ____ |
+| 2 | BombsiteA | T | 77° | cima | 1 | 4 | baixa (1 partida) | ____ |
+| 3 | BombsiteB | CT | -100° | baixo | 1 | 4 | baixa (1 partida) | ____ |
+| 4 | BombsiteB | T | -99° | baixo | 1 | 4 | baixa (1 partida) | ____ |
+| 5 | Catwalk | CT | -103° | baixo | 1 | 4 | baixa (1 partida) | ____ |
+| 6 | Garage | CT | 177° | esquerda | 1 | 4 | baixa (1 partida) | ____ |
+| 7 | Heaven | CT | -118° | esquerda-baixo | 1 | 4 | baixa (1 partida) | ____ |
+| 8 | Lobby | T | -24° | direita-baixo | 1 | 4 | baixa (1 partida) | ____ |
+| 9 | LockerRoom | CT | -87° | baixo | 1 | 4 | baixa (1 partida) | ____ |
+| 10 | Outside | CT | 169° | esquerda | 1 | 4 | baixa (1 partida) | ____ |
+| 11 | Outside | CT | -163° | esquerda | 1 | 4 | baixa (1 partida) | ____ |
+| 12 | Rafters | CT | -132° | esquerda-baixo | 1 | 4 | baixa (1 partida) | ____ |
+| 13 | Ramp | CT | -117° | esquerda-baixo | 1 | 4 | baixa (1 partida) | ____ |
+| 14 | Ramp | T | -72° | baixo | 1 | 4 | baixa (1 partida) | ____ |
+| 15 | Tunnels | CT | 98° | cima | 1 | 4 | baixa (1 partida) | ____ |
+| 16 | Vending | CT | -99° | baixo | 1 | 4 | baixa (1 partida) | ____ |
+| 17 | BombsiteA | T | 147° | esquerda-cima | 1 | 5 | baixa (1 partida) | ____ |
+| 18 | Tunnels | T | 82° | cima | 1 | 5 | baixa (1 partida) | ____ |
+| 19 | Mini | CT | 94° | cima | 1 | 6 | baixa (1 partida) | ____ |
+| 20 | BombsiteA | T | -83° | baixo | 2 | 8 | — | ____ |
+| 21 | BombsiteB | T | 38° | direita-cima | 2 | 8 | — | ____ |
+| 22 | BombsiteB | T | 100° | cima | 2 | 9 | — | ____ |
+| 23 | BombsiteA | CT | 168° | esquerda | 2 | 10 | — | ____ |
+| 24 | BombsiteA | T | 55° | direita-cima | 2 | 11 | — | ____ |
+| 25 | Control | T | -6° | direita | 2 | 11 | — | ____ |
+| 26 | Ramp | CT | -69° | baixo | 2 | 11 | — | ____ |
+| 27 | BombsiteA | CT | -59° | direita-baixo | 2 | 12 | — | ____ |
+| 28 | BombsiteA | CT | -98° | baixo | 2 | 13 | — | ____ |
+| 29 | Outside | CT | -134° | esquerda-baixo | 2 | 13 | — | ____ |
+| 30 | Outside | T | 90° | cima | 2 | 13 | — | ____ |
+| 31 | Ramp | CT | 161° | esquerda | 2 | 13 | — | ____ |
+| 32 | Ramp | CT | -139° | esquerda-baixo | 3 | 12 | — | ____ |
+| 33 | Ramp | CT | -91° | baixo | 3 | 15 | — | ____ |
+| 34 | Outside | T | 68° | cima | 3 | 16 | — | ____ |
+| 35 | BombsiteB | CT | 96° | cima | 4 | 17 | — | ____ |
+| 36 | Admin | CT | 178° | esquerda | 4 | 18 | — | ____ |
+| 37 | Outside | T | 16° | direita | 4 | 18 | — | ____ |
+| 38 | BombsiteA | CT | -135° | esquerda-baixo | 6 | 32 | — | ____ |
 
 **Sua resposta:** para cada linha, *confirma*, *descarta* (não é ângulo de verdade) ou *corrige* o yaw.

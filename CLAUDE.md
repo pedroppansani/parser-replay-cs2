@@ -793,6 +793,11 @@ testada e estava errada.
     e o rótulo fica neutro; por partida saem 1 a 3 grupos (3 em 10 das 43).
     Pendente do Pedro: mínimo por grupo relativo ao tamanho da amostra, ou
     rotular pelo centro mais próximo dos três confirmados.
+    O grupo extra mais frequente (730-800 u/s, 412 arremessos no corpus) é o
+    JUMP-THROW: 97% saem no ar, 69% com o jogador parado na horizontal, pitch
+    mediano -29° (contra -8° do cheio). É categoria real de jogo, não ruído; o
+    desconto da velocidade vertical do pulo não o traz de volta ao grupo cheio.
+    Nomear/separar (pela flag `no_ar` em vez da velocidade) é do Pedro.
 
 21b. **A reprodução por console depende de validação prática do Pedro, não do
     código.** Origem do `setpos`, sinal do `setang` e pré-requisitos de servidor
