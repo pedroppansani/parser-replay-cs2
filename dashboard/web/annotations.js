@@ -575,22 +575,6 @@ window.MapAnnotations = (function () {
   var reprojecaoAgrupada = MapCore.agrupaPorQuadro(function () { reprojetaTudo(); });
   function pedeReprojecao() { reprojecaoAgrupada(); }
 
-  /** Mudança de densidade de pixel (arrastar a janela para outro monitor, zoom
-      do navegador) não dispara `resize` em todo navegador. A media query da
-      densidade atual avisa quando ela deixa de valer; aí vigia a nova. */
-  function vigiaDensidade() {
-    if (!window.matchMedia) return;
-    var mq = window.matchMedia("(resolution: " + (window.devicePixelRatio || 1) + "dppx)");
-    var mudou = function () {
-      if (mq.removeEventListener) mq.removeEventListener("change", mudou);
-      else if (mq.removeListener) mq.removeListener(mudou);
-      pedeReprojecao();
-      vigiaDensidade();
-    };
-    if (mq.addEventListener) mq.addEventListener("change", mudou);
-    else if (mq.addListener) mq.addListener(mudou);
-  }
-
   /* ---------------------------------------------------------------------
      Zoom e pan
      --------------------------------------------------------------------- */
@@ -958,7 +942,9 @@ window.MapAnnotations = (function () {
     window.addEventListener("resize", pedeReprojecao);
     document.addEventListener("fullscreenchange", mudouTelaCheia);
     document.addEventListener("webkitfullscreenchange", mudouTelaCheia);
-    vigiaDensidade();
+    // Mudança de densidade (outro monitor, zoom do navegador) não dispara
+    // `resize` em todo navegador: o vigia do MapCore avisa.
+    MapCore.vigiaDensidade(pedeReprojecao);
     // O observador pega o que não dispara `resize`: a aba do replay aparecendo
     // depois de escondida, a coluna mudando de largura com o layout.
     if (window.ResizeObserver) new ResizeObserver(pedeReprojecao).observe(cv.parentNode);

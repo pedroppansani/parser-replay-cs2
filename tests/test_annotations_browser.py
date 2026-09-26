@@ -272,6 +272,66 @@ def test_densidade_de_pixel_entra_na_resolucao(navegador, partida):
         ctx.close()
 
 
+# Guarda os ouvintes que a página registra nas media queries de DENSIDADE
+# ("(resolution: Ndppx)"), para o teste poder disparar a troca sozinha -- sem
+# redimensionar a janela, que acionaria a reprojeção por outro caminho e
+# deixaria o teste passar mesmo com o vigia quebrado.
+INTERCEPTA_DENSIDADE = """
+(() => {
+  window.__vigias = [];
+  const original = window.matchMedia.bind(window);
+  window.matchMedia = function (q) {
+    const mq = original(q);
+    if (String(q).indexOf("dppx") >= 0) {
+      const add = mq.addEventListener.bind(mq);
+      mq.addEventListener = function (tipo, fn) {
+        if (tipo === "change") window.__vigias.push({ q: String(q), fn: fn, ativo: true });
+        return add(tipo, fn);
+      };
+      const rem = mq.removeEventListener.bind(mq);
+      mq.removeEventListener = function (tipo, fn) {
+        window.__vigias.forEach(v => { if (v.fn === fn) v.ativo = false; });
+        return rem(tipo, fn);
+      };
+    }
+    return mq;
+  };
+})();
+"""
+
+
+def test_trocar_a_densidade_reprojeta_e_o_vigia_se_rearma(navegador, partida):
+    """A troca da media query de densidade, sozinha, reprojeta tudo.
+
+    É o comportamento que o vigia protege: arrastar a janela para um monitor de
+    outra densidade não dispara `resize` em todo navegador. Aqui a troca é
+    disparada DIRETO no ouvinte da media query, sem nenhum outro gatilho.
+
+    Por que não trocar a densidade "de verdade": pelo protocolo do Chrome
+    (Emulation.setDeviceMetricsOverride com deviceScaleFactor 2) o
+    devicePixelRatio vira 2 e a media query deixa de casar, mas o Chrome
+    controlado NÃO despacha o evento `change` (nem `resize`), mesmo forçando
+    layout e dois quadros; setEmulatedMedia não aceita `resolution`, e
+    setPageScaleFactor não mexe na densidade (medido em 2026-09-26).
+    """
+    ctx = navegador.new_context(viewport={"width": 1280, "height": 900})
+    ctx.add_init_script(INTERCEPTA_DENSIDADE)
+    try:
+        pg = abre(ctx, partida)
+        pg.wait_for_timeout(300)                  # deixa assentar reprojeções da carga
+        vigias = pg.evaluate("() => window.__vigias.filter(v => v.ativo).map(v => v.q)")
+        assert vigias, "ninguém vigia a media query de densidade"
+        antes = reprojecoes(pg)
+        pg.evaluate("() => window.__vigias.filter(v => v.ativo).forEach(v => v.fn())")
+        espera_reprojecao(pg, antes)
+        assert reprojecoes(pg) == antes + 1
+        # rearmou: o ouvinte antigo saiu e um novo vigia a densidade atual
+        ativos = pg.evaluate("() => window.__vigias.filter(v => v.ativo).length")
+        assert ativos == len(vigias)
+    finally:
+        ctx.close()
+
+
 def test_tela_cheia_mantem_mapa_proporcao_e_coordenadas(contexto, partida):
     """Entrar e sair de tela cheia: mapa visível, proporção do radar, e as
     coordenadas ARMAZENADAS do traço idênticas -- o traço continua sobre o

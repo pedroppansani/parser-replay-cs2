@@ -137,6 +137,23 @@ window.MapCore = (function () {
     };
   }
 
+  /** Mudança de densidade de pixel (arrastar a janela para outro monitor, zoom
+      do navegador) não dispara `resize` em todo navegador. A media query da
+      densidade atual avisa quando ela deixa de valer; aí `aoMudar` é chamado
+      e o vigia passa a olhar a densidade nova. */
+  function vigiaDensidade(aoMudar) {
+    if (!window.matchMedia) return;
+    var mq = window.matchMedia("(resolution: " + (window.devicePixelRatio || 1) + "dppx)");
+    var mudou = function () {
+      if (mq.removeEventListener) mq.removeEventListener("change", mudou);
+      else if (mq.removeListener) mq.removeListener(mudou);
+      aoMudar();
+      vigiaDensidade(aoMudar);
+    };
+    if (mq.addEventListener) mq.addEventListener("change", mudou);
+    else if (mq.addListener) mq.addListener(mudou);
+  }
+
   function emTelaCheia(el) {
     return !!el && (document.fullscreenElement === el || document.webkitFullscreenElement === el);
   }
@@ -368,9 +385,14 @@ window.MapCore = (function () {
       o.cego     true desenha o anel tracejado de cegueira
       o.nome     texto acima do jogador (até 9 caracteres)
 
-      O estado do contexto (fonte, alinhamento, espessura) fica como o desenho
-      deixa, sem save/restore em volta: é o mesmo efeito que o código tinha
-      quando vivia dentro do draw() do replay. */
+      ATENÇÃO -- EFEITO COLATERAL DE PROPÓSITO: a função altera fillStyle,
+      strokeStyle, lineWidth, font, textAlign e globalAlpha do contexto e NÃO
+      os restaura (só a sombra do halo fica dentro de um save/restore). É
+      exatamente o efeito que o código tinha quando vivia dentro do draw() do
+      replay, e é o que mantém o replay idêntico pixel a pixel ao de antes da
+      extração (etapa 0). Não "conserte" com save/restore em volta: o que for
+      desenhado depois passaria a herdar outro estado, e o replay mudaria sem
+      ninguém perceber. Quem chamar e depender do estado anterior, salve antes. */
   function desenhaJogador(ctx, X, Y, o) {
     var color = o.cor;
 
@@ -797,6 +819,7 @@ window.MapCore = (function () {
     caixaDoMapa: caixaDoMapa,
     tamanhoInterno: tamanhoInterno,
     agrupaPorQuadro: agrupaPorQuadro,
+    vigiaDensidade: vigiaDensidade,
     emTelaCheia: emTelaCheia,
     alternaTelaCheia: alternaTelaCheia,
     criaArmazem: criaArmazem,

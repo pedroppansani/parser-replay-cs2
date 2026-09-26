@@ -36,6 +36,7 @@ from metrics.annotations import (
 )
 
 JS = Path("dashboard/web/annotations.js")
+CORE = Path("dashboard/web/map_core.js")
 CSS = Path("dashboard/web/annotations.css")
 TEMPLATE = Path("dashboard/web/template.html")
 
@@ -251,7 +252,12 @@ def test_estrutural_respeita_a_densidade_de_pixels():
     corpo = js[inicio:js.index("function pedeReprojecao()")]
     assert "devicePixelRatio" in corpo
     assert "opts.redraw()" in corpo, "redimensionar sem redesenhar o mapa deixa o mapa em branco"
-    assert "function vigiaDensidade()" in js and "dppx" in js
+    # O vigia mora no módulo compartilhado (map_core.js) desde 2026-09-26.
+    # Conferir só o módulo não basta: a anotação poderia deixar de CHAMAR o
+    # vigia e este teste continuaria passando. Por isso as duas pontas.
+    core = CORE.read_text(encoding="utf-8")
+    assert "function vigiaDensidade(aoMudar)" in core and "dppx" in core
+    assert "MapCore.vigiaDensidade(pedeReprojecao)" in js
 
 
 def test_estrutural_o_traco_em_andamento_vive_na_camada_de_rascunho():
