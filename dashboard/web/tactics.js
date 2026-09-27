@@ -183,6 +183,8 @@ var Prancheta = (function () {
               dura_passos: tem(op, "dura_passos") ? op.dura_passos : VIDA_PADRAO_GRANADA[op.arma],
               criada_em_ordem: ordemDe(op)
             };
+            // o campo só existe quando é verdade (espelho do Python)
+            if (op.origem_desconhecida === true) estado.granadas[op.granada].origem_desconhecida = true;
           }
           break;
         case "move_granada":
@@ -191,6 +193,7 @@ var Prancheta = (function () {
             g.origem = op.origem.map(Number); g.destino = op.destino.map(Number);
             g.nivel = tem(op, "nivel") ? +op.nivel : 0;
             g.arremesso = null;   // arrastada à mão deixou de ser o arremesso real
+            delete g.origem_desconhecida;
           }
           break;
         case "remove_granada": delete estado.granadas[op.granada]; break;
@@ -351,8 +354,11 @@ var Prancheta = (function () {
       if (g.nasceu_neste_passo) {
         var p = janela[id];
         if (p <= 0) return;
-        granadas[id] = Object.assign({}, g, { linha: entre(p / FRACAO_LINHA),
-          efeito: entre((p - FRACAO_LINHA) / (1 - FRACAO_LINHA)), alfa: 1 });
+        // sem origem conhecida não há linha: a janela inteira abre o efeito
+        granadas[id] = g.origem_desconhecida
+          ? Object.assign({}, g, { linha: 0, efeito: p, alfa: 1 })
+          : Object.assign({}, g, { linha: entre(p / FRACAO_LINHA),
+              efeito: entre((p - FRACAO_LINHA) / (1 - FRACAO_LINHA)), alfa: 1 });
       } else granadas[id] = Object.assign({}, g, { linha: 0, efeito: 1, alfa: 1 });
     });
     Object.keys(qk.tracos).forEach(function (id) {
@@ -451,6 +457,13 @@ var Prancheta = (function () {
       }
       if (op.tipo === "define_duracao" && !(ehNumero(op.segundos) && op.segundos > 0)) erros.push(onde + ": duração não é positiva");
       if (op.tipo === "cria_granada" && ARMAS.indexOf(op.arma) < 0) erros.push(onde + ": granada desconhecida: " + op.arma);
+      if (op.tipo === "cria_granada" && tem(op, "origem_desconhecida")) {
+        if (typeof op.origem_desconhecida !== "boolean") erros.push(onde + ": origem_desconhecida não é verdadeiro/falso");
+        else if (op.origem_desconhecida) {
+          if (op.origem[0] !== op.destino[0] || op.origem[1] !== op.destino[1]) erros.push(onde + ": origem desconhecida exige origem igual ao destino");
+          if (op.arremesso) erros.push(onde + ": origem desconhecida não combina com arremesso real");
+        }
+      }
       if (op.tipo === "cria_traco") {
         if (FERRAMENTAS_TRACO.indexOf(op.ferramenta) < 0) erros.push(onde + ": ferramenta desconhecida");
         if (!/^#[0-9a-f]{6}$/.test(String(op.cor))) erros.push(onde + ": cor fora do formato #rrggbb");
@@ -814,7 +827,8 @@ var Prancheta = (function () {
     var q = quadro(), c = { pecas: {}, granadas: {}, tracos: {} };
     Object.keys(q.pecas).forEach(function (id) { c.pecas[id] = Object.assign({}, q.pecas[id], { alfa: 1 }); });
     Object.keys(q.granadas).forEach(function (id) {
-      c.granadas[id] = Object.assign({}, q.granadas[id], { linha: q.granadas[id].nasceu_neste_passo ? 1 : 0, efeito: 1, alfa: 1 });
+      var g = q.granadas[id];
+      c.granadas[id] = Object.assign({}, g, { linha: g.nasceu_neste_passo && !g.origem_desconhecida ? 1 : 0, efeito: 1, alfa: 1 });
     });
     Object.keys(q.tracos).forEach(function (id) { c.tracos[id] = Object.assign({}, q.tracos[id], { alfa: 1 }); });
     return c;
@@ -961,7 +975,7 @@ var Prancheta = (function () {
       var g = q.granadas[id];
       if (g.nivel !== S.andar || !g.nasceu_neste_passo) return;   // só se mexe no passo em que nasceu
       perto(jogoParaPixel(g.destino[0], g.destino[1]), RAIO_PONTA_GRANADA + 3, { tipo: "granada", id: id, ponta: "destino" });
-      perto(jogoParaPixel(g.origem[0], g.origem[1]), RAIO_PONTA_GRANADA, { tipo: "granada", id: id, ponta: "origem" });
+      if (!g.origem_desconhecida) perto(jogoParaPixel(g.origem[0], g.origem[1]), RAIO_PONTA_GRANADA, { tipo: "granada", id: id, ponta: "origem" });
     });
     return achado;
   }
@@ -1364,6 +1378,8 @@ var Prancheta = (function () {
       if (!(cfg.biblioteca && cfg.biblioteca.comando_conferido_no_jogo)) {
         box.appendChild(el("p", { class: "pr-alerta", texto: "Comando ainda não conferido no jogo: confira onde a granada cai antes de treinar." }));
       }
+    } else if (g.origem_desconhecida) {
+      box.appendChild(el("p", { class: "pr-meta", texto: "Veio do replay sem ligação com o arremesso: só o efeito é conhecido, e a origem fica em branco." }));
     } else {
       box.appendChild(el("p", { class: "pr-meta", texto: "Desenhada à mão: mostra onde cai, não como chegar lá." }));
     }
@@ -1679,6 +1695,34 @@ var Prancheta = (function () {
       if (j.yaw !== null && j.yaw !== undefined) dados.yaw = j.yaw;
       emite("cria_peca", dados, false);
     });
+    // Granadas ativas no instante: com o arremesso real quando ele está na
+    // biblioteca, com a posição da soltura quando não está, e só com o efeito
+    // (origem_desconhecida) quando o replay não ligou o efeito a arremesso nenhum.
+    var granadas = Array.isArray(retrato.granadas) ? retrato.granadas : [];
+    var bib = {};
+    ((cfg.biblioteca && cfg.biblioteca.arremessos) || []).forEach(function (a) { bib[a.id] = a; });
+    var foraGranadas = 0;
+    granadas.forEach(function (g) {
+      var lance = g && g.lance;
+      var ok = g && ARMAS.indexOf(g.arma) >= 0 && Array.isArray(g.destino) && ehNumero(g.destino[0]) && ehNumero(g.destino[1]) &&
+        (lance === null || lance === undefined || (typeof lance.id === "string" &&
+          (lance.o === null || (Array.isArray(lance.o) && lance.o.length === 3 && lance.o.every(ehNumero)))));
+      if (!ok) { foraGranadas++; return; }
+      var real = lance && bib[lance.id];
+      var dados = { granada: novoId(), arma: g.arma, passo: passo };
+      if (real) {
+        dados.origem = real.origem.slice(0, 2); dados.destino = real.destino.slice(0, 2);
+        dados.nivel = nivelDoZ(real.origem[2]); dados.arremesso = real;
+      } else if (lance && lance.o) {
+        dados.origem = lance.o.slice(0, 2); dados.destino = [g.destino[0], g.destino[1]];
+        dados.nivel = nivelDoZ(lance.o[2]); dados.arremesso = null;
+      } else {
+        dados.origem = [g.destino[0], g.destino[1]]; dados.destino = [g.destino[0], g.destino[1]];
+        dados.nivel = 0; dados.arremesso = null; dados.origem_desconhecida = true;
+      }
+      emite("cria_granada", dados, false);
+    });
+
     if (retrato && retrato.round !== undefined) {
       // "match_05 · round 9 · 1:12 · 4v3" -- o placar de vivos é TR v CT
       var titulo = (retrato.partida ? retrato.partida + " · " : "") + "round " + retrato.round +
@@ -1687,9 +1731,12 @@ var Prancheta = (function () {
       emite("renomeia", { titulo: titulo }, false);
     }
     gravaAgora();   // grava ANTES do aviso: gravar com sucesso limpa o aviso
+    var avisos = [];
     if (validos.length !== jogadores.length) {
-      S.aviso = (jogadores.length - validos.length) + " jogador(es) do instante não puderam ser lidos e ficaram de fora.";
+      avisos.push((jogadores.length - validos.length) + " jogador(es) do instante não puderam ser lidos e ficaram de fora.");
     }
+    if (foraGranadas) avisos.push(foraGranadas + " granada(s) do instante não puderam ser lidas e ficaram de fora.");
+    if (avisos.length) S.aviso = avisos.join(" ");
     atualizaTudo();
   }
 

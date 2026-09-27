@@ -115,6 +115,54 @@ def level_of(z: float | None, levels: list[dict]) -> int:
     return 0
 
 
+# Ligação do FOGO ao projétil do molotov: o incêndio é outra entidade (o
+# entity_id só coincide com o do projétil por acaso, 1,2%), mas o projétil do
+# mesmo arremessador, no mesmo round, termina EXATAMENTE 1 tick antes de o fogo
+# começar -- medido em 5.577 dos 5.678 incêndios das 52 partidas (98,2%), com
+# candidato único em todos menos 1. É chave de tick, não de proximidade: quem
+# não casa exatamente fica sem ligação (origem desconhecida na prancheta).
+TICKS_DO_PROJETIL_AO_FOGO = 1
+
+
+def lances_do_corpo(match_id: str, rounds: pl.DataFrame, tickrate: int) -> dict:
+    """(round, entity_id do PROJÉTIL) -> {id, o}: o arremesso que gerou cada
+    granada, com o mesmo id da biblioteca (scripts/build_lineups.py) e a posição
+    dos pés na soltura (`o`, None quando a soltura não foi achada).
+
+    A smoke do replay é o próprio projétil (mesmo entity_id em 100% das 7.423
+    smokes do corpus), e a granada em voo também; o fogo liga por tick (acima).
+    """
+    from metrics.grenade_throws import grenade_throws
+    from parsing.parser import load_interim
+
+    t = load_interim(PROJECT_ROOT / "data" / "interim", match_id)
+    t["rounds"] = rounds
+    pr, _ = grenade_throws(t, tickrate)
+    out = {}
+    if pr.height == 0:
+        return out
+    for r in pr.iter_rows(named=True):
+        o = None if r["x"] is None else [round(r["x"], 1), round(r["y"], 1), round(r["z"], 1)]
+        out[(int(r["round_num"]), int(r["entity_id"]))] = {"id": f"{match_id}:{r['round_num']}:{r['entity_id']}", "o": o}
+    return out
+
+
+def fogo_para_projetil(infernos: pl.DataFrame | None, grenades: pl.DataFrame | None) -> dict:
+    """(round, entity_id do INCÊNDIO) -> entity_id do projétil do molotov."""
+    if infernos is None or grenades is None or infernos.height == 0:
+        return {}
+    mol = (grenades.filter((pl.col("grenade_type") == "CMolotovProjectile") & pl.col("X").is_not_null())
+           .group_by(["round_num", "entity_id"], maintain_order=True)
+           .agg(pl.col("tick").max().alias("t_fim"), pl.col("thrower_steamid").first().alias("dono")))
+    out = {}
+    for f in infernos.iter_rows(named=True):
+        c = mol.filter((pl.col("round_num") == f["round_num"]) & (pl.col("dono") == f["thrower_steamid"])
+                       & (pl.col("t_fim") == f["start_tick"] - TICKS_DO_PROJETIL_AO_FOGO))
+        if c.height == 1:
+            out[(int(f["round_num"]), int(f["entity_id"]))] = int(c["entity_id"][0])
+    return out
+
+
 def build(match_id: str) -> Path:
     processed = PROJECT_ROOT / "data" / "processed" / match_id
     interim = PROJECT_ROOT / "data" / "interim" / match_id
@@ -139,6 +187,11 @@ def build(match_id: str) -> Path:
     blinds_all = opt("player_blind")
     flash_det = opt("flashbang_detonate")
     he_det = opt("hegrenade_detonate")
+
+    # de que arremesso veio cada smoke, fogo e granada em voo (a "Tática deste
+    # instante" liga o efeito ao lance real, sem inventar origem)
+    lances = lances_do_corpo(match_id, rounds, TICKRATE)
+    fogo = fogo_para_projetil(infernos, grenades)
 
     out_rounds = []
 
@@ -312,7 +365,7 @@ def build(match_id: str) -> Path:
 
         # Utility que ocupa área: fumaça e fogo têm início, fim e posição, então
         # aparecem no mapa como zonas durante o tempo em que existiram.
-        def zones(df: pl.DataFrame | None, default_ticks: int) -> list[dict]:
+        def zones(df: pl.DataFrame | None, default_ticks: int, projetil) -> list[dict]:
             if df is None:
                 return []
             sel = df.filter((pl.col("round_num") == rn) & (pl.col("start_tick") <= t1))
@@ -329,6 +382,8 @@ def build(match_id: str) -> Path:
                         "x": int(round(z["X"])),
                         "y": int(round(z["Y"])),
                         "by": z["thrower_name"],
+                        # o arremesso que gerou o efeito, ou None sem ligação
+                        "l": lances.get((rn, projetil(z))),
                     }
                 )
             return out
@@ -376,7 +431,8 @@ def build(match_id: str) -> Path:
                         break
 
                 if len(xs) >= 2:
-                    nades.append({"k": kind, "by": g["thrower"][0], "f0": f0, "x": xs, "y": ys})
+                    nades.append({"k": kind, "by": g["thrower"][0], "f0": f0, "x": xs, "y": ys,
+                                  "l": lances.get((rn, int(eid)))})
 
         # Detonações de flash e HE. Smoke e fogo viram zona (têm duração e área);
         # flash e HE acontecem num instante e o que importa é o EFEITO — quem
@@ -485,8 +541,8 @@ def build(match_id: str) -> Path:
                 "nades": nades,
                 "pops": sorted(pops, key=lambda p: p["f"]),
                 "blinds": blinds,
-                "smokes": zones(smokes, SMOKE_TICKS),
-                "fires": zones(infernos, INFERNO_TICKS),
+                "smokes": zones(smokes, SMOKE_TICKS, lambda z: int(z["entity_id"])),
+                "fires": zones(infernos, INFERNO_TICKS, lambda z: fogo.get((rn, int(z["entity_id"])))),
             }
         )
 

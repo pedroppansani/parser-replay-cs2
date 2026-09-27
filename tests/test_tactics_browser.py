@@ -911,3 +911,76 @@ def test_instante_com_mortos_mostra_o_placar_e_a_ordem_das_mortes(navegador, tmp
             assert f"Mortos {rot}: {trecho}." in desc, desc
     finally:
         ctx.close()
+
+
+def test_espelho_da_origem_desconhecida(contexto, pagina):
+    from metrics.tactics import aplica as aplica_py, centro_do_radar, problemas as problemas_py, quadro_do_passo
+
+    def op(seq, tipo, **d):
+        return {"id": f"u{seq:04d}", "seq": seq, "autor": "pedro", "em": "x", "tipo": tipo, **d}
+    ops = [op(1, "cria_passo", passo="p1", titulo=""), op(2, "cria_passo", passo="p2", titulo=""),
+           op(3, "cria_granada", granada="a", arma="molotov", passo="p1", origem=[5.0, 5.0], destino=[5.0, 5.0],
+              origem_desconhecida=True),
+           op(4, "cria_granada", granada="b", arma="smoke", passo="p1", origem=[6.0, 6.0], destino=[6.0, 6.0],
+              origem_desconhecida=True),
+           op(5, "move_granada", granada="b", origem=[0.0, 0.0], destino=[6.0, 6.0])]
+    pg = abre(contexto, pagina)
+    assert interno(pg, f"I.aplica({json.dumps(ops)})") == aplica_py(ops)
+    for i in range(2):
+        assert interno(pg, f"I.quadroDoPasso(I.aplica({json.dumps(ops)}), {i}, I.centro())") == \
+            quadro_do_passo(aplica_py(ops), i, interno(pg, "I.centro()"))
+    doc = interno(pg, "S.doc")
+    for ruim in (dict(ops[2], destino=[9.0, 9.0]), dict(ops[2], origem_desconhecida="sim")):
+        d = dict(doc, operacoes=[ops[0], ruim], contador=3)
+        assert bool(interno(pg, f"I.problemas({json.dumps(d)}, 1).length")) == bool(problemas_py(d))
+    # o desenho: sem linha no passo em que nasce
+    d = dict(doc, id="semorigem0001", operacoes=ops[:3], contador=3, versao=2)
+    assert interno(pg, f"I.importaTexto({json.dumps(json.dumps(d))})") is True
+    (g,) = ultimo(pg, "granada")
+    assert not g["linha"] and g["area"]
+
+
+def test_instante_com_smoke_ativa_e_granada_no_ar_liga_ao_arremesso(navegador, tmp_path_factory):
+    """A tática tem exatamente as granadas ativas do instante, e cada uma com a
+    origem LIGADA: o arremesso real da biblioteca, ou a posição da soltura."""
+    pasta = _site_instante(tmp_path_factory, "granadas")
+    rep = json.loads((PROJECT_ROOT / "data" / "processed" / "match_02" / "replay.json").read_text(encoding="utf-8"))
+    bib = {a["id"]: a for a in json.loads((PROJECT_ROOT / "data" / "lineups" / "de_mirage.json")
+                                          .read_text(encoding="utf-8"))["arremessos"]}
+    achado = None
+    for r in rep["rounds"]:
+        for q in range(r["frames"]):
+            smokes = [z for z in r["smokes"] if z["f0"] <= q <= z["f1"] and z["l"]]
+            ativos_ids = {z["l"]["id"] for z in r["smokes"] + r["fires"] if z["f0"] <= q <= z["f1"] and z["l"]}
+            no_ar = [n for n in r["nades"] if n["f0"] <= q < n["f0"] + len(n["x"]) - 1 and n["l"]
+                     and n["l"]["id"] not in ativos_ids]
+            todas_z = [z for z in r["smokes"] + r["fires"] if z["f0"] <= q <= z["f1"]]
+            todas_n = [n for n in r["nades"] if n["f0"] <= q < n["f0"] + len(n["x"]) - 1
+                       and not (n["l"] and n["l"]["id"] in ativos_ids)]
+            if len(smokes) == 1 and len(no_ar) == 1 and len(todas_z) == 1 and len(todas_n) == 1:
+                achado = (r, q, smokes[0], no_ar[0])
+                break
+        if achado:
+            break
+    assert achado, "nenhum instante com exatamente uma smoke ativa e uma granada no ar"
+    r, q, smoke, voo = achado
+    ctx = navegador.new_context(viewport={"width": 1400, "height": 1000})
+    try:
+        pg = ctx.new_page()
+        _abre_replay(pg, pasta, "match_02", r["round"], q)
+        pg.click("#anot-tatica-instante")
+        pg.wait_for_function("() => window.Prancheta && Prancheta._interno.S.estado !== null")
+        granadas = list(interno(pg, "S.estado.granadas").values())
+        assert len(granadas) == 2
+        for alvo in (smoke, voo):
+            arma = "smoke" if alvo is smoke else voo["k"]
+            if alvo["l"]["id"] in bib:
+                (g,) = [g for g in granadas if g["arremesso"] and g["arremesso"]["id"] == alvo["l"]["id"]]
+                assert g["origem"] == bib[alvo["l"]["id"]]["origem"][:2]
+            else:
+                (g,) = [g for g in granadas if g["origem"] == alvo["l"]["o"][:2]]
+                assert g["arremesso"] is None
+            assert g["arma"] == arma and "origem_desconhecida" not in g
+        assert interno(pg, "S.estado.granadas[Object.keys(S.estado.granadas)[0]].passo") == interno(pg, "S.estado.passos[0].passo")
+    finally:
+        ctx.close()

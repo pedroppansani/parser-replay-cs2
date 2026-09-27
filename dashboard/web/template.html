@@ -2233,6 +2233,28 @@
             return { nome: p.name, lado: p.side, quadro: q };
           }).sort(function (a, b) { return a.quadro - b.quadro || (a.nome < b.nome ? -1 : 1); })
             .map(function (m, n) { return { nome: m.nome, lado: m.lado, ordem: n + 1 }; }),
+          // granadas ativas no quadro: smoke e fogo com o efeito no ar, e
+          // qualquer granada ainda voando (o destino é o fim da trajetória, que
+          // está alguns quadros à frente -- é o que se quer ver). Flash e HE já
+          // estouradas não entram. `lance` é a ligação ao arremesso que o
+          // export fez (ou null, sem ligação).
+          granadas: (function () {
+            var out = [], vistos = {};
+            [["smoke", cur.smokes], ["molotov", cur.fires]].forEach(function (par) {
+              (par[1] || []).forEach(function (z) {
+                if (z.f0 <= i0 && i0 <= z.f1) {
+                  out.push({ arma: par[0], destino: [z.x, z.y], lance: z.l || null });
+                  if (z.l) vistos[z.l.id] = true;
+                }
+              });
+            });
+            (cur.nades || []).forEach(function (n) {
+              if (n.f0 <= i0 && i0 < n.f0 + n.x.length - 1 && !(n.l && vistos[n.l.id])) {
+                out.push({ arma: n.k, destino: [n.x[n.x.length - 1], n.y[n.y.length - 1]], lance: n.l || null });
+              }
+            });
+            return out;
+          })(),
           jogadores: cur.players.filter(function (p) { return p.alive[i0]; }).map(function (p) {
             return { nome: p.name, lado: p.side, x: p.x[i0], y: p.y[i0],
                      yaw: p.d ? p.d[i0] : null, nivel: p.lv ? p.lv[i0] : 0 };

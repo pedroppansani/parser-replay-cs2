@@ -121,7 +121,9 @@ OPERACOES = {
 OPCIONAIS = {
     "cria_peca": ("nivel", "yaw"),
     "move_peca": ("nivel",),
-    "cria_granada": ("nivel", "dura_passos", "arremesso"),
+    # origem_desconhecida: granada vinda de um instante do replay cujo efeito
+    # não se liga a arremesso nenhum -- só o efeito é conhecido
+    "cria_granada": ("nivel", "dura_passos", "arremesso", "origem_desconhecida"),
     "move_granada": ("nivel",),
     "cria_traco": ("nivel", "dura_passos", "texto"),
 }
@@ -253,6 +255,9 @@ def aplica(operacoes: list[dict]) -> dict:
                     else VIDA_PADRAO_GRANADA[op["arma"]],
                     "criada_em_ordem": _ordem(op),
                 }
+                # o campo só existe quando é verdade: ausente = origem conhecida
+                if op.get("origem_desconhecida") is True:
+                    estado["granadas"][op["granada"]]["origem_desconhecida"] = True
         elif t == "move_granada":
             g = estado["granadas"].get(op["granada"])
             if g is not None:
@@ -262,6 +267,8 @@ def aplica(operacoes: list[dict]) -> dict:
                 # granada arrastada à mão deixou de ser o arremesso real: manter o
                 # comando de console seria afirmar um lineup que não é mais aquele
                 g["arremesso"] = None
+                # e a origem passou a ser a que a pessoa desenhou
+                g.pop("origem_desconhecida", None)
         elif t == "remove_granada":
             estado["granadas"].pop(op["granada"], None)
         elif t == "cria_traco":
@@ -569,6 +576,16 @@ def _problemas_da_granada(op: dict, onde: str) -> list[str]:
     if len(op["origem"]) < 2 or len(op["destino"]) < 2:
         erros.append(f"{onde}: granada sem origem ou destino completos")
     arr = op.get("arremesso")
+    if "origem_desconhecida" in op:
+        if not isinstance(op["origem_desconhecida"], bool):
+            erros.append(f"{onde}: origem_desconhecida não é verdadeiro/falso")
+        elif op["origem_desconhecida"]:
+            # sem origem, o único valor honesto é origem == destino: a linha some
+            # e nada passa por arremesso de verdade
+            if list(op["origem"][:2]) != list(op["destino"][:2]):
+                erros.append(f"{onde}: origem desconhecida exige origem igual ao destino")
+            if arr is not None:
+                erros.append(f"{onde}: origem desconhecida não combina com arremesso real")
     if arr is not None:
         # o arremesso real é o que carrega o comando de console: sem os campos
         # que o reproduzem, ele não é um arremesso real, é um desenho

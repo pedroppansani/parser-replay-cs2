@@ -394,3 +394,34 @@ def test_mortos_da_origem_sao_conferidos():
     assert len(problemas_da_origem({**base, "mortos": [{"nome": "donk", "lado": "ct", "ordem": 1}]})) == 1
     assert len(problemas_da_origem({**base, "mortos": [{"nome": "donk", "lado": "t", "ordem": 1},
                                                        {"nome": "ropz", "lado": "ct", "ordem": 1}]})) == 1
+
+
+# --- origem_desconhecida -------------------------------------------------------
+
+def _granada_sem_origem(seq, **extra):
+    return _op2(seq, "cria_granada", granada=f"u{seq}", arma="smoke", passo="p1",
+                origem=[10.0, 20.0], destino=[10.0, 20.0], origem_desconhecida=True, **extra)
+
+
+def test_origem_desconhecida_so_existe_quando_e_verdade_e_sai_ao_mover():
+    ops = _base() + [_granada_sem_origem(7)]
+    g = aplica(ops)["granadas"]["u7"]
+    assert g["origem_desconhecida"] is True
+    assert "origem_desconhecida" not in aplica(_base())["granadas"]["g1"]      # ausente = conhecida
+    movida = aplica(ops + [_op2(8, "move_granada", granada="u7", origem=[0.0, 0.0], destino=[10.0, 20.0])])
+    assert "origem_desconhecida" not in movida["granadas"]["u7"]
+
+
+@pytest.mark.parametrize("op, trecho", [
+    (_granada_sem_origem(7), None),
+    (dict(_granada_sem_origem(7), destino=[11.0, 20.0]), "exige origem igual ao destino"),
+    (dict(_granada_sem_origem(7), arremesso=REAL), "não combina com arremesso real"),
+    (dict(_granada_sem_origem(7), origem_desconhecida="sim"), "verdadeiro/falso"),
+])
+def test_validacao_da_origem_desconhecida(op, trecho):
+    from metrics.tactics import problemas
+    ps = problemas(_doc(_base() + [op]))
+    if trecho is None:
+        assert ps == []
+    else:
+        assert any(trecho in p for p in ps), ps
