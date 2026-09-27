@@ -857,3 +857,57 @@ def test_tatica_que_nao_veio_do_replay_continua_com_o_banco_numerado(contexto, p
     fichas = pg.locator(".pr-ficha")
     assert sorted(fichas.nth(i).get_attribute("data-rotulo") for i in range(fichas.count())) == \
            sorted([str(n) for n in range(1, 6)] * 2)
+
+
+def test_o_espelho_confere_os_mortos_igual_ao_python(contexto, pagina):
+    from metrics.tactics import problemas_da_origem
+    base = {"partida": "m", "round": 6, "quadro": 40, "relogio": "1:05", "elenco": ELENCO_TESTE}
+    casos = [dict(base, mortos=[{"nome": "donk", "lado": "t", "ordem": 1}]),
+             dict(base, mortos=[{"nome": "fantasma", "lado": "t", "ordem": 1}]),
+             dict(base, mortos=[{"nome": "donk", "lado": "ct", "ordem": 1}]),
+             dict(base, mortos=[{"nome": "donk", "lado": "t", "ordem": 1}, {"nome": "ropz", "lado": "ct", "ordem": 1}]),
+             dict(base, mortos="x")]
+    pg = abre(contexto, pagina)
+    for c in casos:
+        assert len(interno(pg, f"I.problemasDaOrigem({json.dumps(c)})")) == len(problemas_da_origem(c)), c
+
+
+def test_instante_com_mortos_mostra_o_placar_e_a_ordem_das_mortes(navegador, tmp_path_factory):
+    """Os mortos não viram peça: vão no placar de vivos do título e na descrição,
+    por lado e na ordem das mortes, conferidos contra o replay.json."""
+    pasta = _site_instante(tmp_path_factory, "mortos")
+    rep = json.loads((PROJECT_ROOT / "data" / "processed" / "match_02" / "replay.json").read_text(encoding="utf-8"))
+    rodada, quadro = None, None
+    for r in rep["rounds"]:                    # um instante com morto dos dois lados e vivo dos dois
+        for q in range(r["frames"]):
+            vivos = {s: sum(1 for p in r["players"] if p["side"] == s and p["alive"][q]) for s in ("t", "ct")}
+            if 0 < vivos["t"] < 5 and 0 < vivos["ct"] < 5:
+                rodada, quadro = r, q
+                break
+        if rodada:
+            break
+    assert rodada, "nenhum instante com mortos dos dois lados na match_02"
+    primeira = {p["name"]: next(q for q in range(quadro + 1) if not p["alive"][q])
+                for p in rodada["players"] if not p["alive"][quadro]}
+    ordem = sorted(primeira, key=lambda n: (primeira[n], n))
+    lado = {p["name"]: p["side"] for p in rodada["players"]}
+    ctx = navegador.new_context(viewport={"width": 1400, "height": 1000})
+    try:
+        pg = ctx.new_page()
+        _abre_replay(pg, pasta, "match_02", rodada["round"], quadro)
+        pg.click("#anot-tatica-instante")
+        pg.wait_for_function("() => window.Prancheta && Prancheta._interno.S.estado !== null")
+        mortos = interno(pg, "S.doc.origem.mortos")
+        assert [m["nome"] for m in sorted(mortos, key=lambda m: m["ordem"])] == ordem
+        pecas = {p["rotulo"] for p in interno(pg, "S.estado.pecas").values()}
+        assert not pecas & set(ordem)                          # morto não vira peça
+        titulo = interno(pg, "S.estado.titulo")
+        assert titulo.endswith(f"· {vivos['t']}v{vivos['ct']}")
+        assert f"round {rodada['round']}" in titulo
+        desc = pg.locator("#pr-origem").text_content()
+        for s, rot in (("t", "TR"), ("ct", "CT")):
+            doLado = [n for n in ordem if lado[n] == s]
+            trecho = ", ".join(f"{n} ({ordem.index(n) + 1}ª morte)" for n in doLado)
+            assert f"Mortos {rot}: {trecho}." in desc, desc
+    finally:
+        ctx.close()

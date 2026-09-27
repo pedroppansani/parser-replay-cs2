@@ -489,7 +489,40 @@ var Prancheta = (function () {
       var n = Object.keys(nomes).filter(function (k) { return nomes[k] === lado; }).length;
       if (n > PECAS_POR_LADO) erros.push("origem: mais de " + PECAS_POR_LADO + " jogadores de " + lado + " no elenco");
     });
+    var mortos = o.mortos === undefined ? [] : o.mortos;
+    if (!Array.isArray(mortos)) return erros.concat(["origem: mortos não é uma lista"]);
+    var ordens = {};
+    mortos.forEach(function (m) {
+      if (!m || !tem(nomes, m.nome) || nomes[m.nome] !== m.lado) { erros.push("origem: morto fora do elenco"); return; }
+      if (!ehInteiro(m.ordem) || m.ordem < 1 || ordens[m.ordem]) erros.push("origem: ordem de morte inválida para " + m.nome);
+      else ordens[m.ordem] = true;
+    });
     return erros;
+  }
+
+  /** Placar de vivos no instante, sempre TR antes de CT ("4v3"). */
+  function placarDeVivos(origem) {
+    var vivos = { t: 0, ct: 0 }, mortos = {};
+    (origem.mortos || []).forEach(function (m) { mortos[m.nome] = true; });
+    origem.elenco.forEach(function (j) { if (!mortos[j.nome]) vivos[j.lado]++; });
+    return vivos;
+  }
+
+  /** Texto do instante de origem, montado aqui a partir do metadado. */
+  function textoDaOrigem(origem) {
+    var v = placarDeVivos(origem);
+    var linhas = ["Instante do replay: " + origem.partida + ", round " + origem.round + ", " + origem.relogio +
+                  " (quadro " + origem.quadro + "). Vivos: " + v.t + " TR contra " + v.ct + " CT."];
+    var mortos = (origem.mortos || []).slice().sort(function (a, b) { return a.ordem - b.ordem; });
+    if (mortos.length) {
+      [["t", "TR"], ["ct", "CT"]].forEach(function (par) {
+        var doLado = mortos.filter(function (m) { return m.lado === par[0]; });
+        if (doLado.length) {
+          linhas.push("Mortos " + par[1] + ": " + doLado.map(function (m) { return m.nome + " (" + m.ordem + "ª morte)"; }).join(", ") + ".");
+        }
+      });
+    } else linhas.push("Ninguém tinha morrido ainda.");
+    return linhas.join(" ");
   }
 
   function novoId() {
@@ -1204,6 +1237,9 @@ var Prancheta = (function () {
     }
     if (document.activeElement !== $("pr-titulo")) $("pr-titulo").value = S.estado ? S.estado.titulo : "";
     $("pr-historico").textContent = S.doc ? S.doc.operacoes.length + " operações · contador " + S.doc.contador : "";
+    var desc = $("pr-origem");
+    desc.textContent = S.doc && S.doc.origem ? textoDaOrigem(S.doc.origem) : "";
+    desc.hidden = !(S.doc && S.doc.origem);
   }
 
   function atualizaPassos() {
@@ -1627,8 +1663,13 @@ var Prancheta = (function () {
     var elenco = Array.isArray(retrato.elenco) ? retrato.elenco.filter(function (j) {
       return j && typeof j.nome === "string" && j.nome && LADOS.indexOf(j.lado) >= 0;
     }).map(function (j) { return { nome: j.nome.slice(0, 32), lado: j.lado }; }) : [];
+    var nomesDoElenco = {};
+    elenco.forEach(function (j) { nomesDoElenco[j.nome] = j.lado; });
+    var mortos = Array.isArray(retrato.mortos) ? retrato.mortos.filter(function (m) {
+      return m && nomesDoElenco[m.nome] === m.lado && ehInteiro(m.ordem) && m.ordem >= 1;
+    }).map(function (m) { return { nome: m.nome, lado: m.lado, ordem: m.ordem }; }) : [];
     var origem = { partida: String(retrato.partida || ""), round: retrato.round, quadro: retrato.quadro,
-                   relogio: String(retrato.relogio || ""), elenco: elenco };
+                   relogio: String(retrato.relogio || ""), elenco: elenco, mortos: mortos };
     if (!problemasDaOrigem(origem).length) S.doc.origem = origem;
     bancoDe = null;   // o banco da tática nova passa a ser o elenco do round
     var passo = passoAtual();
@@ -1639,8 +1680,11 @@ var Prancheta = (function () {
       emite("cria_peca", dados, false);
     });
     if (retrato && retrato.round !== undefined) {
-      emite("renomeia", { titulo: (retrato.partida ? retrato.partida + " · " : "") + "round " + retrato.round +
-        (retrato.relogio ? " · " + retrato.relogio : "") }, false);
+      // "match_05 · round 9 · 1:12 · 4v3" -- o placar de vivos é TR v CT
+      var titulo = (retrato.partida ? retrato.partida + " · " : "") + "round " + retrato.round +
+        (retrato.relogio ? " · " + retrato.relogio : "");
+      if (S.doc.origem) { var v = placarDeVivos(S.doc.origem); titulo += " · " + v.t + "v" + v.ct; }
+      emite("renomeia", { titulo: titulo }, false);
     }
     gravaAgora();   // grava ANTES do aviso: gravar com sucesso limpa o aviso
     if (validos.length !== jogadores.length) {
@@ -1822,7 +1866,8 @@ var Prancheta = (function () {
       quadroDoPasso: quadroDoPasso, ordemDeCriacao: ordemDeCriacao, anuladas: anuladas,
       estadoNoTempo: estadoNoTempo, linhaDoTempo: linhaDoTempo, reproduzAte: function (t) { reproduzAte(t); },
       comecaReproducao: comecaReproducao, editaAqui: editaAqui, toca: function (s) { toca(s); },
-      problemas: problemas, problemasDaOrigem: problemasDaOrigem, centro: function () { return CENTRO; },
+      problemas: problemas, problemasDaOrigem: problemasDaOrigem, textoDaOrigem: textoDaOrigem,
+      centro: function () { return CENTRO; },
       jogoParaPixel: jogoParaPixel, pixelParaJogo: pixelParaJogo,
       importaTexto: importaTexto, gravaAgora: gravaAgora, busca: busca, usaArremesso: usaArremesso,
       desfaz: desfaz, refaz: refaz, aplicaZoom: aplicaZoom, reprojeta: reprojeta,

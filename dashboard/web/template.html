@@ -2224,6 +2224,15 @@
           tick: cur.t0 !== undefined && R.sample_every ? cur.t0 + i0 * R.sample_every : null,
           // o elenco do round inteiro, vivos e mortos: é o banco da prancheta
           elenco: cur.players.map(function (p) { return { nome: p.name, lado: p.side }; }),
+          // os mortos até o quadro i0, na ordem das mortes: a ordem é o primeiro
+          // quadro em que o jogador aparece morto (o mesmo `alive` que decide
+          // quem vira peça), o que cobre também morte sem kill (bomba, queda)
+          mortos: cur.players.filter(function (p) { return !p.alive[i0]; }).map(function (p) {
+            var q = 0;
+            while (q < i0 && p.alive[q]) q++;
+            return { nome: p.name, lado: p.side, quadro: q };
+          }).sort(function (a, b) { return a.quadro - b.quadro || (a.nome < b.nome ? -1 : 1); })
+            .map(function (m, n) { return { nome: m.nome, lado: m.lado, ordem: n + 1 }; }),
           jogadores: cur.players.filter(function (p) { return p.alive[i0]; }).map(function (p) {
             return { nome: p.name, lado: p.side, x: p.x[i0], y: p.y[i0],
                      yaw: p.d ? p.d[i0] : null, nivel: p.lv ? p.lv[i0] : 0 };

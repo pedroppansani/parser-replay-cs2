@@ -383,3 +383,14 @@ def test_origem_entra_na_validacao_do_documento():
     d["origem"] = CASOS_ORIGEM[1][0]
     with pytest.raises(TaticaInvalida, match="origem"):
         valida(d)
+
+
+def test_mortos_da_origem_sao_conferidos():
+    from metrics.tactics import problemas_da_origem
+    base = {"partida": "match_02", "round": 6, "quadro": 40, "relogio": "1:05", "elenco": ELENCO}
+    assert problemas_da_origem({**base, "mortos": [{"nome": "donk", "lado": "t", "ordem": 1},
+                                                   {"nome": "ropz", "lado": "ct", "ordem": 2}]}) == []
+    assert len(problemas_da_origem({**base, "mortos": [{"nome": "fantasma", "lado": "t", "ordem": 1}]})) == 1
+    assert len(problemas_da_origem({**base, "mortos": [{"nome": "donk", "lado": "ct", "ordem": 1}]})) == 1
+    assert len(problemas_da_origem({**base, "mortos": [{"nome": "donk", "lado": "t", "ordem": 1},
+                                                       {"nome": "ropz", "lado": "ct", "ordem": 1}]})) == 1

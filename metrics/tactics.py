@@ -509,6 +509,18 @@ def problemas_da_origem(origem) -> list[str]:
     for lado in LADOS:
         if sum(1 for v in nomes.values() if v == lado) > PECAS_POR_LADO:
             erros.append(f"origem: mais de {PECAS_POR_LADO} jogadores de {lado} no elenco")
+    mortos = origem.get("mortos", [])
+    if not isinstance(mortos, list):
+        return erros + ["origem: mortos não é uma lista"]
+    ordens = set()
+    for m in mortos:
+        if not isinstance(m, dict) or nomes.get(m.get("nome")) != m.get("lado"):
+            erros.append(f"origem: morto fora do elenco: {m!r}")
+            continue
+        if not _eh_inteiro(m.get("ordem")) or m["ordem"] < 1 or m["ordem"] in ordens:
+            erros.append(f"origem: ordem de morte inválida para {m['nome']}")
+        else:
+            ordens.add(m["ordem"])
     return erros
 
 
