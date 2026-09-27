@@ -34,6 +34,8 @@ pronto não serve aqui.
   partida só depois de conferir o processado, e registra no manifesto. **Sem o
   interim a partida não pode ser recalculada** (insights, replay, calibração do
   rating leem de lá) sem baixar a demo de novo.
+  **Apagar demo, interim ou backup exige a confirmação da decisão 36** (lista
+  explícita, tamanho e outra cópia conferida por sha256).
 - Parsing leva ~14s por partida. Use `--from-interim` para reaproveitar um parse
   já feito em vez de reparsear enquanto itera nas métricas.
 
@@ -1493,6 +1495,33 @@ testada e estava errada.
     Durante a reprodução nada é editável (barra de edição escondida, painel
     `inert`); "Editar" volta ao editor no passo em que parou. Atalhos do
     replay, com a mesma guarda de foco: espaço, setas (passo a passo), [ e ].
+
+36. **PRESERVAÇÃO DE DADOS: nenhum `.dem`, nada de `data/interim/` e nenhum
+    backup é apagado sem o Pedro confirmar uma LISTA EXPLÍCITA dos arquivos,
+    com o tamanho de cada um e a prova de que existe outra cópia conferida por
+    sha256** (regra do Pedro, 2026-09-27). "Nada exclusivo" só vale com hash
+    conferido arquivo a arquivo -- nunca por nome, caminho, tamanho ou "o git
+    tem". Isso vale também para `clean_match.py --confirmar`, `rm -rf` e
+    qualquer limpeza de disco.
+    POR QUE (o que aconteceu, investigado em 2026-09-27): as demos NÃO sumiram
+    na exclusão de `demos/parser-replay-cs2` (173 MB, 2026-09-26). Elas foram
+    apagadas antes, em 2026-09-19 02:52, pelo `clean_match` rodado nas 52
+    partidas (27,1 GB), depois de o Pedro responder "pode apagar só as demos" a
+    uma proposta que dizia que "a partida continua no site normalmente". Era
+    verdade para o site e falso para o projeto: a proposta não dizia que
+    qualquer propriedade NOVA da demo (foi o que o item 7 precisou:
+    `m_vInitialVelocity`, `m_flThrowStrength`, `duck_amount`) passava a ser
+    impossível de extrair. A conferência do `clean_match` olhava a integridade
+    do PROCESSADO, não o que a demo tinha e o interim não. A match_23 escapou
+    porque tinha mudado de pasta. O clone de 173 MB foi checado só POR CAMINHO
+    ("0 arquivos que não existem no repo atual"): o histórico dele está no
+    bundle da reescrita (HEAD `87913bc` conferido lá), mas se a árvore de
+    trabalho tinha mudança não commitada não dá mais para saber -- é o defeito
+    que esta regra fecha.
+    Backups atuais: "...- BACKUP interim 2026-09-21" e "...- BACKUP interim
+    2026-09-27" (interim + o .dem da match_23, `SHA256SUMS.txt` conferido nos
+    dois sentidos). Plano de recuperação das demos, sem nada executado:
+    `RECUPERACAO_DEMOS.md`.
 
 ## Pontos de calibração — pertencem ao Pedro, não ao código
 
