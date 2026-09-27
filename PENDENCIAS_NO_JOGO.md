@@ -13,24 +13,21 @@ decidir fazer a sessão.
 
 - **O que precisa ser feito:** reproduzir no jogo um arremesso da biblioteca
   pelo comando `setpos`/`setang` da ficha e conferir se a smoke cai no ponto
-  registrado no replay.
-- **O que destrava:**
-  - `COMANDO_CONFERIDO_NO_JOGO = True` (decisão 21b): as fichas de arremesso,
-    no replay e na prancheta, deixam de avisar que o comando não foi
-    conferido;
-  - ~~a decisão sobre a postura real no parser~~: **já coberta sem o jogo**
-    (2026-09-27). O ponto de nascimento gravado na demo mediu a altura por
-    botão e por postura (62,4 / 55,1 / 50,6u em pé; 45,3u agachado; offset de
-    agachar -18,00 exato) e explicou 57 dos 62 falsos agachados (decisão 21c).
-    O risco de ALTURA está medido; o teste de console continua sendo o único
-    que diz se `setpos`/`setang` reproduzem a jogada, e por isso fica, menos
-    urgente.
-- **Por que não existe outro caminho:** a origem do `setpos` (pés ou olhos), o
-  sinal do `setang` e os pré-requisitos do servidor só se confirmam rodando no
-  jogo; a demo registra o resultado do arremesso, não o que o console faz.
-- **Custo de nunca fazer:** os ~42 mil arremessos da biblioteca continuam
-  sendo oferecidos com o aviso de "comando não conferido". A postura NÃO
-  depende mais deste teste (ver acima).
+  registrado no replay. É SÓ isso que sobra: botão, pitch do lançamento e
+  altura de saída já estão medidos no gabarito da demo (decisões 21a e 21c,
+  `tests/fixtures/gabarito_arremessos_match_23.json`).
+- **O que destrava:** `COMANDO_CONFERIDO_NO_JOGO = True` (decisão 21b): as
+  fichas de arremesso, no replay e na prancheta, deixam de avisar que o
+  comando não foi conferido.
+- **Por que não existe outro caminho:** a demo grava o que o jogo fez com a
+  granada, não o que o console faz com o jogador: a origem do `setpos` (pés ou
+  olhos), o sinal do `setang` e os pré-requisitos do servidor só se confirmam
+  rodando no jogo.
+- **Custo de nunca fazer:** os ~42 mil arremessos da biblioteca continuam com
+  o aviso de "comando não conferido". Nada mais depende deste teste: a postura
+  e a altura de saída já saem do gabarito, e o que ainda não fecha nelas (uma
+  cauda de arremessos parados que saem 1 a 8u mais baixos, sem causa achada)
+  o console também não explicaria.
 
 ## 2. Revisão dos 38 ângulos de entrada da Nuke
 
