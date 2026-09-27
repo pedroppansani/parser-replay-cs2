@@ -80,8 +80,10 @@ def arremessos_do_corpus() -> pl.DataFrame:
     return pl.concat(partes, how="diagonal_relaxed") if partes else pl.DataFrame()
 
 
-def _entrada(r: dict, grupos: list) -> dict:
-    forca = rotula_forca(r["velocidade_arremesso"], grupos)
+def _entrada(r: dict) -> dict:
+    # força e botão AFIRMADOS pela rotina do jogo medida no gabarito (decisão
+    # 21a); sem botão (neutro), a velocidade vai marcada como estimativa
+    forca = r["forca"]
     seg = r["segundos_no_round"]
     return {
         "id": f"{r['match_id']}:{r['round_num']}:{r['entity_id']}",
@@ -96,6 +98,8 @@ def _entrada(r: dict, grupos: list) -> dict:
         # grupo neutro ("força A") não diz qual botão, e inventar seria pior
         "botao": BOTAO_DA_FORCA.get(forca),
         "velocidade": round(r["velocidade_arremesso"], 0) if r["velocidade_arremesso"] is not None else None,
+        "velocidade_estimada": True,
+        "estado_vertical": r["estado_vertical"],
         "postura": r["postura"],
         "movimento": r["movimento"],
         "no_ar": r["no_ar"],
@@ -111,8 +115,8 @@ def biblioteca_do_mapa(df: pl.DataFrame, mapa: str) -> dict:
     exatos = m.filter(pl.col("reproducao_exata") & pl.col("tick_soltura").is_not_null()
                       & pl.col("x").is_not_null() & pl.col("x_final").is_not_null())
     v = exatos["velocidade_arremesso"].drop_nulls().to_numpy()
-    grupos = grupos_de_forca(v)
-    entradas = [_entrada(r, grupos) for r in
+    grupos = grupos_de_forca(v)          # só diagnóstico (decisão 5): o rótulo vem do botão
+    entradas = [_entrada(r) for r in
                 exatos.sort(["match_id", "round_num", "tick_soltura", "entity_id"]).iter_rows(named=True)]
     return {
         "formato": "biblioteca-de-arremessos",
@@ -121,8 +125,8 @@ def biblioteca_do_mapa(df: pl.DataFrame, mapa: str) -> dict:
         "partidas": int(m["match_id"].n_unique()),
         "arremessos_no_corpus": int(m.height),
         "arremessos_exatos": len(entradas),
-        "grupos_de_forca": [{"centro": round(c, 0), "n": n, "rotulo": rotula_forca(c, grupos)} for c, n in grupos],
-        "rotulos_confirmados": len(grupos) == len(ROTULOS_FORCA),
+        "grupos_de_forca": [{"centro": round(c, 0), "n": n} for c, n in grupos],
+        "rotulos_confirmados": True,          # rótulo pelo botão medido no gabarito
         "comando_conferido_no_jogo": COMANDO_CONFERIDO_NO_JOGO,
         "arremessos": entradas,
     }

@@ -695,36 +695,15 @@ Mapa mais super-representado: overpass (1.5x a fatia do corpus).
 
 ## 3. Rótulos de força do arremesso
 
-2268 arremessos em 6 partidas. Os grupos saem por moda (decisão 5); os rótulos saem PELA ORDEM (mais lento = curto), confirmados por você em 2026-09-26 -- e só quando há exatamente três grupos (decisão 21a).
+2268 arremessos em 6 partidas. Desde a rota A (decisão 21a) o rótulo é o BOTÃO: a velocidade calculada pela rotina do jogo a até 20 u/s do centro de um dos três botões medidos no gabarito (202.5, 438.7, 675 u/s). As velocidades abaixo são ESTIMATIVAS do modelo; o que é afirmado é o botão.
 
-| Grupo | Centro | Arremessos | Exemplo |
+| Rótulo | Velocidade estimada média | Arremessos | Exemplo |
 |---|---|---|---|
-| força D | 758 u/s | 67 | w0nderful, smoke, match_38 round 10 (0:06), agachado, parado |
-| força C | 676 u/s | 1998 | donk666, he, match_05 round 3 (0:11), em pé, parado |
-| força B | 443 u/s | 101 | flameZ, smoke, match_43 round 6 (0:13), em pé, parado |
-| força A | 204 u/s | 102 | molodoy, he, match_43 round 23 (0:10), agachado, parado |
+| curto | 202 u/s | 91 | ZywOo, he, match_43 round 11 (0:09), em pé, parado |
+| médio | 436 u/s | 98 | molodoy, smoke, match_43 round 11 (0:00), em pé, parado |
+| longo | 673 u/s | 1974 | HLEB, flash, match_01 round 14 (0:13), em pé, parado |
 
-```
-   0-50   u/s |                                                       1  força A
-  50-100  u/s |                                                       1  força A
- 100-150  u/s |                                                       1  força A
- 150-200  u/s |                                                      31  força A
- 200-250  u/s | #                                                    63  força A
- 250-300  u/s |                                                       4  força A
- 300-350  u/s |                                                       1  força B
- 350-400  u/s |                                                       0  força B
- 400-450  u/s | ##                                                   89  força B
- 450-500  u/s |                                                       8  força B
- 500-550  u/s |                                                       3  força B
- 550-600  u/s |                                                       4  força C
- 600-650  u/s | #                                                    39  força C
- 650-700  u/s | ################################################## 1862  força C
- 700-750  u/s | ###                                                 131  força C
- 750-800  u/s |                                                      22  força D
- 800-850  u/s |                                                       5  força D
-```
-
-**Respondido (2026-09-26):** curto/médio/longo pela ordem está certo.
+Sem rótulo (neutros): 105, por motivo: fora da tolerância 37; ambíguo: subindo sem parábola 24; janela 0-5 (sem gabarito) 16; ambíguo: parábola sem pulo limpo 15; janela 14-18 (sem gabarito) 11; ambíguo: queda sem decolagem na janela 2
 
 ## 4. Teste do comando de console
 

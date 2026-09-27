@@ -127,7 +127,9 @@ def importa(simular: bool = False, entrada: Path | None = None) -> dict:
             else:
                 registro["copia"] = str(copia)
                 somas = backup.parent / "SHA256SUMS.txt"
-                with open(somas, "a", encoding="utf-8") as f:
+                # newline="\n": com o padrão do Windows (\r\n) o sha256sum -c lê o
+                # \r como parte do nome do arquivo e a conferência falha
+                with open(somas, "a", encoding="utf-8", newline="\n") as f:
                     f.write(f"{h} *demos/{alvo.name}\n")
         out["importados"].append(registro)
     return out

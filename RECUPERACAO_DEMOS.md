@@ -1,4 +1,25 @@
-# Recuperação das demos apagadas (plano, NADA executado)
+# Recuperação das demos apagadas
+
+## RESUMO: o que baixar (só isto)
+
+5 séries, pela página da HLTV (botão "GOTV Demo"), soltas em `demos/entrada/`:
+
+| # | série | página | mapas do corpus |
+|---|---|---|---|
+| 1 | NaVi x Spirit, IEM Cologne Major 2026 | https://www.hltv.org/matches/2394900/natus-vincere-vs-spirit | match_10 Dust2, match_11 Anubis |
+| 2 | FURIA x Vitality, IEM Rio 2026 | https://www.hltv.org/matches/2393243/furia-vs-vitality | match_12 Overpass, match_14 Ancient |
+| 3 | NaVi x FURIA, IEM Rio 2026 | https://www.hltv.org/matches/2393228/natus-vincere-vs-furia | match_15 Mirage, match_16 Nuke, match_17 Dust2 |
+| 4 | FURIA x Falcons, PGL Cluj-Napoca 2026 | https://www.hltv.org/matches/2389969/furia-vs-falcons | match_18 Anubis, match_19 Inferno, match_20 Mirage |
+| 5 | Falcons x MOUZ, IEM Kraków 2026 | https://www.hltv.org/matches/2389660/falcons-vs-mouz | match_41 Inferno, match_42 Dust2 |
+
+NÃO precisa baixar: Vitality x Magic (match_23 já está no disco), as 30 de
+campeonato sem link (só a lista de busca, mais abaixo) e as 9 da FACEIT.
+Depois de soltar os arquivos, me avise; eu rodo `py -3.12 -m scripts.importa_demos`,
+que confere cada .dem pelo sha256. O resto deste arquivo é referência.
+
+---
+
+## Referência
 
 Gerado em 2026-09-27 a partir de `data/manifest.json`. As 52 demos foram apagadas
 por `scripts/clean_match.py` em 2026-09-19 02:52 (horário local), com a autorização

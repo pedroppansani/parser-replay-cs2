@@ -949,6 +949,33 @@ testada e estava errada.
       u/s², limite de subtick). A aceleração não separa com limpeza (há 17,1
       u/s a 467 u/s² e 0,2 a 1.168 u/s²). O código da rota A está na branch
       `rota-a-em-andamento`, fora do main.
+    **Rota A aplicada na branch (2026-09-27), MERGE BLOQUEADO por piora = 2:**
+    - a invariante do botão é a do vizinho (resposta 1 do Pedro): erro do modelo
+      < menor distância entre centros - tolerância (236,2 - 20 = 216,2),
+      calculada das constantes; o erro do modelo vai para a CATRACA (p99 9,73,
+      máximo 22,24, < 5 u/s 96,04%; posição < 1u 69,24%). O teste "nenhum
+      rotulado com erro acima da tolerância" foi SUBSTITUÍDO por ela (misturava
+      tolerância e erro do modelo);
+    - tolerância e faixa de postura saem de `metrics/gabarito_constantes.json`,
+      gerado por `scripts/constantes_do_gabarito.py` e conferido por teste. Com
+      o modelo final: tolerância **20** (p99 9,72, n = 430 -- o 21 de antes
+      incluía a 7:143, falha conhecida que o modelo agora detecta), faixa de
+      postura [-0,012; +1,118] (um agachado no ar correto a -0,012);
+    - convenção da parábola: a contagem começa na segunda diferença centrada em
+      t-1 (com ela a decolagem bate com a gravada; começando em t sai até 0,7
+      tick adiantada);
+    - sem janela CONTÍNUA de ticks (a match_16 pula ticks no round 5) o estado é
+      neutro com motivo; os pés vêm da tabela no tick da soltura;
+    - no corpus: 23.137 de 23.895 com botão (96,83%); neutros: tolerância 186,
+      parábola sem pulo limpo 154, janela 14-18 145, janela 0-5 141, subindo sem
+      parábola 94, queda sem decolagem 22, ticks faltando 16. Postura na faixa
+      neutra: 103, com DUAS partidas acima de 2%, ambas Anubis (match_11 3,8%,
+      match_25 2,1%) -- sinal de que o corte pode não servir num terreno dali;
+    - PIORA (troca de botão) em 2 lineups, os dois com o rótulo ANTIGO fora de
+      qualquer tolerância: match_46:4:985 (330 u/s -> 203, "médio" -> "curto",
+      pulo 12 ticks) e match_31:8:545 (524 -> 683, "médio" -> "longo", descendo
+      escada com vz -146 que o modelo antigo descontava). Replay idêntico no
+      compara_capturas (direção desligada); pytest 987 passed.
 
 21b. **A reprodução por console depende de validação prática do Pedro, não do
     código.** Origem do `setpos`, sinal do `setang` e pré-requisitos de servidor

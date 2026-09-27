@@ -1,0 +1,20 @@
+{
+ "_leia_isto": "Gerado por py -3.12 -m scripts.constantes_do_gabarito a partir de tests/fixtures/gabarito_arremessos_*.json. Não editar à mão.",
+ "tolerancia_botao": 20.0,
+ "tolerancia_origem": {
+  "p99_erro_velocidade": 9.7232,
+  "n": 430
+ },
+ "faixa_postura_neutra": [
+  -0.0121,
+  1.1182
+ ],
+ "faixa_postura_origem": {
+  "n_agachados_corretos": 22,
+  "n_em_pe_corretos": 400
+ },
+ "partidas": [
+  "match_23"
+ ],
+ "n_arremessos": 434
+}

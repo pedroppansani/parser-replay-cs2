@@ -30,7 +30,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from clustering.playstyle import describe_clusters  # noqa: E402
 from metrics.identidade import com_nome_de_exibicao  # noqa: E402
 from metrics.grenade_throws import (  # noqa: E402
-    comando_de_console, grenade_throws, grupos_de_forca, rotula_forca, trajetorias)
+    TOLERANCIA_BOTAO, VELOCIDADE_BOTAO, comando_de_console, grenade_throws, grupos_de_forca, rotula_forca, trajetorias)
 from metrics.player_roles import TRAIT_SPECS  # noqa: E402
 from parsing.parser import load_interim  # noqa: E402
 from scripts.calibration_report import carrega, cortes_com_nomes  # noqa: E402
@@ -97,30 +97,27 @@ def secao_forca() -> list[str]:
             fr = pl.read_parquet(PROCESSED / mid / "rounds.parquet").select("round_num", "freeze_end")
             partes.append(pr.join(fr.with_columns(pl.col("round_num").cast(pr.schema["round_num"])),
                                   on="round_num", how="left").with_columns(pl.lit(mid).alias("match_id")))
-    d = pl.concat(partes, how="diagonal_relaxed").drop_nulls("velocidade_arremesso")
-    v = d["velocidade_arremesso"].to_numpy()
-    g = grupos_de_forca(v)
-    d = d.with_columns(pl.col("velocidade_arremesso").map_elements(
-        lambda x: rotula_forca(x, g), return_dtype=pl.Utf8).alias("forca"))
+    d = pl.concat(partes, how="diagonal_relaxed")
+    rot = d.filter(pl.col("forca").is_not_null())
     out = ["## 3. Rótulos de força do arremesso", "",
-           f"{d.height} arremessos em {d['match_id'].n_unique()} partidas. Os grupos saem por moda "
-           "(decisão 5); os rótulos saem PELA ORDEM (mais lento = curto), confirmados por você em "
-           "2026-09-26 -- e só quando há exatamente três grupos (decisão 21a).", "",
-           "| Grupo | Centro | Arremessos | Exemplo |", "|---|---|---|---|"]
-    for (rot,), grp in d.group_by("forca", maintain_order=True):
+           f"{d.height} arremessos em {d['match_id'].n_unique()} partidas. Desde a rota A (decisão 21a) o "
+           "rótulo é o BOTÃO: a velocidade calculada pela rotina do jogo a até "
+           f"{TOLERANCIA_BOTAO:.0f} u/s do centro de um dos três botões medidos no gabarito "
+           f"({', '.join(f'{v:g}' for v in VELOCIDADE_BOTAO.values())} u/s). As velocidades abaixo são "
+           "ESTIMATIVAS do modelo; o que é afirmado é o botão.", "",
+           "| Rótulo | Velocidade estimada média | Arremessos | Exemplo |", "|---|---|---|---|"]
+    for (r,), grp in rot.sort("botao").group_by("forca", maintain_order=True):
         e = grp.filter(pl.col("reproducao_exata") & (pl.col("movimento") == "parado"))
         e = (e if e.height else grp).sort("velocidade_arremesso").row(min(1, max(0, (e.height or 1) - 1)), named=True)
         seg = (e["tick_soltura"] - e["freeze_end"]) / 64
-        out.append(f"| {rot} | {grp['velocidade_arremesso'].mean():.0f} u/s | {grp.height} | "
+        out.append(f"| {r} | {grp['velocidade_arremesso'].mean():.0f} u/s | {grp.height} | "
                    f"{e['thrower']}, {e['kind']}, {e['match_id']} round {e['round_num']} "
                    f"({int(seg // 60)}:{int(seg % 60):02d}), {e['postura']}, {e['movimento']} |")
-    bordas = np.arange(0, 900, 50)
-    cont, _ = np.histogram(v, bins=bordas)
-    out += ["", "```"]
-    for i, n in enumerate(cont):
-        out.append(f"{bordas[i]:>4}-{bordas[i + 1]:<4} u/s | {'#' * int(50 * n / max(cont.max(), 1)):<50} {n:>4}"
-                   f"  {rotula_forca(float(bordas[i] + 25), g)}")
-    out += ["```", "", "**Respondido (2026-09-26):** curto/médio/longo pela ordem está certo.", ""]
+    neutros = d.filter(pl.col("forca").is_null())
+    motivos = neutros.with_columns(pl.when(pl.col("velocidade_arremesso").is_null()).then(pl.col("estado_vertical"))
+                                   .otherwise(pl.lit("fora da tolerância")).alias("motivo"))["motivo"].value_counts(sort=True)
+    out += ["", f"Sem rótulo (neutros): {neutros.height}, por motivo: "
+            + "; ".join(f"{m} {n}" for m, n in motivos.rows()), ""]
     return out
 
 
