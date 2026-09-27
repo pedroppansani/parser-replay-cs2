@@ -101,9 +101,97 @@ modificação do .dem (costuma ser o fim da gravação), não a conferida na HLT
 | match_52 | starladder-budapest-major-2025 | vitality-vs-the-mongolz | 1 | de_mirage | 2025-12-11T17:12 | 3433a2ab957a174f |
 | match_53 | starladder-budapest-major-2025 | vitality-vs-the-mongolz | 2 | de_dust2 | 2025-12-11T18:07 | 9c2f1d0d9ad881df |
 
-## Download das 12 com link (autorizado, NÃO feito)
+## Para baixar (6 séries com link da HLTV; download MANUAL, pelo navegador)
 
-A HLTV responde 403 ao acesso automatizado (curl e WebFetch, 2026-09-27). O
-download tem de ser feito no navegador: 6 séries, 7,55 GB de .dem no corpus (o
-pacote de cada série traz também os mapas fora do corpus). Depois de salvar em
-`demos/`, cada .dem é conferido pelo sha256 do manifesto antes de entrar.
+A HLTV responde 403 a acesso automatizado. Baixe cada série pela página (botão
+"GOTV Demo") e solte o arquivo, compactado ou não, em `demos/entrada/`. Depois:
+
+    py -3.12 -m scripts.importa_demos --simular   # confere o que vai acontecer
+    py -3.12 -m scripts.importa_demos             # importa pelo sha256, copia para o backup
+    py -3.12 -m scripts.manifest                  # marca as demos como existentes
+
+O nome do pacote abaixo é o PROVÁVEL (é o nome da pasta onde o .dem estava antes
+de ser apagado); ele não importa, porque o script identifica cada .dem pelo
+sha256. O pacote traz também os mapas da série fora do corpus: eles ficam em
+`demos/entrada/` e são listados. A match_23 já está no disco (não precisa baixar
+a série vitality-vs-magic, a não ser pelos outros mapas).
+
+### iem-cologne-major-2026 · natus-vincere-vs-spirit
+
+- página: https://www.hltv.org/matches/2394900/natus-vincere-vs-spirit
+- pacote provável: `iem-cologne-major-2026-natus-vincere-vs-spirit-bo3-kgjfQml_20SbX4SdXD-5FD.rar`
+- .dem do corpus no pacote: 0.82 GB (o pacote tem os outros mapas da série também)
+
+| partida | mapa | mapa da série | arquivo .dem | sha256 esperado |
+|---|---|---|---|---|
+| match_10 | de_dust2 | 1 | `natus-vincere-vs-spirit-m1-dust2.dem` | `00bdd0bfd427775a3cd1844a726c84353dad37517b89a887597a895ba4fc88ff` |
+| match_11 | de_anubis | 2 | `natus-vincere-vs-spirit-m2-anubis.dem` | `8ae575cacb202bbcf13b26ccd6984c01bd95eeb0243a74daa74fa53e15321db2` |
+
+### iem-rio-2026 · furia-vs-vitality
+
+- página: https://www.hltv.org/matches/2393243/furia-vs-vitality
+- pacote provável: `iem-rio-2026-furia-vs-vitality-bo3--OutGDctKNBZKy28qkTgMB - Copia.rar`
+- .dem do corpus no pacote: 1.16 GB (o pacote tem os outros mapas da série também)
+
+| partida | mapa | mapa da série | arquivo .dem | sha256 esperado |
+|---|---|---|---|---|
+| match_12 | de_overpass | 1 | `furia-vs-vitality-m1-overpass-p1.dem` | `d6ded5f8f72cdc11dfe86949752f3158b789aeb8981ef07e2a13feb08dc0ecb4` |
+| match_12 | de_overpass | 1 | `furia-vs-vitality-m1-overpass-p2.dem` | `214cd0f09b4a347592e340645e6dff1e75c60d76b6a04b2086a06b20e504f0b9` |
+| match_14 | de_ancient | 2 | `furia-vs-vitality-m2-ancient.dem` | `a423d8fa9bcd7724118cccdde81bc99dac9b0de37ec3692822bc4427d638a2ae` |
+
+### iem-rio-2026 · natus-vincere-vs-furia
+
+- página: https://www.hltv.org/matches/2393228/natus-vincere-vs-furia
+- pacote provável: `iem-rio-2026-natus-vincere-vs-furia-bo3-qLZX6MdaBCbmtkWux805qr.rar`
+- .dem do corpus no pacote: 1.49 GB (o pacote tem os outros mapas da série também)
+
+| partida | mapa | mapa da série | arquivo .dem | sha256 esperado |
+|---|---|---|---|---|
+| match_15 | de_mirage | 1 | `natus-vincere-vs-furia-m1-mirage.dem` | `1bfb43118089c78331bd7b517e849fe12941a0ce9f1619b34b7b1c91c47dfa6d` |
+| match_16 | de_nuke | 3 | `natus-vincere-vs-furia-m3-nuke.dem` | `87356d11bdeb8616cf13b148e8f3db69554383440bc29ca4826be4522fbb91d6` |
+| match_17 | de_dust2 | 2 | `natus-vincere-vs-furia-m2-dust2.dem` | `bc517609cf2e20861613bfe1cedb1e7ecfda12b744f2f6a22b08f91c8334cf3d` |
+
+### pgl-cluj-napoca-2026 · furia-vs-falcons
+
+- página: https://www.hltv.org/matches/2389969/furia-vs-falcons
+- pacote provável: `pgl-cluj-napoca-2026-furia-vs-falcons-bo3-OfIsfrpSwnaD_LueyZEScm.rar`
+- .dem do corpus no pacote: 1.86 GB (o pacote tem os outros mapas da série também)
+
+| partida | mapa | mapa da série | arquivo .dem | sha256 esperado |
+|---|---|---|---|---|
+| match_18 | de_anubis | 3 | `furia-vs-falcons-m3-anubis.dem` | `42aa5f5826231e0141ba712a0a6b6aa30d360f333a87fecf8eda0d8bfcd6905f` |
+| match_19 | de_inferno | 2 | `furia-vs-falcons-m2-inferno.dem` | `c358451d9f613becab0966efbbe113ab805d236f1a898020f3f16327777cc974` |
+| match_20 | de_mirage | 1 | `furia-vs-falcons-m1-mirage.dem` | `3ada17dbeb8b7122f1e96f8041cdd0db60728885c43c217ef82047421884b39b` |
+
+### starladder-starseries-fall-2026 · vitality-vs-magic
+
+- página: https://www.hltv.org/matches/2398089/vitality-vs-magic
+- pacote provável: `starladder-starseries-fall-2026-vitality-vs-magic-bo3-qBHOW2KPqxQBIay8cnoYpu - Copia.rar`
+- .dem do corpus no pacote: 0.36 GB (o pacote tem os outros mapas da série também)
+
+| partida | mapa | mapa da série | arquivo .dem | sha256 esperado |
+|---|---|---|---|---|
+| match_23 | de_dust2 | 2 | `vitality-vs-magic-m2-dust2.dem` | `f18e6acd0f4dcf3574323bbb6237a0e65cd1f55a1a009404e9635df7818f7574` |
+
+### iem-krakw-2026 · falcons-vs-mouz
+
+- página: https://www.hltv.org/matches/2389660/falcons-vs-mouz
+- pacote provável: `iem-krakw-2026-falcons-vs-mouz-bo3-0NmDSYe_8UmJAHamjCMBo8.rar`
+- .dem do corpus no pacote: 1.86 GB (o pacote tem os outros mapas da série também)
+
+| partida | mapa | mapa da série | arquivo .dem | sha256 esperado |
+|---|---|---|---|---|
+| match_41 | de_inferno | 1 | `falcons-vs-mouz-m1-inferno-p1.dem` | `24d5c304b7614d54505e4d42e0caeba8ec196d0e96e705bee9e31962331f5cb7` |
+| match_41 | de_inferno | 1 | `falcons-vs-mouz-m1-inferno-p2.dem` | `4164738a697e23005ccda4c6ebc2c2a5f59bd2fdfc39de4da59a85e74d9d37dd` |
+| match_42 | de_dust2 | 2 | `falcons-vs-mouz-m2-dust2.dem` | `0a3129ba726a10239fdbcc0da9050c5aad02a17d975ee5cb0f658b75ba0895f4` |
+
+Total de .dem do corpus a baixar (sem a match_23): 7.19 GB.
+
+## O que o próximo gabarito precisa cobrir
+
+As faixas do jump-throw sem gabarito (decisão 21a), que hoje ficam neutras:
+- soltura de 0 a 5 ticks depois da decolagem (inclui soltar no próprio tick do pulo);
+- soltura de 14 a 18 ticks depois da decolagem (a fronteira entre a vz fixa e a vz real).
+Cada demo recuperada é gabarito de botão, postura e posição; procure nelas
+arremessos nessas faixas antes de mexer nas constantes.
+
