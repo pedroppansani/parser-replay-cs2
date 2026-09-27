@@ -167,7 +167,9 @@ def test_as_constantes_do_gabarito_sao_o_recalculo_e_nao_numero_digitado():
     from scripts.constantes_do_gabarito import calcula, carrega_gabarito
     gravado = json.loads((Path(__file__).parents[1] / "metrics" / "gabarito_constantes.json").read_text(encoding="utf-8"))
     arremessos, partidas = carrega_gabarito()
-    novo = calcula(arremessos)
+    # o recálculo usa exatamente as partidas que o arquivo declara: gabarito novo
+    # no disco não muda as constantes sozinho (recalcular é decisão registrada)
+    assert set(gravado["partidas"]) <= set(partidas)
+    novo = calcula([a for a in arremessos if a["id"].split(":")[0] in gravado["partidas"]])
     assert gravado["tolerancia_botao"] == novo["tolerancia_botao"]
     assert gravado["faixa_postura_neutra"] == novo["faixa_postura_neutra"]
-    assert gravado["partidas"] == partidas
