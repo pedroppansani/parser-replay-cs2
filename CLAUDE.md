@@ -786,6 +786,16 @@ testada e estava errada.
     sobre o chão da decolagem (decisão 21a). Dos 62 falsos agachados, 29 são
     botão 0,5 ou 0 no chão e 28 são no ar; 5 (chão, botão 1) sem explicação.
     Agachados de verdade marcados: 28 de 29.
+    **Cauda vertical da saída (2026-09-27): limitação conhecida, não modelada**
+    (seria encaixar um decaimento). A postura passa a sair da ALTURA DE SAÍDA
+    corrigida pelo botão (corte 54,43 = meio entre 63,31 e 45,55). A regra da
+    decisão 6 pedia neutro "com subida recente e perto do corte", mas no
+    gabarito os dois em pé mais perto do corte (+1,12 e +2,23u) NÃO subiram
+    (0,8 e 3,9u em 64 ticks): a subida não é o que os aproxima. Proposta
+    medida: faixa neutra entre o agachado mais alto (-2,43u) e o em pé mais
+    baixo (+1,12u), sem condição de subida -- só os agachamentos parciais
+    caem nela (n = 6). No corpus, 98 em pé sem subida e 254 com subida ficam a
+    menos de 3u do corte.
 
 21a. **A força do arremesso é inferida da velocidade RELATIVA ao jogador.** Sem
     descontar a velocidade de quem arremessou, todo run-throw curto vira
@@ -909,6 +919,36 @@ testada e estava errada.
       96,9 -> 98,8%); POR PARTIDA, a match_09 PIORA (97,8 -> 95,6%, 2 de 90):
       r17 solta no tick da decolagem (vz 205, sem parábola, a regra põe vz 0;
       a vz real acerta) e r24 é limítrofe (616,7 -> 613,4, raio 60).
+    **Decisões do Pedro sobre a rota A (2026-09-27) e o que foi medido depois:**
+    - JANELA DO JUMP-THROW, por ticks entre decolagem e soltura: 0-5 neutro
+      (sem gabarito); 6-13 vz fixa = decolagem - 80 (gabarito 95/95); 14-18
+      neutro (sem gabarito); 19+ vz real (gabarito 1, corpus: a vz real acerta
+      todos a partir de 20). Princípio: a normalização vale onde o gabarito
+      comprova; fora, só a vz real com evidência consistente; no resto, neutro.
+      HIPÓTESE DOS 16 TICKS NÃO SE SUSTENTA: medindo pela decolagem estimada, o
+      corpus tem 147 solturas de 14 a 18 ticks e a vz fixa acerta 140 (14: 134
+      de 141; 15-18: 6 de 6); a troca para a vz real fica entre 18 e 19 (19:
+      empate, 1 caso). A faixa continua neutra até haver gabarito nela;
+    - ESTADO VERTICAL AMBÍGUO é neutro, nunca chão: subindo sem parábola formada
+      (vz > 114, a maior subida medida no chão do gabarito) ou parábola cuja vz
+      de decolagem não é de pulo limpo;
+    - TOLERÂNCIA do botão = 21 u/s (2 x p99, n = 431). Cobertura no corpus com
+      as regras: 97,23%. Neutros por tolerância que 118 rotularia: 147, 142 no
+      chão, CONCENTRADOS NA FACEIT (as 8 partidas com mais casos são FACEIT;
+      build 14178 3,2% contra 0,1-0,5% nas de campeonato) -- hipótese, não
+      investigada: sem `grenade_thrown`, o tick vem da ancoragem (±1 tick);
+    - "PIORA" (decisão 3): arremesso que troca de botão, ou perde o botão sem
+      regra explícita. Ficar neutro por regra (janela, ambíguo, parábola
+      quebrada) é contado à parte. O raio de 60 é diagnóstico, não regra;
+    - PÉS EM t (decisão 5): os pés do `grenade_thrown` são a tabela em t-1; com
+      os da tabela em t o ponto de saída em movimento vai de mediana 3,30u para
+      0,47u (parado idêntico, 0,424u);
+    - **PARADO de novo ao ligar na produção**: a invariante "nenhum arremesso
+      rotulado com erro de velocidade acima da tolerância" falha em 1 caso do
+      gabarito (11:140, erro 22,2 u/s, rótulo CORRETO; aceleração de 2.155
+      u/s², limite de subtick). A aceleração não separa com limpeza (há 17,1
+      u/s a 467 u/s² e 0,2 a 1.168 u/s²). O código da rota A está na branch
+      `rota-a-em-andamento`, fora do main.
 
 21b. **A reprodução por console depende de validação prática do Pedro, não do
     código.** Origem do `setpos`, sinal do `setang` e pré-requisitos de servidor
