@@ -463,6 +463,7 @@ def gera_gabarito(partida: str = "match_23") -> None:
                 "pes": [round(float(v), 4) for v in a["pos_soltura"]],
                 "pos_vizinhos": [[round(float(v), 4) for v in pos[-3]], [round(float(v), 4) for v in pos[-1]]],
                 "z_janela": [round(float(v), 4) for v in pos[:, 2]],
+                "xy_janela": [[round(float(v), 4) for v in par] for par in pos[:, :2]],
                 "proj_ticks": [int(a["ticks"][0]), int(a["ticks"][1])],
                 "proj_pontos": [[round(float(v), 4) for v in a["traj"][0]], [round(float(v), 4) for v in a["traj"][1]]],
             },
@@ -470,7 +471,7 @@ def gera_gabarito(partida: str = "match_23") -> None:
     doc = {
         "_leia_isto": ("Gabarito de arremessos da match_23 (Vitality x Magic, Dust2), o único .dem "
                        "que existe. 'demo' = propriedades gravadas pelo jogo; 'entrada' = o que a "
-                       "produção usa. z_janela vai de tick_soltura-64 a tick_soltura+1; "
+                       "produção usa. z_janela e xy_janela vão de tick_soltura-64 a tick_soltura+1 (tabela de ticks); "
                        "pos_vizinhos = pés em tick_soltura-1 e +1. Gerado por "
                        "py -3.12 -m scripts.investiga_props_arremesso --gabarito"),
         "partida": partida, "tickrate": TICKRATE, "sha256_do_dem": None, "arremessos": saida,

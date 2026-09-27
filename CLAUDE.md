@@ -856,6 +856,31 @@ testada e estava errada.
     passam de 7 para 202/436/673 mais um resto de 53 perto de 818. Os 97 que
     sobram (1,7% do "no ar") não seguem regra única e ficam com rótulo neutro.
     **NADA APLICADO**: é proposta ao Pedro (versão das métricas, sem parser).
+    **Rota A aprovada e PARADA nas metas (2026-09-27).** Medido no gabarito
+    versionado (`tests/fixtures/gabarito_arremessos_match_23.json`, n = 434;
+    `py -3.12 -m scripts.prototipo_rota_a`), inferindo só com o que a produção
+    tem sem o .dem:
+    - direção do lançamento: o remapeamento é POR TRECHOS -- -10 + pitch·80/90
+      com pitch < 0 e -10 + pitch·100/90 com pitch >= 0 (parado, resíduo 0,000°
+      nos dois; o de 80/90 sozinho errava +1° a +3° olhando para baixo);
+    - ponto de nascimento no chão: pés do tick SEGUINTE ao do evento (os pés do
+      `grenade_thrown` são a tabela de ticks em t-1, 100%) + 16,00u na direção
+      do lançamento (parado: 16,00 [15,99; 16,03]) + altura 63,31 + 12·(botão - 1)
+      (botão 0,5: 57,50; botão 0: 51,21), agachado 45,55 (n = 16);
+    - no ar depois de pulo: posição e velocidade do instante decolagem + 0,1 s
+      (altura sobre a parábola nesse instante 62,25 em pé, 45,41 agachado);
+      a decolagem sai da parábola com erro < 0,003 tick; a vz de decolagem pela
+      posição sai 6,25 abaixo (meio passo de gravidade) e com ±5 u/s de ruído,
+      então 298,87 x 301,99 não se separa pela posição (os 301,99 da match_23
+      são exatamente os pulos agachados);
+    - "no ar" pela segunda diferença da altura (resíduo da parábola g = 800 em
+      3 ticks) < 0,05 u/tick²: 433/434, escada e rampa 9/9;
+    - metas: botão 431/431 rotulados (3 neutros), postura no chão 329/329,
+      velocidade < 5 u/s **412/434 = 94,9%** (meta 95%), posição de saída < 1u
+      **293/434 = 67,5%** (meta 95%). O que falha na posição é quase todo
+      VERTICAL no chão (85 casos): arremessos PARADOS, em pé, botão 1, saem de
+      1 a 8u mais baixos sem que agachamento, força, pitch ou pulo expliquem.
+    Nada foi para a produção; a decisão de como seguir é do Pedro.
 
 21b. **A reprodução por console depende de validação prática do Pedro, não do
     código.** Origem do `setpos`, sinal do `setang` e pré-requisitos de servidor
