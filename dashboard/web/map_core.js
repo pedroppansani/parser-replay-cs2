@@ -302,6 +302,43 @@ window.MapCore = (function () {
     }
   }
 
+  /** Clique seco com ferramenta de duas pontas não vira traço: início e fim a
+      menos de 8 pixels do radar um do outro, nos dois eixos. A caneta sempre
+      vale (um clique dela é um ponto, e ponto também é anotação). */
+  function tracoCurtoDemais(t, radar) {
+    if (t.ferramenta === "caneta" || t.ferramenta === "texto") return false;
+    var a = jogoParaPixel(radar, t.pontos[0][0], t.pontos[0][1]);
+    var b = jogoParaPixel(radar, t.pontos[t.pontos.length - 1][0], t.pontos[t.pontos.length - 1][1]);
+    return Math.abs(a[0] - b[0]) < 8 && Math.abs(a[1] - b[1]) < 8;
+  }
+
+  /** A borracha acertou o traço? `alvo` em pixels do radar; `raio` é o raio da
+      borracha, somado à espessura do traço. Apaga o TRAÇO INTEIRO, não pixel a
+      pixel: apagar pedaço de seta deixa meia seta, que é pior que não apagar. */
+  function tracoEncosta(t, alvo, radar, raio) {
+    var pts = t.pontos.map(function (g) { return jogoParaPixel(radar, g[0], g[1]); });
+    var r = raio + t.espessura;
+    if (t.ferramenta === "texto" || pts.length === 1) {
+      return Math.hypot(pts[0][0] - alvo[0], pts[0][1] - alvo[1]) <= r * 3;
+    }
+    if (t.ferramenta === "retangulo" || t.ferramenta === "elipse") {
+      var x0 = Math.min(pts[0][0], pts[1][0]), x1 = Math.max(pts[0][0], pts[1][0]);
+      var y0 = Math.min(pts[0][1], pts[1][1]), y1 = Math.max(pts[0][1], pts[1][1]);
+      return alvo[0] >= x0 - r && alvo[0] <= x1 + r && alvo[1] >= y0 - r && alvo[1] <= y1 + r;
+    }
+    for (var i = 0; i < pts.length - 1; i++) {
+      if (distanciaAoSegmento(alvo, pts[i], pts[i + 1]) <= r) return true;
+    }
+    return false;
+  }
+
+  function distanciaAoSegmento(p, a, b) {
+    var dx = b[0] - a[0], dy = b[1] - a[1];
+    var L = dx * dx + dy * dy;
+    var t = L === 0 ? 0 : Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / L));
+    return Math.hypot(p[0] - (a[0] + t * dx), p[1] - (a[1] + t * dy));
+  }
+
   /** A seta é ferramenta de primeira classe, não linha com enfeite: a cabeça
       cresce com a espessura e fica sólida, para a leitura funcionar de longe. */
   function desenhaSeta(ctx, a, b, esp) {
@@ -412,6 +449,23 @@ window.MapCore = (function () {
     }
 
     ctx.restore();
+  }
+
+  /** Área de efeito de smoke ou molotov (a zona que ela ocupa, não o símbolo),
+      centrada em (X, Y) com raio r, em pixels do radar. O raio vem de
+      RAIO_SMOKE_UNIDADES / RAIO_MOLOTOV_UNIDADES convertido pela escala. */
+  function desenhaArea(ctx, arma, X, Y, r) {
+    var g = ctx.createRadialGradient(X, Y, 0, X, Y, r);
+    if (arma === "smoke") {
+      g.addColorStop(0, "rgba(214,223,233,0.78)");
+      g.addColorStop(0.7, "rgba(190,203,217,0.5)");
+      g.addColorStop(1, "rgba(190,203,217,0)");
+    } else {
+      g.addColorStop(0, "rgba(235,104,52,0.62)");
+      g.addColorStop(1, "rgba(235,104,52,0)");
+    }
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(X, Y, r, 0, Math.PI * 2); ctx.fill();
   }
 
   /* ---------------------------------------------------------------------
@@ -894,6 +948,9 @@ window.MapCore = (function () {
     lerJson: lerJson,
     caminhoDoTraco: caminhoDoTraco,
     desenhaSeta: desenhaSeta,
+    tracoCurtoDemais: tracoCurtoDemais,
+    tracoEncosta: tracoEncosta,
+    desenhaArea: desenhaArea,
     nadeGlyph: nadeGlyph,
     PONTA_DISTANCIA: PONTA_DISTANCIA,
     NOME_ACIMA_COM_DIRECAO: NOME_ACIMA_COM_DIRECAO,

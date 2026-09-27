@@ -59,6 +59,12 @@ def build_html(match_id: str, site: dict | None = None) -> str:
         # o `||` mantém o `null` do template como fallback quando o mapa não tem radar
         radar_js = json.dumps(radar, ensure_ascii=False) + " ||"
     html = html.replace("/*__RADAR__*/", radar_js)
+    # Botão "Criar tática": só quando o mapa desta partida tem prancheta. O link
+    # é relativo e funciona igual em dashboard/web/ e em docs/, que têm as duas
+    # páginas lado a lado.
+    from scripts.build_tactics_page import arquivo_da_pagina, mapas_disponiveis
+    prancheta = arquivo_da_pagina(map_name) if map_name in mapas_disponiveis() else None
+    html = html.replace("/*__PRANCHETA__*/null", json.dumps(prancheta))
     html = html.replace("/*__SITE__*/", json.dumps(site, ensure_ascii=False) + " ||" if site else "")
     return html
 

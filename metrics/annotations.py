@@ -155,24 +155,32 @@ def valida(doc: dict, radar: dict | None = None) -> list[str]:
     atual = impressao_da_calibracao(radar) if radar is not None else None
     for rn, tracos in (doc.get("rounds") or {}).items():
         for i, t in enumerate(tracos):
-            onde = f"round {rn}, traço {i}"
-            if t.get("ferramenta") not in FERRAMENTAS:
-                erros.append(f"{onde}: ferramenta '{t.get('ferramenta')}' desconhecida")
-            if "cor" in t and not FORMATO_DA_COR.match(str(t["cor"])):
-                erros.append(f"{onde}: cor {t['cor']!r} fora do formato #rrggbb")
-            # Cada traço carrega a calibração com que foi feito: um arquivo pode
-            # juntar traços de antes e depois de uma recalibração, e só o traço
-            # sabe de qual lado ele está.
-            if atual and t.get("calibracao") and t["calibracao"] != atual:
-                erros.append(f"{onde}: feito com a calibração {t['calibracao']}, "
-                             f"a atual é {atual} -- precisa ser reprojetado")
-            pontos = t.get("pontos") or []
-            if not pontos:
-                erros.append(f"{onde}: sem pontos")
-            for p in pontos:
-                if not (isinstance(p, (list, tuple)) and len(p) == 2):
-                    erros.append(f"{onde}: ponto malformado {p!r}")
-                    break
+            erros += problemas_do_traco(t, f"round {rn}, traço {i}", atual)
+    return erros
+
+
+def problemas_do_traco(t: dict, onde: str, calibracao_atual: str | None = None) -> list[str]:
+    """Problemas de UM traço. É a regra do traço em qualquer lugar do projeto: a
+    prancheta (metrics/tactics.py) valida o desenho livre dela com esta mesma
+    função, para um traço válido aqui ser válido lá."""
+    erros = []
+    if t.get("ferramenta") not in FERRAMENTAS:
+        erros.append(f"{onde}: ferramenta '{t.get('ferramenta')}' desconhecida")
+    if "cor" in t and not FORMATO_DA_COR.match(str(t["cor"])):
+        erros.append(f"{onde}: cor {t['cor']!r} fora do formato #rrggbb")
+    # Cada traço carrega a calibração com que foi feito: um arquivo pode
+    # juntar traços de antes e depois de uma recalibração, e só o traço
+    # sabe de qual lado ele está.
+    if calibracao_atual and t.get("calibracao") and t["calibracao"] != calibracao_atual:
+        erros.append(f"{onde}: feito com a calibração {t['calibracao']}, "
+                     f"a atual é {calibracao_atual} -- precisa ser reprojetado")
+    pontos = t.get("pontos") or []
+    if not pontos:
+        erros.append(f"{onde}: sem pontos")
+    for p in pontos:
+        if not (isinstance(p, (list, tuple)) and len(p) == 2):
+            erros.append(f"{onde}: ponto malformado {p!r}")
+            break
     return erros
 
 

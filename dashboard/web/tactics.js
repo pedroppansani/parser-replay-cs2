@@ -1,32 +1,83 @@
 /* =========================================================================
-   Prancheta tática: peças, granadas com origem e destino, passos numerados.
+   Prancheta tática: peças com direção, granadas com origem e destino, desenho
+   livre, passos numerados, andares, zoom, tela cheia e desfazer/refazer.
 
    O modelo é o de metrics/tactics.py (lá está o PORQUÊ, com calma): a tática é
    um LOG DE OPERAÇÕES com id estável, autor e número de ordem, e o estado é
    derivado aplicando o log em ordem (seq, autor, id). Este arquivo é o espelho
-   daquele módulo -- há teste que aplica o mesmo log nos dois e compara.
+   daquele módulo -- há teste que aplica o mesmo log nos dois e compara o estado
+   e o quadro de cada passo.
 
-   Tudo em coordenada de JOGO. A tela só projeta.
+   Desfazer e refazer NÃO apagam nada: emitem `anula` e `reativa` sobre uma
+   operação do próprio autor. Um mecanismo só para toda operação, e a mescla
+   por união continua convergindo.
+
+   Tudo em coordenada de JOGO. A tela só projeta, pelo MapCore (map_core.js),
+   o mesmo núcleo do replay e da anotação: projeção, zoom, tamanho do canvas,
+   desenho do jogador, símbolo e área das granadas, traço e seletor de cor.
 
    A persistência fica atrás de `Armazem` (lista / carrega / grava / apaga).
-   Hoje é o navegador; um servidor entra implementando os mesmos quatro métodos,
-   sem a interface da página mudar.
+   Hoje é o navegador; um servidor entra implementando os mesmos quatro métodos.
    ========================================================================= */
 var Prancheta = (function () {
   "use strict";
 
+  /* ---------------------------------------------------------------------
+     Constantes do modelo -- as mesmas de metrics/tactics.py
+     --------------------------------------------------------------------- */
   var IDENTIFICADOR = "prancheta-cs2";
-  var FORMATO = 1;
+  var FORMATO = 2;
+  var VERSOES_ACEITAS = [1, 2];
   var LADOS = ["ct", "t"];
   var PECAS_POR_LADO = 5;
   var ARMAS = ["smoke", "flash", "he", "molotov", "decoy"];
   var NOME_ARMA = { smoke: "Smoke", flash: "Flash", he: "HE", molotov: "Molotov", decoy: "Decoy" };
+  // Padrões do formato 2 -- convenção de interface, não dado de jogo.
+  var DURACAO_PADRAO_S = 2.0;
+  var VIDA_PADRAO_GRANADA = { smoke: null, molotov: 1, flash: 1, he: 1, decoy: 1 };
+  var VIDA_PADRAO_TRACO = 1;
+  var CASAS_DIRECAO_PADRAO = 1;
+  var DESFAZER = ["anula", "reativa"];
+  var OPERACOES = {
+    renomeia: ["titulo"], cria_passo: ["passo", "titulo"], renomeia_passo: ["passo", "titulo"],
+    remove_passo: ["passo"], cria_peca: ["peca", "lado", "rotulo", "passo", "x", "y"],
+    move_peca: ["peca", "passo", "x", "y"], remove_peca: ["peca"],
+    cria_granada: ["granada", "arma", "passo", "origem", "destino"],
+    move_granada: ["granada", "origem", "destino"], remove_granada: ["granada"],
+    gira_peca: ["peca", "passo", "yaw"], tira_peca: ["peca", "passo"],
+    cria_traco: ["traco", "passo", "ferramenta", "cor", "espessura", "pontos"],
+    remove_traco: ["traco"], define_duracao: ["passo", "segundos"],
+    define_vida: ["alvo", "dura_passos"], anula: ["alvo"], reativa: ["alvo"]
+  };
 
-  // Tamanhos em PIXEL DO RADAR (1024 de lado nos radares do projeto): a peça
-  // cresce e encolhe junto com o mapa.
+  // Desenho livre: o formato e as regras do traço são os de
+  // metrics/annotations.py (há teste conferindo estas duas listas contra ele).
+  var FERRAMENTAS_TRACO = ["caneta", "seta", "linha", "retangulo", "elipse", "texto"];
+  var ESPESSURAS = [2, 4, 7];
+  var ROTULOS_ESPESSURA = ["fina", "média", "grossa"];
+  var ROTULO_FERRAMENTA = { caneta: "Caneta", seta: "Seta", linha: "Linha", retangulo: "Retângulo",
+                            elipse: "Elipse", texto: "Texto", borracha: "Borracha" };
+  var COR_PADRAO = "#eb6834";
+  var MAX_RECENTES = 6;
+  var CHAVE_RECENTES = "anot:cores-recentes";   // as mesmas recentes da anotação
+
+  // Tamanhos em PIXEL DO RADAR (1024 de lado): a peça cresce e encolhe junto com
+  // o mapa. A peça é o jogador do replay (MapCore.desenhaJogador) em escala
+  // maior, para dar para pegar com o mouse: halo de 8,2 no replay, 15 aqui.
   var RAIO_PECA = 15;
-  var RAIO_GRANADA = 11;
-  var RAIO_ALCA = 9;          // pegar a ponta da granada para arrastar
+  var ESCALA_PECA = RAIO_PECA / 8.2;
+  var RAIO_ALCA = 7;            // alça de girar, na ponta da direção
+  var RAIO_GRANADA = 8;         // símbolo da granada no destino
+  var RAIO_PONTA_GRANADA = 9;   // pegar a ponta da granada para arrastar
+  var RAIO_BORRACHA = 10;       // o mesmo da anotação
+  var PASSO_MIN_CANETA = 1.5;   // o mesmo da anotação
+  var ALFA_OUTRO_ANDAR = 0.35;  // elemento de outro andar: esmaecido, como no replay
+  var ALFA_RASTRO = 0.3;        // posição e direção do passo anterior
+
+  // Giro pela roda do mouse: 15° por clique, 1° com Shift. Giros seguidos viram
+  // UMA operação depois de 300 ms parado -- senão cada clique da roda seria uma
+  // linha no log e um passo no desfazer.
+  var PASSO_GIRO = 15, PASSO_GIRO_FINO = 1, MS_AGRUPA_GIRO = 300;
 
   // Raio da busca "quero a granada AQUI", em unidade de jogo. É parâmetro de
   // TELA, não de métrica: a pessoa ajusta no controle ao lado da busca.
@@ -34,6 +85,10 @@ var Prancheta = (function () {
   var MAX_RESULTADOS = 40;
 
   var ATRASO_GRAVACAO_MS = 400;
+  // Uma tática nova nasce com duas operações (título e primeiro passo). Com só
+  // elas, ela é VAZIA e não entra na biblioteca -- senão cada visita à página
+  // deixaria uma "Nova tática" a mais na lista.
+  var OPS_DA_CRIACAO = 2;
 
   /* ---------------------------------------------------------------------
      Modelo -- espelho de metrics/tactics.py
@@ -44,30 +99,71 @@ var Prancheta = (function () {
     if (a.id !== b.id) return a.id < b.id ? -1 : 1;
     return 0;
   }
+  function ordemDe(op) { return [op.seq, String(op.autor), String(op.id)]; }
+  function copia(v) { return JSON.parse(JSON.stringify(v)); }
+  function tem(o, k) { return Object.prototype.hasOwnProperty.call(o, k); }
+
+  /** Ids das operações desfeitas agora: para cada alvo vale a ÚLTIMA
+      anula/reativa. Inválida (outro autor, alvo que é anula/reativa, alvo fora
+      do log) não vale. */
+  function anuladas(operacoes) {
+    var porId = {}, ultima = {};
+    operacoes.forEach(function (op) { porId[op.id] = op; });
+    operacoes.slice().sort(chaveDeOrdem).forEach(function (op) {
+      if (DESFAZER.indexOf(op.tipo) < 0) return;
+      var alvo = porId[op.alvo];
+      if (!alvo || DESFAZER.indexOf(alvo.tipo) >= 0 || alvo.autor !== op.autor) return;
+      ultima[alvo.id] = op.tipo;
+    });
+    var fora = {};
+    Object.keys(ultima).forEach(function (k) { if (ultima[k] === "anula") fora[k] = true; });
+    return fora;
+  }
 
   function aplica(operacoes) {
-    var estado = { titulo: "", passos: [], pecas: {}, granadas: {} };
+    var fora = anuladas(operacoes);
+    var estado = { titulo: "", passos: [], pecas: {}, granadas: {}, tracos: {} };
     var passos = {}, ordem = [];
     operacoes.slice().sort(chaveDeOrdem).forEach(function (op) {
-      var p, g;
+      if (fora[op.id]) return;
+      var p, g, alvo;
       switch (op.tipo) {
         case "renomeia": estado.titulo = op.titulo; break;
         case "cria_passo":
-          if (!passos[op.passo]) { passos[op.passo] = { passo: op.passo, titulo: op.titulo }; ordem.push(op.passo); }
+          if (!passos[op.passo]) {
+            passos[op.passo] = { passo: op.passo, titulo: op.titulo, duracao_s: DURACAO_PADRAO_S };
+            ordem.push(op.passo);
+          }
           break;
         case "renomeia_passo": if (passos[op.passo]) passos[op.passo].titulo = op.titulo; break;
+        case "define_duracao": if (passos[op.passo]) passos[op.passo].duracao_s = +op.segundos; break;
         case "remove_passo":
           if (passos[op.passo]) { delete passos[op.passo]; ordem.splice(ordem.indexOf(op.passo), 1); }
           break;
         case "cria_peca":
           if (!estado.pecas[op.peca] && passos[op.passo]) {
-            estado.pecas[op.peca] = { lado: op.lado, rotulo: op.rotulo, posicoes: {} };
-            estado.pecas[op.peca].posicoes[op.passo] = [+op.x, +op.y];
+            p = { lado: op.lado, rotulo: op.rotulo, criada_em_ordem: ordemDe(op),
+                  posicoes: {}, niveis: {}, direcoes: {} };
+            p.posicoes[op.passo] = [+op.x, +op.y];
+            p.niveis[op.passo] = tem(op, "nivel") ? +op.nivel : 0;
+            if (op.yaw !== undefined && op.yaw !== null) p.direcoes[op.passo] = +op.yaw;
+            estado.pecas[op.peca] = p;
           }
           break;
         case "move_peca":
           p = estado.pecas[op.peca];
-          if (p && passos[op.passo]) p.posicoes[op.passo] = [+op.x, +op.y];
+          if (p && passos[op.passo]) {
+            p.posicoes[op.passo] = [+op.x, +op.y];
+            p.niveis[op.passo] = tem(op, "nivel") ? +op.nivel : 0;
+          }
+          break;
+        case "gira_peca":
+          p = estado.pecas[op.peca];
+          if (p && passos[op.passo]) p.direcoes[op.passo] = +op.yaw;
+          break;
+        case "tira_peca":
+          p = estado.pecas[op.peca];
+          if (p && passos[op.passo]) { p.posicoes[op.passo] = null; delete p.niveis[op.passo]; }
           break;
         case "remove_peca": delete estado.pecas[op.peca]; break;
         case "cria_granada":
@@ -75,7 +171,10 @@ var Prancheta = (function () {
             estado.granadas[op.granada] = {
               arma: op.arma, passo: op.passo,
               origem: op.origem.map(Number), destino: op.destino.map(Number),
-              arremesso: op.arremesso === undefined ? null : op.arremesso
+              nivel: tem(op, "nivel") ? +op.nivel : 0,
+              arremesso: op.arremesso === undefined ? null : op.arremesso,
+              dura_passos: tem(op, "dura_passos") ? op.dura_passos : VIDA_PADRAO_GRANADA[op.arma],
+              criada_em_ordem: ordemDe(op)
             };
           }
           break;
@@ -83,20 +182,42 @@ var Prancheta = (function () {
           g = estado.granadas[op.granada];
           if (g) {
             g.origem = op.origem.map(Number); g.destino = op.destino.map(Number);
+            g.nivel = tem(op, "nivel") ? +op.nivel : 0;
             g.arremesso = null;   // arrastada à mão deixou de ser o arremesso real
           }
           break;
         case "remove_granada": delete estado.granadas[op.granada]; break;
+        case "cria_traco":
+          if (!estado.tracos[op.traco] && passos[op.passo]) {
+            estado.tracos[op.traco] = {
+              passo: op.passo, ferramenta: op.ferramenta, cor: op.cor, espessura: op.espessura,
+              pontos: op.pontos.map(function (q) { return [+q[0], +q[1]]; }),
+              texto: op.texto === undefined ? null : op.texto,
+              nivel: tem(op, "nivel") ? +op.nivel : 0,
+              dura_passos: tem(op, "dura_passos") ? op.dura_passos : VIDA_PADRAO_TRACO,
+              criada_em_ordem: ordemDe(op)
+            };
+          }
+          break;
+        case "remove_traco": delete estado.tracos[op.traco]; break;
+        case "define_vida":
+          alvo = estado.granadas[op.alvo] || estado.tracos[op.alvo];
+          if (alvo) alvo.dura_passos = op.dura_passos;
+          break;
       }
     });
     estado.passos = ordem.map(function (k) { return passos[k]; });
     Object.keys(estado.pecas).forEach(function (k) {
-      var pos = estado.pecas[k].posicoes, limpo = {};
-      Object.keys(pos).forEach(function (s) { if (passos[s]) limpo[s] = pos[s]; });
-      estado.pecas[k].posicoes = limpo;
+      ["posicoes", "niveis", "direcoes"].forEach(function (campo) {
+        var m = estado.pecas[k][campo], limpo = {};
+        Object.keys(m).forEach(function (s) { if (passos[s]) limpo[s] = m[s]; });
+        estado.pecas[k][campo] = limpo;
+      });
     });
-    Object.keys(estado.granadas).forEach(function (k) {
-      if (!passos[estado.granadas[k].passo]) delete estado.granadas[k];
+    ["granadas", "tracos"].forEach(function (grupo) {
+      Object.keys(estado[grupo]).forEach(function (k) {
+        if (!passos[estado[grupo][k].passo]) delete estado[grupo][k];
+      });
     });
     return estado;
   }
@@ -104,10 +225,65 @@ var Prancheta = (function () {
   function posicaoNoPasso(peca, passos, indice) {
     var pos = null;
     for (var i = 0; i <= indice && i < passos.length; i++) {
-      var p = peca.posicoes[passos[i].passo];
-      if (p) pos = p;
+      if (tem(peca.posicoes, passos[i].passo)) pos = peca.posicoes[passos[i].passo];
     }
     return pos;
+  }
+
+  function centroDoRadar(r) {
+    return [r.width / 2 / r.scale_px_per_unit + r.origin_x, r.origin_y - r.height / 2 / r.scale_px_per_unit];
+  }
+
+  /** Da peça para o centro do radar, em graus do CS2, em [0, 360), arredondado
+      como no Python (meio para cima, CASAS_DIRECAO_PADRAO casas). */
+  function direcaoPadrao(x, y, centro) {
+    var ang = Math.atan2(centro[1] - y, centro[0] - x) * (180 / Math.PI);
+    ang = ((ang % 360) + 360) % 360;
+    var k = Math.pow(10, CASAS_DIRECAO_PADRAO);
+    return (Math.floor(ang * k + 0.5) / k) % 360;
+  }
+
+  function visivel(nasce, dura, i) { return nasce <= i && (dura === null || dura === undefined || i < nasce + dura); }
+
+  function quadroDoPasso(estado, i, centro) {
+    var passos = estado.passos, indice = {};
+    passos.forEach(function (p, k) { indice[p.passo] = k; });
+    var pecas = {};
+    Object.keys(estado.pecas).forEach(function (pid) {
+      var p = estado.pecas[pid], pos = null, nivel = 0, yaw = null;
+      for (var k = 0; k <= i && k < passos.length; k++) {
+        var s = passos[k].passo;
+        if (tem(p.posicoes, s)) { pos = p.posicoes[s]; nivel = tem(p.niveis, s) ? p.niveis[s] : 0; }
+        if (tem(p.direcoes, s)) yaw = p.direcoes[s];
+      }
+      if (pos === null) return;
+      var padrao = yaw === null;
+      pecas[pid] = { lado: p.lado, rotulo: p.rotulo, x: pos[0], y: pos[1], nivel: nivel,
+                     yaw: padrao ? direcaoPadrao(pos[0], pos[1], centro) : yaw, direcao_padrao: padrao };
+    });
+    function vivos(grupo) {
+      var out = {};
+      Object.keys(estado[grupo]).forEach(function (id) {
+        var e = estado[grupo][id], nasce = indice[e.passo];
+        if (visivel(nasce, e.dura_passos, i)) {
+          out[id] = Object.assign({}, e, { nasceu_neste_passo: nasce === i });
+        }
+      });
+      return out;
+    }
+    return { indice: i, passo: passos[i].passo, titulo: passos[i].titulo, duracao_s: passos[i].duracao_s,
+             pecas: pecas, granadas: vivos("granadas"), tracos: vivos("tracos") };
+  }
+
+  function ordemDeCriacao(estado) {
+    var itens = [];
+    Object.keys(estado.granadas).forEach(function (k) { itens.push(["granada", k, estado.granadas[k]]); });
+    Object.keys(estado.tracos).forEach(function (k) { itens.push(["traco", k, estado.tracos[k]]); });
+    itens.sort(function (a, b) {
+      var x = a[2].criada_em_ordem, y = b[2].criada_em_ordem;
+      return chaveDeOrdem({ seq: x[0], autor: x[1], id: x[2] }, { seq: y[0], autor: y[1], id: y[2] });
+    });
+    return itens.map(function (t) { return { tipo: t[0], id: t[1], passo: t[2].passo }; });
   }
 
   function mescla(a, b) {
@@ -115,11 +291,78 @@ var Prancheta = (function () {
     var porId = {};
     a.operacoes.forEach(function (op) { porId[op.id] = op; });
     b.operacoes.forEach(function (op) { if (!porId[op.id]) porId[op.id] = op; });
-    var unidas = Object.keys(porId).map(function (k) { return porId[k]; }).sort(chaveDeOrdem);
-    var saida = JSON.parse(JSON.stringify(a));
-    saida.operacoes = unidas;
+    var saida = copia(a);
+    saida.operacoes = Object.keys(porId).map(function (k) { return porId[k]; }).sort(chaveDeOrdem);
     saida.contador = Math.max(a.contador, b.contador);
+    saida.versao = FORMATO;
     return saida;
+  }
+
+  /** Formato 1 -> atual, em memória: só a versão muda. */
+  function migra(doc) {
+    var d = Object.assign({}, doc);
+    d.versao = FORMATO;
+    return d;
+  }
+
+  function ehInteiro(v) { return typeof v === "number" && isFinite(v) && Math.floor(v) === v; }
+  function ehNumero(v) { return typeof v === "number" && isFinite(v); }
+
+  /** Os problemas do arquivo, todos de uma vez -- as mesmas regras de
+      metrics.tactics.problemas, para a importação recusar o que o Python
+      recusaria. */
+  function problemas(doc, andares) {
+    if (!doc || doc.formato !== IDENTIFICADOR) return ["não é um arquivo de tática da prancheta"];
+    if (VERSOES_ACEITAS.indexOf(doc.versao) < 0) {
+      return ["versão " + doc.versao + " do formato; esta página lê as versões " + VERSOES_ACEITAS.join(", ")];
+    }
+    var erros = [];
+    ["id", "mapa", "criada_por", "criada_em", "contador", "operacoes", "calibracao"].forEach(function (c) {
+      if (!tem(doc, c)) erros.push("falta o campo '" + c + "'");
+    });
+    if (!Array.isArray(doc.operacoes)) return erros;
+    var porId = {}, vistos = {}, maior = 0;
+    doc.operacoes.forEach(function (op) { if (op && op.id) porId[op.id] = op; });
+    doc.operacoes.forEach(function (op, n) {
+      var onde = "operação " + n + " (" + (op && op.tipo) + ")";
+      if (!op || !op.id || !op.tipo || !op.autor || !tem(op, "seq") || !tem(op, "em")) {
+        erros.push("operação " + n + " incompleta"); return;
+      }
+      if (!OPERACOES[op.tipo]) { erros.push("operação desconhecida: " + op.tipo); return; }
+      var sem = OPERACOES[op.tipo].filter(function (c) { return !tem(op, c); });
+      sem.forEach(function (c) { erros.push("'" + op.tipo + "' sem '" + c + "'"); });
+      if (vistos[op.id]) erros.push("operação repetida: " + op.id);
+      vistos[op.id] = true;
+      if (!ehInteiro(op.seq) || op.seq < 1) erros.push(onde + ": número de ordem inválido");
+      else maior = Math.max(maior, op.seq);
+      if (sem.length) return;
+      if (op.tipo === "cria_peca" && LADOS.indexOf(op.lado) < 0) erros.push(onde + ": lado desconhecido: " + op.lado);
+      if ((op.tipo === "cria_peca" || op.tipo === "gira_peca") && op.yaw !== undefined && op.yaw !== null &&
+          !(ehNumero(op.yaw) && op.yaw >= 0 && op.yaw < 360)) erros.push(onde + ": yaw fora de [0, 360)");
+      if (tem(op, "nivel")) {
+        if (!ehInteiro(op.nivel) || op.nivel < 0) erros.push(onde + ": nivel não é um andar");
+        else if (op.nivel >= andares) erros.push(onde + ": nivel " + op.nivel + " num mapa de " + andares + " andar(es)");
+      }
+      if (tem(op, "dura_passos") && op.dura_passos !== null && !(ehInteiro(op.dura_passos) && op.dura_passos >= 1)) {
+        erros.push(onde + ": dura_passos não é inteiro >= 1 nem null");
+      }
+      if (op.tipo === "define_duracao" && !(ehNumero(op.segundos) && op.segundos > 0)) erros.push(onde + ": duração não é positiva");
+      if (op.tipo === "cria_granada" && ARMAS.indexOf(op.arma) < 0) erros.push(onde + ": granada desconhecida: " + op.arma);
+      if (op.tipo === "cria_traco") {
+        if (FERRAMENTAS_TRACO.indexOf(op.ferramenta) < 0) erros.push(onde + ": ferramenta desconhecida");
+        if (!/^#[0-9a-f]{6}$/.test(String(op.cor))) erros.push(onde + ": cor fora do formato #rrggbb");
+        if (ESPESSURAS.indexOf(op.espessura) < 0) erros.push(onde + ": espessura fora de " + ESPESSURAS.join("/"));
+        if (!Array.isArray(op.pontos) || !op.pontos.length) erros.push(onde + ": sem pontos");
+      }
+      if (DESFAZER.indexOf(op.tipo) >= 0) {
+        var alvo = porId[op.alvo];
+        if (!alvo) erros.push(onde + ": mira operação que não está no log");
+        else if (DESFAZER.indexOf(alvo.tipo) >= 0) erros.push(onde + ": mira outra " + alvo.tipo);
+        else if (alvo.autor !== op.autor) erros.push(onde + ": cada um só desfaz o que é seu");
+      }
+    });
+    if (ehInteiro(doc.contador) && doc.contador < maior) erros.push("o contador está abaixo do maior número de ordem do log");
+    return erros;
   }
 
   function novoId() {
@@ -128,7 +371,6 @@ var Prancheta = (function () {
     for (var i = 0; i < 32; i++) s += Math.floor(Math.random() * 16).toString(16);
     return s;
   }
-
   function agora() { return new Date().toISOString(); }
 
   /* ---------------------------------------------------------------------
@@ -171,6 +413,12 @@ var Prancheta = (function () {
       autor: function (novo) {
         if (novo !== undefined) escreve("autor", novo);
         return le("autor");
+      },
+      // a tática ABERTA nesta aba (sessão): recarregar volta nela; outra aba
+      // ou "Criar tática" começam limpas
+      aberta: function (mapa, id) {
+        if (id !== undefined) A.grava("sessionStorage", prefixo + "aberta:" + mapa, id);
+        return A.le("sessionStorage", prefixo + "aberta:" + mapa);
       }
     };
   }
@@ -180,33 +428,84 @@ var Prancheta = (function () {
      --------------------------------------------------------------------- */
   var cfg = null;             // {radar, biblioteca, mapa, mapas}
   var Armazem = null;
+  var ANDARES = [];           // nomes das camadas do radar: "default" primeiro
+  var CENTRO = null;
   var S = {
     doc: null, estado: null, passo: 0,     // índice do passo na lista
     ferramenta: "mover", arma: "smoke",
-    sel: null,                              // {tipo: "peca"|"granada", id}
-    arrasto: null,
+    sel: null,                              // {tipo: "peca"|"granada"|"traco", id}
+    arrasto: null, tracando: null,
     origemPendente: null,                   // granada à mão: origem já clicada
-    busca: null,                            // {ponto: [x,y], raio, resultados: []}
+    busca: null,                            // {ponto, raio, total, resultados, foco}
     raioBusca: RAIO_BUSCA_PADRAO,
-    soParado: false,                        // busca só com arremesso sem movimento
+    soParado: false,
+    view: { zoom: 1, panX: 0, panY: 0 },
+    andar: 0,
+    cor: COR_PADRAO, recentes: [], corPendente: null, hsv: { h: 0, s: 1, v: 1 },
+    espessura: ESPESSURAS[1],
+    pilhaDesfazer: [], pilhaRefazer: [],    // ids das operações DESTE autor, nesta sessão
+    giro: null,                             // giro da roda ainda não emitido
+    espaco: false, sobreMapa: false, pan: null,
+    ultimoDesenho: [],                      // o que foi desenhado no último quadro (testes)
+    reprojecoes: 0,
     aviso: "",
     gravacoes: 0
   };
-  var cv = null, ctx = null, img = null, timerGravar = null;
+  var cv = null, ctx = null, imgs = [], timerGravar = null, cores = null;
 
   function autor() { return (Armazem.autor() || "").trim() || "anônimo"; }
+  function $(id) { return document.getElementById(id); }
 
-  function emite(tipo, dados) {
+  /** Toda mudança passa por aqui: uma operação nova no log. `desfazivel` põe o
+      id na pilha de desfazer desta sessão (e limpa o refazer: ramo novo). */
+  function emite(tipo, dados, desfazivel) {
+    if (S.giro && tipo !== "gira_peca") confirmaGiro();
     var op = { id: novoId(), seq: S.doc.contador + 1, autor: autor(), em: agora(), tipo: tipo };
     Object.keys(dados).forEach(function (k) { op[k] = dados[k]; });
     S.doc.contador = op.seq;
     S.doc.operacoes.push(op);
-    S.estado = aplica(S.doc.operacoes);
+    if (desfazivel !== false && DESFAZER.indexOf(tipo) < 0) {
+      S.pilhaDesfazer.push(op.id);
+      S.pilhaRefazer = [];
+    }
+    reaplica();
     agendaGravacao();
-    desenha();
-    atualizaPainel();
     return op;
   }
+
+  function reaplica() {
+    S.estado = aplica(S.doc.operacoes);
+    S.passo = Math.max(0, Math.min(S.passo, S.estado.passos.length - 1));
+    if (S.sel) {
+      var grupo = { peca: "pecas", granada: "granadas", traco: "tracos" }[S.sel.tipo];
+      if (!S.estado[grupo][S.sel.id]) S.sel = null;
+    }
+    atualizaTudo();
+  }
+
+  function desfaz() {
+    confirmaGiro();
+    var fora = anuladas(S.doc.operacoes);
+    while (S.pilhaDesfazer.length) {
+      var id = S.pilhaDesfazer.pop();
+      if (fora[id]) continue;
+      emite("anula", { alvo: id });
+      S.pilhaRefazer.push(id);
+      return true;
+    }
+    return false;
+  }
+
+  function refaz() {
+    confirmaGiro();
+    if (!S.pilhaRefazer.length) return false;
+    var id = S.pilhaRefazer.pop();
+    emite("reativa", { alvo: id });
+    S.pilhaDesfazer.push(id);
+    return true;
+  }
+
+  function vazia(doc) { return doc.operacoes.length <= OPS_DA_CRIACAO; }
 
   function agendaGravacao() {
     clearTimeout(timerGravar);
@@ -215,135 +514,223 @@ var Prancheta = (function () {
   function gravaAgora() {
     clearTimeout(timerGravar);
     if (!S.doc) return;
-    S.aviso = Armazem.grava(S.doc) ? "" : "Não foi possível gravar neste navegador: exporte o arquivo para não perder.";
+    Armazem.aberta(cfg.mapa, S.doc.id);
+    if (!vazia(S.doc)) {
+      S.aviso = Armazem.grava(S.doc) ? "" : "Não foi possível gravar neste navegador: exporte o arquivo para não perder.";
+    }
     S.gravacoes++;
     atualizaBiblioteca();
     atualizaAviso();
   }
 
   function novaTatica() {
-    var doc = {
+    S.doc = {
       formato: IDENTIFICADOR, versao: FORMATO, id: novoId(), mapa: cfg.mapa,
       criada_por: autor(), criada_em: agora(), calibracao: cfg.radar.calibracao,
       contador: 0, operacoes: []
     };
-    S.doc = doc;
-    emite("renomeia", { titulo: "Nova tática" });
-    emite("cria_passo", { passo: novoId(), titulo: "" });
     S.passo = 0; S.sel = null; S.busca = null;
+    S.pilhaDesfazer = []; S.pilhaRefazer = [];
+    emite("renomeia", { titulo: "Nova tática" }, false);
+    emite("cria_passo", { passo: novoId(), titulo: "" }, false);
     gravaAgora();
-    atualizaTudo();
   }
 
   function abre(id) {
     var doc = Armazem.carrega(id);
-    if (!doc) return false;
-    S.doc = doc; S.estado = aplica(doc.operacoes);
+    if (!doc || VERSOES_ACEITAS.indexOf(doc.versao) < 0) return false;
+    S.doc = migra(doc);
     S.passo = 0; S.sel = null; S.busca = null;
-    atualizaTudo();
+    S.pilhaDesfazer = []; S.pilhaRefazer = [];
+    Armazem.aberta(cfg.mapa, S.doc.id);
+    reaplica();
     return true;
   }
 
+  function passoAtual() { return S.estado.passos[S.passo].passo; }
+  function indiceDoPasso(passo) {
+    for (var i = 0; i < S.estado.passos.length; i++) if (S.estado.passos[i].passo === passo) return i;
+    return -1;
+  }
+  function quadro(i) { return quadroDoPasso(S.estado, i === undefined ? S.passo : i, CENTRO); }
+
   /* ---------------------------------------------------------------------
-     Projeção -- a do MapCore (map_core.js), a mesma de metrics/annotations.py
+     Projeção e andares
      --------------------------------------------------------------------- */
   function jogoParaPixel(x, y) { return MapCore.jogoParaPixel(cfg.radar, x, y); }
   function pixelParaJogo(px, py) { return MapCore.pixelParaJogo(cfg.radar, px, py); }
-  function eventoParaPixel(e) { return MapCore.eventoParaPixel(cv, cfg.radar, e, null); }
+  function eventoParaPixel(e) { return MapCore.eventoParaPixel(cv, cfg.radar, e, S.view); }
+  function arredonda(v) { return Math.round(v * 10) / 10; }   // 0,1u, como a anotação
+  function eventoParaJogo(e) {
+    var p = eventoParaPixel(e), g = pixelParaJogo(p[0], p[1]);
+    return [arredonda(g[0]), arredonda(g[1])];
+  }
+
+  /** Andares do radar, na ordem do replay (scripts/export_replay.map_levels):
+      "default" primeiro, depois de cima para baixo. */
+  function andaresDoRadar(r) {
+    var sec = r.vertical_sections;
+    if (!sec) return [{ nome: "default", min: -1e9, max: 1e9 }];
+    return Object.keys(sec).map(function (k) { return { nome: k, min: sec[k].min, max: sec[k].max }; })
+      .sort(function (a, b) {
+        if ((a.nome !== "default") !== (b.nome !== "default")) return a.nome === "default" ? -1 : 1;
+        return b.max - a.max;
+      });
+  }
+  function nivelDoZ(z) {
+    if (ANDARES.length < 2 || z === undefined || z === null) return 0;
+    for (var i = 0; i < ANDARES.length; i++) if (z >= ANDARES[i].min && z < ANDARES[i].max) return i;
+    return 0;
+  }
+
+  /* ---------------------------------------------------------------------
+     Tamanho: O ÚNICO lugar que muda o tamanho do canvas
+     --------------------------------------------------------------------- */
+  function emTelaCheia() { return MapCore.emTelaCheia($("pr-palco")); }
+
+  function reprojeta() {
+    var tela = $("pr-tela"), est = getComputedStyle(tela);
+    var util = tela.clientWidth - parseFloat(est.paddingLeft) - parseFloat(est.paddingRight);
+    var alto = emTelaCheia()
+      ? tela.clientHeight - parseFloat(est.paddingTop) - parseFloat(est.paddingBottom)
+      : window.innerHeight - 40;
+    if (util <= 0 || alto <= 0) return;
+    // a proporção é a do radar, nunca a do espaço disponível: nada de mapa esticado
+    var cx = MapCore.caixaDoMapa(cfg.radar, util, Math.max(200, alto));
+    var largura = Math.max(200, Math.floor(cx.largura));
+    var altura = Math.round(largura * cfg.radar.height / cfg.radar.width);
+    cv.style.width = largura + "px"; cv.style.height = altura + "px";
+    var tam = MapCore.tamanhoInterno(cfg.radar, largura, window.devicePixelRatio || 1);
+    if (cv.width !== tam.w || cv.height !== tam.h) { cv.width = tam.w; cv.height = tam.h; }
+    S.reprojecoes++;
+    desenha();
+  }
+  var pedeReprojecao = null;
+
+  function aplicaZoom(novo, cx, cy) {
+    if (MapCore.aplicaZoom(S.view, cfg.radar, novo,
+        cx === undefined ? cfg.radar.width / 2 : cx, cy === undefined ? cfg.radar.height / 2 : cy)) {
+      desenha(); atualizaBarra();
+    }
+  }
+  function resetaZoom() { S.view = { zoom: 1, panX: 0, panY: 0 }; desenha(); atualizaBarra(); }
 
   /* ---------------------------------------------------------------------
      Desenho
      --------------------------------------------------------------------- */
-  function cor(nome) { return getComputedStyle(document.documentElement).getPropertyValue(nome).trim(); }
-  var COR_ARMA = { smoke: "#9aa5b1", flash: "#f2d34f", he: "#d94c4c", molotov: "#f08a24", decoy: "#8b7bd8" };
-
-  function redimensiona() {
-    // O lado sai da largura ÚTIL do palco (sem o padding): usar a caixa inteira
-    // deixava o canvas mais largo que o espaço, o max-width cortava só a
-    // largura, e o mapa aparecia esticado na vertical.
-    var palco = cv.parentNode, est = getComputedStyle(palco);
-    var util = palco.clientWidth - parseFloat(est.paddingLeft) - parseFloat(est.paddingRight);
-    var lado = Math.max(200, Math.floor(Math.min(util, window.innerHeight - 40)));
-    var tam = MapCore.tamanhoInterno(cfg.radar, lado, window.devicePixelRatio || 1);
-    cv.style.width = lado + "px"; cv.style.height = lado + "px";
-    cv.width = tam.w; cv.height = tam.h;
-    desenha();
-  }
+  function cssVar(nome) { return getComputedStyle(document.documentElement).getPropertyValue(nome).trim(); }
+  function escalaUnidade() { return cfg.radar.scale_px_per_unit; }
 
   function desenha() {
-    if (!ctx || !S.estado) return;
-    var k = cv.width / cfg.radar.width;
+    if (!ctx || !temQuadro()) return;
+    S.ultimoDesenho = [];
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, cv.width, cv.height);
-    ctx.setTransform(k, 0, 0, k, 0, 0);
-    if (img && img.complete) ctx.drawImage(img, 0, 0, cfg.radar.width, cfg.radar.height);
+    MapCore.applyView(ctx, cfg.radar, S.view);
+    var im = imgs[S.andar] || imgs[0];
+    if (im && im.complete && im.naturalWidth) ctx.drawImage(im, 0, 0, cfg.radar.width, cfg.radar.height);
 
     desenhaBusca();
-    var passos = S.estado.passos, i = S.passo;
-    // granadas: dos passos anteriores apagadas, as do passo atual cheias
-    Object.keys(S.estado.granadas).forEach(function (gid) {
-      var g = S.estado.granadas[gid];
-      var idx = indiceDoPasso(g.passo);
-      if (idx > i) return;
-      var arr = S.arrasto && S.arrasto.tipo === "granada" && S.arrasto.id === gid ? S.arrasto : null;
-      desenhaGranada(g, idx === i ? 1 : 0.35, idx + 1, arr, S.sel && S.sel.id === gid);
-    });
+    var q = quadro();
+    Object.keys(q.granadas).forEach(function (id) { desenhaGranada(id, q.granadas[id]); });
+    Object.keys(q.tracos).forEach(function (id) { desenhaTraco(id, q.tracos[id]); });
+    if (S.tracando) MapCore.caminhoDoTraco(ctx, S.tracando, cfg.radar);
     if (S.origemPendente) {
       var o = jogoParaPixel(S.origemPendente[0], S.origemPendente[1]);
-      ctx.fillStyle = COR_ARMA[S.arma]; ctx.beginPath(); ctx.arc(o[0], o[1], 5, 0, 2 * Math.PI); ctx.fill();
+      ctx.fillStyle = MapCore.NADE_COLOR[S.arma];
+      ctx.beginPath(); ctx.arc(o[0], o[1], 5, 0, 2 * Math.PI); ctx.fill();
     }
-    // peças: rastro do passo anterior, depois a peça
-    Object.keys(S.estado.pecas).forEach(function (pid) {
-      var p = S.estado.pecas[pid];
-      var pos = posicaoNoPasso(p, passos, i);
-      if (S.arrasto && S.arrasto.tipo === "peca" && S.arrasto.id === pid) pos = S.arrasto.jogo;
-      if (!pos) return;
-      var ant = i > 0 ? posicaoNoPasso(p, passos, i - 1) : null;
-      if (ant && (ant[0] !== pos[0] || ant[1] !== pos[1])) desenhaMovimento(ant, pos, p.lado);
-      desenhaPeca(p, pos, S.sel && S.sel.id === pid);
-    });
+    var ant = S.passo > 0 ? quadro(S.passo - 1) : null;
+    Object.keys(q.pecas).forEach(function (id) { desenhaPeca(id, q.pecas[id], ant && ant.pecas[id]); });
   }
 
-  function desenhaMovimento(de, para, lado) {
-    var a = jogoParaPixel(de[0], de[1]), b = jogoParaPixel(para[0], para[1]);
-    ctx.save();
-    ctx.strokeStyle = cor(lado === "ct" ? "--ct" : "--t");
-    ctx.globalAlpha = 0.7; ctx.lineWidth = 3; ctx.setLineDash([8, 6]);
-    ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
-    ctx.restore();
-  }
+  function alfaDoAndar(nivel) { return nivel === S.andar ? 1 : ALFA_OUTRO_ANDAR; }
 
-  function desenhaPeca(p, pos, selecionada) {
-    var c = jogoParaPixel(pos[0], pos[1]);
-    ctx.save();
-    ctx.fillStyle = cor(p.lado === "ct" ? "--ct" : "--t");
-    ctx.strokeStyle = selecionada ? "#ffffff" : "rgba(0,0,0,0.55)";
-    ctx.lineWidth = selecionada ? 4 : 2;
-    ctx.beginPath(); ctx.arc(c[0], c[1], RAIO_PECA, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = "#ffffff"; ctx.font = "600 15px Figtree, system-ui, sans-serif";
-    ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillText(p.rotulo, c[0], c[1] + 1);
-    ctx.restore();
-  }
-
-  function desenhaGranada(g, alfa, numeroPasso, arrasto, selecionada) {
+  function desenhaGranada(id, g) {
     var o = g.origem, d = g.destino;
-    if (arrasto) { o = arrasto.origem; d = arrasto.destino; }
+    if (S.arrasto && S.arrasto.tipo === "granada" && S.arrasto.id === id) { o = S.arrasto.origem; d = S.arrasto.destino; }
     var a = jogoParaPixel(o[0], o[1]), b = jogoParaPixel(d[0], d[1]);
+    var alfa = alfaDoAndar(g.nivel), cor = MapCore.NADE_COLOR[g.arma];
+    var area = g.arma === "smoke" || g.arma === "molotov";
     ctx.save();
     ctx.globalAlpha = alfa;
-    ctx.strokeStyle = COR_ARMA[g.arma]; ctx.lineWidth = selecionada ? 4 : 2.5;
-    if (!g.arremesso) ctx.setLineDash([4, 4]);   // desenhada à mão: tracejada
-    ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = COR_ARMA[g.arma];
-    ctx.beginPath(); ctx.arc(a[0], a[1], 4.5, 0, 2 * Math.PI); ctx.fill();
-    ctx.beginPath(); ctx.arc(b[0], b[1], RAIO_GRANADA, 0, 2 * Math.PI); ctx.fill();
-    ctx.strokeStyle = selecionada ? "#ffffff" : "rgba(0,0,0,0.6)"; ctx.lineWidth = 2; ctx.stroke();
-    ctx.fillStyle = "#111"; ctx.font = "700 12px Figtree, system-ui, sans-serif";
-    ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillText(String(numeroPasso), b[0], b[1] + 1);
+    if (area) {
+      var r = (g.arma === "smoke" ? MapCore.RAIO_SMOKE_UNIDADES : MapCore.RAIO_MOLOTOV_UNIDADES) * escalaUnidade();
+      MapCore.desenhaArea(ctx, g.arma, b[0], b[1], r);
+    }
+    // A linha do arremesso só aparece no passo de criação; depois, só o efeito.
+    if (g.nasceu_neste_passo) {
+      ctx.strokeStyle = cor; ctx.lineWidth = 2.5;
+      if (!g.arremesso) ctx.setLineDash([6, 5]);   // desenhada à mão: tracejada
+      ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = cor;
+      ctx.beginPath(); ctx.arc(a[0], a[1], 4, 0, 2 * Math.PI); ctx.fill();
+    }
+    MapCore.nadeGlyph(ctx, g.arma, b[0], b[1], RAIO_GRANADA, cor, Math.atan2(b[1] - a[1], b[0] - a[0]));
+    if (S.sel && S.sel.id === id) {
+      ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(b[0], b[1], RAIO_GRANADA * 1.9, 0, 2 * Math.PI); ctx.stroke();
+    }
     ctx.restore();
+    S.ultimoDesenho.push({ tipo: "granada", id: id, linha: !!g.nasceu_neste_passo, area: area, alfa: alfa });
+  }
+
+  function desenhaTraco(id, t) {
+    var alfa = alfaDoAndar(t.nivel);
+    ctx.save();
+    ctx.globalAlpha = alfa;
+    MapCore.caminhoDoTraco(ctx, t, cfg.radar);
+    ctx.restore();
+    S.ultimoDesenho.push({ tipo: "traco", id: id, alfa: alfa });
+  }
+
+  function yawDaPeca(id, p) {
+    if (S.giro && S.giro.peca === id) return S.giro.yaw;
+    if (S.arrasto && S.arrasto.tipo === "giro" && S.arrasto.id === id && S.arrasto.yaw !== null) return S.arrasto.yaw;
+    return p.yaw;
+  }
+
+  function desenhaPeca(id, p, anterior) {
+    var pos = [p.x, p.y];
+    if (S.arrasto && S.arrasto.tipo === "peca" && S.arrasto.id === id) pos = S.arrasto.jogo;
+    var c = jogoParaPixel(pos[0], pos[1]);
+    var cor = cssVar(p.lado === "ct" ? "--ct" : "--t");
+    var alfa = alfaDoAndar(p.nivel), yaw = yawDaPeca(id, p);
+    // rastro do passo anterior: onde estava e para onde olhava
+    if (anterior && (anterior.x !== pos[0] || anterior.y !== pos[1] || anterior.yaw !== yaw)) {
+      var a = jogoParaPixel(anterior.x, anterior.y);
+      ctx.save();
+      ctx.globalAlpha = ALFA_RASTRO * alfa;
+      if (anterior.x !== pos[0] || anterior.y !== pos[1]) {
+        ctx.strokeStyle = cor; ctx.lineWidth = 2; ctx.setLineDash([8, 6]);
+        ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(c[0], c[1]); ctx.stroke();
+        ctx.setLineDash([]);
+      }
+      MapCore.desenhaJogador(ctx, a[0], a[1], { cor: cor, estado: "vivo", hp: 100, cego: false,
+                                                nome: "", yaw: anterior.yaw, escala: ESCALA_PECA });
+      ctx.restore();
+    }
+    ctx.save();
+    ctx.globalAlpha = alfa;
+    MapCore.desenhaJogador(ctx, c[0], c[1], { cor: cor, estado: "vivo", hp: 100, cego: false,
+                                              nome: rotuloDaPeca(p), yaw: yaw, escala: ESCALA_PECA });
+    if (S.sel && S.sel.id === id) {
+      var h = alca(c, yaw);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = "#ffffff"; ctx.strokeStyle = "#0f1620"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(h[0], h[1], RAIO_ALCA, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+    }
+    ctx.restore();
+    S.ultimoDesenho.push({ tipo: "peca", id: id, x: c[0], y: c[1], yaw: yaw, alfa: alfa });
+  }
+
+  function rotuloDaPeca(p) { return (p.lado === "ct" ? "CT " : "TR ") + p.rotulo; }
+
+  /** Onde fica a alça de girar: na ponta da gota. */
+  function alca(c, yaw) {
+    var t = MapCore.anguloDeTela(yaw), d = MapCore.PONTA_DISTANCIA * ESCALA_PECA;
+    return [c[0] + Math.cos(t) * d, c[1] + Math.sin(t) * d];
   }
 
   function desenhaBusca() {
@@ -351,108 +738,223 @@ var Prancheta = (function () {
     var c = jogoParaPixel(S.busca.ponto[0], S.busca.ponto[1]);
     ctx.save();
     ctx.strokeStyle = "rgba(255,255,255,0.8)"; ctx.setLineDash([6, 5]); ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(c[0], c[1], S.busca.raio * cfg.radar.scale_px_per_unit, 0, 2 * Math.PI); ctx.stroke();
+    ctx.beginPath(); ctx.arc(c[0], c[1], S.busca.raio * escalaUnidade(), 0, 2 * Math.PI); ctx.stroke();
     ctx.setLineDash([]);
     S.busca.resultados.forEach(function (r, n) {
       var a = jogoParaPixel(r.origem[0], r.origem[1]), b = jogoParaPixel(r.destino[0], r.destino[1]);
       var foco = S.busca.foco === n;
       ctx.globalAlpha = foco ? 1 : 0.45;
-      ctx.strokeStyle = COR_ARMA[r.arma]; ctx.lineWidth = foco ? 3 : 1.2;
+      ctx.strokeStyle = MapCore.NADE_COLOR[r.arma]; ctx.lineWidth = foco ? 3 : 1.2;
       ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
-      ctx.fillStyle = COR_ARMA[r.arma];
+      ctx.fillStyle = MapCore.NADE_COLOR[r.arma];
       ctx.beginPath(); ctx.arc(a[0], a[1], foco ? 6 : 3.5, 0, 2 * Math.PI); ctx.fill();
     });
     ctx.restore();
   }
 
-  function indiceDoPasso(passo) {
-    for (var i = 0; i < S.estado.passos.length; i++) if (S.estado.passos[i].passo === passo) return i;
-    return -1;
-  }
-  function passoAtual() { return S.estado.passos[S.passo].passo; }
-
   /* ---------------------------------------------------------------------
      Ponteiro
      --------------------------------------------------------------------- */
+  /** O que está sob o ponteiro (pixel do radar). Só o andar ativo é tocável:
+      o que está esmaecido não se mexe sem querer. */
   function acha(px) {
-    var passos = S.estado.passos, i = S.passo, achado = null, melhor = Infinity;
-    function perto(pos, raio, qual) {
-      var c = jogoParaPixel(pos[0], pos[1]);
+    var q = quadro(), achado = null, melhor = Infinity;
+    function perto(c, raio, qual) {
       var d = Math.hypot(c[0] - px[0], c[1] - px[1]);
       if (d <= raio && d < melhor) { melhor = d; achado = qual; }
     }
-    Object.keys(S.estado.pecas).forEach(function (pid) {
-      var pos = posicaoNoPasso(S.estado.pecas[pid], passos, i);
-      if (pos) perto(pos, RAIO_PECA + 3, { tipo: "peca", id: pid });
+    if (S.sel && S.sel.tipo === "peca" && q.pecas[S.sel.id] && q.pecas[S.sel.id].nivel === S.andar) {
+      var ps = q.pecas[S.sel.id];
+      perto(alca(jogoParaPixel(ps.x, ps.y), ps.yaw), RAIO_ALCA + 3, { tipo: "giro", id: S.sel.id });
+      if (achado) return achado;
+    }
+    Object.keys(q.pecas).forEach(function (id) {
+      var p = q.pecas[id];
+      if (p.nivel === S.andar) perto(jogoParaPixel(p.x, p.y), RAIO_PECA + 3, { tipo: "peca", id: id });
     });
-    Object.keys(S.estado.granadas).forEach(function (gid) {
-      var g = S.estado.granadas[gid];
-      if (indiceDoPasso(g.passo) !== i) return;   // só se mexe no passo em que ela está
-      perto(g.destino, RAIO_GRANADA + 3, { tipo: "granada", id: gid, ponta: "destino" });
-      perto(g.origem, RAIO_ALCA, { tipo: "granada", id: gid, ponta: "origem" });
+    Object.keys(q.granadas).forEach(function (id) {
+      var g = q.granadas[id];
+      if (g.nivel !== S.andar || !g.nasceu_neste_passo) return;   // só se mexe no passo em que nasceu
+      perto(jogoParaPixel(g.destino[0], g.destino[1]), RAIO_PONTA_GRANADA + 3, { tipo: "granada", id: id, ponta: "destino" });
+      perto(jogoParaPixel(g.origem[0], g.origem[1]), RAIO_PONTA_GRANADA, { tipo: "granada", id: id, ponta: "origem" });
     });
     return achado;
   }
 
+  function comecaPan(e) {
+    if (S.view.zoom <= 1) return false;
+    S.pan = { x: e.clientX, y: e.clientY, panX: S.view.panX, panY: S.view.panY };
+    cv.setPointerCapture(e.pointerId);
+    return true;
+  }
+
   function pointerDown(e) {
-    if (!S.doc || e.button !== 0) return;
-    var px = eventoParaPixel(e), g = pixelParaJogo(px[0], px[1]);
-    if (S.ferramenta === "buscar") { busca(g); return; }
+    if (!S.doc) return;
+    if (S.espaco || e.button === 1) { comecaPan(e); e.preventDefault(); return; }
+    if (e.button !== 0) return;
+    var px = eventoParaPixel(e), g = eventoParaJogo(e);
+    if (S.ferramenta === "buscar") { if (cfg.biblioteca) busca(g); return; }
     if (S.ferramenta === "granada") {
       if (!S.origemPendente) { S.origemPendente = g; desenha(); return; }
       var o = S.origemPendente; S.origemPendente = null;
-      var op = emite("cria_granada", { granada: novoId(), arma: S.arma, passo: passoAtual(),
+      var op = emite("cria_granada", { granada: novoId(), arma: S.arma, passo: passoAtual(), nivel: S.andar,
                                        origem: [o[0], o[1]], destino: [g[0], g[1]], arremesso: null });
-      S.sel = { tipo: "granada", id: op.granada };
-      atualizaPainel(); desenha();
+      S.sel = { tipo: "granada", id: op.granada }; atualizaTudo();
       return;
     }
+    if (ROTULO_FERRAMENTA[S.ferramenta]) { comecaTraco(e, px, g); return; }
+    // mover
     var alvo = acha(px);
-    S.sel = alvo ? { tipo: alvo.tipo, id: alvo.id } : null;
+    S.sel = alvo ? { tipo: alvo.tipo === "giro" ? "peca" : alvo.tipo, id: alvo.id } : null;
     if (alvo) {
       cv.setPointerCapture(e.pointerId);
-      if (alvo.tipo === "peca") {
-        S.arrasto = { tipo: "peca", id: alvo.id, jogo: posicaoNoPasso(S.estado.pecas[alvo.id], S.estado.passos, S.passo), mexeu: false };
-      } else {
+      var q = quadro();
+      if (alvo.tipo === "giro") S.arrasto = { tipo: "giro", id: alvo.id, yaw: null, mexeu: false };
+      else if (alvo.tipo === "peca") S.arrasto = { tipo: "peca", id: alvo.id, jogo: [q.pecas[alvo.id].x, q.pecas[alvo.id].y], mexeu: false };
+      else {
         var gr = S.estado.granadas[alvo.id];
-        S.arrasto = { tipo: "granada", id: alvo.id, ponta: alvo.ponta,
-                      origem: gr.origem.slice(), destino: gr.destino.slice(), mexeu: false };
+        S.arrasto = { tipo: "granada", id: alvo.id, ponta: alvo.ponta, origem: gr.origem.slice(), destino: gr.destino.slice(), mexeu: false };
       }
     }
     atualizaPainel(); desenha();
   }
 
   function pointerMove(e) {
+    if (S.pan) {
+      var k = cfg.radar.width / cv.getBoundingClientRect().width;
+      S.view.panX = S.pan.panX + (e.clientX - S.pan.x) * k;
+      S.view.panY = S.pan.panY + (e.clientY - S.pan.y) * k;
+      MapCore.limitaPan(S.view, cfg.radar);
+      desenha();
+      return;
+    }
+    if (S.tracando) { continuaTraco(e); return; }
     if (!S.arrasto) return;
-    var px = eventoParaPixel(e), g = pixelParaJogo(px[0], px[1]);
+    var g = eventoParaJogo(e);
     S.arrasto.mexeu = true;
     if (S.arrasto.tipo === "peca") S.arrasto.jogo = g;
-    else S.arrasto[S.arrasto.ponta] = [g[0], g[1]].concat(S.arrasto[S.arrasto.ponta].slice(2));
+    else if (S.arrasto.tipo === "giro") {
+      var p = quadro().pecas[S.arrasto.id];
+      S.arrasto.yaw = yawInteiro(Math.atan2(g[1] - p.y, g[0] - p.x) * (180 / Math.PI));
+    } else S.arrasto[S.arrasto.ponta] = [g[0], g[1]];
     desenha();
   }
 
+  function yawInteiro(v) { return ((Math.round(v) % 360) + 360) % 360; }
+
   function pointerUp() {
+    if (S.pan) { S.pan = null; return; }
+    if (S.tracando) { terminaTraco(); return; }
     var a = S.arrasto; S.arrasto = null;
     if (!a || !a.mexeu) { desenha(); return; }
-    if (a.tipo === "peca") emite("move_peca", { peca: a.id, passo: passoAtual(), x: a.jogo[0], y: a.jogo[1] });
-    else emite("move_granada", { granada: a.id, origem: a.origem, destino: a.destino });
+    if (a.tipo === "peca") emite("move_peca", { peca: a.id, passo: passoAtual(), x: a.jogo[0], y: a.jogo[1], nivel: S.andar });
+    else if (a.tipo === "giro") { if (a.yaw !== null) emite("gira_peca", { peca: a.id, passo: passoAtual(), yaw: a.yaw }); }
+    else emite("move_granada", { granada: a.id, origem: a.origem, destino: a.destino, nivel: S.estado.granadas[a.id].nivel });
   }
 
-  /* Banco de peças: arrastar do banco para o mapa cria a peça no passo atual. */
+  /* --- roda: gira a peça selecionada sob o ponteiro, ou dá zoom ------------ */
+  function roda(e) {
+    e.preventDefault();
+    var px = eventoParaPixel(e);
+    var q = quadro();
+    if (S.sel && S.sel.tipo === "peca" && q.pecas[S.sel.id]) {
+      var p = q.pecas[S.sel.id], c = jogoParaPixel(p.x, p.y);
+      if (Math.hypot(c[0] - px[0], c[1] - px[1]) <= RAIO_PECA + 3) {
+        var base = S.giro && S.giro.peca === S.sel.id ? S.giro.yaw : p.yaw;
+        var passo = e.shiftKey ? PASSO_GIRO_FINO : PASSO_GIRO;
+        // roda para cima gira no sentido anti-horário da tela = yaw crescente
+        var novo = yawInteiro(base + (e.deltaY < 0 ? passo : -passo));
+        if (!S.giro) S.giro = { peca: S.sel.id, yaw: novo, timer: null };
+        S.giro.yaw = novo;
+        clearTimeout(S.giro.timer);
+        S.giro.timer = setTimeout(confirmaGiro, MS_AGRUPA_GIRO);
+        desenha(); atualizaPainel();
+        return;
+      }
+    }
+    var z = px[0] * S.view.zoom + S.view.panX, w = px[1] * S.view.zoom + S.view.panY;
+    aplicaZoom(S.view.zoom * (e.deltaY < 0 ? MapCore.ZOOM_PASSO : 1 / MapCore.ZOOM_PASSO), z, w);
+  }
+
+  function confirmaGiro() {
+    var g = S.giro;
+    if (!g) return;
+    clearTimeout(g.timer);
+    S.giro = null;
+    if (S.estado.pecas[g.peca]) emite("gira_peca", { peca: g.peca, passo: passoAtual(), yaw: g.yaw });
+  }
+
+  /* --- desenho livre --------------------------------------------------------- */
+  function comecaTraco(e, px, g) {
+    cv.setPointerCapture(e.pointerId);
+    if (S.ferramenta === "borracha") { apagaTraco(px); return; }
+    if (S.ferramenta === "texto") {
+      var txt = window.prompt("Texto da anotação:");
+      if (txt) emite("cria_traco", { traco: novoId(), passo: passoAtual(), ferramenta: "texto", texto: txt,
+                                     cor: S.cor, espessura: S.espessura, pontos: [g], nivel: S.andar });
+      return;
+    }
+    S.tracando = { ferramenta: S.ferramenta, pontos: S.ferramenta === "caneta" ? [g] : [g, g],
+                   cor: S.cor, espessura: S.espessura };
+    desenha();
+  }
+
+  function continuaTraco(e) {
+    var eventos = (S.tracando.ferramenta === "caneta" && e.getCoalescedEvents) ? e.getCoalescedEvents() : [e];
+    if (!eventos.length) eventos = [e];
+    eventos.forEach(function (ev) {
+      var g = eventoParaJogo(ev), pts = S.tracando.pontos;
+      if (S.tracando.ferramenta !== "caneta") { pts[1] = g; return; }
+      var ult = jogoParaPixel(pts[pts.length - 1][0], pts[pts.length - 1][1]), novo = jogoParaPixel(g[0], g[1]);
+      if (Math.hypot(novo[0] - ult[0], novo[1] - ult[1]) * S.view.zoom >= PASSO_MIN_CANETA) pts.push(g);
+    });
+    desenha();
+  }
+
+  function terminaTraco() {
+    var t = S.tracando; S.tracando = null;
+    if (MapCore.tracoCurtoDemais(t, cfg.radar)) { desenha(); return; }
+    var op = emite("cria_traco", { traco: novoId(), passo: passoAtual(), ferramenta: t.ferramenta,
+                                   cor: t.cor, espessura: t.espessura, pontos: t.pontos, nivel: S.andar });
+    S.sel = { tipo: "traco", id: op.traco }; atualizaTudo();
+  }
+
+  function apagaTraco(px) {
+    var q = quadro();
+    var alvos = ordemDeCriacao(S.estado).filter(function (x) {
+      return x.tipo === "traco" && q.tracos[x.id] && q.tracos[x.id].nivel === S.andar &&
+             MapCore.tracoEncosta(q.tracos[x.id], px, cfg.radar, RAIO_BORRACHA);
+    });
+    if (alvos.length) emite("remove_traco", { traco: alvos[alvos.length - 1].id });
+  }
+
+  /* --- banco de peças -------------------------------------------------------- */
+  /** Arrastar do banco para o mapa: peça nova, ou -- se esse jogador já existe
+      na tática e só não está no mapa neste passo -- a mesma peça de volta. */
   function soltaDoBanco(e, lado, rotulo) {
     var c = cv.getBoundingClientRect();
     if (e.clientX < c.left || e.clientX > c.right || e.clientY < c.top || e.clientY > c.bottom) return;
-    var px = eventoParaPixel(e), g = pixelParaJogo(px[0], px[1]);
-    var op = emite("cria_peca", { peca: novoId(), lado: lado, rotulo: rotulo, passo: passoAtual(), x: g[0], y: g[1] });
-    S.sel = { tipo: "peca", id: op.peca };
-    atualizaPainel(); desenha();
+    var g = eventoParaJogo(e);
+    var existente = Object.keys(S.estado.pecas).filter(function (id) {
+      return S.estado.pecas[id].lado === lado && S.estado.pecas[id].rotulo === rotulo;
+    })[0];
+    if (existente) {
+      emite("move_peca", { peca: existente, passo: passoAtual(), x: g[0], y: g[1], nivel: S.andar });
+      S.sel = { tipo: "peca", id: existente };
+    } else {
+      var op = emite("cria_peca", { peca: novoId(), lado: lado, rotulo: rotulo, passo: passoAtual(),
+                                    x: g[0], y: g[1], nivel: S.andar });
+      S.sel = { tipo: "peca", id: op.peca };
+    }
+    atualizaTudo();
   }
 
   function removeSelecionado() {
     if (!S.sel) return;
     if (S.sel.tipo === "peca") emite("remove_peca", { peca: S.sel.id });
-    else emite("remove_granada", { granada: S.sel.id });
-    S.sel = null; atualizaPainel(); desenha();
+    else if (S.sel.tipo === "granada") emite("remove_granada", { granada: S.sel.id });
+    else emite("remove_traco", { traco: S.sel.id });
+    S.sel = null; atualizaTudo();
   }
 
   /* ---------------------------------------------------------------------
@@ -460,8 +962,7 @@ var Prancheta = (function () {
      --------------------------------------------------------------------- */
   function busca(ponto) {
     var arr = (cfg.biblioteca && cfg.biblioteca.arremessos) || [];
-    var raio = S.raioBusca;
-    var res = [];
+    var raio = S.raioBusca, res = [];
     arr.forEach(function (r) {
       if (r.arma !== S.arma) return;
       if (S.soParado && (r.movimento !== "parado" || r.no_ar)) return;
@@ -476,7 +977,7 @@ var Prancheta = (function () {
 
   function usaArremesso(r) {
     var op = emite("cria_granada", {
-      granada: novoId(), arma: r.arma, passo: passoAtual(),
+      granada: novoId(), arma: r.arma, passo: passoAtual(), nivel: nivelDoZ(r.origem[2]),
       origem: r.origem.slice(0, 2), destino: r.destino.slice(0, 2), arremesso: r
     });
     S.sel = { tipo: "granada", id: op.granada };
@@ -498,7 +999,6 @@ var Prancheta = (function () {
     return n;
   }
   function limpa(n) { while (n.firstChild) n.removeChild(n.firstChild); return n; }
-  function $(id) { return document.getElementById(id); }
 
   function tempo(seg) {
     if (seg == null) return "";
@@ -515,24 +1015,32 @@ var Prancheta = (function () {
     return partes.join(" · ");
   }
 
+  // Uma tática no meio da criação (antes do primeiro passo) não tem quadro.
+  function temQuadro() { return !!(S.estado && S.estado.passos.length); }
+
   function atualizaTudo() {
+    if (!temQuadro()) return;
     atualizaBiblioteca(); atualizaPassos(); atualizaPainel(); atualizaBusca(); atualizaFerramentas();
-    atualizaAviso(); desenha();
+    atualizaBanco(); atualizaBarra(); atualizaAviso(); desenha();
   }
 
   function atualizaAviso() { $("pr-aviso").textContent = S.aviso; $("pr-aviso").hidden = !S.aviso; }
 
   function atualizaBiblioteca() {
     var sel = limpa($("pr-taticas"));
-    var lista = Armazem.lista(cfg.mapa);
+    var lista = Armazem.lista(cfg.mapa), atual = false;
     lista.forEach(function (r) {
       var o = el("option", { value: r.id, texto: r.titulo + (r.autores.length > 1 ? " · " + r.autores.length + " autores" : "") });
-      if (S.doc && r.id === S.doc.id) o.selected = true;
+      if (S.doc && r.id === S.doc.id) { o.selected = true; atual = true; }
       sel.appendChild(o);
     });
-    $("pr-titulo").value = S.estado ? S.estado.titulo : "";
-    var ops = S.doc ? S.doc.operacoes.length : 0;
-    $("pr-historico").textContent = S.doc ? ops + " operações · contador " + S.doc.contador : "";
+    if (S.doc && !atual) {
+      // fora da lista: ou está vazia (não é gravada) ou a gravação ainda está no atraso
+      sel.insertBefore(el("option", { value: S.doc.id, texto: (S.estado.titulo || "Nova tática") + (vazia(S.doc) ? " (vazia)" : "") }), sel.firstChild);
+      sel.value = S.doc.id;
+    }
+    if (document.activeElement !== $("pr-titulo")) $("pr-titulo").value = S.estado ? S.estado.titulo : "";
+    $("pr-historico").textContent = S.doc ? S.doc.operacoes.length + " operações · contador " + S.doc.contador : "";
   }
 
   function atualizaPassos() {
@@ -541,7 +1049,7 @@ var Prancheta = (function () {
       barra.appendChild(el("button", {
         class: "pr-passo" + (i === S.passo ? " ativo" : ""), "data-passo": String(i + 1),
         title: p.titulo || "Passo " + (i + 1), texto: String(i + 1),
-        onclick: function () { S.passo = i; S.sel = null; atualizaTudo(); }
+        onclick: function () { confirmaGiro(); S.passo = i; S.sel = null; atualizaTudo(); }
       }));
     });
     barra.appendChild(el("button", { class: "pr-passo novo", id: "pr-novo-passo", title: "Novo passo", texto: "+",
@@ -550,7 +1058,8 @@ var Prancheta = (function () {
         S.passo = S.estado.passos.length - 1; atualizaTudo();
       } }));
     var atual = S.estado.passos[S.passo];
-    $("pr-passo-titulo").value = atual ? atual.titulo : "";
+    if (document.activeElement !== $("pr-passo-titulo")) $("pr-passo-titulo").value = atual ? atual.titulo : "";
+    if (document.activeElement !== $("pr-passo-duracao")) $("pr-passo-duracao").value = atual ? String(atual.duracao_s) : "";
     $("pr-remove-passo").disabled = S.estado.passos.length <= 1;
   }
 
@@ -561,24 +1070,82 @@ var Prancheta = (function () {
     Array.prototype.forEach.call(document.querySelectorAll("[data-arma]"), function (b) {
       b.classList.toggle("ativo", b.getAttribute("data-arma") === S.arma);
     });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-espessura]"), function (b) {
+      b.classList.toggle("ativo", b.getAttribute("data-espessura") === String(S.espessura));
+    });
     cv.style.cursor = S.ferramenta === "mover" ? "default" : "crosshair";
+  }
+
+  function atualizaBanco() {
+    var q = quadro();
+    Array.prototype.forEach.call(document.querySelectorAll(".pr-ficha"), function (f) {
+      var noMapa = Object.keys(q.pecas).some(function (id) {
+        return q.pecas[id].lado === f.getAttribute("data-lado") && q.pecas[id].rotulo === f.getAttribute("data-rotulo");
+      });
+      f.classList.toggle("no-mapa", noMapa);
+    });
+  }
+
+  function atualizaBarra() {
+    var z = $("pr-zoom");
+    if (z) z.textContent = Math.round(S.view.zoom * 100) + "%";
+    var d = $("pr-desfaz"), r = $("pr-refaz");
+    if (d) d.disabled = !S.pilhaDesfazer.length;
+    if (r) r.disabled = !S.pilhaRefazer.length;
+    Array.prototype.forEach.call(document.querySelectorAll("[data-andar]"), function (b) {
+      b.classList.toggle("ativo", Number(b.getAttribute("data-andar")) === S.andar);
+    });
+    var fs = $("pr-tela-cheia");
+    if (fs) fs.textContent = emTelaCheia() ? "Sair" : "Tela cheia";
+    if (cores) cores.atualizaCores();
+  }
+
+  function controleDeVida(alvo, dura) {
+    var fim = dura === null || dura === undefined;
+    var n = el("input", { type: "number", id: "pr-vida", min: "1", step: "1", value: fim ? "1" : String(dura) });
+    var ate = el("input", { type: "checkbox", id: "pr-vida-fim" });
+    ate.checked = fim; n.disabled = fim;
+    function aplicaVida() {
+      var v = ate.checked ? null : Math.max(1, Math.round(+n.value || 1));
+      emite("define_vida", { alvo: alvo, dura_passos: v });
+    }
+    n.addEventListener("change", aplicaVida);
+    ate.addEventListener("change", aplicaVida);
+    return el("div", { class: "linha" }, [el("label", { for: "pr-vida", texto: "Fica por" }), n,
+      el("span", { texto: "passo(s)" }), el("label", {}, [ate, el("span", { texto: " até o fim" })])]);
   }
 
   function atualizaPainel() {
     var box = limpa($("pr-selecao"));
     if (!S.sel) {
-      box.appendChild(el("p", { class: "pr-dica", texto: "Arraste uma peça do banco para o mapa. Para uma granada de verdade, use “Buscar arremesso” e clique onde ela deve cair." }));
+      box.appendChild(el("p", { class: "pr-dica", texto: "Arraste uma peça do banco para o mapa. Selecionada, ela gira pela alça na ponta ou pela roda do mouse. Para uma granada de verdade, use “Buscar arremesso” e clique onde ela deve cair." }));
       return;
     }
+    var q = quadro();
     if (S.sel.tipo === "peca") {
       var p = S.estado.pecas[S.sel.id];
-      if (!p) { S.sel = null; return atualizaPainel(); }
-      box.appendChild(el("h3", { texto: (p.lado === "ct" ? "CT " : "TR ") + p.rotulo }));
-      box.appendChild(el("button", { class: "pr-b", texto: "Tirar do mapa", onclick: removeSelecionado }));
+      var noQuadro = q.pecas[S.sel.id];
+      box.appendChild(el("h3", { texto: rotuloDaPeca(p) }));
+      if (noQuadro) {
+        var yaw = yawDaPeca(S.sel.id, noQuadro);
+        box.appendChild(el("p", { class: "pr-meta", id: "pr-peca-direcao",
+          texto: (noQuadro.direcao_padrao && !S.giro ? "Olhando para o centro do mapa (" : "Olhando para ") + Math.round(yaw) + "°" + (noQuadro.direcao_padrao && !S.giro ? ", direção padrão)" : "") }));
+        box.appendChild(el("button", { class: "pr-b", id: "pr-tira-peca", texto: "Tirar do mapa neste passo",
+          onclick: function () { emite("tira_peca", { peca: S.sel.id, passo: passoAtual() }); } }));
+      } else {
+        box.appendChild(el("p", { class: "pr-meta", texto: "Fora do mapa neste passo: arraste do banco para recolocar." }));
+      }
+      box.appendChild(el("button", { class: "pr-b", id: "pr-apaga-peca", texto: "Apagar peça da tática", onclick: removeSelecionado }));
+      return;
+    }
+    if (S.sel.tipo === "traco") {
+      var t = S.estado.tracos[S.sel.id];
+      box.appendChild(el("h3", { texto: ROTULO_FERRAMENTA[t.ferramenta] + " · passo " + (indiceDoPasso(t.passo) + 1) }));
+      box.appendChild(controleDeVida(S.sel.id, t.dura_passos));
+      box.appendChild(el("button", { class: "pr-b", texto: "Apagar desenho", onclick: removeSelecionado }));
       return;
     }
     var g = S.estado.granadas[S.sel.id];
-    if (!g) { S.sel = null; return atualizaPainel(); }
     box.appendChild(el("h3", { texto: NOME_ARMA[g.arma] + " · passo " + (indiceDoPasso(g.passo) + 1) }));
     if (g.arremesso) {
       var r = g.arremesso;
@@ -586,7 +1153,7 @@ var Prancheta = (function () {
       box.appendChild(el("p", { class: "pr-meta", texto: descreveArremesso(r) }));
       var cmd = el("code", { id: "pr-comando", texto: r.comando });
       box.appendChild(el("div", { class: "pr-cmd" }, [cmd, el("button", { class: "pr-b", id: "pr-copia", texto: "Copiar",
-        onclick: function () { copia(r.comando); } })]));
+        onclick: function () { copiaTexto(r.comando); } })]));
       if (r.movimento && r.movimento !== "parado") {
         box.appendChild(el("p", { class: "pr-alerta", texto: "O arremesso original foi " + r.movimento +
           ": o comando põe você na posição e no ângulo da soltura, mas repetir exige o mesmo movimento." }));
@@ -600,6 +1167,7 @@ var Prancheta = (function () {
     } else {
       box.appendChild(el("p", { class: "pr-meta", texto: "Desenhada à mão: mostra onde cai, não como chegar lá." }));
     }
+    box.appendChild(controleDeVida(S.sel.id, g.dura_passos));
     box.appendChild(el("button", { class: "pr-b", texto: "Apagar granada", onclick: removeSelecionado }));
   }
 
@@ -623,7 +1191,7 @@ var Prancheta = (function () {
     box.appendChild(lista);
   }
 
-  function copia(texto) {
+  function copiaTexto(texto) {
     var feito = function () { $("pr-copia").textContent = "Copiado"; };
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(texto).then(feito, function () { copiaAntigo(texto); feito(); });
@@ -639,34 +1207,41 @@ var Prancheta = (function () {
      Arquivo: exportar e importar (importar a MESMA tática mescla)
      --------------------------------------------------------------------- */
   function exporta() {
+    confirmaGiro();
     gravaAgora();
-    var blob = new Blob([JSON.stringify(S.doc, null, 1)], { type: "application/json" });
+    var doc = Object.assign({}, S.doc, { versao: FORMATO });
+    var blob = new Blob([JSON.stringify(doc, null, 1)], { type: "application/json" });
     var a = el("a", { href: URL.createObjectURL(blob),
                       download: (S.estado.titulo || "tatica").replace(/[^\w\-]+/g, "_") + "." + cfg.mapa + ".json" });
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
   }
 
-  function valida(doc) {
-    if (!doc || doc.formato !== IDENTIFICADOR) return "não é um arquivo de tática da prancheta";
-    if (doc.versao !== FORMATO) return "versão " + doc.versao + " do formato; esta página lê a " + FORMATO;
+  /** Motivo da recusa, ou "" -- nunca carrega pela metade. */
+  function motivoDaRecusa(doc) {
+    var erros = problemas(doc, ANDARES.length);
+    if (erros.length) return erros.slice(0, 3).join("; ") + (erros.length > 3 ? " (e mais " + (erros.length - 3) + ")" : "");
     if (doc.mapa !== cfg.mapa) return "a tática é de " + doc.mapa + ", e esta prancheta é de " + cfg.mapa;
-    if (doc.calibracao !== cfg.radar.calibracao) return "a tática foi feita sobre outra calibração do radar";
-    if (!Array.isArray(doc.operacoes)) return "arquivo sem operações";
+    if (doc.calibracao !== cfg.radar.calibracao) return "a tática foi feita sobre outra calibração do radar e precisa ser reprojetada";
     return "";
   }
 
   function importaTexto(texto) {
     var doc;
     try { doc = JSON.parse(texto); } catch (e) { S.aviso = "Arquivo não é JSON."; atualizaAviso(); return false; }
-    var erro = valida(doc);
+    var erro = motivoDaRecusa(doc);
     if (erro) { S.aviso = "Importação recusada: " + erro + "."; atualizaAviso(); return false; }
+    confirmaGiro();
+    doc = migra(doc);
     // A cópia local é a da MEMÓRIA quando é a tática aberta: a gravação tem
     // atraso, e mesclar com a do armazém perderia o que acabou de ser feito.
     var local = (S.doc && S.doc.id === doc.id) ? S.doc : Armazem.carrega(doc.id);
-    S.doc = local ? mescla(local, doc) : doc;
-    S.estado = aplica(S.doc.operacoes);
-    S.passo = 0; S.sel = null; S.busca = null;
-    gravaAgora(); atualizaTudo();
+    var mesma = S.doc && S.doc.id === doc.id;
+    S.doc = local ? mescla(migra(local), doc) : doc;
+    if (!mesma) { S.passo = 0; S.pilhaDesfazer = []; S.pilhaRefazer = []; }
+    S.sel = null; S.busca = null;
+    S.aviso = "";
+    reaplica();
+    gravaAgora();
     return true;
   }
 
@@ -695,24 +1270,89 @@ var Prancheta = (function () {
     });
   }
 
+  function montaBarra() {
+    var barra = limpa($("pr-barra"));
+    var vista = el("div", { class: "anot-grupo sempre" });
+    vista.appendChild(MapCore.botao("−", "Diminuir o zoom", function () { aplicaZoom(S.view.zoom / MapCore.ZOOM_PASSO); }));
+    var lupa = MapCore.botao("100%", "Voltar ao tamanho original (0). Com zoom, segure espaço e arraste para mover o mapa", resetaZoom);
+    lupa.id = "pr-zoom";
+    vista.appendChild(lupa);
+    vista.appendChild(MapCore.botao("+", "Aumentar o zoom", function () { aplicaZoom(S.view.zoom * MapCore.ZOOM_PASSO); }));
+    var fs = MapCore.botao("Tela cheia", "Mapa em tela cheia (F)", function () { MapCore.alternaTelaCheia($("pr-palco")); });
+    fs.id = "pr-tela-cheia";
+    vista.appendChild(fs);
+    barra.appendChild(vista);
+
+    if (ANDARES.length > 1) {
+      var andares = el("div", { class: "anot-grupo sempre", id: "pr-andares" });
+      ANDARES.forEach(function (a, i) {
+        andares.appendChild(el("button", { "data-andar": String(i),
+          texto: i === 0 ? "Andar de cima" : (ANDARES.length === 2 ? "Andar de baixo" : "Andar " + (i + 1)),
+          onclick: function () { S.andar = i; S.sel = null; atualizaTudo(); } }));
+      });
+      barra.appendChild(andares);
+    }
+
+    var historico = el("div", { class: "anot-grupo sempre" });
+    var d = MapCore.botao("Desfazer", "Desfazer (Ctrl+Z)", desfaz); d.id = "pr-desfaz";
+    var r = MapCore.botao("Refazer", "Refazer (Ctrl+Y ou Ctrl+Shift+Z)", refaz); r.id = "pr-refaz";
+    historico.appendChild(d); historico.appendChild(r);
+    barra.appendChild(historico);
+
+    var desenho = el("div", { class: "anot-grupo sempre", id: "pr-desenho" });
+    Object.keys(ROTULO_FERRAMENTA).forEach(function (id) {
+      desenho.appendChild(el("button", { "data-ferramenta": id, texto: ROTULO_FERRAMENTA[id],
+        onclick: function () { escolheFerramenta(id); } }));
+    });
+    barra.appendChild(desenho);
+    cores = MapCore.seletorDeCor({
+      estado: S, armazem: MapCore.criaArmazem(), chaveRecentes: CHAVE_RECENTES, maxRecentes: MAX_RECENTES,
+      palco: function () { return $("pr-palco"); }, aoMudar: function () { atualizaBarra(); }
+    });
+    barra.appendChild(cores.montaCor());
+    var esp = el("div", { class: "anot-grupo sempre" });
+    ESPESSURAS.forEach(function (v, i) {
+      esp.appendChild(el("button", { "data-espessura": String(v), class: "pr-b", texto: ROTULOS_ESPESSURA[i],
+        onclick: function () { S.espessura = v; atualizaFerramentas(); } }));
+    });
+    barra.appendChild(esp);
+  }
+
+  function escolheFerramenta(id) {
+    confirmaGiro();
+    S.ferramenta = id; S.origemPendente = null;
+    if (id !== "buscar") S.busca = null;
+    atualizaTudo();
+  }
+
   function init(opcoes) {
     cfg = opcoes;
     Armazem = opcoes.armazem || ArmazemDoNavegador("prancheta:");
+    ANDARES = andaresDoRadar(cfg.radar);
+    CENTRO = centroDoRadar(cfg.radar);
     cv = $("pr-mapa"); ctx = cv.getContext("2d");
-    img = new Image(); img.onload = desenha; img.src = cfg.radar.image;
+    imgs = ANDARES.map(function (a, i) {
+      var src = i === 0 ? cfg.radar.image : (cfg.radar.layers || {})[a.nome];
+      var im = new Image();
+      im.onload = function () { desenha(); };
+      if (src) im.src = src;
+      return im;
+    });
+    var armazemCores = MapCore.criaArmazem();
+    var rec = MapCore.lerJson(armazemCores.le("localStorage", CHAVE_RECENTES));
+    if (Array.isArray(rec)) S.recentes = rec.map(MapCore.normalizaCor).filter(Boolean).slice(0, MAX_RECENTES);
+    if (S.recentes.length) S.cor = S.recentes[0];
 
+    montaBarra();
     montaBanco();
     cv.addEventListener("pointerdown", pointerDown);
     cv.addEventListener("pointermove", pointerMove);
     cv.addEventListener("pointerup", pointerUp);
-    cv.addEventListener("pointercancel", function () { S.arrasto = null; desenha(); });
+    cv.addEventListener("pointercancel", function () { S.arrasto = null; S.tracando = null; S.pan = null; desenha(); });
+    cv.addEventListener("wheel", roda, { passive: false });
 
-    Array.prototype.forEach.call(document.querySelectorAll("[data-ferramenta]"), function (b) {
-      b.addEventListener("click", function () {
-        S.ferramenta = b.getAttribute("data-ferramenta"); S.origemPendente = null;
-        if (S.ferramenta !== "buscar") S.busca = null;
-        atualizaTudo();
-      });
+    Array.prototype.forEach.call(document.querySelectorAll("aside [data-ferramenta]"), function (b) {
+      b.addEventListener("click", function () { escolheFerramenta(b.getAttribute("data-ferramenta")); });
     });
     Array.prototype.forEach.call(document.querySelectorAll("[data-arma]"), function (b) {
       b.addEventListener("click", function () {
@@ -721,6 +1361,16 @@ var Prancheta = (function () {
         atualizaFerramentas();
       });
     });
+    if (!cfg.biblioteca) {
+      // sem partida deste mapa no corpus, não há arremesso real para buscar
+      var buscar = document.querySelector('aside [data-ferramenta="buscar"]');
+      buscar.disabled = true;
+      var motivo = "Sem arremessos reais neste mapa: não há partidas dele no corpus.";
+      buscar.title = motivo;
+      $("pr-sem-biblioteca").textContent = motivo;
+      $("pr-sem-biblioteca").hidden = false;
+      $("pr-raio").disabled = true; $("pr-so-parado").disabled = true;
+    }
     $("pr-raio").value = String(S.raioBusca);
     $("pr-raio").addEventListener("input", function () {
       S.raioBusca = +this.value; $("pr-raio-valor").textContent = this.value + "u";
@@ -732,11 +1382,16 @@ var Prancheta = (function () {
       if (S.busca) busca(S.busca.ponto);
     });
 
-    $("pr-nova").addEventListener("click", novaTatica);
-    $("pr-taticas").addEventListener("change", function () { abre(this.value); });
+    $("pr-nova").addEventListener("click", function () { gravaAgora(); novaTatica(); });
+    $("pr-taticas").addEventListener("change", function () { if (this.value !== S.doc.id) { gravaAgora(); abre(this.value); } });
     $("pr-titulo").addEventListener("change", function () { emite("renomeia", { titulo: this.value.trim() }); });
     $("pr-passo-titulo").addEventListener("change", function () {
       emite("renomeia_passo", { passo: passoAtual(), titulo: this.value.trim() });
+    });
+    $("pr-passo-duracao").addEventListener("change", function () {
+      var s = +this.value;
+      if (s > 0) emite("define_duracao", { passo: passoAtual(), segundos: s });
+      else atualizaPassos();
     });
     $("pr-remove-passo").addEventListener("click", function () {
       if (S.estado.passos.length <= 1) return;
@@ -747,7 +1402,7 @@ var Prancheta = (function () {
       if (!S.doc || !window.confirm("Apagar esta tática deste navegador?")) return;
       Armazem.apaga(S.doc.id);
       var resto = Armazem.lista(cfg.mapa);
-      if (resto.length) abre(resto[0].id); else novaTatica();
+      if (!(resto.length && abre(resto[0].id))) novaTatica();
     });
     $("pr-exporta").addEventListener("click", exporta);
     var arquivo = $("pr-arquivo");
@@ -761,25 +1416,58 @@ var Prancheta = (function () {
     $("pr-autor").value = Armazem.autor() || "";
     $("pr-autor").addEventListener("change", function () { Armazem.autor(this.value.trim()); });
 
+    var palco = $("pr-palco");
+    palco.addEventListener("pointerenter", function () { S.sobreMapa = true; });
+    palco.addEventListener("pointerleave", function () { S.sobreMapa = false; });
     document.addEventListener("keydown", function (e) {
       if (/^(INPUT|TEXTAREA|SELECT)$/.test((e.target || {}).tagName || "")) return;
-      if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); removeSelecionado(); }
-      if (e.key === "Escape") { S.origemPendente = null; S.busca = null; S.sel = null; atualizaTudo(); }
+      var k = e.key.toLowerCase();
+      if ((e.ctrlKey || e.metaKey) && (k === "y" || (k === "z" && e.shiftKey))) { e.preventDefault(); refaz(); return; }
+      if ((e.ctrlKey || e.metaKey) && k === "z") { e.preventDefault(); desfaz(); return; }
+      if (e.code === "Space" && (S.sobreMapa || S.espaco)) {
+        e.preventDefault();
+        if (!S.espaco) { S.espaco = true; palco.classList.add("pr-pan"); }
+        return;
+      }
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); removeSelecionado(); return; }
+      if (e.key === "Escape") { S.origemPendente = null; S.busca = null; S.sel = null; atualizaTudo(); return; }
+      if (k === "f") { e.preventDefault(); MapCore.alternaTelaCheia(palco); return; }
+      if (k === "0") { e.preventDefault(); resetaZoom(); }
     });
-    window.addEventListener("resize", redimensiona);
-    window.addEventListener("pagehide", gravaAgora);
+    document.addEventListener("keyup", function (e) {
+      if (e.code === "Space" && S.espaco) { S.espaco = false; palco.classList.remove("pr-pan"); S.pan = null; }
+    });
+    window.addEventListener("blur", function () { S.espaco = false; palco.classList.remove("pr-pan"); });
 
-    var lista = Armazem.lista(cfg.mapa);
-    if (!(lista.length && abre(lista[0].id))) novaTatica();
-    redimensiona();
+    // Todos os gatilhos de tamanho caem na mesma função.
+    pedeReprojecao = MapCore.agrupaPorQuadro(reprojeta);
+    window.addEventListener("resize", pedeReprojecao);
+    document.addEventListener("fullscreenchange", function () { pedeReprojecao(); atualizaBarra(); });
+    document.addEventListener("webkitfullscreenchange", function () { pedeReprojecao(); atualizaBarra(); });
+    MapCore.vigiaDensidade(pedeReprojecao);
+    if (window.ResizeObserver) new ResizeObserver(pedeReprojecao).observe($("pr-tela"));
+    window.addEventListener("pagehide", function () { confirmaGiro(); gravaAgora(); });
+
+    // Abre LIMPA ("Criar tática" chega com ?nova), ou a tática aberta nesta aba.
+    var nova = /[?&]nova\b/.test(location.search);
+    if (nova && window.history && history.replaceState) history.replaceState(null, "", location.pathname);
+    var aberta = Armazem.aberta(cfg.mapa);
+    if (nova || !(aberta && abre(aberta))) novaTatica();
+    reprojeta();
   }
 
   return {
     init: init,
     _interno: {
-      S: S, aplica: aplica, mescla: mescla, posicaoNoPasso: posicaoNoPasso,
+      S: S, aplica: aplica, mescla: mescla, posicaoNoPasso: posicaoNoPasso, migra: migra,
+      quadroDoPasso: quadroDoPasso, ordemDeCriacao: ordemDeCriacao, anuladas: anuladas,
+      problemas: problemas, centro: function () { return CENTRO; },
       jogoParaPixel: jogoParaPixel, pixelParaJogo: pixelParaJogo,
       importaTexto: importaTexto, gravaAgora: gravaAgora, busca: busca, usaArremesso: usaArremesso,
+      desfaz: desfaz, refaz: refaz, aplicaZoom: aplicaZoom, reprojeta: reprojeta,
+      alca: function (id) { var p = quadro().pecas[id]; return alca(jogoParaPixel(p.x, p.y), yawDaPeca(id, p)); },
+      FERRAMENTAS_TRACO: FERRAMENTAS_TRACO, ESPESSURAS: ESPESSURAS, FORMATO: FORMATO,
       armazem: function () { return Armazem; },
       radar: function () { return cfg.radar; }
     }

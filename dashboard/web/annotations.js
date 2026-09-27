@@ -420,9 +420,7 @@ window.MapAnnotations = (function () {
     S.tracando = null;
     repintaRascunho();
     // clique seco com ferramenta de duas pontas não vira traço
-    var a = jogoParaPixel(t.pontos[0][0], t.pontos[0][1]);
-    var b = jogoParaPixel(t.pontos[t.pontos.length - 1][0], t.pontos[t.pontos.length - 1][1]);
-    if (t.ferramenta !== "caneta" && Math.abs(a[0] - b[0]) < 8 && Math.abs(a[1] - b[1]) < 8) return;
+    if (MapCore.tracoCurtoDemais(t, opts.radar)) return;
     empilha(t);
   }
 
@@ -452,29 +450,7 @@ window.MapAnnotations = (function () {
     }
   }
 
-  function encosta(t, alvo) {
-    var pts = t.pontos.map(function (g) { return jogoParaPixel(g[0], g[1]); });
-    var r = RAIO_BORRACHA + t.espessura;
-    if (t.ferramenta === "texto" || pts.length === 1) {
-      return Math.hypot(pts[0][0] - alvo[0], pts[0][1] - alvo[1]) <= r * 3;
-    }
-    if (t.ferramenta === "retangulo" || t.ferramenta === "elipse") {
-      var x0 = Math.min(pts[0][0], pts[1][0]), x1 = Math.max(pts[0][0], pts[1][0]);
-      var y0 = Math.min(pts[0][1], pts[1][1]), y1 = Math.max(pts[0][1], pts[1][1]);
-      return alvo[0] >= x0 - r && alvo[0] <= x1 + r && alvo[1] >= y0 - r && alvo[1] <= y1 + r;
-    }
-    for (var i = 0; i < pts.length - 1; i++) {
-      if (distanciaAoSegmento(alvo, pts[i], pts[i + 1]) <= r) return true;
-    }
-    return false;
-  }
-
-  function distanciaAoSegmento(p, a, b) {
-    var dx = b[0] - a[0], dy = b[1] - a[1];
-    var L = dx * dx + dy * dy;
-    var t = L === 0 ? 0 : Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / L));
-    return Math.hypot(p[0] - (a[0] + t * dx), p[1] - (a[1] + t * dy));
-  }
+  function encosta(t, alvo) { return MapCore.tracoEncosta(t, alvo, opts.radar, RAIO_BORRACHA); }
 
   /* ---------------------------------------------------------------------
      Desfazer / refazer
@@ -839,6 +815,17 @@ window.MapAnnotations = (function () {
     });
     dir.id = "anot-direcao";
     vista.appendChild(dir);
+    // "Criar tática": abre a prancheta do mesmo mapa com uma tática nova
+    // (`?nova`), não a última que ficou aberta.
+    if (opts.prancheta) {
+      var tatica = document.createElement("a");
+      tatica.className = "anot-b";
+      tatica.id = "anot-criar-tatica";
+      tatica.href = opts.prancheta + "?nova";
+      tatica.textContent = "Criar tática";
+      tatica.title = "Abrir a prancheta deste mapa com uma tática nova";
+      vista.appendChild(tatica);
+    }
     var fs = botao("Tela cheia", "Mapa em tela cheia (F)", alternaTelaCheia);
     fs.id = "anot-fs";
     vista.appendChild(fs);

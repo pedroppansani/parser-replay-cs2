@@ -35,6 +35,7 @@ DOCS_DIR = PROJECT_ROOT / "docs"
 # Nome bonito do mapa pro seletor e pro índice.
 MAP_LABEL = {
     "de_ancient": "Ancient",
+    "de_cache": "Cache",
     "de_anubis": "Anubis",
     "de_dust2": "Dust II",
     "de_inferno": "Inferno",

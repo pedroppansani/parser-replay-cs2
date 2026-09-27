@@ -1184,6 +1184,7 @@
      desenho nao tem nada a ver com o resto da pagina. -->
 <script>/*__ANNOTATIONS__*/</script>
 <script>window.__SITE__ = /*__SITE__*/null;</script>
+<script>window.__PRANCHETA__ = /*__PRANCHETA__*/null;</script>
 <script>
 (function () {
   "use strict";
@@ -1822,20 +1823,11 @@
 
     cur.smokes.forEach(function (z) {
       if (pos < z.f0 || pos > z.f1) return;
-      var g = ctx.createRadialGradient(mx(z.x), my(z.y), 0, mx(z.x), my(z.y), SMOKE_R);
-      g.addColorStop(0, "rgba(214,223,233,0.78)");
-      g.addColorStop(0.7, "rgba(190,203,217,0.5)");
-      g.addColorStop(1, "rgba(190,203,217,0)");
-      ctx.fillStyle = g;
-      ctx.beginPath(); ctx.arc(mx(z.x), my(z.y), SMOKE_R, 0, Math.PI * 2); ctx.fill();
+      MapCore.desenhaArea(ctx, "smoke", mx(z.x), my(z.y), SMOKE_R);
     });
     cur.fires.forEach(function (z) {
       if (pos < z.f0 || pos > z.f1) return;
-      var g = ctx.createRadialGradient(mx(z.x), my(z.y), 0, mx(z.x), my(z.y), FIRE_R);
-      g.addColorStop(0, "rgba(235,104,52,0.62)");
-      g.addColorStop(1, "rgba(235,104,52,0)");
-      ctx.fillStyle = g;
-      ctx.beginPath(); ctx.arc(mx(z.x), my(z.y), FIRE_R, 0, Math.PI * 2); ctx.fill();
+      MapCore.desenhaArea(ctx, "molotov", mx(z.x), my(z.y), FIRE_R);
     });
 
     // Granadas em voo. O rastro é curto e some atrás da granada (segmentos com
@@ -2208,6 +2200,8 @@
       // projecao sai dos limites da partida e a impressao diz isso.
       calibracao: RAD.calibracao || ["sintetica", RAD.scale_px_per_unit,
                    RAD.origin_x, RAD.origin_y].join(":"),
+      // página da prancheta do mesmo mapa, quando existe (vem do build)
+      prancheta: window.__PRANCHETA__,
       pause: function () { setPlaying(false); },
       redraw: function () { draw(); },
       contexto: function () {
