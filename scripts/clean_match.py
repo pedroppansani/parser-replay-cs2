@@ -16,6 +16,16 @@ da HLTV para isso). O interim pesa ~15MB por partida contra 200-500MB da demo.
 Por isso o PADRÃO é apagar só a demo (decisão do Pedro); --apagar-interim
 apaga os dois.
 
+TRAVA DA REGRA 36 (decisão 36 do CLAUDE.md)
+--------------------------------------------
+Nenhum arquivo é apagado sem uma CÓPIA FORA DO PROJETO com o mesmo sha256,
+conferido NA HORA da chamada, lendo os dois arquivos (uma lista de hashes
+gravada antes pode estar velha, e a cópia pode ter mudado ou sumido). As cópias
+são procuradas nas pastas irmãs "<projeto> - BACKUP*". A trava vive dentro de
+`limpa`, não na linha de comando: em 2026-09-19 as 52 demos foram apagadas
+chamando `limpa` direto pelo Python. Sem --confirmar, a limpeza só lista cada
+arquivo com tamanho, onde está a cópia e o hash, e espera a confirmação.
+
 Uso:
     py -3.12 -m scripts.clean_match match_43                    # só confere
     py -3.12 -m scripts.clean_match match_43 --confirmar        # apaga a demo
@@ -24,6 +34,7 @@ Uso:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import shutil
 from pathlib import Path
@@ -121,6 +132,47 @@ def _alvos(match_id: str, manter_interim: bool) -> list[Path]:
     return alvos
 
 
+def pastas_de_backup() -> list[Path]:
+    """Onde as cópias são procuradas: as pastas irmãs "<projeto> - BACKUP*"."""
+    return sorted(p for p in PROJECT_ROOT.parent.glob(PROJECT_ROOT.name + " - BACKUP*") if p.is_dir())
+
+
+def sha256(p: Path) -> str:
+    h = hashlib.sha256()
+    with open(p, "rb") as f:
+        for bloco in iter(lambda: f.read(1 << 20), b""):
+            h.update(bloco)
+    return h.hexdigest()
+
+
+def _arquivos(alvos: list[Path]) -> list[Path]:
+    """Os arquivos um a um (uma pasta do interim vira os arquivos dela)."""
+    out = []
+    for p in alvos:
+        out += sorted(f for f in p.rglob("*") if f.is_file()) if p.is_dir() else [p]
+    return out
+
+
+def copia_conferida(arquivo: Path, backups: list[Path]) -> tuple[dict | None, list[str]]:
+    """A cópia fora do projeto com o mesmo sha256, conferida agora lendo os dois.
+
+    Devolve ({arquivo, bytes, sha256, copia}, []) ou (None, [o que faltou]).
+    Candidatas: arquivos de mesmo nome e mesmo tamanho dentro das pastas de
+    backup; o que decide é o hash, não o nome.
+    """
+    if not backups:
+        return None, [f"{arquivo.name}: nenhuma pasta de backup encontrada ao lado do projeto"]
+    tamanho = arquivo.stat().st_size
+    candidatas = [q for b in backups for q in b.rglob(arquivo.name) if q.is_file() and q.stat().st_size == tamanho]
+    if not candidatas:
+        return None, [f"{arquivo.name}: sem cópia de mesmo nome e tamanho em {', '.join(str(b) for b in backups)}"]
+    h = sha256(arquivo)
+    for q in candidatas:
+        if sha256(q) == h:
+            return {"arquivo": str(arquivo), "bytes": tamanho, "sha256": h, "copia": str(q)}, []
+    return None, [f"{arquivo.name}: {len(candidatas)} cópia(s) com hash DIVERGENTE ({', '.join(str(q) for q in candidatas)})"]
+
+
 def _tamanho(p: Path) -> int:
     if p.is_file():
         return p.stat().st_size
@@ -128,21 +180,38 @@ def _tamanho(p: Path) -> int:
 
 
 def limpa(match_id: str, confirmar: bool = False, manter_interim: bool = True) -> dict:
-    """Confere e, com `confirmar`, apaga. Devolve o que foi (ou seria) feito."""
+    """Confere e, com `confirmar`, apaga. Devolve o que foi (ou seria) feito.
+
+    Recusa (ok False, nada apagado) se o processado não está íntegro OU se
+    algum arquivo a apagar não tem cópia fora do projeto com o sha256
+    conferido agora. `lista` traz, por arquivo: tamanho, onde está a cópia e o
+    hash -- é o que a pessoa confirma.
+    """
     problemas = verifica(match_id)
     if problemas:
-        return {"ok": False, "problemas": problemas, "removidos": [], "bytes": 0}
+        return {"ok": False, "problemas": problemas, "removidos": [], "bytes": 0, "lista": []}
     alvos = _alvos(match_id, manter_interim)
+    backups = pastas_de_backup()
+    lista, sem_copia = [], []
+    for arq in _arquivos(alvos):
+        conferida, faltas = copia_conferida(arq, backups)
+        if conferida is None:
+            sem_copia += faltas
+        else:
+            lista.append(conferida)
+    if sem_copia:
+        return {"ok": False, "problemas": ["regra 36: sem cópia conferida por sha256 -- nada foi apagado"] + sem_copia,
+                "removidos": [], "bytes": 0, "lista": lista}
     total = sum(_tamanho(p) for p in alvos)
     if not confirmar:
-        return {"ok": True, "simulado": True, "removidos": [str(p) for p in alvos], "bytes": total}
+        return {"ok": True, "simulado": True, "removidos": [str(p) for p in alvos], "bytes": total, "lista": lista}
     for p in alvos:
         if p.is_dir():
             shutil.rmtree(p)
         else:
             p.unlink()
     mf.registra_limpeza(match_id, alvos, total)
-    return {"ok": True, "simulado": False, "removidos": [str(p) for p in alvos], "bytes": total}
+    return {"ok": True, "simulado": False, "removidos": [str(p) for p in alvos], "bytes": total, "lista": lista}
 
 
 def main() -> None:
@@ -155,14 +224,14 @@ def main() -> None:
     for mid in args.match_ids:
         r = limpa(mid, args.confirmar, manter_interim=not args.apagar_interim)
         if not r["ok"]:
-            print(f"[{mid}] NÃO LIMPA -- processado não está íntegro:")
+            print(f"[{mid}] NÃO LIMPA:")
             for p in r["problemas"]:
                 print(f"    - {p}")
             continue
         verbo = "apagaria" if r["simulado"] else "apagou"
-        print(f"[{mid}] íntegro; {verbo} {r['bytes'] / 1e6:.0f}MB:")
-        for p in r["removidos"]:
-            print(f"    - {mf.relativo(p)}")
+        print(f"[{mid}] íntegro e com cópia conferida; {verbo} {r['bytes'] / 1e6:.0f}MB:")
+        for x in r["lista"]:
+            print(f"    - {mf.relativo(x['arquivo'])}  {x['bytes'] / 1e6:.1f}MB  sha256 {x['sha256'][:16]}  cópia: {x['copia']}")
         if r["simulado"]:
             print("    (simulação: rode de novo com --confirmar para apagar)")
 

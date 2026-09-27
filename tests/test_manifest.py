@@ -80,6 +80,13 @@ def partida_falsa(tmp_path, monkeypatch):
     monkeypatch.setattr(mf, "PROJECT_ROOT", tmp_path)
     monkeypatch.setattr(mf, "MANIFEST_FILE", tmp_path / "manifest.json")
     monkeypatch.setattr(cm, "INTERIM_DIR", tmp_path / "interim")
+    # regra 36: a partida falsa tem cópia fora do projeto, com o mesmo conteúdo
+    backup = tmp_path / "BACKUP"
+    (backup / "demos").mkdir(parents=True)
+    (backup / "demos" / demo.name).write_bytes(demo.read_bytes())
+    (backup / "interim" / "match_99").mkdir(parents=True)
+    (backup / "interim" / "match_99" / "ticks.parquet").write_bytes((interim / "ticks.parquet").read_bytes())
+    monkeypatch.setattr(cm, "pastas_de_backup", lambda: [backup])
     mf.salva({"formato": 1, "partidas": {"match_99": {
         "match_id": "match_99", "limpeza": None,
         "demos": [{"arquivo": demo.name, "caminho": "demos/" + demo.name, "sha256": "0" * 64}],
@@ -170,3 +177,59 @@ def test_demo_que_mudou_de_pasta_e_reencontrada_e_o_caminho_antigo_fica_registra
     assert linha["caminho"] == "demos/pasta nova/partida.dem"
     assert linha["caminho_anterior"] == "demos/pasta velha/partida.dem"
     assert linha["sha256"] == sha
+
+
+# --- Trava da regra 36 (decisão 36 do CLAUDE.md) ------------------------------
+
+def test_sem_backup_a_limpeza_recusa_e_diz_o_que_falta(partida_falsa, monkeypatch):
+    demo, interim = partida_falsa
+    monkeypatch.setattr(cm, "verifica", lambda mid: [])
+    monkeypatch.setattr(cm, "pastas_de_backup", lambda: [])
+    r = cm.limpa("match_99", confirmar=False)
+    assert not r["ok"] and any("nenhuma pasta de backup" in x for x in r["problemas"])
+    assert demo.exists() and interim.exists()
+
+
+def test_com_backup_conferido_lista_e_espera_confirmacao(partida_falsa, monkeypatch):
+    demo, interim = partida_falsa
+    monkeypatch.setattr(cm, "verifica", lambda mid: [])
+    r = cm.limpa("match_99", confirmar=False, manter_interim=False)
+    assert r["ok"] and r["simulado"] is True
+    assert demo.exists() and interim.exists()                 # sem confirmação, nada sai
+    por_nome = {Path(x["arquivo"]).name: x for x in r["lista"]}
+    assert set(por_nome) == {demo.name, "ticks.parquet"}
+    assert por_nome[demo.name]["bytes"] == 1000 and len(por_nome[demo.name]["sha256"]) == 64
+    assert "BACKUP" in por_nome[demo.name]["copia"]
+
+
+def test_copia_com_hash_divergente_recusa(partida_falsa, monkeypatch):
+    demo, interim = partida_falsa
+    monkeypatch.setattr(cm, "verifica", lambda mid: [])
+    copia = next(p for p in cm.pastas_de_backup()[0].rglob(demo.name))
+    copia.write_bytes(b"z" * 1000)                           # mesmo tamanho, conteúdo diferente
+    r = cm.limpa("match_99", confirmar=True)
+    assert not r["ok"] and any("DIVERGENTE" in x for x in r["problemas"])
+    assert demo.exists()
+
+
+def test_o_caminho_de_19_09_chamado_pelo_python_sem_backup_e_recusado(partida_falsa, monkeypatch):
+    """Em 2026-09-19 as 52 demos foram apagadas chamando `limpa` direto, não pela
+    linha de comando. A trava tem de estar dentro de `limpa`."""
+    demo, interim = partida_falsa
+    monkeypatch.setattr(cm, "verifica", lambda mid: [])
+    monkeypatch.setattr(cm, "pastas_de_backup", lambda: [])
+    r = cm.limpa("match_99", confirmar=True, manter_interim=False)
+    assert not r["ok"] and r["removidos"] == []
+    assert demo.exists() and interim.exists()
+    assert mf.carrega()["partidas"]["match_99"]["limpeza"] is None
+
+
+def test_o_hash_e_conferido_na_hora_e_nao_por_lista_gravada(partida_falsa, monkeypatch):
+    """Uma cópia apagada depois de uma conferência anterior não vale mais."""
+    demo, interim = partida_falsa
+    monkeypatch.setattr(cm, "verifica", lambda mid: [])
+    assert cm.limpa("match_99", confirmar=False)["ok"]
+    for f in cm.pastas_de_backup()[0].rglob(demo.name):
+        f.unlink()
+    r = cm.limpa("match_99", confirmar=True)
+    assert not r["ok"] and demo.exists()

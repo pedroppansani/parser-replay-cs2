@@ -1575,6 +1575,13 @@ testada e estava errada.
     2026-09-27" (interim + o .dem da match_23, `SHA256SUMS.txt` conferido nos
     dois sentidos). Plano de recuperação das demos, sem nada executado:
     `RECUPERACAO_DEMOS.md`.
+    **A trava está no código** (`scripts/clean_match.limpa`, 2026-09-27): cada
+    arquivo a apagar precisa de uma cópia nas pastas irmãs "<projeto> -
+    BACKUP*" com o mesmo sha256, lido NA HORA dos dois lados (lista gravada não
+    vale); sem isso `limpa` recusa, diga-se o que falta e onde procurou, mesmo
+    chamada direto pelo Python com `confirmar=True` (o caminho de 19/09). Sem
+    `confirmar`, só lista arquivo, tamanho, cópia e hash. Testes em
+    `tests/test_manifest.py`.
 
 ## Pontos de calibração — pertencem ao Pedro, não ao código
 
