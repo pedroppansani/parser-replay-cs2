@@ -2202,6 +2202,21 @@
                    RAD.origin_x, RAD.origin_y].join(":"),
       // página da prancheta do mesmo mapa, quando existe (vem do build)
       prancheta: window.__PRANCHETA__,
+      // Retrato do quadro ATUAL para a prancheta: cada jogador vivo com a
+      // posição, a direção e o andar da amostra do quadro (sem interpolar --
+      // é o dado gravado, não o desenho entre dois quadros).
+      instante: function () {
+        var i0 = Math.floor(pos);
+        return {
+          partida: (M && M.match_id) || "", round: cur.round,
+          relogio: document.getElementById("clock").textContent,
+          tick: cur.t0 !== undefined && R.sample_every ? cur.t0 + i0 * R.sample_every : null,
+          jogadores: cur.players.filter(function (p) { return p.alive[i0]; }).map(function (p) {
+            return { nome: p.name, lado: p.side, x: p.x[i0], y: p.y[i0],
+                     yaw: p.d ? p.d[i0] : null, nivel: p.lv ? p.lv[i0] : 0 };
+          })
+        };
+      },
       pause: function () { setPlaying(false); },
       redraw: function () { draw(); },
       contexto: function () {

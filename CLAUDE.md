@@ -1322,6 +1322,14 @@ testada e estava errada.
       contador próprio: o log já tem a ordem total, e um segundo contador
       divergiria na primeira mescla. É ela que a reprodução usa para riscar os
       desenhos na ordem em que foram feitos.
+    - **"Tática deste instante"** (2026-09-26): o botão na barra do mapa do
+      replay abre a prancheta do mesmo mapa com uma tática nova, uma peça por
+      jogador VIVO no quadro atual -- posição, direção (`d`) e andar (`lv`) da
+      amostra do quadro, sem interpolar, e o NOME do jogador como rótulo. O
+      retrato vai na URL (`#instante=`), que funciona igual em arquivo local e
+      no site; a prancheta confere cada jogador antes de virar peça e AVISA
+      quantos ficaram de fora. Granadas ativas no instante não entram (a
+      decidir).
 
 33. **Um núcleo só para o mapa: `dashboard/web/map_core.js` (`window.MapCore`)**
     (etapa 0 da prancheta, 2026-09-26). Replay, anotação e prancheta usam UMA

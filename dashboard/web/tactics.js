@@ -848,7 +848,11 @@ var Prancheta = (function () {
     S.ultimoDesenho.push({ tipo: "peca", id: id, x: c[0], y: c[1], yaw: yaw, alfa: alfa });
   }
 
-  function rotuloDaPeca(p) { return (p.lado === "ct" ? "CT " : "TR ") + p.rotulo; }
+  /** Peça do banco tem rótulo 1 a 5 e aparece como "CT 1"; peça que veio de um
+      instante do replay tem o NOME do jogador, que já diz quem é. */
+  function rotuloDaPeca(p) {
+    return /^[1-9]$/.test(p.rotulo) ? (p.lado === "ct" ? "CT " : "TR ") + p.rotulo : p.rotulo;
+  }
 
   /** Onde fica a alça de girar: na ponta da gota. */
   function alca(c, yaw) {
@@ -1570,6 +1574,36 @@ var Prancheta = (function () {
     $("pr-palco").insertBefore(player, $("pr-tela"));
   }
 
+  /** A tática nova a partir de um instante do replay (#instante=...). O
+      retrato vem de fora da página: cada jogador é conferido antes de virar
+      peça, e o que não fecha fica de fora com aviso -- nunca pela metade
+      calado. */
+  function criaDoInstante(retrato) {
+    var jogadores = (retrato && Array.isArray(retrato.jogadores)) ? retrato.jogadores : [];
+    var validos = jogadores.filter(function (j) {
+      return j && LADOS.indexOf(j.lado) >= 0 && ehNumero(j.x) && ehNumero(j.y) && typeof j.nome === "string" &&
+        (j.yaw === null || j.yaw === undefined || (ehNumero(j.yaw) && j.yaw >= 0 && j.yaw < 360)) &&
+        (ehInteiro(j.nivel) && j.nivel >= 0 && j.nivel < ANDARES.length);
+    });
+    novaTatica();
+    var passo = passoAtual();
+    validos.forEach(function (j) {
+      var dados = { peca: novoId(), lado: j.lado, rotulo: j.nome.slice(0, 16), passo: passo,
+                    x: j.x, y: j.y, nivel: j.nivel };
+      if (j.yaw !== null && j.yaw !== undefined) dados.yaw = j.yaw;
+      emite("cria_peca", dados, false);
+    });
+    if (retrato && retrato.round !== undefined) {
+      emite("renomeia", { titulo: (retrato.partida ? retrato.partida + " · " : "") + "round " + retrato.round +
+        (retrato.relogio ? " · " + retrato.relogio : "") }, false);
+    }
+    gravaAgora();   // grava ANTES do aviso: gravar com sucesso limpa o aviso
+    if (validos.length !== jogadores.length) {
+      S.aviso = (jogadores.length - validos.length) + " jogador(es) do instante não puderam ser lidos e ficaram de fora.";
+    }
+    atualizaTudo();
+  }
+
   function escolheFerramenta(id) {
     confirmaGiro();
     S.ferramenta = id; S.origemPendente = null;
@@ -1723,7 +1757,16 @@ var Prancheta = (function () {
     var nova = /[?&]nova\b/.test(location.search);
     if (nova && window.history && history.replaceState) history.replaceState(null, "", location.pathname);
     var aberta = Armazem.aberta(cfg.mapa);
-    if (nova || !(aberta && abre(aberta))) novaTatica();
+    var instante = /^#instante=/.test(location.hash) ? location.hash.slice("#instante=".length) : null;
+    if (instante !== null && window.history && history.replaceState) history.replaceState(null, "", location.pathname);
+    var retrato = null;
+    if (instante !== null) {
+      try { retrato = JSON.parse(decodeURIComponent(instante)); } catch (e) { retrato = null; }
+    }
+    if (instante !== null) {
+      if (retrato) criaDoInstante(retrato);
+      else { novaTatica(); S.aviso = "O instante do replay não pôde ser lido."; atualizaAviso(); }
+    } else if (nova || !(aberta && abre(aberta))) novaTatica();
     reprojeta();
   }
 

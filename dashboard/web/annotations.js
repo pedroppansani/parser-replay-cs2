@@ -825,6 +825,16 @@ window.MapAnnotations = (function () {
       tatica.textContent = "Criar tática";
       tatica.title = "Abrir a prancheta deste mapa com uma tática nova";
       vista.appendChild(tatica);
+      // "Tática deste instante": a tática nova já nasce com os jogadores vivos
+      // do quadro atual. O retrato vai na própria URL (#instante=...), que
+      // funciona igual no arquivo local e no site.
+      if (opts.instante) {
+        vista.appendChild(botao("Tática deste instante",
+          "Abrir a prancheta com os jogadores vivos deste instante do replay", function () {
+            if (opts.pause) opts.pause();
+            window.location.href = opts.prancheta + "#instante=" + encodeURIComponent(JSON.stringify(opts.instante()));
+          })).id = "anot-tatica-instante";
+      }
     }
     var fs = botao("Tela cheia", "Mapa em tela cheia (F)", alternaTelaCheia);
     fs.id = "anot-fs";

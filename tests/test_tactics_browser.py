@@ -674,3 +674,60 @@ def test_salvar_recarregar_abrir_pela_lista_e_reproduzir_da_o_mesmo(contexto, pa
         interno(pg, f"(I.reproduzAte({t}), 0)")
         depois.append(interno(pg, "S.reproducao.cena"))
     assert depois == antes
+
+
+# --- Tática a partir de um instante do replay -------------------------------------
+
+def test_tatica_deste_instante_leva_os_jogadores_vivos_do_quadro(navegador, tmp_path_factory):
+    from scripts.build_tactics_page import build_html as prancheta
+    from scripts.build_web_page import build_html as partida
+    pasta = tmp_path_factory.mktemp("instante")
+    (pasta / "prancheta_de_mirage.html").write_text(prancheta("de_mirage"), encoding="utf-8")
+    (pasta / "match_02.html").write_text(partida("match_02"), encoding="utf-8")
+    rep = json.loads((PROJECT_ROOT / "data" / "processed" / "match_02" / "replay.json").read_text(encoding="utf-8"))
+    rodada = next(r for r in rep["rounds"] if r["round"] == 6)
+    quadro = rodada["frames"] // 2
+    esperado = sorted((p["name"], p["side"], p["x"][quadro], p["y"][quadro], p["d"][quadro])
+                      for p in rodada["players"] if p["alive"][quadro])
+    ctx = navegador.new_context(viewport={"width": 1400, "height": 1000})
+    try:
+        pg = ctx.new_page()
+        pg.goto((pasta / "match_02.html").as_uri())
+        pg.locator('[data-tab="replay"]').first.click()
+        pg.wait_for_function("() => window.MapAnnotations && MapAnnotations._interno.S.reprojecoes > 0")
+        pg.locator("#strip button", has_text="6").first.click()
+        pg.evaluate(f"() => {{ const s = document.getElementById('scrub'); s.value = {quadro}; s.dispatchEvent(new Event('input')); }}")
+        pg.click("#anot-tatica-instante")
+        pg.wait_for_function("() => window.Prancheta && Prancheta._interno.S.estado !== null")
+        assert pg.url.endswith("prancheta_de_mirage.html")            # o #instante foi consumido
+        pecas = interno(pg, "I.quadroDoPasso(S.estado, 0, I.centro()).pecas")
+        obtido = sorted((p["rotulo"], p["lado"], p["x"], p["y"], p["yaw"]) for p in pecas.values())
+        assert obtido == esperado and len(obtido) >= 1
+        assert "round 6" in interno(pg, "S.estado.titulo")
+        assert all(not p["direcao_padrao"] for p in pecas.values())
+        # nasce gravada: é uma tática com conteúdo
+        assert interno(pg, f"I.armazem().carrega(S.doc.id) !== null")
+    finally:
+        ctx.close()
+
+
+def test_instante_com_jogador_invalido_fica_de_fora_com_aviso(contexto, pagina):
+    retrato = {"partida": "x", "round": 3, "relogio": "1:20", "jogadores": [
+        {"nome": "ok", "lado": "t", "x": -1000.0, "y": 200.0, "yaw": 90, "nivel": 0},
+        {"nome": "ruim", "lado": "espectador", "x": 0, "y": 0, "yaw": 0, "nivel": 0},
+        {"nome": "andar", "lado": "ct", "x": 0, "y": 0, "yaw": 0, "nivel": 1},   # a Mirage tem um andar
+    ]}
+    pg = contexto.new_page()
+    pg.goto(pagina.as_uri() + "#instante=" + __import__("urllib.parse").parse.quote(json.dumps(retrato)))
+    pg.wait_for_function("() => Prancheta._interno.S.estado !== null")
+    rotulos = [p["rotulo"] for p in interno(pg, "S.estado.pecas").values()]
+    assert rotulos == ["ok"]
+    assert "2 jogador(es)" in pg.locator("#pr-aviso").text_content()
+
+
+def test_instante_ilegivel_abre_tatica_nova_e_avisa(contexto, pagina):
+    pg = contexto.new_page()
+    pg.goto(pagina.as_uri() + "#instante=%7Bquebrado")
+    pg.wait_for_function("() => Prancheta._interno.S.estado !== null")
+    assert interno(pg, "Object.keys(S.estado.pecas).length") == 0
+    assert "não pôde ser lido" in pg.locator("#pr-aviso").text_content()
