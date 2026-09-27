@@ -87,7 +87,18 @@ def _cenario(
         y = np.radians(a["yaw"])
         u = np.array([np.cos(p) * np.cos(y), np.cos(p) * np.sin(y), sinal * np.sin(p)])
         origem = pes0 + np.array([0.0, 0.0, altura + OFFSET_VERTICAL_SOLTURA]) + OFFSET_MAO * u
-        v_proj = u * a["velocidade"] + FATOR_HERANCA * v_jog
+        # o projétil sai na direção em que o JOGO lança (pitch remapeado por
+        # trechos, medido no gabarito), não na direção crua da mira: sem isso a
+        # guarda do voo reconhece o sintético como fisicamente impossível. A
+        # função é ancorada no dado real em test_rotina_arremesso (a âncora da
+        # direção), para o sintético e a produção não errarem juntos.
+        # O z é multiplicado por -sinal porque direcao_do_lancamento segue a
+        # convenção do CS2 (pitch positivo = olhar para BAIXO, decisão 9: z =
+        # -sin(pitch)); `sinal` é -1 nessa convenção e +1 no controle de
+        # convenção invertida, que tem de gerar o projétil espelhado no eixo z.
+        from metrics.grenade_throws import direcao_do_lancamento
+        u_lanc = direcao_do_lancamento(a["pitch"], a["yaw"]) * np.array([1.0, 1.0, -sinal])
+        v_proj = u_lanc * a["velocidade"] + FATOR_HERANCA * v_jog
 
         # o primeiro sample do projétil cai um tick ANTES da soltura, que é o
         # deslocamento sistemático que a ancoragem mede no dado real

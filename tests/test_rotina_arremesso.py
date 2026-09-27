@@ -178,3 +178,26 @@ def test_as_constantes_do_gabarito_sao_o_recalculo_e_nao_numero_digitado():
     novo = calcula([a for a in arremessos if a["id"].split(":")[0] in gravado["partidas"]])
     for chave in ("tolerancia_botao", "faixa_postura_neutra", "limiar_guarda_voo", "deslocamento_primeiro_segmento_z"):
         assert gravado[chave] == novo[chave], chave
+
+
+def test_ancora_a_direcao_do_lancamento_no_dado_real(casos):
+    """ÂNCORA: o gerador sintético de test_grenade_throws importa
+    direcao_do_lancamento da produção, então um erro nela passaria nos dois
+    lados. Aqui ela é conferida contra m_vInitialVelocity nos arremessos PARADOS
+    (herança zero, sem ruído da velocidade do jogador): o ângulo entre a
+    velocidade inicial gravada e a direção prevista.
+    Medido (13 partidas, n = 1.253): mediana 0,00015°, p95 0,14°, p99 0,56°;
+    76% abaixo de 0,01° arremesso a arremesso -- a cauda é provavelmente a mira
+    girando dentro do tick, que o gabarito não guarda. Um remapeamento errado
+    (80/90 no lugar de 100/90, sinal trocado) leva a mediana a graus."""
+    ang = []
+    for a, r, ev in casos:
+        if ev["regra"] != "chão" or np.hypot(*ev["vh"]) > 1e-6 or abs(ev["vz_derivada"]) > 1e-6:
+            continue
+        u = direcao_do_lancamento(a["entrada"]["pitch"], a["entrada"]["yaw"])
+        w = np.array(a["demo"]["v0"])
+        ang.append(np.degrees(np.arccos(np.clip(w @ u / np.linalg.norm(w), -1, 1))))
+    ang = np.array(ang)
+    assert ang.size > 1000
+    assert np.median(ang) < 0.01, np.median(ang)
+    assert np.percentile(ang, 95) < 0.2, np.percentile(ang, 95)

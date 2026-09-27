@@ -695,15 +695,15 @@ Mapa mais super-representado: overpass (1.5x a fatia do corpus).
 
 ## 3. Rótulos de força do arremesso
 
-2268 arremessos em 6 partidas. Desde a rota A (decisão 21a) o rótulo é o BOTÃO: a velocidade calculada pela rotina do jogo a até 20 u/s do centro de um dos três botões medidos no gabarito (202.5, 438.7, 675 u/s). As velocidades abaixo são ESTIMATIVAS do modelo; o que é afirmado é o botão.
+2268 arremessos em 6 partidas. Desde a rota A (decisão 21a) o rótulo é o BOTÃO: a velocidade calculada pela rotina do jogo a até 19 u/s do centro de um dos três botões medidos no gabarito (202.5, 438.7, 675 u/s). As velocidades abaixo são ESTIMATIVAS do modelo; o que é afirmado é o botão.
 
 | Rótulo | Velocidade estimada média | Arremessos | Exemplo |
 |---|---|---|---|
-| curto | 202 u/s | 91 | ZywOo, he, match_43 round 11 (0:09), em pé, parado |
-| médio | 436 u/s | 98 | molodoy, smoke, match_43 round 11 (0:00), em pé, parado |
-| longo | 673 u/s | 1974 | HLEB, flash, match_01 round 14 (0:13), em pé, parado |
+| curto | 202 u/s | 88 | ZywOo, he, match_43 round 11 (0:09), em pé, parado |
+| médio | 436 u/s | 97 | molodoy, smoke, match_43 round 11 (0:00), em pé, parado |
+| longo | 673 u/s | 1931 | jL, flash, match_38 round 7 (0:07), em pé, parado |
 
-Sem rótulo (neutros): 105, por motivo: fora da tolerância 37; ambíguo: subindo sem parábola 24; janela 0-5 (sem gabarito) 16; ambíguo: parábola sem pulo limpo 15; janela 14-18 (sem gabarito) 11; ambíguo: queda sem decolagem na janela 2
+Sem rótulo (neutros): 152, por motivo: vetor incoerente com o voo 46; fora da tolerância 38; ambíguo: subindo sem parábola 24; janela 0-5 (sem gabarito) 16; ambíguo: parábola sem pulo limpo 15; janela 14-18 (sem gabarito) 11; ambíguo: queda sem decolagem na janela 2
 
 ## 4. Teste do comando de console
 

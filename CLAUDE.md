@@ -796,6 +796,19 @@ testada e estava errada.
     baixo (+1,12u), sem condição de subida -- só os agachamentos parciais
     caem nela (n = 6). No corpus, 98 em pé sem subida e 254 com subida ficam a
     menos de 3u do corte.
+    **Faixa de postura final (2026-09-27): por QUANTIL, recalculada a cada
+    gabarito novo.** Escolhido o menor quantil com acerto >= 99,5% fora da
+    faixa em TODAS as 13 partidas: o 0, faixa [-4,01; +2,10], cobertura 97,9%.
+    Três ressalvas registradas: (1) a curva de acerto x quantil NÃO é
+    monótona (0: 100%; 0,25: 99,33%; 0,5: 98,70%; ...; 5: 99,67%), sinal de que
+    a parametrização por quantil é ruidosa com esta amostra; (2) na prática a
+    faixa é o ENVELOPE dos erros observados nas 13 partidas; (3) ela é
+    recalculada pela mesma função a cada gabarito novo. A hipótese "subida
+    recente" foi testada e NÃO é a causa dos casos de fronteira. Os 6 erros que
+    o corte sozinho faria no chão são todos em pé que saem baixos (a cauda da
+    posição de saída) e caem na faixa. Anubis: o corte separa bem (em pé mais
+    baixo +0,07, agachado mais alto -4,26); a concentração na faixa vem da
+    mesma cauda.
 
 21a. **A força do arremesso é inferida da velocidade RELATIVA ao jogador.** Sem
     descontar a velocidade de quem arremessou, todo run-throw curto vira
@@ -1038,6 +1051,40 @@ testada e estava errada.
       mira, sem o remapeamento de pitch do jogo, e a guarda o vê 9° fora.
       Mudança proposta (3 linhas no `_cenario`, testada e revertida): o
       projétil sintético sai na `direcao_do_lancamento`; com ela, 39/39.
+    **ROTA A NO MAIN (2026-09-27).** Estado final e os números que se citam:
+    - GENERALIZAÇÃO (o número honesto): validação FORA DA AMOSTRA, constantes
+      da match_23 congeladas, SEM a guarda, gabarito já corrigido -- botão 100%
+      nas 13 partidas; "no ar" 98,9-100% (match_11 98,9%); postura no chão
+      99,4-100%; invariante do vizinho quebrada em 2 (match_14 233,5 e
+      match_16 273,5, rótulo certo). DENTRO DA AMOSTRA (constantes das 13, com
+      a guarda): botão 100%, "no ar" 99,7-100% nos determinados, postura fora
+      da faixa 100%, invariante máx 14,1 < 217,2.
+    - **A GUARDA DO VOO AINDA NÃO FOI VALIDADA FORA DA AMOSTRA**: o limiar
+      (15,98) saiu das mesmas 13 partidas em que foi medido. A próxima leva de
+      demos com gabarito é o teste dela. Até lá, o número de generalização que
+      se cita é a coluna "fora" acima (constantes congeladas, sem a guarda).
+    - Custo da guarda: < 1 ponto de cobertura em 12 das 13 partidas; 1,62 na
+      match_15, onde os 5 que ela tira têm erro real de 15 a 100 u/s
+      (aprovado pelo Pedro: eram afirmações que o modelo não sustentava).
+    - "No ar" indeterminado acima de 2%, aceito (indeterminado não afirma):
+      match_10 (Dust2) 3,1% -- 7 parábolas sem pulo limpo, 2 transições no
+      chão, 1 subindo sem parábola; match_15 (Mirage) 2,9% -- 4 subindo sem
+      parábola, 3 parábolas sem pulo limpo, 2 transições; match_14 (Ancient)
+      2,1% -- 7 subindo sem parábola, 2 parábolas sem pulo limpo, 1 queda sem
+      decolagem.
+    - Âncora da direção (`test_ancora_a_direcao_do_lancamento_no_dado_real`):
+      o gerador sintético de test_grenade_throws usa direcao_do_lancamento, e
+      ela é conferida contra m_vInitialVelocity nos parados (n = 1.253):
+      mediana 0,00015°, p95 0,14°; arremesso a arremesso só 76% ficam abaixo
+      de 0,01° (cauda provavelmente da mira girando no tick) -- o teste exige
+      mediana < 0,01° e p95 < 0,2°.
+    - Corpus: botão em 22.774 de 23.895 (95,3%). Neutros: guarda do voo 349,
+      tolerância 200, parábola sem pulo limpo 154, janela 14-18 145, janela 0-5
+      141, subindo sem parábola 94, queda sem decolagem 22, ticks faltando 16.
+    - Biblioteca contra o main: piora 0; 11.063 lineups ganharam botão; 466
+      ficaram neutros por regra; 16.572 comandos mudaram (pés em t); 2
+      correções de rótulo antigo (match_46:4:985 e match_31:8:545, acima).
+      `py -3.12 -m scripts.piora_rota_a` refaz a conta.
 
 21b. **A reprodução por console depende de validação prática do Pedro, não do
     código.** Origem do `setpos`, sinal do `setang` e pré-requisitos de servidor
