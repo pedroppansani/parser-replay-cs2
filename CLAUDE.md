@@ -1322,14 +1322,50 @@ testada e estava errada.
       contador próprio: o log já tem a ordem total, e um segundo contador
       divergiria na primeira mescla. É ela que a reprodução usa para riscar os
       desenhos na ordem em que foram feitos.
-    - **"Tática deste instante"** (2026-09-26): o botão na barra do mapa do
-      replay abre a prancheta do mesmo mapa com uma tática nova, uma peça por
-      jogador VIVO no quadro atual -- posição, direção (`d`) e andar (`lv`) da
-      amostra do quadro, sem interpolar, e o NOME do jogador como rótulo. O
-      retrato vai na URL (`#instante=`), que funciona igual em arquivo local e
-      no site; a prancheta confere cada jogador antes de virar peça e AVISA
-      quantos ficaram de fora. Granadas ativas no instante não entram (a
-      decidir).
+    - **"Tática deste instante"** (2026-09-26/27, decisões do Pedro): o botão na
+      barra do mapa do replay abre a prancheta do mesmo mapa com uma tática
+      nova montada do QUADRO i0 = floor(pos) -- o mesmo que o `draw()` usa para
+      `alive`; a dica diz que é a amostra gravada imediatamente anterior (4 por
+      segundo), e o relógio do título é o desse quadro (`relogioDe`), não o da
+      tela.
+      - **Só vivos viram peça**, com posição, direção (`d`) e andar (`lv`) da
+        amostra, sem interpolar, e o NOME do jogador como rótulo. **Mortos não
+        viram peça** (morto no mapa é ruído editável): vão no PLACAR DE VIVOS do
+        título ("match_05 · round 9 · 1:12 · 4v3", sempre TR antes de CT) e na
+        descrição da tática, por lado e na ordem das mortes (a ordem é o
+        primeiro quadro em que o jogador aparece morto no `alive`).
+      - **O retrato viaja na URL** (`#instante=`), que funciona igual em
+        arquivo local e no site, e é CONSUMIDO com `replaceState`: recarregar
+        ou voltar no navegador não cria segunda tática (teste). Cada jogador e
+        cada granada são conferidos antes de entrar; o que não fecha fica de
+        fora com aviso.
+      - **Metadado `origem`** no documento ({partida, round, quadro, relogio,
+        elenco, mortos}): da criação, imutável como `mapa` e `calibracao`, não é
+        operação; validado em `problemas_da_origem` e no espelho JS. Com ele o
+        **banco mostra os jogadores reais do round** (vivos e mortos) em vez de
+        "TR 1..5": arrastar um nome move a peça dele se ela existe, e cria a
+        peça com o nome se não existe (o morto, para planejar "e se"). O banco
+        consulta o metadado, nunca infere dos rótulos.
+      - **Granadas ativas no instante** entram no passo 1, ligadas ao arremesso
+        REAL que as gerou -- nunca por proximidade. O `export_replay` grava em
+        cada smoke, fogo e granada em voo o campo `l` = {id da biblioteca,
+        posição de soltura}: smoke e voo pelo `entity_id` do PROJÉTIL (a smoke
+        É o projétil: mesma entidade em 100% das 7.423 do corpus); fogo pelo
+        TICK -- o incêndio é outra entidade, mas o projétil do mesmo
+        arremessador termina exatamente 1 tick antes do fogo em 98,2% dos 5.678
+        incêndios (`TICKS_DO_PROJETIL_AO_FOGO`). Com o id na biblioteca, a
+        granada entra com o arremesso real e o comando; sem ela, com origem na
+        soltura; sem ligação, com `origem_desconhecida`. Smoke fica até o fim,
+        molotov 1 passo; granada no ar usa o fim da trajetória como destino;
+        flash e HE já estouradas não entram. No corpus: 36.891 de 37.002
+        ligadas, 111 sem ligação (103 fogos, 8 em voo).
+    - **`origem_desconhecida`** (opcional em `cria_granada`): a granada de um
+      instante cujo efeito não se liga a arremesso nenhum. `origem == destino`
+      sozinho seria um valor falso (linha de comprimento zero, e passaria por
+      arremesso de verdade na validação); com a flag, `problemas()` EXIGE
+      origem igual ao destino e RECUSA a flag junto de arremesso real, o
+      desenho mostra só o efeito, e o campo só existe no estado quando é
+      verdade (sai no `move_granada`, quando a pessoa dá uma origem).
 
 33. **Um núcleo só para o mapa: `dashboard/web/map_core.js` (`window.MapCore`)**
     (etapa 0 da prancheta, 2026-09-26). Replay, anotação e prancheta usam UMA
