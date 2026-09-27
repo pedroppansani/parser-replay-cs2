@@ -1215,7 +1215,10 @@ var Prancheta = (function () {
 
   function descreveArremesso(r) {
     var partes = [];
-    if (r.forca) partes.push(r.botao ? r.forca + " (" + r.botao + ")" : r.forca + " (" + r.velocidade + " u/s)");
+    // força AFIRMADA só com botão (rotina do jogo, decisão 21a); sem ele, a
+    // velocidade é estimativa do modelo e aparece como tal
+    if (r.forca && r.botao) partes.push(r.forca + " (" + r.botao + ")");
+    else if (r.velocidade !== null && r.velocidade !== undefined) partes.push("força não afirmada (estimativa: " + r.velocidade + " u/s)");
     if (r.postura) partes.push(r.postura);
     if (r.movimento) partes.push(r.movimento);
     if (r.no_ar) partes.push("no ar (pulo)");

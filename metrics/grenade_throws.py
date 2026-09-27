@@ -44,6 +44,9 @@ Com o tick fixado, a altura dos olhos deixa de ser degenerada e sai medida.
 """
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import numpy as np
 import polars as pl
 
@@ -576,6 +579,263 @@ def rotula_forca(velocidade: float | None, grupos: list[tuple[float, int]]) -> s
 
 
 # ---------------------------------------------------------------------------
+# B2) A rotina de arremesso do jogo, medida no gabarito (item 7, rota A)
+#
+# Todas as constantes abaixo saem do GABARITO: propriedades que o jogo grava na
+# demo (m_vInitialVelocity e m_vInitialPosition do projétil, m_flThrowStrength
+# da arma, duck_amount, m_hGroundEntity, m_nLastJumpTick e
+# m_flLastJumpVelocityZ do jogador), extraídas da match_23 -- a única demo que
+# sobrou -- para `tests/fixtures/gabarito_arremessos_match_23.json.gz` (n = 434); desde
+# 2026-09-27 o gabarito tem 12 partidas (tests/fixtures/gabarito_arremessos_*.json.gz).
+# Nada aqui é encaixado nos grupos de velocidade: cada número é a medida direta
+# de uma propriedade gravada. Decisão 21a do CLAUDE.md.
+#
+# O que é AFIRMADO (passou na própria meta no gabarito): o botão, "no ar" e a
+# postura. O que NÃO é afirmado: a posição de saída (a cauda vertical depois de
+# subir degrau não é explicada) e a velocidade calculada (entra só pelo botão,
+# e só dentro da tolerância).
+# ---------------------------------------------------------------------------
+
+# Velocidade do lançamento por botão (m_flThrowStrength 0 / 0,5 / 1), |v0 - 1,25
+# vj| no chão, IQR < 1 u/s. n = 11 / 30 / 289, match_23.
+VELOCIDADE_BOTAO = {0.0: 202.5, 0.5: 438.7, 1.0: 675.0}
+# Rótulo de cada botão: o botão direito lança curto, os dois botões médio, o
+# esquerdo longo (a mesma correspondência de BOTAO_DA_FORCA).
+ROTULO_DO_BOTAO = {0.0: "curto", 0.5: "médio", 1.0: "longo"}
+
+# Constantes CALCULADAS do gabarito (nunca digitadas): `gabarito_constantes.json`,
+# gerado por `py -3.12 -m scripts.constantes_do_gabarito`; um teste confere que o
+# arquivo bate com o recálculo a partir de tests/fixtures/gabarito_arremessos_*.json.
+_CONSTANTES_DO_GABARITO = json.loads(
+    (Path(__file__).with_name("gabarito_constantes.json")).read_text(encoding="utf-8"))
+
+# Tolerância do rótulo de botão: ceil(2 × p99) do erro da velocidade calculada
+# contra m_vInitialVelocity, nos arremessos em que o modelo se aplica (origem e n
+# no JSON; 21 u/s com a match_23, p99 10,06, n = 431). É a distância máxima da
+# velocidade calculada ao CENTRO do botão para ele ser dado; fora dela o rótulo
+# é NEUTRO. O erro do modelo é outra coisa: fica na catraca dos testes.
+TOLERANCIA_BOTAO = float(_CONSTANTES_DO_GABARITO["tolerancia_botao"])
+
+# Guarda do voo: o vetor inicial previsto (botão + herança) tem de explicar o
+# primeiro segmento observado do projétil. Medido no gabarito, o primeiro
+# segmento é a velocidade inicial gravada mais um deslocamento vertical fixo
+# (a gravidade do primeiro tick: -7,51 u/s, mediana, n = 6.846). O resíduo
+# |vp - (previsto + deslocamento)| acompanha o erro do vetor (correlação 0,999);
+# acima do limiar o arremesso fica NEUTRO ("vetor incoerente com o voo"). O
+# limiar é o meio do vão entre o maior resíduo dos vetores certos (erro < 5
+# u/s) e o menor dos grosseiramente errados (erro acima da tolerância antes da
+# guarda) -- calculado do gabarito, no JSON.
+DESLOCAMENTO_PRIMEIRO_SEGMENTO = np.array([0.0, 0.0, float(_CONSTANTES_DO_GABARITO["deslocamento_primeiro_segmento_z"])])
+LIMIAR_GUARDA_VOO = float(_CONSTANTES_DO_GABARITO["limiar_guarda_voo"])
+
+# Direção do lançamento: o pitch da mira é remapeado POR TRECHOS. Parado, o
+# resíduo contra o gabarito é 0,000° nos dois trechos (n = 92 parados).
+FATOR_PITCH_NEGATIVO = 80.0 / 90.0
+FATOR_PITCH_POSITIVO = 100.0 / 90.0
+DESLOCAMENTO_PITCH = -10.0
+
+# Ponto de saída: 16 u à frente na direção do lançamento (parado: 16,00 [15,99;
+# 16,03], n = 74), a partir dos pés da tabela no tick da soltura.
+AVANCO_SAIDA = 16.0
+# Altura de saída acima dos pés, no chão: em pé 63,31 (botão 1, n = 272),
+# agachado 45,55 (n = 16); cada meio botão abaixo tira 6 u (12 × (botão - 1):
+# botão 0,5 mede 57,50, n = 30; botão 0 mede 51,21, n = 11).
+ALTURA_SAIDA_EM_PE = 63.31
+ALTURA_SAIDA_AGACHADO = 45.55
+ALTURA_SAIDA_POR_BOTAO = 12.0
+CORTE_POSTURA = (ALTURA_SAIDA_EM_PE + ALTURA_SAIDA_AGACHADO) / 2
+# Faixa em torno do corte onde a postura NÃO é afirmada: da margem do agachado
+# correto mais alto à do em pé correto mais baixo, calculadas do gabarito (JSON;
+# com a match_23 ficam perto de -2,4 e +1,1 u). Só os agachamentos parciais
+# caem nela. A hipótese "subida recente" foi testada e não é o que aproxima
+# os casos do corte (decisão 21c).
+FAIXA_POSTURA_NEUTRA = tuple(float(x) for x in _CONSTANTES_DO_GABARITO["faixa_postura_neutra"])
+
+# "No ar": a segunda diferença da altura dos pés é a gravidade (-800 u/s², ou
+# -0,1953 u/tick² a 64 tick) -- o resíduo de uma parábola com g fixo em três
+# ticks. Tolerância 0,05 u/tick²: acerta m_hGroundEntity em 433/434 e os 9 de
+# escada/rampa; 0,01 perde 10 casos e 0,1 marca chão plano como ar.
+GRAVIDADE = 800.0
+TOL_SEGUNDA_DIFERENCA = 0.05
+# Janela de posição usada para achar a decolagem (a mesma do gabarito).
+JANELA_DECOLAGEM_TICKS = 64
+
+# Decolagem: velocidade vertical do pulo, moda de m_flLastJumpVelocityZ (298,868
+# em pé; 301,993 no pulo agachado, 8% dos pulos, que a posição não separa: o
+# erro máximo por usar 298,868 é 3,1 u/s na vertical, 3,9 na granada).
+VZ_PULO = 298.868
+# A parábola ajustada dá a vz de decolagem meio passo de gravidade abaixo da
+# gravada (800/128 = 6,25; medido -6,22 na mediana, n = 95).
+MEIO_PASSO_GRAVIDADE = 800.0 / 128.0
+# Estimada + meio passo tem de ficar a até isto de VZ_PULO para ser um pulo
+# limpo: p99 dos arremessos cuja velocidade o modelo acerta = 8,57 (n = 93),
+# arredondado para cima. As parábolas quebradas ficam ~158 abaixo.
+LIMITE_VZ_DECOLAGEM = 9.0
+# Janela do jump-throw, em ticks entre decolagem e soltura:
+#   0-5    neutro (sem gabarito; inclui soltar no tick do pulo)
+#   6-13   vz herdada FIXA = decolagem - 0,1 s de gravidade (gabarito: 95 de 95)
+#   14-18  neutro (sem gabarito; no corpus a vz fixa acerta 140 de 147)
+#   19+    vz REAL (gabarito: 1 caso, 16:81; corpus: a vz real acerta todos os
+#          arremessos com 20 ou mais ticks)
+# Com a vz fixa, posição e velocidade horizontal são as do instante decolagem +
+# 0,1 s (altura de saída 62,25 acima da parábola nesse instante, n = 88).
+JANELA_REGRA_FIXA = (6, 13)
+JANELA_VZ_REAL_MIN = 19
+TEMPO_FIXO_DO_PULO = 0.1
+# Subindo sem parábola formada (soltura no tick da decolagem, o caso r17 da
+# match_09): vz de subida acima da maior medida no chão do gabarito (113,9 u/s,
+# escada, n = 335) é estado vertical AMBÍGUO, neutro -- nunca tratado como chão.
+VZ_SUBIDA_AMBIGUA = 114.0
+
+
+def direcao_do_lancamento(pitch: float, yaw: float) -> np.ndarray:
+    """Direção em que o jogo lança a granada (pitch remapeado por trechos)."""
+    fator = FATOR_PITCH_NEGATIVO if pitch < 0 else FATOR_PITCH_POSITIVO
+    p = np.radians(DESLOCAMENTO_PITCH + pitch * fator)
+    y = np.radians(yaw)
+    return np.array([np.cos(p) * np.cos(y), np.cos(p) * np.sin(y), -np.sin(p)])
+
+
+def estado_vertical(z: np.ndarray, xy: np.ndarray, tickrate: int) -> dict:
+    """O estado vertical do jogador na soltura, só com a posição dos pés.
+
+    `z` e `xy`: pés na tabela de ticks de soltura-N até soltura+1 (o penúltimo
+    é a soltura). Devolve `regra` (chão, regra fixa, vz real, ou o motivo de
+    neutro), `no_ar` (None quando ambíguo), `vz` herdada (None = neutro), `vh`
+    herdada, os ticks desde a decolagem e `z_ref`, a altura dos pés de
+    referência para a saída, relativa aos pés na soltura.
+    """
+    z = np.asarray(z, dtype=float)
+    xy = np.asarray(xy, dtype=float)
+    n_pts = len(z)
+    s = n_pts - 2
+    v = np.array([(xy[s + 1, 0] - xy[s - 1, 0]) * tickrate / 2,
+                  (xy[s + 1, 1] - xy[s - 1, 1]) * tickrate / 2,
+                  (z[s + 1] - z[s - 1]) * tickrate / 2])
+    base = {"vz_derivada": float(v[2]), "vh": v[:2], "ticks_desde_decolagem": None, "z_ref": 0.0}
+    g_tick = -GRAVIDADE / tickrate ** 2
+    d2 = z[2:] - 2 * z[1:-1] + z[:-2]          # d2[i] centrado em z[i+1]
+    # a contagem começa na segunda diferença centrada em t-1 (i = s - 2): é a
+    # convenção medida no gabarito -- com ela a decolagem estimada bate com a
+    # gravada a < 0,003 tick e "no ar" acerta 433/434; começando em t, a
+    # decolagem sai até 0,7 tick adiantada
+    i = s - 2
+    n = 0
+    while i >= 0 and abs(d2[i] - g_tick) < TOL_SEGUNDA_DIFERENCA:
+        n += 1
+        i -= 1
+    # soltura no tick de um pouso ou de uma decolagem: a mudança de estado
+    # acontece dentro do tick (subtick) e a posição por tick não diz de que
+    # lado ela caiu -- "no ar" INDETERMINADO por construção. A assinatura é a
+    # TROCA entre queda livre e chão em volta da soltura: entre as segundas
+    # diferenças centradas em t-2, t-1 e t, pelo menos uma é a gravidade e pelo
+    # menos uma é anômala (nem chão ~0 nem gravidade). Degrau e chão irregular
+    # dão anomalia sem a gravidade ao lado e continuam "chão".
+    vizinhas = [d2[k] for k in (s - 3, s - 2, s - 1) if 0 <= k < len(d2)]
+    tem_gravidade = any(abs(x - g_tick) < TOL_SEGUNDA_DIFERENCA for x in vizinhas)
+    tem_anomalia = any(abs(x) >= TOL_SEGUNDA_DIFERENCA and abs(x - g_tick) >= TOL_SEGUNDA_DIFERENCA for x in vizinhas)
+    transicao = tem_gravidade and tem_anomalia
+    if n == 0:
+        if v[2] > VZ_SUBIDA_AMBIGUA:
+            return {**base, "regra": "ambíguo: subindo sem parábola", "no_ar": None, "vz": None}
+        return {**base, "regra": "chão", "no_ar": None if transicao else False, "vz": 0.0}
+    k0 = s - n                                  # primeiro ponto da parábola
+    tau = (np.arange(k0, n_pts) - s) / tickrate
+    b, c = np.polyfit(tau, z[k0:] + GRAVIDADE / 2 * tau ** 2, 1)
+    disc = None if k0 < 1 else b * b - 2 * GRAVIDADE * (z[k0 - 1] - c)
+    if disc is None or disc < 0:
+        return {**base, "regra": "ambíguo: queda sem decolagem na janela", "no_ar": None, "vz": None}
+    tau_dec = (b - np.sqrt(disc)) / GRAVIDADE
+    vz_dec = b - GRAVIDADE * tau_dec
+    base = {**base, "ticks_desde_decolagem": float(-tau_dec * tickrate)}
+    if abs(vz_dec + MEIO_PASSO_GRAVIDADE - VZ_PULO) > LIMITE_VZ_DECOLAGEM:
+        return {**base, "regra": "ambíguo: parábola sem pulo limpo", "no_ar": None, "vz": None}
+    t = round(-tau_dec * tickrate)
+    if t < JANELA_REGRA_FIXA[0]:
+        return {**base, "regra": "janela 0-5 (sem gabarito)", "no_ar": True, "vz": None}
+    if t <= JANELA_REGRA_FIXA[1]:
+        t01 = tau_dec + TEMPO_FIXO_DO_PULO
+        # velocidade horizontal e altura dos pés no instante decolagem + 0,1 s
+        k = s + t01 * tickrate - 0.5
+        i0 = int(np.floor(k))
+        f = k - i0
+        vh = v[:2]
+        if 1 <= i0 < n_pts - 2:
+            va = (xy[i0 + 1] - xy[i0 - 1]) * tickrate / 2
+            vb = (xy[i0 + 2] - xy[i0]) * tickrate / 2
+            vh = va * (1 - f) + vb * f
+        z_ref = (c + b * t01 - GRAVIDADE / 2 * t01 ** 2) - z[s]
+        return {**base, "regra": "regra fixa 6-13", "no_ar": True,
+                "vz": VZ_PULO - GRAVIDADE * TEMPO_FIXO_DO_PULO, "vh": vh, "z_ref": float(z_ref)}
+    if t < JANELA_VZ_REAL_MIN:
+        return {**base, "regra": "janela 14-18 (sem gabarito)", "no_ar": True, "vz": None}
+    return {**base, "regra": "vz real 19+", "no_ar": True, "vz": float(v[2])}
+
+
+def botao_da_velocidade(velocidade: float | None, tolerancia: float | None = None) -> float | None:
+    """O botão (0, 0,5 ou 1) cuja velocidade medida está a até a tolerância."""
+    if velocidade is None or not np.isfinite(velocidade):
+        return None
+    tol = TOLERANCIA_BOTAO if tolerancia is None else tolerancia
+    b = min(VELOCIDADE_BOTAO, key=lambda k: abs(VELOCIDADE_BOTAO[k] - velocidade))
+    return b if abs(VELOCIDADE_BOTAO[b] - velocidade) <= tol else None
+
+
+def altura_de_saida(z_saida: float, z_pes_ref: float, u_z: float, botao: float) -> float:
+    """Altura do ponto de saída acima dos pés de referência, sem o avanço de 16 u
+    e corrigida para o botão 1 -- comparável direto com em pé e agachado."""
+    return float(z_saida - z_pes_ref - AVANCO_SAIDA * u_z - ALTURA_SAIDA_POR_BOTAO * (botao - 1.0))
+
+
+def postura_da_altura(h: float | None, faixa: tuple[float, float] | None = None) -> str | None:
+    """Em pé ou agachado pela altura de saída; None na faixa sem afirmação."""
+    if h is None or not np.isfinite(h):
+        return None
+    lo, hi = FAIXA_POSTURA_NEUTRA if faixa is None else faixa
+    d = h - CORTE_POSTURA
+    if lo <= d <= hi and (lo, hi) != (0.0, 0.0):
+        return None
+    return "em pé" if d > 0 else "agachado"
+
+
+def rotina_do_jogo(z: np.ndarray, xy: np.ndarray, vp: np.ndarray, z_saida: float,
+                   pitch: float, yaw: float, tickrate: int,
+                   tolerancia: float | None = None, faixa_postura: tuple[float, float] | None = None,
+                   limiar_voo: float | None = None) -> dict:
+    """Botão, "no ar" e postura de UM arremesso pela rotina medida.
+
+    `vp` é a velocidade do projétil pelos dois primeiros pontos e `z_saida` a
+    altura do primeiro ponto levado ao tick da soltura. Postura só onde a
+    altura de saída foi medida: no chão e na janela da vz fixa.
+    """
+    ev = estado_vertical(z, xy, tickrate)
+    out = {"estado_vertical": ev["regra"], "no_ar": ev["no_ar"],
+           "ticks_desde_decolagem": ev["ticks_desde_decolagem"],
+           "velocidade_arremesso": None, "botao": None, "altura_saida": None, "postura": None,
+           "residuo_voo": None}
+    if ev["vz"] is None:
+        return out
+    vj = np.array([ev["vh"][0], ev["vh"][1], ev["vz"]])
+    rel = float(np.linalg.norm(np.asarray(vp, dtype=float) - FATOR_HERANCA * vj))
+    b = botao_da_velocidade(rel, tolerancia)
+    if b is not None:
+        u = direcao_do_lancamento(pitch, yaw)
+        previsto = VELOCIDADE_BOTAO[b] * u + FATOR_HERANCA * vj + DESLOCAMENTO_PRIMEIRO_SEGMENTO
+        residuo = float(np.linalg.norm(np.asarray(vp, dtype=float) - previsto))
+        out["residuo_voo"] = residuo
+        if residuo > (LIMIAR_GUARDA_VOO if limiar_voo is None else limiar_voo):
+            out["estado_vertical"] = "vetor incoerente com o voo"
+            return out
+    out.update(velocidade_arremesso=rel, botao=b)
+    if b is not None and ev["regra"] in ("chão", "regra fixa 6-13"):
+        u = direcao_do_lancamento(pitch, yaw)
+        z_pes = np.asarray(z, dtype=float)[-2] + ev["z_ref"]
+        h = altura_de_saida(z_saida, z_pes, u[2], b)
+        out.update(altura_saida=h, postura=postura_da_altura(h, faixa_postura))
+    return out
+
+
+# ---------------------------------------------------------------------------
 # D) Colisões na trajetória
 # ---------------------------------------------------------------------------
 
@@ -746,6 +1006,20 @@ def aplica_tick_oficial(
     return saida, (float(np.median(avancos)) if avancos else None)
 
 
+def _janela_de_pes(tk: _Ticks, steamid: int, tick: int) -> tuple[np.ndarray, np.ndarray] | None:
+    """Pés do jogador na tabela de ticks de soltura-64 (ou do primeiro tick dele)
+    até soltura+1: (z, xy). None se não há o tick seguinte ou pontos mínimos."""
+    d = tk.por_jogador.get(int(steamid))
+    if d is None:
+        return None
+    ini = max(int(tick) - JANELA_DECOLAGEM_TICKS, int(d["tick"][0]))
+    idx = tk.indices(steamid, np.arange(ini, int(tick) + 2, dtype=np.int64))
+    if idx is None or len(idx) < 3:
+        return None
+    pos = d["pos"][idx]
+    return pos[:, 2], pos[:, :2]
+
+
 def grenade_throws(
     tables: dict[str, pl.DataFrame], tickrate: int
 ) -> tuple[pl.DataFrame, dict]:
@@ -775,6 +1049,30 @@ def grenade_throws(
         )
         vel = velocidade_de_arremesso(a["traj"], a["ticks"], estado, tickrate) or {}
         bate = colisoes(a["traj"], a["ticks"], tickrate)
+        # a rotina do jogo (rota A): botão, "no ar" e postura medidos no gabarito
+        rotina = {"estado_vertical": None, "no_ar": None, "ticks_desde_decolagem": None,
+                  "velocidade_arremesso": None, "botao": None, "altura_saida": None, "postura": None}
+        pes_t = None
+        janela = None if a["tick_soltura"] is None else _janela_de_pes(tk, a["steamid"], a["tick_soltura"])
+        if janela is not None and a["traj"].shape[0] >= 2 and a.get("pitch") is not None:
+            z, xy = janela
+            # os pés no TICK DA SOLTURA na tabela (o jogo usa esses; os do evento
+            # oficial são os do tick anterior -- decisão 5 do item 7)
+            pes_t = np.array([xy[-2, 0], xy[-2, 1], z[-2]], dtype=float)
+            dt = (a["ticks"][1] - a["ticks"][0]) / tickrate
+            vp = (a["traj"][1] - a["traj"][0]) / dt
+            z_saida = float(a["traj"][0][2] - vp[2] * (a["tick_primeiro"] - a["tick_soltura"]) / tickrate)
+            rotina = rotina_do_jogo(z, xy, vp, z_saida, a["pitch"], a["yaw"], tickrate)
+        elif a["tick_soltura"] is not None and a.get("pos_soltura") is not None:
+            # sem janela CONTÍNUA de ticks (a demo às vezes pula um tick: match_16,
+            # round 5) a rotina não se aplica -- neutro com o motivo declarado.
+            # Os pés ficam os da tabela no tick da soltura, se ele existe; senão,
+            # os do evento (tick anterior).
+            rotina["estado_vertical"] = "neutro: ticks faltando na janela"
+            um = tk.indices(a["steamid"], np.array([int(a["tick_soltura"])], dtype=np.int64))
+            d_ = tk.por_jogador.get(int(a["steamid"]))
+            pes_t = (d_["pos"][um[0]].astype(float) if um is not None and d_ is not None
+                     else np.asarray(a["pos_soltura"], dtype=float))
         linhas.append({
             "round_num": a["round_num"],
             "entity_id": a["entity_id"],
@@ -791,23 +1089,29 @@ def grenade_throws(
             "atraso_animacao_ticks": a.get("atraso_animacao_ticks"),
             "residuo": a["residuo"],
             "altura_olhos": a["altura_olhos"],
-            "postura": classifica_postura(a["altura_olhos"]),
+            # AFIRMADOS pela rotina do jogo (None = neutro, com o motivo em
+            # estado_vertical ou pela tolerância / faixa de postura)
+            "postura": rotina["postura"],
+            "botao": rotina["botao"],
+            "forca": None if rotina["botao"] is None else ROTULO_DO_BOTAO[rotina["botao"]],
+            "estado_vertical": rotina["estado_vertical"],
+            "ticks_desde_decolagem": rotina["ticks_desde_decolagem"],
+            "altura_saida": rotina["altura_saida"],
             "pitch": a.get("pitch"),
             "yaw": a.get("yaw"),
-            "x": None if a.get("pos_soltura") is None else float(a["pos_soltura"][0]),
-            "y": None if a.get("pos_soltura") is None else float(a["pos_soltura"][1]),
-            "z": None if a.get("pos_soltura") is None else float(a["pos_soltura"][2]),
+            "x": None if pes_t is None else float(pes_t[0]),
+            "y": None if pes_t is None else float(pes_t[1]),
+            "z": None if pes_t is None else float(pes_t[2]),
             "velocidade_jogador": estado.get("velocidade"),
             "velocidade_vertical": estado.get("velocidade_vertical"),
             "giro_na_soltura": estado.get("giro"),
             "movimento": classifica_movimento(estado),
-            "no_ar": (
-                None if estado.get("velocidade_vertical") is None
-                else abs(estado["velocidade_vertical"]) >= VELOCIDADE_VERTICAL_NO_AR
-            ),
+            "no_ar": rotina["no_ar"],
             "tick_primeiro": a["tick_primeiro"],
             "velocidade_bruta": vel.get("bruta"),
-            "velocidade_arremesso": vel.get("relativa"),
+            # ESTIMADA: a velocidade relativa pela rotina do jogo (None quando o
+            # estado vertical é neutro). Não é afirmada; entra só pelo botão.
+            "velocidade_arremesso": rotina["velocidade_arremesso"],
             "n_colisoes": len(bate),
             "colisoes": bate,
             "n_samples": int(a["traj"].shape[0]),

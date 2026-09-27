@@ -46,6 +46,9 @@ RAIZ = Path(__file__).resolve().parent.parent
 #   -- afirmar retroativamente que ela rodou na versão 1 seria inventar.
 VERSAO_DO_PARSER = 1
 
+# 10 (2026-09-27) arremessos pela rotina do jogo medida no gabarito (rota A,
+#    decisão 21a): botão, "no ar" e postura novos; pés no tick da soltura
+#    (setpos, origem da biblioteca e l.o do replay); velocidade só estimada
 # 9 (2026-09-27) empate de função: margem de 1 round e o AWPer vence o empate
 #   só quando é o AWPer do time no player_roles.
 # 8 (2026-09-26) piso do lurker relativo 1,5 -> 1,284 (corte estatístico,
@@ -69,7 +72,7 @@ VERSAO_DO_PARSER = 1
 #   (inclui a classe de economia do jogador no rating), unique com subset fica
 #   com a primeira linha. Antes, esses três casos dependiam da ordem de hash.
 # 1 (2026-09-20) primeira versão declarada, mesmo raciocínio acima.
-VERSAO_DAS_METRICAS = 9
+VERSAO_DAS_METRICAS = 10
 
 # Pastas cujo estado define o NÚMERO. `sujo` olha só estas: olhar o repositório
 # inteiro marcava todo reprocessamento como sujo, porque o próprio

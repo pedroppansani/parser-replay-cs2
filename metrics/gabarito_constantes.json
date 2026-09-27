@@ -1,0 +1,110 @@
+{
+ "_leia_isto": "Gerado por py -3.12 -m scripts.constantes_do_gabarito a partir de tests/fixtures/gabarito_arremessos_*. Não editar à mão.",
+ "deslocamento_primeiro_segmento_z": -7.51,
+ "tolerancia_antes_da_guarda": 25.0,
+ "limiar_guarda_voo": 15.9808,
+ "limiar_guarda_origem": {
+  "maior_residuo_vetor_certo": 6.6847,
+  "menor_residuo_vetor_grosseiro": 25.277,
+  "n": 6738,
+  "neutralizados_no_gabarito": 56,
+  "voo_sujo_no_primeiro_tick": 1,
+  "limite_voo_limpo": 5.0
+ },
+ "tolerancia_botao": 19.0,
+ "tolerancia_origem": {
+  "p99_erro_velocidade": 9.4896,
+  "p99_antes_da_guarda": 12.4695,
+  "n": 6682
+ },
+ "faixa_postura_neutra": [
+  -4.0066,
+  2.1031
+ ],
+ "faixa_postura_origem": {
+  "quantil": 0.0,
+  "curva": [
+   {
+    "quantil": 0.0,
+    "faixa": [
+     -4.0066,
+     2.1031
+    ],
+    "pior_acerto": 1.0,
+    "cobertura": 0.979
+   },
+   {
+    "quantil": 0.25,
+    "faixa": [
+     0.4064,
+     1.7446
+    ],
+    "pior_acerto": 0.99332,
+    "cobertura": 0.99426
+   },
+   {
+    "quantil": 0.5,
+    "faixa": [
+     1.3302,
+     1.4339
+    ],
+    "pior_acerto": 0.98697,
+    "cobertura": 0.9994
+   },
+   {
+    "quantil": 1.0,
+    "faixa": [
+     1.1356,
+     2.2456
+    ],
+    "pior_acerto": 0.99016,
+    "cobertura": 0.99426
+   },
+   {
+    "quantil": 2.0,
+    "faixa": [
+     0.7133,
+     3.446
+    ],
+    "pior_acerto": 0.99326,
+    "cobertura": 0.98323
+   },
+   {
+    "quantil": 3.0,
+    "faixa": [
+     0.4173,
+     4.4394
+    ],
+    "pior_acerto": 0.9932,
+    "cobertura": 0.9725
+   },
+   {
+    "quantil": 5.0,
+    "faixa": [
+     -0.068,
+     5.8916
+    ],
+    "pior_acerto": 0.9967,
+    "cobertura": 0.95075
+   }
+  ],
+  "n_agachados": 228,
+  "n_em_pe": 6391
+ },
+ "partidas": [
+  "match_10",
+  "match_11",
+  "match_12",
+  "match_14",
+  "match_15",
+  "match_16",
+  "match_17",
+  "match_18",
+  "match_19",
+  "match_20",
+  "match_23",
+  "match_41",
+  "match_42"
+ ],
+ "n_arremessos": 6846
+}

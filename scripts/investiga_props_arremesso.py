@@ -9,7 +9,7 @@ Uso:
     py -3.12 -m scripts.investiga_props_arremesso            # todas as partidas com .dem no disco
     py -3.12 -m scripts.investiga_props_arremesso match_23   # só as indicadas
     py -3.12 -m scripts.investiga_props_arremesso --corpus   # a regra só com posição, sem .dem
-    py -3.12 -m scripts.investiga_props_arremesso --gabarito # grava tests/fixtures/gabarito_arremessos_match_23.json
+    py -3.12 -m scripts.investiga_props_arremesso --gabarito match_10 ...  # grava tests/fixtures/gabarito_arremessos_<partida>.json.gz
 
 O .dem de cada partida é o `source_dem` do match_meta.json; se o caminho não
 existir mais, procura o mesmo nome de arquivo dentro de demos/. Partida sem .dem
@@ -111,7 +111,16 @@ def props_da_demo(dem: Path, arremessos: list[dict]) -> tuple[pl.DataFrame, pl.D
     arma = g.filter(~pl.col("grenade_type").str.ends_with("Projectile")).select(
         "grenade_type", "tick", "steamid", "Grenade.m_flThrowStrength", "Grenade.m_bJumpThrow")
     ticks = sorted({int(a["tick_soltura"]) + d for a in arremessos for d in range(-2, 3)})
-    jog = pl.from_pandas(p.parse_ticks(list(PROPS_JOGADOR) + ["X", "Y", "Z"], ticks=ticks)).rename(PROPS_JOGADOR)
+    # nem toda build grava todo campo (m_flDuckRootOffset falta em demos mais
+    # antigas): o demoparser devolve a tabela SEM a coluna; o que faltar vem
+    # nulo, declarado
+    jog = pl.from_pandas(p.parse_ticks(list(PROPS_JOGADOR) + ["X", "Y", "Z"], ticks=ticks))
+    for k, v in PROPS_JOGADOR.items():
+        if k in jog.columns:
+            jog = jog.rename({k: v})
+        else:
+            print(f"   {dem.name}: sem o campo {k}")
+            jog = jog.with_columns(pl.lit(None).alias(v))
     # m_nLastJumpTick não está na base de tick da demo: medido, ele muda no
     # próprio tick da decolagem com valor 2·tick + c (meio-tick), c fixo por
     # demo. c sai das mudanças do campo, não de chute.
@@ -157,10 +166,12 @@ def main(partidas: list[str]) -> None:
             if r is None or j is None:
                 continue
             casados += 1
-            # a arma na mão no último tick antes de o projétil nascer
+            # a arma na mão no último tick ANTES da soltura: no próprio tick a
+            # entidade já pode ser a PRÓXIMA granada do mesmo tipo, com força 0
+            # (achado na validação: 4 botões "errados" eram leitura errada)
             m = arma.filter(pl.col("steamid") == a["steamid"]).filter(
                 pl.col("grenade_type").is_in(list(ARMA_NA_MAO.get(a["kind"], ())))
-                & pl.col("tick").is_between(int(a["tick_soltura"]) - 4, int(a["tick_soltura"]))).sort("tick")
+                & pl.col("tick").is_between(int(a["tick_soltura"]) - 4, int(a["tick_soltura"]) - 1)).sort("tick")
             forca = m["Grenade.m_flThrowStrength"][-1] if m.height else None
             pulo = m["Grenade.m_bJumpThrow"][-1] if m.height else None
             ts = int(a["tick_soltura"])
@@ -404,93 +415,150 @@ def regra_no_corpus() -> None:
     print("grupos no ar, regra:   ", [(round(c), n) for c, n in gt.grupos_de_forca(np.array([x["regra"] for x in ar]))])
 
 
-# Janela de altura dos pés guardada no gabarito: a produção detecta o pulo pela
-# parábola dos ticks anteriores à soltura, e o pulo mais longo da match_23 dura
-# menos de 1 s (64 ticks).
+# Janela de posição dos pés guardada no gabarito: a produção acha a decolagem
+# pela parábola dos ticks anteriores à soltura (a mesma JANELA_DECOLAGEM_TICKS).
 JANELA_Z_GABARITO = 64
-ARQUIVO_GABARITO = RAIZ / "tests/fixtures/gabarito_arremessos_match_23.json"
+PASTA_GABARITO = RAIZ / "tests/fixtures"
 
 
-def gera_gabarito(partida: str = "match_23") -> None:
-    """Grava o gabarito versionado: por arremesso, o que a demo diz (botão,
-    jump-throw, chão, postura, velocidade e posição iniciais do projétil) e as
-    ENTRADAS que a produção usa (tick da soltura, pés, mira, dois primeiros
-    pontos do projétil e a altura dos pés nos ticks anteriores). Os testes rodam
-    só com este arquivo, sem o .dem e sem o interim."""
-    meta = json.loads((RAIZ / "data/processed" / partida / "match_meta.json").read_text(encoding="utf-8"))
-    dem = acha_dem(meta)
-    if dem is None:
-        raise SystemExit(f"{partida}: sem .dem no disco")
+def demos_da_partida(partida: str) -> list[Path]:
+    """As partes da demo, em ordem (p1, p2...), pelo manifesto; só as que existem."""
+    import scripts.manifest as mf
+    linha = mf.carrega()["partidas"][partida]
+    out = []
+    for d in linha["demos"]:
+        p = RAIZ / d["caminho"]
+        if not p.is_file():
+            achados = [q for q in (RAIZ / "demos").rglob(d["arquivo"]) if q.is_file()]
+            p = achados[0] if achados else None
+        if p is None:
+            raise SystemExit(f"{partida}: {d['arquivo']} não está no disco")
+        out.append(p)
+    return out
+
+
+def deslocamento_da_parte(p: DemoParser, ticks_interim: np.ndarray) -> int:
+    """Quanto o interim deslocou os ticks desta parte (parte 1: 0).
+
+    O `merge_interim` soma a cada parte o maior tick das anteriores; o valor
+    exato sai casando os ticks do evento grenade_thrown da demo com os do
+    interim (a diferença mais frequente).
+    """
+    ev = p.parse_event("grenade_thrown")
+    if ev is None or len(ev) == 0:
+        return 0
+    from collections import Counter
+    cont = Counter()
+    for e in ev["tick"].to_numpy()[:40]:
+        for g in ticks_interim:
+            if g >= e:
+                cont[int(g - e)] += 1
+    return int(cont.most_common(1)[0][0])
+
+
+def gera_gabarito(partida: str = "match_23") -> Path:
+    """Grava o gabarito de uma partida em tests/fixtures (compactado).
+
+    Por arremesso: o que a demo diz (botão, jump-throw, chão, postura,
+    velocidade e posição iniciais do projétil) e as ENTRADAS que a produção
+    usa (tick da soltura, pés, mira, dois primeiros pontos do projétil e os
+    pés nos ticks anteriores). Os testes rodam só com ele, sem .dem e sem
+    interim. Demo em várias partes: cada parte é casada com o interim pelo
+    deslocamento de tick que a fusão aplicou.
+    """
+    import gzip
+    import hashlib
+    dems = demos_da_partida(partida)
     arr = arremessos_da_partida(partida)
-    proj, arma, jog = props_da_demo(dem, arr)
     t = load_interim(RAIZ / "data/interim", partida)
     tk = gt._Ticks(t["ticks"])
-    pj: dict[int, list[dict]] = {}
-    for r in proj.iter_rows(named=True):
-        pj.setdefault(int(r["grenade_entity_id"]), []).append(r)
-    jt = {(int(r["steamid"]), int(r["tick"])): r for r in jog.iter_rows(named=True)}
+    ticks_ev = np.array(sorted(t["grenade_thrown"]["tick"].to_list())) if t.get("grenade_thrown") is not None else np.array([])
+    partes = []
+    for dem in dems:
+        p = DemoParser(str(dem))
+        partes.append((dem, p, deslocamento_da_parte(p, ticks_ev) if len(dems) > 1 else 0))
+    partes.sort(key=lambda x: x[2])
     saida = []
-    for a in arr:
-        ts = int(a["tick_soltura"])
-        r = next((q for q in pj.get(int(a["entity_id"]), []) if 0 <= q["tick"] - ts <= 4), None)
-        j = jt.get((int(a["steamid"]), ts))
-        idx = tk.indices(a["steamid"], np.arange(ts - JANELA_Z_GABARITO, ts + 2, dtype=np.int64))
-        if r is None or j is None or idx is None:
-            continue
-        pos = tk.por_jogador[int(a["steamid"])]["pos"][idx]
-        m = arma.filter(pl.col("steamid") == a["steamid"]).filter(
-            pl.col("grenade_type").is_in(list(ARMA_NA_MAO.get(a["kind"], ())))
-            & pl.col("tick").is_between(ts - 4, ts)).sort("tick")
-        saida.append({
-            "id": f"{partida}:{a['round_num']}:{a['entity_id']}",
-            "arma": a["kind"],
-            "demo": {
-                "forca": None if not m.height else round(float(m["Grenade.m_flThrowStrength"][-1]), 4),
-                "jump_throw": None if not m.height else bool(m["Grenade.m_bJumpThrow"][-1]),
-                "no_chao": j["chao"] != SEM_CHAO,
-                "duck_amount": round(float(j["duck_amount"]), 4),
-                "ducked": bool(j["ducked"]),
-                "duck_view_offset": round(float(j["duck_view_offset"]), 4),
-                "tick_do_pulo": None if j["ultimo_pulo"] is None else float(j["ultimo_pulo"]),
-                "vz_decolagem": round(float(j["vz_do_pulo"]), 4),
-                "v0": [round(float(v), 4) for v in r["Grenade.m_vInitialVelocity"]],
-                "p0": [round(float(v), 4) for v in r["Grenade.m_vInitialPosition"]],
-            },
-            "entrada": {
-                "tick_soltura": ts,
-                "pitch": round(float(a["pitch"]), 4),
-                "yaw": round(float(a["yaw"]), 4),
-                "pes": [round(float(v), 4) for v in a["pos_soltura"]],
-                "pos_vizinhos": [[round(float(v), 4) for v in pos[-3]], [round(float(v), 4) for v in pos[-1]]],
-                "z_janela": [round(float(v), 4) for v in pos[:, 2]],
-                "xy_janela": [[round(float(v), 4) for v in par] for par in pos[:, :2]],
-                "proj_ticks": [int(a["ticks"][0]), int(a["ticks"][1])],
-                "proj_pontos": [[round(float(v), 4) for v in a["traj"][0]], [round(float(v), 4) for v in a["traj"][1]]],
-            },
-        })
+    for k, (dem, p, desloc) in enumerate(partes):
+        fim = partes[k + 1][2] if k + 1 < len(partes) else None
+        meus = [a for a in arr if a["tick_soltura"] >= desloc and (fim is None or a["tick_soltura"] < fim)]
+        # os ticks da demo desta parte = os do interim menos o deslocamento
+        na_demo = [{**a, "tick_soltura": int(a["tick_soltura"]) - desloc} for a in meus]
+        proj, arma, jog = props_da_demo(dem, na_demo)
+        pj: dict[int, list[dict]] = {}
+        for r in proj.iter_rows(named=True):
+            pj.setdefault(int(r["grenade_entity_id"]), []).append(r)
+        jt = {(int(r["steamid"]), int(r["tick"])): r for r in jog.iter_rows(named=True)}
+        for a, ad in zip(meus, na_demo):
+            ts, td = int(a["tick_soltura"]), int(ad["tick_soltura"])
+            r = next((q for q in pj.get(int(a["entity_id"]), []) if 0 <= q["tick"] - td <= 4), None)
+            j = jt.get((int(a["steamid"]), td))
+            idx = tk.indices(a["steamid"], np.arange(ts - JANELA_Z_GABARITO, ts + 2, dtype=np.int64))
+            if r is None or j is None or idx is None:
+                continue
+            pos = tk.por_jogador[int(a["steamid"])]["pos"][idx]
+            # força lida no tick ANTES da soltura: no próprio tick a entidade já
+            # pode ser a PRÓXIMA granada do mesmo tipo, com força 0
+            m = arma.filter(pl.col("steamid") == a["steamid"]).filter(
+                pl.col("grenade_type").is_in(list(ARMA_NA_MAO.get(a["kind"], ())))
+                & pl.col("tick").is_between(td - 4, td - 1)).sort("tick")
+            if not m.height:
+                continue
+            saida.append({
+                "id": f"{partida}:{a['round_num']}:{a['entity_id']}",
+                "arma": a["kind"],
+                "demo": {
+                    "forca": round(float(m["Grenade.m_flThrowStrength"][-1]), 4),
+                    "jump_throw": bool(m["Grenade.m_bJumpThrow"][-1]),
+                    "no_chao": j["chao"] != SEM_CHAO,
+                    "duck_amount": round(float(j["duck_amount"]), 4),
+                    "ducked": bool(j["ducked"]),
+                    "duck_view_offset": None if j["duck_view_offset"] is None else round(float(j["duck_view_offset"]), 4),
+                    "tick_do_pulo": None if j["ultimo_pulo"] is None else float(j["ultimo_pulo"]) + desloc,
+                    "vz_decolagem": round(float(j["vz_do_pulo"]), 4),
+                    "v0": [round(float(v), 3) for v in r["Grenade.m_vInitialVelocity"]],
+                    "p0": [round(float(v), 3) for v in r["Grenade.m_vInitialPosition"]],
+                },
+                "entrada": {
+                    "tick_soltura": ts,
+                    "pitch": round(float(a["pitch"]), 4),
+                    "yaw": round(float(a["yaw"]), 4),
+                    "pes": [round(float(v), 3) for v in a["pos_soltura"]],
+                    "pos_vizinhos": [[round(float(v), 3) for v in pos[-3]], [round(float(v), 3) for v in pos[-1]]],
+                    "z_janela": [round(float(v), 3) for v in pos[:, 2]],
+                    "xy_janela": [[round(float(v), 3) for v in par] for par in pos[:, :2]],
+                    "proj_ticks": [int(a["ticks"][0]), int(a["ticks"][1])],
+                    "proj_pontos": [[round(float(v), 3) for v in a["traj"][0]], [round(float(v), 3) for v in a["traj"][1]]],
+                },
+            })
+    shas = []
+    for dem, _, _ in partes:
+        h = hashlib.sha256()
+        with open(dem, "rb") as f:
+            for bloco in iter(lambda: f.read(1 << 20), b""):
+                h.update(bloco)
+        shas.append(h.hexdigest())
     doc = {
-        "_leia_isto": ("Gabarito de arremessos da match_23 (Vitality x Magic, Dust2), o único .dem "
-                       "que existe. 'demo' = propriedades gravadas pelo jogo; 'entrada' = o que a "
-                       "produção usa. z_janela e xy_janela vão de tick_soltura-64 a tick_soltura+1 (tabela de ticks); "
-                       "pos_vizinhos = pés em tick_soltura-1 e +1. Gerado por "
-                       "py -3.12 -m scripts.investiga_props_arremesso --gabarito"),
-        "partida": partida, "tickrate": TICKRATE, "sha256_do_dem": None, "arremessos": saida,
+        "_leia_isto": ("Gabarito de arremessos: 'demo' = propriedades gravadas pelo jogo; 'entrada' = o "
+                       "que a produção usa. z_janela e xy_janela vão de tick_soltura-64 a tick_soltura+1 "
+                       "(tabela de ticks); pos_vizinhos = pés em tick_soltura-1 e +1. Ticks na base do "
+                       "interim (partes de demo dividida já deslocadas). Gerado por "
+                       "py -3.12 -m scripts.investiga_props_arremesso --gabarito <partida>"),
+        "partida": partida, "tickrate": TICKRATE, "sha256_do_dem": shas, "arremessos": saida,
     }
-    import hashlib
-    h = hashlib.sha256()
-    with open(dem, "rb") as f:
-        for bloco in iter(lambda: f.read(1 << 20), b""):
-            h.update(bloco)
-    doc["sha256_do_dem"] = h.hexdigest()
-    ARQUIVO_GABARITO.write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
-    print(f"{ARQUIVO_GABARITO.name}: {len(saida)} arremessos de {len(arr)}, "
-          f"{ARQUIVO_GABARITO.stat().st_size / 1e3:.0f} kB")
+    arq = PASTA_GABARITO / f"gabarito_arremessos_{partida}.json.gz"
+    with gzip.open(arq, "wt", encoding="utf-8", compresslevel=9) as f:
+        f.write(json.dumps(doc, ensure_ascii=False, separators=(",", ":")))
+    print(f"{arq.name}: {len(saida)} arremessos de {len(arr)}, {len(partes)} parte(s), "
+          f"deslocamentos {[x[2] for x in partes]}, {arq.stat().st_size / 1e3:.0f} kB")
+    return arq
 
 
 if __name__ == "__main__":
-    if sys.argv[1:] == ["--gabarito"]:
+    if sys.argv[1:2] == ["--gabarito"]:
         sys.stdout.reconfigure(encoding="utf-8")
-        gera_gabarito()
+        for partida in (sys.argv[2:] or ["match_23"]):
+            gera_gabarito(partida)
     elif sys.argv[1:] == ["--corpus"]:
         sys.stdout.reconfigure(encoding="utf-8")
         regra_no_corpus()

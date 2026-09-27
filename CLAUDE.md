@@ -796,6 +796,19 @@ testada e estava errada.
     baixo (+1,12u), sem condição de subida -- só os agachamentos parciais
     caem nela (n = 6). No corpus, 98 em pé sem subida e 254 com subida ficam a
     menos de 3u do corte.
+    **Faixa de postura final (2026-09-27): por QUANTIL, recalculada a cada
+    gabarito novo.** Escolhido o menor quantil com acerto >= 99,5% fora da
+    faixa em TODAS as 13 partidas: o 0, faixa [-4,01; +2,10], cobertura 97,9%.
+    Três ressalvas registradas: (1) a curva de acerto x quantil NÃO é
+    monótona (0: 100%; 0,25: 99,33%; 0,5: 98,70%; ...; 5: 99,67%), sinal de que
+    a parametrização por quantil é ruidosa com esta amostra; (2) na prática a
+    faixa é o ENVELOPE dos erros observados nas 13 partidas; (3) ela é
+    recalculada pela mesma função a cada gabarito novo. A hipótese "subida
+    recente" foi testada e NÃO é a causa dos casos de fronteira. Os 6 erros que
+    o corte sozinho faria no chão são todos em pé que saem baixos (a cauda da
+    posição de saída) e caem na faixa. Anubis: o corte separa bem (em pé mais
+    baixo +0,07, agachado mais alto -4,26); a concentração na faixa vem da
+    mesma cauda.
 
 21a. **A força do arremesso é inferida da velocidade RELATIVA ao jogador.** Sem
     descontar a velocidade de quem arremessou, todo run-throw curto vira
@@ -949,6 +962,129 @@ testada e estava errada.
       u/s², limite de subtick). A aceleração não separa com limpeza (há 17,1
       u/s a 467 u/s² e 0,2 a 1.168 u/s²). O código da rota A está na branch
       `rota-a-em-andamento`, fora do main.
+    **Rota A aplicada na branch (2026-09-27), MERGE BLOQUEADO por piora = 2:**
+    - a invariante do botão é a do vizinho (resposta 1 do Pedro): erro do modelo
+      < menor distância entre centros - tolerância (236,2 - 20 = 216,2),
+      calculada das constantes; o erro do modelo vai para a CATRACA (p99 9,73,
+      máximo 22,24, < 5 u/s 96,04%; posição < 1u 69,24%). O teste "nenhum
+      rotulado com erro acima da tolerância" foi SUBSTITUÍDO por ela (misturava
+      tolerância e erro do modelo);
+    - tolerância e faixa de postura saem de `metrics/gabarito_constantes.json`,
+      gerado por `scripts/constantes_do_gabarito.py` e conferido por teste. Com
+      o modelo final: tolerância **20** (p99 9,72, n = 430 -- o 21 de antes
+      incluía a 7:143, falha conhecida que o modelo agora detecta), faixa de
+      postura [-0,012; +1,118] (um agachado no ar correto a -0,012);
+    - convenção da parábola: a contagem começa na segunda diferença centrada em
+      t-1 (com ela a decolagem bate com a gravada; começando em t sai até 0,7
+      tick adiantada);
+    - sem janela CONTÍNUA de ticks (a match_16 pula ticks no round 5) o estado é
+      neutro com motivo; os pés vêm da tabela no tick da soltura;
+    - no corpus: 23.137 de 23.895 com botão (96,83%); neutros: tolerância 186,
+      parábola sem pulo limpo 154, janela 14-18 145, janela 0-5 141, subindo sem
+      parábola 94, queda sem decolagem 22, ticks faltando 16. Postura na faixa
+      neutra: 103, com DUAS partidas acima de 2%, ambas Anubis (match_11 3,8%,
+      match_25 2,1%) -- sinal de que o corte pode não servir num terreno dali;
+    - PIORA (troca de botão) em 2 lineups, os dois com o rótulo ANTIGO fora de
+      qualquer tolerância: match_46:4:985 (330 u/s -> 203, "médio" -> "curto",
+      pulo 12 ticks) e match_31:8:545 (524 -> 683, "médio" -> "longo", descendo
+      escada com vz -146 que o modelo antigo descontava). Replay idêntico no
+      compara_capturas (direção desligada); pytest 987 passed.
+    **DEFINIÇÃO DE PIORA (Pedro, 2026-09-27, mudança de critério registrada):**
+    piora = o arremesso tinha o botão X com a velocidade antiga a até
+    TOLERANCIA_BOTAO do centro de X e passa a ter outro botão, ou fica neutro
+    sem regra explícita. CORREÇÃO DE RÓTULO ANTIGO = tinha X com a velocidade
+    antiga FORA da tolerância e passa a outro botão dentro dela por causa
+    identificada (regra do pulo, vertical 0 em escada/rampa, janela, pés em t);
+    não trava o merge, mas é listada. Troca sem causa é piora. O portão existe
+    para o produto não retirar afirmação JUSTIFICADA; o "centro mais próximo
+    sem tolerância" do modelo antigo nunca foi. Correções hoje: match_46:4:985
+    (KSCERATO, HE, r4: médio a 330 u/s, 114 do centro -> curto a 203, 0,5 do
+    centro; regra do pulo, 12 ticks) e match_31:8:545 (YEKINDAR, smoke, r8:
+    médio a 524, 84 do centro -> longo a 683, 8 do centro; vertical 0 em
+    escada, vz -146).
+    **VALIDAÇÃO FORA DA AMOSTRA (2026-09-27, `scripts/valida_rota_a.py`, 11
+    partidas novas com gabarito, constantes CONGELADAS): PAROU.** Botão 99,8-100%
+    em todas; postura no chão 99,4-100%; cobertura 95,5-99,3%. FALHAS:
+    (1) "no ar" na match_11 98,9% (442/447): 3 descidas de rampa em que a 2ª
+    diferença cai perto da gravidade (estado ambíguo, marcado no ar) e 2
+    solturas no tick de pouso/decolagem; (2) INVARIANTE em 2 rotulados com
+    rótulo CERTO: match_16:10:199 (no ar pela demo, jogo usou vz fixa 219, a
+    posição não mostra parábola -> modelo usou vz 0; erro 273,5) e
+    match_14:6:222 (vetor horizontal do jogador pela posição [-52, 226] contra
+    [69, 84] usado pelo jogo; erro 233,5); match_18:13:477 185,8, abaixo do
+    limite. Respostas: nenhuma soltura de 0-5 ticks nas 11; 38 de 14 ticks e
+    todas com a vz FIXA; Anubis separa (em pé mais baixo +0,07 do corte,
+    agachado mais alto -4,26) e a faixa pega 16 em pé + 1 agachado no ar; pés
+    em t: em movimento 3,36 -> 0,69u (n = 3.941), parado idêntico (n = 1.321).
+    Gabaritos: 13 partidas (12 recuperadas + match_23; o "11" dos relatórios era
+    erro de contagem), 3,9 MB em .json.gz.
+    **Rodada seguinte (2026-09-27):**
+    - os 4 "rótulos errados" da validação eram LEITURA ERRADA DO GABARITO: no
+      tick da soltura a entidade da arma já é a próxima granada do mesmo tipo,
+      com força 0; o gerador passou a ler a força em t-1. Com isso o botão
+      acerta 100% nas 13 partidas, também FORA DA AMOSTRA;
+    - GUARDA DO VOO: o primeiro segmento do projétil é a velocidade inicial
+      gravada + (0, 0, -7,51) (mediana, n = 6.846); o resíduo |vp - (previsto +
+      deslocamento)| acompanha o erro do vetor (correlação 0,999). Vetores
+      certos (erro < 5, voo limpo): resíduo máximo 6,68; grosseiros (erro acima
+      da tolerância antes da guarda, 25): mínimo 25,28; limiar = meio do vão =
+      15,98. Pega os 6 erros acima de 50 u/s (inclusive os 2 da invariante);
+      custo de cobertura < 1 ponto em 12 das 13 partidas, 1,62 na match_15 (os
+      5 que ela tira têm erro REAL de 15 a 100 u/s). CAMINHO POSSÍVEL, não
+      implementado: como o resíduo nos casos bons é pequeno (p50 1,5, p99 5,2
+      u/s), a trajetória observada do projétil poderia ESTIMAR o vetor
+      inicial, não só conferi-lo;
+    - tolerância = 19 depois da guarda (p99 9,49, n = 6.682; antes da guarda 25,
+      p99 12,47);
+    - "no ar" INDETERMINADO: estado vertical ambíguo e soltura na troca entre
+      queda livre e chão (2ª diferença de gravidade vizinha a uma anômala em
+      t-2..t). Indeterminados 0 a 3,1% por partida (acima de 2%: match_10 3,1%,
+      match_15 2,9%, match_14 2,1%);
+    - faixa de postura por QUANTIL (acerto >= 99,5% fora da faixa em TODAS as
+      partidas): a curva não é monótona e só o quantil 0 (e o de 5%) passa; fica
+      o 0: [-4,01; +2,10], cobertura 97,9%. Os 6 erros que o corte sozinho faria
+      no chão são todos em pé que saem baixos (a cauda da 21c) e caem na faixa;
+    - dentro da amostra (13 partidas): botão 100%, "no ar" 99,7-100% nos
+      determinados, postura fora da faixa 100%, invariante máx 14,1 < 217,2;
+    - **PARADO no merge:** a guarda derruba 4 testes EXISTENTES de
+      `test_grenade_throws.py` -- o gerador sintético lança na direção CRUA da
+      mira, sem o remapeamento de pitch do jogo, e a guarda o vê 9° fora.
+      Mudança proposta (3 linhas no `_cenario`, testada e revertida): o
+      projétil sintético sai na `direcao_do_lancamento`; com ela, 39/39.
+    **ROTA A NO MAIN (2026-09-27).** Estado final e os números que se citam:
+    - GENERALIZAÇÃO (o número honesto): validação FORA DA AMOSTRA, constantes
+      da match_23 congeladas, SEM a guarda, gabarito já corrigido -- botão 100%
+      nas 13 partidas; "no ar" 98,9-100% (match_11 98,9%); postura no chão
+      99,4-100%; invariante do vizinho quebrada em 2 (match_14 233,5 e
+      match_16 273,5, rótulo certo). DENTRO DA AMOSTRA (constantes das 13, com
+      a guarda): botão 100%, "no ar" 99,7-100% nos determinados, postura fora
+      da faixa 100%, invariante máx 14,1 < 217,2.
+    - **A GUARDA DO VOO AINDA NÃO FOI VALIDADA FORA DA AMOSTRA**: o limiar
+      (15,98) saiu das mesmas 13 partidas em que foi medido. A próxima leva de
+      demos com gabarito é o teste dela. Até lá, o número de generalização que
+      se cita é a coluna "fora" acima (constantes congeladas, sem a guarda).
+    - Custo da guarda: < 1 ponto de cobertura em 12 das 13 partidas; 1,62 na
+      match_15, onde os 5 que ela tira têm erro real de 15 a 100 u/s
+      (aprovado pelo Pedro: eram afirmações que o modelo não sustentava).
+    - "No ar" indeterminado acima de 2%, aceito (indeterminado não afirma):
+      match_10 (Dust2) 3,1% -- 7 parábolas sem pulo limpo, 2 transições no
+      chão, 1 subindo sem parábola; match_15 (Mirage) 2,9% -- 4 subindo sem
+      parábola, 3 parábolas sem pulo limpo, 2 transições; match_14 (Ancient)
+      2,1% -- 7 subindo sem parábola, 2 parábolas sem pulo limpo, 1 queda sem
+      decolagem.
+    - Âncora da direção (`test_ancora_a_direcao_do_lancamento_no_dado_real`):
+      o gerador sintético de test_grenade_throws usa direcao_do_lancamento, e
+      ela é conferida contra m_vInitialVelocity nos parados (n = 1.253):
+      mediana 0,00015°, p95 0,14°; arremesso a arremesso só 76% ficam abaixo
+      de 0,01° (cauda provavelmente da mira girando no tick) -- o teste exige
+      mediana < 0,01° e p95 < 0,2°.
+    - Corpus: botão em 22.774 de 23.895 (95,3%). Neutros: guarda do voo 349,
+      tolerância 200, parábola sem pulo limpo 154, janela 14-18 145, janela 0-5
+      141, subindo sem parábola 94, queda sem decolagem 22, ticks faltando 16.
+    - Biblioteca contra o main: piora 0; 11.063 lineups ganharam botão; 466
+      ficaram neutros por regra; 16.572 comandos mudaram (pés em t); 2
+      correções de rótulo antigo (match_46:4:985 e match_31:8:545, acima).
+      `py -3.12 -m scripts.piora_rota_a` refaz a conta.
 
 21b. **A reprodução por console depende de validação prática do Pedro, não do
     código.** Origem do `setpos`, sinal do `setang` e pré-requisitos de servidor

@@ -16,7 +16,7 @@ import json, sys
 from pathlib import Path
 import numpy as np
 sys.stdout.reconfigure(encoding="utf-8")
-G = json.load(open(Path(__file__).resolve().parents[1] / "tests/fixtures/gabarito_arremessos_match_23.json", encoding="utf-8"))
+G = __import__("json").loads(__import__("gzip").decompress((Path(__file__).resolve().parents[1] / "tests/fixtures/gabarito_arremessos_match_23.json.gz").read_bytes()))
 A = G["arremessos"]
 T = 64
 g_t = -800.0 / T ** 2
@@ -142,7 +142,7 @@ for duck in (0, 1):
     print("   piores:", [(a["id"], round(a["hz2"], 2), round(-a["tau_dec"] * 64, 2)) for a in sorted(s, key=lambda a: -a["hz2"])[:5]])
 
 print("\n== horizontal no ar pela janela de x,y interpolada em decolagem + 0,1 s")
-G2 = json.load(open(Path(__file__).resolve().parents[1] / "tests/fixtures/gabarito_arremessos_match_23.json", encoding="utf-8"))
+G2 = __import__("json").loads(__import__("gzip").decompress((Path(__file__).resolve().parents[1] / "tests/fixtures/gabarito_arremessos_match_23.json.gz").read_bytes()))
 xy = {a["id"]: np.array(a["entrada"]["xy_janela"]) for a in G2["arremessos"]}
 for a in ar:
     if a.get("tau_dec") is None: continue
