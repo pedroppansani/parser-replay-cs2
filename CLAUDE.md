@@ -802,6 +802,23 @@ testada e estava errada.
     mediano -29° (contra -8° do cheio). É categoria real de jogo, não ruído; o
     desconto da velocidade vertical do pulo não o traz de volta ao grupo cheio.
     Nomear/separar (pela flag `no_ar` em vez da velocidade) é do Pedro.
+    **Investigação do grupo de ~784 u/s (2026-09-27, item 7 (b)).** A
+    velocidade da ficha JÁ é relativa (vetorial, com a vertical). Por
+    movimento: parado, andando e correndo saem em exatamente 3 grupos (99,0 a
+    99,8% perto de 198/443/675); só "no ar" não fecha (91,9%, 7 grupos). Contra
+    um controle do mesmo tamanho, o grupo de 784 (126 arremessos) é 71%
+    AGACHADO (controle 29%), com vz do jogador concentrada em 122-133 u/s e a
+    parábola quebrando 11-12 ticks antes da soltura. H1 (soltura no tick da
+    decolagem) REFUTADA: 12% a 0-1 tick nos dois. H2 (soltura errada) REFUTADA:
+    resíduo 0,0u nos dois, tick oficial em 94%. O grupo não é um tipo à parte:
+    entre os 1.091 arremessos agachados a 11-13 ticks, só 12,7% chegam a 784
+    (mediana 714, contra 681 do controle) -- é a cauda de um desvio do
+    arremesso AGACHADO NO AR. Hipótese sem confirmação: agachar no pulo desloca
+    a origem do jogador, e a velocidade medida pela posição deixa de ser a
+    velocidade física que o jogo herda. Um fator vertical de 1,375 foi
+    RECUSADO pelo Pedro (encaixado nos grupos, sem causa física); o rótulo
+    fica neutro fora dos 3 grupos, e a medição controlada está em
+    `PENDENCIAS_NO_JOGO.md`.
 
 21b. **A reprodução por console depende de validação prática do Pedro, não do
     código.** Origem do `setpos`, sinal do `setang` e pré-requisitos de servidor
