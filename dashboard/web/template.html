@@ -2222,6 +2222,8 @@
           partida: (M && M.match_id) || "", round: cur.round, quadro: i0,
           relogio: relogioDe(i0 / R.sample_hz).main,
           tick: cur.t0 !== undefined && R.sample_every ? cur.t0 + i0 * R.sample_every : null,
+          // o elenco do round inteiro, vivos e mortos: é o banco da prancheta
+          elenco: cur.players.map(function (p) { return { nome: p.name, lado: p.side }; }),
           jogadores: cur.players.filter(function (p) { return p.alive[i0]; }).map(function (p) {
             return { nome: p.name, lado: p.side, x: p.x[i0], y: p.y[i0],
                      yaw: p.d ? p.d[i0] : null, nivel: p.lv ? p.lv[i0] : 0 };

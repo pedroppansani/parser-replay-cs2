@@ -57,6 +57,11 @@ input[type=number] { flex: 0 0 72px; }
             font-weight: 600; cursor: grab; user-select: none; touch-action: none; aspect-ratio: 1; }
 .pr-ficha.ct { background: var(--ct); } .pr-ficha.t { background: var(--t); }
 .pr-ficha.no-mapa { opacity: 0.45; }
+/* banco com os jogadores reais do round: pílula com o nome */
+#pr-banco.nomes { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); }
+.pr-ficha.nome { border-radius: 16px; aspect-ratio: auto; padding: 0 8px; font-size: 12px;
+                 overflow: hidden; white-space: nowrap; text-overflow: ellipsis; display: block;
+                 line-height: 32px; text-align: center; }
 .pr-ficha.arrastando { cursor: grabbing; outline: 2px solid var(--ink); }
 .pr-dica, .pr-meta { color: var(--ink-2); margin: 4px 0; }
 .pr-alerta { color: var(--alerta); margin: 6px 0; }

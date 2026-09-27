@@ -440,6 +440,8 @@ def problemas(doc: dict, calibracoes: dict[str, str] | None = None) -> list[str]
         erros.append("id da tática fora do formato")
     if calibracoes is not None and "mapa" in doc and calibracoes.get(doc["mapa"]) != doc.get("calibracao"):
         erros.append("a tática foi feita sobre outra calibração do radar deste mapa: precisa ser reprojetada")
+    if doc.get("origem") is not None:
+        erros += problemas_da_origem(doc["origem"])
     ops = doc.get("operacoes")
     if not isinstance(ops, list):
         return erros
@@ -474,6 +476,39 @@ def problemas(doc: dict, calibracoes: dict[str, str] | None = None) -> list[str]
         erros += _problemas_da_operacao(op, onde, andares, por_id)
     if _eh_inteiro(doc.get("contador")) and doc["contador"] < maior:
         erros.append("o contador está abaixo do maior número de ordem do log")
+    return erros
+
+
+def problemas_da_origem(origem) -> list[str]:
+    """O metadado `origem` de uma tática criada a partir de um instante do
+    replay: {partida, round, quadro, relogio, elenco, mortos?}. Como `mapa` e
+    `calibracao`, é da criação e não muda -- não é operação. O banco da
+    prancheta lê o elenco dele (nomes reais em vez de "TR 1..5")."""
+    if not isinstance(origem, dict):
+        return ["origem: não é um objeto"]
+    erros = []
+    if not isinstance(origem.get("partida"), str):
+        erros.append("origem: partida ausente")
+    if not _eh_inteiro(origem.get("round")) or origem["round"] < 1:
+        erros.append("origem: round inválido")
+    if not _eh_inteiro(origem.get("quadro")) or origem["quadro"] < 0:
+        erros.append("origem: quadro inválido")
+    if not isinstance(origem.get("relogio"), str):
+        erros.append("origem: relógio ausente")
+    elenco = origem.get("elenco")
+    if not isinstance(elenco, list) or not elenco:
+        return erros + ["origem: elenco ausente"]
+    nomes = {}
+    for j in elenco:
+        if not isinstance(j, dict) or not isinstance(j.get("nome"), str) or not j["nome"] or j.get("lado") not in LADOS:
+            erros.append(f"origem: jogador do elenco inválido: {j!r}")
+            continue
+        if j["nome"] in nomes:
+            erros.append(f"origem: {j['nome']} repetido no elenco")
+        nomes[j["nome"]] = j["lado"]
+    for lado in LADOS:
+        if sum(1 for v in nomes.values() if v == lado) > PECAS_POR_LADO:
+            erros.append(f"origem: mais de {PECAS_POR_LADO} jogadores de {lado} no elenco")
     return erros
 
 

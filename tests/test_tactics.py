@@ -351,3 +351,35 @@ def test_as_listas_do_traco_na_prancheta_batem_com_as_da_anotacao():
     lista = json.loads(js[ini:js.index("];", ini) + 1].split("=", 1)[1])
     assert sorted(lista) == sorted(FERRAMENTAS)
     assert f"var FORMATO = {FORMATO};" in js
+
+
+# --- Tática do instante: metadado origem e banco com nomes reais ------------------
+
+ELENCO = [{"nome": n, "lado": "t"} for n in ("donk", "sh1ro", "zont1x", "magixx", "chopper")] + \
+         [{"nome": n, "lado": "ct"} for n in ("ZywOo", "apEX", "flameZ", "mezii", "ropz")]
+
+CASOS_ORIGEM = [
+    ({"partida": "match_02", "round": 6, "quadro": 40, "relogio": "1:05", "elenco": ELENCO}, 0),
+    ({"partida": "match_02", "round": 0, "quadro": -1, "relogio": 5, "elenco": ELENCO}, 3),
+    ({"partida": "match_02", "round": 6, "quadro": 4, "relogio": "1:05",
+      "elenco": ELENCO + [{"nome": "extra", "lado": "t"}]}, 1),
+    ({"partida": "match_02", "round": 6, "quadro": 4, "relogio": "1:05",
+      "elenco": ELENCO[:9] + [{"nome": "donk", "lado": "ct"}]}, 1),
+    ({"partida": "match_02", "round": 6, "quadro": 4, "relogio": "1:05", "elenco": []}, 1),
+    ("não é objeto", 1),
+]
+
+
+@pytest.mark.parametrize("origem, n", CASOS_ORIGEM)
+def test_problemas_da_origem(origem, n):
+    from metrics.tactics import problemas_da_origem
+    assert len(problemas_da_origem(origem)) == n
+
+
+def test_origem_entra_na_validacao_do_documento():
+    d = _doc(_base())
+    d["origem"] = CASOS_ORIGEM[0][0]
+    assert valida(d)["titulo"] == "Execução B"
+    d["origem"] = CASOS_ORIGEM[1][0]
+    with pytest.raises(TaticaInvalida, match="origem"):
+        valida(d)

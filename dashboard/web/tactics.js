@@ -422,6 +422,7 @@ var Prancheta = (function () {
     ["id", "mapa", "criada_por", "criada_em", "contador", "operacoes", "calibracao"].forEach(function (c) {
       if (!tem(doc, c)) erros.push("falta o campo '" + c + "'");
     });
+    if (doc.origem !== undefined && doc.origem !== null) erros = erros.concat(problemasDaOrigem(doc.origem));
     if (!Array.isArray(doc.operacoes)) return erros;
     var porId = {}, vistos = {}, maior = 0;
     doc.operacoes.forEach(function (op) { if (op && op.id) porId[op.id] = op; });
@@ -464,6 +465,30 @@ var Prancheta = (function () {
       }
     });
     if (ehInteiro(doc.contador) && doc.contador < maior) erros.push("o contador está abaixo do maior número de ordem do log");
+    return erros;
+  }
+
+  /** Espelho de metrics.tactics.problemas_da_origem. */
+  function problemasDaOrigem(o) {
+    if (!o || typeof o !== "object" || Array.isArray(o)) return ["origem: não é um objeto"];
+    var erros = [];
+    if (typeof o.partida !== "string") erros.push("origem: partida ausente");
+    if (!ehInteiro(o.round) || o.round < 1) erros.push("origem: round inválido");
+    if (!ehInteiro(o.quadro) || o.quadro < 0) erros.push("origem: quadro inválido");
+    if (typeof o.relogio !== "string") erros.push("origem: relógio ausente");
+    if (!Array.isArray(o.elenco) || !o.elenco.length) return erros.concat(["origem: elenco ausente"]);
+    var nomes = {};
+    o.elenco.forEach(function (j) {
+      if (!j || typeof j.nome !== "string" || !j.nome || LADOS.indexOf(j.lado) < 0) {
+        erros.push("origem: jogador do elenco inválido"); return;
+      }
+      if (tem(nomes, j.nome)) erros.push("origem: " + j.nome + " repetido no elenco");
+      nomes[j.nome] = j.lado;
+    });
+    LADOS.forEach(function (lado) {
+      var n = Object.keys(nomes).filter(function (k) { return nomes[k] === lado; }).length;
+      if (n > PECAS_POR_LADO) erros.push("origem: mais de " + PECAS_POR_LADO + " jogadores de " + lado + " no elenco");
+    });
     return erros;
   }
 
@@ -1153,8 +1178,11 @@ var Prancheta = (function () {
   // Uma tática no meio da criação (antes do primeiro passo) não tem quadro.
   function temQuadro() { return !!(S.estado && S.estado.passos.length); }
 
+  var bancoDe = null;   // de que tática o banco foi montado
+
   function atualizaTudo() {
     if (!temQuadro()) return;
+    if (bancoDe !== S.doc.id) { bancoDe = S.doc.id; montaBanco(); }
     atualizaBiblioteca(); atualizaPassos(); atualizaPainel(); atualizaBusca(); atualizaFerramentas();
     atualizaBanco(); atualizaBarra(); atualizaAviso(); desenha();
   }
@@ -1218,6 +1246,7 @@ var Prancheta = (function () {
         return q.pecas[id].lado === f.getAttribute("data-lado") && q.pecas[id].rotulo === f.getAttribute("data-rotulo");
       });
       f.classList.toggle("no-mapa", noMapa);
+      f.title = noMapa ? "No mapa neste passo: arraste para mover" : "Arraste para o mapa";
     });
   }
 
@@ -1383,13 +1412,21 @@ var Prancheta = (function () {
   /* ---------------------------------------------------------------------
      Montagem
      --------------------------------------------------------------------- */
+  /** O banco: "TR 1..5" e "CT 1..5", ou -- em tática que veio de um instante do
+      replay -- os jogadores REAIS do round, vivos e mortos, lidos do metadado
+      `origem` (nunca inferidos dos rótulos). */
   function montaBanco() {
     var banco = limpa($("pr-banco"));
+    var elenco = S.doc && S.doc.origem && S.doc.origem.elenco;
+    banco.classList.toggle("nomes", !!elenco);
     LADOS.forEach(function (lado) {
-      for (var n = 1; n <= PECAS_POR_LADO; n++) {
+      var rotulos = elenco
+        ? elenco.filter(function (j) { return j.lado === lado; }).map(function (j) { return j.nome; })
+        : [1, 2, 3, 4, 5].slice(0, PECAS_POR_LADO).map(String);
+      rotulos.forEach(function (rotulo) {
         (function (rotulo) {
-          var b = el("div", { class: "pr-ficha " + lado, "data-lado": lado, "data-rotulo": rotulo,
-                              title: "Arraste para o mapa", texto: rotulo });
+          var b = el("div", { class: "pr-ficha " + lado + (elenco ? " nome" : ""), "data-lado": lado,
+                              "data-rotulo": rotulo, title: "Arraste para o mapa", texto: rotulo });
           b.addEventListener("pointerdown", function (e) {
             e.preventDefault();
             b.setPointerCapture(e.pointerId);
@@ -1400,8 +1437,8 @@ var Prancheta = (function () {
             if (S.doc) soltaDoBanco(e, lado, rotulo);
           });
           banco.appendChild(b);
-        })(String(n));
-      }
+        })(rotulo);
+      });
     });
   }
 
@@ -1586,9 +1623,17 @@ var Prancheta = (function () {
         (ehInteiro(j.nivel) && j.nivel >= 0 && j.nivel < ANDARES.length);
     });
     novaTatica();
+    // metadado da criação: não é operação e não muda depois (como mapa e calibração)
+    var elenco = Array.isArray(retrato.elenco) ? retrato.elenco.filter(function (j) {
+      return j && typeof j.nome === "string" && j.nome && LADOS.indexOf(j.lado) >= 0;
+    }).map(function (j) { return { nome: j.nome.slice(0, 32), lado: j.lado }; }) : [];
+    var origem = { partida: String(retrato.partida || ""), round: retrato.round, quadro: retrato.quadro,
+                   relogio: String(retrato.relogio || ""), elenco: elenco };
+    if (!problemasDaOrigem(origem).length) S.doc.origem = origem;
+    bancoDe = null;   // o banco da tática nova passa a ser o elenco do round
     var passo = passoAtual();
     validos.forEach(function (j) {
-      var dados = { peca: novoId(), lado: j.lado, rotulo: j.nome.slice(0, 16), passo: passo,
+      var dados = { peca: novoId(), lado: j.lado, rotulo: j.nome.slice(0, 32), passo: passo,
                     x: j.x, y: j.y, nivel: j.nivel };
       if (j.yaw !== null && j.yaw !== undefined) dados.yaw = j.yaw;
       emite("cria_peca", dados, false);
@@ -1777,7 +1822,7 @@ var Prancheta = (function () {
       quadroDoPasso: quadroDoPasso, ordemDeCriacao: ordemDeCriacao, anuladas: anuladas,
       estadoNoTempo: estadoNoTempo, linhaDoTempo: linhaDoTempo, reproduzAte: function (t) { reproduzAte(t); },
       comecaReproducao: comecaReproducao, editaAqui: editaAqui, toca: function (s) { toca(s); },
-      problemas: problemas, centro: function () { return CENTRO; },
+      problemas: problemas, problemasDaOrigem: problemasDaOrigem, centro: function () { return CENTRO; },
       jogoParaPixel: jogoParaPixel, pixelParaJogo: pixelParaJogo,
       importaTexto: importaTexto, gravaAgora: gravaAgora, busca: busca, usaArremesso: usaArremesso,
       desfaz: desfaz, refaz: refaz, aplicaZoom: aplicaZoom, reprojeta: reprojeta,

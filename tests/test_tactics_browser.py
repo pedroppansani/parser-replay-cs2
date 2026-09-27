@@ -793,3 +793,67 @@ def test_o_relogio_do_titulo_e_o_do_quadro_usado(navegador, tmp_path_factory):
         assert "4 por segundo" in pg.locator("#anot-tatica-instante").get_attribute("title")
     finally:
         ctx.close()
+
+
+ELENCO_TESTE = [{"nome": n, "lado": "t"} for n in ("donk", "sh1ro", "zont1x", "magixx", "chopper")] + \
+               [{"nome": n, "lado": "ct"} for n in ("ZywOo", "apEX", "flameZ", "mezii", "ropz")]
+
+
+def _abre_instante(contexto, pagina, retrato):
+    import urllib.parse
+    pg = contexto.new_page()
+    pg.goto(pagina.as_uri() + "#instante=" + urllib.parse.quote(json.dumps(retrato)))
+    pg.wait_for_function("() => Prancheta._interno.S.estado !== null")
+    return pg
+
+
+def _retrato_com_um_morto():
+    vivos = [dict(j, x=-1200.0 + 60 * i, y=300.0 - 40 * i, yaw=0, nivel=0)
+             for i, j in enumerate(ELENCO_TESTE) if j["nome"] != "sh1ro"]
+    return {"partida": "match_02", "round": 6, "quadro": 40, "relogio": "1:05",
+            "elenco": ELENCO_TESTE, "jogadores": vivos}
+
+
+def test_o_espelho_valida_a_origem_igual_ao_python(contexto, pagina):
+    from metrics.tactics import problemas_da_origem
+    casos = [
+        {"partida": "match_02", "round": 6, "quadro": 40, "relogio": "1:05", "elenco": ELENCO_TESTE},
+        {"partida": "match_02", "round": 0, "quadro": -1, "relogio": 5, "elenco": ELENCO_TESTE},
+        {"partida": "m", "round": 6, "quadro": 4, "relogio": "x", "elenco": ELENCO_TESTE + [{"nome": "extra", "lado": "t"}]},
+        {"partida": "m", "round": 6, "quadro": 4, "relogio": "x", "elenco": ELENCO_TESTE[:9] + [{"nome": "donk", "lado": "ct"}]},
+        {"partida": "m", "round": 6, "quadro": 4, "relogio": "x", "elenco": []},
+    ]
+    pg = abre(contexto, pagina)
+    for c in casos:
+        js = interno(pg, f"I.problemasDaOrigem({json.dumps(c)})")
+        assert len(js) == len(problemas_da_origem(c)), c
+
+
+def test_banco_de_tatica_do_replay_mostra_os_jogadores_do_round(contexto, pagina):
+    pg = _abre_instante(contexto, pagina, _retrato_com_um_morto())
+    assert interno(pg, "S.doc.origem.round") == 6
+    fichas = pg.locator(".pr-ficha")
+    assert sorted(fichas.nth(i).get_attribute("data-rotulo") for i in range(fichas.count())) == \
+           sorted(j["nome"] for j in ELENCO_TESTE)
+    assert "no-mapa" in pg.locator('.pr-ficha[data-rotulo="donk"]').get_attribute("class")
+    assert "no-mapa" not in pg.locator('.pr-ficha[data-rotulo="sh1ro"]').get_attribute("class")
+    n_pecas = interno(pg, "Object.keys(S.estado.pecas).length")
+
+    # arrastar um VIVO move a peça dele, não cria outra
+    arrasta_do_banco(pg, "t", "donk", 0.6, 0.6)
+    ops = interno(pg, "S.doc.operacoes")
+    assert ops[-1]["tipo"] == "move_peca"
+    assert interno(pg, "Object.keys(S.estado.pecas).length") == n_pecas
+    # arrastar o MORTO cria a peça com o nome dele
+    arrasta_do_banco(pg, "t", "sh1ro", 0.4, 0.6)
+    ops = interno(pg, "S.doc.operacoes")
+    assert ops[-1]["tipo"] == "cria_peca" and ops[-1]["rotulo"] == "sh1ro"
+    assert interno(pg, "Object.keys(S.estado.pecas).length") == n_pecas + 1
+
+
+def test_tatica_que_nao_veio_do_replay_continua_com_o_banco_numerado(contexto, pagina):
+    pg = abre(contexto, pagina)
+    assert interno(pg, "S.doc.origem === undefined")
+    fichas = pg.locator(".pr-ficha")
+    assert sorted(fichas.nth(i).get_attribute("data-rotulo") for i in range(fichas.count())) == \
+           sorted([str(n) for n in range(1, 6)] * 2)
