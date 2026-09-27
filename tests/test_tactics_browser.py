@@ -486,3 +486,191 @@ def test_vertigo_abre_sem_busca_de_arremesso_e_diz_por_que(contexto, tmp_path_fa
     assert pg.locator('aside [data-ferramenta="buscar"]').is_disabled()
     motivo = pg.locator("#pr-sem-biblioteca")
     assert motivo.is_visible() and "não há partidas" in motivo.text_content()
+
+
+# --- Etapa 3: reprodução --------------------------------------------------------
+
+def _tatica_de_reproducao(pg):
+    """Três passos: peça que anda e gira de 350° para 10°, peça que entra, smoke
+    que fica, flash de um passo, dois traços no mesmo passo."""
+    def op(seq, tipo, **d):
+        return {"id": f"r{seq:04d}", "seq": seq, "autor": "pedro", "em": "2026-09-26T00:00:00Z", "tipo": tipo, **d}
+    ops = [
+        op(1, "renomeia", titulo="Reprodução"),
+        op(2, "cria_passo", passo="p1", titulo="posições"), op(3, "cria_passo", passo="p2", titulo="utilidade"),
+        op(4, "cria_passo", passo="p3", titulo="entrada"), op(5, "define_duracao", passo="p2", segundos=3.0),
+        op(6, "cria_peca", peca="a", lado="t", rotulo="1", passo="p1", x=-1200.0, y=300.0, yaw=350.0),
+        op(7, "gira_peca", peca="a", passo="p2", yaw=10.0),
+        op(8, "move_peca", peca="a", passo="p3", x=-800.0, y=-100.0),
+        op(9, "cria_peca", peca="b", lado="t", rotulo="2", passo="p2", x=-1100.0, y=200.0),
+        op(10, "cria_granada", granada="s", arma="smoke", passo="p1", origem=[-1200.0, 300.0], destino=[-700.0, -300.0]),
+        op(11, "cria_traco", traco="t1", passo="p2", ferramenta="caneta", cor="#eb6834", espessura=4,
+           pontos=[[-900, 0], [-850, -20], [-800, -60], [-760, -110], [-720, -170]]),
+        op(12, "cria_traco", traco="t2", passo="p2", ferramenta="seta", cor="#2a78d6", espessura=4,
+           pontos=[[-1000, 100], [-700, 100]]),
+        op(13, "cria_granada", granada="f", arma="flash", passo="p2", origem=[-1100.0, 200.0], destino=[-900.0, -50.0]),
+    ]
+    doc = interno(pg, "S.doc")
+    doc.update({"id": "reproducao0001", "versao": 2, "contador": 13, "operacoes": ops})
+    assert interno(pg, f"I.importaTexto({json.dumps(json.dumps(doc))})") is True
+    return doc
+
+
+def _cena(pg, t):
+    return interno(pg, f"I.estadoNoTempo(S.estado, {t}, I.centro())")
+
+
+def _fins(pg):
+    """Instante em que cada passo fica completo (fim do intervalo dele)."""
+    lt = interno(pg, "I.linhaDoTempo(S.estado)")
+    durs = interno(pg, "S.estado.passos.map(p => p.duracao_s)")
+    return [i + d for i, d in zip(lt["inicios"], durs)]
+
+
+def test_no_fim_de_cada_passo_a_reproducao_e_o_quadro_do_passo(contexto, pagina):
+    pg = abre(contexto, pagina)
+    _tatica_de_reproducao(pg)
+    for k, t in enumerate(_fins(pg)):
+        c, q = _cena(pg, t), interno(pg, f"I.quadroDoPasso(S.estado, {k}, I.centro())")
+        assert c["indice"] == k
+        assert {i: (p["x"], p["y"], p["nivel"], p["yaw"]) for i, p in c["pecas"].items()} == \
+               {i: (p["x"], p["y"], p["nivel"], p["yaw"]) for i, p in q["pecas"].items()}, f"passo {k}"
+        assert {i: g["linha"] == 1 for i, g in c["granadas"].items()} == \
+               {i: g["nasceu_neste_passo"] for i, g in q["granadas"].items()}
+        assert {i: tr["pontos"] for i, tr in c["tracos"].items()} == {i: tr["pontos"] for i, tr in q["tracos"].items()}
+        assert all(e["alfa"] == 1 for grupo in ("pecas", "granadas", "tracos") for e in c[grupo].values())
+
+
+def test_no_comeco_as_pecas_ja_estao_no_lugar(contexto, pagina):
+    pg = abre(contexto, pagina)
+    _tatica_de_reproducao(pg)
+    c = _cena(pg, 0)
+    assert (c["pecas"]["a"]["x"], c["pecas"]["a"]["y"], c["pecas"]["a"]["yaw"]) == (-1200.0, 300.0, 350.0)
+    assert c["granadas"] == {}                    # a smoke do passo 1 ainda vai aparecer
+
+
+def test_no_meio_da_transicao_de_350_para_10_a_direcao_e_0(contexto, pagina):
+    pg = abre(contexto, pagina)
+    _tatica_de_reproducao(pg)
+    fins = _fins(pg)
+    meio = fins[0] + (fins[1] - fins[0]) / 2
+    yaw = _cena(pg, meio)["pecas"]["a"]["yaw"]
+    assert min(yaw, 360 - yaw) < 1e-9, yaw
+    # e nunca passa por 180: o caminho é o curto
+    for i in range(1, 20):
+        v = _cena(pg, fins[0] + (fins[1] - fins[0]) * i / 20)["pecas"]["a"]["yaw"]
+        assert min(v, 360 - v) <= 10 + 1e-9, v
+
+
+def test_um_traco_so_comeca_depois_que_o_anterior_ficou_completo(contexto, pagina):
+    pg = abre(contexto, pagina)
+    _tatica_de_reproducao(pg)
+    fins = _fins(pg)
+    viu_parcial = False
+    for i in range(0, 61):
+        c = _cena(pg, fins[0] + (fins[1] - fins[0]) * i / 60)
+        t1, t2 = c["tracos"].get("t1"), c["tracos"].get("t2")
+        if t1 and t1["progresso"] < 1:
+            viu_parcial = True
+            assert t2 is None, "o segundo traço começou antes do primeiro terminar"
+        if t2:
+            assert t1 and t1["progresso"] == 1 and len(t1["pontos"]) == 5
+    assert viu_parcial, "o primeiro traço não foi riscado aos poucos"
+
+
+def test_elemento_de_um_passo_criado_no_passo_2_nao_aparece_no_3(contexto, pagina):
+    pg = abre(contexto, pagina)
+    _tatica_de_reproducao(pg)
+    fins = _fins(pg)
+    assert "f" in _cena(pg, fins[1])["granadas"]
+    meio3 = fins[1] + (fins[2] - fins[1]) / 2
+    c = _cena(pg, meio3)
+    assert "f" not in c["granadas"] and "t1" not in c["tracos"]
+    assert "s" in c["granadas"] and c["granadas"]["s"]["linha"] == 0   # a smoke fica, só a área
+
+
+def _arredonda(v):
+    if isinstance(v, float):
+        return round(v, 9)
+    if isinstance(v, list):
+        return [_arredonda(x) for x in v]
+    if isinstance(v, dict):
+        return {k: _arredonda(x) for k, x in v.items() if k != "t"}
+    return v
+
+
+def test_arrastar_a_barra_e_tocar_ate_o_mesmo_t_dao_o_mesmo_quadro(contexto, pagina):
+    pg = abre(contexto, pagina)
+    _tatica_de_reproducao(pg)
+    pg.click("#pr-reproduzir")
+    pg.click("#pr-velocidade"); pg.click("#pr-velocidade")          # 4x
+    pg.wait_for_timeout(700)
+    pg.click("#pr-toca")                                           # pausa
+    t = interno(pg, "S.reproducao.t")
+    tocado = interno(pg, "S.reproducao.cena")
+    assert 0 < t < tocado["total"]
+    interno(pg, "(I.reproduzAte(0), 0)")
+    barra = pg.locator("#pr-tempo")
+    barra.evaluate(f"(b, v) => {{ b.value = v; b.dispatchEvent(new Event('input')); }}", str(round(t * 1000)))
+    arrastado = interno(pg, "S.reproducao.cena")
+    assert _arredonda(arrastado) == _arredonda(_cena(pg, round(t * 1000) / 1000))
+    # e o quadro tocado é a função pura naquele t
+    assert _arredonda(tocado) == _arredonda(_cena(pg, t))
+
+
+def test_durante_a_reproducao_nada_e_editavel_e_editar_volta_no_passo(contexto, pagina):
+    pg = abre(contexto, pagina)
+    _tatica_de_reproducao(pg)
+    n = len(interno(pg, "S.doc.operacoes"))
+    pg.click("#pr-reproduzir"); pg.click("#pr-toca")
+    assert interno(pg, "document.querySelector('aside').hasAttribute('inert')")
+    assert not pg.locator("#pr-barra").is_visible() and pg.locator("#pr-player").is_visible()
+    pg.mouse.move(*no_mapa(pg, 0.5, 0.5)); pg.mouse.down()
+    pg.mouse.move(*no_mapa(pg, 0.6, 0.6), steps=5); pg.mouse.up()
+    arrasta_do_banco(pg, "ct", "5", 0.4, 0.4)
+    assert len(interno(pg, "S.doc.operacoes")) == n
+    fins = _fins(pg)
+    interno(pg, f"(I.reproduzAte({fins[0] + 0.5}), 0)")                 # no meio do passo 2
+    pg.click("#pr-editar")
+    assert interno(pg, "S.reproducao") is None and interno(pg, "S.passo") == 1
+    assert not interno(pg, "document.querySelector('aside').hasAttribute('inert')")
+    assert pg.locator("#pr-barra").is_visible() and not pg.locator("#pr-player").is_visible()
+
+
+def test_atalhos_do_replay_na_reproducao(contexto, pagina):
+    pg = abre(contexto, pagina)
+    _tatica_de_reproducao(pg)
+    pg.click("#pr-reproduzir"); pg.click("#pr-toca")
+    solta_foco(pg)
+    fins = _fins(pg)
+    pg.keyboard.press("ArrowRight")
+    assert interno(pg, "S.reproducao.t") == fins[0]
+    pg.keyboard.press("ArrowRight")
+    assert interno(pg, "S.reproducao.t") == fins[1]
+    pg.keyboard.press("ArrowLeft")
+    assert interno(pg, "S.reproducao.t") == fins[0]
+    pg.keyboard.press("]")
+    assert interno(pg, "S.reproducao.velocidade") == 2
+    pg.keyboard.press("["); pg.keyboard.press("[")
+    assert interno(pg, "S.reproducao.velocidade") == 0.5
+    pg.keyboard.press(" ")
+    assert interno(pg, "S.reproducao.tocando") is True
+
+
+def test_salvar_recarregar_abrir_pela_lista_e_reproduzir_da_o_mesmo(contexto, pagina):
+    pg = abre(contexto, pagina)
+    doc = _tatica_de_reproducao(pg)
+    instantes = [0, 0.7, 2.0, 3.3, 4.9, 6.5, 7.0]
+    antes = [_cena(pg, t) for t in instantes]
+    interno(pg, "I.gravaAgora()")
+    pg.reload()
+    pg.wait_for_function("() => Prancheta._interno.S.estado !== null")
+    pg.click("#pr-nova")                                            # outra tática aberta
+    pg.select_option("#pr-taticas", doc["id"])                      # abre pela lista
+    assert interno(pg, "S.doc.id") == doc["id"]
+    pg.click("#pr-reproduzir"); pg.click("#pr-toca")
+    depois = []
+    for t in instantes:
+        interno(pg, f"(I.reproduzAte({t}), 0)")
+        depois.append(interno(pg, "S.reproducao.cena"))
+    assert depois == antes

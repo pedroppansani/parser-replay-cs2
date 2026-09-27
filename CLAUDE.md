@@ -54,7 +54,8 @@ scripts/      process_demo (CLI), reprocessa (corpus inteiro a partir do interim
               build_player_profiles, show_derived_angles e show_map_areas
               (calibração), narrative, build_site, manifest, clean_match,
               build_lineups e build_tactics_page (prancheta)
-tests/        ~900 testes (os de navegador usam Playwright + Chrome; sem eles, pulados)
+tests/        ~985 testes (os de navegador usam Playwright + Chrome; sem eles, pulados)
+dashboard/web/map_core.js  núcleo compartilhado do mapa (decisão 33)
 demos/       .dem originais (gitignored)
 data/manifest.json origem de cada partida (versionado; scripts/manifest.py)
 data/interim/ tabelas brutas em parquet (gitignored, ticks tem 1M+ linhas)
@@ -1209,6 +1210,12 @@ testada e estava errada.
       janela perder o foco devolve o ponteiro ao desenho. Teste de aceitação:
       traço feito com zoom 3x tem o modelo IDÊNTICO depois de voltar a 1x e
       continua sobre o mesmo ponto do mapa na tela.
+    - **Nenhum texto nem estilo novo no `template.html`** (regra do Pedro,
+      2026-09-26). Rótulo de interface (botão, dica, aviso) sai do JS da
+      própria camada -- `annotations.js`, `tactics.js`, `map_core.js` --, como
+      o "Desenhar" e o "Direção". O template só ganha o ponto de injeção
+      (`/*__MAP_CORE__*/`, `/*__PRANCHETA__*/`). A decisão 18 continua sendo
+      sobre as FRASES dos cards, que saem do Python; esta é sobre a interface.
 
 24. **Saída gerada não vai para o repositório.** O que se versiona é o que gera a
     saída (código e `data/processed/`), não a saída. O site em `docs/` era 54% do
@@ -1286,6 +1293,87 @@ testada e estava errada.
       LOCALMENTE por `py -3.12 -m scripts.build_lineups`, porque depende do
       interim, que não vai para o git nem para o CI. Só entra arremesso com
       reprodução exata. Regerar depois de mudar `metrics/grenade_throws.py`.
+    - **Formato 2 (2026-09-26; a `versao: 1` acima é a do nascimento).** O
+      leitor aceita 1 e 2; a 1 é MIGRADA EM MEMÓRIA -- nenhuma operação muda,
+      só valem os padrões dos campos novos -- e exportar grava sempre a 2.
+      `tests/fixtures/tatica_v1.json` foi exportada pela interface do código
+      antigo (tag `baseline-antes-tatica`), e o teste de migração confere que o
+      código novo dá o estado de `tatica_v1_estado.json` mais os padrões.
+      Operações novas: `gira_peca`, `tira_peca`, `cria_traco`, `remove_traco`,
+      `define_duracao`, `define_vida`, `anula`, `reativa`; `nivel` (andar) nas
+      de peça e granada. O estado guarda `posicoes` como `[x, y]` e o andar em
+      `niveis` separado (um teste existente exige `[x, y]`, e assim a migração é
+      só acréscimo). `problemas(doc)` devolve TODOS os defeitos, e `valida`
+      mantém a assinatura e leva todos na mensagem.
+    - **Desfazer é `anula`/`reativa`, o mecanismo ÚNICO de desfazer e
+      refazer.** Mira operação do MESMO autor, nunca outra anula/reativa; vale a
+      última sobre cada alvo, na ordem do log. Nada sai do log, então a mescla
+      por união continua convergindo (há teste com dois autores desfazendo em
+      paralelo), e um mecanismo só serve para toda operação: anular um
+      `remove_peca` devolve a peça com o histórico, anular um `move_granada`
+      devolve o arremesso real. Não crie operações inversas por tipo.
+    - **Vida útil em `dura_passos` (null = até o fim), contando PASSOS.** Um
+      elemento criado no passo de índice p aparece em i se p <= i < p + dura.
+      Não guarda o id do passo final porque remover um passo no meio deixaria a
+      referência apontando para o nada; contando passos, a conta continua certa
+      (há teste). Padrões, convenção de interface: smoke até o fim; flash, HE,
+      molotov, decoy e traço, 1 passo.
+    - **Ordem de criação = o `(seq, autor, id)` da operação `cria_*`**, sem
+      contador próprio: o log já tem a ordem total, e um segundo contador
+      divergiria na primeira mescla. É ela que a reprodução usa para riscar os
+      desenhos na ordem em que foram feitos.
+
+33. **Um núcleo só para o mapa: `dashboard/web/map_core.js` (`window.MapCore`)**
+    (etapa 0 da prancheta, 2026-09-26). Replay, anotação e prancheta usam UMA
+    versão de: projeção jogo <-> pixel e evento -> pixel, `applyView`/zoom/pan,
+    caixa do mapa e tamanho interno (x densidade, teto `MAX_LADO_INTERNO`),
+    agrupamento por quadro, vigia de densidade, tela cheia, armazenamento
+    seguro, seletor de cor, traço (`caminhoDoTraco`, `desenhaSeta`, acerto da
+    borracha, traço curto demais), `nadeGlyph`, `NADE_COLOR`, área de smoke e
+    molotov com `RAIO_SMOKE_UNIDADES` (144) e `RAIO_MOLOTOV_UNIDADES` (120),
+    `desenhaJogador` e as `VELOCIDADES` de reprodução. Duas cópias divergem na
+    primeira correção -- e já divergiam (a prancheta convertia o ponteiro pela
+    escala de cada eixo, a anotação pela da largura).
+    A extração foi aceita por PIXEL IDÊNTICO (`scripts/compara_capturas.py`,
+    worktree de duas revisões, quadros fixos) e pelos testes de anotação e
+    prancheta passando sem alteração. `desenhaJogador` altera o estado do
+    contexto e NÃO restaura (é o que mantém o replay idêntico) -- está escrito
+    na função; não "conserte" com save/restore.
+
+34. **Direção do olhar: θ = −yaw, e o ângulo interpola pelo caminho mais
+    curto, sem Catmull-Rom** (etapa 1, 2026-09-26). No jogo o yaw 0° aponta
+    para +X e cresce no anti-horário (decisão 9); o radar inverte o Y, então a
+    direção (cos yaw, sin yaw) vira o deslocamento de tela (cos yaw, −sin yaw)
+    -- `MapCore.anguloDeTela` é a ÚNICA função com essa conta. Validado no dado
+    real: yaw do matador no tick da kill contra a direção da vítima, erro
+    mediano 0,46° em 7.685 kills, controle invertido 86,15°; na página, 154 de
+    154 kills da match_02 com a ponta a menos de 20°.
+    `MapCore.interpolaAngulo` usa delta = ((b − a + 540) % 360) − 180: de 359°
+    para 1° são +2°, não −358°. Linear de propósito -- a mira muda por saltos, e
+    suavizar inventaria rotação. No replay só interpola com o jogador vivo nos
+    dois quadros e sem salto (as guardas do par no `smoothPos`); a reprodução da
+    prancheta usa a mesma função. O `d` do replay tem um yaw inteiro por
+    quadro, no MESMO índice da posição.
+
+35. **A reprodução da prancheta é FUNÇÃO PURA DO TEMPO** (etapa 3,
+    2026-09-26). `estadoNoTempo(estado, t)` (em `tactics.js`, que é quem
+    desenha) devolve exatamente o que desenhar; não existe estado de "onde a
+    animação estava", então arrastar a barra até t e tocar até t dão o mesmo
+    quadro (há teste). O passo k ocupa o intervalo (início_k, início_k +
+    duração_k] da linha do tempo: durante ele as peças vão do passo k−1 ao k
+    com entrada e saída suaves e giram pelo caminho curto (decisão 34); troca
+    de andar não interpola (a peça aparece no andar novo na metade do passo);
+    peça que entra ou sai aparece ou some aos poucos; granadas e traços que
+    nascem no passo aparecem em ordem de criação, repartindo o passo -- a
+    granada risca a linha e depois abre o efeito, o traço se risca ponto a
+    ponto --; e o que acabou de viver some no começo do passo seguinte.
+    O ponto que o documento deixava ambíguo e foi resolvido assim: "o início
+    do passo" é o FIM da transição dele -- em t = fim do intervalo do passo k o
+    quadro é exatamente `quadro_do_passo(k)` (teste); em t = 0 as peças já
+    estão no lugar e o que nasce no passo 0 ainda vai aparecer.
+    Durante a reprodução nada é editável (barra de edição escondida, painel
+    `inert`); "Editar" volta ao editor no passo em que parou. Atalhos do
+    replay, com a mesma guarda de foco: espaço, setas (passo a passo), [ e ].
 
 ## Pontos de calibração — pertencem ao Pedro, não ao código
 

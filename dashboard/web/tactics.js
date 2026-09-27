@@ -84,6 +84,13 @@ var Prancheta = (function () {
   var RAIO_BUSCA_PADRAO = 200;
   var MAX_RESULTADOS = 40;
 
+  // Reprodução -- convenção de interface. Dentro do passo, cada granada nova
+  // usa a primeira FRACAO_LINHA da sua janela para riscar a linha do arremesso
+  // e o resto para abrir o efeito; o que acaba de viver some na primeira
+  // FRACAO_SAIDA do passo seguinte.
+  var FRACAO_LINHA = 0.5;
+  var FRACAO_SAIDA = 0.25;
+
   var ATRASO_GRAVACAO_MS = 400;
   // Uma tática nova nasce com duas operações (título e primeiro passo). Com só
   // elas, ela é VAZIA e não entra na biblioteca -- senão cada visita à página
@@ -275,6 +282,101 @@ var Prancheta = (function () {
              pecas: pecas, granadas: vivos("granadas"), tracos: vivos("tracos") };
   }
 
+  /* ---------------------------------------------------------------------
+     Reprodução -- FUNÇÃO PURA DO TEMPO
+     O passo k ocupa o intervalo (início_k, início_k + duração_k] da linha do
+     tempo (o primeiro inclui o 0). Durante ele as peças vão do passo k-1 ao k,
+     e em t = fim do intervalo o quadro é exatamente quadro_do_passo(k). Não há
+     estado de "onde a animação estava": arrastar a barra até t e tocar até t
+     chamam a mesma função com o mesmo t.
+     --------------------------------------------------------------------- */
+  function linhaDoTempo(estado) {
+    var inicios = [], total = 0;
+    estado.passos.forEach(function (p) { inicios.push(total); total += p.duracao_s; });
+    return { inicios: inicios, total: total };
+  }
+
+  // Entrada e saída suaves (smoothstep): começa e termina parado.
+  function suave(u) { return u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u); }
+  function entre(v) { return Math.max(0, Math.min(1, v)); }
+
+  function tracoParcial(t, p) {
+    var n = t.pontos.length, pontos;
+    if (t.ferramenta === "caneta") pontos = t.pontos.slice(0, Math.max(1, Math.ceil(p * n)));
+    else if (n >= 2) {
+      var a = t.pontos[0], b = t.pontos[n - 1];
+      pontos = p >= 1 ? t.pontos.slice() : [a, [a[0] + (b[0] - a[0]) * p, a[1] + (b[1] - a[1]) * p]];
+    } else pontos = t.pontos.slice();
+    return pontos;
+  }
+
+  function estadoNoTempo(estado, t, centro) {
+    var lt = linhaDoTempo(estado), n = estado.passos.length;
+    t = Math.max(0, Math.min(lt.total, t));
+    var k = 0;
+    while (k < n - 1 && t > lt.inicios[k] + estado.passos[k].duracao_s) k++;
+    var dur = estado.passos[k].duracao_s;
+    var u = dur > 0 ? entre((t - lt.inicios[k]) / dur) : 1;
+    var qk = quadroDoPasso(estado, k, centro), qp = k > 0 ? quadroDoPasso(estado, k - 1, centro) : qk;
+    var e = suave(u);
+
+    var pecas = {};
+    Object.keys(Object.assign({}, qp.pecas, qk.pecas)).forEach(function (id) {
+      var a = qp.pecas[id], b = qk.pecas[id], p;
+      if (a && b) {
+        if (e >= 1) p = Object.assign({}, b);
+        else if (e <= 0) p = Object.assign({}, a);
+        else if (a.nivel !== b.nivel) p = Object.assign({}, u < 0.5 ? a : b);   // troca de andar não interpola
+        else {
+          p = Object.assign({}, b, { x: a.x + (b.x - a.x) * e, y: a.y + (b.y - a.y) * e,
+                                     yaw: MapCore.interpolaAngulo(a.yaw, b.yaw, e) });
+        }
+        p.alfa = 1;
+      } else if (b) { p = Object.assign({}, b, { alfa: e }); }        // entra aos poucos
+      else { p = Object.assign({}, a, { alfa: 1 - e }); }             // sai aos poucos
+      if (p.alfa > 0) pecas[id] = p;
+    });
+
+    // o que nasce neste passo aparece em ordem de criação, repartindo o passo
+    var nascem = ordemDeCriacao(estado).filter(function (x) {
+      var grupo = x.tipo === "granada" ? qk.granadas : qk.tracos;
+      return grupo[x.id] && grupo[x.id].nasceu_neste_passo;
+    });
+    var janela = {};
+    nascem.forEach(function (x, j) { janela[x.id] = entre((u - j / nascem.length) * nascem.length); });
+
+    var granadas = {}, tracos = {};
+    Object.keys(qk.granadas).forEach(function (id) {
+      var g = qk.granadas[id];
+      if (g.nasceu_neste_passo) {
+        var p = janela[id];
+        if (p <= 0) return;
+        granadas[id] = Object.assign({}, g, { linha: entre(p / FRACAO_LINHA),
+          efeito: entre((p - FRACAO_LINHA) / (1 - FRACAO_LINHA)), alfa: 1 });
+      } else granadas[id] = Object.assign({}, g, { linha: 0, efeito: 1, alfa: 1 });
+    });
+    Object.keys(qk.tracos).forEach(function (id) {
+      var tr = qk.tracos[id];
+      if (tr.nasceu_neste_passo) {
+        var p = janela[id];
+        if (p <= 0) return;
+        tracos[id] = Object.assign({}, tr, { pontos: tracoParcial(tr, p), progresso: p, alfa: 1 });
+      } else tracos[id] = Object.assign({}, tr, { progresso: 1, alfa: 1 });
+    });
+    // o que acabou de viver some no começo do passo
+    var saida = 1 - entre(u / FRACAO_SAIDA);
+    if (k > 0 && saida > 0) {
+      Object.keys(qp.granadas).forEach(function (id) {
+        if (!qk.granadas[id]) granadas[id] = Object.assign({}, qp.granadas[id], { linha: 0, efeito: 1, alfa: saida });
+      });
+      Object.keys(qp.tracos).forEach(function (id) {
+        if (!qk.tracos[id]) tracos[id] = Object.assign({}, qp.tracos[id], { progresso: 1, alfa: saida });
+      });
+    }
+    return { t: t, total: lt.total, indice: k, u: u, passo: qk.passo, titulo: qk.titulo,
+             pecas: pecas, granadas: granadas, tracos: tracos };
+  }
+
   function ordemDeCriacao(estado) {
     var itens = [];
     Object.keys(estado.granadas).forEach(function (k) { itens.push(["granada", k, estado.granadas[k]]); });
@@ -447,6 +549,7 @@ var Prancheta = (function () {
     giro: null,                             // giro da roda ainda não emitido
     espaco: false, sobreMapa: false, pan: null,
     ultimoDesenho: [],                      // o que foi desenhado no último quadro (testes)
+    reproducao: null,                       // {t, tocando, velocidade, cena} enquanto reproduz
     reprojecoes: 0,
     aviso: "",
     gravacoes: 0
@@ -630,59 +733,79 @@ var Prancheta = (function () {
     var im = imgs[S.andar] || imgs[0];
     if (im && im.complete && im.naturalWidth) ctx.drawImage(im, 0, 0, cfg.radar.width, cfg.radar.height);
 
-    desenhaBusca();
-    var q = quadro();
-    Object.keys(q.granadas).forEach(function (id) { desenhaGranada(id, q.granadas[id]); });
-    Object.keys(q.tracos).forEach(function (id) { desenhaTraco(id, q.tracos[id]); });
-    if (S.tracando) MapCore.caminhoDoTraco(ctx, S.tracando, cfg.radar);
-    if (S.origemPendente) {
+    // O editor e a reprodução desenham a mesma CENA; só o editor põe por cima
+    // busca, rascunho, rastro do passo anterior e seleção.
+    var editando = !S.reproducao;
+    var cena = editando ? cenaDoEditor() : S.reproducao.cena;
+    if (editando) desenhaBusca();
+    Object.keys(cena.granadas).forEach(function (id) { desenhaGranada(id, cena.granadas[id], editando); });
+    Object.keys(cena.tracos).forEach(function (id) { desenhaTraco(id, cena.tracos[id]); });
+    if (editando && S.tracando) MapCore.caminhoDoTraco(ctx, S.tracando, cfg.radar);
+    if (editando && S.origemPendente) {
       var o = jogoParaPixel(S.origemPendente[0], S.origemPendente[1]);
       ctx.fillStyle = MapCore.NADE_COLOR[S.arma];
       ctx.beginPath(); ctx.arc(o[0], o[1], 5, 0, 2 * Math.PI); ctx.fill();
     }
-    var ant = S.passo > 0 ? quadro(S.passo - 1) : null;
-    Object.keys(q.pecas).forEach(function (id) { desenhaPeca(id, q.pecas[id], ant && ant.pecas[id]); });
+    var ant = editando && S.passo > 0 ? quadro(S.passo - 1) : null;
+    Object.keys(cena.pecas).forEach(function (id) { desenhaPeca(id, cena.pecas[id], ant && ant.pecas[id], editando); });
+  }
+
+  /** O passo aberto no editor, no mesmo formato da cena da reprodução: a
+      linha do arremesso só no passo em que a granada nasceu. */
+  function cenaDoEditor() {
+    var q = quadro(), c = { pecas: {}, granadas: {}, tracos: {} };
+    Object.keys(q.pecas).forEach(function (id) { c.pecas[id] = Object.assign({}, q.pecas[id], { alfa: 1 }); });
+    Object.keys(q.granadas).forEach(function (id) {
+      c.granadas[id] = Object.assign({}, q.granadas[id], { linha: q.granadas[id].nasceu_neste_passo ? 1 : 0, efeito: 1, alfa: 1 });
+    });
+    Object.keys(q.tracos).forEach(function (id) { c.tracos[id] = Object.assign({}, q.tracos[id], { alfa: 1 }); });
+    return c;
   }
 
   function alfaDoAndar(nivel) { return nivel === S.andar ? 1 : ALFA_OUTRO_ANDAR; }
 
-  function desenhaGranada(id, g) {
+  /** `g.linha` (0 a 1) é quanto da linha do arremesso está riscada e
+      `g.efeito` (0 a 1) o quanto o efeito já abriu: no editor, 1 e 1 no passo
+      de criação e 0 e 1 depois; na reprodução, o que o tempo disser. */
+  function desenhaGranada(id, g, editando) {
     var o = g.origem, d = g.destino;
-    if (S.arrasto && S.arrasto.tipo === "granada" && S.arrasto.id === id) { o = S.arrasto.origem; d = S.arrasto.destino; }
+    if (editando && S.arrasto && S.arrasto.tipo === "granada" && S.arrasto.id === id) { o = S.arrasto.origem; d = S.arrasto.destino; }
     var a = jogoParaPixel(o[0], o[1]), b = jogoParaPixel(d[0], d[1]);
-    var alfa = alfaDoAndar(g.nivel), cor = MapCore.NADE_COLOR[g.arma];
+    var alfa = alfaDoAndar(g.nivel) * g.alfa, cor = MapCore.NADE_COLOR[g.arma];
     var area = g.arma === "smoke" || g.arma === "molotov";
     ctx.save();
     ctx.globalAlpha = alfa;
-    if (area) {
+    if (area && g.efeito > 0) {
       var r = (g.arma === "smoke" ? MapCore.RAIO_SMOKE_UNIDADES : MapCore.RAIO_MOLOTOV_UNIDADES) * escalaUnidade();
-      MapCore.desenhaArea(ctx, g.arma, b[0], b[1], r);
+      MapCore.desenhaArea(ctx, g.arma, b[0], b[1], r * g.efeito);
     }
-    // A linha do arremesso só aparece no passo de criação; depois, só o efeito.
-    if (g.nasceu_neste_passo) {
+    if (g.linha > 0) {
+      var fim = [a[0] + (b[0] - a[0]) * g.linha, a[1] + (b[1] - a[1]) * g.linha];
       ctx.strokeStyle = cor; ctx.lineWidth = 2.5;
       if (!g.arremesso) ctx.setLineDash([6, 5]);   // desenhada à mão: tracejada
-      ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(fim[0], fim[1]); ctx.stroke();
       ctx.setLineDash([]);
       ctx.fillStyle = cor;
       ctx.beginPath(); ctx.arc(a[0], a[1], 4, 0, 2 * Math.PI); ctx.fill();
     }
-    MapCore.nadeGlyph(ctx, g.arma, b[0], b[1], RAIO_GRANADA, cor, Math.atan2(b[1] - a[1], b[0] - a[0]));
-    if (S.sel && S.sel.id === id) {
+    if (g.efeito > 0) {
+      MapCore.nadeGlyph(ctx, g.arma, b[0], b[1], RAIO_GRANADA * g.efeito, cor, Math.atan2(b[1] - a[1], b[0] - a[0]));
+    }
+    if (editando && S.sel && S.sel.id === id) {
       ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(b[0], b[1], RAIO_GRANADA * 1.9, 0, 2 * Math.PI); ctx.stroke();
     }
     ctx.restore();
-    S.ultimoDesenho.push({ tipo: "granada", id: id, linha: !!g.nasceu_neste_passo, area: area, alfa: alfa });
+    S.ultimoDesenho.push({ tipo: "granada", id: id, linha: g.linha > 0, area: area && g.efeito > 0, alfa: alfa });
   }
 
   function desenhaTraco(id, t) {
-    var alfa = alfaDoAndar(t.nivel);
+    var alfa = alfaDoAndar(t.nivel) * t.alfa;
     ctx.save();
     ctx.globalAlpha = alfa;
     MapCore.caminhoDoTraco(ctx, t, cfg.radar);
     ctx.restore();
-    S.ultimoDesenho.push({ tipo: "traco", id: id, alfa: alfa });
+    S.ultimoDesenho.push({ tipo: "traco", id: id, alfa: alfa, pontos: t.pontos.length });
   }
 
   function yawDaPeca(id, p) {
@@ -691,12 +814,12 @@ var Prancheta = (function () {
     return p.yaw;
   }
 
-  function desenhaPeca(id, p, anterior) {
+  function desenhaPeca(id, p, anterior, editando) {
     var pos = [p.x, p.y];
-    if (S.arrasto && S.arrasto.tipo === "peca" && S.arrasto.id === id) pos = S.arrasto.jogo;
+    if (editando && S.arrasto && S.arrasto.tipo === "peca" && S.arrasto.id === id) pos = S.arrasto.jogo;
     var c = jogoParaPixel(pos[0], pos[1]);
     var cor = cssVar(p.lado === "ct" ? "--ct" : "--t");
-    var alfa = alfaDoAndar(p.nivel), yaw = yawDaPeca(id, p);
+    var alfa = alfaDoAndar(p.nivel) * p.alfa, yaw = editando ? yawDaPeca(id, p) : p.yaw;
     // rastro do passo anterior: onde estava e para onde olhava
     if (anterior && (anterior.x !== pos[0] || anterior.y !== pos[1] || anterior.yaw !== yaw)) {
       var a = jogoParaPixel(anterior.x, anterior.y);
@@ -715,7 +838,7 @@ var Prancheta = (function () {
     ctx.globalAlpha = alfa;
     MapCore.desenhaJogador(ctx, c[0], c[1], { cor: cor, estado: "vivo", hp: 100, cego: false,
                                               nome: rotuloDaPeca(p), yaw: yaw, escala: ESCALA_PECA });
-    if (S.sel && S.sel.id === id) {
+    if (editando && S.sel && S.sel.id === id) {
       var h = alca(c, yaw);
       ctx.globalAlpha = 1;
       ctx.fillStyle = "#ffffff"; ctx.strokeStyle = "#0f1620"; ctx.lineWidth = 2;
@@ -790,6 +913,7 @@ var Prancheta = (function () {
 
   function pointerDown(e) {
     if (!S.doc) return;
+    if (S.reproducao) { if (S.espaco || e.button === 1) comecaPan(e); return; }
     if (S.espaco || e.button === 1) { comecaPan(e); e.preventDefault(); return; }
     if (e.button !== 0) return;
     var px = eventoParaPixel(e), g = eventoParaJogo(e);
@@ -855,6 +979,12 @@ var Prancheta = (function () {
   /* --- roda: gira a peça selecionada sob o ponteiro, ou dá zoom ------------ */
   function roda(e) {
     e.preventDefault();
+    if (S.reproducao) {
+      var pz = eventoParaPixel(e);
+      aplicaZoom(S.view.zoom * (e.deltaY < 0 ? MapCore.ZOOM_PASSO : 1 / MapCore.ZOOM_PASSO),
+                 pz[0] * S.view.zoom + S.view.panX, pz[1] * S.view.zoom + S.view.panY);
+      return;
+    }
     var px = eventoParaPixel(e);
     var q = quadro();
     if (S.sel && S.sel.tipo === "peca" && q.pecas[S.sel.id]) {
@@ -932,6 +1062,7 @@ var Prancheta = (function () {
   /** Arrastar do banco para o mapa: peça nova, ou -- se esse jogador já existe
       na tática e só não está no mapa neste passo -- a mesma peça de volta. */
   function soltaDoBanco(e, lado, rotulo) {
+    if (S.reproducao) return;
     var c = cv.getBoundingClientRect();
     if (e.clientX < c.left || e.clientX > c.right || e.clientY < c.top || e.clientY > c.bottom) return;
     var g = eventoParaJogo(e);
@@ -1293,6 +1424,10 @@ var Prancheta = (function () {
       barra.appendChild(andares);
     }
 
+    var reproduzir = MapCore.botao("Reproduzir", "Reproduzir a tática passo a passo", comecaReproducao, "principal");
+    reproduzir.id = "pr-reproduzir";
+    vista.appendChild(reproduzir);
+
     var historico = el("div", { class: "anot-grupo sempre" });
     var d = MapCore.botao("Desfazer", "Desfazer (Ctrl+Z)", desfaz); d.id = "pr-desfaz";
     var r = MapCore.botao("Refazer", "Refazer (Ctrl+Y ou Ctrl+Shift+Z)", refaz); r.id = "pr-refaz";
@@ -1316,6 +1451,123 @@ var Prancheta = (function () {
         onclick: function () { S.espessura = v; atualizaFerramentas(); } }));
     });
     barra.appendChild(esp);
+  }
+
+  /* ---------------------------------------------------------------------
+     Reprodução: tocar, pausar, velocidade, barra de tempo, passos, Editar
+     --------------------------------------------------------------------- */
+  var quadroPedido = null;
+
+  function reproduzAte(t) {
+    S.reproducao.t = t;
+    S.reproducao.cena = estadoNoTempo(S.estado, t, CENTRO);
+    desenha();
+    atualizaPlayer();
+  }
+
+  function comecaReproducao() {
+    if (S.reproducao) return;
+    confirmaGiro();
+    S.sel = null; S.arrasto = null; S.tracando = null; S.origemPendente = null; S.busca = null;
+    S.reproducao = { t: 0, tocando: false, velocidade: 1, cena: null, ultimo: 0 };
+    $("pr-barra").hidden = true; $("pr-player").hidden = false;
+    // durante a reprodução nada é editável
+    document.querySelector("aside").setAttribute("inert", "");
+    reproduzAte(0);
+    toca(true);
+  }
+
+  function editaAqui() {
+    if (!S.reproducao) return;
+    toca(false);
+    S.passo = S.reproducao.cena.indice;
+    S.reproducao = null;
+    $("pr-barra").hidden = false; $("pr-player").hidden = true;
+    document.querySelector("aside").removeAttribute("inert");
+    atualizaTudo();
+  }
+
+  function toca(sim) {
+    var r = S.reproducao;
+    if (!r) return;
+    if (sim && r.t >= r.cena.total) reproduzAte(0);   // no fim, tocar recomeça
+    r.tocando = sim;
+    r.ultimo = performance.now();
+    cancelAnimationFrame(quadroPedido);
+    if (sim) quadroPedido = requestAnimationFrame(avanca);
+    atualizaPlayer();
+  }
+
+  function avanca(agoraMs) {
+    var r = S.reproducao;
+    if (!r || !r.tocando) return;
+    var dt = Math.max(0, agoraMs - r.ultimo) / 1000;
+    r.ultimo = agoraMs;
+    var t = Math.min(r.cena.total, r.t + dt * r.velocidade);
+    reproduzAte(t);
+    if (t >= r.cena.total) { r.tocando = false; atualizaPlayer(); return; }
+    quadroPedido = requestAnimationFrame(avanca);
+  }
+
+  /** Próximo: o primeiro fim de passo depois de t (é onde o passo fica
+      completo). Anterior: o último fim de passo antes de t, ou o começo. */
+  function vaiParaPasso(delta) {
+    var r = S.reproducao;
+    if (!r) return;
+    var lt = linhaDoTempo(S.estado), EPS = 1e-9;
+    var fins = S.estado.passos.map(function (p, k) { return lt.inicios[k] + p.duracao_s; });
+    var alvo;
+    if (delta > 0) alvo = fins.filter(function (f) { return f > r.t + EPS; })[0];
+    else alvo = fins.filter(function (f) { return f < r.t - EPS; }).pop();
+    reproduzAte(alvo === undefined ? (delta > 0 ? lt.total : 0) : alvo);
+  }
+
+  function mudaVelocidade(dir) {
+    var r = S.reproducao, v = MapCore.VELOCIDADES;
+    if (!r) return;
+    var i = v.indexOf(r.velocidade);
+    r.velocidade = dir === 0 ? v[(i + 1) % v.length] : v[Math.max(0, Math.min(v.length - 1, i + dir))];
+    atualizaPlayer();
+  }
+
+  function atualizaPlayer() {
+    var r = S.reproducao;
+    if (!r || !r.cena) return;
+    var barra = $("pr-tempo");
+    barra.max = String(Math.round(r.cena.total * 1000));
+    if (document.activeElement !== barra) barra.value = String(Math.round(r.t * 1000));
+    $("pr-toca").textContent = r.tocando ? "Pausar" : "Tocar";
+    $("pr-velocidade").textContent = String(r.velocidade).replace(".", ",") + "x";
+    var c = r.cena;
+    $("pr-rotulo-passo").textContent = "Passo " + (c.indice + 1) + " de " + S.estado.passos.length +
+      (c.titulo ? " · " + c.titulo : "") + "  (" + r.t.toFixed(1).replace(".", ",") + " de " +
+      c.total.toFixed(1).replace(".", ",") + " s)";
+  }
+
+  function montaPlayer() {
+    var player = el("div", { class: "pr-barra", id: "pr-player" });
+    player.hidden = true;
+    var grupo = el("div", { class: "anot-grupo sempre" });
+    var b = function (texto, titulo, fn, id) { var x = MapCore.botao(texto, titulo, fn); x.id = id; grupo.appendChild(x); };
+    b("◀", "Passo anterior (seta para a esquerda)", function () { vaiParaPasso(-1); }, "pr-passo-anterior");
+    b("Tocar", "Tocar ou pausar (espaço)", function () { toca(!S.reproducao.tocando); }, "pr-toca");
+    b("▶", "Próximo passo (seta para a direita)", function () { vaiParaPasso(1); }, "pr-passo-seguinte");
+    b("1x", "Velocidade ([ e ])", function () { mudaVelocidade(0); }, "pr-velocidade");
+    player.appendChild(grupo);
+    var tempo = el("input", { type: "range", id: "pr-tempo", min: "0", step: "1", "aria-label": "Linha do tempo da tática" });
+    tempo.style.flex = "1";
+    tempo.addEventListener("input", function () {
+      // lê ANTES de pausar: pausar atualiza a barra com o t atual
+      var t = +this.value / 1000;
+      toca(false);
+      reproduzAte(t);
+    });
+    player.appendChild(tempo);
+    player.appendChild(el("span", { id: "pr-rotulo-passo", class: "pr-meta" }));
+    var editar = MapCore.botao("Editar", "Voltar ao editor no passo em que parou", editaAqui);
+    editar.id = "pr-editar";
+    player.appendChild(editar);
+    $("pr-palco").insertBefore(player, $("pr-tela"));
   }
 
   function escolheFerramenta(id) {
@@ -1344,6 +1596,7 @@ var Prancheta = (function () {
     if (S.recentes.length) S.cor = S.recentes[0];
 
     montaBarra();
+    montaPlayer();
     montaBanco();
     cv.addEventListener("pointerdown", pointerDown);
     cv.addEventListener("pointermove", pointerMove);
@@ -1383,7 +1636,11 @@ var Prancheta = (function () {
     });
 
     $("pr-nova").addEventListener("click", function () { gravaAgora(); novaTatica(); });
-    $("pr-taticas").addEventListener("change", function () { if (this.value !== S.doc.id) { gravaAgora(); abre(this.value); } });
+    $("pr-taticas").addEventListener("change", function () {
+      // lê a escolha ANTES de gravar: gravar reconstrói a lista com a atual marcada
+      var escolhida = this.value;
+      if (escolhida !== S.doc.id) { gravaAgora(); abre(escolhida); }
+    });
     $("pr-titulo").addEventListener("change", function () { emite("renomeia", { titulo: this.value.trim() }); });
     $("pr-passo-titulo").addEventListener("change", function () {
       emite("renomeia_passo", { passo: passoAtual(), titulo: this.value.trim() });
@@ -1420,6 +1677,19 @@ var Prancheta = (function () {
     palco.addEventListener("pointerenter", function () { S.sobreMapa = true; });
     palco.addEventListener("pointerleave", function () { S.sobreMapa = false; });
     document.addEventListener("keydown", function (e) {
+      if (S.reproducao) {
+        // os atalhos do replay, com a mesma guarda de foco
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        var foco = document.activeElement;
+        if (foco && (/^(INPUT|SELECT|TEXTAREA|BUTTON)$/.test(foco.tagName) || foco.isContentEditable)) return;
+        if (e.key === " " || e.key === "Spacebar") { e.preventDefault(); toca(!S.reproducao.tocando); }
+        else if (e.key === "ArrowRight") { e.preventDefault(); vaiParaPasso(1); }
+        else if (e.key === "ArrowLeft") { e.preventDefault(); vaiParaPasso(-1); }
+        else if (e.key === "]") { e.preventDefault(); mudaVelocidade(1); }
+        else if (e.key === "[") { e.preventDefault(); mudaVelocidade(-1); }
+        else if (e.key === "Escape") { e.preventDefault(); editaAqui(); }
+        return;
+      }
       if (/^(INPUT|TEXTAREA|SELECT)$/.test((e.target || {}).tagName || "")) return;
       var k = e.key.toLowerCase();
       if ((e.ctrlKey || e.metaKey) && (k === "y" || (k === "z" && e.shiftKey))) { e.preventDefault(); refaz(); return; }
@@ -1462,6 +1732,8 @@ var Prancheta = (function () {
     _interno: {
       S: S, aplica: aplica, mescla: mescla, posicaoNoPasso: posicaoNoPasso, migra: migra,
       quadroDoPasso: quadroDoPasso, ordemDeCriacao: ordemDeCriacao, anuladas: anuladas,
+      estadoNoTempo: estadoNoTempo, linhaDoTempo: linhaDoTempo, reproduzAte: function (t) { reproduzAte(t); },
+      comecaReproducao: comecaReproducao, editaAqui: editaAqui, toca: function (s) { toca(s); },
       problemas: problemas, centro: function () { return CENTRO; },
       jogoParaPixel: jogoParaPixel, pixelParaJogo: pixelParaJogo,
       importaTexto: importaTexto, gravaAgora: gravaAgora, busca: busca, usaArremesso: usaArremesso,

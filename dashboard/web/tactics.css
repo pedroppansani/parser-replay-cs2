@@ -30,6 +30,9 @@ header nav a[aria-current] { background: var(--ink); color: #fff; }
 .palco:fullscreen { border-radius: 0; }
 .pr-barra { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px;
             background: var(--card); border-radius: var(--r) var(--r) 0 0; border-bottom: 1px solid var(--line); }
+/* `hidden` tem que vencer o display: flex -- a barra do editor some durante a
+   reprodução e a do player some no editor */
+.pr-barra[hidden] { display: none; }
 .pr-barra .anot-grupo { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; position: relative; }
 .pr-tela { flex: 1; display: flex; justify-content: center; align-items: center; padding: 8px; min-height: 0; }
 #pr-mapa { display: block; border-radius: 6px; touch-action: none; }

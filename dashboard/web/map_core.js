@@ -30,6 +30,9 @@ window.MapCore = (function () {
 
   var ZOOM_MIN = 1, ZOOM_MAX = 6, ZOOM_PASSO = 1.18;
 
+  // Velocidades de reprodução, do replay e da prancheta. (Convenção de interface.)
+  var VELOCIDADES = [0.25, 0.5, 1, 2, 4];
+
   // Smoke e Molotov ocupam área, então são desenhados como zona e não como
   // ponto. O raio segue o raio real de efeito no jogo, em UNIDADES DE JOGO, e
   // é convertido pela mesma escala do radar por quem desenha. (Medida no jogo.)
@@ -929,6 +932,7 @@ window.MapCore = (function () {
   return {
     MAX_LADO_INTERNO: MAX_LADO_INTERNO,
     ZOOM_MIN: ZOOM_MIN, ZOOM_MAX: ZOOM_MAX, ZOOM_PASSO: ZOOM_PASSO,
+    VELOCIDADES: VELOCIDADES,
     RAIO_SMOKE_UNIDADES: RAIO_SMOKE_UNIDADES,
     RAIO_MOLOTOV_UNIDADES: RAIO_MOLOTOV_UNIDADES,
     NADE_COLOR: NADE_COLOR,

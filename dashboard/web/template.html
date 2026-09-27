@@ -2121,7 +2121,7 @@
 
   // Câmera lenta é o motivo desta lista: a 0.25× dá pra ler a ordem em que as
   // coisas acontecem numa troca de tiro, que a 1× passa batido.
-  var SPEEDS = [0.25, 0.5, 1, 2, 4];
+  var SPEEDS = MapCore.VELOCIDADES;   // as mesmas da prancheta (map_core.js)
 
   function setSpeed(v) {
     speed = v;
