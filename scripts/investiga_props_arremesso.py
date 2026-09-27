@@ -8,6 +8,8 @@ posição.
 Uso:
     py -3.12 -m scripts.investiga_props_arremesso            # todas as partidas com .dem no disco
     py -3.12 -m scripts.investiga_props_arremesso match_23   # só as indicadas
+    py -3.12 -m scripts.investiga_props_arremesso --corpus   # a regra só com posição, sem .dem
+    py -3.12 -m scripts.investiga_props_arremesso --gabarito # grava tests/fixtures/gabarito_arremessos_match_23.json
 
 O .dem de cada partida é o `source_dem` do match_meta.json; se o caminho não
 existir mais, procura o mesmo nome de arquivo dentro de demos/. Partida sem .dem
@@ -402,8 +404,93 @@ def regra_no_corpus() -> None:
     print("grupos no ar, regra:   ", [(round(c), n) for c, n in gt.grupos_de_forca(np.array([x["regra"] for x in ar]))])
 
 
+# Janela de altura dos pés guardada no gabarito: a produção detecta o pulo pela
+# parábola dos ticks anteriores à soltura, e o pulo mais longo da match_23 dura
+# menos de 1 s (64 ticks).
+JANELA_Z_GABARITO = 64
+ARQUIVO_GABARITO = RAIZ / "tests/fixtures/gabarito_arremessos_match_23.json"
+
+
+def gera_gabarito(partida: str = "match_23") -> None:
+    """Grava o gabarito versionado: por arremesso, o que a demo diz (botão,
+    jump-throw, chão, postura, velocidade e posição iniciais do projétil) e as
+    ENTRADAS que a produção usa (tick da soltura, pés, mira, dois primeiros
+    pontos do projétil e a altura dos pés nos ticks anteriores). Os testes rodam
+    só com este arquivo, sem o .dem e sem o interim."""
+    meta = json.loads((RAIZ / "data/processed" / partida / "match_meta.json").read_text(encoding="utf-8"))
+    dem = acha_dem(meta)
+    if dem is None:
+        raise SystemExit(f"{partida}: sem .dem no disco")
+    arr = arremessos_da_partida(partida)
+    proj, arma, jog = props_da_demo(dem, arr)
+    t = load_interim(RAIZ / "data/interim", partida)
+    tk = gt._Ticks(t["ticks"])
+    pj: dict[int, list[dict]] = {}
+    for r in proj.iter_rows(named=True):
+        pj.setdefault(int(r["grenade_entity_id"]), []).append(r)
+    jt = {(int(r["steamid"]), int(r["tick"])): r for r in jog.iter_rows(named=True)}
+    saida = []
+    for a in arr:
+        ts = int(a["tick_soltura"])
+        r = next((q for q in pj.get(int(a["entity_id"]), []) if 0 <= q["tick"] - ts <= 4), None)
+        j = jt.get((int(a["steamid"]), ts))
+        idx = tk.indices(a["steamid"], np.arange(ts - JANELA_Z_GABARITO, ts + 2, dtype=np.int64))
+        if r is None or j is None or idx is None:
+            continue
+        pos = tk.por_jogador[int(a["steamid"])]["pos"][idx]
+        m = arma.filter(pl.col("steamid") == a["steamid"]).filter(
+            pl.col("grenade_type").is_in(list(ARMA_NA_MAO.get(a["kind"], ())))
+            & pl.col("tick").is_between(ts - 4, ts)).sort("tick")
+        saida.append({
+            "id": f"{partida}:{a['round_num']}:{a['entity_id']}",
+            "arma": a["kind"],
+            "demo": {
+                "forca": None if not m.height else round(float(m["Grenade.m_flThrowStrength"][-1]), 4),
+                "jump_throw": None if not m.height else bool(m["Grenade.m_bJumpThrow"][-1]),
+                "no_chao": j["chao"] != SEM_CHAO,
+                "duck_amount": round(float(j["duck_amount"]), 4),
+                "ducked": bool(j["ducked"]),
+                "duck_view_offset": round(float(j["duck_view_offset"]), 4),
+                "tick_do_pulo": None if j["ultimo_pulo"] is None else float(j["ultimo_pulo"]),
+                "vz_decolagem": round(float(j["vz_do_pulo"]), 4),
+                "v0": [round(float(v), 4) for v in r["Grenade.m_vInitialVelocity"]],
+                "p0": [round(float(v), 4) for v in r["Grenade.m_vInitialPosition"]],
+            },
+            "entrada": {
+                "tick_soltura": ts,
+                "pitch": round(float(a["pitch"]), 4),
+                "yaw": round(float(a["yaw"]), 4),
+                "pes": [round(float(v), 4) for v in a["pos_soltura"]],
+                "pos_vizinhos": [[round(float(v), 4) for v in pos[-3]], [round(float(v), 4) for v in pos[-1]]],
+                "z_janela": [round(float(v), 4) for v in pos[:, 2]],
+                "proj_ticks": [int(a["ticks"][0]), int(a["ticks"][1])],
+                "proj_pontos": [[round(float(v), 4) for v in a["traj"][0]], [round(float(v), 4) for v in a["traj"][1]]],
+            },
+        })
+    doc = {
+        "_leia_isto": ("Gabarito de arremessos da match_23 (Vitality x Magic, Dust2), o único .dem "
+                       "que existe. 'demo' = propriedades gravadas pelo jogo; 'entrada' = o que a "
+                       "produção usa. z_janela vai de tick_soltura-64 a tick_soltura+1; "
+                       "pos_vizinhos = pés em tick_soltura-1 e +1. Gerado por "
+                       "py -3.12 -m scripts.investiga_props_arremesso --gabarito"),
+        "partida": partida, "tickrate": TICKRATE, "sha256_do_dem": None, "arremessos": saida,
+    }
+    import hashlib
+    h = hashlib.sha256()
+    with open(dem, "rb") as f:
+        for bloco in iter(lambda: f.read(1 << 20), b""):
+            h.update(bloco)
+    doc["sha256_do_dem"] = h.hexdigest()
+    ARQUIVO_GABARITO.write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    print(f"{ARQUIVO_GABARITO.name}: {len(saida)} arremessos de {len(arr)}, "
+          f"{ARQUIVO_GABARITO.stat().st_size / 1e3:.0f} kB")
+
+
 if __name__ == "__main__":
-    if sys.argv[1:] == ["--corpus"]:
+    if sys.argv[1:] == ["--gabarito"]:
+        sys.stdout.reconfigure(encoding="utf-8")
+        gera_gabarito()
+    elif sys.argv[1:] == ["--corpus"]:
         sys.stdout.reconfigure(encoding="utf-8")
         regra_no_corpus()
     else:
