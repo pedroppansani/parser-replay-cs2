@@ -881,6 +881,34 @@ testada e estava errada.
       VERTICAL no chão (85 casos): arremessos PARADOS, em pé, botão 1, saem de
       1 a 8u mais baixos sem que agachamento, força, pitch ou pulo expliquem.
     Nada foi para a produção; a decisão de como seguir é do Pedro.
+    **Investigações da cauda (2026-09-27, `scripts/investiga_cauda_rota_a.py`;
+    NADA aplicado, parado por uma partida que piora):**
+    - OBSTRUÇÃO REFUTADA como causa da cauda vertical: nos 81 arremessos no chão
+      com erro >= 1u o resíduo é 100% VERTICAL e para baixo (|vertical|/erro
+      0,999-1,000; 81/81 negativos), o recuo ao longo de -u' tem mediana 1,26u
+      e nenhum jogador está à frente do olho; no ar, 5 de 56 casam com recuo.
+      O que acompanha a cauda é SUBIDA RECENTE dos pés: variação de z nos 64
+      ticks anteriores 11,8u nas falhas contra 1,65u nas que passam (correlação
+      queda x subida em 16 ticks 0,51) -- compatível com suavização de degrau da
+      câmera, NÃO modelado (exigiria encaixar um decaimento);
+    - erro de velocidade no chão é SUBTICK, não alinhamento: a diferença
+      centrada em t (a da produção) é a melhor (95,2% < 5 u/s; centrada em t-1
+      57,0%); o erro segue a aceleração (correlação 0,42), máximo 22,2 u/s;
+    - parábola quebrada: o degrau NÃO é fixo (só 7:143 tem o salto de ~9u de
+      agachar no ar); detecta-se pela vz de decolagem estimada + meio passo
+      (800/128) longe de 298,868 (bons: p99 8,57, n = 93; quebradas: -158);
+    - JANELA DO JUMP-THROW: a vz fixa (decolagem - 80) vale de 6 a 13 ticks
+      depois da decolagem no gabarito; aos 19 ticks (16:81) o jogo usou a vz
+      REAL (erro 3,7 contra 207,5 com a regra). No corpus: 14-18 ticks a regra
+      põe 90% nos três grupos contra 50% da vz real (n = 10); 19+ a vz real põe
+      100% contra 63% (n = 29). Muda o modelo de velocidade: decisão do Pedro;
+    - tolerância do botão = ceil(2 × p99 do erro de velocidade onde o modelo se
+      aplica) = 21 u/s (p99 10,06, n = 431 na match_23): cobertura 430/434 na
+      match_23 (igual a 118), 98,51% no corpus contra 99,70% com 118;
+    - generalização por build (11 builds): todas melhoram (85,1 -> 94,8% a
+      96,9 -> 98,8%); POR PARTIDA, a match_09 PIORA (97,8 -> 95,6%, 2 de 90):
+      r17 solta no tick da decolagem (vz 205, sem parábola, a regra põe vz 0;
+      a vz real acerta) e r24 é limítrofe (616,7 -> 613,4, raio 60).
 
 21b. **A reprodução por console depende de validação prática do Pedro, não do
     código.** Origem do `setpos`, sinal do `setang` e pré-requisitos de servidor

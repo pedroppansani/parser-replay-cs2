@@ -62,3 +62,48 @@ com o da coluna (hash do arquivo `.dem`, não do pacote baixado).
 | match_53 | profissional | de_dust2 | starladder-budapest-major-2025 / vitality-vs-the-mongolz (2) | não | 1 | sim: `vitality-vs-the-mongolz-m2-dust2.dem` 9c2f1d0d9ad881df… | provável: campeonato sem link da HLTV no manifesto; achar a série pelo evento e confronto |
 
 Resumo: {'sim': 12, 'provável': 30, 'incerto': 9, 'não precisa': 1}. sha256 disponível para as 52 partidas.
+
+## Lista de busca: campeonato sem link da HLTV (30 partidas, NADA baixado)
+
+Para achar a série na HLTV pelo evento, o confronto e a data. A data é a de
+modificação do .dem (costuma ser o fim da gravação), não a conferida na HLTV.
+
+| partida | evento | confronto | mapa da série | mapa | data do arquivo | sha256 (16) |
+|---|---|---|---|---|---|---|
+| match_21 | starladder-starseries-fall-2026 | natus-vincere-vs-aurora | 1 | de_nuke | 2026-09-17T13:23 | d84b02b61af2e213 |
+| match_22 | starladder-starseries-fall-2026 | natus-vincere-vs-aurora | 2 | de_mirage | 2026-09-17T13:56 | 067680a00c73c69d |
+| match_24 | blast-open-lisbon-2025 | spirit-vs-natus-vincere | 1 | de_dust2 | 2025-03-28T18:05 | 51ced3a89c8e8bba |
+| match_25 | blast-open-lisbon-2025 | spirit-vs-natus-vincere | 2 | de_anubis | 2025-03-28T18:28 | b9a4b505d1c079ba |
+| match_26 | blast-open-lisbon-2025 | vitality-vs-spirit | 1 | de_anubis | 2025-03-29T18:14 | 3b2169c84d3d6473 |
+| match_27 | blast-open-lisbon-2025 | vitality-vs-spirit | 2 | de_nuke | 2025-03-29T19:04 | de0b5de35e98b352 |
+| match_28 | blast-open-lisbon-2025 | vitality-vs-spirit | 3 | de_mirage | 2025-03-29T20:07 | cf8a96f821b87aee |
+| match_29 | blast-rivals-2025-season-2 | furia-vs-falcons | 1 | de_inferno | 2025-11-16T10:19 | ea651630d1bcd206 |
+| match_30 | blast-rivals-2025-season-2 | furia-vs-falcons | 2 | de_nuke | 2025-11-16T10:19 | 91d445ca120fb4fc |
+| match_31 | blast-rivals-2025-season-2 | furia-vs-falcons | 3 | de_train | 2025-11-16T10:20 | 2735218148a4a12a |
+| match_32 | blast-rivals-2025-season-2 | furia-vs-falcons | 4 | de_mirage | 2025-11-16T10:20 | c20f551ef270bd34 |
+| match_33 | iem-dallas-2025 | mouz-vs-vitality | 1 | de_dust2 | 2025-05-25T17:34 | 372557cd3b27fbda |
+| match_34 | iem-dallas-2025 | mouz-vs-vitality | 2 | de_mirage | 2025-05-25T18:38 | 6ed3d0ed29588b08 |
+| match_35 | iem-dallas-2025 | mouz-vs-vitality | 3 | de_inferno | 2025-05-25T19:45 | 617673668137ac4f |
+| match_36 | iem-katowice-2025 | natus-vincere-vs-spirit | 1 | de_mirage | 2025-02-08T15:50 | a4e69281dfacf9f2 |
+| match_37 | iem-katowice-2025 | natus-vincere-vs-spirit | 2 | de_dust2 | 2025-02-08T17:25 | 077731a93eebecf6 |
+| match_38 | iem-katowice-2025 | natus-vincere-vs-spirit | 1 | de_mirage | 2025-02-03T12:47 | 0b170f4706cc446f |
+| match_39 | iem-katowice-2025 | natus-vincere-vs-spirit | 2 | de_dust2 | 2025-02-03T14:11 | 669af697b423c2cc; 68e4ecf46575438a; dc0f8c4bfdeed063 |
+| match_40 | iem-katowice-2025 | natus-vincere-vs-spirit | 3 | de_nuke | 2025-02-03T15:33 | ff92283d6a9c6c8e |
+| match_43 | iem-krakw-2026 | furia-vs-vitality | 1 | de_mirage | 2026-02-08T13:54 | 9019e9ee6cdeee54 |
+| match_44 | iem-krakw-2026 | furia-vs-vitality | 2 | de_inferno | 2026-02-08T15:04 | affd22a7fb10a99d |
+| match_45 | iem-krakw-2026 | furia-vs-vitality | 3 | de_nuke | 2026-02-08T15:52 | 2b2f6f3ceeb869dc |
+| match_46 | iem-krakw-2026 | furia-vs-vitality | 4 | de_overpass | 2026-02-08T17:15 | 24370e1f72c2f2ca |
+| match_47 | iem-krakw-2026 | vitality-vs-mouz | 1 | de_nuke | 2026-02-07T16:57 | 061cb84a8f284815 |
+| match_48 | iem-krakw-2026 | vitality-vs-mouz | 2 | de_dust2 | 2026-02-07T17:59 | c33d48b9dbb8f079 |
+| match_49 | starladder-budapest-major-2025 | mouz-vs-falcons | 1 | de_mirage | 2025-12-06T15:18 | 80e8b0f338d0294d |
+| match_50 | starladder-budapest-major-2025 | mouz-vs-falcons | 2 | de_inferno | 2025-12-06T16:43 | bcda5d9d0dfdee6a |
+| match_51 | starladder-budapest-major-2025 | mouz-vs-falcons | 3 | de_nuke | 2025-12-06T16:53 | daf6611302cc68db |
+| match_52 | starladder-budapest-major-2025 | vitality-vs-the-mongolz | 1 | de_mirage | 2025-12-11T17:12 | 3433a2ab957a174f |
+| match_53 | starladder-budapest-major-2025 | vitality-vs-the-mongolz | 2 | de_dust2 | 2025-12-11T18:07 | 9c2f1d0d9ad881df |
+
+## Download das 12 com link (autorizado, NÃO feito)
+
+A HLTV responde 403 ao acesso automatizado (curl e WebFetch, 2026-09-27). O
+download tem de ser feito no navegador: 6 séries, 7,55 GB de .dem no corpus (o
+pacote de cada série traz também os mapas fora do corpus). Depois de salvar em
+`demos/`, cada .dem é conferido pelo sha256 do manifesto antes de entrar.
