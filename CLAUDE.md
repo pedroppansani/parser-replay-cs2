@@ -976,6 +976,34 @@ testada e estava errada.
       pulo 12 ticks) e match_31:8:545 (524 -> 683, "médio" -> "longo", descendo
       escada com vz -146 que o modelo antigo descontava). Replay idêntico no
       compara_capturas (direção desligada); pytest 987 passed.
+    **DEFINIÇÃO DE PIORA (Pedro, 2026-09-27, mudança de critério registrada):**
+    piora = o arremesso tinha o botão X com a velocidade antiga a até
+    TOLERANCIA_BOTAO do centro de X e passa a ter outro botão, ou fica neutro
+    sem regra explícita. CORREÇÃO DE RÓTULO ANTIGO = tinha X com a velocidade
+    antiga FORA da tolerância e passa a outro botão dentro dela por causa
+    identificada (regra do pulo, vertical 0 em escada/rampa, janela, pés em t);
+    não trava o merge, mas é listada. Troca sem causa é piora. O portão existe
+    para o produto não retirar afirmação JUSTIFICADA; o "centro mais próximo
+    sem tolerância" do modelo antigo nunca foi. Correções hoje: match_46:4:985
+    (KSCERATO, HE, r4: médio a 330 u/s, 114 do centro -> curto a 203, 0,5 do
+    centro; regra do pulo, 12 ticks) e match_31:8:545 (YEKINDAR, smoke, r8:
+    médio a 524, 84 do centro -> longo a 683, 8 do centro; vertical 0 em
+    escada, vz -146).
+    **VALIDAÇÃO FORA DA AMOSTRA (2026-09-27, `scripts/valida_rota_a.py`, 11
+    partidas novas com gabarito, constantes CONGELADAS): PAROU.** Botão 99,8-100%
+    em todas; postura no chão 99,4-100%; cobertura 95,5-99,3%. FALHAS:
+    (1) "no ar" na match_11 98,9% (442/447): 3 descidas de rampa em que a 2ª
+    diferença cai perto da gravidade (estado ambíguo, marcado no ar) e 2
+    solturas no tick de pouso/decolagem; (2) INVARIANTE em 2 rotulados com
+    rótulo CERTO: match_16:10:199 (no ar pela demo, jogo usou vz fixa 219, a
+    posição não mostra parábola -> modelo usou vz 0; erro 273,5) e
+    match_14:6:222 (vetor horizontal do jogador pela posição [-52, 226] contra
+    [69, 84] usado pelo jogo; erro 233,5); match_18:13:477 185,8, abaixo do
+    limite. Respostas: nenhuma soltura de 0-5 ticks nas 11; 38 de 14 ticks e
+    todas com a vz FIXA; Anubis separa (em pé mais baixo +0,07 do corte,
+    agachado mais alto -4,26) e a faixa pega 16 em pé + 1 agachado no ar; pés
+    em t: em movimento 3,36 -> 0,69u (n = 3.941), parado idêntico (n = 1.321).
+    Gabaritos: 12 partidas, 4,8 MB.
 
 21b. **A reprodução por console depende de validação prática do Pedro, não do
     código.** Origem do `setpos`, sinal do `setang` e pré-requisitos de servidor

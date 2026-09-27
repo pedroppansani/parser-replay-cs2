@@ -29,8 +29,11 @@ SAIDA = RAIZ / "metrics" / "gabarito_constantes.json"
 
 def carrega_gabarito() -> tuple[list[dict], list[str]]:
     arremessos, partidas = [], []
-    for f in sorted(FIXTURES.glob("gabarito_arremessos_*.json")):
-        doc = json.loads(f.read_text(encoding="utf-8"))
+    import gzip
+    arquivos = sorted(list(FIXTURES.glob("gabarito_arremessos_*.json")) + list(FIXTURES.glob("gabarito_arremessos_*.json.gz")))
+    for f in arquivos:
+        texto = gzip.decompress(f.read_bytes()).decode("utf-8") if f.suffix == ".gz" else f.read_text(encoding="utf-8")
+        doc = json.loads(texto)
         partidas.append(doc["partida"])
         arremessos += [{**a, "tickrate": doc["tickrate"]} for a in doc["arremessos"]]
     return arremessos, partidas
