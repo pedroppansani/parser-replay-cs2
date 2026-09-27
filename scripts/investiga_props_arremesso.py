@@ -166,10 +166,12 @@ def main(partidas: list[str]) -> None:
             if r is None or j is None:
                 continue
             casados += 1
-            # a arma na mão no último tick antes de o projétil nascer
+            # a arma na mão no último tick ANTES da soltura: no próprio tick a
+            # entidade já pode ser a PRÓXIMA granada do mesmo tipo, com força 0
+            # (achado na validação: 4 botões "errados" eram leitura errada)
             m = arma.filter(pl.col("steamid") == a["steamid"]).filter(
                 pl.col("grenade_type").is_in(list(ARMA_NA_MAO.get(a["kind"], ())))
-                & pl.col("tick").is_between(int(a["tick_soltura"]) - 4, int(a["tick_soltura"]))).sort("tick")
+                & pl.col("tick").is_between(int(a["tick_soltura"]) - 4, int(a["tick_soltura"]) - 1)).sort("tick")
             forca = m["Grenade.m_flThrowStrength"][-1] if m.height else None
             pulo = m["Grenade.m_bJumpThrow"][-1] if m.height else None
             ts = int(a["tick_soltura"])
@@ -495,9 +497,11 @@ def gera_gabarito(partida: str = "match_23") -> Path:
             if r is None or j is None or idx is None:
                 continue
             pos = tk.por_jogador[int(a["steamid"])]["pos"][idx]
+            # força lida no tick ANTES da soltura: no próprio tick a entidade já
+            # pode ser a PRÓXIMA granada do mesmo tipo, com força 0
             m = arma.filter(pl.col("steamid") == a["steamid"]).filter(
                 pl.col("grenade_type").is_in(list(ARMA_NA_MAO.get(a["kind"], ())))
-                & pl.col("tick").is_between(td - 4, td)).sort("tick")
+                & pl.col("tick").is_between(td - 4, td - 1)).sort("tick")
             if not m.height:
                 continue
             saida.append({

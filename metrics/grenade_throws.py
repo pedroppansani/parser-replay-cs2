@@ -585,7 +585,8 @@ def rotula_forca(velocidade: float | None, grupos: list[tuple[float, int]]) -> s
 # demo (m_vInitialVelocity e m_vInitialPosition do projétil, m_flThrowStrength
 # da arma, duck_amount, m_hGroundEntity, m_nLastJumpTick e
 # m_flLastJumpVelocityZ do jogador), extraídas da match_23 -- a única demo que
-# sobrou -- para `tests/fixtures/gabarito_arremessos_match_23.json` (n = 434).
+# sobrou -- para `tests/fixtures/gabarito_arremessos_match_23.json.gz` (n = 434); desde
+# 2026-09-27 o gabarito tem 12 partidas (tests/fixtures/gabarito_arremessos_*.json.gz).
 # Nada aqui é encaixado nos grupos de velocidade: cada número é a medida direta
 # de uma propriedade gravada. Decisão 21a do CLAUDE.md.
 #
@@ -614,6 +615,18 @@ _CONSTANTES_DO_GABARITO = json.loads(
 # velocidade calculada ao CENTRO do botão para ele ser dado; fora dela o rótulo
 # é NEUTRO. O erro do modelo é outra coisa: fica na catraca dos testes.
 TOLERANCIA_BOTAO = float(_CONSTANTES_DO_GABARITO["tolerancia_botao"])
+
+# Guarda do voo: o vetor inicial previsto (botão + herança) tem de explicar o
+# primeiro segmento observado do projétil. Medido no gabarito, o primeiro
+# segmento é a velocidade inicial gravada mais um deslocamento vertical fixo
+# (a gravidade do primeiro tick: -7,51 u/s, mediana, n = 6.846). O resíduo
+# |vp - (previsto + deslocamento)| acompanha o erro do vetor (correlação 0,999);
+# acima do limiar o arremesso fica NEUTRO ("vetor incoerente com o voo"). O
+# limiar é o meio do vão entre o maior resíduo dos vetores certos (erro < 5
+# u/s) e o menor dos grosseiramente errados (erro acima da tolerância antes da
+# guarda) -- calculado do gabarito, no JSON.
+DESLOCAMENTO_PRIMEIRO_SEGMENTO = np.array([0.0, 0.0, float(_CONSTANTES_DO_GABARITO["deslocamento_primeiro_segmento_z"])])
+LIMIAR_GUARDA_VOO = float(_CONSTANTES_DO_GABARITO["limiar_guarda_voo"])
 
 # Direção do lançamento: o pitch da mira é remapeado POR TRECHOS. Parado, o
 # resíduo contra o gabarito é 0,000° nos dois trechos (n = 92 parados).
@@ -711,21 +724,32 @@ def estado_vertical(z: np.ndarray, xy: np.ndarray, tickrate: int) -> dict:
     while i >= 0 and abs(d2[i] - g_tick) < TOL_SEGUNDA_DIFERENCA:
         n += 1
         i -= 1
+    # soltura no tick de um pouso ou de uma decolagem: a mudança de estado
+    # acontece dentro do tick (subtick) e a posição por tick não diz de que
+    # lado ela caiu -- "no ar" INDETERMINADO por construção. A assinatura é a
+    # TROCA entre queda livre e chão em volta da soltura: entre as segundas
+    # diferenças centradas em t-2, t-1 e t, pelo menos uma é a gravidade e pelo
+    # menos uma é anômala (nem chão ~0 nem gravidade). Degrau e chão irregular
+    # dão anomalia sem a gravidade ao lado e continuam "chão".
+    vizinhas = [d2[k] for k in (s - 3, s - 2, s - 1) if 0 <= k < len(d2)]
+    tem_gravidade = any(abs(x - g_tick) < TOL_SEGUNDA_DIFERENCA for x in vizinhas)
+    tem_anomalia = any(abs(x) >= TOL_SEGUNDA_DIFERENCA and abs(x - g_tick) >= TOL_SEGUNDA_DIFERENCA for x in vizinhas)
+    transicao = tem_gravidade and tem_anomalia
     if n == 0:
         if v[2] > VZ_SUBIDA_AMBIGUA:
             return {**base, "regra": "ambíguo: subindo sem parábola", "no_ar": None, "vz": None}
-        return {**base, "regra": "chão", "no_ar": False, "vz": 0.0}
+        return {**base, "regra": "chão", "no_ar": None if transicao else False, "vz": 0.0}
     k0 = s - n                                  # primeiro ponto da parábola
     tau = (np.arange(k0, n_pts) - s) / tickrate
     b, c = np.polyfit(tau, z[k0:] + GRAVIDADE / 2 * tau ** 2, 1)
     disc = None if k0 < 1 else b * b - 2 * GRAVIDADE * (z[k0 - 1] - c)
     if disc is None or disc < 0:
-        return {**base, "regra": "ambíguo: queda sem decolagem na janela", "no_ar": True, "vz": None}
+        return {**base, "regra": "ambíguo: queda sem decolagem na janela", "no_ar": None, "vz": None}
     tau_dec = (b - np.sqrt(disc)) / GRAVIDADE
     vz_dec = b - GRAVIDADE * tau_dec
     base = {**base, "ticks_desde_decolagem": float(-tau_dec * tickrate)}
     if abs(vz_dec + MEIO_PASSO_GRAVIDADE - VZ_PULO) > LIMITE_VZ_DECOLAGEM:
-        return {**base, "regra": "ambíguo: parábola sem pulo limpo", "no_ar": True, "vz": None}
+        return {**base, "regra": "ambíguo: parábola sem pulo limpo", "no_ar": None, "vz": None}
     t = round(-tau_dec * tickrate)
     if t < JANELA_REGRA_FIXA[0]:
         return {**base, "regra": "janela 0-5 (sem gabarito)", "no_ar": True, "vz": None}
@@ -776,7 +800,8 @@ def postura_da_altura(h: float | None, faixa: tuple[float, float] | None = None)
 
 def rotina_do_jogo(z: np.ndarray, xy: np.ndarray, vp: np.ndarray, z_saida: float,
                    pitch: float, yaw: float, tickrate: int,
-                   tolerancia: float | None = None, faixa_postura: tuple[float, float] | None = None) -> dict:
+                   tolerancia: float | None = None, faixa_postura: tuple[float, float] | None = None,
+                   limiar_voo: float | None = None) -> dict:
     """Botão, "no ar" e postura de UM arremesso pela rotina medida.
 
     `vp` é a velocidade do projétil pelos dois primeiros pontos e `z_saida` a
@@ -786,12 +811,21 @@ def rotina_do_jogo(z: np.ndarray, xy: np.ndarray, vp: np.ndarray, z_saida: float
     ev = estado_vertical(z, xy, tickrate)
     out = {"estado_vertical": ev["regra"], "no_ar": ev["no_ar"],
            "ticks_desde_decolagem": ev["ticks_desde_decolagem"],
-           "velocidade_arremesso": None, "botao": None, "altura_saida": None, "postura": None}
+           "velocidade_arremesso": None, "botao": None, "altura_saida": None, "postura": None,
+           "residuo_voo": None}
     if ev["vz"] is None:
         return out
     vj = np.array([ev["vh"][0], ev["vh"][1], ev["vz"]])
     rel = float(np.linalg.norm(np.asarray(vp, dtype=float) - FATOR_HERANCA * vj))
     b = botao_da_velocidade(rel, tolerancia)
+    if b is not None:
+        u = direcao_do_lancamento(pitch, yaw)
+        previsto = VELOCIDADE_BOTAO[b] * u + FATOR_HERANCA * vj + DESLOCAMENTO_PRIMEIRO_SEGMENTO
+        residuo = float(np.linalg.norm(np.asarray(vp, dtype=float) - previsto))
+        out["residuo_voo"] = residuo
+        if residuo > (LIMIAR_GUARDA_VOO if limiar_voo is None else limiar_voo):
+            out["estado_vertical"] = "vetor incoerente com o voo"
+            return out
     out.update(velocidade_arremesso=rel, botao=b)
     if b is not None and ev["regra"] in ("chão", "regra fixa 6-13"):
         u = direcao_do_lancamento(pitch, yaw)

@@ -1003,7 +1003,41 @@ testada e estava errada.
     todas com a vz FIXA; Anubis separa (em pé mais baixo +0,07 do corte,
     agachado mais alto -4,26) e a faixa pega 16 em pé + 1 agachado no ar; pés
     em t: em movimento 3,36 -> 0,69u (n = 3.941), parado idêntico (n = 1.321).
-    Gabaritos: 12 partidas, 4,8 MB.
+    Gabaritos: 13 partidas (12 recuperadas + match_23; o "11" dos relatórios era
+    erro de contagem), 3,9 MB em .json.gz.
+    **Rodada seguinte (2026-09-27):**
+    - os 4 "rótulos errados" da validação eram LEITURA ERRADA DO GABARITO: no
+      tick da soltura a entidade da arma já é a próxima granada do mesmo tipo,
+      com força 0; o gerador passou a ler a força em t-1. Com isso o botão
+      acerta 100% nas 13 partidas, também FORA DA AMOSTRA;
+    - GUARDA DO VOO: o primeiro segmento do projétil é a velocidade inicial
+      gravada + (0, 0, -7,51) (mediana, n = 6.846); o resíduo |vp - (previsto +
+      deslocamento)| acompanha o erro do vetor (correlação 0,999). Vetores
+      certos (erro < 5, voo limpo): resíduo máximo 6,68; grosseiros (erro acima
+      da tolerância antes da guarda, 25): mínimo 25,28; limiar = meio do vão =
+      15,98. Pega os 6 erros acima de 50 u/s (inclusive os 2 da invariante);
+      custo de cobertura < 1 ponto em 12 das 13 partidas, 1,62 na match_15 (os
+      5 que ela tira têm erro REAL de 15 a 100 u/s). CAMINHO POSSÍVEL, não
+      implementado: como o resíduo nos casos bons é pequeno (p50 1,5, p99 5,2
+      u/s), a trajetória observada do projétil poderia ESTIMAR o vetor
+      inicial, não só conferi-lo;
+    - tolerância = 19 depois da guarda (p99 9,49, n = 6.682; antes da guarda 25,
+      p99 12,47);
+    - "no ar" INDETERMINADO: estado vertical ambíguo e soltura na troca entre
+      queda livre e chão (2ª diferença de gravidade vizinha a uma anômala em
+      t-2..t). Indeterminados 0 a 3,1% por partida (acima de 2%: match_10 3,1%,
+      match_15 2,9%, match_14 2,1%);
+    - faixa de postura por QUANTIL (acerto >= 99,5% fora da faixa em TODAS as
+      partidas): a curva não é monótona e só o quantil 0 (e o de 5%) passa; fica
+      o 0: [-4,01; +2,10], cobertura 97,9%. Os 6 erros que o corte sozinho faria
+      no chão são todos em pé que saem baixos (a cauda da 21c) e caem na faixa;
+    - dentro da amostra (13 partidas): botão 100%, "no ar" 99,7-100% nos
+      determinados, postura fora da faixa 100%, invariante máx 14,1 < 217,2;
+    - **PARADO no merge:** a guarda derruba 4 testes EXISTENTES de
+      `test_grenade_throws.py` -- o gerador sintético lança na direção CRUA da
+      mira, sem o remapeamento de pitch do jogo, e a guarda o vê 9° fora.
+      Mudança proposta (3 linhas no `_cenario`, testada e revertida): o
+      projétil sintético sai na `direcao_do_lancamento`; com ela, 39/39.
 
 21b. **A reprodução por console depende de validação prática do Pedro, não do
     código.** Origem do `setpos`, sinal do `setang` e pré-requisitos de servidor

@@ -55,6 +55,7 @@ def pes_da_saida(a: dict, ev: dict) -> np.ndarray:
 def metas_da_partida(arr: list[dict]) -> dict:
     lim = limite_da_invariante()
     rot, ar, post, erros_vel, erros_pos, max_rot = [], [], [], [], [], 0.0
+    indet, guarda, erros_postura = 0, 0, []
     for a in arr:
         z, xy, vp, zs, t = _entradas(a)
         e, d = a["entrada"], a["demo"]
@@ -69,8 +70,15 @@ def metas_da_partida(arr: list[dict]) -> dict:
             max_rot = max(max_rot, erro)
         if r["no_ar"] is not None:
             ar.append(r["no_ar"] == (not d["no_chao"]))
+        else:
+            indet += 1
+        if r["estado_vertical"] == "vetor incoerente com o voo":
+            guarda += 1
         if r["postura"] is not None and d["no_chao"] and d["duck_amount"] in (0.0, 1.0):
             post.append((r["postura"] == "agachado") == (d["duck_amount"] == 1.0))
+            if not post[-1]:
+                erros_postura.append((a["id"], r["postura"], d["duck_amount"], round(r["altura_saida"] - gt.CORTE_POSTURA, 2),
+                                      round(float(np.ptp(np.array(e["z_janela"])[:-1])), 1)))
         if ev["vz"] is not None:
             vj = np.array([*ev["vh"], ev["vz"]])
             erros_vel.append(float(np.linalg.norm(gt.VELOCIDADE_BOTAO[b_rec] * u + gt.FATOR_HERANCA * vj - np.array(d["v0"]))))
@@ -87,6 +95,7 @@ def metas_da_partida(arr: list[dict]) -> dict:
         "invariante_max": max_rot, "invariante_limite": lim,
         "vel_menos_5": float(np.mean(ev_ < 5)), "vel_p99": float(np.percentile(ev_, 99)), "vel_max": float(ev_.max()),
         "pos_menos_1": float(np.mean(ep_ < 1)), "pos_p95": float(np.percentile(ep_, 95)), "pos_max": float(ep_.max()),
+        "indeterminados": indet / len(arr), "guarda": guarda, "erros_postura": erros_postura,
     }
 
 
@@ -167,18 +176,25 @@ def main() -> None:
         por_partida.setdefault(a["id"].split(":")[0], []).append(a)
     print(f"constantes CONGELADAS: tolerância {gt.TOLERANCIA_BOTAO}, faixa de postura {gt.FAIXA_POSTURA_NEUTRA}, "
           f"janela {gt.JANELA_REGRA_FIXA} / real >= {gt.JANELA_VZ_REAL_MIN}, 2ª diferença {gt.TOL_SEGUNDA_DIFERENCA}")
-    print("\npartida   n    botão         cobertura  no ar         postura(chão)  invariante      vel<5  vel p99  vel máx  pos<1  pos p95  pos máx")
-    falhas = []
+    print("\npartida   n    botão         cobertura  no ar(determ.)  indeterm.  postura(fora da faixa)  guarda  invariante      vel<5  vel p99  vel máx  pos<1  pos p95  pos máx")
+    falhas, erros_postura = [], []
     for p in sorted(por_partida):
         m = metas_da_partida(por_partida[p])
         fr = lambda x: f"{x[0]}/{x[1]} {x[0] / x[1]:.1%}" if x[1] else "-"
-        print(f"{p}  {m['n']:4d}  {fr(m['botao']):13s} {m['cobertura']:6.1%}    {fr(m['no_ar']):13s} {fr(m['postura']):14s} "
+        print(f"{p}  {m['n']:4d}  {fr(m['botao']):13s} {m['cobertura']:6.1%}    {fr(m['no_ar']):14s} {m['indeterminados']:6.1%}    "
+              f"{fr(m['postura']):22s} {m['guarda']:4d}   "
               f"{m['invariante_max']:5.1f}<{m['invariante_limite']:.1f}  {m['vel_menos_5']:6.1%} {m['vel_p99']:7.2f} {m['vel_max']:8.1f}  "
               f"{m['pos_menos_1']:5.1%} {m['pos_p95']:7.2f} {m['pos_max']:7.1f}")
+        erros_postura += m["erros_postura"]
+        if m["indeterminados"] > 0.02:
+            falhas.append((p, "indeterminados acima de 2%", round(m["indeterminados"], 4), None))
         for nome in ("botao", "no_ar", "postura"):
             ok, n = m[nome]
-            if n and ok / n < META:
+            if n and ok / n < (0.995 if nome == "postura" else META):
                 falhas.append((p, nome, ok, n))
+    print("\nerros de postura no chão (id, rotulado, duck_amount, altura - corte, subida dos pés em 64 ticks):")
+    for x in erros_postura:
+        print("   ", x)
         if m["invariante_max"] >= m["invariante_limite"]:
             falhas.append((p, "invariante", m["invariante_max"], m["invariante_limite"]))
     print("\nMETAS ABAIXO:", falhas or "nenhuma")
