@@ -608,7 +608,11 @@ var Prancheta = (function () {
     ferramenta: "mover", arma: "smoke",
     sel: null,                              // {tipo: "peca"|"granada"|"traco", id}
     arrasto: null, tracando: null,
-    origemPendente: null,                   // granada à mão: origem já clicada
+    origemPendente: null,                   // (legado) sem uso desde a máquina de estados
+    acao: null,                             // ação pendente: colocar peça, granada, busca
+    toque: null,                            // apertou no mapa: vira clique ou arrasto ao soltar
+    sugestao: null,                         // granada recém-criada à mão com sugestões abertas
+    editor: null, ajuda: false, sobrePeca: false,
     busca: null,                            // {ponto, raio, total, resultados, foco}
     raioBusca: RAIO_BUSCA_PADRAO,
     soParado: false,
@@ -987,36 +991,185 @@ var Prancheta = (function () {
     return true;
   }
 
+  /* ---------------------------------------------------------------------
+     Interação: UMA máquina de estados (prancheta fluida, 2026-09-27)
+
+     Cada clique faz uma coisa previsível, e a linha de dica diz qual é ANTES
+     do clique. O estado sai de três campos -- a ferramenta de desenho, a ação
+     pendente e a seleção -- e nunca de condições espalhadas pelos handlers.
+     Nada aqui cria operação nova: mover por clique emite o mesmo move_peca,
+     virar emite o mesmo gira_peca, granada o mesmo cria_granada.
+     --------------------------------------------------------------------- */
+  // Ponteiro que anda menos que isto (px de tela) entre apertar e soltar é
+  // CLIQUE; acima, ARRASTO. É a única distinção entre os dois no editor.
+  var LIMIAR_ARRASTO_PX = 4;
+
+  function nomePeca(id) { var p = S.estado.pecas[id]; return p ? rotuloDaPeca(p) : ""; }
+
+  /** O estado atual da interação, pelo nome da tabela. */
+  function estadoDaInteracao() {
+    if (ROTULO_FERRAMENTA[S.ferramenta] || S.ferramenta === "borracha") return "desenhando";
+    var a = S.acao;
+    if (a && a.tipo === "colocar") return "colocando_peca";
+    if (a && a.tipo === "busca") return "buscando";
+    if (a && a.tipo === "granada") return a.origem ? "granada_destino" : "granada_origem";
+    if (S.sel && S.sel.tipo === "peca") return "peca_selecionada";
+    if (S.sel && S.sel.tipo === "granada") return "granada_selecionada";
+    return "livre";
+  }
+
+  /** A tabela da máquina: como se entra, o que o próximo clique faz e a dica.
+      A dica recebe o contexto (nomes, arma) e é a MESMA função que a tela usa. */
+  var ESTADOS = {
+    livre: { entra: "padrão; Esc", clique: "seleciona peça, granada ou traço; no vazio, nada",
+      dica: function () { return "Clique num jogador para selecionar, ou escolha uma ferramenta"; } },
+    peca_selecionada: { entra: "clique numa peça, ou no nome dela no banco",
+      clique: "no vazio: a peça vai para lá (move_peca); em outra peça: seleciona a outra; botão direito: vira para o ponto (gira_peca)",
+      dica: function (c) { return c.peca + " selecionado · clique no mapa para mover · botão direito para virar · 1–4 joga granada"; } },
+    colocando_peca: { entra: "clique numa ficha do banco fora do mapa neste passo",
+      clique: "cria (ou recoloca) a peça ali e a seleciona",
+      dica: function (c) { return "Clique no mapa para colocar " + c.ficha + " · Esc cancela"; } },
+    granada_destino: { entra: "tipo de granada com uma peça selecionada (ou origem já escolhida)",
+      clique: "o destino: cria a granada e mostra os arremessos reais que caem ali",
+      dica: function (c) { return c.arma + " de " + c.origem + " · clique onde ela deve cair"; } },
+    granada_origem: { entra: "tipo de granada sem peça selecionada",
+      clique: "numa peça: ela é a origem; no vazio: o ponto é a origem",
+      dica: function (c) { return c.arma + " · clique em quem joga (ou no ponto de onde sai)"; } },
+    granada_selecionada: { entra: "clique numa granada nascida neste passo",
+      clique: "no vazio: muda onde ela cai (move_granada)",
+      dica: function (c) { return c.arma + " selecionada · clique para mudar onde cai" + (c.real ? " (desfaz o arremesso real)" : ""); } },
+    desenhando: { entra: "uma ferramenta de desenho",
+      clique: "arrastar desenha; a borracha apaga o traço sob o clique",
+      dica: function (c) { return c.ferramenta + " · arraste para desenhar · V volta a selecionar"; } },
+    buscando: { entra: "“Buscar arremesso” no painel",
+      clique: "lista os arremessos reais que caem perto do ponto",
+      dica: function (c) { return "Buscar " + c.arma + " · clique onde ela deve cair"; } }
+  };
+
+  function contextoDaDica() {
+    var a = S.acao || {}, g = S.sel && S.sel.tipo === "granada" ? S.estado.granadas[S.sel.id] : null;
+    var origem = a.de ? nomePeca(a.de) : "um ponto";
+    return {
+      peca: S.sel && S.sel.tipo === "peca" ? nomePeca(S.sel.id) : "",
+      ficha: a.rotulo ? (a.lado === "ct" ? "CT " : "TR ") + a.rotulo : "",
+      arma: NOME_ARMA[a.arma || (g && g.arma) || S.arma],
+      origem: origem,
+      real: !!(g && g.arremesso),
+      ferramenta: ROTULO_FERRAMENTA[S.ferramenta] || (S.ferramenta === "borracha" ? "Borracha" : "")
+    };
+  }
+
+  function dicaAtual() { return ESTADOS[estadoDaInteracao()].dica(contextoDaDica()); }
+
+  function atualizaDica() {
+    var d = $("pr-dica-estado");
+    if (d) d.textContent = dicaAtual();
+    if (!cv) return;
+    var e = estadoDaInteracao();
+    cv.style.cursor = (e === "colocando_peca" || e === "granada_origem" || e === "granada_destino" ||
+                       e === "buscando" || e === "desenhando") ? "crosshair" : (S.sobrePeca ? "pointer" : "default");
+  }
+
+  /* --- ações pendentes --------------------------------------------------------- */
+  /** Escolher um tipo de granada: com peça selecionada, a origem é ela. */
+  function escolheArma(arma) {
+    confirmaGiro();
+    S.arma = arma;
+    if (S.acao && S.acao.tipo === "busca") { S.acao.arma = arma; if (S.busca) busca(S.busca.ponto); atualizaTudo(); return; }
+    if (ROTULO_FERRAMENTA[S.ferramenta] || S.ferramenta === "borracha") S.ferramenta = "mover";
+    var q = quadro();
+    if (S.sel && S.sel.tipo === "peca" && q.pecas[S.sel.id]) {
+      var p = q.pecas[S.sel.id];
+      S.acao = { tipo: "granada", arma: arma, de: S.sel.id, origem: [p.x, p.y], nivel: p.nivel };
+    } else {
+      S.acao = { tipo: "granada", arma: arma, de: null, origem: null };
+    }
+    S.busca = null;
+    atualizaTudo();
+  }
+
+  /** Cria a granada à mão e, se o mapa tem biblioteca, abre as sugestões de
+      arremesso real para o destino -- a primeira opção é manter a desenhada. */
+  function criaGranadaDaAcao(destino) {
+    var a = S.acao;
+    var op = emite("cria_granada", { granada: novoId(), arma: a.arma, passo: passoAtual(),
+                                     nivel: a.nivel === undefined ? S.andar : a.nivel,
+                                     origem: [a.origem[0], a.origem[1]], destino: [destino[0], destino[1]], arremesso: null });
+    if (a.legado) {
+      // "Desenhar à mão" do painel: a ferramenta fica, como sempre foi
+      S.acao = { tipo: "granada", arma: a.arma, de: null, origem: null, legado: true };
+      S.sel = { tipo: "granada", id: op.granada };
+    } else if (a.de && S.estado.pecas[a.de]) {
+      S.acao = null; S.sel = { tipo: "peca", id: a.de };
+    } else {
+      S.acao = null; S.sel = { tipo: "granada", id: op.granada };
+    }
+    if (cfg.biblioteca && !a.legado) {
+      S.sugestao = { granada: op.granada, de: a.de ? nomePeca(a.de) : "o ponto escolhido" };
+      busca(destino, a.arma);
+    } else if (!cfg.biblioteca && !a.legado) {
+      S.aviso = "Sem arremessos reais neste mapa: não há partidas dele no corpus, então a granada fica desenhada à mão.";
+    }
+    atualizaTudo();
+  }
+
+  /** Trocar a granada desenhada pelo arremesso real escolhido na lista. */
+  function trocaPorArremesso(r) {
+    var s = S.sugestao;
+    if (s && S.estado.granadas[s.granada]) emite("remove_granada", { granada: s.granada });
+    S.sugestao = null;
+    usaArremesso(r);
+  }
+
+  /** Um nível para trás: ação pendente -> ferramenta de desenho -> seleção. */
+  function volta() {
+    if (S.editor) { fechaEditorTexto(false); return; }
+    if (S.ajuda) { alternaAjuda(false); return; }
+    if (S.busca || S.sugestao) { S.busca = null; S.sugestao = null; atualizaTudo(); return; }
+    if (S.acao) { S.acao = null; atualizaTudo(); return; }
+    if (ROTULO_FERRAMENTA[S.ferramenta] || S.ferramenta === "borracha") { S.ferramenta = "mover"; atualizaTudo(); return; }
+    S.sel = null; atualizaTudo();
+  }
+
+  /* --- ponteiro ------------------------------------------------------------------ */
   function pointerDown(e) {
     if (!S.doc) return;
     if (S.reproducao) { if (S.espaco || e.button === 1) comecaPan(e); return; }
     if (S.espaco || e.button === 1) { comecaPan(e); e.preventDefault(); return; }
-    if (e.button !== 0) return;
     var px = eventoParaPixel(e), g = eventoParaJogo(e);
-    if (S.ferramenta === "buscar") { if (cfg.biblioteca) busca(g); return; }
-    if (S.ferramenta === "granada") {
-      if (!S.origemPendente) { S.origemPendente = g; desenha(); return; }
-      var o = S.origemPendente; S.origemPendente = null;
-      var op = emite("cria_granada", { granada: novoId(), arma: S.arma, passo: passoAtual(), nivel: S.andar,
-                                       origem: [o[0], o[1]], destino: [g[0], g[1]], arremesso: null });
-      S.sel = { tipo: "granada", id: op.granada }; atualizaTudo();
+    if (e.button === 2) {
+      // botão direito: a peça selecionada passa a olhar para o ponto
+      e.preventDefault();
+      var q = quadro();
+      if (S.sel && S.sel.tipo === "peca" && q.pecas[S.sel.id]) {
+        var p = q.pecas[S.sel.id];
+        confirmaGiro();
+        emite("gira_peca", { peca: S.sel.id, passo: passoAtual(),
+                             yaw: yawInteiro(Math.atan2(g[1] - p.y, g[0] - p.x) * (180 / Math.PI)) });
+      }
       return;
     }
-    if (ROTULO_FERRAMENTA[S.ferramenta]) { comecaTraco(e, px, g); return; }
-    // mover
+    if (e.button !== 0) return;
+    if (S.editor) fechaEditorTexto(true);
+    var estado = estadoDaInteracao();
+    if (estado === "desenhando") { comecaTraco(e, px, g); return; }
+    cv.setPointerCapture(e.pointerId);
     var alvo = acha(px);
-    S.sel = alvo ? { tipo: alvo.tipo === "giro" ? "peca" : alvo.tipo, id: alvo.id } : null;
-    if (alvo) {
-      cv.setPointerCapture(e.pointerId);
-      var q = quadro();
+    S.toque = { x: e.clientX, y: e.clientY, px: px, g: g, alvo: alvo, estado: estado, arrastou: false };
+    // arrastar peça, alça ou ponta de granada continua como sempre (quando não
+    // há ação pendente): o arrasto é armado aqui e só vira operação se andar
+    if (alvo && (estado === "livre" || estado === "peca_selecionada" || estado === "granada_selecionada")) {
+      S.sel = { tipo: alvo.tipo === "giro" ? "peca" : alvo.tipo, id: alvo.id };
+      var q2 = quadro();
       if (alvo.tipo === "giro") S.arrasto = { tipo: "giro", id: alvo.id, yaw: null, mexeu: false };
-      else if (alvo.tipo === "peca") S.arrasto = { tipo: "peca", id: alvo.id, jogo: [q.pecas[alvo.id].x, q.pecas[alvo.id].y], mexeu: false };
+      else if (alvo.tipo === "peca") S.arrasto = { tipo: "peca", id: alvo.id, jogo: [q2.pecas[alvo.id].x, q2.pecas[alvo.id].y], mexeu: false };
       else {
         var gr = S.estado.granadas[alvo.id];
         S.arrasto = { tipo: "granada", id: alvo.id, ponta: alvo.ponta, origem: gr.origem.slice(), destino: gr.destino.slice(), mexeu: false };
       }
+      atualizaPainel(); atualizaDica();
     }
-    atualizaPainel(); desenha();
+    desenha();
   }
 
   function pointerMove(e) {
@@ -1029,7 +1182,16 @@ var Prancheta = (function () {
       return;
     }
     if (S.tracando) { continuaTraco(e); return; }
-    if (!S.arrasto) return;
+    if (S.toque && !S.toque.arrastou &&
+        Math.hypot(e.clientX - S.toque.x, e.clientY - S.toque.y) >= LIMIAR_ARRASTO_PX) S.toque.arrastou = true;
+    if (!S.arrasto) {
+      if (!S.toque && S.doc && !S.reproducao) {
+        var sobre = !!acha(eventoParaPixel(e));
+        if (sobre !== !!S.sobrePeca) { S.sobrePeca = sobre; atualizaDica(); }
+      }
+      return;
+    }
+    if (!S.toque || !S.toque.arrastou) return;
     var g = eventoParaJogo(e);
     S.arrasto.mexeu = true;
     if (S.arrasto.tipo === "peca") S.arrasto.jogo = g;
@@ -1045,11 +1207,233 @@ var Prancheta = (function () {
   function pointerUp() {
     if (S.pan) { S.pan = null; return; }
     if (S.tracando) { terminaTraco(); return; }
-    var a = S.arrasto; S.arrasto = null;
-    if (!a || !a.mexeu) { desenha(); return; }
-    if (a.tipo === "peca") emite("move_peca", { peca: a.id, passo: passoAtual(), x: a.jogo[0], y: a.jogo[1], nivel: S.andar });
-    else if (a.tipo === "giro") { if (a.yaw !== null) emite("gira_peca", { peca: a.id, passo: passoAtual(), yaw: a.yaw }); }
-    else emite("move_granada", { granada: a.id, origem: a.origem, destino: a.destino, nivel: S.estado.granadas[a.id].nivel });
+    var a = S.arrasto, t = S.toque;
+    S.arrasto = null; S.toque = null;
+    if (a && a.mexeu) {
+      if (a.tipo === "peca") emite("move_peca", { peca: a.id, passo: passoAtual(), x: a.jogo[0], y: a.jogo[1], nivel: S.andar });
+      else if (a.tipo === "giro") { if (a.yaw !== null) emite("gira_peca", { peca: a.id, passo: passoAtual(), yaw: a.yaw }); }
+      else emite("move_granada", { granada: a.id, origem: a.origem, destino: a.destino, nivel: S.estado.granadas[a.id].nivel });
+      return;
+    }
+    if (t && !t.arrastou) clique(t);
+    else desenha();
+  }
+
+  /** O clique (ponteiro que não andou), resolvido pelo estado em que começou. */
+  function clique(t) {
+    var g = t.g, alvo = t.alvo, q = quadro();
+    switch (t.estado) {
+      case "colocando_peca": {
+        var ac = S.acao;
+        S.acao = null;
+        colocaPeca(ac.lado, ac.rotulo, g);
+        return;
+      }
+      case "buscando":
+        if (cfg.biblioteca) busca(g, S.acao.arma);
+        return;
+      case "granada_origem":
+        if (alvo && alvo.tipo === "peca" && q.pecas[alvo.id]) {
+          var p = q.pecas[alvo.id];
+          S.acao.de = alvo.id; S.acao.origem = [p.x, p.y]; S.acao.nivel = p.nivel;
+        } else {
+          S.acao.origem = [g[0], g[1]];
+        }
+        atualizaTudo();
+        return;
+      case "granada_destino":
+        criaGranadaDaAcao(g);
+        return;
+      case "peca_selecionada":
+        if (!alvo) {
+          // no vazio: a peça selecionada vai para lá, no andar ativo
+          emite("move_peca", { peca: S.sel.id, passo: passoAtual(), x: g[0], y: g[1], nivel: S.andar });
+          return;
+        }
+        break;
+      case "granada_selecionada":
+        if (!alvo) {
+          var gr = S.estado.granadas[S.sel.id];
+          emite("move_granada", { granada: S.sel.id, origem: gr.origem.slice(), destino: [g[0], g[1]], nivel: gr.nivel });
+          return;
+        }
+        break;
+      default:
+        break;
+    }
+    // livre, ou clique num item: seleciona o que está sob o ponteiro
+    S.sel = alvo ? { tipo: alvo.tipo === "giro" ? "peca" : alvo.tipo, id: alvo.id } : (t.estado === "livre" ? null : S.sel);
+    if (!alvo && t.estado === "livre") {
+      var tr = tracoSob(t.px);
+      if (tr) S.sel = { tipo: "traco", id: tr };
+    }
+    atualizaTudo();
+  }
+
+  /** O traço mais recente sob o ponto, no andar ativo. */
+  function tracoSob(px) {
+    var q = quadro();
+    var alvos = ordemDeCriacao(S.estado).filter(function (x) {
+      return x.tipo === "traco" && q.tracos[x.id] && q.tracos[x.id].nivel === S.andar &&
+             MapCore.tracoEncosta(q.tracos[x.id], px, cfg.radar, RAIO_BORRACHA);
+    });
+    return alvos.length ? alvos[alvos.length - 1].id : null;
+  }
+
+  /** Põe a ficha do banco no mapa: a peça existente volta (move_peca) ou uma
+      nova nasce (cria_peca) -- o mesmo que soltar o arrasto do banco. */
+  function colocaPeca(lado, rotulo, g) {
+    var existente = Object.keys(S.estado.pecas).filter(function (id) {
+      return S.estado.pecas[id].lado === lado && S.estado.pecas[id].rotulo === rotulo;
+    })[0];
+    if (existente) {
+      emite("move_peca", { peca: existente, passo: passoAtual(), x: g[0], y: g[1], nivel: S.andar });
+      S.sel = { tipo: "peca", id: existente };
+    } else {
+      var op = emite("cria_peca", { peca: novoId(), lado: lado, rotulo: rotulo, passo: passoAtual(),
+                                    x: g[0], y: g[1], nivel: S.andar });
+      S.sel = { tipo: "peca", id: op.peca };
+    }
+    atualizaTudo();
+  }
+
+  /** Clique numa ficha do banco: seleciona a peça se ela está no mapa neste
+      passo; senão arma a colocação. */
+  function cliqueNaFicha(lado, rotulo) {
+    confirmaGiro();
+    var q = quadro();
+    var noMapa = Object.keys(q.pecas).filter(function (id) {
+      return q.pecas[id].lado === lado && q.pecas[id].rotulo === rotulo;
+    })[0];
+    if (ROTULO_FERRAMENTA[S.ferramenta] || S.ferramenta === "borracha") S.ferramenta = "mover";
+    S.busca = null; S.sugestao = null;
+    if (noMapa) { S.acao = null; S.sel = { tipo: "peca", id: noMapa }; }
+    else S.acao = { tipo: "colocar", lado: lado, rotulo: rotulo };
+    atualizaTudo();
+  }
+
+  /** Gira a peça selecionada no passo atual (Q/E e os botões do painel). */
+  function giraSelecionada(delta) {
+    var q = quadro();
+    if (!S.sel || S.sel.tipo !== "peca" || !q.pecas[S.sel.id]) return;
+    var base = yawDaPeca(S.sel.id, q.pecas[S.sel.id]);
+    confirmaGiro();
+    emite("gira_peca", { peca: S.sel.id, passo: passoAtual(), yaw: yawInteiro(base + delta) });
+  }
+
+  /** Muda de passo mantendo a seleção quando a peça existe no passo novo. */
+  function mudaPasso(i) {
+    confirmaGiro();
+    S.passo = Math.max(0, Math.min(i, S.estado.passos.length - 1));
+    if (S.sel) {
+      var q = quadro();
+      var grupo = { peca: "pecas", granada: "granadas", traco: "tracos" }[S.sel.tipo];
+      if (!q[grupo][S.sel.id]) S.sel = null;
+    }
+    if (S.acao && S.acao.tipo === "granada" && S.acao.de) {
+      var pq = quadro().pecas[S.acao.de];
+      if (pq) { S.acao.origem = [pq.x, pq.y]; S.acao.nivel = pq.nivel; } else S.acao = null;
+    }
+    atualizaTudo();
+  }
+
+  /* --- texto no próprio mapa (sem window.prompt) --------------------------------- */
+  function abreEditorTexto(g) {
+    fechaEditorTexto(false);
+    var px = jogoParaPixel(g[0], g[1]);
+    var r = cv.getBoundingClientRect(), k = r.width / cfg.radar.width;
+    var x = (px[0] * S.view.zoom + S.view.panX) * k, y = (px[1] * S.view.zoom + S.view.panY) * k;
+    var campo = el("input", { type: "text", id: "pr-editor-texto", class: "pr-editor-texto",
+                              "aria-label": "Texto da anotação (Enter confirma, Esc cancela)",
+                              placeholder: "texto · Enter confirma · Esc cancela" });
+    campo.style.left = (cv.offsetLeft + x) + "px";
+    campo.style.top = (cv.offsetTop + y) + "px";
+    campo.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { e.preventDefault(); fechaEditorTexto(true); }
+      else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); fechaEditorTexto(false); }
+    });
+    $("pr-tela").appendChild(campo);
+    S.editor = { g: g, campo: campo };
+    setTimeout(function () { campo.focus(); }, 0);
+  }
+
+  function fechaEditorTexto(confirma) {
+    var ed = S.editor;
+    if (!ed) return;
+    S.editor = null;
+    var txt = ed.campo.value.trim();
+    if (ed.campo.parentNode) ed.campo.parentNode.removeChild(ed.campo);
+    if (confirma && txt) {
+      var op = emite("cria_traco", { traco: novoId(), passo: passoAtual(), ferramenta: "texto", texto: txt,
+                                     cor: S.cor, espessura: S.espessura, pontos: [ed.g], nivel: S.andar });
+      S.sel = { tipo: "traco", id: op.traco };
+    }
+    atualizaTudo();
+  }
+
+  /* --- atalhos: UM mapa, sem tecla repetida (há teste) ----------------------------- */
+  var ATALHOS = [
+    { tecla: "v", rotulo: "V", acao: "Selecionar", fn: function () { escolheFerramenta("mover"); } },
+    { tecla: "1", rotulo: "1", acao: "Smoke", fn: function () { escolheArma("smoke"); } },
+    { tecla: "2", rotulo: "2", acao: "Flash", fn: function () { escolheArma("flash"); } },
+    { tecla: "3", rotulo: "3", acao: "HE", fn: function () { escolheArma("he"); } },
+    { tecla: "4", rotulo: "4", acao: "Molotov", fn: function () { escolheArma("molotov"); } },
+    { tecla: "c", rotulo: "C", acao: "Caneta", fn: function () { escolheFerramenta("caneta"); } },
+    { tecla: "a", rotulo: "A", acao: "Seta", fn: function () { escolheFerramenta("seta"); } },
+    { tecla: "l", rotulo: "L", acao: "Linha", fn: function () { escolheFerramenta("linha"); } },
+    { tecla: "t", rotulo: "T", acao: "Texto", fn: function () { escolheFerramenta("texto"); } },
+    { tecla: "x", rotulo: "X", acao: "Borracha", fn: function () { escolheFerramenta("borracha"); } },
+    { tecla: "q", rotulo: "Q", acao: "Girar a peça 15° (Shift: 1°) no sentido anti-horário",
+      fn: function (e) { giraSelecionada(e.shiftKey ? PASSO_GIRO_FINO : PASSO_GIRO); } },
+    { tecla: "e", rotulo: "E", acao: "Girar a peça 15° (Shift: 1°) no sentido horário",
+      fn: function (e) { giraSelecionada(-(e.shiftKey ? PASSO_GIRO_FINO : PASSO_GIRO)); } },
+    { tecla: ",", rotulo: ",", acao: "Passo anterior", fn: function () { mudaPasso(S.passo - 1); } },
+    { tecla: ".", rotulo: ".", acao: "Próximo passo", fn: function () { mudaPasso(S.passo + 1); } },
+    { tecla: "n", rotulo: "N", acao: "Novo passo", fn: function () { novoPasso(); } },
+    { tecla: "delete", rotulo: "Delete", acao: "Remover o selecionado", fn: function () { removeSelecionado(); } },
+    { tecla: "escape", rotulo: "Esc", acao: "Um nível para trás", fn: function () { volta(); } },
+    { tecla: "f", rotulo: "F", acao: "Tela cheia", fn: function () { MapCore.alternaTelaCheia($("pr-palco")); } },
+    { tecla: "0", rotulo: "0", acao: "Zoom original", fn: function () { resetaZoom(); } },
+    { tecla: "?", rotulo: "?", acao: "Ajuda: esta lista", fn: function () { alternaAjuda(); } },
+    { tecla: "ctrl+z", rotulo: "Ctrl+Z", acao: "Desfazer", fn: function () { desfaz(); } },
+    { tecla: "ctrl+y", rotulo: "Ctrl+Y", acao: "Refazer (também Ctrl+Shift+Z)", fn: function () { refaz(); } },
+    { tecla: "espaço", rotulo: "Espaço + arrastar", acao: "Mover o mapa (com zoom)", fn: null }
+  ];
+  var ATALHO_DE = {};
+  ATALHOS.forEach(function (a) { ATALHO_DE[a.acao] = a.rotulo; });
+  function comAtalho(texto, acao) { var r = ATALHO_DE[acao]; return r ? texto + " (" + r + ")" : texto; }
+
+  function teclaDoEvento(e) {
+    var k = e.key === "Del" ? "delete" : e.key.toLowerCase();
+    if (e.ctrlKey || e.metaKey) {
+      if (k === "z" && e.shiftKey) return "ctrl+y";
+      return "ctrl+" + k;
+    }
+    if (k === "backspace") return "delete";
+    return k;
+  }
+
+  function alternaAjuda(abrir) {
+    var ja = $("pr-ajuda");
+    var abre = abrir === undefined ? !ja : abrir;
+    if (ja) ja.parentNode.removeChild(ja);
+    S.ajuda = false;
+    if (!abre) return;
+    var lista = el("dl", { class: "pr-atalhos" });
+    ATALHOS.forEach(function (a) {
+      lista.appendChild(el("dt", { texto: a.rotulo }));
+      lista.appendChild(el("dd", { texto: a.acao }));
+    });
+    var painel = el("div", { id: "pr-ajuda", class: "pr-ajuda", role: "dialog", "aria-label": "Atalhos da prancheta" },
+      [el("h3", { texto: "Atalhos" }), lista,
+       el("button", { class: "pr-b", texto: "Fechar (Esc)", onclick: function () { alternaAjuda(false); } })]);
+    $("pr-palco").appendChild(painel);
+    S.ajuda = true;
+  }
+
+  function novoPasso() {
+    emite("cria_passo", { passo: novoId(), titulo: "" });
+    mudaPasso(S.estado.passos.length - 1);
   }
 
   /* --- roda: gira a peça selecionada sob o ponteiro, ou dá zoom ------------ */
@@ -1094,12 +1478,7 @@ var Prancheta = (function () {
   function comecaTraco(e, px, g) {
     cv.setPointerCapture(e.pointerId);
     if (S.ferramenta === "borracha") { apagaTraco(px); return; }
-    if (S.ferramenta === "texto") {
-      var txt = window.prompt("Texto da anotação:");
-      if (txt) emite("cria_traco", { traco: novoId(), passo: passoAtual(), ferramenta: "texto", texto: txt,
-                                     cor: S.cor, espessura: S.espessura, pontos: [g], nivel: S.andar });
-      return;
-    }
+    if (S.ferramenta === "texto") { abreEditorTexto(g); return; }
     S.tracando = { ferramenta: S.ferramenta, pontos: S.ferramenta === "caneta" ? [g] : [g, g],
                    cor: S.cor, espessura: S.espessura };
     desenha();
@@ -1167,17 +1546,18 @@ var Prancheta = (function () {
   /* ---------------------------------------------------------------------
      Arremessos reais: "quero a granada AQUI"
      --------------------------------------------------------------------- */
-  function busca(ponto) {
+  function busca(ponto, arma) {
     var arr = (cfg.biblioteca && cfg.biblioteca.arremessos) || [];
     var raio = S.raioBusca, res = [];
+    arma = arma || S.arma;
     arr.forEach(function (r) {
-      if (r.arma !== S.arma) return;
+      if (r.arma !== arma) return;
       if (S.soParado && (r.movimento !== "parado" || r.no_ar)) return;
       var d = Math.hypot(r.destino[0] - ponto[0], r.destino[1] - ponto[1]);
       if (d <= raio) res.push({ r: r, d: d });
     });
     res.sort(function (a, b) { return a.d - b.d || (a.r.id < b.r.id ? -1 : 1); });
-    S.busca = { ponto: ponto, raio: raio, total: res.length,
+    S.busca = { ponto: ponto, raio: raio, total: res.length, arma: arma,
                 resultados: res.slice(0, MAX_RESULTADOS).map(function (x) { return x.r; }), foco: null };
     desenha(); atualizaBusca();
   }
@@ -1188,7 +1568,7 @@ var Prancheta = (function () {
       origem: r.origem.slice(0, 2), destino: r.destino.slice(0, 2), arremesso: r
     });
     S.sel = { tipo: "granada", id: op.granada };
-    S.busca = null; S.ferramenta = "mover";
+    S.busca = null; S.sugestao = null; S.acao = null; S.ferramenta = "mover";
     atualizaTudo();
   }
 
@@ -1234,7 +1614,7 @@ var Prancheta = (function () {
     if (!temQuadro()) return;
     if (bancoDe !== S.doc.id) { bancoDe = S.doc.id; montaBanco(); }
     atualizaBiblioteca(); atualizaPassos(); atualizaPainel(); atualizaBusca(); atualizaFerramentas();
-    atualizaBanco(); atualizaBarra(); atualizaAviso(); desenha();
+    atualizaBanco(); atualizaBarra(); atualizaAviso(); atualizaContexto(); atualizaDica(); desenha();
   }
 
   function atualizaAviso() { $("pr-aviso").textContent = S.aviso; $("pr-aviso").hidden = !S.aviso; }
@@ -1265,14 +1645,11 @@ var Prancheta = (function () {
       barra.appendChild(el("button", {
         class: "pr-passo" + (i === S.passo ? " ativo" : ""), "data-passo": String(i + 1),
         title: p.titulo || "Passo " + (i + 1), texto: String(i + 1),
-        onclick: function () { confirmaGiro(); S.passo = i; S.sel = null; atualizaTudo(); }
+        onclick: function () { mudaPasso(i); }
       }));
     });
-    barra.appendChild(el("button", { class: "pr-passo novo", id: "pr-novo-passo", title: "Novo passo", texto: "+",
-      onclick: function () {
-        emite("cria_passo", { passo: novoId(), titulo: "" });
-        S.passo = S.estado.passos.length - 1; atualizaTudo();
-      } }));
+    barra.appendChild(el("button", { class: "pr-passo novo", id: "pr-novo-passo", title: comAtalho("Novo passo", "Novo passo"),
+      texto: "+", onclick: novoPasso }));
     var atual = S.estado.passos[S.passo];
     if (document.activeElement !== $("pr-passo-titulo")) $("pr-passo-titulo").value = atual ? atual.titulo : "";
     if (document.activeElement !== $("pr-passo-duracao")) $("pr-passo-duracao").value = atual ? String(atual.duracao_s) : "";
@@ -1280,16 +1657,33 @@ var Prancheta = (function () {
   }
 
   function atualizaFerramentas() {
+    var estado = estadoDaInteracao();
     Array.prototype.forEach.call(document.querySelectorAll("[data-ferramenta]"), function (b) {
-      b.classList.toggle("ativo", b.getAttribute("data-ferramenta") === S.ferramenta);
+      var f = b.getAttribute("data-ferramenta");
+      var ativo = f === "mover" ? (S.ferramenta === "mover" && !S.acao)
+                : f === "buscar" ? estado === "buscando"
+                : f === "granada" ? !!(S.acao && S.acao.legado)
+                : f === S.ferramenta;
+      b.classList.toggle("ativo", ativo);
     });
     Array.prototype.forEach.call(document.querySelectorAll("[data-arma]"), function (b) {
-      b.classList.toggle("ativo", b.getAttribute("data-arma") === S.arma);
+      b.classList.toggle("ativo", !!(S.acao && (S.acao.tipo === "granada" || S.acao.tipo === "busca") &&
+                                     b.getAttribute("data-arma") === S.acao.arma));
     });
     Array.prototype.forEach.call(document.querySelectorAll("[data-espessura]"), function (b) {
       b.classList.toggle("ativo", b.getAttribute("data-espessura") === String(S.espessura));
     });
-    cv.style.cursor = S.ferramenta === "mover" ? "default" : "crosshair";
+  }
+
+  /** Controles de contexto: só aparecem quando servem. Cor e espessura com uma
+      ferramenta de desenho; raio e "só parados" com as sugestões (ou a busca). */
+  function atualizaContexto() {
+    var desenho = !!(ROTULO_FERRAMENTA[S.ferramenta]) && S.ferramenta !== "borracha";
+    var ctxDesenho = $("pr-contexto-desenho");
+    if (ctxDesenho) ctxDesenho.hidden = !desenho;
+    var comBusca = !!(S.busca || (S.acao && S.acao.tipo === "busca"));
+    var filtros = $("pr-filtros-busca");
+    if (filtros) filtros.hidden = !comBusca;
   }
 
   function atualizaBanco() {
@@ -1299,7 +1693,10 @@ var Prancheta = (function () {
         return q.pecas[id].lado === f.getAttribute("data-lado") && q.pecas[id].rotulo === f.getAttribute("data-rotulo");
       });
       f.classList.toggle("no-mapa", noMapa);
-      f.title = noMapa ? "No mapa neste passo: arraste para mover" : "Arraste para o mapa";
+      f.title = noMapa ? "No mapa neste passo: clique para selecionar, ou arraste para mover"
+                       : "Clique e depois clique no mapa para colocar, ou arraste para o mapa";
+      f.classList.toggle("armada", !!(S.acao && S.acao.tipo === "colocar" && S.acao.lado === f.getAttribute("data-lado") &&
+                                      S.acao.rotulo === f.getAttribute("data-rotulo")));
     });
   }
 
@@ -1335,7 +1732,7 @@ var Prancheta = (function () {
   function atualizaPainel() {
     var box = limpa($("pr-selecao"));
     if (!S.sel) {
-      box.appendChild(el("p", { class: "pr-dica", texto: "Arraste uma peça do banco para o mapa. Selecionada, ela gira pela alça na ponta ou pela roda do mouse. Para uma granada de verdade, use “Buscar arremesso” e clique onde ela deve cair." }));
+      box.appendChild(el("p", { class: "pr-dica", texto: "Nada selecionado. Clique num jogador no mapa ou no banco; com ele selecionado, 1 a 4 joga uma granada a partir dele." }));
       return;
     }
     var q = quadro();
@@ -1347,6 +1744,11 @@ var Prancheta = (function () {
         var yaw = yawDaPeca(S.sel.id, noQuadro);
         box.appendChild(el("p", { class: "pr-meta", id: "pr-peca-direcao",
           texto: (noQuadro.direcao_padrao && !S.giro ? "Olhando para o centro do mapa (" : "Olhando para ") + Math.round(yaw) + "°" + (noQuadro.direcao_padrao && !S.giro ? ", direção padrão)" : "") }));
+        box.appendChild(el("div", { class: "linha" }, [
+          el("button", { class: "pr-b", id: "pr-gira-anti", texto: "\u21ba 15\u00b0", title: comAtalho("Girar 15\u00b0 no sentido anti-horário", ATALHOS[10].acao),
+            onclick: function () { giraSelecionada(PASSO_GIRO); } }),
+          el("button", { class: "pr-b", id: "pr-gira-hor", texto: "\u21bb 15\u00b0", title: comAtalho("Girar 15\u00b0 no sentido horário", ATALHOS[11].acao),
+            onclick: function () { giraSelecionada(-PASSO_GIRO); } })]));
         box.appendChild(el("button", { class: "pr-b", id: "pr-tira-peca", texto: "Tirar do mapa neste passo",
           onclick: function () { emite("tira_peca", { peca: S.sel.id, passo: passoAtual() }); } }));
       } else {
@@ -1394,9 +1796,14 @@ var Prancheta = (function () {
     var box = limpa($("pr-resultados"));
     if (!S.busca) return;
     var b = S.busca;
+    if (S.sugestao) {
+      box.appendChild(el("button", { class: "pr-b pr-manter", id: "pr-manter-mao",
+        texto: "Desenhar à mão, saindo de " + S.sugestao.de + " (já está no mapa)",
+        onclick: function () { S.busca = null; S.sugestao = null; atualizaTudo(); } }));
+    }
     box.appendChild(el("p", { class: "pr-meta", texto: b.total === 0
-      ? "Nenhum arremesso real de " + NOME_ARMA[S.arma] + " cai a menos de " + b.raio + "u daqui no corpus."
-      : b.total + " arremessos reais de " + NOME_ARMA[S.arma] + " caem a menos de " + b.raio + "u daqui" +
+      ? "Nenhum arremesso real de " + NOME_ARMA[b.arma] + " cai a menos de " + b.raio + "u daqui no corpus."
+      : b.total + " arremessos reais de " + NOME_ARMA[b.arma] + " caem a menos de " + b.raio + "u daqui" +
         (b.total > b.resultados.length ? " (os " + b.resultados.length + " mais perto)" : "") + "." }));
     var lista = el("ol", { class: "pr-lista" });
     b.resultados.forEach(function (r, n) {
@@ -1404,7 +1811,7 @@ var Prancheta = (function () {
         "data-arremesso": r.id,
         onmouseenter: function () { S.busca.foco = n; desenha(); },
         onmouseleave: function () { S.busca.foco = null; desenha(); },
-        onclick: function () { usaArremesso(r); }
+        onclick: function () { if (S.sugestao) trocaPorArremesso(r); else usaArremesso(r); }
       }, [el("strong", { texto: r.jogador }), el("span", { texto: " " + r.partida + " r" + r.round + " · " + descreveArremesso(r) })]));
     });
     box.appendChild(lista);
@@ -1482,14 +1889,20 @@ var Prancheta = (function () {
         (function (rotulo) {
           var b = el("div", { class: "pr-ficha " + lado + (elenco ? " nome" : ""), "data-lado": lado,
                               "data-rotulo": rotulo, title: "Arraste para o mapa", texto: rotulo });
+          var inicio = null;
           b.addEventListener("pointerdown", function (e) {
             e.preventDefault();
             b.setPointerCapture(e.pointerId);
             b.classList.add("arrastando");
+            inicio = { x: e.clientX, y: e.clientY };
           });
           b.addEventListener("pointerup", function (e) {
             b.classList.remove("arrastando");
-            if (S.doc) soltaDoBanco(e, lado, rotulo);
+            if (!S.doc || S.reproducao) return;
+            var andou = inicio && Math.hypot(e.clientX - inicio.x, e.clientY - inicio.y) >= LIMIAR_ARRASTO_PX;
+            inicio = null;
+            if (andou) soltaDoBanco(e, lado, rotulo);      // arrasto: como sempre
+            else cliqueNaFicha(lado, rotulo);              // clique: seleciona ou arma a colocação
           });
           banco.appendChild(b);
         })(rotulo);
@@ -1497,17 +1910,76 @@ var Prancheta = (function () {
     });
   }
 
+  /** A barra única, na ordem de "o que eu quero fazer agora": selecionar,
+      granadas, desenho | desfazer, reproduzir, vista, andares. Cor e espessura
+      ficam num grupo de CONTEXTO que só aparece com uma ferramenta de desenho.
+      Todo botão mostra o atalho na dica. */
+  var ATALHO_DA_ARMA = { smoke: "Smoke", flash: "Flash", he: "HE", molotov: "Molotov" };
+  var DICA_DA_FERRAMENTA = { caneta: "Caneta", seta: "Seta", linha: "Linha", texto: "Texto", borracha: "Borracha" };
+
   function montaBarra() {
     var barra = limpa($("pr-barra"));
+    var botaoF = function (id, texto, dica) {
+      return el("button", { "data-ferramenta": id, texto: texto, title: dica,
+                            onclick: function () { escolheFerramenta(id); } });
+    };
+
+    var ferramentas = el("div", { class: "anot-grupo sempre", id: "pr-ferramentas" });
+    var sel = botaoF("mover", "Selecionar", comAtalho("Selecionar e mover", "Selecionar"));
+    sel.id = "pr-selecionar";
+    ferramentas.appendChild(sel);
+    barra.appendChild(ferramentas);
+
+    var granadas = el("div", { class: "anot-grupo sempre", id: "pr-granadas" });
+    ["smoke", "flash", "he", "molotov"].forEach(function (a) {
+      granadas.appendChild(el("button", { "data-arma": a, texto: NOME_ARMA[a],
+        title: comAtalho(NOME_ARMA[a] + ": com um jogador selecionado sai dele; senão, clique em quem joga", ATALHO_DA_ARMA[a]),
+        onclick: function () { escolheArma(a); } }));
+    });
+    barra.appendChild(granadas);
+
+    var desenho = el("div", { class: "anot-grupo sempre", id: "pr-desenho" });
+    Object.keys(ROTULO_FERRAMENTA).forEach(function (id) {
+      var nome = id === "borracha" ? "Borracha" : ROTULO_FERRAMENTA[id];
+      desenho.appendChild(botaoF(id, nome, DICA_DA_FERRAMENTA[id] ? comAtalho(nome, DICA_DA_FERRAMENTA[id]) : nome));
+    });
+    barra.appendChild(desenho);
+
+    var contexto = el("div", { class: "anot-grupo sempre", id: "pr-contexto-desenho" });
+    cores = MapCore.seletorDeCor({
+      estado: S, armazem: MapCore.criaArmazem(), chaveRecentes: CHAVE_RECENTES, maxRecentes: MAX_RECENTES,
+      palco: function () { return $("pr-palco"); }, aoMudar: function () { atualizaBarra(); }
+    });
+    contexto.appendChild(cores.montaCor());
+    ESPESSURAS.forEach(function (v, i) {
+      contexto.appendChild(el("button", { "data-espessura": String(v), class: "pr-b", texto: ROTULOS_ESPESSURA[i],
+        title: "Espessura " + ROTULOS_ESPESSURA[i], onclick: function () { S.espessura = v; atualizaFerramentas(); } }));
+    });
+    contexto.hidden = true;
+    barra.appendChild(contexto);
+
+    barra.appendChild(el("span", { class: "pr-separador", "aria-hidden": "true" }));
+
+    var historico = el("div", { class: "anot-grupo sempre" });
+    var d = MapCore.botao("Desfazer", comAtalho("Desfazer", "Desfazer"), desfaz); d.id = "pr-desfaz";
+    var r = MapCore.botao("Refazer", comAtalho("Refazer", "Refazer (também Ctrl+Shift+Z)"), refaz); r.id = "pr-refaz";
+    historico.appendChild(d); historico.appendChild(r);
+    barra.appendChild(historico);
+
     var vista = el("div", { class: "anot-grupo sempre" });
-    vista.appendChild(MapCore.botao("−", "Diminuir o zoom", function () { aplicaZoom(S.view.zoom / MapCore.ZOOM_PASSO); }));
-    var lupa = MapCore.botao("100%", "Voltar ao tamanho original (0). Com zoom, segure espaço e arraste para mover o mapa", resetaZoom);
+    var reproduzir = MapCore.botao("Reproduzir", "Reproduzir a tática passo a passo", comecaReproducao, "principal");
+    reproduzir.id = "pr-reproduzir";
+    vista.appendChild(reproduzir);
+    vista.appendChild(MapCore.botao("\u2212", "Diminuir o zoom", function () { aplicaZoom(S.view.zoom / MapCore.ZOOM_PASSO); }));
+    var lupa = MapCore.botao("100%", comAtalho("Voltar ao tamanho original", "Zoom original") +
+                             ". Com zoom, segure espaço e arraste para mover o mapa", resetaZoom);
     lupa.id = "pr-zoom";
     vista.appendChild(lupa);
     vista.appendChild(MapCore.botao("+", "Aumentar o zoom", function () { aplicaZoom(S.view.zoom * MapCore.ZOOM_PASSO); }));
-    var fs = MapCore.botao("Tela cheia", "Mapa em tela cheia (F)", function () { MapCore.alternaTelaCheia($("pr-palco")); });
+    var fs = MapCore.botao("Tela cheia", comAtalho("Mapa em tela cheia", "Tela cheia"), function () { MapCore.alternaTelaCheia($("pr-palco")); });
     fs.id = "pr-tela-cheia";
     vista.appendChild(fs);
+    vista.appendChild(MapCore.botao("?", comAtalho("Atalhos", "Ajuda: esta lista"), function () { alternaAjuda(); }));
     barra.appendChild(vista);
 
     if (ANDARES.length > 1) {
@@ -1515,38 +1987,68 @@ var Prancheta = (function () {
       ANDARES.forEach(function (a, i) {
         andares.appendChild(el("button", { "data-andar": String(i),
           texto: i === 0 ? "Andar de cima" : (ANDARES.length === 2 ? "Andar de baixo" : "Andar " + (i + 1)),
-          onclick: function () { S.andar = i; S.sel = null; atualizaTudo(); } }));
+          onclick: function () { S.andar = i; S.sel = null; S.acao = null; atualizaTudo(); } }));
       });
       barra.appendChild(andares);
     }
 
-    var reproduzir = MapCore.botao("Reproduzir", "Reproduzir a tática passo a passo", comecaReproducao, "principal");
-    reproduzir.id = "pr-reproduzir";
-    vista.appendChild(reproduzir);
+    // a linha de dica: sempre com o que o PRÓXIMO clique faz
+    if (!$("pr-dica-estado")) {
+      var dica = el("p", { id: "pr-dica-estado", class: "pr-dica-estado", role: "status", "aria-live": "polite" });
+      $("pr-palco").insertBefore(dica, $("pr-tela"));
+    }
+  }
 
-    var historico = el("div", { class: "anot-grupo sempre" });
-    var d = MapCore.botao("Desfazer", "Desfazer (Ctrl+Z)", desfaz); d.id = "pr-desfaz";
-    var r = MapCore.botao("Refazer", "Refazer (Ctrl+Y ou Ctrl+Shift+Z)", refaz); r.id = "pr-refaz";
-    historico.appendChild(d); historico.appendChild(r);
-    barra.appendChild(historico);
-
-    var desenho = el("div", { class: "anot-grupo sempre", id: "pr-desenho" });
-    Object.keys(ROTULO_FERRAMENTA).forEach(function (id) {
-      desenho.appendChild(el("button", { "data-ferramenta": id, texto: ROTULO_FERRAMENTA[id],
-        onclick: function () { escolheFerramenta(id); } }));
-    });
-    barra.appendChild(desenho);
-    cores = MapCore.seletorDeCor({
-      estado: S, armazem: MapCore.criaArmazem(), chaveRecentes: CHAVE_RECENTES, maxRecentes: MAX_RECENTES,
-      palco: function () { return $("pr-palco"); }, aoMudar: function () { atualizaBarra(); }
-    });
-    barra.appendChild(cores.montaCor());
-    var esp = el("div", { class: "anot-grupo sempre" });
-    ESPESSURAS.forEach(function (v, i) {
-      esp.appendChild(el("button", { "data-espessura": String(v), class: "pr-b", texto: ROTULOS_ESPESSURA[i],
-        onclick: function () { S.espessura = v; atualizaFerramentas(); } }));
-    });
-    barra.appendChild(esp);
+  /** O painel lateral, montado aqui (o HTML só tem a estrutura): Jogadores,
+      Selecionado, Passos e Tática, mais a busca de arremessos reais. */
+  function montaLateral() {
+    var lado = limpa(document.querySelector("aside"));
+    var caixa = function (titulo, filhos, id) {
+      var s = el("section", { class: "caixa" }, [el("h2", { texto: titulo })].concat(filhos));
+      if (id) s.id = id;
+      lado.appendChild(s);
+      return s;
+    };
+    caixa("Jogadores", [el("div", { id: "pr-banco" }),
+      el("p", { class: "pr-dica", texto: "Clique numa ficha e depois no mapa, ou arraste." })]);
+    caixa("Selecionado", [el("div", { id: "pr-selecao" })]);
+    caixa("Arremessos reais", [
+      el("div", { class: "linha", id: "pr-modos" }, [
+        el("button", { "data-ferramenta": "mover", texto: "Selecionar", title: comAtalho("Selecionar e mover", "Selecionar"),
+          onclick: function () { escolheFerramenta("mover"); } }),
+        el("button", { "data-ferramenta": "buscar", texto: "Buscar arremesso",
+          title: "Clique onde a granada deve cair e veja os arremessos reais (o mesmo que escolher a granada na barra)",
+          onclick: function () { escolheFerramenta("buscar"); } }),
+        el("button", { "data-ferramenta": "granada", texto: "Desenhar à mão",
+          title: "Clique na origem e depois no destino, sem sugestões",
+          onclick: function () { escolheFerramenta("granada"); } })]),
+      el("p", { class: "pr-dica", id: "pr-sem-biblioteca", hidden: "" }),
+      el("div", { id: "pr-filtros-busca", hidden: "" }, [
+        el("div", { class: "linha" }, [el("label", { for: "pr-raio", texto: "Raio da busca" }),
+          el("input", { type: "range", id: "pr-raio", min: "50", max: "600", step: "25" }), el("span", { id: "pr-raio-valor" })]),
+        el("div", { class: "linha" }, [el("label", {}, [el("input", { type: "checkbox", id: "pr-so-parado" }),
+          el("span", { texto: " só arremessos parados (o comando reproduz sozinho)" })])])]),
+      el("div", { id: "pr-resultados" })]);
+    caixa("Passos", [
+      el("div", { class: "linha", id: "pr-passos" }),
+      el("div", { class: "linha" }, [el("input", { type: "text", id: "pr-passo-titulo", "aria-label": "Título do passo",
+                                                   placeholder: "o que acontece neste passo" })]),
+      el("div", { class: "linha" }, [el("label", { for: "pr-passo-duracao", texto: "Duração (s)" }),
+        el("input", { type: "number", id: "pr-passo-duracao", min: "0.5", step: "0.5" }),
+        el("button", { class: "pr-b", id: "pr-remove-passo", texto: "Remover passo" })])]);
+    caixa("Tática", [
+      el("div", { class: "linha" }, [el("select", { id: "pr-taticas", "aria-label": "Táticas deste mapa" }),
+        el("button", { class: "pr-b", id: "pr-nova", texto: "Nova" })]),
+      el("div", { class: "linha" }, [el("input", { type: "text", id: "pr-titulo", "aria-label": "Título da tática" })]),
+      el("div", { class: "linha" }, [el("button", { class: "pr-b", id: "pr-exporta", texto: "Exportar" }),
+        el("button", { class: "pr-b", id: "pr-importa", texto: "Importar" }),
+        el("button", { class: "pr-b", id: "pr-apaga", texto: "Apagar" }),
+        el("input", { type: "file", id: "pr-arquivo", accept: ".json,application/json", hidden: "" })]),
+      el("div", { class: "linha" }, [el("label", { for: "pr-autor", texto: "Autor" }),
+        el("input", { type: "text", id: "pr-autor", placeholder: "seu nome" })]),
+      el("p", { class: "pr-meta", id: "pr-origem", hidden: "" }),
+      el("p", { id: "pr-historico" }),
+      el("p", { id: "pr-aviso", hidden: "" })]);
   }
 
   /* ---------------------------------------------------------------------
@@ -1567,6 +2069,7 @@ var Prancheta = (function () {
     S.sel = null; S.arrasto = null; S.tracando = null; S.origemPendente = null; S.busca = null;
     S.reproducao = { t: 0, tocando: false, velocidade: 1, cena: null, ultimo: 0 };
     $("pr-barra").hidden = true; $("pr-player").hidden = false;
+    if ($("pr-dica-estado")) $("pr-dica-estado").hidden = true;
     // durante a reprodução nada é editável
     document.querySelector("aside").setAttribute("inert", "");
     reproduzAte(0);
@@ -1579,6 +2082,7 @@ var Prancheta = (function () {
     S.passo = S.reproducao.cena.indice;
     S.reproducao = null;
     $("pr-barra").hidden = false; $("pr-player").hidden = true;
+    if ($("pr-dica-estado")) $("pr-dica-estado").hidden = false;
     document.querySelector("aside").removeAttribute("inert");
     atualizaTudo();
   }
@@ -1745,8 +2249,11 @@ var Prancheta = (function () {
 
   function escolheFerramenta(id) {
     confirmaGiro();
-    S.ferramenta = id; S.origemPendente = null;
-    if (id !== "buscar") S.busca = null;
+    if (S.editor) fechaEditorTexto(true);
+    S.acao = null; S.busca = null; S.sugestao = null;
+    if (id === "buscar") { S.ferramenta = "mover"; S.acao = { tipo: "busca", arma: S.arma }; }
+    else if (id === "granada") { S.ferramenta = "mover"; S.acao = { tipo: "granada", arma: S.arma, de: null, origem: null, legado: true }; }
+    else S.ferramenta = id;
     atualizaTudo();
   }
 
@@ -1768,25 +2275,18 @@ var Prancheta = (function () {
     if (Array.isArray(rec)) S.recentes = rec.map(MapCore.normalizaCor).filter(Boolean).slice(0, MAX_RECENTES);
     if (S.recentes.length) S.cor = S.recentes[0];
 
+    montaLateral();
     montaBarra();
     montaPlayer();
     montaBanco();
     cv.addEventListener("pointerdown", pointerDown);
+    // o botão direito no mapa é "virar para lá": sem o menu do navegador
+    cv.addEventListener("contextmenu", function (e) { e.preventDefault(); });
     cv.addEventListener("pointermove", pointerMove);
     cv.addEventListener("pointerup", pointerUp);
-    cv.addEventListener("pointercancel", function () { S.arrasto = null; S.tracando = null; S.pan = null; desenha(); });
+    cv.addEventListener("pointercancel", function () { S.arrasto = null; S.tracando = null; S.pan = null; S.toque = null; desenha(); });
     cv.addEventListener("wheel", roda, { passive: false });
 
-    Array.prototype.forEach.call(document.querySelectorAll("aside [data-ferramenta]"), function (b) {
-      b.addEventListener("click", function () { escolheFerramenta(b.getAttribute("data-ferramenta")); });
-    });
-    Array.prototype.forEach.call(document.querySelectorAll("[data-arma]"), function (b) {
-      b.addEventListener("click", function () {
-        S.arma = b.getAttribute("data-arma");
-        if (S.busca) busca(S.busca.ponto);
-        atualizaFerramentas();
-      });
-    });
     if (!cfg.biblioteca) {
       // sem partida deste mapa no corpus, não há arremesso real para buscar
       var buscar = document.querySelector('aside [data-ferramenta="buscar"]');
@@ -1800,12 +2300,12 @@ var Prancheta = (function () {
     $("pr-raio").value = String(S.raioBusca);
     $("pr-raio").addEventListener("input", function () {
       S.raioBusca = +this.value; $("pr-raio-valor").textContent = this.value + "u";
-      if (S.busca) busca(S.busca.ponto);
+      if (S.busca) busca(S.busca.ponto, S.busca.arma);
     });
     $("pr-raio-valor").textContent = S.raioBusca + "u";
     $("pr-so-parado").addEventListener("change", function () {
       S.soParado = this.checked;
-      if (S.busca) busca(S.busca.ponto);
+      if (S.busca) busca(S.busca.ponto, S.busca.arma);
     });
 
     $("pr-nova").addEventListener("click", function () { gravaAgora(); novaTatica(); });
@@ -1863,20 +2363,18 @@ var Prancheta = (function () {
         else if (e.key === "Escape") { e.preventDefault(); editaAqui(); }
         return;
       }
-      if (/^(INPUT|TEXTAREA|SELECT)$/.test((e.target || {}).tagName || "")) return;
-      var k = e.key.toLowerCase();
-      if ((e.ctrlKey || e.metaKey) && (k === "y" || (k === "z" && e.shiftKey))) { e.preventDefault(); refaz(); return; }
-      if ((e.ctrlKey || e.metaKey) && k === "z") { e.preventDefault(); desfaz(); return; }
-      if (e.code === "Space" && (S.sobreMapa || S.espaco)) {
+      if (/^(INPUT|TEXTAREA|SELECT)$/.test((e.target || {}).tagName || "") || (e.target || {}).isContentEditable) return;
+      if (e.code === "Space" && (S.sobreMapa || S.espaco) && !e.ctrlKey && !e.metaKey) {
         e.preventDefault();
         if (!S.espaco) { S.espaco = true; palco.classList.add("pr-pan"); }
         return;
       }
-      if (e.ctrlKey || e.metaKey || e.altKey) return;
-      if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); removeSelecionado(); return; }
-      if (e.key === "Escape") { S.origemPendente = null; S.busca = null; S.sel = null; atualizaTudo(); return; }
-      if (k === "f") { e.preventDefault(); MapCore.alternaTelaCheia(palco); return; }
-      if (k === "0") { e.preventDefault(); resetaZoom(); }
+      if (e.altKey) return;
+      var tecla = teclaDoEvento(e);
+      var atalho = ATALHOS.filter(function (a) { return a.tecla === tecla && a.fn; })[0];
+      if (!atalho) return;
+      e.preventDefault();
+      atalho.fn(e);
     });
     document.addEventListener("keyup", function (e) {
       if (e.code === "Space" && S.espaco) { S.espaco = false; palco.classList.remove("pr-pan"); S.pan = null; }
@@ -1923,6 +2421,9 @@ var Prancheta = (function () {
       desfaz: desfaz, refaz: refaz, aplicaZoom: aplicaZoom, reprojeta: reprojeta,
       alca: function (id) { var p = quadro().pecas[id]; return alca(jogoParaPixel(p.x, p.y), yawDaPeca(id, p)); },
       FERRAMENTAS_TRACO: FERRAMENTAS_TRACO, ESPESSURAS: ESPESSURAS, FORMATO: FORMATO,
+      ESTADOS: ESTADOS, estadoDaInteracao: estadoDaInteracao, dicaAtual: dicaAtual,
+      ATALHOS: ATALHOS.map(function (x) { return { tecla: x.tecla, rotulo: x.rotulo, acao: x.acao }; }),
+      LIMIAR_ARRASTO_PX: LIMIAR_ARRASTO_PX,
       armazem: function () { return Armazem; },
       radar: function () { return cfg.radar; }
     }

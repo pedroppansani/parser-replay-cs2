@@ -24,55 +24,7 @@
     <div class="pr-barra" id="pr-barra"></div>
     <div class="pr-tela" id="pr-tela"><canvas id="pr-mapa" aria-label="Mapa da prancheta"></canvas></div>
   </div>
-  <aside>
-    <section class="caixa">
-      <h2>Tática</h2>
-      <div class="linha"><select id="pr-taticas" aria-label="Táticas deste mapa"></select>
-        <button class="pr-b" id="pr-nova">Nova</button></div>
-      <div class="linha"><input type="text" id="pr-titulo" aria-label="Título da tática"></div>
-      <div class="linha">
-        <button class="pr-b" id="pr-exporta">Exportar</button>
-        <button class="pr-b" id="pr-importa">Importar</button>
-        <button class="pr-b" id="pr-apaga">Apagar</button>
-        <input type="file" id="pr-arquivo" accept=".json,application/json" hidden>
-      </div>
-      <div class="linha"><label for="pr-autor">Autor</label>
-        <input type="text" id="pr-autor" placeholder="seu nome"></div>
-      <p class="pr-meta" id="pr-origem" hidden></p>
-      <p id="pr-historico"></p>
-      <p id="pr-aviso" hidden></p>
-    </section>
-    <section class="caixa">
-      <h2>Passos</h2>
-      <div class="linha" id="pr-passos"></div>
-      <div class="linha"><input type="text" id="pr-passo-titulo" aria-label="Título do passo" placeholder="o que acontece neste passo"></div>
-      <div class="linha"><label for="pr-passo-duracao">Duração (s)</label>
-        <input type="number" id="pr-passo-duracao" min="0.5" step="0.5">
-        <button class="pr-b" id="pr-remove-passo">Remover passo</button></div>
-    </section>
-    <section class="caixa">
-      <h2>Peças</h2>
-      <div id="pr-banco"></div>
-    </section>
-    <section class="caixa">
-      <h2>Granadas</h2>
-      <div class="linha">
-        <button data-arma="smoke">Smoke</button><button data-arma="flash">Flash</button>
-        <button data-arma="he">HE</button><button data-arma="molotov">Molotov</button>
-      </div>
-      <div class="linha">
-        <button data-ferramenta="mover">Mover</button>
-        <button data-ferramenta="buscar">Buscar arremesso</button>
-        <button data-ferramenta="granada">Desenhar à mão</button>
-      </div>
-      <p class="pr-dica" id="pr-sem-biblioteca" hidden></p>
-      <div class="linha"><label for="pr-raio">Raio da busca</label>
-        <input type="range" id="pr-raio" min="50" max="600" step="25"><span id="pr-raio-valor"></span></div>
-      <div class="linha"><label><input type="checkbox" id="pr-so-parado"> só arremessos parados (o comando reproduz sozinho)</label></div>
-      <div id="pr-resultados"></div>
-    </section>
-    <section class="caixa"><h2>Selecionado</h2><div id="pr-selecao"></div></section>
-  </aside>
+  <aside></aside>
 </div>
 <script>
 /*__MAP_CORE__*/

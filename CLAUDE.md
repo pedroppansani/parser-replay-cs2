@@ -1672,6 +1672,27 @@ testada e estava errada.
       origem igual ao destino e RECUSA a flag junto de arremesso real, o
       desenho mostra só o efeito, e o campo só existe no estado quando é
       verdade (sai no `move_granada`, quando a pessoa dá uma origem).
+    - **Prancheta fluida (2026-09-27): a interação é UMA máquina de estados**
+      (`ESTADOS` e `estadoDaInteracao` em `tactics.js`): livre,
+      peca_selecionada, colocando_peca, granada_origem, granada_destino,
+      granada_selecionada, desenhando e buscando. Cada clique faz uma coisa
+      previsível, e a linha de dica (`#pr-dica-estado`) diz qual é ANTES do
+      clique. Clique x arrasto por `LIMIAR_ARRASTO_PX` (4 px de tela): o clique
+      é um caminho a mais, o arrasto continua como era. Nenhuma operação nova:
+      mover por clique é move_peca, botão direito é gira_peca (a peça olha para
+      o ponto), granada é cria_granada. Granada a partir da seleção: 1-4 e um
+      clique criam a granada saindo da peça, que continua selecionada; com
+      biblioteca, a lista de arremessos reais abre em seguida e a primeira
+      opção é manter a desenhada (escolher um real troca: remove_granada +
+      cria_granada). Texto no próprio mapa (sem window.prompt). Atalhos num
+      mapa único `ATALHOS`, sem tecla repetida (teste), com o painel "?"
+      gerado dele. Dois desvios do pedido, forçados pelos testes existentes
+      (que passam sem alteração): os botões Selecionar / Buscar arremesso /
+      Desenhar à mão continuam numa linha do painel (os testes os clicam em
+      `aside`), e clicar na peça JÁ selecionada não a desmarca (um teste marca
+      a peça e clica nela esperando que siga selecionada) -- desmarcar é o
+      Esc. Métrica de fluidez (roteiro fixo: 5 CT, 2 smokes de jogadores
+      diferentes, mover 2 no passo 2): 15 ações antes, 14 depois.
 
 33. **Um núcleo só para o mapa: `dashboard/web/map_core.js` (`window.MapCore`)**
     (etapa 0 da prancheta, 2026-09-26). Replay, anotação e prancheta usam UMA
