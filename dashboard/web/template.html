@@ -1779,8 +1779,10 @@
     return { plant: plant, stop: stop };
   }
 
-  function updateClock(elapsed) {
-    var host = document.getElementById("clock");
+  // O relógio de um instante (segundos desde o fim do freeze): o do round ou,
+  // depois do plant, o da bomba. Função pura: a tela e a "Tática deste
+  // instante" leem o mesmo número.
+  function relogioDe(elapsed) {
     var b = bombState();
     var main, armed = false;
 
@@ -1794,9 +1796,14 @@
     } else {
       main = mmss(Math.max(0, CLOCK.round_seconds - elapsed));
     }
+    return { main: main, armed: armed };
+  }
 
-    host.className = "clock" + (armed ? " armed" : "");
-    host.innerHTML = "<b>" + main + "</b><span>decorrido " + mmss(elapsed) + "</span>";
+  function updateClock(elapsed) {
+    var host = document.getElementById("clock");
+    var r = relogioDe(elapsed);
+    host.className = "clock" + (r.armed ? " armed" : "");
+    host.innerHTML = "<b>" + r.main + "</b><span>decorrido " + mmss(elapsed) + "</span>";
   }
 
   function draw() {
@@ -2205,11 +2212,15 @@
       // Retrato do quadro ATUAL para a prancheta: cada jogador vivo com a
       // posição, a direção e o andar da amostra do quadro (sem interpolar --
       // é o dado gravado, não o desenho entre dois quadros).
+      // A peça sai do quadro i0 = floor(pos), o mesmo que draw() usa para
+      // `alive`; o relógio é o DESSE quadro, não o da tela (que anda com o
+      // pos fracionário entre dois quadros).
+      amostrasPorSegundo: R.sample_hz,
       instante: function () {
         var i0 = Math.floor(pos);
         return {
-          partida: (M && M.match_id) || "", round: cur.round,
-          relogio: document.getElementById("clock").textContent,
+          partida: (M && M.match_id) || "", round: cur.round, quadro: i0,
+          relogio: relogioDe(i0 / R.sample_hz).main,
           tick: cur.t0 !== undefined && R.sample_every ? cur.t0 + i0 * R.sample_every : null,
           jogadores: cur.players.filter(function (p) { return p.alive[i0]; }).map(function (p) {
             return { nome: p.name, lado: p.side, x: p.x[i0], y: p.y[i0],

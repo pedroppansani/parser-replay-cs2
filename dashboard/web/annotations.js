@@ -829,8 +829,10 @@ window.MapAnnotations = (function () {
       // do quadro atual. O retrato vai na própria URL (#instante=...), que
       // funciona igual no arquivo local e no site.
       if (opts.instante) {
+        var porSegundo = opts.amostrasPorSegundo || 4;
         vista.appendChild(botao("Tática deste instante",
-          "Abrir a prancheta com os jogadores vivos deste instante do replay", function () {
+          "Abrir a prancheta com os jogadores vivos deste instante do replay. O instante usado é a " +
+          "amostra gravada imediatamente anterior (" + porSegundo + " por segundo)", function () {
             if (opts.pause) opts.pause();
             window.location.href = opts.prancheta + "#instante=" + encodeURIComponent(JSON.stringify(opts.instante()));
           })).id = "anot-tatica-instante";
@@ -1049,6 +1051,7 @@ window.MapAnnotations = (function () {
       documento: documento, importaTexto: importaTexto,
       reprojetaTudo: reprojetaTudo, gravaPendentes: gravaPendentes,
       aplicaZoom: aplicaZoom, reseta: reseta,
+      instante: function () { return opts.instante ? opts.instante() : null; },
       normalizaCor: normalizaCor,
       radar: function () { return opts.radar; }
     }

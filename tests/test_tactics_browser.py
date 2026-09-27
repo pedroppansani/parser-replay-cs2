@@ -731,3 +731,65 @@ def test_instante_ilegivel_abre_tatica_nova_e_avisa(contexto, pagina):
     pg.wait_for_function("() => Prancheta._interno.S.estado !== null")
     assert interno(pg, "Object.keys(S.estado.pecas).length") == 0
     assert "não pôde ser lido" in pg.locator("#pr-aviso").text_content()
+
+
+def _site_instante(tmp_path_factory, nome="instante2"):
+    from scripts.build_tactics_page import build_html as prancheta
+    from scripts.build_web_page import build_html as partida
+    pasta = tmp_path_factory.mktemp(nome)
+    for mapa, mid in (("de_mirage", "match_02"), ("de_nuke", "match_05")):
+        (pasta / f"prancheta_{mapa}.html").write_text(prancheta(mapa), encoding="utf-8")
+        (pasta / f"{mid}.html").write_text(partida(mid), encoding="utf-8")
+    return pasta
+
+
+def _abre_replay(pg, pasta, mid, rodada, quadro):
+    pg.goto((pasta / f"{mid}.html").as_uri())
+    pg.locator('[data-tab="replay"]').first.click()
+    pg.wait_for_function("() => window.MapAnnotations && MapAnnotations._interno.S.reprojecoes > 0")
+    pg.locator("#strip button", has_text=str(rodada)).first.click()
+    if quadro is not None:
+        pg.evaluate(f"() => {{ const s = document.getElementById('scrub'); s.value = {quadro}; s.dispatchEvent(new Event('input')); }}")
+
+
+def test_recarregar_a_prancheta_do_instante_nao_duplica_a_tatica(navegador, tmp_path_factory):
+    pasta = _site_instante(tmp_path_factory, "recarga")
+    ctx = navegador.new_context(viewport={"width": 1400, "height": 1000})
+    try:
+        pg = ctx.new_page()
+        _abre_replay(pg, pasta, "match_02", 6, 40)
+        pg.click("#anot-tatica-instante")
+        pg.wait_for_function("() => window.Prancheta && Prancheta._interno.S.estado !== null")
+        assert "#instante" not in pg.url
+        doc = interno(pg, "S.doc.id")
+        pg.reload()
+        pg.wait_for_function("() => Prancheta._interno.S.estado !== null")
+        assert interno(pg, "S.doc.id") == doc
+        assert interno(pg, "I.armazem().lista('de_mirage').length") == 1
+        pg.go_back()                                     # voltar ao replay e ir de novo não pode reaproveitar o hash
+        pg.go_forward()
+        pg.wait_for_function("() => window.Prancheta && Prancheta._interno.S.estado !== null")
+        assert interno(pg, "I.armazem().lista('de_mirage').length") == 1
+    finally:
+        ctx.close()
+
+
+def test_o_relogio_do_titulo_e_o_do_quadro_usado(navegador, tmp_path_factory):
+    """Com o replay entre dois quadros (pos fracionário), o título leva o
+    relógio do quadro inteiro i0 -- o mesmo de onde saem as peças."""
+    pasta = _site_instante(tmp_path_factory, "relogio")
+    ctx = navegador.new_context(viewport={"width": 1400, "height": 1000})
+    try:
+        pg = ctx.new_page()
+        _abre_replay(pg, pasta, "match_02", 6, 40)
+        solta_foco(pg)                    # com foco num botão o espaço é ignorado (guarda do replay)
+        pg.keyboard.press("Space"); pg.wait_for_timeout(900); pg.keyboard.press("Space")   # toca e pausa no meio
+        inst = pg.evaluate("() => MapAnnotations._interno.instante()")
+        quadro = inst["quadro"]
+        assert quadro > 40, "o replay não tocou: o teste não estaria entre dois quadros"
+        assert int(pg.evaluate("() => document.getElementById('scrub').value")) == quadro
+        pg.evaluate(f"() => {{ const s = document.getElementById('scrub'); s.value = {quadro}; s.dispatchEvent(new Event('input')); }}")
+        assert inst["relogio"] == pg.locator("#clock b").text_content()
+        assert "4 por segundo" in pg.locator("#anot-tatica-instante").get_attribute("title")
+    finally:
+        ctx.close()
