@@ -1121,6 +1121,29 @@ testada e estava errada.
     prioridade (como já vence em `player_roles.TRAIT_SPECS`) é decisão dele.
     As 52 partidas registram `parser 1, métricas 2`, o commit `56742b2` e
     `sujo: false`; o manifesto passou de 52 "desconhecidas" para 52 em dia.
+    **REGRA DE EMPATE ATUAL (convenção do Pedro, 2026-09-27; substitui a margem
+    0 acima)**, na ordem de aplicação, que está também no código
+    (`structural_roles.MARGEM_EMPATE_FUNCAO_ROUNDS` e `FUNCAO_QUE_VENCE_EMPATE`):
+    1. as duas funções com mais rounds naquele lado;
+    2. diferença de até **1 round** é empate (entram todas a até 1 round da
+       primeira). Medido nas 52: 1 round marca 352 jogador-lados (34,1%); "menos
+       de 1 desvio do ruído" marcaria 438 (42,5%). Fica 1 round: dá para explicar
+       na tela, não depende de modelo de ruído, e o outro apagaria a função de
+       quase metade dos jogador-lados;
+    3. no empate, o **AWPer vence -- só se for o AWPer do TIME na partida**, pela
+       definição do `player_roles` (piso de `awp_share`, liderança no time,
+       amostra mínima). Posse de AWP é sinal mecânico, mais confiável que função
+       de posição; quem empata em "AWPer" por pegar a AWP em 2 ou 3 rounds não
+       tem esse sinal. O resumo por lado é refeito no `process_demo` DEPOIS do
+       `player_roles`, com o conjunto dos AWPers dele: contradição impossível por
+       construção (medido: 0);
+    4. empate que o passo 3 não resolve é "sem função dominante", com as
+       funções empatadas e as contagens.
+    Resultado nas 52 (1.031 jogador-lados): **301 sem função dominante
+    (29,2%)**; 51 empates vencidos pelo AWPer do time. Dos 30 empates exatos
+    originais com o AWPer: 19 o AWPer vence, 11 viram "sem função dominante"
+    (FalleN x2, Jimpphat, KSCERATO, Magnojezzz, NiKo, apEX, b1t, kyousuke,
+    m0NESY na match_29, ropz -- nenhum é o AWPer do time naquela partida).
 
 29. **Lurker: sem os rounds com AWP, relativo à função e com amostra mínima**
     (decisão do Pedro, 2026-09-24). O caso: o m0NESY levava "Lurker" como

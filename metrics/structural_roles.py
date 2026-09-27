@@ -130,12 +130,33 @@ MIN_ROUNDS_POR_LADO = 6
 # Em ROUNDS e não em pontos percentuais porque a concentração anda de round em
 # round: com ~12 rounds por lado (mediana do corpus), 1 round = 8,3 p.p., e
 # qualquer limiar abaixo disso é idêntico ao empate exato.
-# 0 = só empate exato. É o único valor sem parâmetro livre, e resolve os três
-# casos que eram cara ou coroa (decisão 28). Medido em 1.031 jogador-lados
-# (2026-09-22), quantos ficam sem função dominante: 0 round 145 (14%), 1 round
-# 372 (36%), diferença < 1 desvio do ruído 438 (42%), 2 rounds 520 (50%) -- a
-# curva sobe sem patamar. Estender é decisão do Pedro em cima dessa curva.
-MARGEM_EMPATE_FUNCAO_ROUNDS = 0
+# CONVENÇÃO DO PEDRO (2026-09-27): 1 round fixo. Medido nas 52 partidas, 1.031
+# jogador-lados: 1 round marca 352 empates (34,1%) e "menos de 1 desvio do
+# ruído" marcaria 438 (42,5%). Fica 1 round porque dá para explicar na tela
+# ("diferença de 1 round"), não depende de um modelo de ruído e o outro
+# critério apagaria a função de quase metade dos jogador-lados. (Até
+# 2026-09-27 era 0, o empate exato: 145, 14,1%.)
+#
+# ORDEM DE APLICAÇÃO (fixa):
+#   1. as duas funções com mais rounds;
+#   2. diferença de até MARGEM_EMPATE_FUNCAO_ROUNDS round = empate (entram na
+#      lista todas as que ficam a até 1 round da primeira);
+#   3. no empate, o AWPer vence -- só se o jogador for o AWPer do time na
+#      partida, pela definição do player_roles (FUNCAO_QUE_VENCE_EMPATE);
+#   4. empate que o passo 3 não resolve é "sem função dominante", com as
+#      funções empatadas e as contagens.
+MARGEM_EMPATE_FUNCAO_ROUNDS = 1
+
+# No empate, o AWPer vence (decisão do Pedro, 2026-09-26/27). Ter a AWP na mão é
+# fato mecânico, contado direto; as funções de posição são inferidas de
+# estatística de movimento. MAS só vence quem é o AWPer DO TIME na partida, pela
+# mesma definição do player_roles (piso de awp_share, liderança no time e
+# amostra mínima): jogador que empata em "AWPer" por ter pegado a AWP em 2 ou 3
+# rounds não tem esse sinal, e ganharia um título que o player_roles nega. O
+# resumo por lado recebe o conjunto desses jogadores (`awpers_do_time`) --
+# process_demo o refaz depois do player_roles --, então a contradição entre os
+# dois é impossível por construção.
+FUNCAO_QUE_VENCE_EMPATE = "awper"
 
 # Funções e em que lado cada uma existe. AWPer vale nos dois.
 FUNCOES = {
@@ -912,13 +933,20 @@ def atribui_funcao(pontuado: pl.DataFrame) -> pl.DataFrame:
     )
 
 
-def resume_por_lado(por_round: pl.DataFrame, match_id: str = "") -> pl.DataFrame:
+def resume_por_lado(por_round: pl.DataFrame, match_id: str = "",
+                    awpers_do_time: set | None = None) -> pl.DataFrame:
     """Função dominante de cada jogador em cada lado, com a concentração.
 
     "Âncora em 9 de 12 rounds de CT" e não "âncora e ponto": quem ancora em 9 e
     rotaciona em 3 não é a mesma coisa que quem ancora em 12, e essa nuance é o
     que a interface precisa mostrar.
+
+    `awpers_do_time`: steamids que o player_roles rotula AWPer nesta partida. É
+    quem vence um empate que tenha o AWPer entre as funções empatadas (ver a
+    ordem de aplicação em MARGEM_EMPATE_FUNCAO_ROUNDS). Sem o conjunto, nenhum
+    empate é desfeito.
     """
+    awpers = pl.Series("steamid", sorted(awpers_do_time or []), dtype=por_round.schema["steamid"])
     com_funcao = por_round.filter(pl.col("funcao").is_not_null())
 
     total = por_round.group_by(["steamid", "name", "side"], maintain_order=True).agg(
@@ -929,6 +957,7 @@ def resume_por_lado(por_round: pl.DataFrame, match_id: str = "") -> pl.DataFrame
             pl.lit(None, dtype=pl.String).alias("funcao"),
             pl.lit(0, dtype=pl.UInt32).alias("rounds_na_funcao"),
             pl.lit(False).alias("empate_funcao"),
+            pl.lit(False).alias("empate_vencido_pelo_awper"),
             pl.lit(None, dtype=pl.List(pl.String)).alias("funcoes_empatadas"),
             pl.lit(None, dtype=pl.List(pl.UInt32)).alias("rounds_empatadas"),
             pl.lit(None, dtype=pl.Float64).alias("concentracao"),
@@ -953,19 +982,34 @@ def resume_por_lado(por_round: pl.DataFrame, match_id: str = "") -> pl.DataFrame
         .group_by(["steamid", "side"], maintain_order=True)
         .agg(pl.col("funcao").alias("funcoes_empatadas"),
              pl.col("rounds_na_funcao").alias("rounds_empatadas"))
-        .with_columns((pl.col("funcoes_empatadas").list.len() >= 2).alias("empate_funcao"))
+        .with_columns((pl.col("funcoes_empatadas").list.len() >= 2).alias("empate_multiplo"))
+        .with_columns(
+            (pl.col("empate_multiplo")
+             & pl.col("funcoes_empatadas").list.contains(FUNCAO_QUE_VENCE_EMPATE)
+             & pl.col("steamid").is_in(awpers.implode()))
+            .alias("empate_vencido_pelo_awper"))
+        .with_columns((pl.col("empate_multiplo") & ~pl.col("empate_vencido_pelo_awper")).alias("empate_funcao"))
     )
+    rounds_awper = (ordenado.filter(pl.col("funcao") == FUNCAO_QUE_VENCE_EMPATE)
+                    .select("steamid", "side", pl.col("rounds_na_funcao").alias("rounds_awper")))
     dominante = (
         ordenado.group_by(["steamid", "side"], maintain_order=True).first()
         .join(empatadas, on=["steamid", "side"])
+        .join(rounds_awper, on=["steamid", "side"], how="left")
         # no empate não há função dominante: a lista das empatadas vai junto, e a
         # contagem continua sendo a da mais frequente (é a concentração que os
-        # outros cards comparam)
-        .with_columns(pl.when(pl.col("empate_funcao")).then(None).otherwise(pl.col("funcao")).alias("funcao"),
-                      pl.when(pl.col("empate_funcao")).then(pl.col("funcoes_empatadas"))
+        # outros cards comparam). Quando o AWPer vence, a função e a contagem
+        # passam a ser as dele, e as empatadas continuam registradas.
+        .with_columns(pl.when(pl.col("empate_funcao")).then(None)
+                      .when(pl.col("empate_vencido_pelo_awper")).then(pl.lit(FUNCAO_QUE_VENCE_EMPATE))
+                      .otherwise(pl.col("funcao")).alias("funcao"),
+                      pl.when(pl.col("empate_vencido_pelo_awper")).then(pl.col("rounds_awper"))
+                      .otherwise(pl.col("rounds_na_funcao")).alias("rounds_na_funcao"),
+                      pl.when(pl.col("empate_multiplo")).then(pl.col("funcoes_empatadas"))
                       .otherwise(None).alias("funcoes_empatadas"),
-                      pl.when(pl.col("empate_funcao")).then(pl.col("rounds_empatadas"))
+                      pl.when(pl.col("empate_multiplo")).then(pl.col("rounds_empatadas"))
                       .otherwise(None).alias("rounds_empatadas"))
+        .drop("empate_multiplo", "rounds_awper")
     )
 
     return (
@@ -973,6 +1017,7 @@ def resume_por_lado(por_round: pl.DataFrame, match_id: str = "") -> pl.DataFrame
         .with_columns(
             pl.col("rounds_na_funcao").fill_null(0),
             pl.col("empate_funcao").fill_null(False),
+            pl.col("empate_vencido_pelo_awper").fill_null(False),
             (pl.col("rounds_na_funcao") / pl.col("rounds_no_lado")).alias("concentracao"),
             (pl.col("rounds_no_lado") < MIN_ROUNDS_POR_LADO).alias("amostra_fraca"),
             pl.lit(match_id).alias("match_id"),

@@ -471,13 +471,41 @@ def test_empate_na_contagem_e_sem_funcao_dominante_com_todas_as_empatadas():
     assert t.startswith("sem função dominante:") and "Lurker 8% (1 de 12)" in t and " vs " in t
 
 
-def test_um_round_de_diferenca_ainda_define_a_funcao_com_margem_zero():
+def test_um_round_de_diferenca_e_empate_e_dois_definem_a_funcao():
+    """Convenção do Pedro (2026-09-27): margem de 1 round. Substituiu o teste
+    da margem 0 (5 contra 4 definia a função)."""
     from metrics.structural_roles import MARGEM_EMPATE_FUNCAO_ROUNDS, resume_por_lado, texto_empate
 
-    assert MARGEM_EMPATE_FUNCAO_ROUNDS == 0
+    assert MARGEM_EMPATE_FUNCAO_ROUNDS == 1
     r = resume_por_lado(_por_round_sintetico({"entry": 5, "lurker": 4})).row(0, named=True)
+    assert r["funcao"] is None and r["empate_funcao"] is True
+    r = resume_por_lado(_por_round_sintetico({"entry": 5, "lurker": 3})).row(0, named=True)
     assert r["funcao"] == "entry" and r["empate_funcao"] is False
     assert r["funcoes_empatadas"] is None and texto_empate(r) == ""
+
+
+def test_no_empate_o_awper_vence_so_se_for_o_awper_do_time():
+    """Itens 5 e 6: empate com o AWPer entre as empatadas. Vence se o
+    player_roles o rotula AWPer; senão, sem função dominante."""
+    from metrics.structural_roles import resume_por_lado, texto_empate
+
+    por_round = _por_round_sintetico({"awper": 6, "coringa": 6})
+    r = resume_por_lado(por_round, awpers_do_time={1}).row(0, named=True)
+    assert r["funcao"] == "awper" and r["empate_funcao"] is False and r["empate_vencido_pelo_awper"] is True
+    assert r["rounds_na_funcao"] == 6 and sorted(r["funcoes_empatadas"]) == ["awper", "coringa"]
+    assert texto_empate(r) == ""
+    r = resume_por_lado(por_round, awpers_do_time=set()).row(0, named=True)
+    assert r["funcao"] is None and r["empate_funcao"] is True and r["empate_vencido_pelo_awper"] is False
+    # o AWPer vence com a contagem DELE, mesmo um round atrás
+    r = resume_por_lado(_por_round_sintetico({"coringa": 5, "awper": 4}), awpers_do_time={1}).row(0, named=True)
+    assert r["funcao"] == "awper" and r["rounds_na_funcao"] == 4
+
+
+def test_empate_sem_awper_continua_sem_funcao_mesmo_com_awper_do_time():
+    from metrics.structural_roles import resume_por_lado
+
+    r = resume_por_lado(_por_round_sintetico({"entry": 4, "lurker": 4}), awpers_do_time={1}).row(0, named=True)
+    assert r["funcao"] is None and r["empate_funcao"] is True
 
 
 def test_a_margem_estende_o_empate_quando_for_decidida(monkeypatch):

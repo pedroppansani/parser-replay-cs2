@@ -493,7 +493,7 @@
     "steamid": 76561197960690195,
     "name": "FalleN",
     "team": "A",
-    "funcao": "Rotativo",
+    "funcao": "sem função dominante: Rotativo 60% (3 de 5) vs AWPer 40% (2 de 5)",
     "indice": 0.7734426229508198,
     "vice_nome": "YEKINDAR",
     "vice_indice": 0.614519906323185,
@@ -3717,7 +3717,7 @@
   "narrative": {
     "decisive": "Partida sem round decisivo: a diferença se construiu ao longo do jogo, e o placar terminou em 13-4. O round de maior peso moveu 8% da chance de vitória, abaixo dos 12% que o modelo exige para chamar um round de decisivo.",
     "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário.",
-    "mvp_card": "FalleN foi o MVP com 94% de KAST contra 88% de YEKINDAR e 5 aberturas de round contra 3 de YEKINDAR, jogando de rotativo.",
+    "mvp_card": "FalleN foi o MVP com 94% de KAST contra 88% de YEKINDAR e 5 aberturas de round contra 3 de YEKINDAR, jogando de sem função dominante: rotativo 60% (3 de 5) vs awper 40% (2 de 5).",
     "highlight_card": "molodoy: 11 rounds com AWP na mão, contra 1 de mediana dos outros desta partida. yuurih pontuou praticamente o mesmo como repick: houve mais de um destaque equivalente nesta partida.",
     "spectacle": "Round 2: 4K de molodoy e virou com 3 jogadores a menos. Não foi o round decisivo porque esta partida não teve um -- a diferença se construiu ao longo do jogo.",
     "economy": null,
