@@ -18,17 +18,19 @@ decidir fazer a sessão.
   - `COMANDO_CONFERIDO_NO_JOGO = True` (decisão 21b): as fichas de arremesso,
     no replay e na prancheta, deixam de avisar que o comando não foi
     conferido;
-  - a decisão sobre a postura real no parser (`ducked`/`duck_amount`,
-    decisão 21c): se a smoke cair no lugar, a diferença de 0,2 a 0,9u na
-    altura dos olhos não importa na prática e o parser fica como está; se
-    errar em distância, grava-se a postura real e reprocessa-se o corpus.
+  - ~~a decisão sobre a postura real no parser~~: **já coberta sem o jogo**
+    (2026-09-27). O ponto de nascimento gravado na demo mediu a altura por
+    botão e por postura (62,4 / 55,1 / 50,6u em pé; 45,3u agachado; offset de
+    agachar -18,00 exato) e explicou 57 dos 62 falsos agachados (decisão 21c).
+    O risco de ALTURA está medido; o teste de console continua sendo o único
+    que diz se `setpos`/`setang` reproduzem a jogada, e por isso fica, menos
+    urgente.
 - **Por que não existe outro caminho:** a origem do `setpos` (pés ou olhos), o
   sinal do `setang` e os pré-requisitos do servidor só se confirmam rodando no
   jogo; a demo registra o resultado do arremesso, não o que o console faz.
 - **Custo de nunca fazer:** os ~42 mil arremessos da biblioteca continuam
-  sendo oferecidos com o aviso de "comando não conferido", e a postura do
-  arremesso continua inferida da altura (limiar de 55u), com os falsos
-  agachados medidos na match_23.
+  sendo oferecidos com o aviso de "comando não conferido". A postura NÃO
+  depende mais deste teste (ver acima).
 
 ## 2. Revisão dos 38 ângulos de entrada da Nuke
 
@@ -46,23 +48,12 @@ decidir fazer a sessão.
   ângulos derivados, com as 19 de partida única marcadas como baixa confiança.
   Nada é gravado em `MANUAL_ENTRY_ANGLES`.
 
-## 3. Medição controlada da força do arremesso no ar
+## Resolvidos sem o jogo
 
-- **O que precisa ser feito:** arremessar no jogo, com velocidade conhecida,
-  granadas pulando em pé e pulando agachado (e agachando em momentos
-  diferentes do pulo), e gravar a demo, para comparar a velocidade do
-  projétil com a do jogador medida pela posição da origem.
-- **O que destrava:** o item 7 -- rotular pelo botão os arremessos "no ar" que
-  hoje caem fora dos três grupos confirmados (91,9% caem neles; a meta é 95%
-  por causa explicada). A investigação (b) mostrou que o excesso de
-  velocidade acompanha o arremesso AGACHADO no ar (mediana 714 u/s contra 681
-  do controle; o grupo de 784 u/s é a cauda disso), e a hipótese é que agachar
-  no pulo desloca a origem do jogador, de modo que a velocidade medida pela
-  posição não é a velocidade física que o jogo herda.
-- **Por que não existe outro caminho:** a demo não grava a velocidade física
-  do jogador (`m_vecVelocity`) nem o instante do agachamento no ar nas tabelas
-  que o projeto tem; só com posição não dá para separar o deslocamento da
-  origem da velocidade de verdade. Um fator vertical encaixado nos grupos foi
-  recusado (sem causa física).
-- **Custo de nunca fazer:** os arremessos no ar fora dos três grupos continuam
-  com rótulo de força neutro, e a prancheta não diz o botão nesses casos.
+- **Medição controlada da força no ar (era o item 3), removida em
+  2026-09-27.** As propriedades da demo explicaram o grupo de ~784 u/s: no ar
+  depois de um pulo, o jogo herda a vz de decolagem menos 0,1 s de gravidade,
+  não a vz do instante (decisão 21a; `scripts/investiga_props_arremesso.py`).
+  A regra aplicada só com posição leva o "no ar" a 98,3% dentro dos três
+  grupos. Os 1,7% que sobram ficam com rótulo neutro; só voltam para cá se
+  passarem a bloquear algo importante.
