@@ -47,7 +47,7 @@ from metrics.site_roles import (
     player_round_areas,
 )
 from parsing.parser import load_interim, parse_demo, save_interim
-from parsing.versao import versoes
+from parsing.versao import versao_do_parser_do_interim, versoes
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
@@ -208,6 +208,17 @@ def process(
     # nas 52 partidas de uma vez. Este módulo só sobrescreve o que ele calcula.
     meta_path = processed_dir / "match_meta.json"
     anterior = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else {}
+    # a versão do parser é a do INTERIM usado, não a do código: reprocessar do
+    # interim uma partida sem .dem não a torna "parser novo". Interim sem
+    # registro fica com a versão que já estava no match_meta.
+    versao_parser = None
+    if from_interim:
+        versao_parser = versao_do_parser_do_interim(interim_dir / match_id)
+        if versao_parser is None:
+            versao_parser = (anterior.get("versao") or {}).get("parser")
+    bloco_de_versao = versoes(parser=versao_parser)
+    if from_interim and versao_parser is None:
+        bloco_de_versao["parser"] = None   # não se sabe: "desconhecida", nunca a do código
     match_meta = {
         **anterior,
         "match_id": match_id,
@@ -217,7 +228,7 @@ def process(
         # Com que versão do código estes números foram feitos (parsing/versao.py).
         # Sem isto, data/processed/ vira uma mistura de versões e a comparação
         # entre partidas confunde mudança de jogo com mudança de código.
-        "versao": versoes(),
+        "versao": bloco_de_versao,
         "pca": meta,
     }
     meta_path.write_text(json.dumps(match_meta, ensure_ascii=False, indent=2), encoding="utf-8")

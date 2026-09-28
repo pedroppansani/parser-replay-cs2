@@ -94,3 +94,6 @@ h3 { margin: 0 0 4px; font-size: 15px; }
 .pr-atalhos dd { margin: 0; color: var(--ink-2); }
 .pr-ficha.armada { outline: 3px solid var(--ink); outline-offset: 2px; }
 .pr-manter { display: block; width: 100%; text-align: left; margin-bottom: 6px; }
+
+/* Fonte de cada afirmação da ficha (rota B): discreta, sem sumir. */
+.pr-fonte { margin: 2px 0 6px; font-size: 11px; color: var(--ink-2); }

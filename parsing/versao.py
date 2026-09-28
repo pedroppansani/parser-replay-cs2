@@ -40,12 +40,24 @@ RAIZ = Path(__file__).resolve().parent.parent
 
 # HISTÓRICO -- uma linha por mudança que alterou número, a mais nova em cima.
 #
+# 2 (2026-09-28) rota B: duas tabelas NOVAS no interim, arremessos_demo (botão,
+#   velocidade e ponto de nascimento gravados de cada granada, a força lida da
+#   granada que saiu) e movimento (postura, chão e último pulo por tick). As
+#   tabelas da versão 1 não mudam; partida com .dem ganha as duas por
+#   COMPLEMENTO (scripts/complementa_interim.py), sem regravar o resto.
 # 1 (2026-09-20) primeira versão declarada. NÃO é "o parser nasceu aqui": é o
 #   ponto em que o projeto passou a registrar isso. Partida processada antes
 #   disto fica com versão desconhecida no manifesto, e é assim que tem que ser
 #   -- afirmar retroativamente que ela rodou na versão 1 seria inventar.
-VERSAO_DO_PARSER = 1
+VERSAO_DO_PARSER = 2
 
+# Onde o complemento registra o que acrescentou a um interim existente.
+ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
+
+# 11 (2026-09-28) rota B: nas partidas com a verdade da demo no interim, botão,
+#    postura, "no ar" e ponto de saída LIDOS (fonte_do_botao, fonte_da_postura,
+#    fonte_do_no_ar, fonte_da_origem, forca_lida, x/y/z_saida); nas outras,
+#    tudo como na 10, com a fonte "inferido" declarada
 # 10 (2026-09-27) arremessos pela rotina do jogo medida no gabarito (rota A,
 #    decisão 21a): botão, "no ar" e postura novos; pés no tick da soltura
 #    (setpos, origem da biblioteca e l.o do replay); velocidade só estimada
@@ -72,7 +84,7 @@ VERSAO_DO_PARSER = 1
 #   (inclui a classe de economia do jogador no rating), unique com subset fica
 #   com a primeira linha. Antes, esses três casos dependiam da ordem de hash.
 # 1 (2026-09-20) primeira versão declarada, mesmo raciocínio acima.
-VERSAO_DAS_METRICAS = 10
+VERSAO_DAS_METRICAS = 11
 
 # Pastas cujo estado define o NÚMERO. `sujo` olha só estas: olhar o repositório
 # inteiro marcava todo reprocessamento como sujo, porque o próprio
@@ -109,10 +121,34 @@ def _versao_da_lib(nome: str) -> str | None:
         return None
 
 
-def versoes() -> dict:
-    """O bloco que vai para `match_meta.json` e daí para o manifesto."""
+def versao_do_parser_do_interim(pasta: Path) -> int | None:
+    """A versão do parser que produziu um interim, lida DO INTERIM.
+
+    Um processamento --from-interim não pode carimbar a versão do código: o
+    interim de uma partida sem .dem continua sendo o da versão em que foi
+    parseado. Ordem: o registro do complemento (acrescentou as tabelas de uma
+    versão mais nova), depois o `header.json` de um parse completo. Sem nenhum
+    dos dois, None -- e quem chama mantém o que já estava registrado.
+    """
+    import json
+
+    pasta = Path(pasta)
+    for nome in (ARQUIVO_DO_COMPLEMENTO, "header.json"):
+        arq = pasta / nome
+        if arq.exists():
+            v = json.loads(arq.read_text(encoding="utf-8")).get("versao_do_parser")
+            if v is not None:
+                return int(v)
+    return None
+
+
+def versoes(parser: int | None = None) -> dict:
+    """O bloco que vai para `match_meta.json` e daí para o manifesto.
+
+    `parser` é a versão do parser do INTERIM usado (None = a do código, que é o
+    caso de um parse feito agora)."""
     return {
-        "parser": VERSAO_DO_PARSER,
+        "parser": VERSAO_DO_PARSER if parser is None else parser,
         "metricas": VERSAO_DAS_METRICAS,
         **_commit(),
         "awpy": _versao_da_lib("awpy"),

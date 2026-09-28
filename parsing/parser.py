@@ -18,6 +18,8 @@ import polars as pl
 from awpy import Demo
 from awpy.parsers.rounds import apply_round_num
 
+from parsing.versao import VERSAO_DO_PARSER
+
 # Ticks é tratado à parte das outras tabelas porque é MUITO maior (uma linha por
 # jogador por snapshot de tick -- ~1 milhão de linhas num BO1 de 22 rounds) e nem
 # toda métrica da Fase 1 precisa dele (só KAST, pra saber quem sobreviveu o round).
@@ -146,6 +148,32 @@ def grenade_event_tables(demo: Demo) -> dict[str, pl.DataFrame]:
     return out
 
 
+# Tabelas da rota B (parsing/verdade_do_arremesso.py). Opcionais no interim: só
+# as partidas parseadas (ou complementadas) com VERSAO_DO_PARSER >= 2 as têm.
+TABELAS_DA_VERDADE = ("arremessos_demo", "movimento")
+
+
+def grava_tabela(nome: str, df: pl.DataFrame, caminho: Path) -> None:
+    """Grava uma tabela do interim; o `movimento` vai com o tick em delta."""
+    if nome == "movimento":
+        from parsing.verdade_do_arremesso import grava_movimento
+
+        grava_movimento(df, caminho)
+    else:
+        df.write_parquet(caminho)
+
+
+def tabelas_da_verdade(parser, rounds: pl.DataFrame | None) -> dict[str, pl.DataFrame]:
+    """`arremessos_demo` (com round_num) e `movimento` (sem X, Y, Z) de uma demo."""
+    from parsing import verdade_do_arremesso as va
+
+    arr, _ = va.arremessos_demo(parser)
+    if rounds is not None and rounds.height and arr.height:
+        arr = apply_round_num(df=arr, rounds_df=rounds, tick_col="tick").filter(pl.col("round_num").is_not_null())
+    mov = va.movimento(parser).drop("X", "Y", "Z")
+    return {"arremessos_demo": arr, "movimento": mov}
+
+
 def save_interim(demo: Demo, interim_dir: Path | str, match_id: str) -> dict[str, Path]:
     """
     Salva as tabelas brutas do awpy (rounds/kills/damages/ticks) como parquet.
@@ -179,20 +207,33 @@ def save_interim(demo: Demo, interim_dir: Path | str, match_id: str) -> dict[str
     compra = compra_por_round(demo)
     if compra is not None:
         tables["compra"] = compra
+    # A verdade do arremesso gravada na demo (rota B, decisão 21a): o botão, a
+    # velocidade e o ponto de nascimento de cada granada, e a postura, o chão e
+    # o último pulo de cada jogador por tick. Ver parsing/verdade_do_arremesso.
+    tables.update(tabelas_da_verdade(demo.parser, demo.rounds))
     # O round de faca sai AQUI, antes de gravar: todo leitor do interim (as
     # métricas, o replay, a calibração do rating) recebe a partida já sem ele.
     tables, faca = remove_round_de_faca(tables)
     # vários acertos no mesmo tick: o awpy trava cada um na vida do início do
     # tick e a soma passa de 100 (ver dano_real_no_mesmo_tick)
     tables["damages"] = dano_real_no_mesmo_tick(tables["damages"])
+    # o movimento fica nas MESMAS linhas da tabela de ticks (sem o round de
+    # faca, que já saiu dela)
+    if "movimento" in tables and tables.get("ticks") is not None:
+        tables["movimento"] = tables["movimento"].join(
+            tables["ticks"].select(pl.col("tick").cast(pl.Int32), pl.col("steamid").cast(pl.UInt64)),
+            on=["tick", "steamid"], how="semi")
 
     paths: dict[str, Path] = {}
     for name, df in tables.items():
         p = match_dir / f"{name}.parquet"
-        df.write_parquet(p)
+        grava_tabela(name, df, p)
         paths[name] = p
 
     header = dict(demo.header)
+    # a versão do parser vai NO interim: é ela que diz o que o interim tem, e
+    # um processamento --from-interim a lê daqui (não do código)
+    header["versao_do_parser"] = VERSAO_DO_PARSER
     if faca:
         header["round_de_faca_removido"] = True
     header_path = match_dir / "header.json"
@@ -268,7 +309,8 @@ def remove_round_de_faca(tables: dict[str, pl.DataFrame]) -> tuple[dict[str, pl.
 
 # Colunas que guardam TICK em alguma tabela do interim. Na tabela de rounds as
 # fronteiras do round têm nome próprio; nas de fumaça/fogo, início e fim.
-_TICK_COLUMNS = {"tick", "start_tick", "end_tick", "start", "freeze_end", "end", "official_end", "bomb_plant"}
+_TICK_COLUMNS = {"tick", "start_tick", "end_tick", "start", "freeze_end", "end", "official_end", "bomb_plant",
+                 "tick_do_ultimo_pulo"}
 
 
 def merge_interim(interim_dir: Path | str, part_ids: list[str], dest_id: str) -> Path:
@@ -316,7 +358,7 @@ def merge_interim(interim_dir: Path | str, part_ids: list[str], dest_id: str) ->
 
     for nome, pedacos in fundido.items():
         if pedacos:
-            pl.concat(pedacos, how="diagonal_relaxed").write_parquet(dest / f"{nome}.parquet")
+            grava_tabela(nome, pl.concat(pedacos, how="diagonal_relaxed"), dest / f"{nome}.parquet")
 
     header = json.loads((interim_dir / part_ids[0] / "header.json").read_text(encoding="utf-8"))
     header["merged_from_parts"] = len(part_ids)
@@ -333,7 +375,7 @@ def load_interim(interim_dir: Path | str, match_id: str) -> dict[str, pl.DataFra
     # esses arquivos, e as métricas de utility tratam ausência como zero. Sem
     # carregá-los aqui, porém, a ausência é SEMPRE — foi assim que as métricas de
     # flash zeraram sem ninguém perceber.
-    for name in EVENTOS_SALVOS + ("smokes", "infernos", "bomb", "compra"):
+    for name in EVENTOS_SALVOS + ("smokes", "infernos", "bomb", "compra") + TABELAS_DA_VERDADE:
         path = match_dir / f"{name}.parquet"
         if path.exists():
             tables[name] = pl.read_parquet(path)
