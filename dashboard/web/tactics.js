@@ -1605,6 +1605,21 @@ var Prancheta = (function () {
     return partes.join(" · ");
   }
 
+  /** De onde veio cada afirmação da ficha (rota B, decisão 21a): "lido" da
+      demo ou "inferido" pela rotina do jogo. Discreto, mas nunca omitido. */
+  var NOME_DA_FONTE = { botao: "botão", postura: "postura", no_ar: "no ar", origem: "saída" };
+  function descreveFontes(fontes) {
+    if (!fontes) return "";
+    var por = { lido: [], inferido: [] };
+    Object.keys(NOME_DA_FONTE).forEach(function (k) {
+      if (por[fontes[k]]) por[fontes[k]].push(NOME_DA_FONTE[k]);
+    });
+    var partes = [];
+    if (por.lido.length) partes.push("lido da demo: " + por.lido.join(", "));
+    if (por.inferido.length) partes.push("inferido pela rotina do jogo: " + por.inferido.join(", "));
+    return partes.join(" · ");
+  }
+
   // Uma tática no meio da criação (antes do primeiro passo) não tem quadro.
   function temQuadro() { return !!(S.estado && S.estado.passos.length); }
 
@@ -1770,6 +1785,8 @@ var Prancheta = (function () {
       var r = g.arremesso;
       box.appendChild(el("p", { class: "pr-meta", texto: r.jogador + " · " + r.partida + " round " + r.round + " (" + tempo(r.segundos_no_round) + ")" }));
       box.appendChild(el("p", { class: "pr-meta", texto: descreveArremesso(r) }));
+      var fonte = descreveFontes(r.fontes);
+      if (fonte) box.appendChild(el("p", { class: "pr-fonte", id: "pr-fonte", texto: fonte }));
       var cmd = el("code", { id: "pr-comando", texto: r.comando });
       box.appendChild(el("div", { class: "pr-cmd" }, [cmd, el("button", { class: "pr-b", id: "pr-copia", texto: "Copiar",
         onclick: function () { copiaTexto(r.comando); } })]));
@@ -2422,6 +2439,7 @@ var Prancheta = (function () {
       alca: function (id) { var p = quadro().pecas[id]; return alca(jogoParaPixel(p.x, p.y), yawDaPeca(id, p)); },
       FERRAMENTAS_TRACO: FERRAMENTAS_TRACO, ESPESSURAS: ESPESSURAS, FORMATO: FORMATO,
       ESTADOS: ESTADOS, estadoDaInteracao: estadoDaInteracao, dicaAtual: dicaAtual,
+      descreveFontes: descreveFontes,
       ATALHOS: ATALHOS.map(function (x) { return { tecla: x.tecla, rotulo: x.rotulo, acao: x.acao }; }),
       LIMIAR_ARRASTO_PX: LIMIAR_ARRASTO_PX,
       armazem: function () { return Armazem; },

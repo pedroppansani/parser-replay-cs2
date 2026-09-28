@@ -421,39 +421,9 @@ JANELA_Z_GABARITO = 64
 PASTA_GABARITO = RAIZ / "tests/fixtures"
 
 
-def demos_da_partida(partida: str) -> list[Path]:
-    """As partes da demo, em ordem (p1, p2...), pelo manifesto; só as que existem."""
-    import scripts.manifest as mf
-    linha = mf.carrega()["partidas"][partida]
-    out = []
-    for d in linha["demos"]:
-        p = RAIZ / d["caminho"]
-        if not p.is_file():
-            achados = [q for q in (RAIZ / "demos").rglob(d["arquivo"]) if q.is_file()]
-            p = achados[0] if achados else None
-        if p is None:
-            raise SystemExit(f"{partida}: {d['arquivo']} não está no disco")
-        out.append(p)
-    return out
-
-
-def deslocamento_da_parte(p: DemoParser, ticks_interim: np.ndarray) -> int:
-    """Quanto o interim deslocou os ticks desta parte (parte 1: 0).
-
-    O `merge_interim` soma a cada parte o maior tick das anteriores; o valor
-    exato sai casando os ticks do evento grenade_thrown da demo com os do
-    interim (a diferença mais frequente).
-    """
-    ev = p.parse_event("grenade_thrown")
-    if ev is None or len(ev) == 0:
-        return 0
-    from collections import Counter
-    cont = Counter()
-    for e in ev["tick"].to_numpy()[:40]:
-        for g in ticks_interim:
-            if g >= e:
-                cont[int(g - e)] += 1
-    return int(cont.most_common(1)[0][0])
+# as partes da demo e o deslocamento de cada uma: as mesmas do complemento da
+# rota B (código de produção, conferido por X, Y, Z contra o interim)
+from scripts.complementa_interim import demos_da_partida, deslocamento_da_parte  # noqa: E402,F401
 
 
 def gera_gabarito(partida: str = "match_23") -> Path:

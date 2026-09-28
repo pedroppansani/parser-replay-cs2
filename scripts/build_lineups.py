@@ -103,6 +103,10 @@ def _entrada(r: dict) -> dict:
         "postura": r["postura"],
         "movimento": r["movimento"],
         "no_ar": r["no_ar"],
+        # de onde veio cada afirmação (rota B): "lido" da demo ou "inferido"
+        # pela rotina do jogo -- a ficha mostra, nunca mistura em silêncio
+        "fontes": {"botao": r.get("fonte_do_botao"), "postura": r.get("fonte_da_postura"),
+                   "no_ar": r.get("fonte_do_no_ar"), "origem": r.get("fonte_da_origem")},
         "jogador": r["thrower"],
         "partida": r["match_id"],
         "round": r["round_num"],

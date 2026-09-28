@@ -1020,6 +1020,49 @@ def _janela_de_pes(tk: _Ticks, steamid: int, tick: int) -> tuple[np.ndarray, np.
     return pos[:, 2], pos[:, :2]
 
 
+def botao_da_forca_lida(forca: float | None) -> float | None:
+    """O botão (0, 0,5 ou 1) de uma m_flThrowStrength lida: o mais próximo.
+
+    A força lida não é sempre 0 / 0,5 / 1: há valores de transição entre
+    botões (0,48, 0,52, 0,59...). É a mesma convenção do gabarito da rota A
+    (round(2·força)/2). Medido nos parados do gabarito (n = 1.200): 29 das 30
+    forças intermediárias saíram EXATAMENTE na velocidade do botão mais
+    próximo; 1 (0,6141) saiu a 492,65 u/s, entre dois botões -- a força crua
+    vai junto na saída (`forca_lida`) para isso ficar visível.
+    """
+    if forca is None or not np.isfinite(forca):
+        return None
+    return float(round(float(forca) * 2) / 2)
+
+
+def postura_lida(ducked: bool | None, duck_amount: float | None) -> str | None:
+    """Postura pelo que a demo grava: m_bDucked = agachado, duck_amount 0 = em
+    pé; agachamento parcial (entre os dois, sem m_bDucked) não é afirmado."""
+    if ducked is None and duck_amount is None:
+        return None
+    if ducked:
+        return "agachado"
+    if duck_amount is not None and float(duck_amount) == 0.0:
+        return "em pé"
+    return None
+
+
+def _verdade_da_demo(tables: dict[str, pl.DataFrame], chaves: list[tuple[int, int]]) -> tuple[dict, dict]:
+    """(arremessos lidos por (entity_id, tick), movimento por (tick, steamid)).
+
+    Vazio quando o interim não tem as tabelas da rota B (partidas sem .dem): aí
+    tudo sai INFERIDO, e a saída diz isso."""
+    arr, mov = tables.get("arremessos_demo"), tables.get("movimento")
+    lidos = {} if arr is None else {(int(r["entity_id"]), int(r["tick"])): r for r in arr.iter_rows(named=True)}
+    movs = {}
+    if mov is not None and chaves:
+        alvo = pl.DataFrame(chaves, schema={"tick": pl.Int64, "steamid": pl.UInt64}, orient="row")
+        sub = mov.with_columns(pl.col("tick").cast(pl.Int64), pl.col("steamid").cast(pl.UInt64)).join(
+            alvo, on=["tick", "steamid"], how="semi")
+        movs = {(int(r["tick"]), int(r["steamid"])): r for r in sub.iter_rows(named=True)}
+    return lidos, movs
+
+
 def grenade_throws(
     tables: dict[str, pl.DataFrame], tickrate: int
 ) -> tuple[pl.DataFrame, dict]:
@@ -1040,6 +1083,8 @@ def grenade_throws(
     ancorados, offset = ancora_arremessos(crus, tk, tickrate)
     ancorados, offset_oficial = aplica_tick_oficial(ancorados, tables.get("grenade_thrown"), tickrate)
 
+    lidos, movs = _verdade_da_demo(tables, [(int(a["tick_soltura"]), int(a["steamid"]))
+                                            for a in ancorados if a["tick_soltura"] is not None])
     linhas = []
     for a in ancorados:
         estado = (
@@ -1053,6 +1098,7 @@ def grenade_throws(
         rotina = {"estado_vertical": None, "no_ar": None, "ticks_desde_decolagem": None,
                   "velocidade_arremesso": None, "botao": None, "altura_saida": None, "postura": None}
         pes_t = None
+        saida = None
         janela = None if a["tick_soltura"] is None else _janela_de_pes(tk, a["steamid"], a["tick_soltura"])
         if janela is not None and a["traj"].shape[0] >= 2 and a.get("pitch") is not None:
             z, xy = janela
@@ -1063,6 +1109,12 @@ def grenade_throws(
             vp = (a["traj"][1] - a["traj"][0]) / dt
             z_saida = float(a["traj"][0][2] - vp[2] * (a["tick_primeiro"] - a["tick_soltura"]) / tickrate)
             rotina = rotina_do_jogo(z, xy, vp, z_saida, a["pitch"], a["yaw"], tickrate)
+            # ponto de nascimento INFERIDO: o primeiro ponto do projétil já é o
+            # nascimento + UM tick de voo (medido contra m_vInitialPosition: o
+            # resto de traj[0] - v0/64 é 0,04 u, n = 1.370, match_23 e
+            # match_42). A rotina acima segue com o z_saida da rota A, sem
+            # esse recuo: as constantes dela foram medidas nessa convenção.
+            saida = a["traj"][0] - vp * (a["tick_primeiro"] - a["tick_soltura"] + 1) / tickrate
         elif a["tick_soltura"] is not None and a.get("pos_soltura") is not None:
             # sem janela CONTÍNUA de ticks (a demo às vezes pula um tick: match_16,
             # round 5) a rotina não se aplica -- neutro com o motivo declarado.
@@ -1073,6 +1125,24 @@ def grenade_throws(
             d_ = tk.por_jogador.get(int(a["steamid"]))
             pes_t = (d_["pos"][um[0]].astype(float) if um is not None and d_ is not None
                      else np.asarray(a["pos_soltura"], dtype=float))
+        # ROTA B: o que a demo grava vence o inferido, arremesso a arremesso e
+        # campo a campo, e cada campo DIZ de onde veio (nunca misturar em silêncio)
+        ts = a["tick_soltura"]
+        lido = None if ts is None else lidos.get((int(a["entity_id"]), int(ts)))
+        mv = None if ts is None else movs.get((int(ts), int(a["steamid"])))
+        forca_lida = None if lido is None else lido["forca"]
+        b_lido = botao_da_forca_lida(forca_lida)
+        botao, fonte_botao = (b_lido, "lido") if b_lido is not None else (rotina["botao"], "inferido")
+        p_lida = None if mv is None else postura_lida(mv["ducked"], mv["duck_amount"])
+        tem_postura = mv is not None and (mv["ducked"] is not None or mv["duck_amount"] is not None)
+        postura, fonte_postura = (p_lida, "lido") if tem_postura else (rotina["postura"], "inferido")
+        tem_chao = mv is not None and mv["no_chao"] is not None
+        no_ar, fonte_no_ar = (not mv["no_chao"], "lido") if tem_chao else (rotina["no_ar"], "inferido")
+        tem_p0 = lido is not None and lido["p0_x"] is not None
+        if tem_p0:
+            saida, fonte_origem = np.array([lido["p0_x"], lido["p0_y"], lido["p0_z"]], dtype=float), "lido"
+        else:
+            fonte_origem = "inferido" if saida is not None else None
         linhas.append({
             "round_num": a["round_num"],
             "entity_id": a["entity_id"],
@@ -1091,9 +1161,19 @@ def grenade_throws(
             "altura_olhos": a["altura_olhos"],
             # AFIRMADOS pela rotina do jogo (None = neutro, com o motivo em
             # estado_vertical ou pela tolerância / faixa de postura)
-            "postura": rotina["postura"],
-            "botao": rotina["botao"],
-            "forca": None if rotina["botao"] is None else ROTULO_DO_BOTAO[rotina["botao"]],
+            "postura": postura,
+            "botao": botao,
+            "forca": None if botao is None else ROTULO_DO_BOTAO[botao],
+            "forca_lida": None if forca_lida is None else float(forca_lida),
+            "fonte_do_botao": fonte_botao,
+            "fonte_da_postura": fonte_postura,
+            "fonte_do_no_ar": fonte_no_ar,
+            "fonte_da_origem": fonte_origem,
+            # ponto de nascimento da granada: m_vInitialPosition (lido) ou o
+            # primeiro ponto do projétil levado ao tick da soltura (inferido)
+            "x_saida": None if saida is None else float(saida[0]),
+            "y_saida": None if saida is None else float(saida[1]),
+            "z_saida": None if saida is None else float(saida[2]),
             "estado_vertical": rotina["estado_vertical"],
             "ticks_desde_decolagem": rotina["ticks_desde_decolagem"],
             "altura_saida": rotina["altura_saida"],
@@ -1106,7 +1186,7 @@ def grenade_throws(
             "velocidade_vertical": estado.get("velocidade_vertical"),
             "giro_na_soltura": estado.get("giro"),
             "movimento": classifica_movimento(estado),
-            "no_ar": rotina["no_ar"],
+            "no_ar": no_ar,
             "tick_primeiro": a["tick_primeiro"],
             "velocidade_bruta": vel.get("bruta"),
             # ESTIMADA: a velocidade relativa pela rotina do jogo (None quando o
