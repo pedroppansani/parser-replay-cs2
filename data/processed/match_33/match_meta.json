@@ -24,8 +24,8 @@
   "source_fingerprint": "058b375180bec2969beb",
   "versao": {
     "parser": 1,
-    "metricas": 10,
-    "commit": "9db79b0d9197",
+    "metricas": 11,
+    "commit": "ba928f368250",
     "sujo": false,
     "awpy": "2.0.2",
     "demoparser2": "0.42.0"
