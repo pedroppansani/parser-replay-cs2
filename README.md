@@ -8,8 +8,7 @@ arremessos reais. O parsing é da biblioteca [awpy](https://awpy.rtfd.io/); o
 trabalho daqui é o desenho das métricas, cada uma com a decisão de jogo escrita
 no código e conferida contra dado oficial.
 
-**[Ver o site](https://pedroppansani.github.io/parser-replay-cs2/)** ·
-<!-- numeros:inicio corpus -->52 partidas (43 profissionais, de 11 times, e 9 de FACEIT) em 8 mapas<!-- numeros:fim corpus -->.
+**[Ver o site](https://pedroppansani.github.io/parser-replay-cs2/)** · <!-- numeros:inicio corpus -->52 partidas (43 profissionais, de 11 times, e 9 de FACEIT) em 8 mapas<!-- numeros:fim corpus -->.
 
 ## Três números
 
