@@ -36,8 +36,8 @@ MANIFESTO = PROJECT_ROOT / "data" / "manifest.json"
 
 
 def _time(nome: str) -> str:
-    n = (nome or "").strip()
-    return n[5:] if n.lower().startswith("team ") else n
+    from metrics.times import nome_canonico
+    return nome_canonico(nome)
 
 
 def _le(tabela: str, partidas: dict[str, dict]) -> pl.DataFrame:

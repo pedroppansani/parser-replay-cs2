@@ -1,0 +1,9 @@
+{
+  "_leia_isto": "Nome canônico de cada time profissional do corpus. A demo grava o nome do time como ele estava no servidor, e o mesmo time aparece escrito de mais de um jeito ('Vitality' e 'Team Vitality'). Todo agregado por time passa por metrics/times.nome_canonico, que lê daqui. Um nome novo que seja variante de um time já conhecido entra em 'alias' depois de conferido; tests/test_times.py falha se dois nomes do corpus parecerem o mesmo time sem estarem aqui.",
+  "_conferido_em": "2026-10-02, 43 partidas profissionais",
+  "alias": {
+    "Team Vitality": "Vitality",
+    "Team Falcons": "Falcons",
+    "Team Spirit": "Spirit"
+  }
+}

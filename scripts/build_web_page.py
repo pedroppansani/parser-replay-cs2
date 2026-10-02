@@ -37,7 +37,8 @@ def titulo_da_pagina(match_id: str) -> str:
         linha = json.loads(manifesto.read_text(encoding="utf-8")).get("partidas", {}).get(match_id) or {}
         times = linha.get("times") or {}
         if linha.get("origem") == "profissional" and times.get("A", {}).get("nome") and times.get("B", {}).get("nome"):
-            partes.append(f"{times['A']['nome']} x {times['B']['nome']}")
+            from metrics.times import nome_canonico
+            partes.append(f"{nome_canonico(times['A']['nome'])} x {nome_canonico(times['B']['nome'])}")
     return " · ".join(partes)
 
 

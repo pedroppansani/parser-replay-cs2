@@ -63,8 +63,8 @@ PROXIES = {
 
 def _time_normalizado(nome: str) -> str:
     """"Team Vitality" e "Vitality" são o mesmo time no manifesto."""
-    n = (nome or "").strip()
-    return n[5:] if n.lower().startswith("team ") else n
+    from metrics.times import nome_canonico
+    return nome_canonico(nome)
 
 
 def drops_da_partida(match_id: str) -> pl.DataFrame:

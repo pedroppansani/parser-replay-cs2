@@ -21,6 +21,7 @@ from pathlib import Path
 
 import numpy as np
 import polars as pl
+from metrics.times import nome_canonico  # noqa: E402
 
 RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ))
@@ -42,8 +43,8 @@ def corpus() -> dict:
         jogador_partidas += n
         jogador_rounds += n * int(p.get("rounds") or 0)
         if p.get("origem") == "profissional":
-            # "Vitality" e "Team Vitality" são o mesmo time (a demo grava os dois)
-            times.update(t["nome"].removeprefix("Team ") for t in (p.get("times") or {}).values() if t.get("nome"))
+            # "Vitality" e "Team Vitality" são o mesmo time: nome canônico (metrics/times.py)
+            times.update(nome_canonico(t["nome"]) for t in (p.get("times") or {}).values() if t.get("nome"))
     return {
         "fonte": "data/manifest.json",
         "partidas": len(partidas),

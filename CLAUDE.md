@@ -136,6 +136,7 @@ texto completo de cada uma está na nota do link (`notas/decisoes/`).
 - [35](notas/decisoes/35-reproducao-pura.md) A reprodução da prancheta é função pura do tempo.
 - [36](notas/decisoes/36-preservacao-de-dados.md) Nenhum `.dem`, interim ou backup é apagado sem lista confirmada e cópia por sha256.
 - [37](notas/decisoes/37-pagina-e-dado.md) Número de corpus vem de `numeros_citaveis.json`; texto do dado passa por `esc()`; CI testa antes de publicar.
+- [38](notas/decisoes/38-times-canonicos.md) Agregado por time usa o nome canônico (`metrics/times.py`).
 
 ## Números citáveis
 
