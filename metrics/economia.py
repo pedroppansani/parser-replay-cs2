@@ -72,57 +72,96 @@ def compra_por_jogador(compra: pl.DataFrame) -> pl.DataFrame:
     return pl.DataFrame(linhas).with_columns(pl.col("steamid").cast(pl.UInt64))
 
 
+# Empate na classe de equipamento do time (dois de rifle, dois de pistola, um de
+# SMG): o round conta em PARTES IGUAIS para cada classe empatada. Decisão do
+# Pedro, 2026-10-02 (nota da decisão 8i, com os números): é determinística, não
+# tem constante escolhida e reproduz o valor esperado do sorteio que existia
+# antes. Escolher uma das classes (a primeira em ordem alfabética, a mais forte,
+# a mais fraca) move o erro do rating contra a HLTV em até 0,004 por causa de
+# 159 empates em 2.304 time-rounds.
+REGRA_DE_DESEMPATE = "empate dividido entre as classes empatadas"
+
+
+def classes_do_time(grupos: list[str]) -> list[str]:
+    """As classes mais frequentes entre os jogadores do time, em ordem fixa.
+    Uma só quando há maioria; duas ou mais no empate."""
+    cont: dict[str, int] = {}
+    for g in grupos:
+        cont[g] = cont.get(g, 0) + 1
+    topo = max(cont.values())
+    return sorted(g for g, n in cont.items() if n == topo)
+
+
 def confrontos_da_partida(compra: pl.DataFrame, team_of: dict[int, str],
                           vencedor_por_round: dict[int, str]) -> pl.DataFrame:
-    """Um registro por (round, time): lado, classe dele, classe do adversário, venceu."""
+    """Um registro por (round, time, classe dele, classe do adversário), com o
+    `peso` daquela combinação: 1 sem empate; 1/(k·m) quando o time tem k classes
+    empatadas e o adversário m. Os pesos de um (round, time) somam 1."""
     j = compra_por_jogador(compra).with_columns(
         pl.col("steamid").map_elements(lambda s: team_of.get(int(s)), return_dtype=pl.Utf8).alias("time")
     ).drop_nulls("time")
-    por_time = j.group_by(["round_num", "time"], maintain_order=True).agg(
-        pl.col("grupo").mode().sort().first(), (pl.col("colete").mean() >= 0.5).alias("colete"))
+    por_round: dict[int, dict[str, tuple[list[str], bool]]] = {}
+    for (rn, time), g in j.group_by(["round_num", "time"], maintain_order=True):
+        por_round.setdefault(int(rn), {})[time] = (classes_do_time(g["grupo"].to_list()),
+                                                   bool(g["colete"].mean() >= 0.5))
     linhas = []
-    for (rn,), g in por_time.group_by("round_num", maintain_order=True):
-        if g.height != 2:
+    for rn in sorted(por_round):
+        times = por_round[rn]
+        if len(times) != 2:
             continue
-        a, b = g.row(0, named=True), g.row(1, named=True)
-        for eu, ele in ((a, b), (b, a)):
-            linhas.append({
-                "round_num": int(rn), "lado": side_of_team(eu["time"], int(rn)),
-                "grupo": eu["grupo"], "colete": eu["colete"],
-                "grupo_dele": ele["grupo"], "colete_dele": ele["colete"],
-                "venceu": vencedor_por_round.get(int(rn)) == eu["time"],
-            })
+        (ta, a), (tb, b) = sorted(times.items())
+        for eu, (meus, colete), (deles, colete_dele) in ((ta, a, b), (tb, b, a)):
+            peso = 1.0 / (len(meus) * len(deles))
+            for grupo in meus:
+                for grupo_dele in deles:
+                    linhas.append({
+                        "round_num": rn, "lado": side_of_team(eu, rn),
+                        "grupo": grupo, "colete": colete, "grupo_dele": grupo_dele, "colete_dele": colete_dele,
+                        "venceu": vencedor_por_round.get(rn) == eu, "peso": peso,
+                    })
     return pl.DataFrame(linhas) if linhas else pl.DataFrame()
 
 
 def ajusta_tabela(confrontos: pl.DataFrame) -> dict:
-    """Taxas encolhidas por célula, a partir dos confrontos do corpus inteiro."""
-    base = {lado: float(t) for lado, t in confrontos.group_by("lado", maintain_order=True).agg(pl.col("venceu").mean()).iter_rows()}
+    """Taxas encolhidas por célula, a partir dos confrontos do corpus inteiro.
+
+    Cada linha entra com o seu `peso` (ver `confrontos_da_partida`): `n` é a
+    soma dos pesos e a taxa é a média ponderada. Tabela sem a coluna `peso`
+    (formato antigo) vale peso 1.
+    """
+    if "peso" not in confrontos.columns:
+        confrontos = confrontos.with_columns(pl.lit(1.0).alias("peso"))
+    venceu = pl.col("venceu").cast(pl.Float64)
+
+    def agrega(chaves: list[str]) -> pl.DataFrame:
+        return confrontos.group_by(chaves, maintain_order=True).agg(
+            pl.col("peso").sum().alias("n"), ((venceu * pl.col("peso")).sum() / pl.col("peso").sum()).alias("taxa"))
+
+    base = {r["lado"]: float(r["taxa"]) for r in agrega(["lado"]).iter_rows(named=True)}
 
     pai = {}
-    for r in confrontos.group_by(["lado", "grupo", "grupo_dele"], maintain_order=True).agg(
-            pl.len().alias("n"), pl.col("venceu").mean().alias("taxa")).iter_rows(named=True):
+    for r in agrega(["lado", "grupo", "grupo_dele"]).iter_rows(named=True):
         w = r["n"] / (r["n"] + K_ENCOLHIMENTO)
         pai[(r["lado"], r["grupo"], r["grupo_dele"])] = {
-            "n": int(r["n"]), "taxa_crua": float(r["taxa"]),
+            "n": round(float(r["n"]), 4), "taxa_crua": float(r["taxa"]),
             "taxa": w * float(r["taxa"]) + (1 - w) * base[r["lado"]],
         }
 
     celulas = {}
-    for r in confrontos.group_by(["lado", "grupo", "colete", "grupo_dele", "colete_dele"], maintain_order=True).agg(
-            pl.len().alias("n"), pl.col("venceu").mean().alias("taxa")).iter_rows(named=True):
+    for r in agrega(["lado", "grupo", "colete", "grupo_dele", "colete_dele"]).iter_rows(named=True):
         acima = pai[(r["lado"], r["grupo"], r["grupo_dele"])]["taxa"]
         w = r["n"] / (r["n"] + K_ENCOLHIMENTO)
         chave = "||".join([r["lado"], classe(r["grupo"], r["colete"]), classe(r["grupo_dele"], r["colete_dele"])])
-        celulas[chave] = {"n": int(r["n"]), "taxa_crua": round(float(r["taxa"]), 4),
+        celulas[chave] = {"n": round(float(r["n"]), 4), "taxa_crua": round(float(r["taxa"]), 4),
                           "taxa": round(w * float(r["taxa"]) + (1 - w) * acima, 4),
-                          "amostra_fraca": int(r["n"]) < MIN_AMOSTRA_CELULA}
+                          "amostra_fraca": float(r["n"]) < MIN_AMOSTRA_CELULA}
     return {
+        "regra_de_desempate": REGRA_DE_DESEMPATE,
         "taxa_base_por_lado": base,
         "celulas_sem_colete": {"||".join(k): {**v, "taxa": round(v["taxa"], 4), "taxa_crua": round(v["taxa_crua"], 4)}
                                for k, v in pai.items()},
         "celulas": celulas,
-        "lados_round": confrontos.height,
+        "lados_round": round(float(confrontos["peso"].sum()), 4),
         "k_encolhimento": K_ENCOLHIMENTO,
     }
 
