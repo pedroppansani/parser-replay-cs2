@@ -81,8 +81,40 @@ def match_summary(match_id: str) -> dict | None:
         "mvp": mvp["name"] if mvp else None,
         "mvp_adr": round(mvp["adr"], 1) if mvp else None,
         "has_radar": (PROJECT_ROOT / "assets" / "radars" / f"{map_name}.json").exists(),
+        # para a escolha da partida de exemplo da landing
+        "tem_round_decisivo": bool(insights.get("decisive_round")),
+        "origem": _origem(match_id),
         "label": f"{MAP_LABEL.get(map_name, map_name)} · {m.get('score_a')}-{m.get('score_b')} · {match_id}",
     }
+
+
+def _origem(match_id: str) -> str | None:
+    manifesto = PROJECT_ROOT / "data" / "manifest.json"
+    if not manifesto.exists():
+        return None
+    return (json.loads(manifesto.read_text(encoding="utf-8")).get("partidas", {}).get(match_id) or {}).get("origem")
+
+
+def partida_de_exemplo(matches: list[dict]) -> dict | None:
+    """A partida do botão "Ver uma partida" da landing.
+
+    Critério declarado, para a escolha não ser gosto: entre as partidas
+    PROFISSIONAIS com radar e com round decisivo (um jogo apertado tem mais o
+    que mostrar: o round que virou a partida, a curva de probabilidade), a de
+    placar mais apertado; no empate, a de mais rounds e depois o menor id. Sem
+    nenhuma assim, a primeira com radar; sem radar, a primeira.
+    """
+    if not matches:
+        return None
+
+    def aperto(m):
+        return (abs((m.get("score_a") or 0) - (m.get("score_b") or 0)), -(m.get("rounds") or 0), m["id"])
+
+    boas = [m for m in matches if m.get("origem") == "profissional" and m.get("has_radar") and m.get("tem_round_decisivo")]
+    if boas:
+        return min(boas, key=aperto)
+    com_radar = [m for m in matches if m.get("has_radar")]
+    return (com_radar or matches)[0]
 
 
 def utility_highlight(match_id: str) -> str | None:
@@ -97,13 +129,17 @@ def utility_highlight(match_id: str) -> str | None:
     return f"{top['name']} impôs {top['enemy_blind_seconds']:.0f}s de cegueira"
 
 
-def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | None = None) -> str:
+def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | None = None,
+                numeros: dict | None = None, imagem: str | None = None) -> str:
+    """A landing. `numeros` é o documento de numeros_citaveis.json (os três
+    números do topo vêm dele, nunca escritos aqui); `imagem` é o arquivo da
+    captura do replay ao lado da página, se houver."""
     from html import escape as e
 
     # todo texto que vem do dado (nicks, mapa, frase do destaque) é escapado:
     # um nick com `<` não pode virar marcação na landing
     cards = "\n".join(
-        f"""      <a class="mcard" href="{e(m['file'])}">
+        f"""      <a class="mcard" data-mapa="{e(str(m.get('map', '')))}" href="{e(m['file'])}">
         <div class="mtop"><span class="mmap">{e(str(m['map_label']))}</span>
           <span class="mscore">{m['score_a']}<em>–</em>{m['score_b']}</span></div>
         <div class="mrosters">{" · ".join(e(n) for n in m['rosters'].get('A', []))}<br>
@@ -124,6 +160,26 @@ def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | Non
       reproduz. {links}</p>
   </section>
 """ if links else "")
+
+    # --- topo: o que é, três números validados, uma imagem e três caminhos ---
+    from scripts.numeros_citaveis import blocos_de_texto, tres_numeros
+
+    exemplo = partida_de_exemplo(matches)
+    tres = "".join(
+        f"""      <div class="num"><b>{e(n['valor'])}</b><span>{e(n['rotulo'])}</span><p>{e(n['contexto'])}</p></div>\n"""
+        for n in (tres_numeros(numeros) if numeros else []))
+    corpus = e(blocos_de_texto(numeros)["corpus"]) if numeros else ""
+    prancheta_do_exemplo = next((p for p in (pranchetas or []) if exemplo and p.get("mapa") == exemplo.get("map")),
+                                (pranchetas or [None])[0])
+    botoes = "".join([
+        f'<a class="btn principal" id="btn-partida" href="{e(exemplo["file"])}">Ver uma partida</a>' if exemplo else "",
+        f'<a class="btn" id="btn-prancheta" href="{e(prancheta_do_exemplo["file"])}">Prancheta</a>' if prancheta_do_exemplo else "",
+        f'<a class="btn" id="btn-github" href="{e(repo_url)}">GitHub</a>',
+    ])
+    figura = (f'<img class="hero-img" src="{e(imagem)}" alt="Replay de uma partida no radar, com a direção do olhar '
+              f'de cada jogador" loading="lazy">' if imagem else "")
+    mapas = sorted({(m.get("map"), m.get("map_label")) for m in matches if m.get("map")}, key=lambda x: str(x[1]))
+    filtro = "".join(f'<button type="button" data-filtro="{e(str(k))}">{e(str(rot))}</button>' for k, rot in mapas)
 
     return f"""<!DOCTYPE html>
 <html lang="pt-BR">
@@ -156,7 +212,28 @@ def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | Non
   .lead {{ max-width: 62ch; font-size: 16px; line-height: 1.6; color: var(--ink-2); margin: 16px 0 0; }}
   .lead b {{ color: var(--ink); font-weight: 600; }}
 
-  .grid {{ margin-top: 30px; display: grid;
+  .hero {{ display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; align-items: center; }}
+  .hero-img {{ width: 100%; height: auto; border-radius: var(--r); border: 1px solid var(--line);
+    box-shadow: 0 10px 30px rgba(15, 22, 32, .10); display: block; }}
+  .botoes {{ display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }}
+  .btn {{ display: inline-block; padding: 10px 18px; border-radius: 999px; border: 1px solid var(--line);
+    background: var(--card); color: var(--ink); text-decoration: none; font-weight: 600; font-size: 15px; }}
+  .btn:hover {{ border-color: var(--ct); }}
+  .btn.principal {{ background: var(--ink); color: #fff; border-color: var(--ink); }}
+  .corpus {{ font-family: var(--mono); font-size: 12px; color: var(--dim); margin: 16px 0 0; }}
+  .nums {{ margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 14px; }}
+  .num {{ background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 18px 20px; }}
+  .num b {{ display: block; font-family: var(--display); font-size: 30px; letter-spacing: -0.02em; line-height: 1.1; }}
+  .num span {{ display: block; font-weight: 600; font-size: 14px; margin-top: 6px; }}
+  .num p {{ margin: 8px 0 0; font-size: 13px; line-height: 1.5; color: var(--ink-2); }}
+  .filtro {{ margin-top: 34px; display: flex; flex-wrap: wrap; gap: 8px; }}
+  .filtro button {{ font: inherit; font-size: 13px; padding: 6px 13px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--card); color: var(--ink-2); }}
+  .filtro button[aria-pressed="true"] {{ background: var(--ink); color: #fff; border-color: var(--ink); }}
+  .mcard[hidden] {{ display: none; }}
+  @media (max-width: 760px) {{ .hero {{ grid-template-columns: 1fr; }} }}
+
+  .grid {{ margin-top: 14px; display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 290px), 1fr)); gap: 14px; }}
   .mcard {{ display: block; text-decoration: none; color: inherit; background: var(--card);
     border: 1px solid var(--line); border-radius: var(--r); padding: 16px;
@@ -191,18 +268,28 @@ def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | Non
 </head>
 <body>
 <div class="shell">
-  <header>
-    <div class="eyebrow">CS2 · replay parser · métricas autorais</div>
-    <h1>Uma partida,<br>round a round</h1>
-    <p class="lead">
-      Leitor de replay (.dem) de CS2 com métricas desenhadas a partir de decisões de jogo, não das
-      que já vinham prontas. <b>Escolha uma partida abaixo</b> para abrir o replay no mapa, a leitura
-      round a round e o perfil de cada jogador. Tudo processado localmente: o site é estático e só
-      carrega o resultado.
-    </p>
+  <header class="hero">
+    <div class="hero-txt">
+      <div class="eyebrow">CS2 · replay parser · métricas autorais</div>
+      <h1>Uma partida,<br>round a round</h1>
+      <p class="lead">
+        Lê o replay (.dem) de uma partida de CS2 e mostra o que aconteceu: o mapa round a round, o
+        round que decidiu o jogo e o que cada jogador fez. <b>Cada número é conferido contra dado
+        oficial</b>, e o que não se sustenta fica sem afirmação.
+      </p>
+      <div class="botoes">{botoes}</div>
+      <p class="corpus" id="corpus">{corpus}</p>
+    </div>
+    {figura}
   </header>
 
-  <div class="grid">
+  <section class="nums" id="tres-numeros">
+{tres}  </section>
+
+  <div class="filtro" id="filtro" role="group" aria-label="Filtrar as partidas por mapa">
+    <button type="button" data-filtro="" aria-pressed="true">Todos os mapas</button>{filtro}
+  </div>
+  <div class="grid" id="partidas">
 {cards}
   </div>
 {bloco_prancheta}
@@ -235,6 +322,21 @@ python -m scripts.build_site
     fundo. Código e metodologia em <a href="{repo_url}">{repo_url}</a>.
   </footer>
 </div>
+<script>
+  // filtro por mapa: esconde os cards dos outros mapas
+  (function () {{
+    var botoes = document.querySelectorAll("#filtro button");
+    Array.prototype.forEach.call(botoes, function (b) {{
+      b.addEventListener("click", function () {{
+        var alvo = b.getAttribute("data-filtro");
+        Array.prototype.forEach.call(botoes, function (x) {{ x.setAttribute("aria-pressed", String(x === b)); }});
+        Array.prototype.forEach.call(document.querySelectorAll("#partidas .mcard"), function (c) {{
+          c.hidden = !!alvo && c.getAttribute("data-mapa") !== alvo;
+        }});
+      }});
+    }});
+  }})();
+</script>
 </body>
 </html>
 """
@@ -279,7 +381,16 @@ def build(repo_url: str) -> Path:
         pranchetas.append({"mapa": mapa, "file": arquivo_da_pagina(mapa), "label": MAP_LABEL.get(mapa, mapa)})
         print(f"  {arquivo_da_pagina(mapa)}  ({len(html) / 1024:.0f} KB)  prancheta")
 
-    (DOCS_DIR / "index.html").write_text(build_index(matches, repo_url, pranchetas), encoding="utf-8")
+    # os números do topo vêm de numeros_citaveis.json; a imagem do replay é a
+    # captura versionada do README (scripts/capturas_readme.py), copiada para o site
+    from scripts.numeros_citaveis import carrega as numeros_citaveis
+    captura = PROJECT_ROOT / "assets" / "readme" / "replay.png"
+    imagem = None
+    if captura.exists():
+        shutil.copyfile(captura, DOCS_DIR / "replay.png")
+        imagem = "replay.png"
+    (DOCS_DIR / "index.html").write_text(
+        build_index(matches, repo_url, pranchetas, numeros=numeros_citaveis(), imagem=imagem), encoding="utf-8")
 
     # o GitHub Pages passa o conteúdo pelo Jekyll por padrão, que ignora arquivos
     # e pastas começando com underscore; .nojekyll desliga isso
