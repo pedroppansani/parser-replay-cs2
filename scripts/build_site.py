@@ -98,20 +98,24 @@ def utility_highlight(match_id: str) -> str | None:
 
 
 def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | None = None) -> str:
+    from html import escape as e
+
+    # todo texto que vem do dado (nicks, mapa, frase do destaque) é escapado:
+    # um nick com `<` não pode virar marcação na landing
     cards = "\n".join(
-        f"""      <a class="mcard" href="{m['file']}">
-        <div class="mtop"><span class="mmap">{m['map_label']}</span>
+        f"""      <a class="mcard" href="{e(m['file'])}">
+        <div class="mtop"><span class="mmap">{e(str(m['map_label']))}</span>
           <span class="mscore">{m['score_a']}<em>–</em>{m['score_b']}</span></div>
-        <div class="mrosters">{" · ".join(m['rosters'].get('A', []))}<br>
-          <span class="vs">contra</span><br>{" · ".join(m['rosters'].get('B', []))}</div>
+        <div class="mrosters">{" · ".join(e(n) for n in m['rosters'].get('A', []))}<br>
+          <span class="vs">contra</span><br>{" · ".join(e(n) for n in m['rosters'].get('B', []))}</div>
         <div class="mfoot"><span>{m['rounds']} rounds</span>
-          <span>{m.get('extra') or ('MVP ' + (m['mvp'] or '?'))}</span></div>
+          <span>{e(m.get('extra') or ('MVP ' + (m['mvp'] or '?')))}</span></div>
         {"" if m['has_radar'] else '<div class="noradar">sem radar calibrado</div>'}
       </a>"""
         for m in matches
     )
 
-    links = " · ".join(f'<a href="{p["file"]}">{p["label"]}</a>' for p in (pranchetas or []))
+    links = " · ".join(f'<a href="{e(p["file"])}">{e(p["label"])}</a>' for p in (pranchetas or []))
     bloco_prancheta = (f"""
   <section class="box">
     <h2>Prancheta tática</h2>

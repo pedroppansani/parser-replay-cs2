@@ -42,8 +42,10 @@ def mapas_disponiveis() -> list[str]:
 
 
 def _js(valor) -> str:
-    # `</` fechando o <script> no meio de um nome de jogador quebraria a página
-    return json.dumps(valor, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+    # `</` fechando o <script> no meio de um nome de jogador quebraria a página:
+    # a injeção segura é uma função só, usada também pela página da partida
+    from scripts.json_em_script import js
+    return js(valor)
 
 
 def build_html(mapa: str, rotulos: dict[str, str] | None = None) -> str:

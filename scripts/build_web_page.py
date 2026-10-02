@@ -85,18 +85,24 @@ def dados_da_pagina(match_id: str) -> dict:
     return {"origem": origem_da_partida(match_id), "rodape_html": rodape_html(carrega())}
 
 
-def build_html(match_id: str, site: dict | None = None) -> str:
+def build_html(match_id: str, site: dict | None = None, base: Path | None = None) -> str:
     """Devolve o HTML final da partida, com os dados já embutidos.
 
     `site` é a lista de partidas do site multi-demo (ver scripts/build_site.py).
     Sem ele, a barra de troca de partida fica escondida e o arquivo é um HTML
     solto que funciona offline — que é o modo original da página.
     """
-    base = PROJECT_ROOT / "data" / "processed" / match_id
-    payload = (base / "web_payload.json").read_text(encoding="utf-8")
-    replay = (base / "replay.json").read_text(encoding="utf-8")
+    from scripts.json_em_script import js, texto_seguro
+
+    # `base` troca a pasta dos dados da partida (os testes montam uma partida
+    # sintética); o padrão é data/processed/<partida>
+    base = base or PROJECT_ROOT / "data" / "processed" / match_id
+    # todo JSON que entra num <script> passa pela injeção segura: um nome de
+    # jogador com `</script>` fecharia o script no meio do dado
+    payload = texto_seguro((base / "web_payload.json").read_text(encoding="utf-8"))
+    replay = texto_seguro((base / "replay.json").read_text(encoding="utf-8"))
     breakdown_path = base / "breakdown.json"
-    breakdown = breakdown_path.read_text(encoding="utf-8") if breakdown_path.exists() else "[]"
+    breakdown = texto_seguro(breakdown_path.read_text(encoding="utf-8")) if breakdown_path.exists() else "[]"
     # A camada de desenho vive em arquivo separado no repositorio (o template ja
     # esta grande demais) e e injetada aqui, para a pagina continuar sendo um
     # arquivo unico que abre offline.
@@ -126,18 +132,18 @@ def build_html(match_id: str, site: dict | None = None) -> str:
         # discordam sobre qual calibração um traço usou.
         radar["calibracao"] = impressao_da_calibracao(radar)
         # o `||` mantém o `null` do template como fallback quando o mapa não tem radar
-        radar_js = json.dumps(radar, ensure_ascii=False) + " ||"
+        radar_js = js(radar, compacto=False) + " ||"
     html = html.replace("/*__RADAR__*/", radar_js)
     # Botão "Criar tática": só quando o mapa desta partida tem prancheta. O link
     # é relativo e funciona igual em dashboard/web/ e em docs/, que têm as duas
     # páginas lado a lado.
     from scripts.build_tactics_page import arquivo_da_pagina, mapas_disponiveis
     prancheta = arquivo_da_pagina(map_name) if map_name in mapas_disponiveis() else None
-    html = html.replace("/*__PRANCHETA__*/null", json.dumps(prancheta))
+    html = html.replace("/*__PRANCHETA__*/null", js(prancheta))
     import html as _html
-    html = html.replace("/*__PAGINA__*/null", json.dumps(dados_da_pagina(match_id), ensure_ascii=False))
+    html = html.replace("/*__PAGINA__*/null", js(dados_da_pagina(match_id), compacto=False))
     html = html.replace("<!--__TITULO__-->", _html.escape(titulo_da_pagina(match_id)))
-    html = html.replace("/*__SITE__*/", json.dumps(site, ensure_ascii=False) + " ||" if site else "")
+    html = html.replace("/*__SITE__*/", js(site, compacto=False) + " ||" if site else "")
     return html
 
 

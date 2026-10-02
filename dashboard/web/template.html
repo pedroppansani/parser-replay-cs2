@@ -1238,6 +1238,10 @@
   /* ---------------- Cabeçalho ---------------- */
 
   var M = D.match;
+  // Todo texto que vem do DADO passa por esc() antes de entrar em HTML montado
+  // por concatenação (nome de jogador, frase gerada, arma, lugar). A função é
+  // uma só, a do map_core.js.
+  var esc = MapCore.esc;
   document.getElementById("c-map").textContent = M.map;
   document.getElementById("c-rounds").textContent = M.rounds + " rounds";
   // Origem da partida e números do corpus: montados no BUILD a partir do
@@ -1257,9 +1261,9 @@
   document.getElementById("sa").className = "s " + (aWins ? "win" : "lose");
   document.getElementById("sb").className = "s " + (aWins ? "lose" : "win");
   document.getElementById("tc-a").innerHTML =
-    "<b>Time A</b><span class='nicks'>" + M.rosters.A.join(" · ") + "</span>";
+    "<b>Time A</b><span class='nicks'>" + M.rosters.A.map(esc).join(" · ") + "</span>";
   document.getElementById("tc-b").innerHTML =
-    "<b>Time B</b><span class='nicks'>" + M.rosters.B.join(" · ") + "</span>";
+    "<b>Time B</b><span class='nicks'>" + M.rosters.B.map(esc).join(" · ") + "</span>";
   if (!aWins) {
     document.getElementById("tc-a").classList.remove("won");
     document.getElementById("tc-b").classList.add("won");
@@ -1538,7 +1542,7 @@
     var b = BD[cur.round];
     if (!b) { host.innerHTML = ""; return; }
 
-    var tags = b.tags.map(function (t) { return "<span class='tag'>" + t + "</span>"; }).join("");
+    var tags = b.tags.map(function (t) { return "<span class='tag'>" + esc(t) + "</span>"; }).join("");
     var moments = b.moments.map(function (m, i) {
       var extra = "";
       var title = "";
@@ -1546,12 +1550,12 @@
       // bomba): nunca cai no nome da vítima como matador.
       var causa = m.causa || (m.by ? "morreu para " + m.by : "");
       if (m.kind === "morte_isolada") {
-        extra = "<small>" + causa + "</small>";
-        title = " title='companheiro mais próximo a " + m.distance + " unidades'";
+        extra = "<small>" + esc(causa) + "</small>";
+        title = " title='companheiro mais próximo a " + esc(m.distance) + " unidades'";
       } else if (m.kind === "abertura_perdida") {
-        extra = "<small>" + causa + (m.traded ? " · trocado" : " · sem troca") + "</small>";
+        extra = "<small>" + esc(causa) + (m.traded ? " · trocado" : " · sem troca") + "</small>";
       } else if (m.kind === "virada_numerica") {
-        extra = "<small>" + m.victim + " " + causa + "</small>";
+        extra = "<small>" + esc(m.victim) + " " + esc(causa) + "</small>";
       }
 
       // Tempo decorrido desde o fim do freeze time, no relógio. Segundos crus
@@ -1561,27 +1565,27 @@
       var alvo = frameDoTick(m.tick);
       var podeClicar = alvo !== null;
       if (!podeClicar) {
-        title = " title='tick " + m.tick + " fora da janela exportada do replay — " +
+        title = " title='tick " + esc(m.tick) + " fora da janela exportada do replay — " +
           "melhor não navegar do que navegar para o lugar errado'";
       }
 
-      var who = m.who ? "<b>" + m.who + "</b> " : "";
+      var who = m.who ? "<b>" + esc(m.who) + "</b> " : "";
       return "<button class='moment" + (podeClicar ? "" : " inerte") + "' data-i='" + i + "'" +
         (podeClicar ? "" : " disabled") + title + ">" +
         "<span class='mt'>" + quando + "</span>" +
         "<span class='ic'>" + (MOMENT_ICON[m.kind] || "•") + "</span>" +
-        "<span class='mx'>" + who + m.text + extra + "</span></button>";
+        "<span class='mx'>" + who + esc(m.text) + extra + "</span></button>";
     }).join("");
 
     host.innerHTML =
-      "<div class='ah'><h3>Por que o Time " + b.loser_team + " perdeu este round" +
+      "<div class='ah'><h3>Por que o Time " + esc(b.loser_team) + " perdeu este round" +
       (b.ultimo_round ? " <span class='borda'>último round da partida</span>"
         : (b.fim_de_metade ? " <span class='borda'>último round da primeira metade</span>" : "")) +
       "</h3>" +
       "<div class='tags'>" + tags + "</div></div>" +
       // o texto de economia vem pronto do Python, com os dois lados e o dinheiro
       // formatado num único helper (ver metrics/formatting.format_money)
-      (b.eco_text ? "<p class='why'>" + b.eco_text + "</p>" : "") +
+      (b.eco_text ? "<p class='why'>" + esc(b.eco_text) + "</p>" : "") +
       "<div class='mlist'>" + (moments || "<p class='why'>Nada fora do padrão: o round foi perdido no confronto direto, sem erro estrutural detectável.</p>") + "</div>" +
       "<p class='caveat'>São padrões observáveis que costumam custar rounds — morrer sem cobertura, " +
       "ficar em desvantagem que não se recupera, não usar utility. <b>Não é um veredito sobre a decisão " +
@@ -1608,10 +1612,10 @@
       host.className = "card squad " + side;
       var mine = cur.players.filter(function (p) { return p.side === side; });
       var team = mine.length ? mine[0].team : "?";
-      host.innerHTML = "<h4>" + (side === "ct" ? "CT" : "T") + " <b>time " + team + "</b></h4>" +
+      host.innerHTML = "<h4>" + (side === "ct" ? "CT" : "T") + " <b>time " + esc(team) + "</b></h4>" +
         mine.map(function (p, i) {
           return "<div class='plr' data-side='" + side + "' data-i='" + i + "'>" +
-            "<div class='nm'>" + p.name + "</div><div class='hpn'>100</div>" +
+            "<div class='nm'>" + esc(p.name) + "</div><div class='hpn'>100</div>" +
             "<div class='hpbar'><i style='width:100%;background:" + (side === "ct" ? C.ct : C.t) + "'></i></div>" +
             "<div class='wp'>—</div><div class='loc'></div></div>";
         }).join("");
@@ -1676,25 +1680,25 @@
     if (it.pop) {
       if (it.pop.k === "flash") {
         var longest = it.hit.reduce(function (m, v) { return v.s > m ? v.s : m; }, 0);
-        var who = it.hit.map(function (v) { return v.n; }).join(", ");
-        return "<span class='who'><b>" + it.pop.by + "</b> cegou " + who + "</span> " +
+        var who = it.hit.map(function (v) { return esc(v.n); }).join(", ");
+        return "<span class='who'><b>" + esc(it.pop.by) + "</b> cegou " + who + "</span> " +
           "<span class='wpn'>flash · " + br(longest) + "s</span>";
       }
-      return "<span class='who'><b>" + it.pop.by + "</b> acertou HE</span> " +
-        "<span class='wpn'>" + it.pop.dmg + " de dano</span>";
+      return "<span class='who'><b>" + esc(it.pop.by) + "</b> acertou HE</span> " +
+        "<span class='wpn'>" + esc(it.pop.dmg) + " de dano</span>";
     }
     var e = it.e;
     if (e.type === "kill") {
       // a frase vem pronta do Python (frase_da_morte): sem atacante, fogo amigo
       // e atacante igual à vítima têm cada um a sua
-      return "<span class='who'><b>" + e.quem + "</b> " + e.acao + "</span> " +
-        "<span class='wpn'>" + (e.weapon || "").replace(/_/g, " ") + (e.headshot ? " · hs" : "") + "</span>";
+      return "<span class='who'><b>" + esc(e.quem) + "</b> " + esc(e.acao) + "</span> " +
+        "<span class='wpn'>" + esc((e.weapon || "").replace(/_/g, " ")) + (e.headshot ? " · hs" : "") + "</span>";
     }
     if (e.type === "plant") {
-      return "<span class='who'>" + (e.player || "T") + " plantou</span> <span class='wpn'>" +
-        (e.site || "").replace("Bombsite", "bomb ") + "</span>";
+      return "<span class='who'>" + esc(e.player || "T") + " plantou</span> <span class='wpn'>" +
+        esc((e.site || "").replace("Bombsite", "bomb ")) + "</span>";
     }
-    if (e.type === "defuse") return "<span class='who'>" + (e.player || "CT") + " desarmou</span>";
+    if (e.type === "defuse") return "<span class='who'>" + esc(e.player || "CT") + " desarmou</span>";
     return "<span class='who'>a bomba explodiu</span>";
   }
 
@@ -1842,7 +1846,7 @@
     var host = document.getElementById("clock");
     var r = relogioDe(elapsed);
     host.className = "clock" + (r.armed ? " armed" : "");
-    host.innerHTML = "<b>" + r.main + "</b><span>decorrido " + mmss(elapsed) + "</span>";
+    host.innerHTML = "<b>" + esc(r.main) + "</b><span>decorrido " + mmss(elapsed) + "</span>";
   }
 
   function draw() {
@@ -2324,18 +2328,18 @@
   // imprime. Inclusive a frase do caso "não houve round decisivo", que não é
   // fallback nem erro -- é o resultado de uma partida de placar largo.
   var dr = D.decisive_round;
-  var econ = D.narrative.economy ? "<div class='econ'>" + D.narrative.economy + "</div>" : "";
+  var econ = D.narrative.economy ? "<div class='econ'>" + esc(D.narrative.economy) + "</div>" : "";
   document.getElementById("decisive").innerHTML = dr
-    ? "<div class='stamp'><div class='k'>Round decisivo</div><div class='n'>" + dr.round + "</div>" +
-      "<div class='s'>placar " + dr.score_a + "–" + dr.score_b + " · Time " + dr.winner_team + "</div></div>" +
-      "<div class='story'><p class='t'>" + D.narrative.decisive + "</p>" +
+    ? "<div class='stamp'><div class='k'>Round decisivo</div><div class='n'>" + esc(dr.round) + "</div>" +
+      "<div class='s'>placar " + esc(dr.score_a) + "–" + esc(dr.score_b) + " · Time " + esc(dr.winner_team) + "</div></div>" +
+      "<div class='story'><p class='t'>" + esc(D.narrative.decisive) + "</p>" +
       barraWp(dr) + econ +
-      "<p class='lead tight' style='margin-top:14px'>" + D.narrative.criterion + "</p></div>"
+      "<p class='lead tight' style='margin-top:14px'>" + esc(D.narrative.criterion) + "</p></div>"
     : "<div class='stamp'><div class='k'>Round decisivo</div>" +
       "<div class='n' style='font-size:44px'>—</div>" +
       "<div class='s'>nenhum round passou do mínimo</div></div>" +
-      "<div class='story'><p class='t'>" + D.narrative.decisive + "</p>" +
-      "<p class='lead tight' style='margin-top:14px'>" + D.narrative.criterion + "</p></div>";
+      "<div class='story'><p class='t'>" + esc(D.narrative.decisive) + "</p>" +
+      "<p class='lead tight' style='margin-top:14px'>" + esc(D.narrative.criterion) + "</p></div>";
 
   function barraWp(d) {
     // Duas barras sobrepostas: a clara é onde o time estava, a laranja onde
@@ -2345,7 +2349,7 @@
       "<span class='track'><i class='was' style='left:0;width:" + (a * 100) + "%'></i>" +
       "<i class='now' style='left:0;width:" + (b * 100) + "%;opacity:.82'></i></span>" +
       "<span>" + pct(b) + "</span></div>" +
-      "<div class='cap'>chance de o Time " + d.winner_team + " vencer a partida, antes e depois deste round</div></div>";
+      "<div class='cap'>chance de o Time " + esc(d.winner_team) + " vencer a partida, antes e depois deste round</div></div>";
   }
 
   // --- Card do round mais impressionante --------------------------------
@@ -2354,10 +2358,10 @@
   var sp = D.spectacle_round;
   document.getElementById("spectacle").innerHTML = sp
     ? "<div class='eyebrow'>Round mais impressionante</div>" +
-      "<h3 style='margin:6px 0 0'>Round " + sp.round + "</h3>" +
-      "<p style='margin-top:10px'>" + D.narrative.spectacle + "</p>" +
+      "<h3 style='margin:6px 0 0'>Round " + esc(sp.round) + "</h3>" +
+      "<p style='margin-top:10px'>" + esc(D.narrative.spectacle) + "</p>" +
       "<div class='comps'>" + sp.componentes.map(function (c) {
-        return "<div class='comp'><b>" + Math.round(c.pontos) + "</b><span>" + c.texto + "</span></div>";
+        return "<div class='comp'><b>" + Math.round(c.pontos) + "</b><span>" + esc(c.texto) + "</span></div>";
       }).join("") + "</div>"
     : "<div class='eyebrow'>Round mais impressionante</div>" +
       "<p style='margin-top:10px'>Nenhum round desta partida teve clutch, multikill, virada em " +
@@ -2383,23 +2387,23 @@
       var teto = Math.max(c.valor || 0, c.melhor_dos_outros || 0) || 1;
       var ref = (c.melhor_dos_outros || 0) / teto * 100;
       return "<div class='cmp" + (c.lidera ? " win" : "") + "'>" +
-        "<div class='k'>" + c.rotulo + "</div>" +
+        "<div class='k'>" + esc(c.rotulo) + "</div>" +
         "<div class='bar'><i style='width:" + Math.max(3, (c.valor || 0) / teto * 100) + "%;" +
         "background:" + (c.lidera ? C.ct : C.dim) + "'></i>" +
         "<span class='ref' style='left:" + ref + "%'></span></div>" +
-        "<div class='v'>" + c.texto +
-        (c.melhor_dos_outros_texto ? " <em>/ " + c.melhor_dos_outros_texto + "</em>" : "") +
+        "<div class='v'>" + esc(c.texto) +
+        (c.melhor_dos_outros_texto ? " <em>/ " + esc(c.melhor_dos_outros_texto) + "</em>" : "") +
         "</div></div>";
     }).join("") + "</div>";
   }
 
   document.getElementById("fig-mvp").innerHTML = mvpc
     ? "<div class='hd'><div><div class='role'>MVP da partida</div>" +
-      "<div class='nm'>" + mvpc.name + "</div>" +
-      "<div class='sub'>Time " + mvpc.team +
-      (mvpc.funcao ? " · " + mvpc.funcao : "") + "</div></div>" +
+      "<div class='nm'>" + esc(mvpc.name) + "</div>" +
+      "<div class='sub'>Time " + esc(mvpc.team) +
+      (mvpc.funcao ? " · " + esc(mvpc.funcao) : "") + "</div></div>" +
       ring(mvpc.indice, C.ct) + "</div>" +
-      "<p>" + D.narrative.mvp_card + "</p>" +
+      "<p>" + esc(D.narrative.mvp_card) + "</p>" +
       componentes(mvpc.componentes)
     : "<div class='hd'><div><div class='role'>MVP da partida</div>" +
       "<div class='nm'>sem dados</div></div></div>";
@@ -2420,20 +2424,20 @@
     var ev = dst.evidencia || {};
     var linhaEv = "";
     if (ev.valor) {
-      linhaEv = "<div class='evid'><b>" + ev.valor + "</b> " + ev.metrica +
+      linhaEv = "<div class='evid'><b>" + esc(ev.valor) + "</b> " + esc(ev.metrica) +
         (ev.referencia
-          ? " · contra <b>" + ev.referencia + "</b> " +
-            (ev.referencia_nome ? "de " + ev.referencia_nome : (ev.referencia_rotulo || ""))
+          ? " · contra <b>" + esc(ev.referencia) + "</b> " +
+            (ev.referencia_nome ? "de " + esc(ev.referencia_nome) : esc(ev.referencia_rotulo || ""))
           : "") + "</div>";
     }
     alvo.innerHTML =
       "<div class='hd'><div>" +
       (dst.negativo ? "<div class='tagneg'>destaque negativo</div>" : "") +
-      "<div class='role'>" + dst.label + "</div>" +
-      "<div class='nm'>" + dst.name + "</div>" +
-      "<div class='sub'>" + (dst.team ? "Time " + dst.team + " · " : "") + dst.meaning + "</div>" +
+      "<div class='role'>" + esc(dst.label) + "</div>" +
+      "<div class='nm'>" + esc(dst.name) + "</div>" +
+      "<div class='sub'>" + (dst.team ? "Time " + esc(dst.team) + " · " : "") + esc(dst.meaning) + "</div>" +
       "</div>" + ring(dst.index, dst.negativo ? C.t : C.aqua) + "</div>" +
-      "<p>" + D.narrative.highlight_card + "</p>" + linhaEv;
+      "<p>" + esc(D.narrative.highlight_card) + "</p>" + linhaEv;
   }
 
   /* ================= PLACAR ================= */
@@ -2646,9 +2650,9 @@
       var info = scored[p.round] || p;
 
       tip.innerHTML =
-        "<div class='rh'><span>Round " + p.round + "</span><span>Time " + p.winner_team + " venceu</span></div>" +
-        "<div class='rt'>" + roundHeadline(info, p) + "</div>" +
-        "<div class='rs'>" + p.score_a + "–" + p.score_b + " · " + (REASON[p.reason] || p.reason) +
+        "<div class='rh'><span>Round " + esc(p.round) + "</span><span>Time " + esc(p.winner_team) + " venceu</span></div>" +
+        "<div class='rt'>" + esc(roundHeadline(info, p)) + "</div>" +
+        "<div class='rs'>" + esc(p.score_a) + "–" + esc(p.score_b) + " · " + esc(REASON[p.reason] || p.reason) +
         (p.bomb_planted ? " · bomba plantada" : "") + "</div>" +
         "<div class='rgo'>clique para assistir este round</div>";
 
@@ -2744,7 +2748,7 @@
     var ordem = temRating ? "rating" : "adr";
 
     function rotulo(chave, texto, titulo) {
-      return "<div><button type='button' data-ordem='" + chave + "' title='" + titulo + "'" +
+      return "<div><button type='button' data-ordem='" + esc(chave) + "' title='" + esc(titulo) + "'" +
         (ordem === chave ? " class='on'" : "") + ">" + texto + "</button></div>";
     }
 
@@ -2781,7 +2785,7 @@
           "<div class='n rt" + (p.rating_amostra_fraca ? " fraca" : "") + "'" +
           (p.rating_amostra_fraca ? " title='amostra pequena: poucos rounds jogados'" : "") + ">" +
           p.rating.toFixed(2).replace(".", ",") + "</div>";
-        row.innerHTML = "<div class='nk'>" + p.name + "<small>time " + p.team + "</small></div>" +
+        row.innerHTML = "<div class='nk'>" + esc(p.name) + "<small>time " + esc(p.team) + "</small></div>" +
           "<div class='n'>" + (kd.kills_totais != null ? kd.kills_totais : "—") + "</div>" +
           "<div class='n q'>" + (kd.assistencias != null ? kd.assistencias : "—") + "</div>" +
           "<div class='n q'>" + (kd.mortes != null ? kd.mortes : "—") + "</div>" + rt +
@@ -2820,7 +2824,7 @@
       var col = document.createElement("div");
       col.className = "roster";
       var named = mine.filter(function (p) { return p.role; }).length;
-      col.innerHTML = "<h3><b>Time " + team + "</b> " + named + " de " + mine.length +
+      col.innerHTML = "<h3><b>Time " + esc(team) + "</b> " + named + " de " + mine.length +
         " com função dominante</h3>";
 
       mine.sort(function (a, b) { return b.adr - a.adr; }).forEach(function (p) {
@@ -2833,17 +2837,17 @@
         var chips = (byPlayer[p.name] || [])
           .sort(function (a, b) { return a.priority - b.priority; })
           .slice(1)  // a primeira já é o título do cartão
-          .map(function (t) { return "<span class='chip'>" + t.evidence + "</span>"; })
+          .map(function (t) { return "<span class='chip'>" + esc(t.evidence) + "</span>"; })
           .join("");
 
         var ev = p.role_evidence
-          ? "<div class='pc-ev'>" + p.role_evidence + "</div>"
+          ? "<div class='pc-ev'>" + esc(p.role_evidence) + "</div>"
           : "<div class='pc-ev'>Não lidera o time em nenhuma das métricas de função acima do piso — " +
             "joga distribuído.</div>";
 
         card.innerHTML =
-          "<div class='top'><div class='who'>" + p.name + "</div>" +
-          "<div class='" + roleCls + "'>" + roleTxt + "</div></div>" +
+          "<div class='top'><div class='who'>" + esc(p.name) + "</div>" +
+          "<div class='" + roleCls + "'>" + esc(roleTxt) + "</div></div>" +
           ev +
           (chips ? "<div class='chips'>" + chips + "</div>" : "") +
           "<div class='nums'>" +
@@ -2961,10 +2965,10 @@
       ["A", "B", ""].forEach(function (t) {
         var lista = porTime[t].sort();
         if (!lista.length) return;
-        if (t) html += "<span class='timelab'>Time " + t + "</span>";
+        if (t) html += "<span class='timelab'>Time " + esc(t) + "</span>";
         html += lista.map(function (n) {
-          return "<button type='button' data-nome=\"" + n + "\" aria-pressed='" +
-            (n === escolhido) + "'>" + n + "</button>";
+          return "<button type='button' data-nome=\"" + esc(n) + "\" aria-pressed='" +
+            (n === escolhido) + "'>" + esc(n) + "</button>";
         }).join("");
       });
       botoes.innerHTML = html;
@@ -2983,7 +2987,7 @@
       if (nomes.indexOf(escolhido) < 0) escolhido = nomes[0];
       var atual = selB.value;
       selB.innerHTML = "<option value=''>— ninguém —</option>" +
-        nomes.map(function (n) { return "<option>" + n + "</option>"; }).join("");
+        nomes.map(function (n) { return "<option>" + esc(n) + "</option>"; }).join("");
       if (nomes.indexOf(atual) >= 0) selB.value = atual;
     }
 
@@ -3015,11 +3019,11 @@
         : (nomeDoGrupoPerfil(p.grupo_dominante) + " · " + p.grupo_dominante_n +
            " de " + p.grupo_dominante_d + " rounds");
       var kad = (p.kills_totais || 0) + " / " + (p.assistencias || 0) + " / " + (p.mortes || 0);
-      return "<div><b>" + p.name + "</b><br>" + p.rounds_jogados + " rounds em " +
+      return "<div><b>" + esc(p.name) + "</b><br>" + esc(p.rounds_jogados) + " rounds em " +
         partidas + (partidas > 1 ? " partidas" : " partida") + "</div>" +
-        "<div>kills / assists / mortes<br><b style='font-size:15px'>" + kad + "</b></div>" +
+        "<div>kills / assists / mortes<br><b style='font-size:15px'>" + esc(kad) + "</b></div>" +
         "<div>função no round<br>" + funcaoPorLado(p.name) + "</div>" +
-        "<div>jeito de jogar mais frequente<br><b style='font-size:13px'>" + grupo + "</b></div>";
+        "<div>jeito de jogar mais frequente<br><b style='font-size:13px'>" + esc(grupo) + "</b></div>";
     }
 
     // Função ESTRUTURAL, por lado. É leitura diferente do perfil comportamental
@@ -3040,7 +3044,7 @@
         if (r && r.texto_empate) {
           // empate na função dominante: o texto (com as concentrações lado a lado)
           // vem pronto do Python -- metrics/structural_roles.texto_empate
-          return "<span class='fnlado'><i>" + rot + "</i> " + r.texto_empate + "</span>";
+          return "<span class='fnlado'><i>" + rot + "</i> " + esc(r.texto_empate) + "</span>";
         }
         if (!r || !r.funcao) {
           return "<span class='fnlado'><i>" + rot + "</i> sem função definida</span>";
@@ -3051,7 +3055,7 @@
         var conc = r.rounds_na_funcao + " de " + r.rounds_no_lado;
         var fraca = r.amostra_fraca ? " <em>amostra fraca</em>" : "";
         return "<span class='fnlado'><i>" + rot + "</i><b>" +
-          (FUNC_LABELS[r.funcao] || r.funcao) + "</b> " + conc + fraca + "</span>";
+          esc(FUNC_LABELS[r.funcao] || r.funcao) + "</b> " + conc + fraca + "</span>";
       }).join("");
     }
 
@@ -3067,14 +3071,14 @@
       var d = p.descricao;
       var tracos = (d.caracteristicas || []).map(function (c) {
         return "<div class='traco" + (c.acima ? "" : " abaixo") + "'>" +
-          "<b>" + c.texto + "</b>" +
+          "<b>" + esc(c.texto) + "</b>" +
           "<span>" + Math.round(c.taxa * 100) + "% · " + c.n + " de " + c.d + " " +
           (c.unidade || "rounds") +
           " · " + REGUA_ROTULO + " " + Math.round(c.ref * 100) + "%</span></div>";
       }).join("");
-      return "<div class='quem'>Como " + p.name + " joga</div>" +
-        "<h3>" + d.titulo + "</h3>" +
-        "<p>" + d.resumo + "</p>" +
+      return "<div class='quem'>Como " + esc(p.name) + " joga</div>" +
+        "<h3>" + esc(d.titulo) + "</h3>" +
+        "<p>" + esc(d.resumo) + "</p>" +
         (tracos ? "<div class='pftracos'>" + tracos + "</div>" : "");
     }
 
@@ -3092,15 +3096,15 @@
           var destaque = a[chave] !== null && ref !== null && ref !== undefined &&
                          Math.abs(a[chave] - ref) >= MARGEM_DESTAQUE && !a[chave + "_fraco"];
           return "<tr class='" + (destaque ? "fora" : "") + "'>" +
-            "<td>" + rotulo + "</td>" +
+            "<td>" + esc(rotulo) + "</td>" +
             celula(a, chave) +
             (b ? celula(b, chave) : "") +
             "<td class='refv'>" + pct(ref) + "</td></tr>";
         }).join("");
 
-        html += "<div class='pfcat'><h3>" + cat + "</h3><table class='pf'>" +
-          "<tr><th>Comportamento</th><th>" + (a ? a.name : "") + "</th>" +
-          (b ? "<th>" + b.name + "</th>" : "") +
+        html += "<div class='pfcat'><h3>" + esc(cat) + "</h3><table class='pf'>" +
+          "<tr><th>Comportamento</th><th>" + esc(a ? a.name : "") + "</th>" +
+          (b ? "<th>" + esc(b.name) + "</th>" : "") +
           "<th>" + REGUA_ROTULO + "</th></tr>" + linhas + "</table></div>";
       });
 
@@ -3110,7 +3114,7 @@
         html += "<p class='lead tight' style='margin-top:18px'>Tempo mediano até o primeiro " +
           "contato: <b>" + br(a.tempo_mediano_ate_contato_s) + "s</b>" +
           (b && b.tempo_mediano_ate_contato_s != null
-            ? " · " + b.name + ": <b>" + br(b.tempo_mediano_ate_contato_s) + "s</b>" : "") +
+            ? " · " + esc(b.name) + ": <b>" + br(b.tempo_mediano_ate_contato_s) + "s</b>" : "") +
           ". É mediana e não média: dois rounds sem contato distorcem a média.</p>";
       }
       document.getElementById("pf-tabela").innerHTML = html;
@@ -3131,15 +3135,15 @@
     (function () {
       var E = D.cards_de_estilo, el = document.getElementById("pf-estilos");
       if (!el || !E || !E.grupos || !E.grupos.length) return;
-      el.innerHTML = "<h3>" + E.titulo + "</h3><div class='estcards'>" +
+      el.innerHTML = "<h3>" + esc(E.titulo) + "</h3><div class='estcards'>" +
         E.grupos.map(function (g) {
-          return "<div class='estcard'><b>" + nomeDoGrupoPerfil(g.cluster) + "</b>" +
-            "<span class='estsub'>" + g.subtitulo + "</span><ol>" +
+          return "<div class='estcard'><b>" + esc(nomeDoGrupoPerfil(g.cluster)) + "</b>" +
+            "<span class='estsub'>" + esc(g.subtitulo) + "</span><ol>" +
             g.jogadores.map(function (j) {
-              return "<li>" + j.name + (j.dominante ? "<em>" + E.rotulo_dominante + "</em>" : "") +
-                "<span>" + j.texto + "</span></li>";
+              return "<li>" + esc(j.name) + (j.dominante ? "<em>" + esc(E.rotulo_dominante) + "</em>" : "") +
+                "<span>" + esc(j.texto) + "</span></li>";
             }).join("") + "</ol></div>";
-        }).join("") + "</div><p class='estnota'>" + E.nota + "</p>";
+        }).join("") + "</div><p class='estnota'>" + esc(E.nota) + "</p>";
     })();
 
     preencheSelects();
@@ -3182,7 +3186,7 @@
       "<b>Como adicionar uma demo nova.</b> O parsing não roda no navegador: um .dem tem 200-300MB " +
       "e o parser é nativo (Rust, via awpy). Então a demo é processada localmente e o que vai pro " +
       "site é só o resultado — alguns KB de métricas por partida." +
-      "<pre>git clone " + (SITE.repo || "&lt;este repositório&gt;") + "\n" +
+      "<pre>git clone " + (SITE.repo ? esc(SITE.repo) : "&lt;este repositório&gt;") + "\n" +
       "pip install -r requirements.txt\n\n" +
       "# jogue o .dem em demos/ e rode:\n" +
       "python -m scripts.process_all_demos\n" +
