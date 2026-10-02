@@ -5,8 +5,9 @@ pelo git: no GitHub as imagens davam 404. As capturas agora são versionadas em
 `assets/readme/` e REGERADAS por este script a partir do site atual -- nunca
 editadas à mão.
 
-Quadros (fixos): a partida de exemplo é PARTIDA; o replay vai a 45% do round
-ROUND, com a direção do olhar ligada.
+Quadros (fixos): a partida é a MESMA do botão "Ver uma partida" da landing
+(scripts/build_site.partida_de_exemplo, critério declarado lá); o replay vai a
+45% do round ROUND, com a direção do olhar ligada.
 
 Uso:
     py -3.12 -m scripts.capturas_readme
@@ -19,7 +20,6 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ))
 SAIDA = RAIZ / "assets" / "readme"
-PARTIDA = "match_23"          # a partida que tem o .dem e a verdade da demo
 ROUND = 6
 LARGURA, ALTURA = 1280, 900
 # (arquivo, aba, seletor do recorte)
@@ -37,7 +37,11 @@ def gera() -> list[Path]:
     from scripts.build_tactics_page import build_html as prancheta_html
     from scripts.build_web_page import build_html
 
+    from scripts.build_site import PROCESSED_DIR, match_summary, partida_de_exemplo
+
     SAIDA.mkdir(parents=True, exist_ok=True)
+    resumos = [m for m in (match_summary(d.name) for d in sorted(PROCESSED_DIR.glob("match_*")) if d.is_dir()) if m]
+    PARTIDA = partida_de_exemplo(resumos)["id"]
     mapa = json.loads((RAIZ / "data" / "processed" / PARTIDA / "match_meta.json").read_text(encoding="utf-8"))["map_name"]
     pasta = Path(tempfile.mkdtemp(prefix="capturas_readme_"))
     partida = pasta / f"{PARTIDA}.html"
@@ -63,7 +67,11 @@ def gera() -> list[Path]:
         for arquivo, aba, seletor in ABAS:
             pg.click(f'[role=tab][data-tab="{aba}"]')
             pg.wait_for_timeout(400)
-            pg.locator(seletor).screenshot(path=str(SAIDA / arquivo))
+            # recorte pela página inteira: o screenshot do elemento rola a tela e a
+            # barra de abas (fixa) ficava por cima do começo do painel
+            pg.evaluate("() => window.scrollTo(0, 0)")
+            caixa = pg.locator(seletor).bounding_box()
+            pg.screenshot(path=str(SAIDA / arquivo), full_page=True, clip=caixa)
             feitas.append(SAIDA / arquivo)
         pg.goto(prancheta.as_uri())
         pg.wait_for_function("() => Prancheta._interno.S.estado !== null")

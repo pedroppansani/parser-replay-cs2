@@ -31,5 +31,103 @@
   "estilos": {
     "fonte": "clustering/cluster_names.json",
     "grupos": 4
+  },
+  "rating": {
+    "fonte": "data/processed/*/insights.json x data/reference/hltv_ratings.json; metrics/rating_weights.json",
+    "jogador_partidas": 430,
+    "na_pagina": {
+      "erro_medio": 0.077,
+      "correlacao": 0.967,
+      "metodo": "dentro da amostra: tudo foi ajustado nestas mesmas partidas"
+    },
+    "fora_da_amostra": {
+      "erro_medio": 0.079,
+      "correlacao": 0.966,
+      "partidas": 43,
+      "metodo": "deixa uma partida fora, reajustando só os PESOS; o modelo de round, a referência de escala e a economia viram todas as partidas"
+    }
+  },
+  "escada": {
+    "fonte": "scripts/escada_validacao.py contra data/reference/hltv_placar.json, hltv_componentes.json e hltv_detalhado.json",
+    "jogador_partidas": 410,
+    "partidas": 41,
+    "kills_exatos": 410,
+    "mortes_exatas": 410,
+    "adr_exatos": 401,
+    "kast_exatos": 247,
+    "kast_com_oficial": 330,
+    "series_inteiras": 8,
+    "aberturas_feitas": {
+      "exatos": 80,
+      "de": 80
+    },
+    "aberturas_sofridas": {
+      "exatos": 80,
+      "de": 80
+    },
+    "rounds_de_multikill": {
+      "exatos": 80,
+      "de": 80
+    },
+    "headshots": {
+      "exatos": 80,
+      "de": 80
+    },
+    "clutches": {
+      "exatos": 67,
+      "de": 80
+    }
+  },
+  "arremessos": {
+    "fonte": "tests/fixtures/gabarito_arremessos_*.json.gz (scripts/valida_rota_a.metas_da_partida)",
+    "partidas_do_gabarito": 13,
+    "arremessos": 6846,
+    "dentro_da_amostra": {
+      "botao": {
+        "pior_partida": 1.0,
+        "melhor_partida": 1.0,
+        "acertos": 6682,
+        "de": 6682
+      },
+      "no_ar": {
+        "pior_partida": 0.9967,
+        "melhor_partida": 1.0,
+        "acertos": 6752,
+        "de": 6757
+      },
+      "postura": {
+        "pior_partida": 1.0,
+        "melhor_partida": 1.0,
+        "acertos": 5092,
+        "de": 5092
+      },
+      "cobertura_do_botao": 0.976
+    },
+    "fora_da_amostra": {
+      "botao": {
+        "pior_partida": 1.0,
+        "melhor_partida": 1.0,
+        "acertos": 6686,
+        "de": 6686
+      },
+      "no_ar": {
+        "pior_partida": 0.9967,
+        "melhor_partida": 1.0,
+        "acertos": 6752,
+        "de": 6757
+      },
+      "postura": {
+        "pior_partida": 0.9974,
+        "melhor_partida": 1.0,
+        "acertos": 5098,
+        "de": 5099
+      },
+      "cobertura_do_botao": 0.9766,
+      "metodo": "deixa uma partida fora: tolerância, guarda do voo, faixa de postura e deslocamento recalculados sem a partida avaliada"
+    }
+  },
+  "testes": {
+    "fonte": "pytest --collect-only",
+    "coletados": 1103
   }
 }
