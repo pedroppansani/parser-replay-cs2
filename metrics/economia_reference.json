@@ -728,8 +728,8 @@
   "k_encolhimento": 20.0,
   "gerada_por": {
     "comando": "py -3.12 -m scripts.fit_economia",
-    "commit": "a519bf7a0bc0",
-    "sujo": true,
+    "commit": "fc01ae8d79a2",
+    "sujo": false,
     "partidas": 52
   }
 }
