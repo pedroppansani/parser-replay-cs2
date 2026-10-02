@@ -520,8 +520,8 @@ def amostras_de_round(
             bomba = t_plant is not None and k["tick"] >= int(t_plant)
             for time in ("A", "B"):
                 outro = "B" if time == "A" else "A"
-                eq_meu, lado = equip.get((rn, time), (0.0, "ct"))
-                eq_dele, _ = equip.get((rn, outro), (0.0, "ct"))
+                eq_meu, lado = _equip_do_time(equip, rn, time)
+                eq_dele, _ = _equip_do_time(equip, rn, outro)
                 X.append(_estado_completo(vivos[time], vivos[outro], eq_meu - eq_dele, bomba, lado == "ct",
                                           *_tempos(k["tick"], inicio.get(rn), t_plant, tickrate)))
                 y.append(1 if venc == time else 0)
@@ -529,6 +529,28 @@ def amostras_de_round(
     if not X:
         return np.zeros((0, len(ModeloDeRound.COLUNAS_COMPLETAS))), np.zeros(0)
     return np.array(X, dtype=float), np.array(y, dtype=int)
+
+
+def _equip_do_time(equip: dict, rn: int, time: str) -> tuple[float, str]:
+    """(equipamento, lado) do time no round. Sem o dado, o equipamento é 0 e o
+    lado vem da REGRA DE LADOS -- antes o padrão era (0, "ct") para os dois
+    times, e um round sem dado tinha dois CTs."""
+    achado = equip.get((rn, time))
+    if achado is not None:
+        return achado
+    from metrics.sides import side_of_team
+    return 0.0, side_of_team(time, rn)
+
+
+def _sem_equipamento(grupos: pl.DataFrame, rounds: pl.DataFrame, team_of: dict[int, str]) -> list[str]:
+    """Motivo de modo degradado quando algum (round, time) não tem equipamento."""
+    com = set()
+    for r in grupos.iter_rows(named=True):
+        t = team_of.get(r["steamid"])
+        if t:
+            com.add((int(r["round_num"]), t))
+    faltam = sum(1 for rn in rounds["round_num"].to_list() for t in ("A", "B") if (int(rn), t) not in com)
+    return [f"{faltam} lados de round sem equipamento registrado (contados com equipamento 0)"] if faltam else []
 
 
 def _inicio_dos_rounds(rounds: pl.DataFrame) -> dict[int, int | None]:
@@ -622,8 +644,8 @@ def swing_por_evento(
             # a variacao e medida do ponto de vista do time que MATOU
             beneficiado = time_matador if time_matador and time_matador != time_vitima else outro
             adversario = "B" if beneficiado == "A" else "A"
-            eq_meu, lado = equip.get((rn, beneficiado), (0.0, "ct"))
-            eq_dele, _ = equip.get((rn, adversario), (0.0, "ct"))
+            eq_meu, lado = _equip_do_time(equip, rn, beneficiado)
+            eq_dele, _ = _equip_do_time(equip, rn, adversario)
 
             # antes e depois no MESMO instante (o tick da kill): o que o evento
             # muda são os vivos; o tempo que passa entre dois eventos não é de ninguém
@@ -718,8 +740,8 @@ def swing_por_evento(
             mortos = {e["victim_steamid"] for e in eventos}
             vivos_fim = {tm: [s for s, x in team_of.items() if x == tm and s not in mortos]
                          for tm in ("A", "B")}
-            eq_v, lado_v = equip.get((rn, venc_time), (0.0, "ct"))
-            eq_p, _ = equip.get((rn, perd_time), (0.0, "ct"))
+            eq_v, lado_v = _equip_do_time(equip, rn, venc_time)
+            eq_p, _ = _equip_do_time(equip, rn, perd_time)
             # o estado do fim é o do último evento do round (o salto é o que
             # falta dali até a certeza)
             t_fim = eventos[-1]["tick"] if eventos else (inicio.get(rn) or 0)
@@ -1128,6 +1150,9 @@ def rating(
     from metrics.economia import carrega_tabela, celulas_para_o_rating, classe, compra_por_jogador
 
     tabela_eco = tabela_economia if tabela_economia is not None else carrega_tabela()
+    # Tudo o que foi calculado por um caminho de reserva fica dito aqui, com o
+    # motivo: a página esconde o número afetado em vez de mostrar um palpite.
+    degradado: list[str] = []
     compra = tables.get("compra")
     if tabela_eco is not None and compra is not None and compra.height:
         classes = compra_por_jogador(compra).with_columns(
@@ -1145,10 +1170,20 @@ def rating(
     else:
         celulas, base_lado = taxas_por_confronto(grupos, rounds, team_of, vencedor_por_round)
         fonte_economia = "partida"
+        degradado.append("economia estimada só nesta partida (sem a tabela do corpus ou sem a compra do round)")
 
+    # (2) Modelo de round: é o GLOBAL (decisão 11). Sem ele passado, vem da
+    # referência; só sem referência nenhuma ele é treinado na própria partida,
+    # e isso é dito no resumo -- antes acontecia em silêncio, e com menos de 50
+    # amostras o Round Swing inteiro valia 0,5 sem aviso.
+    if modelo is None and referencia and (referencia.get("modelo_de_round") or {}).get("treinou"):
+        modelo = ModeloDeRound.da_referencia(referencia["modelo_de_round"])
     if modelo is None:
         X, y = amostras_de_round(kills, rounds, grupos, team_of, vencedor_por_round)
         modelo = ModeloDeRound().treina(X, y)
+        degradado.append(
+            "modelo de round treinado só nesta partida (sem o modelo global)" if modelo.metricas.get("treinou")
+            else "sem modelo de round: Round Swing neutro (menos de 50 eventos e nenhum modelo global)")
 
     swing = swing_por_evento(
         kills, damages, blinds, rounds, grupos, modelo,
@@ -1256,6 +1291,7 @@ def rating(
         "taxa_base_por_lado": base_lado,
         "confrontos_estimados": len(celulas),
         "fonte_da_economia": fonte_economia,
+        "modo_degradado": degradado + _sem_equipamento(grupos, rounds, team_of),
         "referencia_ajustada": referencia is not None,
         "normalizado_por_lado": usa_lados,
         "pesos": ajuste["pesos"],

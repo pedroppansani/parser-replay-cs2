@@ -2736,7 +2736,10 @@
     Object.keys(D.damage_by_player).forEach(function (k) {
       D.damage_by_player[k].forEach(function (v) { if (v > maxD) maxD = v; });
     });
-    var temRating = D.players.some(function (p) { return p.rating != null; });
+    // Rating calculado por caminho de reserva (sem modelo global, sem a tabela
+    // de economia) não é mostrado: a página diz por quê, com o texto do Python.
+    var ratingDegradado = (D.rating_info || {}).texto_degradado || "";
+    var temRating = !ratingDegradado && D.players.some(function (p) { return p.rating != null; });
 
     // Colunas ordenáveis. A chave diz de onde sai o número de cada jogador.
     var ORDENS = {
@@ -2781,7 +2784,7 @@
         var kd = kad[p.name] || {};
         // Amostra fraca (poucos rounds) aparece apagada e com o motivo no title:
         // o número existe, mas não sustenta comparação.
-        var rt = p.rating == null ? "<div class='n q'>—</div>" :
+        var rt = (p.rating == null || ratingDegradado) ? "<div class='n q'>—</div>" :
           "<div class='n rt" + (p.rating_amostra_fraca ? " fraca" : "") + "'" +
           (p.rating_amostra_fraca ? " title='amostra pequena: poucos rounds jogados'" : "") + ">" +
           p.rating.toFixed(2).replace(".", ",") + "</div>";
@@ -2802,6 +2805,13 @@
         nota.className = "rnota";
         nota.textContent = "* " + D.rating_info.texto;
         wrap.appendChild(nota);
+      }
+      if (ratingDegradado) {
+        var aviso = document.createElement("p");
+        aviso.className = "rnota";
+        aviso.id = "rating-degradado";
+        aviso.textContent = ratingDegradado;
+        wrap.appendChild(aviso);
       }
     }
     desenha();

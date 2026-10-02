@@ -380,6 +380,13 @@ def _rating_da_partida(tabelas, interim, rounds, team_of, vencedor_por_round, ka
                if validacao.get("partidas") else "provisórios")
             + "."
         ),
+        # caminhos de reserva usados no cálculo, com o motivo: a página esconde
+        # o rating e diz por quê (nunca mostra um número de reserva como normal)
+        "modo_degradado": resumo.get("modo_degradado") or [],
+        # a frase que a página mostra NO LUGAR do número (decisão 18: texto do Python)
+        "texto_degradado": (
+            "Rating não mostrado nesta partida: " + "; ".join(resumo.get("modo_degradado") or []) + "."
+            if resumo.get("modo_degradado") else ""),
         "origem_dos_pesos": resumo["origem_dos_pesos"],
         "pesos_desatualizados": resumo["pesos_desatualizados"],
         "validacao": validacao,

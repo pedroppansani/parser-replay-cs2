@@ -1092,6 +1092,20 @@ def archetype_indices(
     def p(nome: str) -> list[float]:
         return pct.get(nome, zeros)
 
+    # DADO AUSENTE NÃO É ZERO. `percentil` devolve 0 para valor nulo (e `p`
+    # devolve zeros para coluna que não existe), e nos índices que são PRODUTO
+    # DE COMPLEMENTOS isso vira nota máxima: esforço 0 e impacto 0 davam
+    # mochila 1,0 ("Carregado") a quem só não tinha o dado. Os rótulos
+    # negativos ficam SEM índice quando falta algum componente deles.
+    def ausente(*nomes: str) -> list[bool]:
+        falta = [False] * components.height
+        for nome in nomes:
+            if nome not in components.columns:
+                return [True] * components.height
+            for i, v in enumerate(components[nome].to_list()):
+                falta[i] = falta[i] or v is None
+        return falta
+
     esforco = _media(
         p("first_contact_share"), p("util_per_round"),
         p("frac_entering_fight"), p("death_rate"),
@@ -1152,17 +1166,31 @@ def archetype_indices(
         for r, s, q in zip(awp_rounds, p("awp_round_share"), produz)
     ]
 
+    COMPONENTES_DA_MOCHILA = ("first_contact_share", "util_per_round", "frac_entering_fight", "death_rate",
+                              "damage_share", "kill_share")
+    sem_mochila = ausente(*COMPONENTES_DA_MOCHILA)
+    sem_camper = ausente("distinct_places_mean", "path_per_round")
+    sem_baiter = ausente("sacrificio_share", "isca_share")
+    mochila = [None if f else v for v, f in zip(mochila, sem_mochila)]
+    camper = [None if f else v for v, f in zip(camper, sem_camper)]
+    baiter = [None if f else v for v, f in zip(baiter, sem_baiter)]
+    motivos = []
+    for i in range(components.height):
+        m = [nome for nome, f in (("mochila", sem_mochila), ("camper", sem_camper), ("baiter", sem_baiter)) if f[i]]
+        motivos.append("sem dado para: " + ", ".join(m) if m else None)
+
     return components.with_columns(
+        pl.Series("modo_degradado", motivos, dtype=pl.Utf8),
         pl.Series("piano_total_share", piano_bruto),
         pl.Series("sacrifice_index", eixo),
         pl.Series("effort_pct", esforco),
         pl.Series("impact_pct", impacto),
         pl.Series("idx_carrega_piano", piano),
         pl.Series("idx_carry", carry),
-        pl.Series("idx_mochila", mochila),
-        pl.Series("idx_camper", camper),
+        pl.Series("idx_mochila", mochila, dtype=pl.Float64),
+        pl.Series("idx_camper", camper, dtype=pl.Float64),
         pl.Series("idx_repick", p("repick_share")),
-        pl.Series("idx_baiter", baiter),
+        pl.Series("idx_baiter", baiter, dtype=pl.Float64),
         pl.Series("idx_rei_do_nt", rei_nt),
         pl.Series("idx_awper", awper),
     )
