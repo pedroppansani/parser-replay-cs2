@@ -5,6 +5,30 @@
 - **Data:** 2026-09-21
 - **Resumo:** Processamento determinístico: `group_by`/`unique` com ordem; empate de função por 1 round.
 
+## O que vale hoje
+
+**Um sorteio ficou duas semanas no repositório (achado em 2026-10-02).** A tabela de economia do
+rating (`metrics/economia_reference.json`) foi gravada em 2026-09-19, quando o empate da classe de
+equipamento do time era desempatado pela ordem de hash. A correção de determinismo de 2026-09-21
+tornou o CÓDIGO determinístico, mas as referências globais não são reajustadas por padrão, e o
+arquivo antigo continuou em uso. O erro do rating citado (0,079) vinha desse sorteio; ver a decisão
+8i para os números.
+
+Por que os testes não pegaram: `tests/test_determinismo.py` trava a causa no código-fonte
+(`group_by` e `unique` com ordem, `mode` com `sort`) e roda no mesmo processo, onde a ordem de hash
+é fixa; e nenhum teste conferia que um arquivo de referência gravado é o que o código produz.
+
+A brecha foi fechada com dois testes:
+- `tests/test_determinismo_em_processos.py`: o cálculo de uma partida inteira e o da tabela de
+  economia rodam em dois processos com `PYTHONHASHSEED` diferente e são comparados byte a byte;
+- `tests/test_economia_reprodutivel.py`: regerar a tabela de economia do corpus dá exatamente o
+  arquivo gravado, que passa a guardar a regra de desempate e o commit que o gerou.
+
+A varredura do código inteiro (aleatoriedade sem semente, `mode` sem ordenação, iteração sobre
+`set` cujo resultado dependa da ordem, KMeans e PCA sem semente) não achou outro ponto: KMeans, PCA
+e o sorteio de `scripts/casos_repick.py` têm semente fixa, e a única iteração sobre `set`
+(`scripts/escada_validacao.py`) só preenche um dicionário.
+
 ## Texto
 
 28. **O processamento é DETERMINÍSTICO, e o paralelo é aceito só por
