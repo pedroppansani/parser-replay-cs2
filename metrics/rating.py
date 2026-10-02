@@ -842,8 +842,20 @@ def sub_ratings(
         .fill_null(0)
     )
 
+    # Rounds que o jogador JOGOU (a mesma definição de componentes_por_lado:
+    # rounds_ct + rounds_t), não o total da partida: quem entra no round 8
+    # jogou menos, e os subcomponentes por round e a marca de amostra fraca têm
+    # de usar isso. A HLTV também divide pelos rounds jogados. Jogador sem
+    # nenhum round na tabela de grupos fica com o total (não há como saber).
+    total_da_partida = rounds.height
+    jogados: dict[int, int] = {}
+    for (_rn, sid) in grupo_de:
+        jogados[sid] = jogados.get(sid, 0) + 1
+    base = base.with_columns(
+        pl.col("steamid").map_elements(lambda s: jogados.get(int(s), total_da_partida), return_dtype=pl.Int64)
+        .alias("rounds"))
+    n_rounds = pl.col("rounds")
     resultado = base.with_columns(
-        pl.lit(n_rounds).alias("rounds"),
         (pl.col("kills_ponderadas") / n_rounds).alias("sub_kills"),
         (pl.col("kills_limpas_ponderadas") / n_rounds).alias("sub_kills_limpas"),
         (pl.col("kills_assistidas_ponderadas") / n_rounds).alias("sub_kills_assistidas"),
