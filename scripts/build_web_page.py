@@ -41,6 +41,50 @@ def titulo_da_pagina(match_id: str) -> str:
     return " · ".join(partes)
 
 
+def _br(x: float, casas: int = 2) -> str:
+    return f"{x:.{casas}f}".replace(".", ",")
+
+
+def _milhar(n: int) -> str:
+    return f"{n:,}".replace(",", ".")
+
+
+def rodape_html(c: dict) -> str:
+    """Metodologia e limites, com os números do corpus LIDOS de
+    numeros_citaveis.json (nunca escritos à mão)."""
+    co, an, es = c["corpus"], c["convencao_de_angulos"], c["estilos"]
+    return (
+        "<b>Metodologia.</b> Parsing com awpy sobre demoparser2, métricas próprias em Polars. A convenção "
+        "de ângulos do CS2 foi validada contra os dados, não assumida: no tick de cada kill a mira do "
+        f"atacante fica a {_br(an['erro_mediano_graus'])}° da vítima na convenção adotada, contra "
+        f"{_br(an['erro_mediano_invertida_graus'])}° na invertida ({_milhar(an['kills'])} kills).<br>"
+        f"<b>Limites.</b> {_milhar(co['partidas'])} partidas ({_milhar(co['jogador_rounds'])} jogador-rounds), "
+        f"todas de nível profissional e não do autor. Os {es['grupos']} jeitos de jogar têm separação fraca: "
+        "os grupos existem e são distintos na média, mas a fronteira entre eles não é nítida — e isso não "
+        "melhorou ao processar mais partidas, o que sugere que estilo de jogo é um contínuo e não um conjunto "
+        "de caixas. Os índices de papel são fórmulas declaradas aqui, não padrões da indústria."
+    )
+
+
+def origem_da_partida(match_id: str) -> str | None:
+    """De onde é a partida, para o cabeçalho: "FACEIT" ou o nome do evento."""
+    manifesto = PROJECT_ROOT / "data" / "manifest.json"
+    if not manifesto.exists():
+        return None
+    linha = json.loads(manifesto.read_text(encoding="utf-8")).get("partidas", {}).get(match_id) or {}
+    if linha.get("origem") == "faceit":
+        return "FACEIT"
+    if linha.get("evento"):
+        return " ".join(p.upper() if p in ("iem", "pgl", "blast", "esl") else p.capitalize()
+                        for p in str(linha["evento"]).split("-"))
+    return None
+
+
+def dados_da_pagina(match_id: str) -> dict:
+    from scripts.numeros_citaveis import carrega
+    return {"origem": origem_da_partida(match_id), "rodape_html": rodape_html(carrega())}
+
+
 def build_html(match_id: str, site: dict | None = None) -> str:
     """Devolve o HTML final da partida, com os dados já embutidos.
 
@@ -91,6 +135,7 @@ def build_html(match_id: str, site: dict | None = None) -> str:
     prancheta = arquivo_da_pagina(map_name) if map_name in mapas_disponiveis() else None
     html = html.replace("/*__PRANCHETA__*/null", json.dumps(prancheta))
     import html as _html
+    html = html.replace("/*__PAGINA__*/null", json.dumps(dados_da_pagina(match_id), ensure_ascii=False))
     html = html.replace("<!--__TITULO__-->", _html.escape(titulo_da_pagina(match_id)))
     html = html.replace("/*__SITE__*/", json.dumps(site, ensure_ascii=False) + " ||" if site else "")
     return html

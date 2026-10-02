@@ -977,9 +977,9 @@
 
   <header class="top">
     <div class="crumbs">
-      <span id="c-map">de_ancient</span><em>/</em>
-      <span id="c-rounds">22 rounds</span><em>/</em>
-      <span>FACEIT</span><em>/</em>
+      <span id="c-map"></span><em>/</em>
+      <span id="c-rounds"></span><em>/</em>
+      <span id="c-origem"></span><em id="c-origem-sep">/</em>
       <span>parser próprio · awpy + demoparser2</span>
     </div>
 
@@ -1149,7 +1149,7 @@
 
   <!-- JOGADORES -->
   <section class="panel" data-panel="jogadores" hidden>
-    <div class="eyebrow">Dez jogadores, 22 rounds</div>
+    <div class="eyebrow" id="jog-eyebrow"></div>
     <h2 class="sec">Desempenho individual</h2>
     <p class="lead">
       A faixa de cada jogador é o dano round a round; as barras cheias marcam os rounds em
@@ -1166,8 +1166,8 @@
       A aba Estilos agrupa <b>rounds</b>: as médias de um grupo descrevem o grupo, não uma pessoa —
       os rounds de um mesmo jogador se espalham por todos eles. Aqui o mesmo dado é olhado pelo
       outro lado: <b>em que fração dos rounds dele</b> cada comportamento aconteceu. Toda taxa vem
-      com o bruto ao lado e com a régua do corpus, porque 41% em 22 rounds e 50% em
-      22 rounds são, na prática, o mesmo número.
+      com o bruto ao lado e com a régua do corpus, porque 41% e 50% em
+      <span class="n-rounds"></span> rounds são, na prática, o mesmo número.
     </p>
 
     <div id="pf-botoes" class="pfbotoes"></div>
@@ -1240,6 +1240,17 @@
   var M = D.match;
   document.getElementById("c-map").textContent = M.map;
   document.getElementById("c-rounds").textContent = M.rounds + " rounds";
+  // Origem da partida e números do corpus: montados no BUILD a partir do
+  // manifesto e de numeros_citaveis.json (nada de número de corpus escrito
+  // à mão aqui -- há teste).
+  var PAGINA = /*__PAGINA__*/null || {};
+  (function () {
+    var o = document.getElementById("c-origem"), sep = document.getElementById("c-origem-sep");
+    if (PAGINA.origem) o.textContent = PAGINA.origem; else { o.hidden = true; sep.hidden = true; }
+    var nJog = (D.players || []).length;
+    document.getElementById("jog-eyebrow").textContent = nJog + " jogadores, " + M.rounds + " rounds";
+    Array.prototype.forEach.call(document.querySelectorAll(".n-rounds"), function (e) { e.textContent = M.rounds; });
+  })();
   document.getElementById("sa").textContent = M.score_a;
   document.getElementById("sb").textContent = M.score_b;
   var aWins = M.score_a > M.score_b;
@@ -3137,15 +3148,8 @@
     desenha();
   })();
 
-  document.getElementById("foot").innerHTML =
-    "<b>Metodologia.</b> Parsing com awpy sobre demoparser2, métricas próprias em Polars. A convenção " +
-    "de ângulos do CS2 foi validada contra os dados, não assumida: no tick de cada kill a mira do " +
-    "atacante fica a 1,76° da vítima na convenção adotada, contra 6,52° na invertida.<br>" +
-    "<b>Limites.</b> Nove partidas (1.870 jogador-rounds), todas de nível profissional e não do " +
-    "autor. Os quatro jeitos de jogar têm separação fraca: os grupos existem e são distintos na " +
-    "média, mas a fronteira entre eles não é nítida — e isso não melhorou ao processar mais " +
-    "partidas, o que sugere que estilo de jogo é um contínuo e não um conjunto de caixas. Os " +
-    "índices de papel são fórmulas declaradas aqui, não padrões da indústria.";
+  // o texto do rodapé vem pronto do build (scripts/build_web_page.rodape_html)
+  document.getElementById("foot").innerHTML = PAGINA.rodape_html || "";
 
   /* ================= TROCA DE PARTIDA ================= */
 
