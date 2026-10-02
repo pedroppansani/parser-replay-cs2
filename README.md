@@ -8,7 +8,7 @@ arremessos reais. O parsing é da biblioteca [awpy](https://awpy.rtfd.io/); o
 trabalho daqui é o desenho das métricas, cada uma com a decisão de jogo escrita
 no código e conferida contra dado oficial.
 
-**[Ver o site](https://pedroppansani.github.io/parser-replay-cs2/)** · <!-- numeros:inicio corpus -->52 partidas (43 profissionais, de 11 times, e 9 de FACEIT) em 8 mapas<!-- numeros:fim corpus -->.
+**[Ver o site](https://pedroppansani.github.io/parser-replay-cs2/)** · <!-- numeros:inicio corpus -->52 partidas (43 profissionais, de 9 times, e 9 de FACEIT) em 8 mapas<!-- numeros:fim corpus -->.
 
 ## Três números
 
@@ -110,7 +110,7 @@ python -m pytest tests/
 ```
 
 Uma demo só: `python -m scripts.process_demo caminho/da/partida.dem --match-id match_99`.
-São <!-- numeros:inicio testes -->1.108 testes<!-- numeros:fim testes -->, e o CI
+São <!-- numeros:inicio testes -->1.114 testes<!-- numeros:fim testes -->, e o CI
 roda a suíte antes de publicar o site.
 
 ## Limitações

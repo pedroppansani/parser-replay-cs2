@@ -42,7 +42,8 @@ def corpus() -> dict:
         jogador_partidas += n
         jogador_rounds += n * int(p.get("rounds") or 0)
         if p.get("origem") == "profissional":
-            times.update(t["nome"] for t in (p.get("times") or {}).values() if t.get("nome"))
+            # "Vitality" e "Team Vitality" são o mesmo time (a demo grava os dois)
+            times.update(t["nome"].removeprefix("Team ") for t in (p.get("times") or {}).values() if t.get("nome"))
     return {
         "fonte": "data/manifest.json",
         "partidas": len(partidas),
