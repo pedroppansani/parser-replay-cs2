@@ -78,6 +78,24 @@ def main() -> None:
         ma, md = (x.get("mvp_card") or {}).get("name"), (d.get("mvp_card") or {}).get("name")
         if ma != md:
             mvp.append((partida, ma, md))
+    # tamanho da mudança de rating e o que mais mudou na leitura da partida
+    difs = np.array([abs(d_ - a_) for _, _, a_, d_ in mud if a_ is not None and d_ is not None] + [0.0] * (total - len(mud)))
+    if total:
+        print(f"|variação do rating| por jogador-partida: máximo {difs.max():.3f}, p95 {np.percentile(difs, 95):.3f}, "
+              f"mediana {np.median(difs):.3f}")
+    destaque, funcoes = [], 0
+    for partida, d in depois.items():
+        x = antes.get(partida)
+        if x is None:
+            continue
+        ha, hd = x.get("highlight_card") or {}, d.get("highlight_card") or {}
+        if (ha.get("name"), ha.get("label")) != (hd.get("name"), hd.get("label")):
+            destaque.append((partida, (ha.get("name"), ha.get("label")), (hd.get("name"), hd.get("label"))))
+        fa = {p["steamid"]: (p.get("role"), p.get("funcao")) for p in x["players"]}
+        funcoes += sum(1 for p in d["players"] if fa.get(p["steamid"]) != (p.get("role"), p.get("funcao")))
+    print(f"outro destaque mudou em {len(destaque)} partidas; rótulo de função mudou em {funcoes} jogador-partidas")
+    for linha in destaque[: a.lista]:
+        print("  destaque:", linha)
     print(f"jogador-partidas comparados: {total}")
     print(f"rating mudou em {len(mud)}; amostra fraca mudou em {len(fraca)}; MVP mudou em {len(mvp)} partidas")
     for linha in mud[: a.lista]:

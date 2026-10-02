@@ -27,8 +27,13 @@ REFERENCIA = RAIZ / "data" / "reference"
 
 # Patamares medidos em 2026-10-02 (430 jogador-partidas de 43 mapas profissionais;
 # rating da página, dentro da amostra). `py -3.12 -m scripts.impacto_rating` refaz.
-CATRACA_ERRO_MEDIO = 0.0770
-CATRACA_CORRELACAO = 0.9674
+# REGRAVADOS no mesmo dia por CORREÇÃO da linha de base, não por piora: os
+# anteriores (0,0770 e 0,9674) eram do rating calculado com a tabela de
+# economia de um desempate ao acaso, que o código não reproduzia. Com o empate
+# dividido entre as classes (decisão 8i) a tabela é reprodutível e o rating
+# sai em 0,0794 e 0,9652. Autorizado pelo Pedro só para esta mudança.
+CATRACA_ERRO_MEDIO = 0.0794
+CATRACA_CORRELACAO = 0.9652
 CATRACA_KAST_EXATOS = 247
 JOGADOR_PARTIDAS = 430
 KAST_COM_OFICIAL = 330

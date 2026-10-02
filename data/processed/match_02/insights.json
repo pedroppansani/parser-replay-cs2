@@ -1219,17 +1219,17 @@
       "clutches": 1,
       "team": "A",
       "mvp_index": 0.9999999999999999,
-      "rating": 1.73,
+      "rating": 1.74,
       "rating_amostra_fraca": false,
       "rating_sub": {
-        "kills_limpas": 1.67,
+        "kills_limpas": 1.72,
         "kills_assistidas": 0.09,
-        "dano": 1.41,
+        "dano": 1.44,
         "sobrevivencia": 1.46,
         "mortes_trocadas": 1.0,
         "kast": 1.21,
         "multikills": 1.1,
-        "round_swing": 1.58
+        "round_swing": 1.59
       }
     },
     {
@@ -1250,12 +1250,12 @@
       "clutches": 0,
       "team": "A",
       "mvp_index": 0.6951810584958218,
-      "rating": 1.51,
+      "rating": 1.5,
       "rating_amostra_fraca": false,
       "rating_sub": {
         "kills_limpas": 1.63,
-        "kills_assistidas": 1.58,
-        "dano": 1.34,
+        "kills_assistidas": 1.53,
+        "dano": 1.33,
         "sobrevivencia": 0.46,
         "mortes_trocadas": 1.37,
         "kast": 1.14,
@@ -1285,12 +1285,12 @@
       "rating_amostra_fraca": false,
       "rating_sub": {
         "kills_limpas": 1.35,
-        "kills_assistidas": 1.87,
+        "kills_assistidas": 1.86,
         "dano": 1.32,
         "sobrevivencia": 0.29,
         "mortes_trocadas": 2.0,
         "kast": 1.14,
-        "multikills": 1.1,
+        "multikills": 1.11,
         "round_swing": 0.95
       }
     },
@@ -1312,16 +1312,16 @@
       "clutches": 0,
       "team": "B",
       "mvp_index": 0.4259610027855153,
-      "rating": 1.17,
+      "rating": 1.19,
       "rating_amostra_fraca": false,
       "rating_sub": {
-        "kills_limpas": 0.83,
-        "kills_assistidas": 2.24,
-        "dano": 0.89,
+        "kills_limpas": 0.87,
+        "kills_assistidas": 2.28,
+        "dano": 0.91,
         "sobrevivencia": 1.11,
         "mortes_trocadas": 1.12,
         "kast": 1.07,
-        "multikills": 1.33,
+        "multikills": 1.38,
         "round_swing": 1.14
       }
     },
@@ -1343,16 +1343,16 @@
       "clutches": 0,
       "team": "A",
       "mvp_index": 0.3683844011142061,
-      "rating": 1.09,
+      "rating": 1.08,
       "rating_amostra_fraca": false,
       "rating_sub": {
         "kills_limpas": 0.98,
-        "kills_assistidas": 1.52,
-        "dano": 1.06,
+        "kills_assistidas": 1.48,
+        "dano": 1.05,
         "sobrevivencia": 0.87,
         "mortes_trocadas": 1.12,
         "kast": 1.01,
-        "multikills": 1.01,
+        "multikills": 1.0,
         "round_swing": 0.96
       }
     },
@@ -1378,12 +1378,12 @@
       "rating_amostra_fraca": false,
       "rating_sub": {
         "kills_limpas": 0.8,
-        "kills_assistidas": 1.5,
+        "kills_assistidas": 1.49,
         "dano": 0.96,
         "sobrevivencia": 0.82,
         "mortes_trocadas": 1.87,
         "kast": 1.07,
-        "multikills": 0.76,
+        "multikills": 0.74,
         "round_swing": 0.89
       }
     },
@@ -1409,12 +1409,12 @@
       "rating_amostra_fraca": false,
       "rating_sub": {
         "kills_limpas": 0.7,
-        "kills_assistidas": 1.16,
+        "kills_assistidas": 1.1,
         "dano": 0.79,
         "sobrevivencia": 0.99,
         "mortes_trocadas": 1.5,
         "kast": 1.07,
-        "multikills": 0.7,
+        "multikills": 0.69,
         "round_swing": 0.71
       }
     },
@@ -1439,8 +1439,8 @@
       "rating": 0.79,
       "rating_amostra_fraca": false,
       "rating_sub": {
-        "kills_limpas": 0.76,
-        "kills_assistidas": 1.1,
+        "kills_limpas": 0.77,
+        "kills_assistidas": 1.08,
         "dano": 0.83,
         "sobrevivencia": 0.82,
         "mortes_trocadas": 1.12,
@@ -1467,16 +1467,16 @@
       "clutches": 0,
       "team": "B",
       "mvp_index": 0.12272980501392758,
-      "rating": 0.78,
+      "rating": 0.77,
       "rating_amostra_fraca": false,
       "rating_sub": {
-        "kills_limpas": 0.82,
+        "kills_limpas": 0.81,
         "kills_assistidas": 0.0,
-        "dano": 0.76,
+        "dano": 0.75,
         "sobrevivencia": 0.65,
         "mortes_trocadas": 1.5,
         "kast": 0.81,
-        "multikills": 0.38,
+        "multikills": 0.37,
         "round_swing": 0.86
       }
     },
@@ -1502,7 +1502,7 @@
       "rating_amostra_fraca": false,
       "rating_sub": {
         "kills_limpas": 0.45,
-        "kills_assistidas": 0.69,
+        "kills_assistidas": 0.68,
         "dano": 0.65,
         "sobrevivencia": 1.52,
         "mortes_trocadas": 0.75,
@@ -1519,8 +1519,8 @@
     "pesos_desatualizados": false,
     "validacao": {
       "partidas": 43,
-      "erro_medio": 0.079,
-      "correlacao": 0.966
+      "erro_medio": 0.081,
+      "correlacao": 0.964
     }
   },
   "archetypes": [

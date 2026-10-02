@@ -176,11 +176,17 @@ def valida(avisa=print) -> dict:
 
 
 def main() -> None:
-    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stdout.reconfigure(encoding="utf-8", line_buffering=True)
+    # --modelo completo|atual mede com o outro modelo de round sem mexer no código
+    import metrics.rating as r
+    if "--modelo" in sys.argv:
+        r.MODELO_DE_ROUND_COMPLETO = sys.argv[sys.argv.index("--modelo") + 1] == "completo"
+    saida = Path(sys.argv[sys.argv.index("--saida") + 1]) if "--saida" in sys.argv else SAIDA
     doc = valida()
+    doc["modelo_de_round"] = "completo" if r.MODELO_DE_ROUND_COMPLETO else "quatro entradas"
     if "--gravar" in sys.argv:
-        SAIDA.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        print("gravado em", SAIDA.relative_to(RAIZ))
+        saida.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print("gravado em", saida)
     print(json.dumps({k: v for k, v in doc.items() if k != "_leia_isto"}, ensure_ascii=False, indent=2))
 
 
