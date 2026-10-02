@@ -92,3 +92,16 @@ def test_a_origem_no_cabecalho_vem_do_manifesto():
     from scripts.build_web_page import origem_da_partida
     assert origem_da_partida("match_02") == "FACEIT"
     assert origem_da_partida("match_23") not in (None, "FACEIT")
+
+
+def test_as_imagens_do_readme_existem_no_repositorio():
+    """O README apontava para docs/img/, que o .gitignore ignora: 404 no GitHub."""
+    import subprocess
+    readme = (RAIZ / "README.md").read_text(encoding="utf-8")
+    imagens = re.findall(r"!\[[^\]]*\]\(([^)]+)\)", readme)
+    locais = [i for i in imagens if not i.startswith("http")]
+    assert locais, "o README não tem imagem nenhuma"
+    for i in locais:
+        assert (RAIZ / i).is_file(), i
+        ignorado = subprocess.run(["git", "check-ignore", "-q", i], cwd=RAIZ).returncode == 0
+        assert not ignorado, f"{i} é ignorado pelo git e não chega ao GitHub"
