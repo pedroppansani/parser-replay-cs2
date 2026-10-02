@@ -913,8 +913,44 @@ ARMA_DO_EVENTO = {"smokegrenade": "smoke", "flashbang": "flash", "hegrenade": "h
                   "molotov": "molotov", "incgrenade": "molotov", "decoy": "decoy"}
 
 
+# Demo SEM o evento `grenade_thrown` (as de FACEIT): o evento é RECONSTRUÍDO do
+# projétil. Medido nas 43 partidas que têm o evento (20.863 solturas): o tick do
+# evento é o do primeiro ponto do projétil em 100%, e a mira e os pés do evento
+# são os da tabela de ticks em t-1 em 100% (20.862; 1 sem o tick). A ancoragem,
+# que era a fonte do tick nessas demos, acerta o tick em só 41%.
+# `scripts/investiga_faceit.py` e `tests/test_tick_pelo_projetil.py`.
+# DESLIGADA até o Pedro aprovar: ligá-la muda o que dois testes existentes de
+# test_grenade_throws.py afirmam ("sem evento, a ancoragem continua valendo" e
+# "a ancoragem acha o tick da soltura"), e exige subir VERSAO_DAS_METRICAS,
+# reprocessar e regerar a biblioteca (medido: piora 0, 447 botões a mais, 2.390
+# comandos da FACEIT mudam).
+TICK_PELO_PROJETIL_SEM_EVENTO = False
+
+
+def evento_pelo_projetil(ancorados: list[dict], tk: "_Ticks") -> pl.DataFrame:
+    """O `grenade_thrown` que a demo teria gravado, reconstruído das tabelas."""
+    nome = {}
+    for arma, kind in ARMA_DO_EVENTO.items():
+        nome.setdefault(kind, arma)
+    linhas = []
+    for a in ancorados:
+        t = int(a["tick_primeiro"])
+        i = tk.indices(a["steamid"], np.array([t - 1], dtype=np.int64))
+        d = tk.por_jogador.get(int(a["steamid"]))
+        if i is None or d is None or a["kind"] not in nome:
+            continue
+        linhas.append({"tick": t, "user_steamid": int(a["steamid"]), "weapon": nome[a["kind"]],
+                       "user_X": float(d["pos"][i[0]][0]), "user_Y": float(d["pos"][i[0]][1]),
+                       "user_Z": float(d["pos"][i[0]][2]), "user_pitch": float(d["pitch"][i[0]]),
+                       "user_yaw": float(d["yaw"][i[0]]), "user_ducking": None})
+    esquema = {"tick": pl.Int64, "user_steamid": pl.UInt64, "weapon": pl.Utf8, "user_X": pl.Float64,
+               "user_Y": pl.Float64, "user_Z": pl.Float64, "user_pitch": pl.Float64, "user_yaw": pl.Float64,
+               "user_ducking": pl.Boolean}
+    return pl.DataFrame(linhas, schema=esquema)
+
+
 def aplica_tick_oficial(
-    ancorados: list[dict], oficial: pl.DataFrame | None, tickrate: int
+    ancorados: list[dict], oficial: pl.DataFrame | None, tickrate: int, fonte: str = "oficial"
 ) -> tuple[list[dict], float | None]:
     """Troca o tick da ancoragem pelo tick do evento `grenade_thrown`, quando há.
 
@@ -998,10 +1034,11 @@ def aplica_tick_oficial(
             # ~190 ms), não a postura: medido, fica ligada em 6-9% dos arremessos
             # em qualquer faixa de altura. Vai para a tabela como informação, e a
             # postura continua saindo da altura medida.
-            "em_transicao_de_agachar": bool(e.get("user_ducking")),
+            "em_transicao_de_agachar": (None if e.get("user_ducking") is None and fonte != "oficial"
+                                        else bool(e.get("user_ducking"))),
             "atraso_animacao_ticks": (None if a.get("tick_clique") is None
                                       else int(e["tick"]) - int(a["tick_clique"])),
-            "fonte_tick": "oficial",
+            "fonte_tick": fonte,
         }
     return saida, (float(np.median(avancos)) if avancos else None)
 
@@ -1081,7 +1118,10 @@ def grenade_throws(
     tk = _Ticks(tables["ticks"])
     crus = _lancamentos_crus(traj, eventos)
     ancorados, offset = ancora_arremessos(crus, tk, tickrate)
-    ancorados, offset_oficial = aplica_tick_oficial(ancorados, tables.get("grenade_thrown"), tickrate)
+    oficial, fonte = tables.get("grenade_thrown"), "oficial"
+    if TICK_PELO_PROJETIL_SEM_EVENTO and (oficial is None or oficial.height == 0):
+        oficial, fonte = evento_pelo_projetil(ancorados, tk), "projetil"
+    ancorados, offset_oficial = aplica_tick_oficial(ancorados, oficial, tickrate, fonte)
 
     lidos, movs = _verdade_da_demo(tables, [(int(a["tick_soltura"]), int(a["steamid"]))
                                             for a in ancorados if a["tick_soltura"] is not None])
@@ -1224,6 +1264,8 @@ def motivo_aproximado(linha: dict) -> str | None:
     if r is not None and r > MAX_RESIDUO_ANCORAGEM:
         if linha.get("fonte_tick") == "oficial":
             return f"a mira do evento oficial passa a {r:.1f}u do ponto observado da granada"
+        if linha.get("fonte_tick") == "projetil":
+            return f"a mira no tick do projétil passa a {r:.1f}u do ponto observado da granada"
         return f"a ancoragem ficou a {r:.1f}u do ponto observado da granada"
     g = linha.get("giro_na_soltura")
     if g is not None and g > MAX_GIRO_NA_SOLTURA:
