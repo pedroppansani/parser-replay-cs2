@@ -82,3 +82,20 @@ def test_no_celular_nenhuma_aba_rola_na_horizontal_e_o_mapa_cabe(navegador, pagi
     caixa = pg.eval_on_selector("canvas#map", "e => { const r = e.getBoundingClientRect(); return [r.left, r.right]; }")
     assert caixa[0] >= 0 and caixa[1] <= 390, caixa
     ctx.close()
+
+
+def test_a_evidencia_do_card_nao_herda_o_estilo_do_evento_da_linha_do_tempo(navegador, paginas):
+    """O card de jogador usava a classe `.ev`, que é a do evento da linha do
+    tempo: grade de 46 px e opacidade de evento futuro (0,38)."""
+    ctx, pg = _abre(navegador, paginas[PARTIDAS[0]])
+    pg.click('[role=tab][data-tab="estilos"]')
+    estilos = pg.eval_on_selector_all(".pc .pc-ev", """els => els.map(e => { const c = getComputedStyle(e);
+        return [c.display, c.opacity, c.gridTemplateColumns, e.classList.contains('ev')]; })""")
+    assert len(estilos) >= 10
+    for display, opacidade, grade, tem_ev in estilos:
+        assert display == "block" and opacidade == "1" and grade == "none" and not tem_ev
+    assert pg.locator(".pc .ev").count() == 0
+    # e a linha do tempo continua com a classe dela
+    pg.click('[role=tab][data-tab="replay"]')
+    assert pg.locator("#log .ev").count() > 0
+    ctx.close()

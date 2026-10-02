@@ -927,7 +927,9 @@
   }
   .pc .role.none { background: var(--paper-2); color: var(--dim); }
   .pc .role.manual { background: rgba(27, 175, 122, 0.12); color: var(--aqua); }
-  .pc .ev { font-size: 12.5px; color: var(--ink-2); margin-top: 5px; }
+  /* classe PRÓPRIA do card: `.ev` é o evento da linha do tempo (grade de 46 px
+     e opacidade de evento futuro), e a evidência do card herdava as duas */
+  .pc .pc-ev { font-size: 12.5px; color: var(--ink-2); margin-top: 5px; }
   .pc .chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
   .pc .chip {
     font-family: var(--mono); font-size: 10px; color: var(--ink-2);
@@ -2824,8 +2826,8 @@
           .join("");
 
         var ev = p.role_evidence
-          ? "<div class='ev'>" + p.role_evidence + "</div>"
-          : "<div class='ev'>Não lidera o time em nenhuma das métricas de função acima do piso — " +
+          ? "<div class='pc-ev'>" + p.role_evidence + "</div>"
+          : "<div class='pc-ev'>Não lidera o time em nenhuma das métricas de função acima do piso — " +
             "joga distribuído.</div>";
 
         card.innerHTML =
