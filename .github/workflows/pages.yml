@@ -3,11 +3,15 @@
 # O site é saída gerada: o que se versiona é o que o gera (código + data/processed/).
 # Aqui ele é reconstruído do zero a cada push e vai para o Pages como artefato,
 # que não entra no histórico do git -- quem clona o repositório não baixa HTML.
-name: Publica o site
+#
+# Os TESTES rodam antes: o site só é gerado e publicado com a suíte verde. O
+# workflow roda em toda branch (para a branch de trabalho ter CI antes do
+# merge); a publicação acontece só no main.
+name: Testa e publica o site
 
 on:
   push:
-    branches: [main]
+    branches: ["**"]
   workflow_dispatch:
 
 permissions:
@@ -16,11 +20,31 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Dependências (versões fixadas)
+        run: pip install -r requirements.txt
+      # Os testes de navegador usam o Chromium do Playwright (no runner não há
+      # Chrome instalado no canal que eles pedem primeiro; caem no Chromium).
+      - name: Chromium do Playwright
+        run: python -m playwright install --with-deps chromium
+      # Os testes que dependem de data/interim/ (não versionado) são pulados
+      # num clone limpo -- nunca quebram.
+      - name: Testes
+        run: python -m pytest -q
+
   build:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -38,6 +62,7 @@ jobs:
 
   deploy:
     needs: build
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment:
       name: github-pages

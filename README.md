@@ -8,7 +8,7 @@ partida e perfil de cada jogador.
 Lê replays `.dem` do Counter-Strike 2, extrai as estatísticas e gera um site
 estático por partida. Projeto 1 de 5 de um portfólio.
 
-![Resumo da partida: round decisivo, MVP e o outro destaque](docs/img/insights.png)
+![Resumo da partida: round decisivo, MVP e o outro destaque](assets/readme/insights.png)
 
 ## O que é, e qual o diferencial
 
@@ -37,7 +37,7 @@ Quem define o que cada métrica deve medir é conhecimento de jogo (Faceit Level
 porquê ao lado, e os pontos que dependem de julgamento humano estão listados
 em vez de escondidos.
 
-![Replay: radar com posições, granadas, anotação à mão livre e os dois times](docs/img/replay.png)
+![Replay: radar com posições, granadas, anotação à mão livre e os dois times](assets/readme/replay.png)
 
 ## Como rodar
 
@@ -156,7 +156,7 @@ aprendido o estilo de um deles, aquele time destoaria):
 | `data/reference/` | Ratings oficiais da HLTV usados na validação do rating |
 | `tests/` | ~700 testes, incluindo testes de navegador da camada de desenho |
 
-![Aba de jogadores](docs/img/jogadores.png)
+![Aba de jogadores](assets/readme/jogadores.png)
 
 ## Limitações conhecidas
 
@@ -178,7 +178,7 @@ aprendido o estilo de um deles, aquele time destoaria):
 - Depois de `clean_match` sem `--manter-interim`, a partida continua no site mas
   não pode mais ser recalculada sem baixar a demo de novo.
 
-![Perfil do jogador](docs/img/perfil.png)
+![Perfil do jogador](assets/readme/perfil.png)
 
 ---
 

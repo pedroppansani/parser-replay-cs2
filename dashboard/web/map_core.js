@@ -638,6 +638,16 @@ window.MapCore = (function () {
   }
 
   /** Botão da barra, no estilo da anotação (annotations.css). */
+  /** Texto que vem do DADO, pronto para entrar em HTML montado por
+      concatenação. É a ÚNICA função de escape do projeto (replay, anotação e
+      prancheta): nome de jogador, arma, lugar e frase gerada passam por aqui
+      antes de qualquer innerHTML. Onde der, prefira textContent. */
+  var ESCAPES = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+  function esc(v) {
+    if (v === null || v === undefined) return "";
+    return String(v).replace(/[&<>"']/g, function (ch) { return ESCAPES[ch]; });
+  }
+
   function botao(texto, titulo, aoClicar, classe) {
     var b = document.createElement("button");
     b.type = "button";
@@ -930,6 +940,7 @@ window.MapCore = (function () {
   }
 
   return {
+    esc: esc,
     MAX_LADO_INTERNO: MAX_LADO_INTERNO,
     ZOOM_MIN: ZOOM_MIN, ZOOM_MAX: ZOOM_MAX, ZOOM_PASSO: ZOOM_PASSO,
     VELOCIDADES: VELOCIDADES,

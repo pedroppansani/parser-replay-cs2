@@ -54,6 +54,9 @@ VERSAO_DO_PARSER = 2
 # Onde o complemento registra o que acrescentou a um interim existente.
 ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
 
+# 12 (2026-10-02) rating: `rounds` é o que o jogador JOGOU (não o total da
+#    partida); os subcomponentes por round do caminho sem lado e a marca de
+#    amostra fraca passam a usar isso
 # 11 (2026-09-28) rota B: nas partidas com a verdade da demo no interim, botão,
 #    postura, "no ar" e ponto de saída LIDOS (fonte_do_botao, fonte_da_postura,
 #    fonte_do_no_ar, fonte_da_origem, forca_lida, x/y/z_saida); nas outras,
@@ -84,7 +87,7 @@ ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
 #   (inclui a classe de economia do jogador no rating), unique com subset fica
 #   com a primeira linha. Antes, esses três casos dependiam da ordem de hash.
 # 1 (2026-09-20) primeira versão declarada, mesmo raciocínio acima.
-VERSAO_DAS_METRICAS = 11
+VERSAO_DAS_METRICAS = 12
 
 # Pastas cujo estado define o NÚMERO. `sujo` olha só estas: olhar o repositório
 # inteiro marcava todo reprocessamento como sujo, porque o próprio

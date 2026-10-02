@@ -1,0 +1,35 @@
+{
+  "_leia_isto": "Gerado por py -3.12 -m scripts.numeros_citaveis. Não editar à mão: a página, a landing e o README leem daqui.",
+  "corpus": {
+    "fonte": "data/manifest.json",
+    "partidas": 52,
+    "por_origem": {
+      "faceit": 9,
+      "profissional": 43
+    },
+    "mapas": [
+      "de_ancient",
+      "de_anubis",
+      "de_dust2",
+      "de_inferno",
+      "de_mirage",
+      "de_nuke",
+      "de_overpass",
+      "de_train"
+    ],
+    "times_profissionais": 11,
+    "jogador_partidas": 520,
+    "jogador_rounds": 11520
+  },
+  "convencao_de_angulos": {
+    "fonte": "data/interim/*/kills.parquet (metrics.geometry.add_aim_error_columns)",
+    "erro_mediano_graus": 1.68,
+    "erro_mediano_invertida_graus": 6.0,
+    "kills": 7652,
+    "partidas": 52
+  },
+  "estilos": {
+    "fonte": "clustering/cluster_names.json",
+    "grupos": 4
+  }
+}
