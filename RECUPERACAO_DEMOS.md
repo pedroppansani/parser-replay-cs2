@@ -220,58 +220,59 @@ arremessos nessas faixas antes de mexer nas constantes.
 ## Para validar o rating (partidas de times FORA do corpus)
 
 **Para que serve.** O erro do rating contra a HLTV que o projeto cita é medido
-"deixando de fora" partidas dos mesmos times que estão no treino. A única prova
-de que o modelo não aprendeu o estilo desses times é avaliá-lo em partidas de
-times que ele nunca viu. A avaliação será ÚNICA e com tudo congelado (modelo de
-round, economia, referência e pesos), como foi feito com os arremessos.
+deixando de fora partidas dos mesmos times que estão no treino. A prova de que
+o modelo não aprendeu o estilo desses times é avaliá-lo em partidas de times
+que ele nunca viu. A lista é do Pedro (a HLTV bloqueia automação, e link de
+partida não se inventa).
 
-**O que baixar: 10 a 15 mapas**, escolhidos por você na HLTV (o download é manual;
-a HLTV bloqueia automação). Critérios, em ordem:
+### Critérios
 
-1. **Nenhum dos dois times pode estar no corpus.** Estão no corpus hoje: FURIA,
-   Natus Vincere, Vitality, Spirit, MOUZ, Falcons, Aurora, The MongolZ e magic.
-2. **Pelo menos 4 mapas de tier 2** (times fora do top 20 da HLTV). O corpus é
-   todo de topo, e é no tier 2 que o rating pode se comportar diferente.
-3. **Mapas variados.** O corpus tem pouco de Ancient, Train, Overpass e Anubis;
-   se der, prefira esses. Evite mais de 3 mapas da mesma série.
-4. **Mapas inteiros, sem prorrogação longa** não é exigência; qualquer mapa MR12
-   serve. Demo dividida em partes (`-p1`, `-p2`) também serve: solte todas.
-5. **De 2025 em diante** (mesma metodologia de rating da HLTV que o corpus usa).
+1. **Times fora do corpus.** Nenhum dos dois times pode ser um destes: FURIA,
+   Natus Vincere, Vitality, Spirit, MOUZ, Falcons, Aurora, The MongolZ, magic.
+2. **Pelo menos 4 times de tier 2** entre os escolhidos (fora do top 20 da HLTV).
+   O corpus é todo de topo; é no tier 2 que o rating pode se comportar diferente.
+3. **Mapas variados.** O corpus tem pouco de Ancient, Train, Overpass e Anubis.
+   Evite mais de 3 mapas da mesma série.
+4. **Partidas de 2026.**
+5. De 10 a 15 mapas no total. Demo dividida em partes (`-p1`, `-p2`) serve: solte todas.
 
-**O que eu preciso de cada mapa** (preencha a tabela abaixo):
+### Tabela (preencha)
 
-- o **link da partida** na HLTV (`https://www.hltv.org/matches/<id>/...`), de
-  onde sai o botão "GOTV Demo";
-- o **link das estatísticas do MAPA** (`https://www.hltv.org/stats/matches/mapstatsid/<id>/...`):
-  é a página que tem o rating, o K-D, o ADR, o KAST e o Swing por jogador
-  daquele mapa (a página da série soma os mapas e não serve).
+| # | Link da partida na HLTV | Link das estatísticas do mapa | Mapa | Demo baixada? |
+|---|---|---|---|---|
+| 1 | | | | |
+| 2 | | | | |
+| 3 | | | | |
+| 4 | | | | |
+| 5 | | | | |
+| 6 | | | | |
+| 7 | | | | |
+| 8 | | | | |
+| 9 | | | | |
+| 10 | | | | |
+| 11 | | | | |
+| 12 | | | | |
+| 13 | | | | |
+| 14 | | | | |
+| 15 | | | | |
 
-| # | Série (times e evento) | Mapa | Link da partida | Link das estatísticas do mapa | Tier |
-|---|---|---|---|---|---|
-| 1 | | | | | |
-| 2 | | | | | |
-| 3 | | | | | |
-| 4 | | | | | |
-| 5 | | | | | |
-| 6 | | | | | |
-| 7 | | | | | |
-| 8 | | | | | |
-| 9 | | | | | |
-| 10 | | | | | |
-| 11 | | | | | |
-| 12 | | | | | |
+- **Link da partida:** `https://www.hltv.org/matches/<id>/...`, de onde sai o botão "GOTV Demo".
+- **Link das estatísticas do mapa:** `https://www.hltv.org/stats/matches/mapstatsid/<id>/...`.
+  É a página com rating, K-D, ADR, KAST e Swing por jogador DAQUELE mapa (a da
+  série soma os mapas e não serve).
 
-**Onde colocar.** As demos (o `.rar` ou o `.dem`) em `demos/entrada/`, como nas
-outras recuperações. Os números oficiais de cada mapa: copie a tabela da página
-de estatísticas (os dois times) e cole num arquivo de texto em
-`data/reference/brutos/`, um por mapa, com o nome `hltv_validacao_<n>.txt`. Eu
-importo, confiro a transcrição pelo K-D contra a demo e NÃO olho o rating oficial
-antes de congelar o modelo.
+### Depois do download
 
-**O que acontece quando chegarem.** `py -3.12 -m scripts.importa_demos`, parse,
-e uma única avaliação: erro médio e correlação do rating nessas partidas, com o
-modelo de hoje. O número vai para `numeros_citaveis.json` como "partidas de times
-fora do corpus" e passa a ser o que o README cita.
+1. Solte o arquivo (o `.rar` ou o `.dem`) em `demos/entrada/`.
+2. Copie a tabela de estatísticas do mapa (os dois times) para um arquivo de
+   texto em `data/reference/brutos/`, um por mapa, com o nome
+   `hltv_validacao_<n>.txt`, onde `<n>` é o número da linha acima.
+3. Me avise. Eu rodo `py -3.12 -m scripts.importa_demos`, que importa pelo
+   sha256 e copia para o backup, e processo as partidas.
+4. **A avaliação é única, com tudo congelado**, como foi nos arremessos: o
+   modelo de round, a economia, a referência e os pesos ficam como estão, e eu
+   não olho o rating oficial dessas partidas antes de congelar. O erro médio e
+   a correlação nelas vão para `numeros_citaveis.json` como "partidas de times
+   fora do corpus".
 
-> Esta lista está em branco de propósito: eu não tenho como conferir links da
-> HLTV daqui, e inventar um id de partida seria pior que deixar para você.
+Isto é uma etapa própria: o resto do trabalho não espera por ela.

@@ -130,6 +130,20 @@ roda a suíte antes de publicar o site.
 - **KAST e clutch** não batem em todos os jogadores: a HLTV aplica regras que os
   dados publicados não permitem recuperar.
 
+## Licença e dados de terceiros
+
+O código é distribuído sob a licença [MIT](LICENSE).
+
+A licença cobre só o código. Não cobre o que é de terceiros:
+
+- **Estatísticas oficiais** em `data/reference/` são da HLTV, transcritas das
+  páginas públicas de cada partida para conferir os números daqui.
+- **Radares dos mapas** em `assets/radars/` vêm dos arquivos do próprio jogo
+  (via awpy) e pertencem à Valve.
+- **Demos** (`.dem`) são gravações de partidas de terceiros e não são
+  distribuídas neste repositório; o que está versionado é o resultado do
+  processamento.
+
 ## Notas técnicas
 
 O histórico de cada métrica, com as versões testadas e descartadas, está em
