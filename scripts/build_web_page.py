@@ -16,6 +16,31 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE = PROJECT_ROOT / "dashboard" / "web" / "template.html"
 
 
+def titulo_da_pagina(match_id: str) -> str:
+    """Título da aba, por partida: mapa, placar e times; sem dado, só o mapa.
+
+    Os times vêm do manifesto e só entram quando a partida é profissional (em
+    FACEIT o "time" é um nome gerado, `team_<nick>`, que não diz nada).
+    """
+    base = PROJECT_ROOT / "data" / "processed" / match_id
+    mapa = json.loads((base / "match_meta.json").read_text(encoding="utf-8")).get("map_name") or ""
+    nome = mapa.removeprefix("de_").capitalize() or match_id
+    partes = [nome]
+    try:
+        m = json.loads((base / "web_payload.json").read_text(encoding="utf-8")).get("match") or {}
+        if m.get("score_a") is not None and m.get("score_b") is not None:
+            partes[0] = f"{nome} {m['score_a']}–{m['score_b']}"
+    except (OSError, ValueError):
+        pass
+    manifesto = PROJECT_ROOT / "data" / "manifest.json"
+    if manifesto.exists():
+        linha = json.loads(manifesto.read_text(encoding="utf-8")).get("partidas", {}).get(match_id) or {}
+        times = linha.get("times") or {}
+        if linha.get("origem") == "profissional" and times.get("A", {}).get("nome") and times.get("B", {}).get("nome"):
+            partes.append(f"{times['A']['nome']} x {times['B']['nome']}")
+    return " · ".join(partes)
+
+
 def build_html(match_id: str, site: dict | None = None) -> str:
     """Devolve o HTML final da partida, com os dados já embutidos.
 
@@ -65,6 +90,8 @@ def build_html(match_id: str, site: dict | None = None) -> str:
     from scripts.build_tactics_page import arquivo_da_pagina, mapas_disponiveis
     prancheta = arquivo_da_pagina(map_name) if map_name in mapas_disponiveis() else None
     html = html.replace("/*__PRANCHETA__*/null", json.dumps(prancheta))
+    import html as _html
+    html = html.replace("<!--__TITULO__-->", _html.escape(titulo_da_pagina(match_id)))
     html = html.replace("/*__SITE__*/", json.dumps(site, ensure_ascii=False) + " ||" if site else "")
     return html
 

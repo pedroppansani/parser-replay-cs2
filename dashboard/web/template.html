@@ -1,4 +1,9 @@
-<title>Ancient Round a Round</title>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><!--__TITULO__--></title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
@@ -46,6 +51,19 @@
 
   * { box-sizing: border-box; }
 
+  /* A página saiu do modo de compatibilidade (ganhou doctype). No modo antigo
+     as tabelas NÃO herdavam fonte nem altura de linha; isto mantém o desenho
+     que a página sempre teve. */
+  table { font-size: medium; font-weight: normal; font-style: normal; line-height: normal;
+          white-space: normal; text-align: start; }
+  /* Idem para a "altura mínima da linha": no modo antigo, uma linha só com um
+     controle ou só com texto menor não ganhava a altura da fonte do bloco.
+     Três lugares dependiam disso: a barra do tempo, o texto do evento na
+     linha do tempo e o número sob cada traço do perfil. */
+  .scrub { line-height: 0; }
+  .ev > span:not(.tm) { line-height: 0; }
+  .ev > span:not(.tm) > * { line-height: normal; }
+  .pftracos .traco span { display: block; }
   body {
     margin: 0;
     color: var(--ink);
@@ -943,7 +961,15 @@
   @media (prefers-reduced-motion: reduce) {
     * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
   }
+
+  /* Celular: a tabela do perfil é mais larga que a tela; ela rola dentro da
+     própria caixa, e a página não ganha rolagem horizontal. */
+  @media (max-width: 640px) {
+    #pf-tabela { overflow-x: auto; }
+  }
 </style>
+</head>
+<body>
 
 <div class="shell">
 
@@ -3186,3 +3212,5 @@
   });
 })();
 </script>
+</body>
+</html>
