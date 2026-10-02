@@ -105,3 +105,24 @@ def test_as_imagens_do_readme_existem_no_repositorio():
         assert (RAIZ / i).is_file(), i
         ignorado = subprocess.run(["git", "check-ignore", "-q", i], cwd=RAIZ).returncode == 0
         assert not ignorado, f"{i} é ignorado pelo git e não chega ao GitHub"
+
+
+def test_os_numeros_do_readme_sao_os_do_json_e_nao_digitados():
+    """Cada bloco marcado do README tem de ser IGUAL ao gerado do JSON: quem
+    editar um número à mão quebra este teste."""
+    from scripts.numeros_citaveis import SAIDA, blocos_de_texto, blocos_no_texto
+    doc = json.loads(SAIDA.read_text(encoding="utf-8"))
+    esperado = blocos_de_texto(doc)
+    escrito = blocos_no_texto((RAIZ / "README.md").read_text(encoding="utf-8"))
+    assert set(escrito) == set(esperado), "bloco de números faltando no README"
+    for nome, trechos in escrito.items():
+        for t in trechos:
+            assert t == esperado[nome], f"bloco '{nome}' do README difere do JSON: rode py -3.12 -m scripts.numeros_citaveis"
+
+
+def test_fora_dos_blocos_o_readme_nao_cita_numero_de_validacao():
+    """Os números citáveis só aparecem dentro dos blocos marcados."""
+    texto = (RAIZ / "README.md").read_text(encoding="utf-8")
+    fora = re.sub(r"<!-- numeros:inicio (\w+) -->.*?<!-- numeros:fim \1 -->", "", texto, flags=re.S)
+    for padrao in (r"\b\d+ de \d+\b", r"\b0,\d{2,3}\b", r"\b\d+ (partidas|mapas|testes|jogador)", r"\d+,\d+\s*°"):
+        assert not re.search(padrao, fora), (padrao, re.search(padrao, fora).group(0))
