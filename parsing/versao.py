@@ -54,6 +54,10 @@ VERSAO_DO_PARSER = 2
 # Onde o complemento registra o que acrescentou a um interim existente.
 ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
 
+# 14 (2026-10-02) rótulos de jogador: amostra mínima em todos (8 rounds, 8 kills
+#    no "Segundo homem"), suporte medido por round, estabilidade por
+#    reamostragem dos rounds gravada (abaixo de 0,70 a página diz "tendência");
+#    `chance_ao_acaso` da função dominante gravada, sem mudar a função
 # 13 (2026-10-02) economia do rating com o empate da classe do time DIVIDIDO
 #    entre as classes empatadas (era um desempate ao acaso gravado em 19/09);
 #    referência de escala e pesos do rating reajustados sobre a tabela nova
@@ -90,7 +94,7 @@ ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
 #   (inclui a classe de economia do jogador no rating), unique com subset fica
 #   com a primeira linha. Antes, esses três casos dependiam da ordem de hash.
 # 1 (2026-09-20) primeira versão declarada, mesmo raciocínio acima.
-VERSAO_DAS_METRICAS = 13
+VERSAO_DAS_METRICAS = 14
 
 # Pastas cujo estado define o NÚMERO. `sujo` olha só estas: olhar o repositório
 # inteiro marcava todo reprocessamento como sujo, porque o próprio

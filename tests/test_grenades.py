@@ -294,11 +294,13 @@ def test_roles_are_compared_within_the_team_not_across_the_match():
     Se a comparação fosse entre os 10 jogadores, o time inteiro que joga menos
     utility ficaria sem suporte nenhum, o que não descreve como ele joga.
     """
+    # O suporte é medido POR ROUND desde 2026-10-02 (PISO_SUPORTE_POR_ROUND):
+    # os mesmos segundos totais, numa partida de 22 rounds.
+    rounds = 22
     signals = _signals([
-        {"steamid": 1, "name": "A1", "team": "A", "enemy_blind_seconds": 80.0},
-        {"steamid": 2, "name": "A2", "team": "A", "enemy_blind_seconds": 10.0},
-        {"steamid": 3, "name": "B1", "team": "B", "enemy_blind_seconds": 30.0},
-        {"steamid": 4, "name": "B2", "team": "B", "enemy_blind_seconds": 5.0},
+        {"steamid": s, "name": n, "team": t, "enemy_blind_seconds": seg,
+         "rounds_jogados": rounds, "enemy_blind_por_round": seg / rounds}
+        for s, n, t, seg in ((1, "A1", "A", 80.0), (2, "A2", "A", 10.0), (3, "B1", "B", 30.0), (4, "B2", "B", 5.0))
     ])
     support = assign_traits(signals).filter(pl.col("trait") == "support")
     assert sorted(support["name"].to_list()) == ["A1", "B1"]

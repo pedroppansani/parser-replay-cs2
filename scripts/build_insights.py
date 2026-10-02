@@ -524,6 +524,8 @@ def build(match_id: str) -> Path:
         tem_leitura = pl.col("funcao").is_not_null()
         if "empate_funcao" in estruturais.columns:
             tem_leitura = tem_leitura | pl.col("empate_funcao")
+        if "abaixo_do_acaso" in estruturais.columns:
+            tem_leitura = tem_leitura | pl.col("abaixo_do_acaso")
         melhor = estruturais.filter(tem_leitura).sort(
             ["rounds_na_funcao", "side"], descending=[True, False]
         )

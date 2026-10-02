@@ -18,6 +18,7 @@ import polars as pl
 
 from clustering.playstyle import describe_clusters, load_cluster_names
 from metrics.player_profile import cards_de_estilo
+from metrics.player_roles import evidencia_exibida, rotulo_exibido
 from metrics.structural_roles import FUNCOES, texto_empate
 from scripts.narrative import descreve_jogador
 
@@ -93,6 +94,23 @@ def build(match_id: str) -> Path:
          "smoke_thrown", "utility_damage", "nades_per_round"]
     )
     traits = rd("player_traits").select(["name", "team", "trait", "label", "evidence", "priority"])
+    # Rótulo instável na reamostragem dos rounds vira "tendência", com o texto
+    # pronto do Python (metrics/player_roles.py, LIMIAR_DE_TENDENCIA).
+    cheio = rd("player_roles")
+    if "role_tendencia" in cheio.columns:
+        roles = roles.with_columns(
+            pl.Series("role", [rotulo_exibido(r, t) for r, t in zip(cheio["role"], cheio["role_tendencia"])],
+                      dtype=pl.String),
+            pl.Series("role_evidence", [evidencia_exibida(e, s, t) for e, s, t in zip(
+                cheio["role_evidence"], cheio["role_estabilidade"], cheio["role_tendencia"])], dtype=pl.String),
+            cheio["role_tendencia"])
+        bruto = rd("player_traits")
+        traits = traits.with_columns(
+            pl.Series("label", [rotulo_exibido(r, t) for r, t in zip(bruto["label"], bruto["tendencia"])],
+                      dtype=pl.String),
+            pl.Series("evidence", [evidencia_exibida(e, s, t) for e, s, t in zip(
+                bruto["evidence"], bruto["estabilidade"], bruto["tendencia"])], dtype=pl.String),
+            bruto["tendencia"])
     grenades = rd("grenades_summary")
 
     perfil = rd("player_profile")

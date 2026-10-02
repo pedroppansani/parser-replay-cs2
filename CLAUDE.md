@@ -91,7 +91,7 @@ texto completo de cada uma está na nota do link (`notas/decisoes/`).
 - [15c](notas/decisoes/15c-traco-dentro-da-funcao.md) Traço comportamental é comparado dentro da função estrutural.
 - [15d](notas/decisoes/15d-repick.md) Repick é jiggle mais evento no ângulo; o desfecho é campo à parte.
 - [15e](notas/decisoes/15e-eixo-por-populacao.md) Cada braço do eixo piano/baiter é comparado com a população da função.
-- [15f](notas/decisoes/15f-funcao-do-round-no-pipeline.md) O pipeline passa a função do round aos papéis comportamentais (regressão corrigida).
+- [15f](notas/decisoes/15f-funcao-do-round-no-pipeline.md) O pipeline passa a função do round aos papéis comportamentais.
 - [16](notas/decisoes/16-escala-dos-papeis.md) A escala dos papéis é do corpus (`archetype_reference.json`).
 - [17](notas/decisoes/17-empate-no-contato.md) Empate no primeiro contato não é abertura de ninguém.
 - [18](notas/decisoes/18-frases-em-python.md) Frases dos cards saem do Python; papel sem sustentação devolve vazio.
@@ -137,6 +137,7 @@ texto completo de cada uma está na nota do link (`notas/decisoes/`).
 - [36](notas/decisoes/36-preservacao-de-dados.md) Nenhum `.dem`, interim ou backup é apagado sem lista confirmada e cópia por sha256.
 - [37](notas/decisoes/37-pagina-e-dado.md) Número de corpus vem de `numeros_citaveis.json`; texto do dado passa por `esc()`; CI testa antes de publicar.
 - [38](notas/decisoes/38-times-canonicos.md) Agregado por time usa o nome canônico (`metrics/times.py`).
+- [39](notas/decisoes/39-rotulos-com-amostra-e-estabilidade.md) Rótulo de jogador: amostra mínima; estabilidade < 0,70 vira "tendência".
 
 ## Números citáveis
 

@@ -14,7 +14,7 @@ no código e conferida contra dado oficial.
 
 <!-- numeros:inicio resumo -->
 - **410 de 410** placares idênticos aos da HLTV. Kills e mortes de 410 jogadores em 41 mapas profissionais batem com o placar oficial, um a um.
-- **0,079** erro médio do rating contra o oficial. Em 430 jogador-partidas (correlação 0,966), deixando uma partida fora a cada vez. É uma implementação própria da metodologia publicada, não o número da HLTV.
+- **0,081** erro médio do rating contra o oficial. Em 430 jogador-partidas (correlação 0,964), deixando uma partida fora a cada vez. É uma implementação própria da metodologia publicada, não o número da HLTV.
 - **100%** botão do arremesso certo, fora da amostra. A força de 6.846 granadas inferida só da posição, conferida contra o que a demo grava em 13 partidas.
 <!-- numeros:fim resumo -->
 
@@ -40,8 +40,8 @@ acerto do rating em cima delas seria coincidência.
 | KAST | 247 de 330 idênticos |
 | Aberturas, rounds de multi-kill e headshots | 80 de 80 idênticos (8 séries inteiras) |
 | Clutches vencidos | 67 de 80 idênticos |
-| Rating, na página (dentro da amostra) | erro médio 0,077, correlação 0,967 (430 jogador-partidas) |
-| Rating, fora da amostra | erro médio 0,079, correlação 0,966 |
+| Rating, na página (dentro da amostra) | erro médio 0,079, correlação 0,965 (430 jogador-partidas) |
+| Rating, fora da amostra | erro médio 0,081, correlação 0,964 |
 | Convenção de ângulos | mira a 1,68° da vítima no tick da kill, contra 6,00° na convenção invertida (7.652 kills) |
 <!-- numeros:fim validacao -->
 
@@ -110,7 +110,7 @@ python -m pytest tests/
 ```
 
 Uma demo só: `python -m scripts.process_demo caminho/da/partida.dem --match-id match_99`.
-São <!-- numeros:inicio testes -->1.114 testes<!-- numeros:fim testes -->, e o CI
+São <!-- numeros:inicio testes -->1.144 testes<!-- numeros:fim testes -->, e o CI
 roda a suíte antes de publicar o site.
 
 ## Limitações
