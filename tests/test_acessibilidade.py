@@ -78,3 +78,9 @@ def test_abas_andam_pelas_setas_e_so_a_ativa_entra_no_tab(contexto, partida):
     pg.keyboard.press("ArrowRight")
     assert pg.evaluate("() => document.activeElement.dataset.tab") == "replay"
     pg.close()
+
+
+def test_todo_json_injetado_nas_paginas_e_compacto():
+    """Auditoria 5.5: nenhum build injeta JSON indentado."""
+    for arq in ("build_web_page.py", "build_tactics_page.py", "build_site.py"):
+        assert "compacto=False" not in (RAIZ / "scripts" / arq).read_text(encoding="utf-8"), arq

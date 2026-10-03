@@ -152,7 +152,7 @@ def build_html(match_id: str, site: dict | None = None, base: Path | None = None
         # discordam sobre qual calibração um traço usou.
         radar["calibracao"] = impressao_da_calibracao(radar)
         # o `||` mantém o `null` do template como fallback quando o mapa não tem radar
-        radar_js = js(radar, compacto=False) + " ||"
+        radar_js = js(radar) + " ||"
     html = html.replace("/*__RADAR__*/", radar_js)
     # Botão "Criar tática": só quando o mapa desta partida tem prancheta. O link
     # é relativo e funciona igual em dashboard/web/ e em docs/, que têm as duas
@@ -161,14 +161,14 @@ def build_html(match_id: str, site: dict | None = None, base: Path | None = None
     prancheta = arquivo_da_pagina(map_name) if map_name in mapas_disponiveis() else None
     html = html.replace("/*__PRANCHETA__*/null", js(prancheta))
     import html as _html
-    html = html.replace("/*__PAGINA__*/null", js(dados_da_pagina(match_id, base), compacto=False))
+    html = html.replace("/*__PAGINA__*/null", js(dados_da_pagina(match_id, base)))
     html = html.replace("<!--__TITULO__-->", _html.escape(titulo_da_pagina(match_id)))
     from scripts.meta_da_pagina import meta_tags, url_do_site
     titulo = titulo_da_pagina(match_id)
     html = html.replace("<!--__META__-->", meta_tags(
         titulo, f"{titulo}: replay no radar, placar round a round e a leitura da partida.",
         url_do_site((site or {}).get("repo")), f"{match_id}.html"))
-    html = html.replace("/*__SITE__*/", js(site, compacto=False) + " ||" if site else "")
+    html = html.replace("/*__SITE__*/", js(site) + " ||" if site else "")
     return html
 
 
