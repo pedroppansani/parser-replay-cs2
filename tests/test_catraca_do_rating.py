@@ -32,8 +32,12 @@ REFERENCIA = RAIZ / "data" / "reference"
 # economia de um desempate ao acaso, que o código não reproduzia. Com o empate
 # dividido entre as classes (decisão 8i) a tabela é reprodutível e o rating
 # sai em 0,0794 e 0,9652. Autorizado pelo Pedro só para esta mudança.
-CATRACA_ERRO_MEDIO = 0.0794
-CATRACA_CORRELACAO = 0.9652
+# APERTADOS no mesmo dia pela adoção do modelo de round completo (auditoria
+# 4.3, nota 22a), regravação autorizada pela decisão 3 do Pedro: fora da
+# amostra (deixa uma partida fora, completo) 0,0810 -> 0,0788; na página
+# 0,0794 -> 0,0771 e correlação 0,9652 -> 0,9672.
+CATRACA_ERRO_MEDIO = 0.0771
+CATRACA_CORRELACAO = 0.9672
 CATRACA_KAST_EXATOS = 247
 JOGADOR_PARTIDAS = 430
 KAST_COM_OFICIAL = 330
