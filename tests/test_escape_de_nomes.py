@@ -150,6 +150,7 @@ def test_o_nome_malicioso_chega_literal_a_prancheta_pelo_instante(navegador, pag
         pg.wait_for_function("() => window.MapAnnotations && MapAnnotations._interno.S.reprojecoes > 0")
         pg.locator("#strip button", has_text="1").first.click()
         pg.evaluate("() => { const s = document.getElementById('scrub'); s.value = 8; s.dispatchEvent(new Event('input')); }")
+        pg.click("#anot-toggle")   # a barra de desenho abre recolhida (auditoria 5.1)
         pg.click("#anot-tatica-instante")
         pg.wait_for_function("() => window.Prancheta && Prancheta._interno.S.estado !== null")
         rotulos = pg.evaluate("""() => { const I = Prancheta._interno;

@@ -156,9 +156,11 @@ def _captura(paginas: Path, saida: Path, sufixo: str, direcao: str) -> dict:
                 s.value = Math.floor(s.max * {frac}); s.dispatchEvent(new Event('input')); }}""")
             pg.evaluate("() => document.getElementById('map').scrollIntoView({block: 'center'})")
             pg.wait_for_timeout(700)
-            c = pg.locator("#map").bounding_box()
-            # dois traços, sempre nas mesmas coordenadas de tela: caneta em arco e seta
+            # dois traços, sempre nas mesmas coordenadas do MAPA: caneta em arco e
+            # seta. O mapa é medido DEPOIS de abrir o desenho -- a barra abre
+            # recolhida (auditoria 5.1) e, aberta, empurra o mapa para baixo.
             pg.click("#anot-toggle")
+            c = pg.locator("#map").bounding_box()
             pg.mouse.move(c["x"] + c["width"] * .3, c["y"] + c["height"] * .3)
             pg.mouse.down()
             for i in range(1, 13):
@@ -177,7 +179,8 @@ def _captura(paginas: Path, saida: Path, sufixo: str, direcao: str) -> dict:
             pg.evaluate("""() => { const s = document.getElementById('scrub');
                 s.dispatchEvent(new Event('input')); }""")
             pg.wait_for_timeout(400)
-            pg.screenshot(path=str(saida / f"{nome}_{sufixo}.png"), clip=c)
+            # medido de novo: fechar o desenho recolhe a barra e o mapa sobe
+            pg.screenshot(path=str(saida / f"{nome}_{sufixo}.png"), clip=pg.locator("#map").bounding_box())
             dpr_css = pg.evaluate("() => document.getElementById('map').width / document.getElementById('map').clientWidth")
             registros[nome] = [dict(j, escala_css=1 / dpr_css) for j in pg.evaluate("() => window.__jogadores")]
             if erros:
