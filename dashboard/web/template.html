@@ -995,7 +995,7 @@
     <div class="howto" id="howto" hidden></div>
 
     <div class="lockup">
-      <h1>Uma partida,<br>round a round</h1>
+      <h1 id="titulo-partida"></h1>
       <div class="scorebox">
         <div>
           <div class="tm">TIME A</div>
@@ -1186,7 +1186,7 @@
 
   <section class="panel" data-panel="estilos" hidden>
     <div class="eyebrow">Função medida, não atribuída</div>
-    <h2 class="sec">O que cada um faz em quadra</h2>
+    <h2 class="sec">O que cada um faz no mapa</h2>
     <p class="lead">
       A função é atribuída <b>round a round</b> e depois resumida no que ele mais fez em cada lado —
       sempre com a conta ao lado (<i>âncora em 9 de 12 rounds de CT</i>), porque quem ancora em 9 e
@@ -1253,6 +1253,8 @@
   (function () {
     var o = document.getElementById("c-origem"), sep = document.getElementById("c-origem-sep");
     if (PAGINA.origem) o.textContent = PAGINA.origem; else { o.hidden = true; sep.hidden = true; }
+    // h1: mapa e placar, montado no build (scripts/build_web_page.titulo_da_partida)
+    document.getElementById("titulo-partida").textContent = PAGINA.titulo || M.map;
     var nJog = (D.players || []).length;
     document.getElementById("jog-eyebrow").textContent = nJog + " jogadores, " + M.rounds + " rounds";
     Array.prototype.forEach.call(document.querySelectorAll(".n-rounds"), function (e) { e.textContent = M.rounds; });
@@ -2766,7 +2768,7 @@
         "<div>A</div><div>M</div>" +
         (temRating ? rotulo("rating", "Rating*", (D.rating_info || {}).texto || "") : "<div></div>") +
         rotulo("adr", "ADR", "Ordenar por ADR") + rotulo("kast", "KAST", "Ordenar por KAST") +
-        "<div>Dano round a round</div><div class='hide'>Mira</div>";
+        "<div>Dano round a round</div><div class='hide' title='" + esc(D.dica_mira || "") + "'>Mira</div>";
       wrap.appendChild(hd);
       Array.prototype.forEach.call(hd.querySelectorAll("button"), function (b) {
         b.addEventListener("click", function () { ordem = b.dataset.ordem; desenha(); });
@@ -2894,7 +2896,7 @@
         ["pct_rounds_longe_do_time", "Joga longe do time"],
         ["pct_rounds_isolado", "Fica isolado"],
         ["pct_rounds_ancorado", "Ancora num lugar só"],
-        ["pct_rounds_rotacionando", "Roda o mapa"]
+        ["pct_rounds_rotacionando", "Passa por muitas regiões"]
       ],
       "Arma e abertura": [
         ["pct_rounds_com_awp", "Pega a AWP"],

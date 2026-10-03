@@ -54,6 +54,8 @@ VERSAO_DO_PARSER = 2
 # Onde o complemento registra o que acrescentou a um interim existente.
 ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
 
+# 19 (2026-10-03) textos (auditoria 5.2): porcentagens comparadas que o
+#    arredondamento igualava ganham uma casa; "--" vira travessão; dica da Mira
 # 18 (2026-10-02) card de destaque "AWPer" só para o AWPer do time
 #    (player_roles.awpers_do_time); muda a tabela de candidatos em 4 partidas
 # 17 (2026-10-02) tempo até o contato fica NULO sem contato (era a mediana da
@@ -102,7 +104,7 @@ ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
 #   (inclui a classe de economia do jogador no rating), unique com subset fica
 #   com a primeira linha. Antes, esses três casos dependiam da ordem de hash.
 # 1 (2026-09-20) primeira versão declarada, mesmo raciocínio acima.
-VERSAO_DAS_METRICAS = 18
+VERSAO_DAS_METRICAS = 19
 
 # Pastas cujo estado define o NÚMERO. `sujo` olha só estas: olhar o repositório
 # inteiro marcava todo reprocessamento como sujo, porque o próprio

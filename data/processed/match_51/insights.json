@@ -4002,8 +4002,8 @@
     "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 23 moveu praticamente o mesmo (12% contra 12%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
     "mvp_card": "Spinx foi o MVP, com rating 1,45 contra 1,37 de kyousuke; 87% de KAST contra 83% de m0NESY, jogando de rotativo.",
     "highlight_card": "xertioN: 12 de 12 rounds como Coringa no lado CT.",
-    "spectacle": "Round 5: 3K de Jimpphat e torzsi abriu o round e o time fechou perdendo só um. Não foi o round decisivo -- quem mais moveu a partida foi o 21, e o round mais bonito daqui não mudou o resultado.",
-    "economy": "Equipamento médio no round: 1.040$ de quem venceu contra 1.840$ de quem perdeu. Quem perdeu estava com o equipamento melhor, então a derrota não tem desculpa de economia -- custou mais do que um round no placar.",
+    "spectacle": "Round 5: 3K de Jimpphat e torzsi abriu o round e o time fechou perdendo só um. Não foi o round decisivo — quem mais moveu a partida foi o 21, e o round mais bonito daqui não mudou o resultado.",
+    "economy": "Equipamento médio no round: 1.040$ de quem venceu contra 1.840$ de quem perdeu. Quem perdeu estava com o equipamento melhor, então a derrota não tem desculpa de economia — custou mais do que um round no placar.",
     "carry": "kyousuke é o retrato do papel nesta partida: leva o time nas costas. 26% do dano do time, 3 rounds de multikill.",
     "highlight": "m0NESY é o retrato do papel nesta partida: reaparece no mesmo ângulo em vez de ocupar espaço. 14% dos engajamentos saindo e voltando, em 29 brigas."
   }

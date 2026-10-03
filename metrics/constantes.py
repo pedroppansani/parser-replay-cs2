@@ -15,3 +15,17 @@ JANELA_DE_TRADE_S = 5.0
 # MR12: o lado troca depois do round 12 no tempo regulamentar. A prorrogação
 # (MR3) e o formato lido da demo ficam em metrics/sides.py.
 HALFTIME_ROUND = 12
+
+# Nome do mapa como a página escreve (seletor, índice, título da partida).
+NOME_DO_MAPA = {
+    "de_ancient": "Ancient",
+    "de_cache": "Cache",
+    "de_anubis": "Anubis",
+    "de_dust2": "Dust II",
+    "de_inferno": "Inferno",
+    "de_mirage": "Mirage",
+    "de_nuke": "Nuke",
+    "de_overpass": "Overpass",
+    "de_train": "Train",
+    "de_vertigo": "Vertigo",
+}

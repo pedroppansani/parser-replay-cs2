@@ -4007,8 +4007,8 @@
     "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 22 moveu praticamente o mesmo (19% contra 19%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
     "mvp_card": "ZywOo teve o maior rating (1,44), empatado com flameZ (1,37) dentro do erro do rating (0,079); 96,7 de ADR contra 89,6 de yuurih, jogando de awper.",
     "highlight_card": "flameZ: 12 de 12 rounds como Coringa no lado CT. FalleN pontuou praticamente o mesmo como repick: houve mais de um destaque equivalente nesta partida.",
-    "spectacle": "Round 3: clutch de FalleN em 1v2. Não foi o round decisivo -- quem mais moveu a partida foi o 21, e o round mais bonito daqui não mudou o resultado.",
-    "economy": "Equipamento médio no round: 200$ de quem venceu contra 1.430$ de quem perdeu. Quem perdeu estava com o equipamento melhor, então a derrota não tem desculpa de economia -- custou mais do que um round no placar.",
+    "spectacle": "Round 3: clutch de FalleN em 1v2. Não foi o round decisivo — quem mais moveu a partida foi o 21, e o round mais bonito daqui não mudou o resultado.",
+    "economy": "Equipamento médio no round: 200$ de quem venceu contra 1.430$ de quem perdeu. Quem perdeu estava com o equipamento melhor, então a derrota não tem desculpa de economia — custou mais do que um round no placar.",
     "carry": "yuurih é o retrato do papel nesta partida: leva o time nas costas. 25% do dano do time, 1 round de multikill, 1 clutch fechado.",
     "highlight": "FalleN é o retrato do papel nesta partida: reaparece no mesmo ângulo em vez de ocupar espaço. 24% dos engajamentos saindo e voltando, em 25 brigas."
   }

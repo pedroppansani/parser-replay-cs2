@@ -61,3 +61,17 @@ def format_pct(fracao: float | None) -> str:
     if fracao is None:
         return "—"
     return f"{round(float(fracao) * 100)}%"
+
+
+def format_pct_par(a: float | None, b: float | None) -> tuple[str, str]:
+    """Duas porcentagens que a frase COMPARA ("moveu X, abaixo dos Y").
+
+    Inteiras, como `format_pct`, a não ser que o arredondamento as iguale: aí
+    as duas ganham uma casa, senão a frase diz "moveu 12%, abaixo dos 12%"
+    (auditoria 5.2; match_11 e match_23).
+    """
+    if a is None or b is None or round(float(a) * 100) != round(float(b) * 100):
+        return format_pct(a), format_pct(b)
+    def uma_casa(x: float) -> str:
+        return f"{float(x) * 100:.1f}".replace(".", ",") + "%"
+    return uma_casa(a), uma_casa(b)

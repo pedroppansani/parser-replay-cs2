@@ -18,7 +18,7 @@ verifica-se que a frase sai curta em vez de citar campo vazio.
 """
 from __future__ import annotations
 
-from metrics.formatting import format_money, format_pct
+from metrics.formatting import format_money, format_pct, format_pct_par
 
 # Como cada final de round é dito em português. O demo entrega códigos.
 MOTIVO = {
@@ -183,9 +183,10 @@ def historia_sem_round_decisivo(resumo: dict, placar: tuple[int, int]) -> str:
         f"e o placar terminou em {max(a, b)}-{min(a, b)}"
     )
     if maior is not None and minimo is not None:
+        movido, exigido = format_pct_par(maior, minimo)
         frase += (
-            f". O round de maior peso moveu {format_pct(maior)} da chance de vitória, "
-            f"abaixo dos {format_pct(minimo)} que o modelo exige para chamar um "
+            f". O round de maior peso moveu {movido} da chance de vitória, "
+            f"abaixo dos {exigido} que o modelo exige para chamar um "
             f"round de decisivo"
         )
     return frase + "."
@@ -244,14 +245,14 @@ def historia_round_impressionante(resumo: dict, round_decisivo: int | None) -> s
 
     if round_decisivo is None:
         frase += (
-            ". Não foi o round decisivo porque esta partida não teve um -- a "
+            ". Não foi o round decisivo porque esta partida não teve um — a "
             "diferença se construiu ao longo do jogo"
         )
     elif imp["round"] == round_decisivo:
         frase += ". Foi também o round que mais moveu a partida"
     else:
         frase += (
-            f". Não foi o round decisivo -- quem mais moveu a partida foi o "
+            f". Não foi o round decisivo — quem mais moveu a partida foi o "
             f"{round_decisivo}, e o round mais bonito daqui não mudou o resultado"
         )
     return frase + "."
@@ -276,7 +277,7 @@ def leitura_economica(equip_vencedor, equip_perdedor, perdedor_estava_melhor: bo
     if perdedor_estava_melhor:
         frase += (
             ". Quem perdeu estava com o equipamento melhor, então a derrota não "
-            "tem desculpa de economia -- custou mais do que um round no placar"
+            "tem desculpa de economia — custou mais do que um round no placar"
         )
     return frase + "."
 
@@ -402,7 +403,9 @@ FRASES_PERFIL = {
     "pct_rounds_longe_do_time": ("joga longe do time", "joga colado no time", "rounds"),
     "pct_rounds_isolado": ("fica sozinho no mapa", None, "rounds"),
     "pct_rounds_ancorado": ("ancora num lugar só", "não para quieto", "rounds"),
-    "pct_rounds_rotacionando": ("roda o mapa", None, "rounds"),
+    # "passa por 7 regiões ou mais": não confundir com o grupo de estilo "Roda o
+    # mapa", que aparece na mesma tela (auditoria 5.2)
+    "pct_rounds_rotacionando": ("passa por muitas regiões do mapa", None, "rounds"),
     "pct_rounds_com_awp": ("puxa a AWP", None, "rounds"),
     "pct_kills_de_awp": ("mata de AWP", None, "kills"),
     "pct_rounds_abertura_awp": ("abre o round de AWP", None, "rounds"),

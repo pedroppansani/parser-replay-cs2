@@ -28,23 +28,14 @@ from scripts.build_tactics_page import arquivo_da_pagina, mapas_disponiveis
 from scripts.build_tactics_page import build_html as build_prancheta
 from scripts.build_web_page import build_html
 
+from metrics.constantes import NOME_DO_MAPA
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
 DOCS_DIR = PROJECT_ROOT / "docs"
 
-# Nome bonito do mapa pro seletor e pro índice.
-MAP_LABEL = {
-    "de_ancient": "Ancient",
-    "de_cache": "Cache",
-    "de_anubis": "Anubis",
-    "de_dust2": "Dust II",
-    "de_inferno": "Inferno",
-    "de_mirage": "Mirage",
-    "de_nuke": "Nuke",
-    "de_overpass": "Overpass",
-    "de_train": "Train",
-    "de_vertigo": "Vertigo",
-}
+# Nome bonito do mapa pro seletor e pro índice (metrics/constantes.py).
+MAP_LABEL = NOME_DO_MAPA
 
 
 def match_summary(match_id: str) -> dict | None:

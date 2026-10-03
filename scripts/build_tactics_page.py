@@ -56,10 +56,8 @@ def build_html(mapa: str, rotulos: dict[str, str] | None = None) -> str:
     caminho_bib = LINEUPS_DIR / f"{mapa}.json"
     biblioteca = json.loads(caminho_bib.read_text(encoding="utf-8")) if caminho_bib.exists() else None
     if rotulos is None:
-        # o nome bonito dos mapas vive no build do site; import tardio porque o
-        # build do site importa este módulo
-        from scripts.build_site import MAP_LABEL
-        rotulos = MAP_LABEL
+        from metrics.constantes import NOME_DO_MAPA
+        rotulos = NOME_DO_MAPA
     mapas = [{"mapa": m, "nome": rotulos.get(m, m), "arquivo": arquivo_da_pagina(m)} for m in mapas_disponiveis()]
     return (
         (WEB / "tactics.html").read_text(encoding="utf-8")

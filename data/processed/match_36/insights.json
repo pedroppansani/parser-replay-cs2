@@ -3923,8 +3923,8 @@
     "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 19 moveu praticamente o mesmo (12% contra 12%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
     "mvp_card": "donk foi o MVP, com rating 1,74 contra 1,47 de zont1x; 106,6 de ADR contra 95,6 de sh1ro, jogando de âncora.",
     "highlight_card": "chopper: 12 de 12 rounds como Coringa no lado CT.",
-    "spectacle": "Round 19: clutch de sh1ro em 1v2, 3K de sh1ro e virou com 2 jogadores a menos. Não foi o round decisivo -- quem mais moveu a partida foi o 16, e o round mais bonito daqui não mudou o resultado.",
-    "economy": "Equipamento médio no round: 1.680$ de quem venceu contra 3.760$ de quem perdeu. Quem perdeu estava com o equipamento melhor, então a derrota não tem desculpa de economia -- custou mais do que um round no placar.",
+    "spectacle": "Round 19: clutch de sh1ro em 1v2, 3K de sh1ro e virou com 2 jogadores a menos. Não foi o round decisivo — quem mais moveu a partida foi o 16, e o round mais bonito daqui não mudou o resultado.",
+    "economy": "Equipamento médio no round: 1.680$ de quem venceu contra 3.760$ de quem perdeu. Quem perdeu estava com o equipamento melhor, então a derrota não tem desculpa de economia — custou mais do que um round no placar.",
     "carry": "donk é o retrato do papel nesta partida: leva o time nas costas. 27% do dano do time, 4 rounds de multikill.",
     "highlight": "w0nderful é o retrato do papel nesta partida: jogou de AWP e produziu com ela. AWP na mão em 8 rounds, 100% de conversão na primeira briga, 1 pick de abertura."
   }
