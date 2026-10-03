@@ -453,16 +453,21 @@
     "name": "mezii",
     "team": "B",
     "funcao": "Rotativo",
-    "indice": 0.7666666666666667,
+    "rating": 2.07,
+    "rating_texto": "2,07",
+    "vice_steamid": 76561198113666193,
     "vice_nome": "ZywOo",
-    "vice_indice": 0.7612081513828238,
+    "vice_rating": 1.85,
+    "vice_rating_texto": "1,85",
+    "margem": 0.0788,
+    "margem_texto": "0,079",
+    "empatados": [],
     "componentes": [
       {
         "chave": "adr",
         "rotulo": "ADR",
         "unidade": "de dano por round",
         "sintagma": "de ADR",
-        "peso": 0.4,
         "valor": 126.13333333333334,
         "texto": "126,1",
         "melhor_dos_outros": 105.8,
@@ -475,7 +480,6 @@
         "rotulo": "KAST",
         "unidade": "% dos rounds com contribuição",
         "sintagma": "de KAST",
-        "peso": 0.3,
         "valor": 93.33333333333333,
         "texto": "93%",
         "melhor_dos_outros": 100.0,
@@ -488,7 +492,6 @@
         "rotulo": "Aberturas",
         "unidade": "rounds em que abriu o placar",
         "sintagma": "aberturas de round",
-        "peso": 0.2,
         "valor": 0.0,
         "texto": "0",
         "melhor_dos_outros": 4.0,
@@ -501,7 +504,6 @@
         "rotulo": "Clutches",
         "unidade": "rounds fechados sozinho",
         "sintagma": "clutch fechado",
-        "peso": 0.1,
         "valor": 1.0,
         "texto": "1",
         "melhor_dos_outros": 0.0,
@@ -898,7 +900,6 @@
       "opening_kills": 0,
       "clutches": 1,
       "team": "B",
-      "mvp_index": 0.7666666666666667,
       "rating": 2.07,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -929,7 +930,6 @@
       "opening_kills": 3,
       "clutches": 0,
       "team": "B",
-      "mvp_index": 0.7612081513828238,
       "rating": 1.85,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -960,7 +960,6 @@
       "opening_kills": 4,
       "clutches": 0,
       "team": "B",
-      "mvp_index": 0.6395924308588063,
       "rating": 1.19,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -991,7 +990,6 @@
       "opening_kills": 2,
       "clutches": 0,
       "team": "B",
-      "mvp_index": 0.5475982532751091,
       "rating": 1.15,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1022,7 +1020,6 @@
       "opening_kills": 3,
       "clutches": 0,
       "team": "A",
-      "mvp_index": 0.4610625909752547,
       "rating": 1.17,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1053,7 +1050,6 @@
       "opening_kills": 1,
       "clutches": 0,
       "team": "B",
-      "mvp_index": 0.3635371179039301,
       "rating": 1.17,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1065,37 +1061,6 @@
         "kast": 1.05,
         "multikills": 1.15,
         "round_swing": 1.29
-      }
-    },
-    {
-      "steamid": 76561198164970560,
-      "name": "yuurih",
-      "adr": 50.4,
-      "kast_pct": 60.0,
-      "total_utility_damage": 31,
-      "utility_damage_per_round": 2.066666666666667,
-      "total_kills": 5,
-      "total_trade_kills": 1,
-      "median_first_contact_s": 39.03125,
-      "survival_rate": 0.06666666666666667,
-      "crosshair_score": 59.80358760979729,
-      "frac_entering_fight": 0.09800641093464763,
-      "avg_distance_from_team": 339.1129150390625,
-      "opening_kills": 1,
-      "clutches": 0,
-      "team": "A",
-      "mvp_index": 0.2192867540029112,
-      "rating": 0.55,
-      "rating_amostra_fraca": false,
-      "rating_sub": {
-        "kills_limpas": 0.46,
-        "kills_assistidas": 1.11,
-        "dano": 0.8,
-        "sobrevivencia": 0.25,
-        "mortes_trocadas": 0.73,
-        "kast": 0.85,
-        "multikills": 0.0,
-        "round_swing": 0.71
       }
     },
     {
@@ -1115,7 +1080,6 @@
       "opening_kills": 1,
       "clutches": 0,
       "team": "A",
-      "mvp_index": 0.1361717612809316,
       "rating": 0.59,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1127,6 +1091,36 @@
         "kast": 0.58,
         "multikills": 0.0,
         "round_swing": 0.84
+      }
+    },
+    {
+      "steamid": 76561198164970560,
+      "name": "yuurih",
+      "adr": 50.4,
+      "kast_pct": 60.0,
+      "total_utility_damage": 31,
+      "utility_damage_per_round": 2.066666666666667,
+      "total_kills": 5,
+      "total_trade_kills": 1,
+      "median_first_contact_s": 39.03125,
+      "survival_rate": 0.06666666666666667,
+      "crosshair_score": 59.80358760979729,
+      "frac_entering_fight": 0.09800641093464763,
+      "avg_distance_from_team": 339.1129150390625,
+      "opening_kills": 1,
+      "clutches": 0,
+      "team": "A",
+      "rating": 0.55,
+      "rating_amostra_fraca": false,
+      "rating_sub": {
+        "kills_limpas": 0.46,
+        "kills_assistidas": 1.11,
+        "dano": 0.8,
+        "sobrevivencia": 0.25,
+        "mortes_trocadas": 0.73,
+        "kast": 0.85,
+        "multikills": 0.0,
+        "round_swing": 0.71
       }
     },
     {
@@ -1146,7 +1140,6 @@
       "opening_kills": 0,
       "clutches": 0,
       "team": "A",
-      "mvp_index": 0.05720524017467248,
       "rating": 0.57,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1177,7 +1170,6 @@
       "opening_kills": 0,
       "clutches": 0,
       "team": "A",
-      "mvp_index": 0.03333333333333332,
       "rating": 0.37,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -3650,7 +3642,7 @@
   "narrative": {
     "decisive": "Partida sem round decisivo: a diferença se construiu ao longo do jogo, e o placar terminou em 13-2. O round de maior peso moveu 8% da chance de vitória, abaixo dos 12% que o modelo exige para chamar um round de decisivo.",
     "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário.",
-    "mvp_card": "mezii foi o MVP com 126,1 de ADR contra 105,8 de ZywOo e 1 clutch fechado contra 0 de ZywOo, jogando de rotativo.",
+    "mvp_card": "mezii foi o MVP, com rating 2,07 contra 1,85 de ZywOo; 126,1 de ADR contra 105,8 de ZywOo e 1 clutch fechado contra 0 de ZywOo, jogando de rotativo.",
     "highlight_card": "FalleN: 96% de mortes por perto sem troca, contra 90% de mediana dos outros desta partida. molodoy pontuou praticamente o mesmo como repick: houve mais de um destaque equivalente nesta partida.",
     "spectacle": "Round 13: clutch de mezii em 1v2, 3K de mezii e virou com 2 jogadores a menos. Não foi o round decisivo porque esta partida não teve um -- a diferença se construiu ao longo do jogo.",
     "economy": null,

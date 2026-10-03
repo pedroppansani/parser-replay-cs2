@@ -587,38 +587,42 @@
     "winner_team": "A"
   },
   "mvp_card": {
-    "steamid": 76561198246607476,
-    "name": "b1t",
-    "team": "B",
-    "funcao": "Rotativo",
-    "indice": 0.85,
-    "vice_nome": "sh1ro",
-    "vice_indice": 0.7983089348813731,
+    "steamid": 76561198081484775,
+    "name": "sh1ro",
+    "team": "A",
+    "funcao": "AWPer",
+    "rating": 2.06,
+    "rating_texto": "2,06",
+    "vice_steamid": 76561198246607476,
+    "vice_nome": "b1t",
+    "vice_rating": 1.6,
+    "vice_rating_texto": "1,60",
+    "margem": 0.0788,
+    "margem_texto": "0,079",
+    "empatados": [],
     "componentes": [
       {
         "chave": "adr",
         "rotulo": "ADR",
         "unidade": "de dano por round",
         "sintagma": "de ADR",
-        "peso": 0.4,
-        "valor": 122.23809523809524,
-        "texto": "122,2",
-        "melhor_dos_outros": 100.23809523809524,
-        "melhor_dos_outros_texto": "100,2",
-        "melhor_dos_outros_nome": "sh1ro",
-        "lidera": true
+        "valor": 100.23809523809524,
+        "texto": "100,2",
+        "melhor_dos_outros": 122.23809523809524,
+        "melhor_dos_outros_texto": "122,2",
+        "melhor_dos_outros_nome": "b1t",
+        "lidera": false
       },
       {
         "chave": "kast_pct",
         "rotulo": "KAST",
         "unidade": "% dos rounds com contribuição",
         "sintagma": "de KAST",
-        "peso": 0.3,
-        "valor": 85.71428571428571,
-        "texto": "86%",
+        "valor": 80.95238095238095,
+        "texto": "81%",
         "melhor_dos_outros": 85.71428571428571,
         "melhor_dos_outros_texto": "86%",
-        "melhor_dos_outros_nome": "w0nderful",
+        "melhor_dos_outros_nome": "b1t",
         "lidera": false
       },
       {
@@ -626,7 +630,6 @@
         "rotulo": "Aberturas",
         "unidade": "rounds em que abriu o placar",
         "sintagma": "aberturas de round",
-        "peso": 0.2,
         "valor": 3.0,
         "texto": "3",
         "melhor_dos_outros": 4.0,
@@ -639,13 +642,12 @@
         "rotulo": "Clutches",
         "unidade": "rounds fechados sozinho",
         "sintagma": "clutches fechados",
-        "peso": 0.1,
-        "valor": 0.0,
-        "texto": "0",
-        "melhor_dos_outros": 2.0,
-        "melhor_dos_outros_texto": "2",
-        "melhor_dos_outros_nome": "sh1ro",
-        "lidera": false
+        "valor": 2.0,
+        "texto": "2",
+        "melhor_dos_outros": 1.0,
+        "melhor_dos_outros_texto": "1",
+        "melhor_dos_outros_nome": "w0nderful",
+        "lidera": true
       }
     ]
   },
@@ -1146,7 +1148,6 @@
       "opening_kills": 3,
       "clutches": 0,
       "team": "B",
-      "mvp_index": 0.85,
       "rating": 1.6,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1177,7 +1178,6 @@
       "opening_kills": 3,
       "clutches": 2,
       "team": "A",
-      "mvp_index": 0.7983089348813731,
       "rating": 2.06,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1208,7 +1208,6 @@
       "opening_kills": 4,
       "clutches": 0,
       "team": "A",
-      "mvp_index": 0.688726232542487,
       "rating": 1.47,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1220,68 +1219,6 @@
         "kast": 1.08,
         "multikills": 1.47,
         "round_swing": 1.18
-      }
-    },
-    {
-      "steamid": 76561199076189612,
-      "name": "makazze",
-      "adr": 76.28571428571429,
-      "kast_pct": 80.95238095238095,
-      "total_utility_damage": 19,
-      "utility_damage_per_round": 0.9047619047619048,
-      "total_kills": 14,
-      "total_trade_kills": 1,
-      "median_first_contact_s": 62.421875,
-      "survival_rate": 0.23809523809523808,
-      "crosshair_score": 62.71064708399393,
-      "frac_entering_fight": 0.08160281979390284,
-      "avg_distance_from_team": 732.729248046875,
-      "opening_kills": 4,
-      "clutches": 0,
-      "team": "B",
-      "mvp_index": 0.629816590947333,
-      "rating": 0.92,
-      "rating_amostra_fraca": false,
-      "rating_sub": {
-        "kills_limpas": 1.07,
-        "kills_assistidas": 0.49,
-        "dano": 1.0,
-        "sobrevivencia": 0.79,
-        "mortes_trocadas": 1.18,
-        "kast": 1.13,
-        "multikills": 0.44,
-        "round_swing": 0.73
-      }
-    },
-    {
-      "steamid": 76561199063068840,
-      "name": "w0nderful",
-      "adr": 67.0952380952381,
-      "kast_pct": 85.71428571428571,
-      "total_utility_damage": 31,
-      "utility_damage_per_round": 1.4761904761904763,
-      "total_kills": 17,
-      "total_trade_kills": 5,
-      "median_first_contact_s": 87.828125,
-      "survival_rate": 0.38095238095238093,
-      "crosshair_score": 70.86626122150902,
-      "frac_entering_fight": 0.04358430870308974,
-      "avg_distance_from_team": 601.5257568359375,
-      "opening_kills": 3,
-      "clutches": 1,
-      "team": "B",
-      "mvp_index": 0.6272084805653712,
-      "rating": 1.38,
-      "rating_amostra_fraca": false,
-      "rating_sub": {
-        "kills_limpas": 1.11,
-        "kills_assistidas": 2.17,
-        "dano": 0.9,
-        "sobrevivencia": 1.22,
-        "mortes_trocadas": 1.31,
-        "kast": 1.19,
-        "multikills": 1.26,
-        "round_swing": 1.32
       }
     },
     {
@@ -1301,7 +1238,6 @@
       "opening_kills": 2,
       "clutches": 0,
       "team": "B",
-      "mvp_index": 0.5119300016826519,
       "rating": 0.96,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1313,6 +1249,36 @@
         "kast": 1.06,
         "multikills": 0.68,
         "round_swing": 0.89
+      }
+    },
+    {
+      "steamid": 76561199076189612,
+      "name": "makazze",
+      "adr": 76.28571428571429,
+      "kast_pct": 80.95238095238095,
+      "total_utility_damage": 19,
+      "utility_damage_per_round": 0.9047619047619048,
+      "total_kills": 14,
+      "total_trade_kills": 1,
+      "median_first_contact_s": 62.421875,
+      "survival_rate": 0.23809523809523808,
+      "crosshair_score": 62.71064708399393,
+      "frac_entering_fight": 0.08160281979390284,
+      "avg_distance_from_team": 732.729248046875,
+      "opening_kills": 4,
+      "clutches": 0,
+      "team": "B",
+      "rating": 0.92,
+      "rating_amostra_fraca": false,
+      "rating_sub": {
+        "kills_limpas": 1.07,
+        "kills_assistidas": 0.49,
+        "dano": 1.0,
+        "sobrevivencia": 0.79,
+        "mortes_trocadas": 1.18,
+        "kast": 1.13,
+        "multikills": 0.44,
+        "round_swing": 0.73
       }
     },
     {
@@ -1332,7 +1298,6 @@
       "opening_kills": 0,
       "clutches": 0,
       "team": "A",
-      "mvp_index": 0.41521117280834596,
       "rating": 1.02,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1344,6 +1309,36 @@
         "kast": 1.15,
         "multikills": 0.6,
         "round_swing": 0.88
+      }
+    },
+    {
+      "steamid": 76561199063068840,
+      "name": "w0nderful",
+      "adr": 67.0952380952381,
+      "kast_pct": 85.71428571428571,
+      "total_utility_damage": 31,
+      "utility_damage_per_round": 1.4761904761904763,
+      "total_kills": 17,
+      "total_trade_kills": 5,
+      "median_first_contact_s": 87.828125,
+      "survival_rate": 0.38095238095238093,
+      "crosshair_score": 70.86626122150902,
+      "frac_entering_fight": 0.04358430870308974,
+      "avg_distance_from_team": 601.5257568359375,
+      "opening_kills": 3,
+      "clutches": 1,
+      "team": "B",
+      "rating": 1.38,
+      "rating_amostra_fraca": false,
+      "rating_sub": {
+        "kills_limpas": 1.11,
+        "kills_assistidas": 2.17,
+        "dano": 0.9,
+        "sobrevivencia": 1.22,
+        "mortes_trocadas": 1.31,
+        "kast": 1.19,
+        "multikills": 1.26,
+        "round_swing": 1.32
       }
     },
     {
@@ -1363,7 +1358,6 @@
       "opening_kills": 0,
       "clutches": 1,
       "team": "A",
-      "mvp_index": 0.39241965337371704,
       "rating": 1.02,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1394,7 +1388,6 @@
       "opening_kills": 0,
       "clutches": 0,
       "team": "B",
-      "mvp_index": 0.2844691233383813,
       "rating": 0.57,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1425,7 +1418,6 @@
       "opening_kills": 2,
       "clutches": 0,
       "team": "A",
-      "mvp_index": 0.1,
       "rating": 0.52,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -3898,7 +3890,7 @@
   "narrative": {
     "decisive": "Partida sem round decisivo: a diferença se construiu ao longo do jogo, e o placar terminou em 13-8. O round de maior peso moveu 12% da chance de vitória, abaixo dos 12% que o modelo exige para chamar um round de decisivo.",
     "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário.",
-    "mvp_card": "b1t foi o MVP com 122,2 de ADR contra 100,2 de sh1ro, jogando de rotativo.",
+    "mvp_card": "sh1ro foi o MVP, com rating 2,06 contra 1,60 de b1t; 2 clutches fechados contra 1 de w0nderful, jogando de awper.",
     "highlight_card": "magixx: 9 de 9 rounds como Coringa no lado CT.",
     "spectacle": "Round 4: clutch de sh1ro em 1v2, 4K de b1t e virou com 2 jogadores a menos. Não foi o round decisivo porque esta partida não teve um -- a diferença se construiu ao longo do jogo.",
     "economy": null,

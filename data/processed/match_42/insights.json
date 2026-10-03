@@ -963,16 +963,27 @@
     "name": "m0NESY",
     "team": "A",
     "funcao": "AWPer",
-    "indice": 0.8238095238095239,
+    "rating": 1.48,
+    "rating_texto": "1,48",
+    "vice_steamid": 76561198193174134,
     "vice_nome": "xertioN",
-    "vice_indice": 0.7639079247935336,
+    "vice_rating": 1.45,
+    "vice_rating_texto": "1,45",
+    "margem": 0.0788,
+    "margem_texto": "0,079",
+    "empatados": [
+      {
+        "steamid": 76561198193174134,
+        "name": "xertioN",
+        "rating_texto": "1,45"
+      }
+    ],
     "componentes": [
       {
         "chave": "adr",
         "rotulo": "ADR",
         "unidade": "de dano por round",
         "sintagma": "de ADR",
-        "peso": 0.4,
         "valor": 93.72222222222223,
         "texto": "93,7",
         "melhor_dos_outros": 90.72222222222223,
@@ -985,12 +996,11 @@
         "rotulo": "KAST",
         "unidade": "% dos rounds com contribuição",
         "sintagma": "de KAST",
-        "peso": 0.3,
         "valor": 75.0,
         "texto": "75%",
         "melhor_dos_outros": 77.77777777777777,
         "melhor_dos_outros_texto": "78%",
-        "melhor_dos_outros_nome": "Spinx",
+        "melhor_dos_outros_nome": "NiKo",
         "lidera": false
       },
       {
@@ -998,7 +1008,6 @@
         "rotulo": "Aberturas",
         "unidade": "rounds em que abriu o placar",
         "sintagma": "aberturas de round",
-        "peso": 0.2,
         "valor": 5.0,
         "texto": "5",
         "melhor_dos_outros": 6.0,
@@ -1011,7 +1020,6 @@
         "rotulo": "Clutches",
         "unidade": "rounds fechados sozinho",
         "sintagma": "clutches fechados",
-        "peso": 0.1,
         "valor": 0.0,
         "texto": "0",
         "melhor_dos_outros": 3.0,
@@ -1811,7 +1819,6 @@
       "opening_kills": 5,
       "clutches": 0,
       "team": "A",
-      "mvp_index": 0.8238095238095239,
       "rating": 1.48,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1842,7 +1849,6 @@
       "opening_kills": 3,
       "clutches": 1,
       "team": "B",
-      "mvp_index": 0.7639079247935336,
       "rating": 1.45,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1854,68 +1860,6 @@
         "kast": 1.03,
         "multikills": 1.48,
         "round_swing": 1.26
-      }
-    },
-    {
-      "steamid": 76561198063336407,
-      "name": "Spinx",
-      "adr": 69.63888888888889,
-      "kast_pct": 77.77777777777777,
-      "total_utility_damage": 152,
-      "utility_damage_per_round": 4.222222222222222,
-      "total_kills": 24,
-      "total_trade_kills": 3,
-      "median_first_contact_s": 60.5078125,
-      "survival_rate": 0.3888888888888889,
-      "crosshair_score": 67.12996495126866,
-      "frac_entering_fight": 0.05386488405827442,
-      "avg_distance_from_team": 831.2330322265625,
-      "opening_kills": 5,
-      "clutches": 0,
-      "team": "B",
-      "mvp_index": 0.6533825338253381,
-      "rating": 1.14,
-      "rating_amostra_fraca": false,
-      "rating_sub": {
-        "kills_limpas": 0.9,
-        "kills_assistidas": 1.67,
-        "dano": 1.01,
-        "sobrevivencia": 1.21,
-        "mortes_trocadas": 1.52,
-        "kast": 1.08,
-        "multikills": 1.16,
-        "round_swing": 0.98
-      }
-    },
-    {
-      "steamid": 76561197996678278,
-      "name": "TeSeS",
-      "adr": 70.41666666666667,
-      "kast_pct": 75.0,
-      "total_utility_damage": 109,
-      "utility_damage_per_round": 3.0277777777777777,
-      "total_kills": 21,
-      "total_trade_kills": 2,
-      "median_first_contact_s": 60.5234375,
-      "survival_rate": 0.25,
-      "crosshair_score": 72.96442596188949,
-      "frac_entering_fight": 0.07603276978385895,
-      "avg_distance_from_team": 884.81787109375,
-      "opening_kills": 6,
-      "clutches": 0,
-      "team": "A",
-      "mvp_index": 0.6507467931822176,
-      "rating": 0.98,
-      "rating_amostra_fraca": false,
-      "rating_sub": {
-        "kills_limpas": 1.06,
-        "kills_assistidas": 0.35,
-        "dano": 1.0,
-        "sobrevivencia": 0.78,
-        "mortes_trocadas": 1.3,
-        "kast": 1.05,
-        "multikills": 0.4,
-        "round_swing": 0.88
       }
     },
     {
@@ -1935,7 +1879,6 @@
       "opening_kills": 0,
       "clutches": 0,
       "team": "A",
-      "mvp_index": 0.5706027060270602,
       "rating": 1.17,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1947,6 +1890,66 @@
         "kast": 1.08,
         "multikills": 0.68,
         "round_swing": 1.03
+      }
+    },
+    {
+      "steamid": 76561197996678278,
+      "name": "TeSeS",
+      "adr": 70.41666666666667,
+      "kast_pct": 75.0,
+      "total_utility_damage": 109,
+      "utility_damage_per_round": 3.0277777777777777,
+      "total_kills": 21,
+      "total_trade_kills": 2,
+      "median_first_contact_s": 60.5234375,
+      "survival_rate": 0.25,
+      "crosshair_score": 72.96442596188949,
+      "frac_entering_fight": 0.07603276978385895,
+      "avg_distance_from_team": 884.81787109375,
+      "opening_kills": 6,
+      "clutches": 0,
+      "team": "A",
+      "rating": 0.98,
+      "rating_amostra_fraca": false,
+      "rating_sub": {
+        "kills_limpas": 1.06,
+        "kills_assistidas": 0.35,
+        "dano": 1.0,
+        "sobrevivencia": 0.78,
+        "mortes_trocadas": 1.3,
+        "kast": 1.05,
+        "multikills": 0.4,
+        "round_swing": 0.88
+      }
+    },
+    {
+      "steamid": 76561198063336407,
+      "name": "Spinx",
+      "adr": 69.63888888888889,
+      "kast_pct": 77.77777777777777,
+      "total_utility_damage": 152,
+      "utility_damage_per_round": 4.222222222222222,
+      "total_kills": 24,
+      "total_trade_kills": 3,
+      "median_first_contact_s": 60.5078125,
+      "survival_rate": 0.3888888888888889,
+      "crosshair_score": 67.12996495126866,
+      "frac_entering_fight": 0.05386488405827442,
+      "avg_distance_from_team": 831.2330322265625,
+      "opening_kills": 5,
+      "clutches": 0,
+      "team": "B",
+      "rating": 1.14,
+      "rating_amostra_fraca": false,
+      "rating_sub": {
+        "kills_limpas": 0.9,
+        "kills_assistidas": 1.67,
+        "dano": 1.01,
+        "sobrevivencia": 1.21,
+        "mortes_trocadas": 1.52,
+        "kast": 1.08,
+        "multikills": 1.16,
+        "round_swing": 0.98
       }
     },
     {
@@ -1966,7 +1969,6 @@
       "opening_kills": 4,
       "clutches": 0,
       "team": "A",
-      "mvp_index": 0.4732735898787558,
       "rating": 1.13,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1978,6 +1980,36 @@
         "kast": 0.96,
         "multikills": 1.22,
         "round_swing": 0.99
+      }
+    },
+    {
+      "steamid": 76561198138828475,
+      "name": "Brollan",
+      "adr": 60.916666666666664,
+      "kast_pct": 58.333333333333336,
+      "total_utility_damage": 87,
+      "utility_damage_per_round": 2.4166666666666665,
+      "total_kills": 17,
+      "total_trade_kills": 5,
+      "median_first_contact_s": 51.96875,
+      "survival_rate": 0.19444444444444445,
+      "crosshair_score": 71.80150123568704,
+      "frac_entering_fight": 0.08592693988313228,
+      "avg_distance_from_team": 858.6033935546875,
+      "opening_kills": 2,
+      "clutches": 1,
+      "team": "B",
+      "rating": 0.68,
+      "rating_amostra_fraca": false,
+      "rating_sub": {
+        "kills_limpas": 0.85,
+        "kills_assistidas": 0.46,
+        "dano": 0.88,
+        "sobrevivencia": 0.62,
+        "mortes_trocadas": 0.47,
+        "kast": 0.84,
+        "multikills": 0.63,
+        "round_swing": 0.63
       }
     },
     {
@@ -1997,7 +2029,6 @@
       "opening_kills": 3,
       "clutches": 3,
       "team": "B",
-      "mvp_index": 0.43336847654190835,
       "rating": 1.08,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -2028,7 +2059,6 @@
       "opening_kills": 5,
       "clutches": 1,
       "team": "B",
-      "mvp_index": 0.42407309787383585,
       "rating": 1.03,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -2059,7 +2089,6 @@
       "opening_kills": 3,
       "clutches": 0,
       "team": "A",
-      "mvp_index": 0.3142857142857144,
       "rating": 0.76,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -2071,37 +2100,6 @@
         "kast": 1.01,
         "multikills": 0.72,
         "round_swing": 0.65
-      }
-    },
-    {
-      "steamid": 76561198138828475,
-      "name": "Brollan",
-      "adr": 60.916666666666664,
-      "kast_pct": 58.333333333333336,
-      "total_utility_damage": 87,
-      "utility_damage_per_round": 2.4166666666666665,
-      "total_kills": 17,
-      "total_trade_kills": 5,
-      "median_first_contact_s": 51.96875,
-      "survival_rate": 0.19444444444444445,
-      "crosshair_score": 71.80150123568704,
-      "frac_entering_fight": 0.08592693988313228,
-      "avg_distance_from_team": 858.6033935546875,
-      "opening_kills": 2,
-      "clutches": 1,
-      "team": "B",
-      "mvp_index": 0.20947109471094705,
-      "rating": 0.68,
-      "rating_amostra_fraca": false,
-      "rating_sub": {
-        "kills_limpas": 0.85,
-        "kills_assistidas": 0.46,
-        "dano": 0.88,
-        "sobrevivencia": 0.62,
-        "mortes_trocadas": 0.47,
-        "kast": 0.84,
-        "multikills": 0.63,
-        "round_swing": 0.63
       }
     }
   ],
@@ -4563,7 +4561,7 @@
   "narrative": {
     "decisive": "Levou o Time B de 25% para 50% de chance de vencer a partida, a partir do Time A na frente por 12-11, com o 1v1 de Jimpphat e o round terminou com os CTs eliminados.",
     "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 30 moveu praticamente o mesmo (25% contra 25%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
-    "mvp_card": "m0NESY foi o MVP com 93,7 de ADR contra 90,7 de xertioN, jogando de awper.",
+    "mvp_card": "m0NESY teve o maior rating (1,48), empatado com xertioN (1,45) dentro do erro do rating (0,079); 93,7 de ADR contra 90,7 de xertioN, jogando de awper.",
     "highlight_card": "torzsi: 27 rounds com AWP na mão, contra 2 de mediana dos outros desta partida. Spinx pontuou praticamente o mesmo como coringa: houve mais de um destaque equivalente nesta partida.",
     "spectacle": "Round 23: clutch de xertioN em 1v2, 3K de kyousuke e virou com 2 jogadores a menos. Não foi o round decisivo -- quem mais moveu a partida foi o 24, e o round mais bonito daqui não mudou o resultado.",
     "economy": "Equipamento médio no round: 1.440$ de quem venceu contra 200$ de quem perdeu.",

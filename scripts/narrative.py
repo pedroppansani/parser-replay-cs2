@@ -299,24 +299,23 @@ def historia_mvp(mvp: dict) -> str:
             pedaco += f" contra {c['melhor_dos_outros_texto']} de {c['melhor_dos_outros_nome']}"
         partes.append(pedaco)
 
+    # O MVP é o maior rating (metrics/match_highlights.py). A frase diz o rating
+    # contra o do segundo e, se o segundo está dentro do erro do rating, diz que
+    # é empate -- uma diferença menor que o erro não elege ninguém.
     nome = mvp["name"]
-    if not partes:
-        # Ninguém lidera componente nenhum: ele venceu na soma, e dizer isso é
-        # mais honesto que escolher um número em que ele não foi o melhor. Os
-        # números vão junto (decisão 20): sem eles a frase era só o nome, e saía
-        # idêntica em toda partida em que o mesmo jogador vencesse assim.
-        numeros = [
-            f"{c['texto']} {c.get('sintagma') or c['rotulo']}"
-            for c in mvp.get("componentes", [])[:2]
-            if c.get("texto")
-        ]
-        frase = f"{nome} foi o MVP pela soma dos componentes, sem liderar nenhum deles isoladamente"
-        if numeros:
-            frase += ": " + " e ".join(numeros)
-        return frase + "."
-
-    corpo = partes[0] if len(partes) == 1 else f"{partes[0]} e {partes[1]}"
-    frase = f"{nome} foi o MVP com {corpo}"
+    empatados = mvp.get("empatados") or []
+    if empatados:
+        outros = [f"{e['name']} ({e['rating_texto']})" for e in empatados]
+        lista = outros[0] if len(outros) == 1 else ", ".join(outros[:-1]) + " e " + outros[-1]
+        frase = (f"{nome} teve o maior rating ({mvp['rating_texto']}), empatado com {lista} dentro do "
+                 f"erro do rating ({mvp['margem_texto']})")
+    elif mvp.get("vice_nome"):
+        frase = (f"{nome} foi o MVP, com rating {mvp['rating_texto']} contra "
+                 f"{mvp['vice_rating_texto']} de {mvp['vice_nome']}")
+    else:
+        frase = f"{nome} foi o MVP, com rating {mvp['rating_texto']}"
+    if partes:
+        frase += "; " + (partes[0] if len(partes) == 1 else f"{partes[0]} e {partes[1]}")
 
     funcao = mvp.get("funcao")
     if funcao:

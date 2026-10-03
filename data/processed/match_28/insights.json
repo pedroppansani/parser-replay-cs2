@@ -664,16 +664,21 @@
     "name": "ZywOo",
     "team": "A",
     "funcao": "AWPer",
-    "indice": 0.9225000000000001,
+    "rating": 1.93,
+    "rating_texto": "1,93",
+    "vice_steamid": 76561198081484775,
     "vice_nome": "sh1ro",
-    "vice_indice": 0.7673816679188581,
+    "vice_rating": 1.49,
+    "vice_rating_texto": "1,49",
+    "margem": 0.0788,
+    "margem_texto": "0,079",
+    "empatados": [],
     "componentes": [
       {
         "chave": "adr",
         "rotulo": "ADR",
         "unidade": "de dano por round",
         "sintagma": "de ADR",
-        "peso": 0.4,
         "valor": 104.52173913043478,
         "texto": "104,5",
         "melhor_dos_outros": 97.3913043478261,
@@ -686,7 +691,6 @@
         "rotulo": "KAST",
         "unidade": "% dos rounds com contribuição",
         "sintagma": "de KAST",
-        "peso": 0.3,
         "valor": 86.95652173913044,
         "texto": "87%",
         "melhor_dos_outros": 91.30434782608695,
@@ -699,7 +703,6 @@
         "rotulo": "Aberturas",
         "unidade": "rounds em que abriu o placar",
         "sintagma": "aberturas de round",
-        "peso": 0.2,
         "valor": 4.0,
         "texto": "4",
         "melhor_dos_outros": 5.0,
@@ -712,7 +715,6 @@
         "rotulo": "Clutches",
         "unidade": "rounds fechados sozinho",
         "sintagma": "clutches fechados",
-        "peso": 0.1,
         "valor": 2.0,
         "texto": "2",
         "melhor_dos_outros": 1.0,
@@ -1261,7 +1263,6 @@
       "opening_kills": 4,
       "clutches": 2,
       "team": "A",
-      "mvp_index": 0.9225000000000001,
       "rating": 1.93,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1273,37 +1274,6 @@
         "kast": 1.22,
         "multikills": 2.31,
         "round_swing": 1.7
-      }
-    },
-    {
-      "steamid": 76561198081484775,
-      "name": "sh1ro",
-      "adr": 94.73913043478261,
-      "kast_pct": 82.6086956521739,
-      "total_utility_damage": 53,
-      "utility_damage_per_round": 2.3043478260869565,
-      "total_kills": 20,
-      "total_trade_kills": 4,
-      "median_first_contact_s": 54.84375,
-      "survival_rate": 0.391304347826087,
-      "crosshair_score": 71.4899692465505,
-      "frac_entering_fight": 0.09216665278151213,
-      "avg_distance_from_team": 716.9415283203125,
-      "opening_kills": 4,
-      "clutches": 1,
-      "team": "B",
-      "mvp_index": 0.7673816679188581,
-      "rating": 1.49,
-      "rating_amostra_fraca": false,
-      "rating_sub": {
-        "kills_limpas": 1.43,
-        "kills_assistidas": 0.87,
-        "dano": 1.33,
-        "sobrevivencia": 1.23,
-        "mortes_trocadas": 1.43,
-        "kast": 1.15,
-        "multikills": 1.39,
-        "round_swing": 1.22
       }
     },
     {
@@ -1323,7 +1293,6 @@
       "opening_kills": 2,
       "clutches": 0,
       "team": "B",
-      "mvp_index": 0.6182137490608566,
       "rating": 1.36,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1335,6 +1304,36 @@
         "kast": 1.08,
         "multikills": 1.79,
         "round_swing": 1.01
+      }
+    },
+    {
+      "steamid": 76561198081484775,
+      "name": "sh1ro",
+      "adr": 94.73913043478261,
+      "kast_pct": 82.6086956521739,
+      "total_utility_damage": 53,
+      "utility_damage_per_round": 2.3043478260869565,
+      "total_kills": 20,
+      "total_trade_kills": 4,
+      "median_first_contact_s": 54.84375,
+      "survival_rate": 0.391304347826087,
+      "crosshair_score": 71.4899692465505,
+      "frac_entering_fight": 0.09216665278151213,
+      "avg_distance_from_team": 716.9415283203125,
+      "opening_kills": 4,
+      "clutches": 1,
+      "team": "B",
+      "rating": 1.49,
+      "rating_amostra_fraca": false,
+      "rating_sub": {
+        "kills_limpas": 1.43,
+        "kills_assistidas": 0.87,
+        "dano": 1.33,
+        "sobrevivencia": 1.23,
+        "mortes_trocadas": 1.43,
+        "kast": 1.15,
+        "multikills": 1.39,
+        "round_swing": 1.22
       }
     },
     {
@@ -1354,7 +1353,6 @@
       "opening_kills": 1,
       "clutches": 1,
       "team": "A",
-      "mvp_index": 0.5844402704733284,
       "rating": 1.34,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1385,7 +1383,6 @@
       "opening_kills": 5,
       "clutches": 0,
       "team": "A",
-      "mvp_index": 0.5693181818181818,
       "rating": 0.99,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1416,7 +1413,6 @@
       "opening_kills": 3,
       "clutches": 0,
       "team": "A",
-      "mvp_index": 0.4106461307287754,
       "rating": 0.9,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1428,37 +1424,6 @@
         "kast": 1.03,
         "multikills": 0.84,
         "round_swing": 0.76
-      }
-    },
-    {
-      "steamid": 76561197973140692,
-      "name": "mezii",
-      "adr": 53.52173913043478,
-      "kast_pct": 78.26086956521739,
-      "total_utility_damage": 76,
-      "utility_damage_per_round": 3.3043478260869565,
-      "total_kills": 9,
-      "total_trade_kills": 2,
-      "median_first_contact_s": 58.625,
-      "survival_rate": 0.43478260869565216,
-      "crosshair_score": 66.41571653670763,
-      "frac_entering_fight": 0.1089026699315485,
-      "avg_distance_from_team": 777.962646484375,
-      "opening_kills": 0,
-      "clutches": 0,
-      "team": "A",
-      "mvp_index": 0.2349830954169797,
-      "rating": 0.88,
-      "rating_amostra_fraca": false,
-      "rating_sub": {
-        "kills_limpas": 0.79,
-        "kills_assistidas": 0.3,
-        "dano": 0.78,
-        "sobrevivencia": 1.34,
-        "mortes_trocadas": 1.31,
-        "kast": 1.1,
-        "multikills": 0.64,
-        "round_swing": 0.75
       }
     },
     {
@@ -1478,7 +1443,6 @@
       "opening_kills": 2,
       "clutches": 0,
       "team": "B",
-      "mvp_index": 0.1926972201352367,
       "rating": 0.96,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1509,7 +1473,6 @@
       "opening_kills": 0,
       "clutches": 0,
       "team": "B",
-      "mvp_index": 0.19033621337340345,
       "rating": 0.82,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1521,6 +1484,36 @@
         "kast": 0.97,
         "multikills": 0.45,
         "round_swing": 0.81
+      }
+    },
+    {
+      "steamid": 76561197973140692,
+      "name": "mezii",
+      "adr": 53.52173913043478,
+      "kast_pct": 78.26086956521739,
+      "total_utility_damage": 76,
+      "utility_damage_per_round": 3.3043478260869565,
+      "total_kills": 9,
+      "total_trade_kills": 2,
+      "median_first_contact_s": 58.625,
+      "survival_rate": 0.43478260869565216,
+      "crosshair_score": 66.41571653670763,
+      "frac_entering_fight": 0.1089026699315485,
+      "avg_distance_from_team": 777.962646484375,
+      "opening_kills": 0,
+      "clutches": 0,
+      "team": "A",
+      "rating": 0.88,
+      "rating_amostra_fraca": false,
+      "rating_sub": {
+        "kills_limpas": 0.79,
+        "kills_assistidas": 0.3,
+        "dano": 0.78,
+        "sobrevivencia": 1.34,
+        "mortes_trocadas": 1.31,
+        "kast": 1.1,
+        "multikills": 0.64,
+        "round_swing": 0.75
       }
     },
     {
@@ -1540,7 +1533,6 @@
       "opening_kills": 2,
       "clutches": 0,
       "team": "B",
-      "mvp_index": 0.11750000000000002,
       "rating": 0.59,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -4013,7 +4005,7 @@
   "narrative": {
     "decisive": "Levou o Time A de 50% para 66% de chance de vencer a partida, a partir de um empate em 9-9, com os 3 kills de donk e o round terminou com os TRs eliminados.",
     "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 20 moveu praticamente o mesmo (16% contra 16%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
-    "mvp_card": "ZywOo foi o MVP com 104,5 de ADR contra 97,4 de donk e 2 clutches fechados contra 1 de sh1ro, jogando de awper.",
+    "mvp_card": "ZywOo foi o MVP, com rating 1,93 contra 1,49 de sh1ro; 104,5 de ADR contra 97,4 de donk e 2 clutches fechados contra 1 de sh1ro, jogando de awper.",
     "highlight_card": "chopper: 15% de brigas no mesmo ângulo, contra 5% de mediana dos outros desta partida.",
     "spectacle": "Round 4: clutch de ropz em 1v3, 4K de zont1x e virou com 2 jogadores a menos. Não foi o round decisivo -- quem mais moveu a partida foi o 19, e o round mais bonito daqui não mudou o resultado.",
     "economy": "Equipamento médio no round: 4.040$ de quem venceu contra 200$ de quem perdeu.",

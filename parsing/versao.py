@@ -54,6 +54,8 @@ VERSAO_DO_PARSER = 2
 # Onde o complemento registra o que acrescentou a um interim existente.
 ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
 
+# 16 (2026-10-02) MVP = maior rating da partida (era um índice 40/30/20/10), com
+#    empate declarado dentro do erro do rating; o anel do card mostra o rating
 # 15 (2026-10-02) rating com o modelo de round de ESTADO COMPLETO (vivos, eliminação,
 #    tempo do round e da bomba; auditoria 4.3), referência e pesos reajustados
 # 14 (2026-10-02) rótulos de jogador: amostra mínima em todos (8 rounds, 8 kills
@@ -96,7 +98,7 @@ ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
 #   (inclui a classe de economia do jogador no rating), unique com subset fica
 #   com a primeira linha. Antes, esses três casos dependiam da ordem de hash.
 # 1 (2026-09-20) primeira versão declarada, mesmo raciocínio acima.
-VERSAO_DAS_METRICAS = 15
+VERSAO_DAS_METRICAS = 16
 
 # Pastas cujo estado define o NÚMERO. `sujo` olha só estas: olhar o repositório
 # inteiro marcava todo reprocessamento como sujo, porque o próprio

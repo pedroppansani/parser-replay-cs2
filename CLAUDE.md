@@ -101,7 +101,7 @@ texto completo de cada uma está na nota do link (`notas/decisoes/`).
 - [19c](notas/decisoes/19c-formato-pela-troca-de-lado.md) MR12 ou MR15 sai da troca de lado na demo.
 - [19d](notas/decisoes/19d-economia-e-leitura.md) Economia é leitura ao lado do round decisivo, nunca peso.
 - [19e](notas/decisoes/19e-prorrogacao.md) A prorrogação é modelada: o alvo sobe 4 a cada uma, até 5.
-- [20](notas/decisoes/20-tres-blocos.md) A aba de leitura tem três blocos fixos; o MVP mostra os componentes.
+- [20](notas/decisoes/20-tres-blocos.md) A aba de leitura tem três blocos fixos; o MVP é o maior rating.
 - [20a](notas/decisoes/20a-destaque-negativo.md) Destaque negativo só com número e referência.
 - [20b](notas/decisoes/20b-bottom-frag.md) Bottom frag exige distância destacada (MAD); mochila exige vitória.
 - [20c](notas/decisoes/20c-comparabilidade.md) Pontuação de função é "quanto acima do normal"; concentração ponderada.

@@ -636,16 +636,21 @@
     "name": "YEKINDAR",
     "team": "B",
     "funcao": "Rotativo",
-    "indice": 0.9142857142857143,
-    "vice_nome": "KSCERATO",
-    "vice_indice": 0.6103161397670548,
+    "rating": 2.12,
+    "rating_texto": "2,12",
+    "vice_steamid": 76561199032006224,
+    "vice_nome": "kyousuke",
+    "vice_rating": 1.33,
+    "vice_rating_texto": "1,33",
+    "margem": 0.0788,
+    "margem_texto": "0,079",
+    "empatados": [],
     "componentes": [
       {
         "chave": "adr",
         "rotulo": "ADR",
         "unidade": "de dano por round",
         "sintagma": "de ADR",
-        "peso": 0.4,
         "valor": 119.0,
         "texto": "119,0",
         "melhor_dos_outros": 94.0,
@@ -658,7 +663,6 @@
         "rotulo": "KAST",
         "unidade": "% dos rounds com contribuição",
         "sintagma": "de KAST",
-        "peso": 0.3,
         "valor": 77.27272727272727,
         "texto": "77%",
         "melhor_dos_outros": 86.36363636363636,
@@ -671,12 +675,11 @@
         "rotulo": "Aberturas",
         "unidade": "rounds em que abriu o placar",
         "sintagma": "aberturas de round",
-        "peso": 0.2,
         "valor": 5.0,
         "texto": "5",
         "melhor_dos_outros": 3.0,
         "melhor_dos_outros_texto": "3",
-        "melhor_dos_outros_nome": "KSCERATO",
+        "melhor_dos_outros_nome": "kyousuke",
         "lidera": true
       },
       {
@@ -684,7 +687,6 @@
         "rotulo": "Clutches",
         "unidade": "rounds fechados sozinho",
         "sintagma": "clutches fechados",
-        "peso": 0.1,
         "valor": 2.0,
         "texto": "2",
         "melhor_dos_outros": 1.0,
@@ -1218,7 +1220,6 @@
       "opening_kills": 5,
       "clutches": 2,
       "team": "B",
-      "mvp_index": 0.9142857142857143,
       "rating": 2.12,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1230,37 +1231,6 @@
         "kast": 1.07,
         "multikills": 3.46,
         "round_swing": 1.58
-      }
-    },
-    {
-      "steamid": 76561198058500492,
-      "name": "KSCERATO",
-      "adr": 80.13636363636364,
-      "kast_pct": 86.36363636363636,
-      "total_utility_damage": 130,
-      "utility_damage_per_round": 5.909090909090909,
-      "total_kills": 15,
-      "total_trade_kills": 1,
-      "median_first_contact_s": 24.734375,
-      "survival_rate": 0.4090909090909091,
-      "crosshair_score": 68.27762914315652,
-      "frac_entering_fight": 0.09009976196527834,
-      "avg_distance_from_team": 531.6680908203125,
-      "opening_kills": 3,
-      "clutches": 0,
-      "team": "B",
-      "mvp_index": 0.6103161397670548,
-      "rating": 1.01,
-      "rating_amostra_fraca": false,
-      "rating_sub": {
-        "kills_limpas": 0.87,
-        "kills_assistidas": 0.5,
-        "dano": 0.99,
-        "sobrevivencia": 1.28,
-        "mortes_trocadas": 1.37,
-        "kast": 1.21,
-        "multikills": 0.71,
-        "round_swing": 0.81
       }
     },
     {
@@ -1280,7 +1250,6 @@
       "opening_kills": 3,
       "clutches": 0,
       "team": "A",
-      "mvp_index": 0.5065525711116393,
       "rating": 1.33,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1292,6 +1261,36 @@
         "kast": 0.95,
         "multikills": 1.65,
         "round_swing": 1.11
+      }
+    },
+    {
+      "steamid": 76561198058500492,
+      "name": "KSCERATO",
+      "adr": 80.13636363636364,
+      "kast_pct": 86.36363636363636,
+      "total_utility_damage": 130,
+      "utility_damage_per_round": 5.909090909090909,
+      "total_kills": 15,
+      "total_trade_kills": 1,
+      "median_first_contact_s": 24.734375,
+      "survival_rate": 0.4090909090909091,
+      "crosshair_score": 68.27762914315652,
+      "frac_entering_fight": 0.09009976196527834,
+      "avg_distance_from_team": 531.6680908203125,
+      "opening_kills": 3,
+      "clutches": 0,
+      "team": "B",
+      "rating": 1.01,
+      "rating_amostra_fraca": false,
+      "rating_sub": {
+        "kills_limpas": 0.87,
+        "kills_assistidas": 0.5,
+        "dano": 0.99,
+        "sobrevivencia": 1.28,
+        "mortes_trocadas": 1.37,
+        "kast": 1.21,
+        "multikills": 0.71,
+        "round_swing": 0.81
       }
     },
     {
@@ -1311,7 +1310,6 @@
       "opening_kills": 2,
       "clutches": 0,
       "team": "B",
-      "mvp_index": 0.49416448775849764,
       "rating": 0.95,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1323,37 +1321,6 @@
         "kast": 1.13,
         "multikills": 1.02,
         "round_swing": 0.83
-      }
-    },
-    {
-      "steamid": 76561198164970560,
-      "name": "yuurih",
-      "adr": 66.27272727272727,
-      "kast_pct": 77.27272727272727,
-      "total_utility_damage": 43,
-      "utility_damage_per_round": 1.9545454545454546,
-      "total_kills": 15,
-      "total_trade_kills": 5,
-      "median_first_contact_s": 60.4140625,
-      "survival_rate": 0.4090909090909091,
-      "crosshair_score": 58.87423009814986,
-      "frac_entering_fight": 0.09579965899932641,
-      "avg_distance_from_team": 399.9518127441406,
-      "opening_kills": 1,
-      "clutches": 0,
-      "team": "B",
-      "mvp_index": 0.3569368512796133,
-      "rating": 1.05,
-      "rating_amostra_fraca": false,
-      "rating_sub": {
-        "kills_limpas": 0.92,
-        "kills_assistidas": 1.21,
-        "dano": 0.78,
-        "sobrevivencia": 1.23,
-        "mortes_trocadas": 1.5,
-        "kast": 1.07,
-        "multikills": 1.14,
-        "round_swing": 0.93
       }
     },
     {
@@ -1373,7 +1340,6 @@
       "opening_kills": 1,
       "clutches": 0,
       "team": "A",
-      "mvp_index": 0.31785120038031855,
       "rating": 1.19,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1385,6 +1351,36 @@
         "kast": 1.03,
         "multikills": 0.74,
         "round_swing": 1.25
+      }
+    },
+    {
+      "steamid": 76561198164970560,
+      "name": "yuurih",
+      "adr": 66.27272727272727,
+      "kast_pct": 77.27272727272727,
+      "total_utility_damage": 43,
+      "utility_damage_per_round": 1.9545454545454546,
+      "total_kills": 15,
+      "total_trade_kills": 5,
+      "median_first_contact_s": 60.4140625,
+      "survival_rate": 0.4090909090909091,
+      "crosshair_score": 58.87423009814986,
+      "frac_entering_fight": 0.09579965899932641,
+      "avg_distance_from_team": 399.9518127441406,
+      "opening_kills": 1,
+      "clutches": 0,
+      "team": "B",
+      "rating": 1.05,
+      "rating_amostra_fraca": false,
+      "rating_sub": {
+        "kills_limpas": 0.92,
+        "kills_assistidas": 1.21,
+        "dano": 0.78,
+        "sobrevivencia": 1.23,
+        "mortes_trocadas": 1.5,
+        "kast": 1.07,
+        "multikills": 1.14,
+        "round_swing": 0.93
       }
     },
     {
@@ -1404,7 +1400,6 @@
       "opening_kills": 2,
       "clutches": 0,
       "team": "A",
-      "mvp_index": 0.3132358767134142,
       "rating": 1.03,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1435,7 +1430,6 @@
       "opening_kills": 2,
       "clutches": 0,
       "team": "A",
-      "mvp_index": 0.25618017589731396,
       "rating": 0.95,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1447,37 +1441,6 @@
         "kast": 0.9,
         "multikills": 0.6,
         "round_swing": 0.99
-      }
-    },
-    {
-      "steamid": 76561198200982290,
-      "name": "molodoy",
-      "adr": 37.04545454545455,
-      "kast_pct": 63.63636363636363,
-      "total_utility_damage": 8,
-      "utility_damage_per_round": 0.36363636363636365,
-      "total_kills": 9,
-      "total_trade_kills": 2,
-      "median_first_contact_s": 60.453125,
-      "survival_rate": 0.4090909090909091,
-      "crosshair_score": 70.32350108643999,
-      "frac_entering_fight": 0.08150376281824524,
-      "avg_distance_from_team": 604.13525390625,
-      "opening_kills": 2,
-      "clutches": 1,
-      "team": "B",
-      "mvp_index": 0.18571428571428567,
-      "rating": 0.69,
-      "rating_amostra_fraca": false,
-      "rating_sub": {
-        "kills_limpas": 0.56,
-        "kills_assistidas": 0.7,
-        "dano": 0.45,
-        "sobrevivencia": 1.23,
-        "mortes_trocadas": 0.87,
-        "kast": 0.88,
-        "multikills": 0.45,
-        "round_swing": 0.84
       }
     },
     {
@@ -1497,7 +1460,6 @@
       "opening_kills": 1,
       "clutches": 1,
       "team": "A",
-      "mvp_index": 0.07928452579034942,
       "rating": 0.6,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1509,6 +1471,36 @@
         "kast": 0.77,
         "multikills": 0.53,
         "round_swing": 0.61
+      }
+    },
+    {
+      "steamid": 76561198200982290,
+      "name": "molodoy",
+      "adr": 37.04545454545455,
+      "kast_pct": 63.63636363636363,
+      "total_utility_damage": 8,
+      "utility_damage_per_round": 0.36363636363636365,
+      "total_kills": 9,
+      "total_trade_kills": 2,
+      "median_first_contact_s": 60.453125,
+      "survival_rate": 0.4090909090909091,
+      "crosshair_score": 70.32350108643999,
+      "frac_entering_fight": 0.08150376281824524,
+      "avg_distance_from_team": 604.13525390625,
+      "opening_kills": 2,
+      "clutches": 1,
+      "team": "B",
+      "rating": 0.69,
+      "rating_amostra_fraca": false,
+      "rating_sub": {
+        "kills_limpas": 0.56,
+        "kills_assistidas": 0.7,
+        "dano": 0.45,
+        "sobrevivencia": 1.23,
+        "mortes_trocadas": 0.87,
+        "kast": 0.88,
+        "multikills": 0.45,
+        "round_swing": 0.84
       }
     }
   ],
@@ -3970,7 +3962,7 @@
   "narrative": {
     "decisive": "Levou o Time B de 62% para 75% de chance de vencer a partida, a partir da própria liderança por 8-7, com o 1v1 de YEKINDAR e o round terminou com os CTs eliminados.",
     "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 13 moveu praticamente o mesmo (11% contra 12%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
-    "mvp_card": "YEKINDAR foi o MVP com 119,0 de ADR contra 94,0 de kyousuke e 5 aberturas de round contra 3 de KSCERATO, jogando de rotativo.",
+    "mvp_card": "YEKINDAR foi o MVP, com rating 2,12 contra 1,33 de kyousuke; 119,0 de ADR contra 94,0 de kyousuke e 5 aberturas de round contra 3 de kyousuke, jogando de rotativo.",
     "highlight_card": "FalleN: 12 de 12 rounds como Rotativo no lado CT. yuurih pontuou praticamente o mesmo como rotativo: houve mais de um destaque equivalente nesta partida.",
     "spectacle": "Round 20: 4K de YEKINDAR e KSCERATO abriu o round e o time fechou sem perder ninguém. Não foi o round decisivo -- quem mais moveu a partida foi o 16, e o round mais bonito daqui não mudou o resultado.",
     "economy": "Equipamento médio no round: 940$ de quem venceu contra 1.570$ de quem perdeu. Quem perdeu estava com o equipamento melhor, então a derrota não tem desculpa de economia -- custou mais do que um round no placar.",

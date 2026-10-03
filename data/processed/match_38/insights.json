@@ -614,22 +614,33 @@
     "winner_team": "B"
   },
   "mvp_card": {
-    "steamid": 76561198050250233,
-    "name": "iM",
-    "team": "A",
-    "funcao": "Rotativo",
-    "indice": 0.871537001897533,
+    "steamid": 76561198995880877,
+    "name": "zont1x",
+    "team": "B",
+    "funcao": "Âncora",
+    "rating": 1.54,
+    "rating_texto": "1,54",
+    "vice_steamid": 76561198386265483,
     "vice_nome": "donk",
-    "vice_indice": 0.7999999999999999,
+    "vice_rating": 1.5,
+    "vice_rating_texto": "1,50",
+    "margem": 0.0788,
+    "margem_texto": "0,079",
+    "empatados": [
+      {
+        "steamid": 76561198386265483,
+        "name": "donk",
+        "rating_texto": "1,50"
+      }
+    ],
     "componentes": [
       {
         "chave": "adr",
         "rotulo": "ADR",
         "unidade": "de dano por round",
         "sintagma": "de ADR",
-        "peso": 0.4,
-        "valor": 94.71428571428571,
-        "texto": "94,7",
+        "valor": 96.71428571428571,
+        "texto": "96,7",
         "melhor_dos_outros": 98.28571428571429,
         "melhor_dos_outros_texto": "98,3",
         "melhor_dos_outros_nome": "donk",
@@ -640,7 +651,6 @@
         "rotulo": "KAST",
         "unidade": "% dos rounds com contribuição",
         "sintagma": "de KAST",
-        "peso": 0.3,
         "valor": 76.19047619047619,
         "texto": "76%",
         "melhor_dos_outros": 76.19047619047619,
@@ -653,20 +663,18 @@
         "rotulo": "Aberturas",
         "unidade": "rounds em que abriu o placar",
         "sintagma": "aberturas de round",
-        "peso": 0.2,
-        "valor": 4.0,
-        "texto": "4",
-        "melhor_dos_outros": 3.0,
-        "melhor_dos_outros_texto": "3",
-        "melhor_dos_outros_nome": "chopper",
-        "lidera": true
+        "valor": 2.0,
+        "texto": "2",
+        "melhor_dos_outros": 4.0,
+        "melhor_dos_outros_texto": "4",
+        "melhor_dos_outros_nome": "iM",
+        "lidera": false
       },
       {
         "chave": "clutches",
         "rotulo": "Clutches",
         "unidade": "rounds fechados sozinho",
         "sintagma": "clutches fechados",
-        "peso": 0.1,
         "valor": 0.0,
         "texto": "0",
         "melhor_dos_outros": 1.0,
@@ -1165,37 +1173,6 @@
   ],
   "players": [
     {
-      "steamid": 76561198050250233,
-      "name": "iM",
-      "adr": 94.71428571428571,
-      "kast_pct": 76.19047619047619,
-      "total_utility_damage": 61,
-      "utility_damage_per_round": 2.9047619047619047,
-      "total_kills": 19,
-      "total_trade_kills": 2,
-      "median_first_contact_s": 34.1875,
-      "survival_rate": 0.38095238095238093,
-      "crosshair_score": 61.50498640622017,
-      "frac_entering_fight": 0.09814057237956343,
-      "avg_distance_from_team": 674.19287109375,
-      "opening_kills": 4,
-      "clutches": 0,
-      "team": "A",
-      "mvp_index": 0.871537001897533,
-      "rating": 1.44,
-      "rating_amostra_fraca": false,
-      "rating_sub": {
-        "kills_limpas": 1.4,
-        "kills_assistidas": 0.63,
-        "dano": 1.17,
-        "sobrevivencia": 1.16,
-        "mortes_trocadas": 0.92,
-        "kast": 1.06,
-        "multikills": 1.82,
-        "round_swing": 1.25
-      }
-    },
-    {
       "steamid": 76561198386265483,
       "name": "donk",
       "adr": 98.28571428571429,
@@ -1212,7 +1189,6 @@
       "opening_kills": 1,
       "clutches": 1,
       "team": "B",
-      "mvp_index": 0.7999999999999999,
       "rating": 1.5,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1243,7 +1219,6 @@
       "opening_kills": 2,
       "clutches": 0,
       "team": "B",
-      "mvp_index": 0.7541429475015811,
       "rating": 1.54,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1255,6 +1230,36 @@
         "kast": 1.05,
         "multikills": 1.63,
         "round_swing": 1.26
+      }
+    },
+    {
+      "steamid": 76561198050250233,
+      "name": "iM",
+      "adr": 94.71428571428571,
+      "kast_pct": 76.19047619047619,
+      "total_utility_damage": 61,
+      "utility_damage_per_round": 2.9047619047619047,
+      "total_kills": 19,
+      "total_trade_kills": 2,
+      "median_first_contact_s": 34.1875,
+      "survival_rate": 0.38095238095238093,
+      "crosshair_score": 61.50498640622017,
+      "frac_entering_fight": 0.09814057237956343,
+      "avg_distance_from_team": 674.19287109375,
+      "opening_kills": 4,
+      "clutches": 0,
+      "team": "A",
+      "rating": 1.44,
+      "rating_amostra_fraca": false,
+      "rating_sub": {
+        "kills_limpas": 1.4,
+        "kills_assistidas": 0.63,
+        "dano": 1.17,
+        "sobrevivencia": 1.16,
+        "mortes_trocadas": 0.92,
+        "kast": 1.06,
+        "multikills": 1.82,
+        "round_swing": 1.25
       }
     },
     {
@@ -1274,7 +1279,6 @@
       "opening_kills": 2,
       "clutches": 0,
       "team": "A",
-      "mvp_index": 0.6915243516761542,
       "rating": 1.19,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1305,7 +1309,6 @@
       "opening_kills": 2,
       "clutches": 1,
       "team": "A",
-      "mvp_index": 0.6616571790006325,
       "rating": 1.33,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1336,7 +1339,6 @@
       "opening_kills": 2,
       "clutches": 0,
       "team": "B",
-      "mvp_index": 0.351752055660974,
       "rating": 0.49,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1367,7 +1369,6 @@
       "opening_kills": 2,
       "clutches": 0,
       "team": "B",
-      "mvp_index": 0.3282226438962682,
       "rating": 1.14,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1379,37 +1380,6 @@
         "kast": 0.83,
         "multikills": 1.29,
         "round_swing": 1.11
-      }
-    },
-    {
-      "steamid": 76561198013243326,
-      "name": "Aleksib",
-      "adr": 52.333333333333336,
-      "kast_pct": 61.904761904761905,
-      "total_utility_damage": 31,
-      "utility_damage_per_round": 1.4761904761904763,
-      "total_kills": 12,
-      "total_trade_kills": 3,
-      "median_first_contact_s": 69.015625,
-      "survival_rate": 0.2857142857142857,
-      "crosshair_score": 73.91400713701479,
-      "frac_entering_fight": 0.09835381899900805,
-      "avg_distance_from_team": 828.9957275390625,
-      "opening_kills": 2,
-      "clutches": 1,
-      "team": "A",
-      "mvp_index": 0.3204427577482606,
-      "rating": 0.84,
-      "rating_amostra_fraca": false,
-      "rating_sub": {
-        "kills_limpas": 0.67,
-        "kills_assistidas": 1.7,
-        "dano": 0.76,
-        "sobrevivencia": 0.86,
-        "mortes_trocadas": 1.05,
-        "kast": 0.86,
-        "multikills": 1.22,
-        "round_swing": 0.83
       }
     },
     {
@@ -1429,7 +1399,6 @@
       "opening_kills": 1,
       "clutches": 0,
       "team": "A",
-      "mvp_index": 0.29958254269449713,
       "rating": 1.1,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1441,6 +1410,36 @@
         "kast": 0.99,
         "multikills": 1.11,
         "round_swing": 1.15
+      }
+    },
+    {
+      "steamid": 76561198013243326,
+      "name": "Aleksib",
+      "adr": 52.333333333333336,
+      "kast_pct": 61.904761904761905,
+      "total_utility_damage": 31,
+      "utility_damage_per_round": 1.4761904761904763,
+      "total_kills": 12,
+      "total_trade_kills": 3,
+      "median_first_contact_s": 69.015625,
+      "survival_rate": 0.2857142857142857,
+      "crosshair_score": 73.91400713701479,
+      "frac_entering_fight": 0.09835381899900805,
+      "avg_distance_from_team": 828.9957275390625,
+      "opening_kills": 2,
+      "clutches": 1,
+      "team": "A",
+      "rating": 0.84,
+      "rating_amostra_fraca": false,
+      "rating_sub": {
+        "kills_limpas": 0.67,
+        "kills_assistidas": 1.7,
+        "dano": 0.76,
+        "sobrevivencia": 0.86,
+        "mortes_trocadas": 1.05,
+        "kast": 0.86,
+        "multikills": 1.22,
+        "round_swing": 0.83
       }
     },
     {
@@ -1460,7 +1459,6 @@
       "opening_kills": 3,
       "clutches": 0,
       "team": "B",
-      "mvp_index": 0.13333333333333333,
       "rating": 0.36,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -3933,7 +3931,7 @@
   "narrative": {
     "decisive": "Levou o Time A de 50% para 62% de chance de vencer a partida, a partir de um empate em 7-7, com a abertura de jL sobre magixx e o round terminou no tempo.",
     "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 16 moveu praticamente o mesmo (12% contra 12%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
-    "mvp_card": "iM foi o MVP com 4 aberturas de round contra 3 de chopper, jogando de rotativo.",
+    "mvp_card": "zont1x teve o maior rating (1,54), empatado com donk (1,50) dentro do erro do rating (0,079), jogando de âncora.",
     "highlight_card": "SH1R0: 12 rounds com AWP na mão, contra 0 de mediana dos outros desta partida. chopper pontuou praticamente o mesmo como repick: houve mais de um destaque equivalente nesta partida.",
     "spectacle": "Round 13: clutch de donk em 1v3, 5K de donk e virou com 3 jogadores a menos. Não foi o round decisivo -- quem mais moveu a partida foi o 15, e o round mais bonito daqui não mudou o resultado.",
     "economy": "Equipamento médio no round: 810$ de quem venceu contra 200$ de quem perdeu.",

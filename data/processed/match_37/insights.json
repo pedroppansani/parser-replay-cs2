@@ -825,16 +825,21 @@
     "name": "donk",
     "team": "A",
     "funcao": "Coringa",
-    "indice": 0.8142857142857145,
-    "vice_nome": "iM",
-    "vice_indice": 0.7616838407494146,
+    "rating": 1.44,
+    "rating_texto": "1,44",
+    "vice_steamid": 76561198081484775,
+    "vice_nome": "sh1ro",
+    "vice_rating": 1.35,
+    "vice_rating_texto": "1,35",
+    "margem": 0.0788,
+    "margem_texto": "0,079",
+    "empatados": [],
     "componentes": [
       {
         "chave": "adr",
         "rotulo": "ADR",
         "unidade": "de dano por round",
         "sintagma": "de ADR",
-        "peso": 0.4,
         "valor": 94.5,
         "texto": "94,5",
         "melhor_dos_outros": 91.9,
@@ -847,7 +852,6 @@
         "rotulo": "KAST",
         "unidade": "% dos rounds com contribuição",
         "sintagma": "de KAST",
-        "peso": 0.3,
         "valor": 76.66666666666667,
         "texto": "77%",
         "melhor_dos_outros": 83.33333333333333,
@@ -860,7 +864,6 @@
         "rotulo": "Aberturas",
         "unidade": "rounds em que abriu o placar",
         "sintagma": "aberturas de round",
-        "peso": 0.2,
         "valor": 8.0,
         "texto": "8",
         "melhor_dos_outros": 5.0,
@@ -873,7 +876,6 @@
         "rotulo": "Clutches",
         "unidade": "rounds fechados sozinho",
         "sintagma": "clutches fechados",
-        "peso": 0.1,
         "valor": 0.0,
         "texto": "0",
         "melhor_dos_outros": 1.0,
@@ -1550,7 +1552,6 @@
       "opening_kills": 8,
       "clutches": 0,
       "team": "A",
-      "mvp_index": 0.8142857142857145,
       "rating": 1.44,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1581,7 +1582,6 @@
       "opening_kills": 5,
       "clutches": 0,
       "team": "B",
-      "mvp_index": 0.7616838407494146,
       "rating": 1.27,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1612,7 +1612,6 @@
       "opening_kills": 2,
       "clutches": 1,
       "team": "A",
-      "mvp_index": 0.6994988290398128,
       "rating": 1.35,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1624,37 +1623,6 @@
         "kast": 1.08,
         "multikills": 1.3,
         "round_swing": 1.13
-      }
-    },
-    {
-      "steamid": 76561198176878303,
-      "name": "jL",
-      "adr": 78.53333333333333,
-      "kast_pct": 76.66666666666667,
-      "total_utility_damage": 121,
-      "utility_damage_per_round": 4.033333333333333,
-      "total_kills": 18,
-      "total_trade_kills": 5,
-      "median_first_contact_s": 75.9296875,
-      "survival_rate": 0.3333333333333333,
-      "crosshair_score": 63.891827883801824,
-      "frac_entering_fight": 0.10221346087747438,
-      "avg_distance_from_team": 1055.166015625,
-      "opening_kills": 4,
-      "clutches": 1,
-      "team": "B",
-      "mvp_index": 0.6886463700234192,
-      "rating": 1.19,
-      "rating_amostra_fraca": false,
-      "rating_sub": {
-        "kills_limpas": 0.7,
-        "kills_assistidas": 1.95,
-        "dano": 1.16,
-        "sobrevivencia": 0.99,
-        "mortes_trocadas": 1.37,
-        "kast": 1.06,
-        "multikills": 0.49,
-        "round_swing": 1.26
       }
     },
     {
@@ -1674,7 +1642,6 @@
       "opening_kills": 3,
       "clutches": 0,
       "team": "A",
-      "mvp_index": 0.6795245901639344,
       "rating": 1.28,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1705,7 +1672,6 @@
       "opening_kills": 4,
       "clutches": 1,
       "team": "B",
-      "mvp_index": 0.6108009367681498,
       "rating": 1.25,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1717,6 +1683,36 @@
         "kast": 0.98,
         "multikills": 1.02,
         "round_swing": 1.08
+      }
+    },
+    {
+      "steamid": 76561198176878303,
+      "name": "jL",
+      "adr": 78.53333333333333,
+      "kast_pct": 76.66666666666667,
+      "total_utility_damage": 121,
+      "utility_damage_per_round": 4.033333333333333,
+      "total_kills": 18,
+      "total_trade_kills": 5,
+      "median_first_contact_s": 75.9296875,
+      "survival_rate": 0.3333333333333333,
+      "crosshair_score": 63.891827883801824,
+      "frac_entering_fight": 0.10221346087747438,
+      "avg_distance_from_team": 1055.166015625,
+      "opening_kills": 4,
+      "clutches": 1,
+      "team": "B",
+      "rating": 1.19,
+      "rating_amostra_fraca": false,
+      "rating_sub": {
+        "kills_limpas": 0.7,
+        "kills_assistidas": 1.95,
+        "dano": 1.16,
+        "sobrevivencia": 0.99,
+        "mortes_trocadas": 1.37,
+        "kast": 1.06,
+        "multikills": 0.49,
+        "round_swing": 1.26
       }
     },
     {
@@ -1736,7 +1732,6 @@
       "opening_kills": 1,
       "clutches": 0,
       "team": "A",
-      "mvp_index": 0.390208430913349,
       "rating": 0.83,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1747,37 +1742,6 @@
         "mortes_trocadas": 0.46,
         "kast": 1.12,
         "multikills": 0.35,
-        "round_swing": 0.83
-      }
-    },
-    {
-      "steamid": 76561199063068840,
-      "name": "w0nderful",
-      "adr": 56.166666666666664,
-      "kast_pct": 76.66666666666667,
-      "total_utility_damage": 114,
-      "utility_damage_per_round": 3.8,
-      "total_kills": 17,
-      "total_trade_kills": 3,
-      "median_first_contact_s": 80.0703125,
-      "survival_rate": 0.36666666666666664,
-      "crosshair_score": 69.9795748122953,
-      "frac_entering_fight": 0.04189540976113551,
-      "avg_distance_from_team": 767.322509765625,
-      "opening_kills": 0,
-      "clutches": 0,
-      "team": "B",
-      "mvp_index": 0.31264637002341933,
-      "rating": 0.95,
-      "rating_amostra_fraca": false,
-      "rating_sub": {
-        "kills_limpas": 0.75,
-        "kills_assistidas": 1.42,
-        "dano": 0.81,
-        "sobrevivencia": 1.23,
-        "mortes_trocadas": 1.65,
-        "kast": 1.07,
-        "multikills": 0.86,
         "round_swing": 0.83
       }
     },
@@ -1798,7 +1762,6 @@
       "opening_kills": 1,
       "clutches": 0,
       "team": "A",
-      "mvp_index": 0.3026580796252927,
       "rating": 0.83,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -1810,6 +1773,36 @@
         "kast": 1.0,
         "multikills": 0.67,
         "round_swing": 0.72
+      }
+    },
+    {
+      "steamid": 76561199063068840,
+      "name": "w0nderful",
+      "adr": 56.166666666666664,
+      "kast_pct": 76.66666666666667,
+      "total_utility_damage": 114,
+      "utility_damage_per_round": 3.8,
+      "total_kills": 17,
+      "total_trade_kills": 3,
+      "median_first_contact_s": 80.0703125,
+      "survival_rate": 0.36666666666666664,
+      "crosshair_score": 69.9795748122953,
+      "frac_entering_fight": 0.04189540976113551,
+      "avg_distance_from_team": 767.322509765625,
+      "opening_kills": 0,
+      "clutches": 0,
+      "team": "B",
+      "rating": 0.95,
+      "rating_amostra_fraca": false,
+      "rating_sub": {
+        "kills_limpas": 0.75,
+        "kills_assistidas": 1.42,
+        "dano": 0.81,
+        "sobrevivencia": 1.23,
+        "mortes_trocadas": 1.65,
+        "kast": 1.07,
+        "multikills": 0.86,
+        "round_swing": 0.83
       }
     },
     {
@@ -1829,7 +1822,6 @@
       "opening_kills": 1,
       "clutches": 0,
       "team": "B",
-      "mvp_index": 0.025,
       "rating": 0.7,
       "rating_amostra_fraca": false,
       "rating_sub": {
@@ -4302,7 +4294,7 @@
   "narrative": {
     "decisive": "Levou o Time A de 25% para 50% de chance de vencer a partida, a partir do Time B na frente por 12-11, com a abertura de sh1ro sobre iM e o round terminou com os TRs eliminados.",
     "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 30 moveu praticamente o mesmo (25% contra 25%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
-    "mvp_card": "donk foi o MVP com 94,5 de ADR contra 91,9 de iM e 8 aberturas de round contra 5 de iM, jogando de coringa.",
+    "mvp_card": "donk foi o MVP, com rating 1,44 contra 1,35 de sh1ro; 94,5 de ADR contra 91,9 de iM e 8 aberturas de round contra 5 de iM, jogando de coringa.",
     "highlight_card": "jL: 16% de brigas no mesmo ângulo, contra 7% de mediana dos outros desta partida.",
     "spectacle": "Round 21: clutch de b1t em 1v2, 3K de magixx e virou com 2 jogadores a menos. Não foi o round decisivo -- quem mais moveu a partida foi o 24, e o round mais bonito daqui não mudou o resultado.",
     "economy": "Equipamento médio no round: 870$ de quem venceu contra 200$ de quem perdeu.",
