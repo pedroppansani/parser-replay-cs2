@@ -21,6 +21,17 @@ header h1 { font-family: var(--display); font-size: 20px; margin: 0; }
 header nav { display: flex; flex-wrap: wrap; gap: 6px; }
 header nav a { color: var(--ink-2); text-decoration: none; padding: 3px 8px; border-radius: 6px; }
 header nav a[aria-current] { background: var(--ink); color: #fff; }
+header nav.pr-volta { padding-right: 10px; border-right: 1px solid var(--line); }
+/* a seta vem de outra fonte e esticava a linha (o cabeçalho crescia 1 px e o mapa encolhia) */
+header nav.pr-volta a { height: 23px; box-sizing: border-box; line-height: 17px; }
+/* Rótulo de lado no banco de peças (auditoria 5.3): a cor sozinha não diz qual é qual. */
+/* Texto na cor da tinta (o laranja do TR não passa 4,5:1 em letra pequena);
+   a cor do lado vai na bolinha ao lado. */
+.pr-lado-rotulo { grid-column: 1 / -1; font-family: var(--mono); font-size: 10.5px; font-weight: 600;
+  letter-spacing: 0.08em; color: var(--ink-2); margin: 4px 0 0; display: flex; align-items: center; gap: 6px; }
+.pr-lado-rotulo::before { content: ""; width: 9px; height: 9px; border-radius: 50%; }
+.pr-lado-rotulo.ct::before { background: var(--ct); }
+.pr-lado-rotulo.t::before { background: var(--t); }
 .grade { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; padding: 16px; }
 @media (max-width: 900px) { .grade { grid-template-columns: minmax(0, 1fr); } }
 
