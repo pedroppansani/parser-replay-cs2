@@ -103,24 +103,42 @@ def rating(anterior: dict | None) -> dict:
 
     `na_pagina` é o número que o site mostra, DENTRO da amostra (os pesos, a
     referência de escala, o modelo de round e a economia foram ajustados nas
-    mesmas partidas). `fora_da_amostra` é o "deixa uma partida fora" gravado
-    com os pesos -- hoje ele reajusta SÓ os pesos.
+    mesmas partidas). `fora_da_amostra` é o número CITADO (decisão do Pedro,
+    2026-10-02): "deixa uma partida fora, completo" de metrics/rating_validacao.json,
+    com o modelo de round, a economia, a referência e os pesos refeitos sem a
+    partida avaliada. `deixa_um_time_fora` é o segundo número, com o erro por
+    time; time com menos de MIN_JOGADOR_PARTIDAS_POR_TIME jogador-partidas é
+    marcado amostra pequena e não entra em frase de destaque.
     """
     from scripts.impacto_rating import contra_a_hltv, insights
 
     h = contra_a_hltv(insights(None))
-    pesos = json.loads((RAIZ / "metrics" / "rating_weights.json").read_text(encoding="utf-8"))["validacao"]
+    v = json.loads((RAIZ / "metrics" / "rating_validacao.json").read_text(encoding="utf-8"))
+    partida, time = v["deixa_uma_partida_fora"], v["deixa_um_time_fora"]
     return {
-        "fonte": "data/processed/*/insights.json x data/reference/hltv_ratings.json; metrics/rating_weights.json",
+        "fonte": "data/processed/*/insights.json x data/reference/hltv_ratings.json; metrics/rating_validacao.json",
         "jogador_partidas": h["n"],
+        "modelo_de_round": v.get("modelo_de_round"),
         "na_pagina": {"erro_medio": round(h["erro_medio"], 3), "correlacao": round(h["correlacao"], 3),
                       "metodo": "dentro da amostra: tudo foi ajustado nestas mesmas partidas"},
-        "fora_da_amostra": {"erro_medio": pesos["fora_da_amostra"]["erro_medio_absoluto"],
-                            "correlacao": pesos["fora_da_amostra"]["correlacao"],
-                            "partidas": pesos["partidas"],
-                            "metodo": ("deixa uma partida fora, reajustando só os PESOS; o modelo de round, a "
-                                       "referência de escala e a economia viram todas as partidas")},
+        "fora_da_amostra": {"erro_medio": partida["erro_medio"], "correlacao": partida["correlacao"],
+                            "partidas": v["partidas_com_rating_oficial"],
+                            "metodo": ("deixa uma partida fora, completo: modelo de round, economia, referência "
+                                       "de escala e pesos refeitos sem a partida avaliada")},
+        "deixa_um_time_fora": {
+            "erro_medio": time["erro_medio"], "correlacao": time["correlacao"],
+            "metodo": "idem, sem nenhuma partida do time avaliado",
+            "por_time": [{"time": t, "erro_medio": x["erro_medio"], "jogador_partidas": x["n"],
+                          "amostra_pequena": x["n"] < MIN_JOGADOR_PARTIDAS_POR_TIME}
+                         for t, x in sorted(time.get("por_time", {}).items(),
+                                            key=lambda kv: (-kv[1]["n"], kv[0]))],
+        },
     }
+
+
+# Decisão do Pedro (2026-10-02): erro de time com menos de 30 jogador-partidas
+# (3 mapas) é amostra pequena -- aparece na tabela, marcado, e fica fora de frase.
+MIN_JOGADOR_PARTIDAS_POR_TIME = 30
 
 
 def escada(anterior: dict | None) -> dict:
@@ -259,7 +277,8 @@ def tres_numeros(d: dict) -> list[dict]:
         {"valor": _br(r["fora_da_amostra"]["erro_medio"], 3),
          "rotulo": "erro médio do rating contra o oficial",
          "contexto": (f"Em {_mil(r['jogador_partidas'])} jogador-partidas (correlação "
-                      f"{_br(r['fora_da_amostra']['correlacao'], 3)}), deixando uma partida fora a cada vez. "
+                      f"{_br(r['fora_da_amostra']['correlacao'], 3)}), deixando uma partida fora a cada vez e "
+                      "refazendo sem ela tudo o que o rating ajusta. "
                       "É uma implementação própria da metodologia publicada, não o número da HLTV.")},
         {"valor": _pct(a["fora_da_amostra"]["botao"]["pior_partida"]),
          "rotulo": "botão do arremesso certo, fora da amostra",
@@ -290,7 +309,11 @@ def blocos_de_texto(d: dict) -> dict[str, str]:
         f"| Aberturas, rounds de multi-kill e headshots | {e['aberturas_feitas']['exatos']} de {e['aberturas_feitas']['de']} idênticos ({e['series_inteiras']} séries inteiras) |",
         f"| Clutches vencidos | {e['clutches']['exatos']} de {e['clutches']['de']} idênticos |",
         f"| Rating, na página (dentro da amostra) | erro médio {_br(r['na_pagina']['erro_medio'], 3)}, correlação {_br(r['na_pagina']['correlacao'], 3)} ({r['jogador_partidas']} jogador-partidas) |",
-        f"| Rating, fora da amostra | erro médio {_br(r['fora_da_amostra']['erro_medio'], 3)}, correlação {_br(r['fora_da_amostra']['correlacao'], 3)} |",
+        f"| Rating, fora da amostra (deixa uma partida fora, completo) | erro médio {_br(r['fora_da_amostra']['erro_medio'], 3)}, correlação {_br(r['fora_da_amostra']['correlacao'], 3)} |",
+        f"| Rating, deixando um time inteiro fora | erro médio {_br(r['deixa_um_time_fora']['erro_medio'], 3)}, correlação {_br(r['deixa_um_time_fora']['correlacao'], 3)} |",
+        "| Rating por time (time fora; jogador-partidas) | " + "; ".join(
+            f"{t['time']} {_br(t['erro_medio'], 3)} ({t['jogador_partidas']}" + (", amostra pequena)" if t["amostra_pequena"] else ")")
+            for t in r["deixa_um_time_fora"]["por_time"]) + " |",
         f"| Convenção de ângulos | mira a {_br(an['erro_mediano_graus'], 2)}° da vítima no tick da kill, contra {_br(an['erro_mediano_invertida_graus'], 2)}° na convenção invertida ({_mil(an['kills'])} kills) |",
     ])
     arremessos = "\n".join([

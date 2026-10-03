@@ -14,7 +14,7 @@ no código e conferida contra dado oficial.
 
 <!-- numeros:inicio resumo -->
 - **410 de 410** placares idênticos aos da HLTV. Kills e mortes de 410 jogadores em 41 mapas profissionais batem com o placar oficial, um a um.
-- **0,081** erro médio do rating contra o oficial. Em 430 jogador-partidas (correlação 0,964), deixando uma partida fora a cada vez. É uma implementação própria da metodologia publicada, não o número da HLTV.
+- **0,081** erro médio do rating contra o oficial. Em 430 jogador-partidas (correlação 0,964), deixando uma partida fora a cada vez e refazendo sem ela tudo o que o rating ajusta. É uma implementação própria da metodologia publicada, não o número da HLTV.
 - **100%** botão do arremesso certo, fora da amostra. A força de 6.846 granadas inferida só da posição, conferida contra o que a demo grava em 13 partidas.
 <!-- numeros:fim resumo -->
 
@@ -41,7 +41,9 @@ acerto do rating em cima delas seria coincidência.
 | Aberturas, rounds de multi-kill e headshots | 80 de 80 idênticos (8 séries inteiras) |
 | Clutches vencidos | 67 de 80 idênticos |
 | Rating, na página (dentro da amostra) | erro médio 0,079, correlação 0,965 (430 jogador-partidas) |
-| Rating, fora da amostra | erro médio 0,081, correlação 0,964 |
+| Rating, fora da amostra (deixa uma partida fora, completo) | erro médio 0,081, correlação 0,964 |
+| Rating, deixando um time inteiro fora | erro médio 0,082, correlação 0,963 |
+| Rating por time (time fora; jogador-partidas) | Vitality 0,084 (85); FURIA 0,070 (80); Natus Vincere 0,084 (70); Falcons 0,080 (60); Spirit 0,082 (60); MOUZ 0,084 (50); Aurora Gaming 0,121 (10, amostra pequena); The MongolZ 0,090 (10, amostra pequena); magic 0,087 (5, amostra pequena) |
 | Convenção de ângulos | mira a 1,68° da vítima no tick da kill, contra 6,00° na convenção invertida (7.652 kills) |
 <!-- numeros:fim validacao -->
 

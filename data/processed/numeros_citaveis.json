@@ -33,8 +33,9 @@
     "grupos": 4
   },
   "rating": {
-    "fonte": "data/processed/*/insights.json x data/reference/hltv_ratings.json; metrics/rating_weights.json",
+    "fonte": "data/processed/*/insights.json x data/reference/hltv_ratings.json; metrics/rating_validacao.json",
     "jogador_partidas": 430,
+    "modelo_de_round": "quatro entradas",
     "na_pagina": {
       "erro_medio": 0.079,
       "correlacao": 0.965,
@@ -42,9 +43,70 @@
     },
     "fora_da_amostra": {
       "erro_medio": 0.081,
-      "correlacao": 0.964,
+      "correlacao": 0.9637,
       "partidas": 43,
-      "metodo": "deixa uma partida fora, reajustando só os PESOS; o modelo de round, a referência de escala e a economia viram todas as partidas"
+      "metodo": "deixa uma partida fora, completo: modelo de round, economia, referência de escala e pesos refeitos sem a partida avaliada"
+    },
+    "deixa_um_time_fora": {
+      "erro_medio": 0.0816,
+      "correlacao": 0.9629,
+      "metodo": "idem, sem nenhuma partida do time avaliado",
+      "por_time": [
+        {
+          "time": "Vitality",
+          "erro_medio": 0.0835,
+          "jogador_partidas": 85,
+          "amostra_pequena": false
+        },
+        {
+          "time": "FURIA",
+          "erro_medio": 0.0703,
+          "jogador_partidas": 80,
+          "amostra_pequena": false
+        },
+        {
+          "time": "Natus Vincere",
+          "erro_medio": 0.0837,
+          "jogador_partidas": 70,
+          "amostra_pequena": false
+        },
+        {
+          "time": "Falcons",
+          "erro_medio": 0.0803,
+          "jogador_partidas": 60,
+          "amostra_pequena": false
+        },
+        {
+          "time": "Spirit",
+          "erro_medio": 0.0824,
+          "jogador_partidas": 60,
+          "amostra_pequena": false
+        },
+        {
+          "time": "MOUZ",
+          "erro_medio": 0.0843,
+          "jogador_partidas": 50,
+          "amostra_pequena": false
+        },
+        {
+          "time": "Aurora Gaming",
+          "erro_medio": 0.1206,
+          "jogador_partidas": 10,
+          "amostra_pequena": true
+        },
+        {
+          "time": "The MongolZ",
+          "erro_medio": 0.0901,
+          "jogador_partidas": 10,
+          "amostra_pequena": true
+        },
+        {
+          "time": "magic",
+          "erro_medio": 0.0872,
+          "jogador_partidas": 5,
+          "amostra_pequena": true
+        }
+      ]
     }
   },
   "escada": {
