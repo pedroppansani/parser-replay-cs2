@@ -9,6 +9,18 @@
 
 A silhueta de 0,216 e os 56% são do corpus de 9 partidas. Hoje, com 52: silhueta 0,195 (`data/global_clusters/model_meta.json`).
 
+## Round sem contato (2026-10-02, auditoria 4.7)
+
+O tempo até o contato fica **nulo** quando não houve contato (antes: "mediana da partida x 2", um
+valor diferente em cada partida que vazava para `player_roles`, `archetypes` e o perfil). A
+coluna `sem_contato` marca o round na tabela; no agrupamento, o modelo global preenche o tempo
+com a mediana dele (`fill_medians`). `sem_contato` como feature foi medida e recusada: ARI 0,652
+contra o agrupamento anterior (mínimo 0,9) e o grupo "Mira fora da altura" some. A variante
+adotada: ARI 0,936, quatro perfis mantidos (nomes remapeados pela tabela cruzada), estabilidade
+por reamostragem das partidas 0,929 (era 0,920). `pesquisa/imputacao_clusters.py` refaz.
+Efeito colateral medido: 11 rótulos "Abre o round" entram (o round sem contato saiu do
+denominador); a mediana do 1º contato muda em 350 jogador-partidas (mediana 3,0 s).
+
 ## Texto
 
 7b. **As features do clustering são só COMPORTAMENTO.** `damage`, `kills`,

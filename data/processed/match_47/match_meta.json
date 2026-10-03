@@ -5,8 +5,8 @@
   "source_dem": "C:\\Users\\User\\Desktop\\Projetos Claude\\01 - Parser de Replay CS2\\demos\\iem-krakw-2026-vitality-vs-mouz-bo3-UD0TEnJpRupm9E_EHc4hZG\\vitality-vs-mouz-m1-nuke.dem",
   "pca": {
     "explained_variance_ratio": [
-      0.31078943390577846,
-      0.24719487150790692
+      0.304497849161664,
+      0.24679905906789776
     ],
     "feature_columns": [
       "avg_distance_from_team",
@@ -24,8 +24,8 @@
   "source_fingerprint": "564a9674a4fe6c84a3c4",
   "versao": {
     "parser": 1,
-    "metricas": 16,
-    "commit": "3f4ae8797eb2",
+    "metricas": 17,
+    "commit": "56e783633c87",
     "sujo": true,
     "awpy": "2.0.2",
     "demoparser2": "0.42.0"
