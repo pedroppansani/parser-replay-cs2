@@ -1156,7 +1156,7 @@
       "clutches": 1,
       "team": "A",
       "mvp_index": 0.9142857142857143,
-      "rating": 2.38,
+      "rating": 2.39,
       "rating_amostra_fraca": false,
       "rating_sub": {
         "kills_limpas": 2.42,
@@ -1166,7 +1166,7 @@
         "mortes_trocadas": 0.65,
         "kast": 1.07,
         "multikills": 3.85,
-        "round_swing": 1.84
+        "round_swing": 1.86
       }
     },
     {
@@ -1187,7 +1187,7 @@
       "clutches": 0,
       "team": "A",
       "mvp_index": 0.4772235294117647,
-      "rating": 1.1,
+      "rating": 1.12,
       "rating_amostra_fraca": false,
       "rating_sub": {
         "kills_limpas": 0.89,
@@ -1197,7 +1197,7 @@
         "mortes_trocadas": 1.05,
         "kast": 1.2,
         "multikills": 0.57,
-        "round_swing": 1.08
+        "round_swing": 1.1
       }
     },
     {
@@ -1218,7 +1218,7 @@
       "clutches": 0,
       "team": "A",
       "mvp_index": 0.4728268907563026,
-      "rating": 1.36,
+      "rating": 1.38,
       "rating_amostra_fraca": false,
       "rating_sub": {
         "kills_limpas": 1.45,
@@ -1228,7 +1228,7 @@
         "mortes_trocadas": 0.92,
         "kast": 1.07,
         "multikills": 1.71,
-        "round_swing": 1.05
+        "round_swing": 1.1
       }
     },
     {
@@ -1249,7 +1249,7 @@
       "clutches": 0,
       "team": "A",
       "mvp_index": 0.4579294117647059,
-      "rating": 0.95,
+      "rating": 0.93,
       "rating_amostra_fraca": false,
       "rating_sub": {
         "kills_limpas": 0.71,
@@ -1259,7 +1259,7 @@
         "mortes_trocadas": 1.05,
         "kast": 1.21,
         "multikills": 0.51,
-        "round_swing": 0.82
+        "round_swing": 0.8
       }
     },
     {
@@ -1280,7 +1280,7 @@
       "clutches": 0,
       "team": "A",
       "mvp_index": 0.4061647058823529,
-      "rating": 0.9,
+      "rating": 0.88,
       "rating_amostra_fraca": false,
       "rating_sub": {
         "kills_limpas": 0.63,
@@ -1290,7 +1290,7 @@
         "mortes_trocadas": 0.65,
         "kast": 1.22,
         "multikills": 0.77,
-        "round_swing": 0.8
+        "round_swing": 0.76
       }
     },
     {
@@ -1311,7 +1311,7 @@
       "clutches": 1,
       "team": "B",
       "mvp_index": 0.3752672268907564,
-      "rating": 1.45,
+      "rating": 1.46,
       "rating_amostra_fraca": false,
       "rating_sub": {
         "kills_limpas": 1.2,
@@ -1321,7 +1321,7 @@
         "mortes_trocadas": 1.05,
         "kast": 0.85,
         "multikills": 2.08,
-        "round_swing": 1.36
+        "round_swing": 1.39
       }
     },
     {
@@ -1342,7 +1342,7 @@
       "clutches": 0,
       "team": "B",
       "mvp_index": 0.35298151260504207,
-      "rating": 1.23,
+      "rating": 1.21,
       "rating_amostra_fraca": false,
       "rating_sub": {
         "kills_limpas": 1.37,
@@ -1352,7 +1352,7 @@
         "mortes_trocadas": 0.78,
         "kast": 0.99,
         "multikills": 1.67,
-        "round_swing": 0.96
+        "round_swing": 0.92
       }
     },
     {
@@ -1373,7 +1373,7 @@
       "clutches": 0,
       "team": "B",
       "mvp_index": 0.24857142857142867,
-      "rating": 0.64,
+      "rating": 0.63,
       "rating_amostra_fraca": false,
       "rating_sub": {
         "kills_limpas": 0.69,
@@ -1383,7 +1383,7 @@
         "mortes_trocadas": 1.31,
         "kast": 0.93,
         "multikills": 0.21,
-        "round_swing": 0.76
+        "round_swing": 0.73
       }
     },
     {
@@ -1435,7 +1435,7 @@
       "clutches": 0,
       "team": "B",
       "mvp_index": 0.07661176470588234,
-      "rating": 0.52,
+      "rating": 0.51,
       "rating_amostra_fraca": false,
       "rating_sub": {
         "kills_limpas": 0.58,
@@ -1445,7 +1445,7 @@
         "mortes_trocadas": 1.31,
         "kast": 0.72,
         "multikills": 0.48,
-        "round_swing": 0.47
+        "round_swing": 0.5
       }
     }
   ],
@@ -1458,8 +1458,8 @@
     "pesos_desatualizados": false,
     "validacao": {
       "partidas": 43,
-      "erro_medio": 0.081,
-      "correlacao": 0.964
+      "erro_medio": 0.079,
+      "correlacao": 0.966
     }
   },
   "archetypes": [

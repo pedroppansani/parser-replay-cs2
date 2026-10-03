@@ -35,74 +35,74 @@
   "rating": {
     "fonte": "data/processed/*/insights.json x data/reference/hltv_ratings.json; metrics/rating_validacao.json",
     "jogador_partidas": 430,
-    "modelo_de_round": "quatro entradas",
+    "modelo_de_round": "completo",
     "na_pagina": {
-      "erro_medio": 0.079,
-      "correlacao": 0.965,
+      "erro_medio": 0.077,
+      "correlacao": 0.967,
       "metodo": "dentro da amostra: tudo foi ajustado nestas mesmas partidas"
     },
     "fora_da_amostra": {
-      "erro_medio": 0.081,
-      "correlacao": 0.9637,
+      "erro_medio": 0.0788,
+      "correlacao": 0.9658,
       "partidas": 43,
       "metodo": "deixa uma partida fora, completo: modelo de round, economia, referência de escala e pesos refeitos sem a partida avaliada"
     },
     "deixa_um_time_fora": {
-      "erro_medio": 0.0816,
-      "correlacao": 0.9629,
+      "erro_medio": 0.0793,
+      "correlacao": 0.9652,
       "metodo": "idem, sem nenhuma partida do time avaliado",
       "por_time": [
         {
           "time": "Vitality",
-          "erro_medio": 0.0835,
+          "erro_medio": 0.0798,
           "jogador_partidas": 85,
           "amostra_pequena": false
         },
         {
           "time": "FURIA",
-          "erro_medio": 0.0703,
+          "erro_medio": 0.0726,
           "jogador_partidas": 80,
           "amostra_pequena": false
         },
         {
           "time": "Natus Vincere",
-          "erro_medio": 0.0837,
+          "erro_medio": 0.0787,
           "jogador_partidas": 70,
           "amostra_pequena": false
         },
         {
           "time": "Falcons",
-          "erro_medio": 0.0803,
+          "erro_medio": 0.0816,
           "jogador_partidas": 60,
           "amostra_pequena": false
         },
         {
           "time": "Spirit",
-          "erro_medio": 0.0824,
+          "erro_medio": 0.0779,
           "jogador_partidas": 60,
           "amostra_pequena": false
         },
         {
           "time": "MOUZ",
-          "erro_medio": 0.0843,
+          "erro_medio": 0.0798,
           "jogador_partidas": 50,
           "amostra_pequena": false
         },
         {
           "time": "Aurora Gaming",
-          "erro_medio": 0.1206,
+          "erro_medio": 0.121,
           "jogador_partidas": 10,
           "amostra_pequena": true
         },
         {
           "time": "The MongolZ",
-          "erro_medio": 0.0901,
+          "erro_medio": 0.0897,
           "jogador_partidas": 10,
           "amostra_pequena": true
         },
         {
           "time": "magic",
-          "erro_medio": 0.0872,
+          "erro_medio": 0.0686,
           "jogador_partidas": 5,
           "amostra_pequena": true
         }

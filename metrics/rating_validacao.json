@@ -3,90 +3,90 @@
   "partidas_com_rating_oficial": 43,
   "jogador_partidas": 430,
   "so_os_pesos": {
-    "erro_medio": 0.0812,
-    "correlacao": 0.9635,
+    "erro_medio": 0.0789,
+    "correlacao": 0.9656,
     "vies": 0.0001,
     "n": 430,
     "metodo": "deixa uma partida fora reajustando só os pesos (o método antigo)"
   },
   "deixa_uma_partida_fora": {
-    "erro_medio": 0.081,
-    "correlacao": 0.9637,
-    "vies": 0.001,
+    "erro_medio": 0.0788,
+    "correlacao": 0.9658,
+    "vies": 0.0009,
     "n": 430,
     "metodo": "modelo de round, economia, referência e pesos sem a partida avaliada"
   },
   "deixa_um_time_fora": {
-    "erro_medio": 0.0816,
-    "correlacao": 0.9629,
-    "vies": 0.002,
+    "erro_medio": 0.0793,
+    "correlacao": 0.9652,
+    "vies": 0.0019,
     "n": 430,
     "metodo": "idem, sem NENHUMA partida do time avaliado; o erro é o dos jogadores desse time",
     "por_time": {
       "Aurora Gaming": {
-        "erro_medio": 0.1206,
-        "correlacao": 0.8939,
-        "vies": 0.0257,
+        "erro_medio": 0.121,
+        "correlacao": 0.9099,
+        "vies": 0.0285,
         "n": 10,
         "partidas_de_fora": 2
       },
       "FURIA": {
-        "erro_medio": 0.0703,
-        "correlacao": 0.9693,
-        "vies": 0.0079,
+        "erro_medio": 0.0726,
+        "correlacao": 0.969,
+        "vies": 0.007,
         "n": 80,
         "partidas_de_fora": 16
       },
       "Falcons": {
-        "erro_medio": 0.0803,
-        "correlacao": 0.964,
-        "vies": -0.0116,
+        "erro_medio": 0.0816,
+        "correlacao": 0.9631,
+        "vies": -0.0121,
         "n": 60,
         "partidas_de_fora": 12
       },
       "MOUZ": {
-        "erro_medio": 0.0843,
-        "correlacao": 0.9401,
-        "vies": 0.0378,
+        "erro_medio": 0.0798,
+        "correlacao": 0.9452,
+        "vies": 0.0414,
         "n": 50,
         "partidas_de_fora": 10
       },
       "Natus Vincere": {
-        "erro_medio": 0.0837,
-        "correlacao": 0.945,
-        "vies": 0.0045,
+        "erro_medio": 0.0787,
+        "correlacao": 0.9524,
+        "vies": 0.0043,
         "n": 70,
         "partidas_de_fora": 14
       },
       "Spirit": {
-        "erro_medio": 0.0824,
-        "correlacao": 0.9736,
-        "vies": 0.0181,
+        "erro_medio": 0.0779,
+        "correlacao": 0.9767,
+        "vies": 0.0152,
         "n": 60,
         "partidas_de_fora": 12
       },
       "The MongolZ": {
-        "erro_medio": 0.0901,
-        "correlacao": 0.9724,
-        "vies": -0.0718,
+        "erro_medio": 0.0897,
+        "correlacao": 0.98,
+        "vies": -0.0805,
         "n": 10,
         "partidas_de_fora": 2
       },
       "Vitality": {
-        "erro_medio": 0.0835,
-        "correlacao": 0.9714,
-        "vies": -0.0262,
+        "erro_medio": 0.0798,
+        "correlacao": 0.9723,
+        "vies": -0.0241,
         "n": 85,
         "partidas_de_fora": 17
       },
       "magic": {
-        "erro_medio": 0.0872,
-        "correlacao": 0.9479,
-        "vies": 0.0643,
+        "erro_medio": 0.0686,
+        "correlacao": 0.973,
+        "vies": 0.0526,
         "n": 5,
         "partidas_de_fora": 1
       }
     }
   },
-  "modelo_de_round": "quatro entradas"
+  "modelo_de_round": "completo"
 }

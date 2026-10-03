@@ -442,14 +442,13 @@ def _estado(dif_vivos: int, dif_equip: float, bomba: bool, eh_ct: bool) -> list[
 
 
 # O modelo de round usa o estado COMPLETO (vivos de cada lado e tempo)?
-# DESLIGADO: medido fora da dobra em 2026-10-02 (scripts/valida_modelo_de_round.py,
-# validação cruzada agrupada por partida) ele MELHORA -- Brier 0,1287 -> 0,1245,
-# AUC 0,900 -> 0,907, e o 1v0 deixa de ser previsto em 74% (vence 94%). A
-# segunda condição para adotar (o erro do rating contra a HLTV não piorar no
-# "deixa uma partida fora" completo, scripts/valida_rating.py) NÃO foi medida:
-# a linha de base depende da tabela de economia, e essa decisão é do Pedro.
+# LIGADO em 2026-10-02 (auditoria 4.3, nota 22a), com as duas condições do Pedro
+# medidas: fora da dobra, agrupado por partida (scripts/valida_modelo_de_round.py),
+# Brier 0,1287 -> 0,1245 e AUC 0,900 -> 0,907; e o erro do rating contra a HLTV
+# no "deixa uma partida fora" completo (scripts/valida_rating.py) caiu de 0,0810
+# para 0,0788 (tolerância era piorar até +0,001).
 # O interruptor só age ao REAJUSTAR a referência; uma já gravada manda no que roda.
-MODELO_DE_ROUND_COMPLETO = False
+MODELO_DE_ROUND_COMPLETO = True
 # Relógio do round competitivo (1:55) e da bomba (40 s, a mesma constante que
 # metrics/timing.py usa para achar o tickrate).
 SEGUNDOS_DO_ROUND = 115.0
