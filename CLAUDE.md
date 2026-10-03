@@ -60,10 +60,10 @@ texto completo de cada uma está na nota do link (`notas/decisoes/`).
 - [5](notas/decisoes/5-angulos-por-moda.md) Ângulos de pré-fire saem dos dados por moda circular; nunca bins fixos.
 - [6](notas/decisoes/6-desvio-de-setup.md) Desvio de setup é contra o padrão do próprio time, não contra um setup certo.
 - [7](notas/decisoes/7-cluster-por-round.md) Clustering é por (jogador, round), não por jogador.
-- [7a](notas/decisoes/7a-perfil-por-jogador.md) O perfil por jogador é a leitura; taxa sempre com bruto, referência e marca de amostra fraca.
+- [7a](notas/decisoes/7a-perfil-por-jogador.md) O perfil por jogador é a leitura; taxa com bruto, referência e marca de amostra fraca.
 - [7b](notas/decisoes/7b-features-comportamento.md) Features do clustering são só comportamento; resultado (kills, dano) fica fora.
 - [7c](notas/decisoes/7c-longe-do-time.md) "Longe do time" exige piso absoluto e nenhum companheiro no raio de apoio.
-- [7d](notas/decisoes/7d-duas-camadas.md) Função estrutural (o trabalho) e traço comportamental (como executa) não se misturam.
+- [7d](notas/decisoes/7d-duas-camadas.md) Função estrutural (o trabalho) e traço comportamental (como) não se misturam.
 - [7e](notas/decisoes/7e-funcoes-de-ct.md) Âncora, rotativo e coringa saem de dispersão do início × distância ao contato.
 - [7f](notas/decisoes/7f-posicao-de-setup.md) Posição inicial é a de setup (10 s depois do freeze), não o tick do freeze.
 - [7g](notas/decisoes/7g-igl-manual.md) IGL nunca é atribuído automaticamente; vem de `roles_manual.json`.
@@ -79,7 +79,7 @@ texto completo de cada uma está na nota do link (`notas/decisoes/`).
 - [8h](notas/decisoes/8h-cegueira-reconstruida.md) Cegueira é reconstruída de `flash_duration` nas demos sem `player_blind`.
 - [8i](notas/decisoes/8i-economia-do-corpus.md) Economia do rating estimada no corpus, por arma mais cara e colete.
 - [8j](notas/decisoes/8j-dano-no-mesmo-tick.md) `dmg_health_real` é recalculado: vários acertos no tick não passam da vida.
-- [9](notas/decisoes/9-convencao-de-angulos.md) Pitch positivo olha para baixo; o teste roda a convenção invertida como controle.
+- [9](notas/decisoes/9-convencao-de-angulos.md) Pitch positivo olha para baixo; o teste roda a invertida como controle.
 - [10](notas/decisoes/10-paleta.md) Paleta validada para daltonismo e contraste; não trocar cor sem `valida_paleta`.
 - [11](notas/decisoes/11-kmeans-global.md) O KMeans é ajustado uma vez no corpus (`global_model.json`), não por partida.
 - [12](notas/decisoes/12-ancora-e-lurk-por-area.md) Âncora e lurk são medidos por área do mapa (A/Mid/B), não por distância.
@@ -106,7 +106,7 @@ texto completo de cada uma está na nota do link (`notas/decisoes/`).
 - [20b](notas/decisoes/20b-bottom-frag.md) Bottom frag exige distância destacada (MAD); mochila exige vitória.
 - [20c](notas/decisoes/20c-comparabilidade.md) Pontuação de função é "quanto acima do normal"; concentração ponderada.
 - [20d](notas/decisoes/20d-empate-do-destaque.md) No empate do topo vence o destaque negativo.
-- [21a](notas/decisoes/21a-arremesso.md) Botão, "no ar" e postura: lidos da demo onde há `.dem`, inferidos pela rotina do jogo onde não há.
+- [21a](notas/decisoes/21a-arremesso.md) Botão, "no ar" e postura: lidos da demo com `.dem`, inferidos pela rotina sem ela.
 - [21b](notas/decisoes/21b-console-no-jogo.md) O comando de console só é dado como exato depois de conferido no jogo.
 - [21c](notas/decisoes/21c-tick-oficial.md) Com `grenade_thrown`, o tick do evento é a soltura; postura pela altura de saída.
 - [22](notas/decisoes/22-rating-proprio.md) O rating é implementação própria da metodologia do Rating 3.0; nunca "o da HLTV".
@@ -126,18 +126,19 @@ texto completo de cada uma está na nota do link (`notas/decisoes/`).
 - [25](notas/decisoes/25-identidade-steamid.md) Identidade é o steamid; o nome é rótulo (`metrics/identidade.py`).
 - [26](notas/decisoes/26-invariantes.md) Dez invariantes sobre o corpus inteiro (`test_invariantes_corpus.py`).
 - [27](notas/decisoes/27-versoes.md) Cada partida grava a versão do parser (lida do interim) e das métricas, e o commit.
-- [28](notas/decisoes/28-determinismo.md) Processamento determinístico: `group_by`/`unique` com ordem; empate de função por 1 round.
+- [28](notas/decisoes/28-determinismo.md) Processamento determinístico: `group_by`/`unique` com ordem declarada.
 - [29](notas/decisoes/29-lurker.md) Lurker: sem os rounds de AWP, relativo à função, mínimo de 8 rounds.
 - [30](notas/decisoes/30-tres-niveis.md) Página da partida: números só dela; régua anônima do corpus; sem seletor.
 - [31](notas/decisoes/31-pisos-de-funcao.md) Registro dos pisos de função e de onde veio cada um.
-- [32](notas/decisoes/32-prancheta.md) A tática é um log de operações; desfazer é `anula`/`reativa`; interação por máquina de estados.
+- [32](notas/decisoes/32-prancheta.md) A tática é um log de operações; desfazer é `anula`/`reativa`; máquina de estados.
 - [33](notas/decisoes/33-map-core.md) Um núcleo só para o mapa (`map_core.js`); extração aceita por pixel idêntico.
 - [34](notas/decisoes/34-direcao-do-olhar.md) θ = −yaw; ângulo interpola linear pelo caminho curto.
 - [35](notas/decisoes/35-reproducao-pura.md) A reprodução da prancheta é função pura do tempo.
 - [36](notas/decisoes/36-preservacao-de-dados.md) Nenhum `.dem`, interim ou backup é apagado sem lista confirmada e cópia por sha256.
-- [37](notas/decisoes/37-pagina-e-dado.md) Número de corpus vem de `numeros_citaveis.json`; texto do dado passa por `esc()`; CI testa antes de publicar.
+- [37](notas/decisoes/37-pagina-e-dado.md) Número de corpus vem de `numeros_citaveis.json`; dado passa por `esc()`; CI testa antes.
 - [38](notas/decisoes/38-times-canonicos.md) Agregado por time usa o nome canônico (`metrics/times.py`).
-- [39](notas/decisoes/39-rotulos-com-amostra-e-estabilidade.md) Rótulo de jogador: amostra mínima; estabilidade < 0,70 vira "tendência".
+- [39](notas/decisoes/39-rotulos-com-amostra-e-estabilidade.md) Rótulo: amostra mínima; estabilidade < 0,70 vira "tendência".
+- [40](notas/decisoes/40-uma-regra-um-lugar.md) Trade, troca de lado, contato e AWPer do time: definidos uma vez.
 
 ## Números citáveis
 

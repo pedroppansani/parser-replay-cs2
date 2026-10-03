@@ -45,6 +45,7 @@ from pathlib import Path
 import polars as pl
 
 from metrics.timing import detect_tickrate
+from metrics.constantes import JANELA_DE_TRADE_S
 
 # --- Limiares de calibração -------------------------------------------------
 
@@ -74,8 +75,8 @@ MIN_REGIOES_ROTACIONANDO = 7
 # abertura ou peek de informação, não o meio do round.
 SEGUNDOS_CONTATO_CEDO = 15.0
 
-# Janela de trade, a mesma das métricas básicas do projeto.
-JANELA_TRADE_S = 5.0
+# Janela de trade do projeto (metrics/constantes.py).
+JANELA_TRADE_S = JANELA_DE_TRADE_S
 
 # Fração do time que precisa estar de rifle para a arma pior de um jogador
 # contar como economia sacrificada. Abaixo disso é eco do time inteiro.
@@ -107,8 +108,6 @@ PISTOLAS = {"Glock-18", "USP-S", "P2000", "P250", "Five-SeveN", "Tec-9",
 AWP_NO_DEMO = "AWP"
 AWP_NA_TABELA_DE_KILLS = "awp"
 
-# Round em que os lados trocam (MR12).
-HALFTIME_ROUND = 12
 
 
 # --- Blocos de fato por round -----------------------------------------------

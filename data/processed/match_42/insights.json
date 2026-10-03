@@ -1082,13 +1082,6 @@
       "negativo": false
     },
     {
-      "funcao": "awper",
-      "steamid": 76561199032006224,
-      "name": "kyousuke",
-      "pontuacao": 0.8092499999999999,
-      "negativo": false
-    },
-    {
       "funcao": "estrutural_awper",
       "steamid": 76561198074762801,
       "name": "m0NESY",
@@ -1107,6 +1100,13 @@
       "steamid": 76561198138828475,
       "name": "Brollan",
       "pontuacao": 0.7,
+      "negativo": false
+    },
+    {
+      "funcao": "repick",
+      "steamid": 76561198074762801,
+      "name": "m0NESY",
+      "pontuacao": 0.69,
       "negativo": false
     }
   ],

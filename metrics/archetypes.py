@@ -35,6 +35,7 @@ from pathlib import Path
 import numpy as np
 import polars as pl
 
+from metrics.constantes import JANELA_DE_TRADE_S
 from metrics.awp_metrics import HOLD_MAX_DISPLACEMENT, PRE_ENGAGEMENT_WINDOW_SECONDS
 from metrics.geometry import horizontal_distance
 
@@ -43,9 +44,9 @@ REFERENCE_FILE = PROJECT_ROOT / "metrics" / "archetype_reference.json"
 
 # --- Limiares de calibração -------------------------------------------------
 
-# Janela de trade, a mesma das métricas básicas: se o companheiro morreu e você
-# não matou quem o matou em 5s, você não trocou aquela morte.
-TRADE_WINDOW_SECONDS = 5.0
+# Janela de trade (metrics/constantes.py): se o companheiro morreu e você não
+# matou quem o matou dentro dela, você não trocou aquela morte.
+TRADE_WINDOW_SECONDS = JANELA_DE_TRADE_S
 
 # Distância até o companheiro que morreu para a morte ser considerada "do seu
 # lado". Além disso o jogador está jogando outra parte do mapa e não tinha como

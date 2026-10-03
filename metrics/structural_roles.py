@@ -40,6 +40,8 @@ from pathlib import Path
 import numpy as np
 import polars as pl
 
+from metrics.constantes import JANELA_DE_TRADE_S
+from metrics.contato import primeiro_contato
 from metrics.map_areas import AREA_A, AREA_B, area_lookup, derive_place_areas
 from metrics.player_profile import distancia_do_companheiro_mais_proximo
 from metrics.positioning import position_samples, setup_snapshot
@@ -51,8 +53,6 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 # mão. O código LÊ este arquivo e nunca escreve nele — há teste travando isso.
 ROLES_MANUAL_FILE = PROJECT_ROOT / "roles_manual.json"
 
-# Round em que os lados trocam (MR12).
-HALFTIME_ROUND = 12
 
 # --- Limiares de calibração -------------------------------------------------
 # Os quatro primeiros saem da distribuição real das 9 partidas (881 rounds de CT).
@@ -99,8 +99,8 @@ SEGUNDOS_UTILITY_ANTES_DA_KILL = 4.0
 # chegou depois.
 RAIO_ATRAS_DO_ENTRY = 600.0
 
-# Janela de trade do projeto inteiro.
-JANELA_TRADE_S = 5.0
+# Janela de trade do projeto inteiro (metrics/constantes.py).
+JANELA_TRADE_S = JANELA_DE_TRADE_S
 
 # AWPer: a arma tem que ser consistente, não evento isolado. Um rifler que pega a
 # AWP largada do adversário em 2 de 24 rounds não é AWPer.
@@ -184,25 +184,8 @@ def carrega_roles_manual(path: Path = ROLES_MANUAL_FILE) -> dict:
 # --- Fatos por round --------------------------------------------------------
 
 def _primeiro_contato(damages: pl.DataFrame) -> pl.DataFrame:
-    """Tick do primeiro contato de cada jogador em cada round.
-
-    Contato = causou ou sofreu dano, a mesma definição que o resto do projeto
-    usa (ver clustering/playstyle.first_contact_per_player_round).
-    """
-    lados = [
-        damages.select(
-            pl.col("round_num").cast(pl.UInt32),
-            pl.col(col).alias("steamid"),
-            pl.col("tick"),
-        )
-        for col in ("attacker_steamid", "victim_steamid")
-    ]
-    return (
-        pl.concat(lados)
-        .filter(pl.col("steamid").is_not_null())
-        .group_by(["round_num", "steamid"], maintain_order=True)
-        .agg(pl.col("tick").min().alias("tick_contato"))
-    )
+    """Tick do primeiro contato de cada jogador em cada round (metrics/contato.py)."""
+    return primeiro_contato(damages.with_columns(pl.col("round_num").cast(pl.UInt32)))
 
 
 # A "posição inicial" é a de SETUP, não a do tick exato do fim do freeze.

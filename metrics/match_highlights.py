@@ -292,7 +292,7 @@ def candidato_bottom_frag(players: pl.DataFrame) -> dict | None:
 
 
 def _candidatos_comportamentais(
-    archetypes: pl.DataFrame, time_vencedor: str | None
+    archetypes: pl.DataFrame, time_vencedor: str | None, awpers: set | None = None
 ) -> list[dict]:
     """Papéis de `metrics/archetypes.py`, já em escala de percentil global."""
     out = []
@@ -308,6 +308,11 @@ def _candidatos_comportamentais(
             # perdeu não é mochila: é jogador ruim em time que perdeu, e isso não
             # é destaque nenhum. Sem a trava, toda derrota elegeria um "mochila".
             if papel == "mochila" and row.get("team") != time_vencedor:
+                continue
+            # O card "AWPer" só vai para o AWPer DO TIME (player_roles.awpers_do_time):
+            # o índice de AWP do archetypes mede como ele jogou com a arma, não
+            # quem era o AWPer -- duas réguas não podem responder a mesma pergunta.
+            if papel == "awper" and awpers is not None and row["steamid"] not in awpers:
                 continue
 
             out.append({
@@ -443,13 +448,14 @@ def outro_destaque(
     structural: pl.DataFrame | None,
     mvp_steamid: int | None,
     time_vencedor: str | None,
+    awpers: set | None = None,
 ) -> dict | None:
     """O jogador mais notável entre todos os OUTROS, positivo ou negativo.
 
     Nunca o MVP: o card da direita é sempre outra pessoa, e se o vencedor da
     segunda pontuação for ele, pula-se para o próximo.
     """
-    candidatos = _candidatos_comportamentais(archetypes, time_vencedor)
+    candidatos = _candidatos_comportamentais(archetypes, time_vencedor, awpers)
     candidatos += _candidatos_estruturais(structural)
     bf = candidato_bottom_frag(players)
     if bf is not None:
@@ -553,6 +559,7 @@ def match_highlights(
     structural: pl.DataFrame | None,
     funcao_por_steamid: dict[int, str],
     time_vencedor: str | None,
+    awpers: set | None = None,
 ) -> tuple[pl.DataFrame, dict]:
     """Contrato do projeto: `(per_round, summary)`.
 
@@ -564,10 +571,10 @@ def match_highlights(
     mvp = mvp_da_partida(players, funcao_por_steamid)
     destaque = outro_destaque(
         players, archetypes, structural,
-        None if mvp is None else int(mvp["steamid"]), time_vencedor,
+        None if mvp is None else int(mvp["steamid"]), time_vencedor, awpers,
     )
 
-    candidatos = _candidatos_comportamentais(archetypes, time_vencedor)
+    candidatos = _candidatos_comportamentais(archetypes, time_vencedor, awpers)
     candidatos += _candidatos_estruturais(structural)
     bf = candidato_bottom_frag(players)
     if bf is not None:

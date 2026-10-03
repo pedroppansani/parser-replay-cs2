@@ -36,8 +36,10 @@ Convenção do projeto: Time A = quem começou de T; Time B = quem começou de C
 """
 from __future__ import annotations
 
-# MR12: 12 rounds por metade no tempo regulamentar.
-REGULATION_HALF = 12
+from metrics.constantes import HALFTIME_ROUND
+
+# MR12: 12 rounds por metade no tempo regulamentar (metrics/constantes.py).
+REGULATION_HALF = HALFTIME_ROUND
 # Prorrogação MR3: 3 rounds por metade (6 por prorrogação).
 OT_HALF = 3
 

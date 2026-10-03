@@ -41,6 +41,8 @@ from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import StandardScaler
 
+from metrics.contato import primeiro_contato
+
 CLUSTER_NAMES_FILE = Path(__file__).resolve().parent / "cluster_names.json"
 
 DEFAULT_N_CLUSTERS = 4
@@ -97,21 +99,8 @@ def first_contact_per_player_round(damages: pl.DataFrame, rounds: pl.DataFrame, 
     round e quem joga atrás: entry fragger toma contato nos primeiros segundos,
     lurker e âncora demoram.
     """
-    contacts = pl.concat(
-        [
-            damages.filter(pl.col("attacker_steamid").is_not_null()).select(
-                pl.col("round_num"), pl.col("attacker_steamid").alias("steamid"), pl.col("tick")
-            ),
-            damages.filter(pl.col("victim_steamid").is_not_null()).select(
-                pl.col("round_num"), pl.col("victim_steamid").alias("steamid"), pl.col("tick")
-            ),
-        ],
-        how="vertical",
-    )
-
     return (
-        contacts.group_by(["round_num", "steamid"], maintain_order=True)
-        .agg(pl.col("tick").min().alias("first_contact_tick"))
+        primeiro_contato(damages).rename({"tick_contato": "first_contact_tick"})
         .join(rounds.select(["round_num", "freeze_end", "end"]), on="round_num", how="left")
         .with_columns(
             ((pl.col("first_contact_tick") - pl.col("freeze_end")) / tickrate).alias("time_of_first_contact_s")

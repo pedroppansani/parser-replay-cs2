@@ -39,6 +39,8 @@ from pathlib import Path
 import numpy as np
 import polars as pl
 
+from metrics.constantes import JANELA_DE_TRADE_S
+
 # ---------------------------------------------------------------------------
 # Grupos de equipamento
 #
@@ -135,8 +137,8 @@ CREDITO_TRADE = 0.10
 
 # Janela em que uma flash ainda explica a kill que veio depois.
 SEGUNDOS_FLASH_ANTES_DA_KILL = 3.0
-# Janela de troca, a mesma do resto do projeto.
-SEGUNDOS_TRADE = 5.0
+# Janela de troca do projeto (metrics/constantes.py).
+SEGUNDOS_TRADE = JANELA_DE_TRADE_S
 # Dano abaixo disto não divide crédito -- um tiro de raspão não fez a kill.
 DANO_MINIMO_PARA_CREDITO = 20.0
 

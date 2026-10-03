@@ -49,8 +49,6 @@ import polars as pl
 from metrics.map_areas import AREA_A, AREA_B
 from metrics.structural_roles import MIN_ROUNDS_POR_LADO
 
-# Rounds por metade (MR12): o lado troca, o time não.
-HALFTIME_ROUND = 12
 
 # Rounds em que O TIME teve AWP mínimos para confiar na taxa "a AWP do time era
 # dele". É o DENOMINADOR da métrica, e por isso não reusa o MIN_AWP_ROUNDS de
@@ -773,6 +771,18 @@ def rotulos_na_partida_inteira(outputs: dict[str, pl.DataFrame], features: pl.Da
         ok = _qualifica(spec, num, den, amostra, sinais["times"])[:, 0]
         fora |= {(s, spec.key) for s, q in zip(ids, ok) if q}
     return fora
+
+
+def awpers_do_time(traits: pl.DataFrame) -> set:
+    """Quem é o AWPer do time nesta partida: o rótulo "AWPer" do player_roles.
+
+    Uma regra, um lugar (auditoria, item 4.8): o empate de função por lado
+    (structural_roles) e o card de destaque "AWPer" (match_highlights) perguntam
+    AQUI, em vez de cada um decidir com a sua régua.
+    """
+    if traits is None or traits.height == 0 or "trait" not in traits.columns:
+        return set()
+    return set(traits.filter(pl.col("trait") == "awp")["steamid"].to_list())
 
 
 def build_player_roles(

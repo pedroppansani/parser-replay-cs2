@@ -40,6 +40,7 @@ from metrics.rating import PESOS_FILE, ModeloDeRound, carrega_referencia
 from metrics.rating import rating as calcula_rating
 from metrics.positioning import position_samples
 from metrics.match_highlights import match_highlights
+from metrics.player_roles import awpers_do_time
 from metrics.round_spectacle import round_spectacle
 # side_of_team é reexportado daqui: build_breakdown e fit_rating importam deste
 # módulo. A regra em si (inclusive a prorrogação) vive em metrics/sides.py.
@@ -535,8 +536,10 @@ def build(match_id: str) -> Path:
         s: v["rating"] for s, v in rating_por_jogador.items()}
     players = players.with_columns(
         pl.col("steamid").replace_strict(ratings, default=None, return_dtype=pl.Float64).alias("rating"))
+    traits_caminho = processed / "player_traits.parquet"
+    awpers = awpers_do_time(pl.read_parquet(traits_caminho)) if traits_caminho.exists() else None
     candidatos_destaque, cards = match_highlights(
-        players, papeis, estruturais, funcao_por_steamid, time_vencedor
+        players, papeis, estruturais, funcao_por_steamid, time_vencedor, awpers
     )
     mvp_card = cards["mvp"]
     destaque_card = cards["destaque"]

@@ -741,18 +741,18 @@
       "negativo": true
     },
     {
-      "funcao": "awper",
-      "steamid": 76561198013243326,
-      "name": "Aleksib",
-      "pontuacao": 0.6241000000000001,
-      "negativo": false
-    },
-    {
       "funcao": "repick",
       "steamid": 76561198050250233,
       "name": "iM",
       "pontuacao": 0.61,
       "negativo": false
+    },
+    {
+      "funcao": "baiter",
+      "steamid": 76561198995880877,
+      "name": "zont1x",
+      "pontuacao": 0.59,
+      "negativo": true
     }
   ],
   "economy_decisive": {
