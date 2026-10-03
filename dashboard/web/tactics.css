@@ -5,7 +5,7 @@
    seletor, vindo do MapCore.
    ========================================================================= */
 :root {
-  --paper: #eef1f5; --card: #ffffff; --ink: #0f1620; --ink-2: #4c5a6b; --dim: #7d8a99;
+  --paper: #eef1f5; --card: #ffffff; --ink: #0f1620; --ink-2: #4c5a6b; --dim: #5f6b79;
   --line: #dde3eb; --line-2: #eaeef3;
   --ct: #2a78d6; --t: #eb6834; --aqua: #1baf7a; --alerta: #9a5b00;
   --display: "Bricolage Grotesque", Georgia, sans-serif;
@@ -108,3 +108,8 @@ h3 { margin: 0 0 4px; font-size: 15px; }
 
 /* Fonte de cada afirmação da ficha (rota B): discreta, sem sumir. */
 .pr-fonte { margin: 2px 0 6px; font-size: 11px; color: var(--ink-2); }
+
+/* Todo controle mostra o foco do teclado (auditoria 5.4). */
+:where(button, a[href], select, input, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--ct); outline-offset: 2px;
+}

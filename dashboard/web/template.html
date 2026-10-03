@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><!--__TITULO__--></title>
+<!--__META__-->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
@@ -18,7 +19,7 @@
     --card: #ffffff;
     --ink: #0f1620;
     --ink-2: #4c5a6b;
-    --dim: #7d8a99;
+    --dim: #5f6b79;
     --line: #dde3eb;
     --line-2: #eaeef3;
 
@@ -288,6 +289,11 @@
     color: #fff;
   }
   .tabs button:focus-visible { outline: 2px solid var(--ct); outline-offset: 2px; }
+  /* Todo controle mostra o foco do teclado (auditoria 5.4); as regras próprias
+     acima e abaixo continuam valendo onde já existiam. */
+  :where(button, a[href], select, input, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--ct); outline-offset: 2px;
+  }
 
   /* ---------- Blocos ---------- */
 
@@ -1226,7 +1232,7 @@
   // Nos gráficos da partida: Time A = azul (ct), Time B = laranja (t), round
   // decisivo = verde esmeralda escuro (dec). Validado junto, ver --dec no CSS.
   var C = { ct: "#2a78d6", t: "#eb6834", dec: "#0b6b4a", aqua: "#1baf7a", ink: "#0f1620",
-            ink2: "#4c5a6b", dim: "#7d8a99", line: "#dde3eb", paper: "#eef1f5" };
+            ink2: "#4c5a6b", dim: "#5f6b79", line: "#dde3eb", paper: "#eef1f5" };
   var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   function fmt(v, d) { return (v == null || isNaN(v)) ? "—" : Number(v).toFixed(d == null ? 1 : d); }
@@ -3225,6 +3231,8 @@
   function selectTab(name) {
     Array.prototype.forEach.call(tabs, function (o) {
       o.setAttribute("aria-selected", String(o.dataset.tab === name));
+      // tabindex itinerante: Tab entra na aba ativa, as setas andam entre elas
+      o.tabIndex = o.dataset.tab === name ? 0 : -1;
     });
     Array.prototype.forEach.call(document.querySelectorAll("[data-panel]"), function (p) {
       p.hidden = p.dataset.panel !== name;
@@ -3232,8 +3240,24 @@
     if (name === "replay") draw();
   }
 
-  Array.prototype.forEach.call(tabs, function (b) {
+  Array.prototype.forEach.call(tabs, function (b, i) {
     b.addEventListener("click", function () { selectTab(b.dataset.tab); });
+    // Setas, Home e End entre as abas (padrão de tablist da WAI-ARIA; auditoria 5.4)
+    b.addEventListener("keydown", function (e) {
+      var n = tabs.length, j = null;
+      if (e.key === "ArrowRight") j = (i + 1) % n;
+      else if (e.key === "ArrowLeft") j = (i - 1 + n) % n;
+      else if (e.key === "Home") j = 0;
+      else if (e.key === "End") j = n - 1;
+      if (j === null) return;
+      e.preventDefault();
+      selectTab(tabs[j].dataset.tab);
+      tabs[j].focus();
+    });
+  });
+  // estado inicial do tabindex sem redesenhar nada (o replay desenha sozinho)
+  Array.prototype.forEach.call(tabs, function (o) {
+    o.tabIndex = o.getAttribute("aria-selected") === "true" ? 0 : -1;
   });
 })();
 </script>

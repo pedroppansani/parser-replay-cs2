@@ -41,6 +41,9 @@ def mapas_disponiveis() -> list[str]:
                   if not p.stem.endswith(SUFIXOS_NAO_COMPETITIVOS))
 
 
+from scripts.meta_da_pagina import meta_tags  # noqa: E402
+
+
 def _js(valor) -> str:
     # `</` fechando o <script> no meio de um nome de jogador quebraria a página:
     # a injeção segura é uma função só, usada também pela página da partida
@@ -48,7 +51,7 @@ def _js(valor) -> str:
     return js(valor)
 
 
-def build_html(mapa: str, rotulos: dict[str, str] | None = None) -> str:
+def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | None = None) -> str:
     radar = json.loads((RADARS_DIR / f"{mapa}.json").read_text(encoding="utf-8"))
     # a mesma impressão que as anotações usam: tática feita sobre outra
     # calibração do radar é recusada na importação
@@ -69,6 +72,10 @@ def build_html(mapa: str, rotulos: dict[str, str] | None = None) -> str:
         .replace("/*__RADAR__*/null", _js(radar))
         .replace("/*__LINEUPS__*/null", _js(biblioteca))
         .replace("/*__MAPAS__*/[]", _js(mapas))
+        .replace("<!--__META__-->", meta_tags(
+            f"Prancheta tática · {rotulos.get(mapa, mapa)}",
+            f"Monte uma tática na {rotulos.get(mapa, mapa)}: jogadores, granadas reais do corpus e passos.",
+            site, arquivo_da_pagina(mapa)))
     )
 
 
