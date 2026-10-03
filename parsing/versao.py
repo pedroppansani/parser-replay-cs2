@@ -54,6 +54,21 @@ VERSAO_DO_PARSER = 2
 # Onde o complemento registra o que acrescentou a um interim existente.
 ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
 
+# 18 (2026-10-02) card de destaque "AWPer" só para o AWPer do time
+#    (player_roles.awpers_do_time); muda a tabela de candidatos em 4 partidas
+# 17 (2026-10-02) tempo até o contato fica NULO sem contato (era a mediana da
+#    partida x 2), coluna `sem_contato`; modelo global de estilos reajustado
+# 16 (2026-10-02) MVP = maior rating da partida (era um índice 40/30/20/10), com
+#    empate declarado dentro do erro do rating; o anel do card mostra o rating
+# 15 (2026-10-02) rating com o modelo de round de ESTADO COMPLETO (vivos, eliminação,
+#    tempo do round e da bomba; auditoria 4.3), referência e pesos reajustados
+# 14 (2026-10-02) rótulos de jogador: amostra mínima em todos (8 rounds, 8 kills
+#    no "Segundo homem"), suporte medido por round, estabilidade por
+#    reamostragem dos rounds gravada (abaixo de 0,70 a página diz "tendência");
+#    `chance_ao_acaso` da função dominante gravada, sem mudar a função
+# 13 (2026-10-02) economia do rating com o empate da classe do time DIVIDIDO
+#    entre as classes empatadas (era um desempate ao acaso gravado em 19/09);
+#    referência de escala e pesos do rating reajustados sobre a tabela nova
 # 12 (2026-10-02) rating: `rounds` é o que o jogador JOGOU (não o total da
 #    partida); os subcomponentes por round do caminho sem lado e a marca de
 #    amostra fraca passam a usar isso
@@ -87,7 +102,7 @@ ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
 #   (inclui a classe de economia do jogador no rating), unique com subset fica
 #   com a primeira linha. Antes, esses três casos dependiam da ordem de hash.
 # 1 (2026-09-20) primeira versão declarada, mesmo raciocínio acima.
-VERSAO_DAS_METRICAS = 12
+VERSAO_DAS_METRICAS = 18
 
 # Pastas cujo estado define o NÚMERO. `sujo` olha só estas: olhar o repositório
 # inteiro marcava todo reprocessamento como sujo, porque o próprio

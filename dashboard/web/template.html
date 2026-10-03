@@ -2367,14 +2367,14 @@
       "<p style='margin-top:10px'>Nenhum round desta partida teve clutch, multikill, virada em " +
       "desvantagem ou desarme no limite. Foi uma partida decidida no jogo padrão.</p>";
 
-  function ring(pct, color) {
+  function ring(pct, color, rotulo) {
     var r = 26, c = 2 * Math.PI * r;
     return "<svg width='68' height='68' viewBox='0 0 68 68' aria-hidden='true'>" +
       "<circle cx='34' cy='34' r='" + r + "' fill='none' stroke='#e7ebf1' stroke-width='5'></circle>" +
       "<circle cx='34' cy='34' r='" + r + "' fill='none' stroke='" + color + "' stroke-width='5' " +
       "stroke-linecap='round' stroke-dasharray='" + (c * pct) + " " + c + "' transform='rotate(-90 34 34)'></circle>" +
       "<text x='34' y='39' text-anchor='middle' fill='" + C.ink + "' font-family=\"DM Mono, monospace\" " +
-      "font-size='15' font-weight='500'>" + Math.round(pct * 100) + "</text></svg>";
+      "font-size='15' font-weight='500'>" + (rotulo != null ? esc(rotulo) : Math.round(pct * 100)) + "</text></svg>";
   }
   // --- Card da esquerda: MVP --------------------------------------------
   // Os COMPONENTES aparecem, não só o índice: quem lê tem que ver se ele venceu
@@ -2402,7 +2402,8 @@
       "<div class='nm'>" + esc(mvpc.name) + "</div>" +
       "<div class='sub'>Time " + esc(mvpc.team) +
       (mvpc.funcao ? " · " + esc(mvpc.funcao) : "") + "</div></div>" +
-      ring(mvpc.indice, C.ct) + "</div>" +
+      // o anel cheio com o rating dentro: o número É o critério (não há escala 0-1)
+      ring(1, C.ct, mvpc.rating_texto) + "</div>" +
       "<p>" + esc(D.narrative.mvp_card) + "</p>" +
       componentes(mvpc.componentes)
     : "<div class='hd'><div><div class='role'>MVP da partida</div>" +
@@ -2736,7 +2737,10 @@
     Object.keys(D.damage_by_player).forEach(function (k) {
       D.damage_by_player[k].forEach(function (v) { if (v > maxD) maxD = v; });
     });
-    var temRating = D.players.some(function (p) { return p.rating != null; });
+    // Rating calculado por caminho de reserva (sem modelo global, sem a tabela
+    // de economia) não é mostrado: a página diz por quê, com o texto do Python.
+    var ratingDegradado = (D.rating_info || {}).texto_degradado || "";
+    var temRating = !ratingDegradado && D.players.some(function (p) { return p.rating != null; });
 
     // Colunas ordenáveis. A chave diz de onde sai o número de cada jogador.
     var ORDENS = {
@@ -2781,7 +2785,7 @@
         var kd = kad[p.name] || {};
         // Amostra fraca (poucos rounds) aparece apagada e com o motivo no title:
         // o número existe, mas não sustenta comparação.
-        var rt = p.rating == null ? "<div class='n q'>—</div>" :
+        var rt = (p.rating == null || ratingDegradado) ? "<div class='n q'>—</div>" :
           "<div class='n rt" + (p.rating_amostra_fraca ? " fraca" : "") + "'" +
           (p.rating_amostra_fraca ? " title='amostra pequena: poucos rounds jogados'" : "") + ">" +
           p.rating.toFixed(2).replace(".", ",") + "</div>";
@@ -2802,6 +2806,13 @@
         nota.className = "rnota";
         nota.textContent = "* " + D.rating_info.texto;
         wrap.appendChild(nota);
+      }
+      if (ratingDegradado) {
+        var aviso = document.createElement("p");
+        aviso.className = "rnota";
+        aviso.id = "rating-degradado";
+        aviso.textContent = ratingDegradado;
+        wrap.appendChild(aviso);
       }
     }
     desenha();

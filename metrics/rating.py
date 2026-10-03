@@ -39,6 +39,8 @@ from pathlib import Path
 import numpy as np
 import polars as pl
 
+from metrics.constantes import JANELA_DE_TRADE_S
+
 # ---------------------------------------------------------------------------
 # Grupos de equipamento
 #
@@ -135,8 +137,8 @@ CREDITO_TRADE = 0.10
 
 # Janela em que uma flash ainda explica a kill que veio depois.
 SEGUNDOS_FLASH_ANTES_DA_KILL = 3.0
-# Janela de troca, a mesma do resto do projeto.
-SEGUNDOS_TRADE = 5.0
+# Janela de troca do projeto (metrics/constantes.py).
+SEGUNDOS_TRADE = JANELA_DE_TRADE_S
 # Dano abaixo disto não divide crédito -- um tiro de raspão não fez a kill.
 DANO_MINIMO_PARA_CREDITO = 20.0
 
@@ -345,6 +347,11 @@ class ModeloDeRound:
     """
 
     COLUNAS = ("dif_vivos", "dif_equip_milhares", "bomba_a_favor", "eh_ct")
+    # O estado COMPLETO acrescenta os vivos de cada lado e o tempo (ver
+    # `_estado_completo`). As quatro primeiras colunas são as de sempre: um
+    # modelo de quatro coeficientes lê só elas, então uma referência antiga
+    # continua dando exatamente as mesmas probabilidades.
+    COLUNAS_COMPLETAS = COLUNAS + ("razao_de_vivos", "eliminacao", "tempo_do_round", "tempo_da_bomba")
 
     def __init__(self):
         self.modelo = None
@@ -359,7 +366,10 @@ class ModeloDeRound:
             self.metricas = {"amostras": int(X.shape[0]), "treinou": False}
             return self
 
-        self.modelo = LogisticRegression(max_iter=1000)
+        if X.shape[1] > len(self.COLUNAS) and not MODELO_DE_ROUND_COMPLETO:
+            X = X[:, :len(self.COLUNAS)]
+        colunas = self.COLUNAS_COMPLETAS if X.shape[1] == len(self.COLUNAS_COMPLETAS) else self.COLUNAS
+        self.modelo = LogisticRegression(max_iter=2000)
         self.modelo.fit(X, y)
         p = self.modelo.predict_proba(X)[:, 1]
         self.metricas = {
@@ -372,7 +382,7 @@ class ModeloDeRound:
             "auc": float(roc_auc_score(y, p)),
             # precisão cheia: o pipeline de cada partida reconstrói o modelo a
             # partir daqui (da_referencia), e arredondar mudaria o Round Swing
-            "coeficientes": dict(zip(self.COLUNAS, self.modelo.coef_[0].tolist())),
+            "coeficientes": dict(zip(colunas, self.modelo.coef_[0].tolist())),
             "intercepto": float(self.modelo.intercept_[0]),
         }
         return self
@@ -386,18 +396,33 @@ class ModeloDeRound:
         m = cls()
         m.metricas = dict(metricas or {})
         if metricas and metricas.get("treinou") and metricas.get("coeficientes"):
-            m._coef = np.array([float(metricas["coeficientes"][c]) for c in cls.COLUNAS])
+            colunas = (cls.COLUNAS_COMPLETAS if all(c in metricas["coeficientes"] for c in cls.COLUNAS_COMPLETAS)
+                       else cls.COLUNAS)
+            m._coef = np.array([float(metricas["coeficientes"][c]) for c in colunas])
             m._intercepto = float(metricas["intercepto"])
         return m
 
     def prob(self, X: np.ndarray) -> np.ndarray:
         """Probabilidade de vitória. Sempre em (0, 1), nunca 0 nem 1 cravados."""
         if self.modelo is None and getattr(self, "_coef", None) is not None:
+            X = self._nas_colunas_do_modelo(X, len(self._coef))
             p = 1.0 / (1.0 + np.exp(-(X @ self._coef + self._intercepto)))
             return np.clip(p, 1e-6, 1 - 1e-6)
         if self.modelo is None:
             return np.full(X.shape[0], 0.5)
+        X = self._nas_colunas_do_modelo(X, self.modelo.coef_.shape[1])
         return np.clip(self.modelo.predict_proba(X)[:, 1], 1e-6, 1 - 1e-6)
+
+    @staticmethod
+    def _nas_colunas_do_modelo(X: np.ndarray, n: int) -> np.ndarray:
+        """Um modelo de quatro colunas lê as quatro primeiras do estado completo;
+        um modelo completo com um estado de quatro colunas (os testes antigos)
+        trata as que faltam como zero."""
+        if X.shape[1] == n:
+            return X
+        if X.shape[1] > n:
+            return X[:, :n]
+        return np.hstack([X, np.zeros((X.shape[0], n - X.shape[1]))])
 
 
 def _estado(dif_vivos: int, dif_equip: float, bomba: bool, eh_ct: bool) -> list[float]:
@@ -418,9 +443,46 @@ def _estado(dif_vivos: int, dif_equip: float, bomba: bool, eh_ct: bool) -> list[
     return [float(dif_vivos), float(dif_equip) / 1000.0, favor, 1.0 if eh_ct else 0.0]
 
 
+# O modelo de round usa o estado COMPLETO (vivos de cada lado e tempo)?
+# LIGADO em 2026-10-02 (auditoria 4.3, nota 22a), com as duas condições do Pedro
+# medidas: fora da dobra, agrupado por partida (scripts/valida_modelo_de_round.py),
+# Brier 0,1287 -> 0,1245 e AUC 0,900 -> 0,907; e o erro do rating contra a HLTV
+# no "deixa uma partida fora" completo (scripts/valida_rating.py) caiu de 0,0810
+# para 0,0788 (tolerância era piorar até +0,001).
+# O interruptor só age ao REAJUSTAR a referência; uma já gravada manda no que roda.
+MODELO_DE_ROUND_COMPLETO = True
+# Relógio do round competitivo (1:55) e da bomba (40 s, a mesma constante que
+# metrics/timing.py usa para achar o tickrate).
+SEGUNDOS_DO_ROUND = 115.0
+SEGUNDOS_DA_BOMBA = 40.0
+
+
+def _estado_completo(vivos_meu: int, vivos_dele: int, dif_equip: float, bomba: bool, eh_ct: bool,
+                     decorrido_s: float = 0.0, da_bomba_s: float = 0.0) -> list[float]:
+    """O estado de `_estado` mais o que ele joga fora.
+
+    - `razao_de_vivos`: (meu - dele) / (meu + dele). Com só a diferença, 5v4,
+      2v1 e 1v0 eram o MESMO estado; medido fora da dobra, o modelo dava 74% a
+      um 1v0 que vence 94% das vezes.
+    - `eliminacao`: +1 se o adversário não tem ninguém vivo, -1 se sou eu.
+    - `tempo_do_round`: fração do relógio já gasta, antes do plant, a favor do
+      CT (o tempo acabando é dele) e contra o TR.
+    - `tempo_da_bomba`: fração do tempo da bomba já gasta, depois do plant, a
+      favor do TR e contra o CT.
+    """
+    total = vivos_meu + vivos_dele
+    razao = (vivos_meu - vivos_dele) / total if total > 0 else 0.0
+    eliminacao = float(vivos_dele == 0) - float(vivos_meu == 0)
+    if bomba:
+        t_round, t_bomba = 0.0, min(1.0, max(0.0, da_bomba_s) / SEGUNDOS_DA_BOMBA) * (-1.0 if eh_ct else 1.0)
+    else:
+        t_round, t_bomba = min(1.0, max(0.0, decorrido_s) / SEGUNDOS_DO_ROUND) * (1.0 if eh_ct else -1.0), 0.0
+    return _estado(vivos_meu - vivos_dele, dif_equip, bomba, eh_ct) + [razao, eliminacao, t_round, t_bomba]
+
+
 def amostras_de_round(
     kills: pl.DataFrame, rounds: pl.DataFrame, grupos: pl.DataFrame,
-    team_of: dict[int, str], vencedor_por_round: dict[int, str],
+    team_of: dict[int, str], vencedor_por_round: dict[int, str], tickrate: int = 64,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Uma linha de treino por (evento, lado): o estado e se aquele lado venceu."""
     equip_por_round = (
@@ -440,6 +502,7 @@ def amostras_de_round(
         int(r["round_num"]): r["bomb_plant"]
         for r in rounds.select(["round_num", "bomb_plant"]).iter_rows(named=True)
     }
+    inicio = _inicio_dos_rounds(rounds)
 
     X, y = [], []
     for rn_t, rk in kills.sort("tick").group_by("round_num", maintain_order=True):
@@ -458,15 +521,51 @@ def amostras_de_round(
             bomba = t_plant is not None and k["tick"] >= int(t_plant)
             for time in ("A", "B"):
                 outro = "B" if time == "A" else "A"
-                eq_meu, lado = equip.get((rn, time), (0.0, "ct"))
-                eq_dele, _ = equip.get((rn, outro), (0.0, "ct"))
-                X.append(_estado(vivos[time] - vivos[outro], eq_meu - eq_dele,
-                                 bomba, lado == "ct"))
+                eq_meu, lado = _equip_do_time(equip, rn, time)
+                eq_dele, _ = _equip_do_time(equip, rn, outro)
+                X.append(_estado_completo(vivos[time], vivos[outro], eq_meu - eq_dele, bomba, lado == "ct",
+                                          *_tempos(k["tick"], inicio.get(rn), t_plant, tickrate)))
                 y.append(1 if venc == time else 0)
 
     if not X:
-        return np.zeros((0, 4)), np.zeros(0)
+        return np.zeros((0, len(ModeloDeRound.COLUNAS_COMPLETAS))), np.zeros(0)
     return np.array(X, dtype=float), np.array(y, dtype=int)
+
+
+def _equip_do_time(equip: dict, rn: int, time: str) -> tuple[float, str]:
+    """(equipamento, lado) do time no round. Sem o dado, o equipamento é 0 e o
+    lado vem da REGRA DE LADOS -- antes o padrão era (0, "ct") para os dois
+    times, e um round sem dado tinha dois CTs."""
+    achado = equip.get((rn, time))
+    if achado is not None:
+        return achado
+    from metrics.sides import side_of_team
+    return 0.0, side_of_team(time, rn)
+
+
+def _sem_equipamento(grupos: pl.DataFrame, rounds: pl.DataFrame, team_of: dict[int, str]) -> list[str]:
+    """Motivo de modo degradado quando algum (round, time) não tem equipamento."""
+    com = set()
+    for r in grupos.iter_rows(named=True):
+        t = team_of.get(r["steamid"])
+        if t:
+            com.add((int(r["round_num"]), t))
+    faltam = sum(1 for rn in rounds["round_num"].to_list() for t in ("A", "B") if (int(rn), t) not in com)
+    return [f"{faltam} lados de round sem equipamento registrado (contados com equipamento 0)"] if faltam else []
+
+
+def _inicio_dos_rounds(rounds: pl.DataFrame) -> dict[int, int | None]:
+    """Tick em que o relógio de cada round começa (o fim do freeze time)."""
+    if "freeze_end" not in rounds.columns:
+        return {}
+    return {int(r["round_num"]): r["freeze_end"] for r in rounds.select(["round_num", "freeze_end"]).iter_rows(named=True)}
+
+
+def _tempos(tick: int, inicio: int | None, t_plant: int | None, tickrate: int) -> tuple[float, float]:
+    """(segundos desde o começo do round, segundos desde o plant) num tick."""
+    decorrido = (int(tick) - int(inicio)) / tickrate if inicio is not None else 0.0
+    da_bomba = (int(tick) - int(t_plant)) / tickrate if t_plant is not None and int(tick) >= int(t_plant) else 0.0
+    return max(0.0, decorrido), max(0.0, da_bomba)
 
 
 def swing_por_evento(
@@ -508,6 +607,7 @@ def swing_por_evento(
         for r in rounds.select(["round_num", "bomb_plant"]).iter_rows(named=True)
     }
 
+    inicio = _inicio_dos_rounds(rounds)
     janela_trade = int(SEGUNDOS_TRADE * tickrate)
     janela_flash = int(SEGUNDOS_FLASH_ANTES_DA_KILL * tickrate)
     fim_do_round = dict(rounds.select(pl.col("round_num").cast(pl.Int64), "end").iter_rows())
@@ -545,13 +645,16 @@ def swing_por_evento(
             # a variacao e medida do ponto de vista do time que MATOU
             beneficiado = time_matador if time_matador and time_matador != time_vitima else outro
             adversario = "B" if beneficiado == "A" else "A"
-            eq_meu, lado = equip.get((rn, beneficiado), (0.0, "ct"))
-            eq_dele, _ = equip.get((rn, adversario), (0.0, "ct"))
+            eq_meu, lado = _equip_do_time(equip, rn, beneficiado)
+            eq_dele, _ = _equip_do_time(equip, rn, adversario)
 
-            p_antes = modelo.prob(np.array([_estado(
-                antes[beneficiado] - antes[adversario], eq_meu - eq_dele, bomba, lado == "ct")]))[0]
-            p_depois = modelo.prob(np.array([_estado(
-                vivos[beneficiado] - vivos[adversario], eq_meu - eq_dele, bomba, lado == "ct")]))[0]
+            # antes e depois no MESMO instante (o tick da kill): o que o evento
+            # muda são os vivos; o tempo que passa entre dois eventos não é de ninguém
+            tempos = _tempos(k["tick"], inicio.get(rn), t_plant, tickrate)
+            p_antes = modelo.prob(np.array([_estado_completo(
+                antes[beneficiado], antes[adversario], eq_meu - eq_dele, bomba, lado == "ct", *tempos)]))[0]
+            p_depois = modelo.prob(np.array([_estado_completo(
+                vivos[beneficiado], vivos[adversario], eq_meu - eq_dele, bomba, lado == "ct", *tempos)]))[0]
             delta = float(p_depois - p_antes)
 
             # --- a vitima paga a conta inteira -----------------------------
@@ -638,11 +741,14 @@ def swing_por_evento(
             mortos = {e["victim_steamid"] for e in eventos}
             vivos_fim = {tm: [s for s, x in team_of.items() if x == tm and s not in mortos]
                          for tm in ("A", "B")}
-            eq_v, lado_v = equip.get((rn, venc_time), (0.0, "ct"))
-            eq_p, _ = equip.get((rn, perd_time), (0.0, "ct"))
-            p_fim = modelo.prob(np.array([_estado(
-                len(vivos_fim[venc_time]) - len(vivos_fim[perd_time]), eq_v - eq_p,
-                t_plant is not None, lado_v == "ct")]))[0]
+            eq_v, lado_v = _equip_do_time(equip, rn, venc_time)
+            eq_p, _ = _equip_do_time(equip, rn, perd_time)
+            # o estado do fim é o do último evento do round (o salto é o que
+            # falta dali até a certeza)
+            t_fim = eventos[-1]["tick"] if eventos else (inicio.get(rn) or 0)
+            p_fim = modelo.prob(np.array([_estado_completo(
+                len(vivos_fim[venc_time]), len(vivos_fim[perd_time]), eq_v - eq_p,
+                t_plant is not None, lado_v == "ct", *_tempos(t_fim, inicio.get(rn), t_plant, tickrate))]))[0]
             salto = 1.0 - float(p_fim)
             # Os dois lados do salto SEMPRE têm destinatário, senão a soma do
             # round vaza (medido: sem isto, 1 de 31 partidas somava zero).
@@ -1022,8 +1128,13 @@ def rating(
     tables: dict[str, pl.DataFrame], team_of: dict[int, str],
     vencedor_por_round: dict[int, str], kast: pl.DataFrame, tickrate: int,
     referencia: dict | None = None, modelo: ModeloDeRound | None = None,
+    tabela_economia: dict | None = None,
 ) -> tuple[pl.DataFrame, dict]:
     """Contrato do projeto: `(per_round, summary)`.
+
+    `tabela_economia` troca a tabela de economia do corpus (o padrão é a
+    gravada em `metrics/economia_reference.json`): é o que permite à validação
+    reajustá-la SEM a partida avaliada (scripts/valida_rating.py).
 
     `per_round` e o Round Swing por (round, jogador) -- e nele que a validacao
     manual acontece, porque e o unico componente que nao se confere de cabeca.
@@ -1039,7 +1150,10 @@ def rating(
     # sem a tabela, cai na estimativa dentro da partida (a versão antiga).
     from metrics.economia import carrega_tabela, celulas_para_o_rating, classe, compra_por_jogador
 
-    tabela_eco = carrega_tabela()
+    tabela_eco = tabela_economia if tabela_economia is not None else carrega_tabela()
+    # Tudo o que foi calculado por um caminho de reserva fica dito aqui, com o
+    # motivo: a página esconde o número afetado em vez de mostrar um palpite.
+    degradado: list[str] = []
     compra = tables.get("compra")
     if tabela_eco is not None and compra is not None and compra.height:
         classes = compra_por_jogador(compra).with_columns(
@@ -1057,10 +1171,20 @@ def rating(
     else:
         celulas, base_lado = taxas_por_confronto(grupos, rounds, team_of, vencedor_por_round)
         fonte_economia = "partida"
+        degradado.append("economia estimada só nesta partida (sem a tabela do corpus ou sem a compra do round)")
 
+    # (2) Modelo de round: é o GLOBAL (decisão 11). Sem ele passado, vem da
+    # referência; só sem referência nenhuma ele é treinado na própria partida,
+    # e isso é dito no resumo -- antes acontecia em silêncio, e com menos de 50
+    # amostras o Round Swing inteiro valia 0,5 sem aviso.
+    if modelo is None and referencia and (referencia.get("modelo_de_round") or {}).get("treinou"):
+        modelo = ModeloDeRound.da_referencia(referencia["modelo_de_round"])
     if modelo is None:
         X, y = amostras_de_round(kills, rounds, grupos, team_of, vencedor_por_round)
         modelo = ModeloDeRound().treina(X, y)
+        degradado.append(
+            "modelo de round treinado só nesta partida (sem o modelo global)" if modelo.metricas.get("treinou")
+            else "sem modelo de round: Round Swing neutro (menos de 50 eventos e nenhum modelo global)")
 
     swing = swing_por_evento(
         kills, damages, blinds, rounds, grupos, modelo,
@@ -1168,6 +1292,7 @@ def rating(
         "taxa_base_por_lado": base_lado,
         "confrontos_estimados": len(celulas),
         "fonte_da_economia": fonte_economia,
+        "modo_degradado": degradado + _sem_equipamento(grupos, rounds, team_of),
         "referencia_ajustada": referencia is not None,
         "normalizado_por_lado": usa_lados,
         "pesos": ajuste["pesos"],

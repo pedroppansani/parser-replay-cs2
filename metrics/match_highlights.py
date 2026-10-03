@@ -38,6 +38,9 @@ mesma coisa. Aqui todas significam "o quanto isto está acima do normal", em
 """
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import numpy as np
 import polars as pl
 
@@ -48,16 +51,28 @@ from metrics.structural_roles import FUNCOES
 # Constantes
 # ---------------------------------------------------------------------------
 
-# Pesos do índice de MVP. Ficam aqui, e não espalhados, porque são a DEFINIÇÃO
-# de impacto que decide round: dano constante primeiro, presença no round
-# depois, e os dois eventos raros que viram round sozinhos por último.
-PESOS_MVP = {
-    "adr": 0.40,
-    "kast_pct": 0.30,
-    "opening_kills": 0.20,
-    "clutches": 0.10,
-}
+# MVP = MAIOR RATING DA PARTIDA (auditoria, item 4.6, 2026-10-02). Antes era um
+# índice próprio com pesos sem origem (40% ADR, 30% KAST, 20% aberturas, 10%
+# clutches, normalizados dentro da partida), e o MVP divergia do maior rating
+# em 18 das 52 partidas: a página mostrava um número validado contra a HLTV e
+# elegia o MVP por outro. Agora é o rating, casado por steamid.
+#
+# EMPATE: o rating tem erro medido contra o oficial (deixa uma partida fora,
+# metrics/rating_validacao.json). Quem fica a menos desse erro do primeiro está
+# empatado com ele, e o card diz isso em vez de afirmar uma diferença que o
+# número não sustenta. O primeiro continua no card (é o maior rating), mas a
+# frase declara o empate.
+ARQUIVO_DA_VALIDACAO = Path(__file__).resolve().parent / "rating_validacao.json"
 
+
+def margem_de_ruido_do_rating(caminho: Path = ARQUIVO_DA_VALIDACAO) -> float:
+    """O erro médio do rating fora da amostra (deixa uma partida fora, completo)."""
+    dado = json.loads(caminho.read_text(encoding="utf-8"))
+    return float(dado["deixa_uma_partida_fora"]["erro_medio"])
+
+
+# Os números que ACOMPANHAM o MVP no card (não o elegem): é o que deixa conferir
+# de onde veio o rating dele contra o melhor dos outros.
 # Rótulo, unidade e como o componente entra numa frase corrida. O terceiro
 # campo existe porque `rotulo.lower()` produzia "126,1 de adr" -- sigla não se
 # minúscula, e "5 de aberturas" não é português.
@@ -132,23 +147,36 @@ def _texto_numero(chave: str, valor: float | None) -> str:
     return f"{valor:.1f}".replace(".", ",")
 
 
-def mvp_da_partida(players: pl.DataFrame, funcao_por_steamid: dict[int, str]) -> dict | None:
-    """O MVP, os componentes que o elegeram e a comparação com o segundo.
+def _br(v: float, casas: int = 2) -> str:
+    return f"{v:.{casas}f}".replace(".", ",")
+
+
+def mvp_da_partida(players: pl.DataFrame, funcao_por_steamid: dict[int, str],
+                   margem: float | None = None) -> dict | None:
+    """O MVP (maior rating), quem empata com ele e os números que o acompanham.
 
     Cada componente sai com o valor dele E com o melhor valor entre os OUTROS
     jogadores -- é o que permite dizer "94 de ADR contra 81 do segundo", que
     informa muito mais que "94 de ADR". `lidera` diz em quais componentes ele
-    realmente ganhou, que é a resposta para "ele venceu por quê".
+    realmente ganhou. Sem rating (coluna ausente ou nula: rating não mostrado
+    na partida), não há MVP -- não há outro critério para cair.
     """
-    if players.height == 0:
+    if players.height == 0 or "rating" not in players.columns:
         return None
+    com_rating = players.filter(pl.col("rating").is_not_null())
+    if com_rating.height == 0:
+        return None
+    margem = margem_de_ruido_do_rating() if margem is None else margem
 
-    ordenado = players.sort("mvp_index", descending=True)
+    # desempate exato pelo steamid: a ordem não pode depender da entrada (decisão 28)
+    ordenado = com_rating.sort(["rating", "steamid"], descending=[True, False])
     primeiro = ordenado.row(0, named=True)
     vice = ordenado.row(1, named=True) if ordenado.height > 1 else None
+    empatados = [r for r in ordenado.iter_rows(named=True)
+                 if r["steamid"] != primeiro["steamid"] and primeiro["rating"] - r["rating"] < margem]
 
     componentes = []
-    for chave, peso in PESOS_MVP.items():
+    for chave in COMPONENTES_MVP:
         if chave not in players.columns:
             continue
         rotulo, unidade, sintagma = COMPONENTES_MVP[chave]
@@ -162,7 +190,6 @@ def mvp_da_partida(players: pl.DataFrame, funcao_por_steamid: dict[int, str]) ->
             "unidade": unidade,
             # concordância: "1 clutch fechado" e não "1 clutches fechados"
             "sintagma": _singular(sintagma) if meu == 1 else sintagma,
-            "peso": peso,
             "valor": None if meu is None else float(meu),
             "texto": _texto_numero(chave, meu),
             "melhor_dos_outros": (
@@ -184,9 +211,16 @@ def mvp_da_partida(players: pl.DataFrame, funcao_por_steamid: dict[int, str]) ->
         "name": primeiro["name"],
         "team": primeiro.get("team"),
         "funcao": funcao_por_steamid.get(int(primeiro["steamid"])),
-        "indice": float(primeiro["mvp_index"]),
+        "rating": float(primeiro["rating"]),
+        "rating_texto": _br(primeiro["rating"]),
+        "vice_steamid": None if vice is None else vice["steamid"],
         "vice_nome": None if vice is None else vice["name"],
-        "vice_indice": None if vice is None else float(vice["mvp_index"]),
+        "vice_rating": None if vice is None else float(vice["rating"]),
+        "vice_rating_texto": None if vice is None else _br(vice["rating"]),
+        "margem": margem,
+        "margem_texto": _br(margem, 3),
+        "empatados": [{"steamid": r["steamid"], "name": r["name"], "rating_texto": _br(r["rating"])}
+                      for r in empatados],
         "componentes": componentes,
     }
 
@@ -258,7 +292,7 @@ def candidato_bottom_frag(players: pl.DataFrame) -> dict | None:
 
 
 def _candidatos_comportamentais(
-    archetypes: pl.DataFrame, time_vencedor: str | None
+    archetypes: pl.DataFrame, time_vencedor: str | None, awpers: set | None = None
 ) -> list[dict]:
     """Papéis de `metrics/archetypes.py`, já em escala de percentil global."""
     out = []
@@ -274,6 +308,11 @@ def _candidatos_comportamentais(
             # perdeu não é mochila: é jogador ruim em time que perdeu, e isso não
             # é destaque nenhum. Sem a trava, toda derrota elegeria um "mochila".
             if papel == "mochila" and row.get("team") != time_vencedor:
+                continue
+            # O card "AWPer" só vai para o AWPer DO TIME (player_roles.awpers_do_time):
+            # o índice de AWP do archetypes mede como ele jogou com a arma, não
+            # quem era o AWPer -- duas réguas não podem responder a mesma pergunta.
+            if papel == "awper" and awpers is not None and row["steamid"] not in awpers:
                 continue
 
             out.append({
@@ -409,13 +448,14 @@ def outro_destaque(
     structural: pl.DataFrame | None,
     mvp_steamid: int | None,
     time_vencedor: str | None,
+    awpers: set | None = None,
 ) -> dict | None:
     """O jogador mais notável entre todos os OUTROS, positivo ou negativo.
 
     Nunca o MVP: o card da direita é sempre outra pessoa, e se o vencedor da
     segunda pontuação for ele, pula-se para o próximo.
     """
-    candidatos = _candidatos_comportamentais(archetypes, time_vencedor)
+    candidatos = _candidatos_comportamentais(archetypes, time_vencedor, awpers)
     candidatos += _candidatos_estruturais(structural)
     bf = candidato_bottom_frag(players)
     if bf is not None:
@@ -519,6 +559,7 @@ def match_highlights(
     structural: pl.DataFrame | None,
     funcao_por_steamid: dict[int, str],
     time_vencedor: str | None,
+    awpers: set | None = None,
 ) -> tuple[pl.DataFrame, dict]:
     """Contrato do projeto: `(per_round, summary)`.
 
@@ -530,10 +571,10 @@ def match_highlights(
     mvp = mvp_da_partida(players, funcao_por_steamid)
     destaque = outro_destaque(
         players, archetypes, structural,
-        None if mvp is None else int(mvp["steamid"]), time_vencedor,
+        None if mvp is None else int(mvp["steamid"]), time_vencedor, awpers,
     )
 
-    candidatos = _candidatos_comportamentais(archetypes, time_vencedor)
+    candidatos = _candidatos_comportamentais(archetypes, time_vencedor, awpers)
     candidatos += _candidatos_estruturais(structural)
     bf = candidato_bottom_frag(players)
     if bf is not None:

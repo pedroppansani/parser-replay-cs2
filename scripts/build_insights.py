@@ -40,6 +40,7 @@ from metrics.rating import PESOS_FILE, ModeloDeRound, carrega_referencia
 from metrics.rating import rating as calcula_rating
 from metrics.positioning import position_samples
 from metrics.match_highlights import match_highlights
+from metrics.player_roles import awpers_do_time
 from metrics.round_spectacle import round_spectacle
 # side_of_team é reexportado daqui: build_breakdown e fit_rating importam deste
 # módulo. A regra em si (inclusive a prorrogação) vive em metrics/sides.py.
@@ -242,15 +243,6 @@ def contexto_economico(
 # MVP e "carrega piano"
 # ---------------------------------------------------------------------------
 
-def _norm(df: pl.DataFrame, col: str, invert: bool = False) -> pl.Expr:
-    """Normaliza uma coluna pro intervalo 0-1 dentro da partida."""
-    lo, hi = df[col].min(), df[col].max()
-    if lo is None or hi is None or hi == lo:
-        return pl.lit(0.5)
-    expr = (pl.col(col) - lo) / (hi - lo)
-    return (1 - expr) if invert else expr
-
-
 def build_player_indices(
     basic: dict[str, pl.DataFrame],
     crosshair: pl.DataFrame,
@@ -261,13 +253,12 @@ def build_player_indices(
 ) -> pl.DataFrame:
     """Monta a tabela por jogador com os dois índices.
 
-    MVP — impacto que decide rounds:
-        ADR, KAST, kills de abertura e clutches. Pesos declarados abaixo.
+    ADR, KAST, kills de abertura e clutches: os números que acompanham o MVP
+    no card (o MVP é o maior rating, metrics/match_highlights.py).
 
     Os papéis nomeados (carrega piano, carry, camper, repick, AWPer...) NÃO
     estão aqui: vivem em metrics/archetypes.py, com escala ajustada no conjunto
-    das partidas. Esta função ficou só com o índice de MVP, que alimenta o anel
-    do card.
+    das partidas.
     """
     adr = basic["adr_summary"].select(["steamid", "name", "adr"])
     kast = basic["kast_summary"].select(["steamid", "kast_pct"])
@@ -308,15 +299,8 @@ def build_player_indices(
         )
     )
 
-    # --- MVP: 40% ADR, 30% KAST, 20% aberturas, 10% clutches ---
-    df = df.with_columns(
-        (
-            0.40 * _norm(df, "adr")
-            + 0.30 * _norm(df, "kast_pct")
-            + 0.20 * _norm(df, "opening_kills")
-            + 0.10 * _norm(df, "clutches")
-        ).alias("mvp_index")
-    )
+    # O MVP não sai mais daqui: é o maior rating (metrics/match_highlights.py,
+    # item 4.6 da auditoria). O índice com pesos 40/30/20/10 saiu.
 
     # O índice de "carrega piano" que existia aqui era `esforço − recompensa`, e
     # estava errado por construção: quem tem recompensa baixa vence a subtração,
@@ -325,7 +309,7 @@ def build_player_indices(
     # vive em metrics/archetypes.py, onde é um PRODUTO de esforço por benefício
     # ao time, e tem três formas (entrada de T, solo hold de CT, sacrifício de
     # economia) em vez de uma fórmula de entry.
-    return df.sort("mvp_index", descending=True)
+    return df.sort(["adr", "steamid"], descending=[True, False])
 
 
 # ---------------------------------------------------------------------------
@@ -380,6 +364,13 @@ def _rating_da_partida(tabelas, interim, rounds, team_of, vencedor_por_round, ka
                if validacao.get("partidas") else "provisórios")
             + "."
         ),
+        # caminhos de reserva usados no cálculo, com o motivo: a página esconde
+        # o rating e diz por quê (nunca mostra um número de reserva como normal)
+        "modo_degradado": resumo.get("modo_degradado") or [],
+        # a frase que a página mostra NO LUGAR do número (decisão 18: texto do Python)
+        "texto_degradado": (
+            "Rating não mostrado nesta partida: " + "; ".join(resumo.get("modo_degradado") or []) + "."
+            if resumo.get("modo_degradado") else ""),
         "origem_dos_pesos": resumo["origem_dos_pesos"],
         "pesos_desatualizados": resumo["pesos_desatualizados"],
         "validacao": validacao,
@@ -517,6 +508,8 @@ def build(match_id: str) -> Path:
         tem_leitura = pl.col("funcao").is_not_null()
         if "empate_funcao" in estruturais.columns:
             tem_leitura = tem_leitura | pl.col("empate_funcao")
+        if "abaixo_do_acaso" in estruturais.columns:
+            tem_leitura = tem_leitura | pl.col("abaixo_do_acaso")
         melhor = estruturais.filter(tem_leitura).sort(
             ["rounds_na_funcao", "side"], descending=[True, False]
         )
@@ -537,8 +530,16 @@ def build(match_id: str) -> Path:
     # Card da esquerda: quem levou o time nas costas. Card da direita: quem
     # exemplificou COM MAIS FORCA algum dos outros papeis -- nao um slot fixo.
     time_vencedor = "A" if progression[-1]["score_a"] > progression[-1]["score_b"] else "B"
+    # O MVP é o maior rating, casado por steamid. Rating não mostrado (modo
+    # degradado, item 4.4) = sem MVP: não há outro critério para cair.
+    ratings = {} if rating_info.get("modo_degradado") else {
+        s: v["rating"] for s, v in rating_por_jogador.items()}
+    players = players.with_columns(
+        pl.col("steamid").replace_strict(ratings, default=None, return_dtype=pl.Float64).alias("rating"))
+    traits_caminho = processed / "player_traits.parquet"
+    awpers = awpers_do_time(pl.read_parquet(traits_caminho)) if traits_caminho.exists() else None
     candidatos_destaque, cards = match_highlights(
-        players, papeis, estruturais, funcao_por_steamid, time_vencedor
+        players, papeis, estruturais, funcao_por_steamid, time_vencedor, awpers
     )
     mvp_card = cards["mvp"]
     destaque_card = cards["destaque"]
@@ -601,7 +602,7 @@ def build(match_id: str) -> Path:
         "highlight_candidates": candidatos_destaque.head(8).to_dicts(),
         "economy_decisive": economia,
         "rounds_scored": rounds_scored,
-        "players": [{**p, **rating_por_jogador.get(p["steamid"], {})} for p in players.to_dicts()],
+        "players": [{**p, **rating_por_jogador.get(p["steamid"], {})} for p in players.drop("rating").to_dicts()],
         "rating_info": rating_info,
         "archetypes": papeis.to_dicts(),
         "player_profile": perfil.to_dicts(),

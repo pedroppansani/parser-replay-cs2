@@ -11,11 +11,11 @@ from __future__ import annotations
 
 import polars as pl
 
-# Janela de tempo (segundos) pra considerar uma kill como "trade kill": matar o
-# inimigo que acabou de matar um companheiro de time. 5s é a faixa usada por
-# HLTV/Leetify (a maioria fica entre 3-5s) -- deixei como constante fácil de
-# recalibrar se eu comparar com demos e achar que está contando trade demais/de menos.
-DEFAULT_TRADE_WINDOW_SECONDS = 5.0
+from metrics.constantes import JANELA_DE_TRADE_S
+
+# Janela para considerar uma kill "trade kill": matar o inimigo que acabou de
+# matar um companheiro de time. Origem e valor em metrics/constantes.py.
+DEFAULT_TRADE_WINDOW_SECONDS = JANELA_DE_TRADE_S
 
 # Granadas que causam dano direto. NÃO inclui smokegrenade (não causa dano) nem
 # planted_c4 (dano da bomba, não é "utility" no sentido clássico da métrica).

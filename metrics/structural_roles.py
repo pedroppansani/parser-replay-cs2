@@ -40,6 +40,8 @@ from pathlib import Path
 import numpy as np
 import polars as pl
 
+from metrics.constantes import JANELA_DE_TRADE_S
+from metrics.contato import primeiro_contato
 from metrics.map_areas import AREA_A, AREA_B, area_lookup, derive_place_areas
 from metrics.player_profile import distancia_do_companheiro_mais_proximo
 from metrics.positioning import position_samples, setup_snapshot
@@ -51,8 +53,6 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 # mão. O código LÊ este arquivo e nunca escreve nele — há teste travando isso.
 ROLES_MANUAL_FILE = PROJECT_ROOT / "roles_manual.json"
 
-# Round em que os lados trocam (MR12).
-HALFTIME_ROUND = 12
 
 # --- Limiares de calibração -------------------------------------------------
 # Os quatro primeiros saem da distribuição real das 9 partidas (881 rounds de CT).
@@ -99,8 +99,8 @@ SEGUNDOS_UTILITY_ANTES_DA_KILL = 4.0
 # chegou depois.
 RAIO_ATRAS_DO_ENTRY = 600.0
 
-# Janela de trade do projeto inteiro.
-JANELA_TRADE_S = 5.0
+# Janela de trade do projeto inteiro (metrics/constantes.py).
+JANELA_TRADE_S = JANELA_DE_TRADE_S
 
 # AWPer: a arma tem que ser consistente, não evento isolado. Um rifler que pega a
 # AWP largada do adversário em 2 de 24 rounds não é AWPer.
@@ -184,25 +184,8 @@ def carrega_roles_manual(path: Path = ROLES_MANUAL_FILE) -> dict:
 # --- Fatos por round --------------------------------------------------------
 
 def _primeiro_contato(damages: pl.DataFrame) -> pl.DataFrame:
-    """Tick do primeiro contato de cada jogador em cada round.
-
-    Contato = causou ou sofreu dano, a mesma definição que o resto do projeto
-    usa (ver clustering/playstyle.first_contact_per_player_round).
-    """
-    lados = [
-        damages.select(
-            pl.col("round_num").cast(pl.UInt32),
-            pl.col(col).alias("steamid"),
-            pl.col("tick"),
-        )
-        for col in ("attacker_steamid", "victim_steamid")
-    ]
-    return (
-        pl.concat(lados)
-        .filter(pl.col("steamid").is_not_null())
-        .group_by(["round_num", "steamid"], maintain_order=True)
-        .agg(pl.col("tick").min().alias("tick_contato"))
-    )
+    """Tick do primeiro contato de cada jogador em cada round (metrics/contato.py)."""
+    return primeiro_contato(damages.with_columns(pl.col("round_num").cast(pl.UInt32)))
 
 
 # A "posição inicial" é a de SETUP, não a do tick exato do fim do freeze.
@@ -933,6 +916,45 @@ def atribui_funcao(pontuado: pl.DataFrame) -> pl.DataFrame:
     )
 
 
+# FUNÇÃO DOMINANTE TEM DE SE DESTACAR DO ACASO (auditoria, 2026-10-02).
+# "Dominante" era só a função mais frequente entre os rounds COM função
+# reconhecida, e a maioria dos rounds não tem função nenhuma: medido nas 52
+# partidas, 136 dos 730 jogador-lados com função dominante a tinham em 3 rounds
+# ou menos (ZywOo, match_14: "AWPer" de TR por 1 round em 11; HLEB, match_01:
+# "Trader" por 1 em 10). Isso é a função de um round, não a do lado.
+#
+# O critério é um teste binomial contra a divisão uniforme: se a função de cada
+# round fosse sorteada entre as K funções daquele lado, qual a chance de uma
+# delas aparecer em k ou mais dos n rounds? Só é dominante quando essa chance
+# fica abaixo de ALFA. 0,05 é a convenção de sempre, não um valor ajustado ao
+# corpus; K sai do vocabulário (`FUNCOES`: 4 no CT, 5 no TR, contando o AWPer).
+# Exemplos com 12 rounds: no TR (K = 5) precisa de 6; no CT (K = 4), de 7.
+#
+# PRONTA E DESLIGADA: medida nas 52 partidas (pesquisa/funcao_acima_do_acaso.py),
+# a regra tira a função dominante de 324 dos 730 jogador-lados e quase apaga o
+# lado TR (251 -> 48; entry 70 -> 7, lurker 33 -> 1, trader 44 -> 4), além de 82
+# dos 166 AWPers. Isso muda o caráter da leitura, e ligar é decisão do Pedro.
+# Com a constante em False a coluna `chance_ao_acaso` é gravada e nada mais muda.
+ALFA_FUNCAO_ACIMA_DO_ACASO = 0.05
+EXIGE_FUNCAO_ACIMA_DO_ACASO = False
+
+
+def funcoes_do_lado(lado: str) -> int:
+    """Quantas funções existem para um lado (as do lado mais as sem lado, como o AWPer)."""
+    return sum(1 for _rot, l in FUNCOES.values() if l in (None, lado))
+
+
+def chance_ao_acaso(k: int, n: int, lado: str) -> float:
+    """P(X >= k) com X ~ Binomial(n, 1/K): a chance de a função mais frequente
+    aparecer em k ou mais dos n rounds se fosse sorteada entre as K do lado."""
+    from math import comb
+
+    if n <= 0 or k <= 0:
+        return 1.0
+    p = 1.0 / funcoes_do_lado(lado)
+    return float(sum(comb(n, i) * p ** i * (1 - p) ** (n - i) for i in range(int(k), int(n) + 1)))
+
+
 def resume_por_lado(por_round: pl.DataFrame, match_id: str = "",
                     awpers_do_time: set | None = None) -> pl.DataFrame:
     """Função dominante de cada jogador em cada lado, com a concentração.
@@ -962,6 +984,9 @@ def resume_por_lado(por_round: pl.DataFrame, match_id: str = "",
             pl.lit(None, dtype=pl.List(pl.UInt32)).alias("rounds_empatadas"),
             pl.lit(None, dtype=pl.Float64).alias("concentracao"),
             pl.lit(True).alias("amostra_fraca"),
+            pl.lit(None, dtype=pl.Float64).alias("chance_ao_acaso"),
+            pl.lit(False).alias("abaixo_do_acaso"),
+            pl.lit(None, dtype=pl.String).alias("funcao_mais_frequente"),
             pl.lit(match_id).alias("match_id"),
         )
 
@@ -1022,6 +1047,18 @@ def resume_por_lado(por_round: pl.DataFrame, match_id: str = "",
             (pl.col("rounds_no_lado") < MIN_ROUNDS_POR_LADO).alias("amostra_fraca"),
             pl.lit(match_id).alias("match_id"),
         )
+        # a função mais frequente só é DOMINANTE se se destaca do acaso
+        .with_columns(
+            pl.struct(["rounds_na_funcao", "rounds_no_lado", "side"]).map_elements(
+                lambda r: chance_ao_acaso(r["rounds_na_funcao"], r["rounds_no_lado"], r["side"]),
+                return_dtype=pl.Float64).alias("chance_ao_acaso"))
+        .with_columns(
+            (pl.lit(EXIGE_FUNCAO_ACIMA_DO_ACASO) & pl.col("funcao").is_not_null()
+             & (pl.col("chance_ao_acaso") >= ALFA_FUNCAO_ACIMA_DO_ACASO))
+            .alias("abaixo_do_acaso"))
+        .with_columns(
+            pl.when(pl.col("abaixo_do_acaso")).then(pl.col("funcao")).otherwise(None).alias("funcao_mais_frequente"),
+            pl.when(pl.col("abaixo_do_acaso")).then(None).otherwise(pl.col("funcao")).alias("funcao"))
         .sort(["name", "side"])
     )
 
@@ -1033,9 +1070,13 @@ def texto_empate(linha: dict) -> str:
     porcentagem sozinha inventa precisão (decisão 7a). Linha sem empate devolve
     string vazia -- a interface mostra a função normal.
     """
+    n = linha["rounds_no_lado"]
+    if linha.get("abaixo_do_acaso"):
+        f, k = linha.get("funcao_mais_frequente"), linha["rounds_na_funcao"]
+        return (f"sem função dominante: {FUNCOES.get(f, (f,))[0]} em {k} de {n} "
+                f"{'round' if n == 1 else 'rounds'}, o que não se destaca do acaso")
     if not linha.get("empate_funcao"):
         return ""
-    n = linha["rounds_no_lado"]
     partes = [f"{FUNCOES.get(f, (f,))[0]} {round(100 * k / n)}% ({k} de {n})"
               for f, k in zip(linha["funcoes_empatadas"], linha["rounds_empatadas"])]
     return "sem função dominante: " + " vs ".join(partes)

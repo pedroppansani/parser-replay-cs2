@@ -36,10 +36,11 @@ import numpy as np
 import polars as pl
 
 from metrics.formatting import format_money
+from metrics.constantes import JANELA_DE_TRADE_S
 from metrics.sides import fim_de_metade
 
-# Janela para considerar uma morte "trocada" — mesma do resto do projeto.
-TRADE_WINDOW_SECONDS = 5.0
+# Janela para considerar uma morte "trocada" (metrics/constantes.py).
+TRADE_WINDOW_SECONDS = JANELA_DE_TRADE_S
 
 # Distância (unidades) até o companheiro vivo mais próximo no instante da morte.
 # Acima disso, ninguém tinha como trocar: a morte foi isolada. ~600u é cerca de

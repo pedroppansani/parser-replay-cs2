@@ -439,14 +439,16 @@ def ajusta_pesos(ids: list[str]) -> dict:
 def _times_dos_jogadores() -> dict:
     """(match_id, nick) -> nome do time, pelo manifesto. Os nomes que a demo
     grava variam ("Vitality" e "Team Vitality"); aqui eles são unificados
-    tirando o prefixo "Team "."""
+    pela tabela de nomes canônicos (metrics/times.py)."""
+    from metrics.times import nome_canonico
+
     arq = PROJECT_ROOT / "data" / "manifest.json"
     if not arq.exists():
         return {}
     out = {}
     for mid, v in json.loads(arq.read_text(encoding="utf-8"))["partidas"].items():
         for lado in ("A", "B"):
-            nome = (v["times"][lado]["nome"] or "?").removeprefix("Team ")
+            nome = nome_canonico(v["times"][lado]["nome"]) or "?"
             for j in v["times"][lado]["jogadores"]:
                 out[(mid, j)] = nome
     return out

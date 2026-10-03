@@ -8,13 +8,13 @@ arremessos reais. O parsing é da biblioteca [awpy](https://awpy.rtfd.io/); o
 trabalho daqui é o desenho das métricas, cada uma com a decisão de jogo escrita
 no código e conferida contra dado oficial.
 
-**[Ver o site](https://pedroppansani.github.io/parser-replay-cs2/)** · <!-- numeros:inicio corpus -->52 partidas (43 profissionais, de 11 times, e 9 de FACEIT) em 8 mapas<!-- numeros:fim corpus -->.
+**[Ver o site](https://pedroppansani.github.io/parser-replay-cs2/)** · <!-- numeros:inicio corpus -->52 partidas (43 profissionais, de 9 times, e 9 de FACEIT) em 8 mapas<!-- numeros:fim corpus -->.
 
 ## Três números
 
 <!-- numeros:inicio resumo -->
 - **410 de 410** placares idênticos aos da HLTV. Kills e mortes de 410 jogadores em 41 mapas profissionais batem com o placar oficial, um a um.
-- **0,079** erro médio do rating contra o oficial. Em 430 jogador-partidas (correlação 0,966), deixando uma partida fora a cada vez. É uma implementação própria da metodologia publicada, não o número da HLTV.
+- **0,079** erro médio do rating contra o oficial. Em 430 jogador-partidas (correlação 0,966), deixando uma partida fora a cada vez e refazendo sem ela tudo o que o rating ajusta. É uma implementação própria da metodologia publicada, não o número da HLTV.
 - **100%** botão do arremesso certo, fora da amostra. A força de 6.846 granadas inferida só da posição, conferida contra o que a demo grava em 13 partidas.
 <!-- numeros:fim resumo -->
 
@@ -41,7 +41,9 @@ acerto do rating em cima delas seria coincidência.
 | Aberturas, rounds de multi-kill e headshots | 80 de 80 idênticos (8 séries inteiras) |
 | Clutches vencidos | 67 de 80 idênticos |
 | Rating, na página (dentro da amostra) | erro médio 0,077, correlação 0,967 (430 jogador-partidas) |
-| Rating, fora da amostra | erro médio 0,079, correlação 0,966 |
+| Rating, fora da amostra (deixa uma partida fora, completo) | erro médio 0,079, correlação 0,966 |
+| Rating, deixando um time inteiro fora | erro médio 0,079, correlação 0,965 |
+| Rating por time (time fora; jogador-partidas) | Vitality 0,080 (85); FURIA 0,073 (80); Natus Vincere 0,079 (70); Falcons 0,082 (60); Spirit 0,078 (60); MOUZ 0,080 (50); Aurora Gaming 0,121 (10, amostra pequena); The MongolZ 0,090 (10, amostra pequena); magic 0,069 (5, amostra pequena) |
 | Convenção de ângulos | mira a 1,68° da vítima no tick da kill, contra 6,00° na convenção invertida (7.652 kills) |
 <!-- numeros:fim validacao -->
 
@@ -110,7 +112,7 @@ python -m pytest tests/
 ```
 
 Uma demo só: `python -m scripts.process_demo caminho/da/partida.dem --match-id match_99`.
-São <!-- numeros:inicio testes -->1.108 testes<!-- numeros:fim testes -->, e o CI
+São <!-- numeros:inicio testes -->1.156 testes<!-- numeros:fim testes -->, e o CI
 roda a suíte antes de publicar o site.
 
 ## Limitações
@@ -129,6 +131,20 @@ roda a suíte antes de publicar o site.
   Até lá, a página avisa em cada ficha.
 - **KAST e clutch** não batem em todos os jogadores: a HLTV aplica regras que os
   dados publicados não permitem recuperar.
+
+## Licença e dados de terceiros
+
+O código é distribuído sob a licença [MIT](LICENSE).
+
+A licença cobre só o código. Não cobre o que é de terceiros:
+
+- **Estatísticas oficiais** em `data/reference/` são da HLTV, transcritas das
+  páginas públicas de cada partida para conferir os números daqui.
+- **Radares dos mapas** em `assets/radars/` vêm dos arquivos do próprio jogo
+  (via awpy) e pertencem à Valve.
+- **Demos** (`.dem`) são gravações de partidas de terceiros e não são
+  distribuídas neste repositório; o que está versionado é o resultado do
+  processamento.
 
 ## Notas técnicas
 

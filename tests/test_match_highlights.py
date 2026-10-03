@@ -38,7 +38,8 @@ def _players(adrs: list[float], kasts: list[float] | None = None) -> pl.DataFram
         "kast_pct": kasts,
         "opening_kills": [2] * n,
         "clutches": [0] * n,
-        "mvp_index": [a / max(adrs) for a in adrs],
+        # o MVP é o maior rating (item 4.6); aqui o rating acompanha o ADR
+        "rating": [a / 100 for a in adrs],
     }).with_columns(pl.col("steamid").cast(pl.UInt64))
 
 

@@ -54,6 +54,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from metrics.identidade import com_nome_de_exibicao  # noqa: E402
 from metrics.player_roles import TRAIT_SPECS  # noqa: E402
+from metrics.times import nome_canonico  # noqa: E402
 
 PROCESSED = PROJECT_ROOT / "data" / "processed"
 MANIFESTO = PROJECT_ROOT / "data" / "manifest.json"
@@ -137,7 +138,7 @@ def carrega() -> pl.DataFrame:
             continue
         r = pl.read_parquet(d / "player_roles.parquet").with_columns(
             pl.lit(d.name).alias("match_id"),
-            pl.col("team").replace_strict({t: (info["times"][t]["nome"] or t) for t in ("A", "B")},
+            pl.col("team").replace_strict({t: (nome_canonico(info["times"][t]["nome"]) or t) for t in ("A", "B")},
                                           default=pl.col("team")).alias("time"),
             pl.lit(info.get("mapa", "").replace("de_", "")).alias("mapa"),
         )

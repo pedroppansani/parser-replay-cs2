@@ -31,6 +31,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from metrics.identidade import com_nome_de_exibicao  # noqa: E402
 from metrics.player_roles import TRAIT_SPECS  # noqa: E402
+from metrics.times import nome_canonico  # noqa: E402
 
 PROCESSED = PROJECT_ROOT / "data" / "processed"
 MANIFESTO = PROJECT_ROOT / "data" / "manifest.json"
@@ -171,7 +172,7 @@ def main() -> None:
     if args.cortes:
         funcoes = carrega("player_roles")
         man = json.loads(MANIFESTO.read_text(encoding="utf-8"))["partidas"]
-        time_de = {(m, n): (v["times"][t]["nome"] or "").removeprefix("Team ")
+        time_de = {(m, n): nome_canonico(v["times"][t]["nome"])
                    for m, v in man.items() for t in ("A", "B") for n in v["times"][t]["jogadores"]}
         funcoes = funcoes.with_columns(pl.struct(["match_id", "name"]).map_elements(
             lambda r: time_de.get((r["match_id"], r["name"])), return_dtype=pl.Utf8).alias("time_real"))

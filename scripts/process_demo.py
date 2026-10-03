@@ -37,7 +37,7 @@ from metrics.basic_metrics import compute_all_basic_metrics, roster_per_round
 from metrics.crosshair import calculate_crosshair_metrics
 from metrics.map_areas import area_lookup, derive_place_areas
 from metrics.grenades import compute_grenade_metrics
-from metrics.player_roles import build_player_roles, resolve_teams
+from metrics.player_roles import awpers_do_time, build_player_roles, resolve_teams
 from metrics.structural_roles import resume_por_lado, structural_roles
 from metrics.positioning import calculate_positioning_metrics
 from metrics.site_roles import (
@@ -193,7 +193,7 @@ def process(
     # no empate de função, só o AWPer do time vence (structural_roles,
     # FUNCAO_QUE_VENCE_EMPATE). Antes daqui o player_roles não existe -- ele
     # usa a função do round, que o structural_roles calcula primeiro.
-    awpers = set(traits.filter(pl.col("trait") == "awp")["steamid"].to_list()) if traits.height else set()
+    awpers = awpers_do_time(traits)
     outputs["structural_roles_summary"] = resume_por_lado(funcoes_round, match_id, awpers)
 
     print("[6/6] Salvando métricas processadas ...")

@@ -65,9 +65,10 @@ def match_summary(match_id: str) -> dict | None:
     m = insights.get("match", {})
     map_name = meta.get("map_name", "?")
 
-    # destaque do índice: quem foi o MVP pela fórmula já declarada em build_insights
-    players = insights.get("players", [])
-    mvp = max(players, key=lambda p: p.get("mvp_index", 0)) if players else None
+    # o MVP é o do card da partida (maior rating, metrics/match_highlights.py),
+    # casado por steamid -- a landing não tem critério próprio
+    card = insights.get("mvp_card") or {}
+    mvp = next((p for p in insights.get("players", []) if p.get("steamid") == card.get("steamid")), None)
 
     return {
         "id": match_id,

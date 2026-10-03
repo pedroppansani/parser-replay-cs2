@@ -45,6 +45,12 @@ def confrontos_do_corpus() -> pl.DataFrame:
 def main() -> None:
     conf = confrontos_do_corpus()
     tabela = ajusta_tabela(conf)
+    # o arquivo diz de que código saiu: é o que permite conferir depois que ele
+    # é reprodutível (tests/test_economia_reprodutivel.py)
+    from parsing.versao import versoes
+    v = versoes()
+    tabela["gerada_por"] = {"comando": "py -3.12 -m scripts.fit_economia", "commit": v["commit"], "sujo": v["sujo"],
+                            "partidas": conf["match_id"].n_unique()}
     REFERENCIA_ECONOMIA.write_text(json.dumps(tabela, ensure_ascii=False, indent=2), encoding="utf-8")
     cel = tabela["celulas"]
     fracas = sum(1 for v in cel.values() if v["amostra_fraca"])
@@ -52,14 +58,20 @@ def main() -> None:
           f"{fracas} com menos de {MIN_AMOSTRA_CELULA} casos (encolhidas para o nível de cima)")
     print("taxa base por lado:", {k: round(v, 3) for k, v in tabela["taxa_base_por_lado"].items()})
     t = conf.filter(pl.col("lado") == "t")
+
+    def taxa(x: pl.DataFrame) -> tuple[float, float]:
+        """(taxa de vitória ponderada pelo peso do empate, casos = soma dos pesos)."""
+        n = float(x["peso"].sum())
+        return (float((x["venceu"].cast(pl.Float64) * x["peso"]).sum() / n) if n else 0.0), n
+
     rr = t.filter(pl.col("grupo").is_in(["rifle_t1", "rifle_t2"]) & pl.col("grupo_dele").is_in(["rifle_t1", "rifle_t2"]))
-    print(f"\nHLTV rifle x rifle (TR) {PONTOS_HLTV['rifle x rifle']:.0%}  | corpus {rr['venceu'].mean():.1%} ({rr.height} casos)")
+    print(f"\nHLTV rifle x rifle (TR) {PONTOS_HLTV['rifle x rifle']:.0%}  | corpus {taxa(rr)[0]:.1%} ({taxa(rr)[1]:.1f} casos)")
     for rot, filtro in (("pistola inicial sem colete", (pl.col("grupo_dele") == "pistola_inicial") & ~pl.col("colete_dele")),
                         ("pistola inicial (qualquer)", pl.col("grupo_dele") == "pistola_inicial"),
                         ("qualquer pistola", pl.col("grupo_dele").is_in(["pistola_inicial", "pistola_melhorada"]))):
         x = t.filter(pl.col("grupo").is_in(["rifle_t1", "rifle_t2"]) & filtro)
         print(f"HLTV matar pistola inicial (TR) {PONTOS_HLTV['matar pistola inicial']:.0%}  | corpus, TR de rifle contra "
-              f"{rot}: {x['venceu'].mean():.1%} ({x.height} casos)")
+              f"{rot}: {taxa(x)[0]:.1%} ({taxa(x)[1]:.1f} casos)")
     print(f"\nTabela gravada em {REFERENCIA_ECONOMIA}")
 
 

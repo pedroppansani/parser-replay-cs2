@@ -41,6 +41,8 @@ from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import StandardScaler
 
+from metrics.contato import primeiro_contato
+
 CLUSTER_NAMES_FILE = Path(__file__).resolve().parent / "cluster_names.json"
 
 DEFAULT_N_CLUSTERS = 4
@@ -59,6 +61,13 @@ FEATURE_COLUMNS = [
     "frac_entering_fight",  # quanto do round foi passado entrando em briga (Fase 2)
     "time_of_first_contact_s",  # entra cedo ou espera (derivada abaixo)
 ]
+# `sem_contato` (1 = o round inteiro sem contato) fica na TABELA, não no
+# agrupamento. Medido em 2026-10-02 (pesquisa/imputacao_clusters.py, 11.520
+# player-rounds, 685 sem contato): como feature, o KMeans dedica um grupo
+# inteiro aos rounds sem contato e o grupo "Mira fora da altura" some -- ARI
+# 0,652 contra o agrupamento anterior, abaixo do mínimo de 0,9 da auditoria.
+# Fora dele: ARI 0,936, os quatro perfis se mantêm, estabilidade por
+# reamostragem das partidas 0,929 (era 0,920). Pô-la dentro é decisão do Pedro.
 
 # Estas cinco features SAIRAM da lista, e a saida foi o conserto do modulo:
 #
@@ -90,21 +99,8 @@ def first_contact_per_player_round(damages: pl.DataFrame, rounds: pl.DataFrame, 
     round e quem joga atrás: entry fragger toma contato nos primeiros segundos,
     lurker e âncora demoram.
     """
-    contacts = pl.concat(
-        [
-            damages.filter(pl.col("attacker_steamid").is_not_null()).select(
-                pl.col("round_num"), pl.col("attacker_steamid").alias("steamid"), pl.col("tick")
-            ),
-            damages.filter(pl.col("victim_steamid").is_not_null()).select(
-                pl.col("round_num"), pl.col("victim_steamid").alias("steamid"), pl.col("tick")
-            ),
-        ],
-        how="vertical",
-    )
-
     return (
-        contacts.group_by(["round_num", "steamid"], maintain_order=True)
-        .agg(pl.col("tick").min().alias("first_contact_tick"))
+        primeiro_contato(damages).rename({"tick_contato": "first_contact_tick"})
         .join(rounds.select(["round_num", "freeze_end", "end"]), on="round_num", how="left")
         .with_columns(
             ((pl.col("first_contact_tick") - pl.col("freeze_end")) / tickrate).alias("time_of_first_contact_s")
@@ -162,13 +158,15 @@ def build_feature_matrix(
         pl.col("trade_kills").fill_null(0),
         pl.col("utility_damage").fill_null(0),
         pl.col("survived").cast(pl.Float64).fill_null(0.0),
-        # sem contato no round = o round inteiro sem briga. Preencher com a
-        # duração do round seria mais correto que 0, mas como nem todo round tem
-        # a mesma duração, uso a mediana dos contatos observados + margem, pra não
-        # criar um outlier artificial que distorce o PCA.
-        pl.col("time_of_first_contact_s").fill_null(
-            pl.col("time_of_first_contact_s").median() * 2
-        ),
+        # SEM CONTATO FICA NULO (auditoria, item 4.7, 2026-10-02). Antes o nulo
+        # virava "mediana DA PARTIDA x 2": um valor inventado, diferente em cada
+        # partida, que ia para a tabela que o resto do pipeline lê -- os
+        # `is_not_null()` de player_roles, archetypes e do perfil nunca viam um
+        # nulo, e o round sem contato entrava como contato tardio. Agora a
+        # ausência é uma coluna própria (`sem_contato`) e, no agrupamento, o
+        # modelo global preenche o tempo com o valor DELE (`fill_medians`, a
+        # mediana dos contatos observados no conjunto).
+        pl.col("time_of_first_contact_s").is_null().cast(pl.Float64).alias("sem_contato"),
     ).sort(["round_num", "steamid"])
 
 
@@ -315,7 +313,9 @@ def save_cluster_names_template(profiles: pl.DataFrame, path: Path = CLUSTER_NAM
 # vale mais poder ler o diff e não depender da versão do scikit-learn instalada
 # do que economizar linhas.
 GLOBAL_MODEL_FILE = Path(__file__).resolve().parent / "global_model.json"
-GLOBAL_MODEL_VERSION = 1
+# 2 (2026-10-02): o tempo até o contato chega NULO quando não houve contato e
+#   o modelo preenche com a mediana dele (antes: mediana da partida x 2).
+GLOBAL_MODEL_VERSION = 2
 
 
 def _profile_clusters(assignments: pl.DataFrame, cols: list[str]) -> pl.DataFrame:
