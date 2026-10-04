@@ -56,14 +56,19 @@ def _nome(n: str, conhecidos) -> str:
     return n if n in conhecidos else APELIDOS.get(n, n)
 
 
-def contagens() -> pl.DataFrame:
-    """Degraus 1 a 3: uma linha por jogador com o oficial e o nosso lado a lado."""
+def contagens(interim: Path = INTERIM, partidas: list[str] | None = None) -> pl.DataFrame:
+    """Degraus 1 a 3: uma linha por jogador com o oficial e o nosso lado a lado.
+
+    `interim` e `partidas` existem para a fixture do CI (tests/fixtures/interim_ci,
+    auditoria 5.7): o interim inteiro não é versionado."""
     placar = _ler("hltv_placar.json")
     comp = _ler("hltv_componentes.json")
     linhas = []
     for mid, v in placar.items():
+        if partidas is not None and mid not in partidas:
+            continue
         rounds = pl.read_parquet(PROCESSED / mid / "rounds.parquet")
-        k = kills_do_round_jogado(pl.read_parquet(INTERIM / mid / "kills.parquet"), rounds)
+        k = kills_do_round_jogado(pl.read_parquet(interim / mid / "kills.parquet"), rounds)
         kills = dict(k.filter(pl.col("attacker_side") != pl.col("victim_side")).group_by("attacker_name", maintain_order=True).len().iter_rows())
         mortes = dict(k.group_by("victim_name", maintain_order=True).len().iter_rows())
         adr = dict(pl.read_parquet(PROCESSED / mid / "adr_summary.parquet").select("name", "adr").iter_rows())
