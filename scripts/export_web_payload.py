@@ -21,7 +21,7 @@ from metrics.crosshair import DICA_MIRA
 from metrics.player_profile import cards_de_estilo
 from metrics.player_roles import evidencia_exibida, rotulo_exibido
 from metrics.structural_roles import FUNCOES, texto_empate
-from scripts.narrative import descreve_jogador
+from leitura.narrativa import descreve_jogador
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 

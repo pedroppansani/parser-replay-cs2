@@ -51,11 +51,11 @@
           "sha256": "796b51156e56985d3ddcbeddd19177af49f32635b8cff51796107adf5add41a9"
         }
       ],
-      "processado_em": "2026-10-03T14:05",
+      "processado_em": "2026-10-04T19:44",
       "versao": {
         "parser": 1,
         "metricas": 19,
-        "commit": "33f2f41b9bf1",
+        "commit": "22908ceb5578",
         "sujo": true,
         "awpy": "2.0.2",
         "demoparser2": "0.42.0"

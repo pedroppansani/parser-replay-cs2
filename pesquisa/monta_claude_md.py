@@ -15,7 +15,7 @@ from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ))
-from pesquisa.divide_claude_md import META  # noqa: E402
+from scripts.divide_claude_md import META  # noqa: E402
 
 LIMITE_BYTES = 15_000
 

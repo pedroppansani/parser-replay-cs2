@@ -16,7 +16,7 @@ from parsing.parser import kills_do_round_jogado
 
 from metrics.round_breakdown import build_breakdowns
 from metrics.timing import detect_tickrate
-from scripts.build_insights import resolve_teams, side_of_team
+from leitura.insights import resolve_teams, side_of_team
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 

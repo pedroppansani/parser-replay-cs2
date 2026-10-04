@@ -1,7 +1,7 @@
 """
 Situações de último vivo: as TENTATIVAS, não só as que deram certo.
 
-Por que este módulo existe: `scripts/build_insights.py` já achava clutch, mas só
+Por que este módulo existe: `leitura/insights.py` já achava clutch, mas só
 registrava quando o último vivo GANHAVA. Com isso não dá pra responder a pergunta
 do "rei do NT" -- quem chega muito em situação de último vivo e quase nunca
 converte -- porque o denominador (as tentativas) nunca foi calculado. Contar só

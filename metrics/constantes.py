@@ -9,7 +9,7 @@ from __future__ import annotations
 
 # Janela de trade: matar quem acabou de matar um companheiro dentro de 5 s.
 # 5 s é a faixa usada por HLTV/Leetify (a maioria fica entre 3 e 5 s); varrida
-# no corpus em scripts/varre_trade.py (decisão 7h).
+# no corpus em scripts/calibracao/varre_trade.py (decisão 7h).
 JANELA_DE_TRADE_S = 5.0
 
 # MR12: o lado troca depois do round 12 no tempo regulamentar. A prorrogação

@@ -7,7 +7,7 @@
 > Narrativa da investigação, como foi registrada na época. A regra que vale hoje está na decisão.
 
 **INVESTIGAÇÃO FACEIT (2026-10-02): hipótese CONFIRMADA, regra pronta e
-    DESLIGADA à espera do Pedro** (`scripts/investiga_faceit.py`,
+    DESLIGADA à espera do Pedro** (`pesquisa/investiga_faceit.py`,
     `data/reference/investigacao_faceit.json`). Os neutros a mais da FACEIT
     vêm do TICK: sem `grenade_thrown`, a soltura é a da ancoragem, e nas 13
     partidas com gabarito (evento retirado de propósito) ela cai no tick do

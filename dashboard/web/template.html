@@ -2334,7 +2334,7 @@
   function pct(v) { return Math.round(v * 100) + "%"; }
 
   // --- Card do round decisivo -------------------------------------------
-  // As frases vêm prontas de scripts/narrative.py (decisão 18): o template só
+  // As frases vêm prontas de leitura/narrativa.py (decisão 18): o template só
   // imprime. Inclusive a frase do caso "não houve round decisivo", que não é
   // fallback nem erro -- é o resultado de uma partida de placar largo.
   var dr = D.decisive_round;
@@ -2389,7 +2389,7 @@
   // --- Card da esquerda: MVP --------------------------------------------
   // Os COMPONENTES aparecem, não só o índice: quem lê tem que ver se ele venceu
   // por ADR, por abertura ou por clutch, e quanto foi acima do segundo. Escolha
-  // e frases vêm de metrics/match_highlights.py + scripts/narrative.py.
+  // e frases vêm de metrics/match_highlights.py + leitura/narrativa.py.
   var mvpc = D.mvp_card;
 
   function componentes(lista) {

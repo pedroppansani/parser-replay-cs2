@@ -35,7 +35,7 @@ from metrics.grenade_throws import (
     estado_vertical,
     rotina_do_jogo,
 )
-from scripts.constantes_do_gabarito import _entradas, carrega_gabarito
+from metrics.gabarito import _entradas, carrega_gabarito
 
 # Catraca (2026-09-27, 12 partidas, com a guarda do voo): os valores medidos
 # quando a rota A entrou. O teste falha se a qualidade PIORAR; se melhorar,
@@ -153,7 +153,7 @@ def test_catraca_da_velocidade(casos):
 
 
 def test_catraca_da_posicao_de_saida(casos):
-    from scripts.valida_rota_a import pes_da_saida
+    from metrics.gabarito import pes_da_saida
     erros = []
     for a, r, ev in casos:
         if r["botao"] is None or r["postura"] is None:
@@ -171,7 +171,7 @@ def test_as_constantes_do_gabarito_sao_o_recalculo_e_nao_numero_digitado():
     """As constantes em metrics/gabarito_constantes.json têm de ser exatamente o
     que o cálculo dá a partir das partidas que o arquivo declara: gabarito novo
     no disco não muda as constantes sozinho (recalcular é decisão registrada)."""
-    from scripts.constantes_do_gabarito import calcula
+    from metrics.gabarito import calcula
     gravado = json.loads((Path(__file__).parents[1] / "metrics" / "gabarito_constantes.json").read_text(encoding="utf-8"))
     arremessos, partidas = carrega_gabarito()
     assert set(gravado["partidas"]) <= set(partidas)

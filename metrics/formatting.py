@@ -46,7 +46,7 @@ def format_clock(segundos: float | int | None) -> str:
         raise ValueError(
             f"tempo negativo no timeline ({total}s): a origem é o fim do freeze time, "
             "então evento anterior a ela não pertence ao round. Ver "
-            "scripts/debug_timeline.py."
+            "pesquisa/debug_timeline.py."
         )
     return f"{total // 60}:{total % 60:02d}"
 

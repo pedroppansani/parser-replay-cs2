@@ -9,7 +9,7 @@
 
 31. **Registro dos pisos de função** (`metrics/player_roles.py`, TRAIT_SPECS;
     revisão do Pedro em 2026-09-26 sobre 52 partidas, 430 jogador-partidas
-    profissionais em 43 partidas, via `scripts/proposta_pisos.py`):
+    profissionais em 43 partidas, via `pesquisa/proposta_pisos.py`):
     | função | piso | origem |
     |---|---|---|
     | AWPer (`awp_share`) | 0,533 | corte estatístico (os três métodos concordam) |

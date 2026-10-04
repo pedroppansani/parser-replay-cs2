@@ -62,7 +62,7 @@ MIN_PARTIDAS_ANGULO_CONFIAVEL = 2
 # (ver coluna `place` nos ticks: "BombsiteA", "Alley", "Middle", "TSideLower"...).
 # `yaw` segue a convenção do CS2: 0° = eixo +X, cresce no anti-horário.
 #
-# Dica pra preencher: rode `scripts/show_derived_angles.py` -- ele lista os
+# Dica pra preencher: rode `pesquisa/show_derived_angles.py` -- ele lista os
 # ângulos derivados por região, e aí é só corrigir/complementar o que não bate
 # com o que você sabe do mapa.
 MANUAL_ENTRY_ANGLES: dict[str, dict[tuple[str, str], list[dict]]] = {}

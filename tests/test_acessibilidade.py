@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.valida_paleta import (DICROMACIAS, contraste, delta_e_2000, hex_para_rgb, paleta_em_uso,
+from metrics.paleta import (DICROMACIAS, contraste, delta_e_2000, hex_para_rgb, paleta_em_uso,
                                    rgb_para_lab, simula_dicromacia)
 
 RAIZ = Path(__file__).resolve().parent.parent

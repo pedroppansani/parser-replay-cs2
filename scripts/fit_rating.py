@@ -39,7 +39,7 @@ from metrics.rating import (
     grupo_do_round,
     rating,
 )
-from scripts.build_insights import resolve_teams, side_of_team
+from leitura.insights import resolve_teams, side_of_team
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 HLTV_FILE = PROJECT_ROOT / "data" / "reference" / "hltv_ratings.json"

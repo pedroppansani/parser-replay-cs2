@@ -441,7 +441,7 @@ def test_causa_de_morte_sem_atacante_nunca_usa_o_nome_da_vitima():
 def test_fogo_amigo_e_bomba_antes_do_duelo_nao_sao_abertura():
     """A abertura é o primeiro duelo ganho contra o adversário. Um teamkill ou
     uma morte pela bomba antes dele não é abertura de ninguém."""
-    from scripts.build_insights import round_situations
+    from leitura.insights import round_situations
 
     team_of = {1: "A", 2: "A", 3: "B", 4: "B"}
     kills = pl.DataFrame([

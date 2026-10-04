@@ -26,7 +26,7 @@ A brecha foi fechada com dois testes:
 
 A varredura do código inteiro (aleatoriedade sem semente, `mode` sem ordenação, iteração sobre
 `set` cujo resultado dependa da ordem, KMeans e PCA sem semente) não achou outro ponto: KMeans, PCA
-e o sorteio de `scripts/casos_repick.py` têm semente fixa, e a única iteração sobre `set`
+e o sorteio de `pesquisa/casos_repick.py` têm semente fixa, e a única iteração sobre `set`
 (`scripts/escada_validacao.py`) só preenche um dicionário.
 
 ## Texto

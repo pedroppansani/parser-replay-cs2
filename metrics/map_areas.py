@@ -34,7 +34,7 @@ um andar te afasta de um site muito mais do que andar o mesmo tanto no plano.
 
 Ainda assim, a derivação da Nuke é a mais discutível das nove partidas -- é o
 tipo de caso que `MANUAL_PLACE_AREAS` existe pra resolver. Rode
-`py -3.12 -m scripts.show_map_areas` pra ver a tabela derivada de cada mapa.
+`py -3.12 -m pesquisa.show_map_areas` pra ver a tabela derivada de cada mapa.
 """
 from __future__ import annotations
 
@@ -154,7 +154,7 @@ def derive_place_areas(
 
     `area_ratio` fica na saída de propósito: é ele que permite discordar da
     classificação olhando o número (0,5 = equidistante dos dois sites), e é o que
-    `scripts/show_map_areas.py` mostra pra revisão manual.
+    `pesquisa/show_map_areas.py` mostra pra revisão manual.
     """
     centroids = place_centroids(positions)
     sites = site_centroids(bomb, positions)

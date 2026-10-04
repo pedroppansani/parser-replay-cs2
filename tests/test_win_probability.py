@@ -304,7 +304,7 @@ def test_curva_vazia_nao_estoura():
 # concordância entre preposição e artigo não sobrevive a `f"{a} {b}"` ingênuo.
 
 def test_preposicao_contrai_com_artigo_definido():
-    from scripts.narrative import com_de
+    from leitura.narrativa import com_de
 
     assert com_de("o Time B na frente por 12-11") == "do Time B na frente por 12-11"
     assert com_de("a própria liderança por 12-11") == "da própria liderança por 12-11"
@@ -319,7 +319,7 @@ def test_o_nome_do_time_nao_e_minusculado_nem_repetido():
     conserto: "Levou o Time B ... a partir do Time B na frente", que repete o
     sujeito. Quem liderava e venceu vira "a própria liderança".
     """
-    from scripts.narrative import contexto_placar_sintagma
+    from leitura.narrativa import contexto_placar_sintagma
 
     lider_venceu = {"score_a": 11, "score_b": 13, "winner_team": "B"}
     assert contexto_placar_sintagma(lider_venceu) == "a própria liderança por 12-11"

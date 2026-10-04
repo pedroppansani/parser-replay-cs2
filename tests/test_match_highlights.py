@@ -22,7 +22,7 @@ from metrics.match_highlights import (
     mvp_da_partida,
     outro_destaque,
 )
-from scripts.narrative import historia_destaque, historia_mvp
+from leitura.narrativa import historia_destaque, historia_mvp
 
 PROCESSED = Path("data/processed")
 

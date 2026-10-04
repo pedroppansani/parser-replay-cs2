@@ -16,13 +16,13 @@ Não "resolva" nenhum destes automaticamente; pergunte.
   conferir os nomes de novo (`py -3.12 -m scripts.fit_global_clusters
   --dry-run`).
 - Revisar a partição A/Mid/B dos mapas (`MANUAL_PLACE_AREAS` em
-  `metrics/map_areas.py`). Rode `py -3.12 -m scripts.show_map_areas`. A Nuke é a
+  `metrics/map_areas.py`). Rode `py -3.12 -m pesquisa.show_map_areas`. A Nuke é a
   mais frágil: os dois sites ficam empilhados na vertical.
 - Ângulos de entrada manuais (`MANUAL_ENTRY_ANGLES` em `metrics/map_angles.py`).
-  Rode `python -m scripts.show_derived_angles <match_id>` para ver os derivados.
+  Rode `python -m pesquisa.show_derived_angles <match_id>` para ver os derivados.
   Os com `n_kills` baixo (4-5) são os que mais precisam de julgamento humano.
 - Janela de trade: **5,0s, calibrada empiricamente** (2026-09-19,
-  `py -3.12 -m scripts.varre_trade`) contra DOIS gabaritos oficiais -- 310 KASTs
+  `py -3.12 -m scripts.calibracao.varre_trade`) contra DOIS gabaritos oficiais -- 310 KASTs
   e as 50 mortes trocadas D(t) da página Detailed stats. A curva é LARGA e
   suave (4,5 a 6,0s ficam todas perto do topo), o que é sinal de regra e não de
   coincidência do corpus. Os dois gabaritos discordam do ótimo: KAST prefere
@@ -75,15 +75,15 @@ Não "resolva" nenhum destes automaticamente; pergunte.
   percurso, razão 3x), mínimo de tentativas de clutch (3), mínimo de rounds com
   AWP (4), compra abaixo da média do time (-400), fração do time de rifle (60%),
   e o quanto um papel crítico precisa se destacar para virar card (0,85).
-- Paleta dos gráficos: `py -3.12 -m scripts.valida_paleta` mede ΔE2000 entre
+- Paleta dos gráficos: `py -3.12 -m metrics.paleta` mede ΔE2000 entre
   todos os pares, em visão normal e em protanopia/deuteranopia, e o contraste
   no branco. Rode antes de trocar qualquer cor de gráfico.
 - Distribuição de todo índice de função, antes (9 de FACEIT) e depois (corpus
-  inteiro): `py -3.12 -m scripts.calibration_report`. Tabela de funções com os
-  componentes abertos, por jogador: `py -3.12 -m scripts.tabela_funcoes`.
+  inteiro): `py -3.12 -m scripts.calibracao.calibration_report`. Tabela de funções com os
+  componentes abertos, por jogador: `py -3.12 -m scripts.calibracao.tabela_funcoes`.
 - Pisos do eixo carrega piano <-> baiter (`PISO_CARREGA_PIANO` 0,5 e
   `PISO_BAITER` -0,5) e se o repick exige mais de uma saída e volta
-  (`scripts/casos_repick.py`).
+  (`pesquisa/casos_repick.py`).
 - Pisos de função (`TRAIT_SPECS` em `metrics/player_roles.py`). Sensibilidade
   medida: lurker (0,40) é estável (±10% muda 1 rótulo), âncora (0,80) é sensível
   só para cima (+10% perde 28% dos rótulos) e **entry (0,32) é sensível dos dois

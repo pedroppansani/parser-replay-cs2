@@ -33,7 +33,7 @@ jobs:
           python-version: "3.12"
           cache: pip
       - name: Dependências (versões fixadas)
-        run: pip install -r requirements.txt
+        run: pip install -r requirements-dev.txt
       # Os testes de navegador usam o Chromium do Playwright (no runner não há
       # Chrome instalado no canal que eles pedem primeiro; caem no Chromium).
       - name: Chromium do Playwright

@@ -81,8 +81,8 @@ def test_regra_vigente_aparece_no_claude_md_e_a_superada_nao():
 def test_a_reestruturacao_nao_perdeu_nada():
     """A conferência de 2026-10-02: todo ID e todo trecho do CLAUDE.md antigo
     está em alguma nota. Precisa da revisão antiga no git (pulado num clone raso)."""
-    from pesquisa.confere_claude_md import confere
-    from pesquisa.divide_claude_md import ANTIGO
+    from scripts.confere_claude_md import confere
+    from scripts.divide_claude_md import ANTIGO
     if subprocess.run(["git", "cat-file", "-e", f"{ANTIGO}:CLAUDE.md"], cwd=RAIZ, capture_output=True).returncode != 0:
         pytest.skip("a revisão antiga do CLAUDE.md não está neste clone")
     r = confere()

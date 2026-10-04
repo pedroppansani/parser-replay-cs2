@@ -50,7 +50,7 @@ decidir fazer a sessão.
 - **Medição controlada da força no ar (era o item 3), removida em
   2026-09-27.** As propriedades da demo explicaram o grupo de ~784 u/s: no ar
   depois de um pulo, o jogo herda a vz de decolagem menos 0,1 s de gravidade,
-  não a vz do instante (decisão 21a; `scripts/investiga_props_arremesso.py`).
+  não a vz do instante (decisão 21a; `pesquisa/investiga_props_arremesso.py`).
   A regra aplicada só com posição leva o "no ar" a 98,3% dentro dos três
   grupos. Os 1,7% que sobram ficam com rótulo neutro; só voltam para cá se
   passarem a bloquear algo importante.
