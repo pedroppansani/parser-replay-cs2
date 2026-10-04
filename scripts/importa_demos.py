@@ -1,6 +1,7 @@
 """Importa demos baixadas à mão, identificando cada .dem pelo sha256 do manifesto.
 
-Fluxo (decisão 7 do item 7, 2026-09-27): o Pedro solta os arquivos em
+Fluxo (decisão do Pedro de 2026-09-27, na investigação da rota A; passos para
+quem baixa as demos em RECUPERACAO_DEMOS.md): o Pedro solta os arquivos em
 `demos/entrada/`, compactados ou não. Este script:
   1. extrai os pacotes (.rar, .zip, .7z, .gz, ...) para
      `demos/entrada/_extraido/<pacote>/`, sem apagar o pacote;

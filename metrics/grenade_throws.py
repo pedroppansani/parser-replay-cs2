@@ -1143,7 +1143,8 @@ def grenade_throws(
         if janela is not None and a["traj"].shape[0] >= 2 and a.get("pitch") is not None:
             z, xy = janela
             # os pés no TICK DA SOLTURA na tabela (o jogo usa esses; os do evento
-            # oficial são os do tick anterior -- decisão 5 do item 7)
+            # oficial são os do tick anterior -- decisão do Pedro "pés em t", 2026-09-27,
+            # em notas/investigacoes/2026-09-27-rota-a.md)
             pes_t = np.array([xy[-2, 0], xy[-2, 1], z[-2]], dtype=float)
             dt = (a["ticks"][1] - a["ticks"][0]) / tickrate
             vp = (a["traj"][1] - a["traj"][0]) / dt
