@@ -22,7 +22,7 @@
     dizia que "esmeralda passava por menos (ΔE 9,2) e com contraste 2,8:1",
     como se a cor tivesse sido reprovada. O que foi reprovado era o esmeralda
     CLARO (`#1baf7a`, o `--aqua` do tema) -- e o defeito era a LUMINÂNCIA, não
-    o matiz. Medido de novo com `scripts/valida_paleta.py` (ΔE2000 e dicromacia
+    o matiz. Medido de novo com `metrics/paleta.py` (ΔE2000 e dicromacia
     por Viénot 1999), o esmeralda escuro empata com o roxo no critério mais
     duro: pior par para daltônico ΔE **14,5** contra 14,9 do roxo (alvo 8),
     visão normal 40,6 contra 23,1, contraste no branco 6,53:1 contra 8,56:1.

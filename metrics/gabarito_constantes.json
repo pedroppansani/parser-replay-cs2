@@ -1,5 +1,5 @@
 {
- "_leia_isto": "Gerado por py -3.12 -m scripts.constantes_do_gabarito a partir de tests/fixtures/gabarito_arremessos_*. Não editar à mão.",
+ "_leia_isto": "Gerado por py -3.12 -m metrics.gabarito a partir de tests/fixtures/gabarito_arremessos_*. Não editar à mão.",
  "deslocamento_primeiro_segmento_z": -7.51,
  "tolerancia_antes_da_guarda": 25.0,
  "limiar_guarda_voo": 15.9808,

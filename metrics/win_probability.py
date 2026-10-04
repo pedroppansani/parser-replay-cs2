@@ -267,7 +267,7 @@ def wpa_minimo(formato: Formato = MR12) -> float:
 def curva_da_partida(progressao: list[dict], formato: Formato = MR12) -> pl.DataFrame:
     """Uma linha por round com a probabilidade antes, depois e a variação.
 
-    `progressao` é a saída de `scripts.build_insights.score_progression`: placar
+    `progressao` é a saída de `leitura.insights.score_progression`: placar
     acumulado por TIME (não por lado) round a round.
 
     A variação sai com SINAL para os dois times, porque a mesma jogada é ganho

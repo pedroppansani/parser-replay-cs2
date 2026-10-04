@@ -433,7 +433,7 @@ def test_candidatos_a_igl_nao_escrevem_nada():
     manual podem aparecer nele."""
     from pathlib import Path
 
-    fonte = (Path(__file__).resolve().parent.parent / "scripts" / "igl_candidatos.py").read_text(encoding="utf-8")
+    fonte = (Path(__file__).resolve().parent.parent / "pesquisa" / "igl_candidatos.py").read_text(encoding="utf-8")
     codigo = "\n".join(l for l in fonte.splitlines() if not l.strip().startswith("#"))
     corpo = codigo.split('"""', 2)[-1]  # fora da docstring do módulo
     for proibido in ("write_text", "write_parquet", ".write(", "open(", "ROLES_MANUAL", "json.dump"):

@@ -96,9 +96,10 @@ com reprodução animada.
 Python 3.11 a 3.13 (o awpy 2.0.2 não suporta 3.14). No Windows, `py -3.12`.
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt       # pipeline e site
+pip install -r requirements-dev.txt   # testes, navegador e extração de radares
 
-# radares oficiais, extraídos da instalação local do CS2 (uma vez só)
+# radares oficiais, extraídos da instalação local do CS2 (uma vez só; já versionados)
 python -m scripts.extract_radars
 
 # processar as demos da pasta demos/ (parse, métricas, replay, página)
@@ -112,7 +113,7 @@ python -m pytest tests/
 ```
 
 Uma demo só: `python -m scripts.process_demo caminho/da/partida.dem --match-id match_99`.
-São <!-- numeros:inicio testes -->1.156 testes<!-- numeros:fim testes -->, e o CI
+São <!-- numeros:inicio testes -->1.185 testes<!-- numeros:fim testes -->, e o CI
 roda a suíte antes de publicar o site.
 
 ## Limitações

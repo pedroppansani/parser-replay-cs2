@@ -123,6 +123,14 @@ NON_AIMING_WEAPONS = {
 WEIGHT_HEIGHT = 0.4
 WEIGHT_DIRECTION = 0.6
 
+# A dica da coluna "Mira" na tabela de jogadores (auditoria 5.2): o que o número
+# mede, com os pesos daqui -- e o que ele NÃO é.
+DICA_MIRA = (
+    f"Posicionamento da mira, de 0 a 100: {round(WEIGHT_HEIGHT * 100)}% pela altura (mira na linha "
+    f"da cabeça o tempo todo) e {round(WEIGHT_DIRECTION * 100)}% pela direção (mira no adversário ao "
+    "entrar na briga, com crédito para quem pré-mira o ângulo). Não é pontaria nem taxa de acerto."
+)
+
 
 def _linear_score(error: np.ndarray, good: float, bad: float) -> np.ndarray:
     """1.0 quando o erro é <= `good`, 0.0 quando >= `bad`, linear no meio."""

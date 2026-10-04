@@ -13,7 +13,7 @@
    capitão: medido, o jogador com 32% de toda a voz de uma partida era o astro
    do time, não quem chamava. O rótulo vem de `roles_manual.json`, preenchido à
    mão, e há teste que falha se o código escrever nesse arquivo.
-   `scripts/igl_candidatos.py` ranqueia CANDIDATOS por time com cinco proxies
+   `pesquisa/igl_candidatos.py` ranqueia CANDIDATOS por time com cinco proxies
    (doa arma, compra menos que o time, contato tardio, granadas por round,
    rating baixo), cada um comparado dentro do time, com aviso de confiança
    baixa. Só imprime; há teste garantindo que ele não escreve nada.

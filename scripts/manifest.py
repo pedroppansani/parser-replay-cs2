@@ -209,7 +209,7 @@ def entrada(match_id: str, anterior: dict | None = None) -> dict:
     else:
         import polars as pl
 
-        from scripts.build_insights import resolve_teams
+        from leitura.insights import resolve_teams
 
         interim_ticks = PROJECT_ROOT / "data" / "interim" / match_id / "ticks.parquet"
         team_of = {}

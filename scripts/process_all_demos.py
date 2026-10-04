@@ -25,7 +25,8 @@ import traceback
 from pathlib import Path
 
 from parsing.parser import merge_interim, parse_demo, save_interim
-from scripts import build_breakdown, build_insights, export_replay, export_web_payload, manifest
+from leitura import insights as build_insights
+from scripts import build_breakdown, export_replay, export_web_payload, manifest
 from scripts.process_demo import process
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent

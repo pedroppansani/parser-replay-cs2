@@ -1648,7 +1648,8 @@ var Prancheta = (function () {
       sel.value = S.doc.id;
     }
     if (document.activeElement !== $("pr-titulo")) $("pr-titulo").value = S.estado ? S.estado.titulo : "";
-    $("pr-historico").textContent = S.doc ? S.doc.operacoes.length + " operações · contador " + S.doc.contador : "";
+    // o "N operações · contador N" saiu da tela (auditoria 5.3): é depuração, e
+    // continua inteiro no JSON exportado (`operacoes`, `contador`)
     var desc = $("pr-origem");
     desc.textContent = S.doc && S.doc.origem ? textoDaOrigem(S.doc.origem) : "";
     desc.hidden = !(S.doc && S.doc.origem);
@@ -1899,6 +1900,7 @@ var Prancheta = (function () {
     var elenco = S.doc && S.doc.origem && S.doc.origem.elenco;
     banco.classList.toggle("nomes", !!elenco);
     LADOS.forEach(function (lado) {
+      banco.appendChild(el("div", { class: "pr-lado-rotulo " + lado, texto: lado === "ct" ? "CT" : "TR" }));
       var rotulos = elenco
         ? elenco.filter(function (j) { return j.lado === lado; }).map(function (j) { return j.nome; })
         : [1, 2, 3, 4, 5].slice(0, PECAS_POR_LADO).map(String);
@@ -2064,7 +2066,6 @@ var Prancheta = (function () {
       el("div", { class: "linha" }, [el("label", { for: "pr-autor", texto: "Autor" }),
         el("input", { type: "text", id: "pr-autor", placeholder: "seu nome" })]),
       el("p", { class: "pr-meta", id: "pr-origem", hidden: "" }),
-      el("p", { id: "pr-historico" }),
       el("p", { id: "pr-aviso", hidden: "" })]);
   }
 

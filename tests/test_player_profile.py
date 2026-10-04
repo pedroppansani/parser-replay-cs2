@@ -13,7 +13,7 @@ from pathlib import Path
 import polars as pl
 import pytest
 
-from scripts.narrative import (
+from leitura.narrativa import (
     FRASES_PERFIL,
     MAX_CARACTERISTICAS,
     descreve_jogador,

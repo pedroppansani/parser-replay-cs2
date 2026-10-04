@@ -194,7 +194,7 @@ def round_spectacle(
 ) -> tuple[pl.DataFrame, dict]:
     """Contrato do projeto: `(per_round, summary)`.
 
-    `situacoes` é a saída de `scripts.build_insights.round_situations` -- clutch,
+    `situacoes` é a saída de `leitura.insights.round_situations` -- clutch,
     déficit superado, abertura e multikill já reconstruídos round a round. Este
     módulo não recalcula nada disso; ele só decide o que vale quanto.
     """

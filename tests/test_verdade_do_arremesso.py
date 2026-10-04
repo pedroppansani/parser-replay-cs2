@@ -188,7 +188,7 @@ def test_a_leitura_do_parser_bate_com_o_gabarito_inteiro():
 
 @pytest.fixture(scope="module")
 def comparacoes():
-    from scripts.compara_lido_inferido import compara, partidas_com_verdade
+    from metrics.verdade_do_arremesso import compara, partidas_com_verdade
     if not INTERIM.exists():
         pytest.skip("sem data/interim/")
     partidas = partidas_com_verdade()

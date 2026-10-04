@@ -17,6 +17,6 @@
     interim CRU (sem o filtro de kills do round jogado, sem a correção de dano,
     sem a cegueira) e passou a usar `load_interim` -- a referência era ajustada
     sobre um dado diferente do que ela depois escala.
-    Os 10 casos de `scripts/casos_repick.py` mostram 9 com UMA saída e volta só:
+    Os 10 casos de `pesquisa/casos_repick.py` mostram 9 com UMA saída e volta só:
     a métrica pega um jiggle, não necessariamente o "fica repickando" repetido.
     Se exige 2+ saídas, é decisão do Pedro.

@@ -8,7 +8,7 @@
 ## Texto
 
 15f. **REGRESSÃO ACHADA NO CAMINHO (2026-09-24): o pipeline rodava os papéis
-    comportamentais SEM a função do round.** `scripts/build_insights.py` montava
+    comportamentais SEM a função do round.** `leitura/insights.py` montava
     o dicionário de saídas sem `structural_roles`, então `funcao_do_round` caía
     em "sem_funcao" para todos os rounds. A decisão 15c valia no ajuste da
     referência (que passa a tabela) e NÃO valia no número que ia para a página --

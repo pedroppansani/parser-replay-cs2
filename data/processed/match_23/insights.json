@@ -3925,11 +3925,11 @@
     "evidence": "AWP na mão em 11 rounds, 100% de conversão na primeira briga, 2 picks de abertura"
   },
   "narrative": {
-    "decisive": "Partida sem round decisivo: a diferença se construiu ao longo do jogo, e o placar terminou em 13-9. O round de maior peso moveu 12% da chance de vitória, abaixo dos 12% que o modelo exige para chamar um round de decisivo.",
+    "decisive": "Partida sem round decisivo: a diferença se construiu ao longo do jogo, e o placar terminou em 13-9. O round de maior peso moveu 11,7% da chance de vitória, abaixo dos 12,1% que o modelo exige para chamar um round de decisivo.",
     "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário.",
     "mvp_card": "ZywOo foi o MVP, com rating 1,82 contra 1,45 de ropz; 109,3 de ADR contra 85,6 de mo0N, jogando de awper.",
     "highlight_card": "mo0N: 9 de 10 rounds como AWPer no lado T.",
-    "spectacle": "Round 17: clutch de sFade8 em 1v2 e 4K de apEX. Não foi o round decisivo porque esta partida não teve um -- a diferença se construiu ao longo do jogo.",
+    "spectacle": "Round 17: clutch de sFade8 em 1v2 e 4K de apEX. Não foi o round decisivo porque esta partida não teve um — a diferença se construiu ao longo do jogo.",
     "economy": null,
     "carry": "mo0N é o retrato do papel nesta partida: leva o time nas costas. 25% do dano do time, 3 rounds de multikill, 1 clutch fechado.",
     "highlight": "ZywOo é o retrato do papel nesta partida: jogou de AWP e produziu com ela. AWP na mão em 11 rounds, 100% de conversão na primeira briga, 2 picks de abertura."

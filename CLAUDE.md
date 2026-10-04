@@ -25,17 +25,18 @@ quanto a corretude.
 ## Mapa do repositório
 
 ```
-parsing/      wrapper do awpy, versões, verdade do arremesso lida da demo
+parsing/      wrapper do awpy, versões, verdade do arremesso
 metrics/      as métricas (uma decisão de jogo por módulo) e as referências .json
 clustering/   estilo de jogo por (jogador, round): PCA + KMeans global
-scripts/      pipeline, build do site, calibração, manifesto
-pesquisa/     scripts de uma vez só (reestruturação desta documentação)
+leitura/      insights e frases da página
+scripts/      pipeline, build, manifesto; calibracao/ validações
+pesquisa/     exploratórios (teste não importa) · legado/ sem uso
 dashboard/web template da página, map_core.js, annotations, tactics (prancheta)
-tests/        testes; os de navegador usam Playwright
+tests/        testes (os de navegador usam Playwright)
 data/processed  métricas por partida (versionado) · data/lineups  arremessos reais
 data/interim    tabelas brutas (fora do git) · demos/  .dem (fora do git)
 data/reference  dados oficiais da HLTV · notas/  decisões e investigações
-docs/           site gerado (fora do git; o Pages é artefato do CI)
+docs/           site gerado (fora do git; artefato do CI)
 ```
 
 ## Convenções de código

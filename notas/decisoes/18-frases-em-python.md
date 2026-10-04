@@ -8,7 +8,7 @@
 ## Texto
 
 18. **As frases dos cards são geradas em Python, não em JavaScript.** Ficam em
-    `scripts/narrative.py` e chegam prontas ao template. O motivo é testabilidade:
+    `leitura/narrativa.py` e chegam prontas ao template. O motivo é testabilidade:
     a regra "campo que não existe some da frase" vira teste. Antes disso as três
     frases eram texto fixo escrito para a match_01, e todas as páginas
     renderizavam o placar e os nicks daquela partida. **Papel sem sustentação

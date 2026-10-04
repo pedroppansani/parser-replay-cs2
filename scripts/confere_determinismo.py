@@ -23,7 +23,7 @@ sys.path.insert(0, str(RAIZ))
 
 
 def roda(raiz: Path, partida: str) -> None:
-    import scripts.build_insights as insights
+    import leitura.insights as insights
     import scripts.process_demo as processo
     from metrics.economia import ajusta_tabela
     from scripts.fit_economia import confrontos_do_corpus

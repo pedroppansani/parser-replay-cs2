@@ -1,19 +1,7 @@
+# O que o pipeline e o site precisam -- é o que o job `build` do CI instala.
 awpy==2.0.2
 polars==1.44.2
 numpy==2.4.4
 scikit-learn==1.8.0
-streamlit==1.64.0
-plotly==7.1.0
-pytest==9.1.1
+# radares (scripts/prepare_radar.py) e o recorte do mapa
 pillow==12.2.0
-
-# Extração dos radares oficiais da instalação local do CS2 (scripts/extract_radars.py):
-# vpk lê os arquivos do jogo, lz4 descomprime as texturas e texture2ddecoder
-# cobre os mapas antigos, que ainda estão em DXT em vez de BGRA.
-vpk==1.4.0
-lz4==4.4.5
-texture2ddecoder==1.0.6
-
-# Testes de navegador da camada de desenho (tests/test_annotations_browser.py).
-# Opcional: usa o Chrome já instalado; sem ele os testes são pulados.
-playwright==1.63.0

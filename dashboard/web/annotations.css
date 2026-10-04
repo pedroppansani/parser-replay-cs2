@@ -44,6 +44,9 @@
 .anot-grupo { display: flex; gap: 4px; align-items: center; opacity: 0.45; pointer-events: none; }
 .anot-barra.ativo .anot-grupo,
 .anot-grupo.sempre { opacity: 1; pointer-events: auto; }
+/* Recolhida (auditoria 5.1): sem o modo de desenho, só os grupos `.fixo`
+   aparecem -- o "Desenhar", a direção e a tela cheia. O resto abre com ele. */
+.anot-barra:not(.ativo) .anot-grupo:not(.fixo) { display: none; }
 .anot-b {
   font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.04em;
   padding: 5px 9px; border-radius: 7px; border: 1px solid var(--line);

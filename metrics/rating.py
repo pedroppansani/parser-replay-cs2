@@ -445,9 +445,9 @@ def _estado(dif_vivos: int, dif_equip: float, bomba: bool, eh_ct: bool) -> list[
 
 # O modelo de round usa o estado COMPLETO (vivos de cada lado e tempo)?
 # LIGADO em 2026-10-02 (auditoria 4.3, nota 22a), com as duas condições do Pedro
-# medidas: fora da dobra, agrupado por partida (scripts/valida_modelo_de_round.py),
+# medidas: fora da dobra, agrupado por partida (scripts/calibracao/valida_modelo_de_round.py),
 # Brier 0,1287 -> 0,1245 e AUC 0,900 -> 0,907; e o erro do rating contra a HLTV
-# no "deixa uma partida fora" completo (scripts/valida_rating.py) caiu de 0,0810
+# no "deixa uma partida fora" completo (scripts/calibracao/valida_rating.py) caiu de 0,0810
 # para 0,0788 (tolerância era piorar até +0,001).
 # O interruptor só age ao REAJUSTAR a referência; uma já gravada manda no que roda.
 MODELO_DE_ROUND_COMPLETO = True
@@ -1134,7 +1134,7 @@ def rating(
 
     `tabela_economia` troca a tabela de economia do corpus (o padrão é a
     gravada em `metrics/economia_reference.json`): é o que permite à validação
-    reajustá-la SEM a partida avaliada (scripts/valida_rating.py).
+    reajustá-la SEM a partida avaliada (scripts/calibracao/valida_rating.py).
 
     `per_round` e o Round Swing por (round, jogador) -- e nele que a validacao
     manual acontece, porque e o unico componente que nao se confere de cabeca.

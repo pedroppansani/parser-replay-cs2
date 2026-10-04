@@ -57,7 +57,7 @@ def test_suporte_e_medido_por_round_e_nao_pelo_total():
 
 
 def _partida(nome: str):
-    from pesquisa.estabilidade_dos_rotulos import partida
+    from metrics.player_roles import entradas_da_partida_processada as partida
     d = PROCESSED / nome
     if not (d / "player_roles.parquet").exists():
         pytest.skip(f"sem o processado da {nome}")

@@ -151,7 +151,7 @@ INTERIM = Path("data/interim")
 
 def _contexto(match_id: str):
     from parsing.parser import kills_do_round_jogado
-    from scripts.build_insights import resolve_teams, side_of_team
+    from leitura.insights import resolve_teams, side_of_team
 
     processed, interim = PROCESSED / match_id, INTERIM / match_id
     rounds = pl.read_parquet(processed / "rounds.parquet")

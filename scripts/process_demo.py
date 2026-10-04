@@ -10,8 +10,8 @@ Uso:
     # reaproveitando um parse anterior (pula os ~14s de parsing):
     python -m scripts.process_demo data/raw/minha_partida.dem --match-id x --from-interim
 
-Depois disso, é só rodar o dashboard (streamlit run dashboard/app.py) que ele
-já lista as partidas processadas em data/processed/.
+Depois disso, `python -m scripts.build_site` gera as páginas de todas as partidas
+processadas em data/processed/ (o antigo dashboard Streamlit está em legado/).
 """
 from __future__ import annotations
 

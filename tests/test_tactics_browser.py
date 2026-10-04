@@ -303,6 +303,7 @@ def test_criar_tatica_na_pagina_da_partida_abre_a_prancheta_limpa(navegador, tmp
         velha = interno(pg, "S.doc.id")
         pg.goto((pasta / "match_02.html").as_uri())
         pg.locator('[data-tab="replay"]').first.click()
+        pg.click("#anot-toggle")   # a barra de desenho abre recolhida (auditoria 5.1)
         pg.click("#anot-criar-tatica")
         pg.wait_for_function("() => window.Prancheta && Prancheta._interno.S.estado !== null")
         assert pg.url.endswith("prancheta_de_mirage.html")          # o ?nova foi consumido
@@ -697,6 +698,7 @@ def test_tatica_deste_instante_leva_os_jogadores_vivos_do_quadro(navegador, tmp_
         pg.wait_for_function("() => window.MapAnnotations && MapAnnotations._interno.S.reprojecoes > 0")
         pg.locator("#strip button", has_text="6").first.click()
         pg.evaluate(f"() => {{ const s = document.getElementById('scrub'); s.value = {quadro}; s.dispatchEvent(new Event('input')); }}")
+        pg.click("#anot-toggle")   # a barra de desenho abre recolhida (auditoria 5.1)
         pg.click("#anot-tatica-instante")
         pg.wait_for_function("() => window.Prancheta && Prancheta._interno.S.estado !== null")
         assert pg.url.endswith("prancheta_de_mirage.html")            # o #instante foi consumido
@@ -758,6 +760,7 @@ def test_recarregar_a_prancheta_do_instante_nao_duplica_a_tatica(navegador, tmp_
     try:
         pg = ctx.new_page()
         _abre_replay(pg, pasta, "match_02", 6, 40)
+        pg.click("#anot-toggle")   # a barra de desenho abre recolhida (auditoria 5.1)
         pg.click("#anot-tatica-instante")
         pg.wait_for_function("() => window.Prancheta && Prancheta._interno.S.estado !== null")
         assert "#instante" not in pg.url
@@ -895,6 +898,7 @@ def test_instante_com_mortos_mostra_o_placar_e_a_ordem_das_mortes(navegador, tmp
     try:
         pg = ctx.new_page()
         _abre_replay(pg, pasta, "match_02", rodada["round"], quadro)
+        pg.click("#anot-toggle")   # a barra de desenho abre recolhida (auditoria 5.1)
         pg.click("#anot-tatica-instante")
         pg.wait_for_function("() => window.Prancheta && Prancheta._interno.S.estado !== null")
         mortos = interno(pg, "S.doc.origem.mortos")
@@ -968,6 +972,7 @@ def test_instante_com_smoke_ativa_e_granada_no_ar_liga_ao_arremesso(navegador, t
     try:
         pg = ctx.new_page()
         _abre_replay(pg, pasta, "match_02", r["round"], q)
+        pg.click("#anot-toggle")   # a barra de desenho abre recolhida (auditoria 5.1)
         pg.click("#anot-tatica-instante")
         pg.wait_for_function("() => window.Prancheta && Prancheta._interno.S.estado !== null")
         granadas = list(interno(pg, "S.estado.granadas").values())

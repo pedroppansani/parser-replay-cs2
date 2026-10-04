@@ -202,7 +202,8 @@ def _roda(match_id: str, etapa: str) -> tuple[str, str, float, str | None, float
                 # o source_dem é só registro: com from_interim a demo não é lida
                 process(Path(meta["source_dem"]), match_id, from_interim=True)
             elif etapa == "insights":
-                from scripts import build_breakdown, build_insights, export_replay
+                from leitura import insights as build_insights
+                from scripts import build_breakdown, export_replay
 
                 build_insights.build(match_id)
                 build_breakdown.build(match_id)

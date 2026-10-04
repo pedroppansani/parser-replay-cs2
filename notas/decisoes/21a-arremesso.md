@@ -19,7 +19,7 @@
   projétil), nunca a da arma no tick da soltura. Botão = o mais próximo da força lida; agachamento
   parcial não é afirmado.
 - **Piora.** Um arremesso que tinha botão dentro da tolerância e troca de botão, ou fica neutro sem
-  regra explícita. Mudança na biblioteca só entra com piora 0 (`py -3.12 -m scripts.piora_rota_a`).
+  regra explícita. Mudança na biblioteca só entra com piora 0 (`py -3.12 -m pesquisa.piora_rota_a`).
 - **Teste permanente.** Lido contra inferido nas partidas com demo, nas metas da rota A
   (`tests/test_verdade_do_arremesso.py`).
 - **Demos sem `grenade_thrown` (FACEIT).** O tick ainda vem da ancoragem; a regra do tick pelo projétil

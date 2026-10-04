@@ -41,7 +41,7 @@ def main() -> None:
 
     if not perfis:
         raise SystemExit(
-            "Nenhum perfil encontrado. Rode scripts.build_insights nas partidas antes."
+            "Nenhum perfil encontrado. Rode leitura.insights nas partidas antes."
         )
 
     resumo = accumulate(perfis)

@@ -8,7 +8,7 @@ import polars as pl
 import pytest
 
 import metrics.match_highlights as mh
-from scripts.narrative import historia_mvp
+from leitura.narrativa import historia_mvp
 
 PROCESSED = Path(__file__).resolve().parent.parent / "data" / "processed"
 

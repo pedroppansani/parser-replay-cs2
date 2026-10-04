@@ -1,0 +1,17 @@
+# Testes e ferramentas de pesquisa. O job `test` do CI instala este arquivo
+# junto do requirements.txt.
+-r requirements.txt
+pytest==9.1.1
+
+# Testes de navegador (tests/*_browser.py), capturas do README e comparação de
+# páginas (scripts/capturas_readme.py, scripts/compara_capturas.py). Usa o Chrome
+# instalado; no CI, o Chromium do Playwright.
+playwright==1.63.0
+
+# Extração dos radares oficiais da instalação local do CS2 (scripts/extract_radars.py):
+# vpk lê os arquivos do jogo, lz4 descomprime as texturas e texture2ddecoder
+# cobre os mapas antigos, que ainda estão em DXT em vez de BGRA. Os radares
+# extraídos estão versionados em assets/radars/; só precisa para refazê-los.
+vpk==1.4.0
+lz4==4.4.5
+texture2ddecoder==1.0.6

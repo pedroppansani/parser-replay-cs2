@@ -28,23 +28,15 @@ from scripts.build_tactics_page import arquivo_da_pagina, mapas_disponiveis
 from scripts.build_tactics_page import build_html as build_prancheta
 from scripts.build_web_page import build_html
 
+from metrics.constantes import NOME_DO_MAPA
+from scripts.meta_da_pagina import meta_tags, url_do_site
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
 DOCS_DIR = PROJECT_ROOT / "docs"
 
-# Nome bonito do mapa pro seletor e pro índice.
-MAP_LABEL = {
-    "de_ancient": "Ancient",
-    "de_cache": "Cache",
-    "de_anubis": "Anubis",
-    "de_dust2": "Dust II",
-    "de_inferno": "Inferno",
-    "de_mirage": "Mirage",
-    "de_nuke": "Nuke",
-    "de_overpass": "Overpass",
-    "de_train": "Train",
-    "de_vertigo": "Vertigo",
-}
+# Nome bonito do mapa pro seletor e pro índice (metrics/constantes.py).
+MAP_LABEL = NOME_DO_MAPA
 
 
 def match_summary(match_id: str) -> dict | None:
@@ -188,20 +180,23 @@ def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | Non
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CS2 Replay Stats — demonstração</title>
-<meta name="description" content="Parser de replay de CS2 com métricas autorais: utility por efeito, crosshair placement validado contra os dados e função de jogador derivada de limiar explícito.">
+{meta_tags("CS2 Replay Stats", "Parser de replay de CS2 com métricas autorais: utility por efeito, crosshair placement validado contra os dados e função de jogador derivada de limiar explícito.", url_do_site(repo_url))}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=DM+Mono:wght@400;500&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {{
     --paper: #eef1f5; --paper-2: #e7ebf1; --card: #fff; --ink: #0f1620; --ink-2: #4c5a6b;
-    --dim: #7d8a99; --line: #dde3eb; --ct: #2a78d6; --t: #eb6834; --aqua: #1baf7a;
+    --dim: #5f6b79; --line: #dde3eb; --ct: #2a78d6; --t: #eb6834; --aqua: #1baf7a;
     --display: "Bricolage Grotesque", Georgia, sans-serif;
     --body: "Figtree", system-ui, sans-serif;
     --mono: "DM Mono", ui-monospace, Menlo, monospace;
     --r: 10px;
   }}
   * {{ box-sizing: border-box; }}
+  :where(button, a[href], select, input, textarea, summary, [tabindex]):focus-visible {{
+    outline: 2px solid var(--ct); outline-offset: 2px;
+  }}
   body {{ margin: 0; background: var(--paper); color: var(--ink); font-family: var(--body);
     -webkit-font-smoothing: antialiased; }}
   .shell {{ max-width: 1120px; margin: 0 auto; padding: 0 20px 64px; }}
@@ -377,7 +372,7 @@ def build(repo_url: str) -> Path:
     # prancheta tática: uma página por mapa com radar e biblioteca de arremessos
     pranchetas = []
     for mapa in mapas_disponiveis():
-        html = build_prancheta(mapa, MAP_LABEL)
+        html = build_prancheta(mapa, MAP_LABEL, site=url_do_site(repo_url))
         (DOCS_DIR / arquivo_da_pagina(mapa)).write_text(html, encoding="utf-8")
         pranchetas.append({"mapa": mapa, "file": arquivo_da_pagina(mapa), "label": MAP_LABEL.get(mapa, mapa)})
         print(f"  {arquivo_da_pagina(mapa)}  ({len(html) / 1024:.0f} KB)  prancheta")

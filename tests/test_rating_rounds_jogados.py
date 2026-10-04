@@ -43,7 +43,7 @@ def test_rounds_e_o_que_o_jogador_jogou(cenario):
 
 
 def test_quem_entra_no_round_8_recebe_a_marca_de_amostra_fraca(cenario):
-    from scripts.build_insights import FRACAO_MINIMA_DE_ROUNDS, _rating_da_partida
+    from leitura.insights import FRACAO_MINIMA_DE_ROUNDS, _rating_da_partida
     tabelas, team_of, vencedor, kast, sid = cenario
     rounds = tabelas["rounds"]
     assert rounds.height - (ENTRA_NO_ROUND - 1) < FRACAO_MINIMA_DE_ROUNDS * rounds.height

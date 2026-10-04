@@ -32,7 +32,7 @@
 ```bash
 py -3.12 -m pytest tests/ -v          # 291 testes
 py -3.12 -m scripts.process_demo data/raw/match_01.dem --match-id match_01 --from-interim
-py -3.12 -m streamlit run dashboard/app.py
+py -3.12 -m streamlit run legado/app.py
 py -3.12 -m scripts.escada_validacao     # rating: contagens contra a HLTV, de baixo para cima
 ```
 

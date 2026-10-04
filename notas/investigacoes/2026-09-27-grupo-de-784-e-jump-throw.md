@@ -20,7 +20,7 @@
     arremesso AGACHADO NO AR -- leitura que as propriedades da demo
     DERRUBARAM no mesmo dia (abaixo).
     **Causa achada com as propriedades da demo (2026-09-27, só match_23 tem o
-    .dem; `scripts/investiga_props_arremesso.py`).** O projétil grava
+    .dem; `pesquisa/investiga_props_arremesso.py`).** O projétil grava
     `m_vInitialVelocity` e `m_vInitialPosition` (o gabarito), a arma grava
     `m_flThrowStrength` (0 / 0,5 / 1: o BOTÃO) e o jogador grava duck_amount,
     `m_hGroundEntity`, `m_nLastJumpTick` (= 2·tick + constante da demo) e

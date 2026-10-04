@@ -39,7 +39,7 @@ from metrics.rating import (
     grupo_do_round,
     rating,
 )
-from scripts.build_insights import resolve_teams, side_of_team
+from leitura.insights import resolve_teams, side_of_team
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 HLTV_FILE = PROJECT_ROOT / "data" / "reference" / "hltv_ratings.json"
@@ -55,10 +55,12 @@ MIN_PARTIDAS_TESTE = 3
 MIN_PARTIDAS_TOTAL = MIN_PARTIDAS_TREINO + MIN_PARTIDAS_TESTE
 
 
-def carrega_partida(match_id: str) -> tuple:
-    """Tabelas e contexto de uma partida já processada."""
+def carrega_partida(match_id: str, pasta_interim: Path | None = None) -> tuple:
+    """Tabelas e contexto de uma partida já processada.
+
+    `pasta_interim` troca a pasta do interim (a fixture do CI, auditoria 5.7)."""
     processed = PROJECT_ROOT / "data" / "processed" / match_id
-    interim = PROJECT_ROOT / "data" / "interim" / match_id
+    interim = (pasta_interim or PROJECT_ROOT / "data" / "interim") / match_id
 
     rounds = pl.read_parquet(processed / "rounds.parquet")
     kills = kills_do_round_jogado(pl.read_parquet(interim / "kills.parquet"), rounds)

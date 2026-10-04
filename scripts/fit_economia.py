@@ -18,7 +18,7 @@ from metrics.economia import (
     MIN_AMOSTRA_CELULA, REFERENCIA_ECONOMIA, ajusta_tabela, confrontos_da_partida,
 )
 from metrics.sides import side_of_team
-from scripts.build_insights import resolve_teams
+from leitura.insights import resolve_teams
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 

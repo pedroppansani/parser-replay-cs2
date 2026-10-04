@@ -80,7 +80,7 @@ python -m scripts.clean_match match_43 --confirmar  # apaga e registra no manife
 python -m scripts.fit_rating [--fit-pesos]
 
 # dashboard de trabalho (Streamlit)
-streamlit run dashboard/app.py
+streamlit run legado/app.py
 ```
 
 As demos (200–500MB cada) ficam em `demos/` e **não vão para o git**; os dados
@@ -584,7 +584,7 @@ BombsiteB. A correção usa a mesma informação que o radar oficial usa pra des
 dois andares (`vertical_sections`): quando o mapa tem andares, a diferença de
 altura pesa 5× mais na distância. Ainda assim a Nuke é a derivação mais
 discutível das nove partidas, e é por isso que existe `MANUAL_PLACE_AREAS`:
-`py -3.12 -m scripts.show_map_areas` imprime a tabela de cada mapa com a razão
+`py -3.12 -m pesquisa.show_map_areas` imprime a tabela de cada mapa com a razão
 que decidiu cada callout, pra eu discordar olhando o número.
 
 ---
@@ -668,7 +668,7 @@ escondê-los:
 
 1. **Nomear os clusters** — `clustering/cluster_names.json`, olhando o perfil e
    os rounds representativos no dashboard.
-2. **Calibrar os ângulos de entrada** — rodar `python -m scripts.show_derived_angles <match_id>`,
+2. **Calibrar os ângulos de entrada** — rodar `python -m pesquisa.show_derived_angles <match_id>`,
    comparar com o conhecimento de mapa e preencher `MANUAL_ENTRY_ANGLES`. Ângulos
    com `n_kills` baixo (4-5) são os que mais precisam disso.
 3. **Revisar os limiares** — janela de trade (5s), limiares de peek/hold
@@ -685,7 +685,7 @@ escondê-los:
    julgamento sobrepor o limiar, e o painel marca o rótulo como manual quando
    isso acontece.
 5. **Revisar a partição A/Mid/B dos mapas** — `MANUAL_PLACE_AREAS` em
-   `metrics/map_areas.py`, com `py -3.12 -m scripts.show_map_areas`. A Nuke é a
+   `metrics/map_areas.py`, com `py -3.12 -m pesquisa.show_map_areas`. A Nuke é a
    que mais precisa.
 6. **Validação round a round** — a aba "Detalhe por round" existe pra isso.
 
@@ -709,7 +709,7 @@ toda página renderizava "Empate em 9–9... _AmadeuS mata os quatro no retake",
 o placar e os nicks de outra partida. É o tipo de erro que não quebra nada e mente
 em todas as páginas.
 
-Agora saem de `scripts/narrative.py`, em Python e não em JavaScript, porque assim
+Agora saem de `leitura/narrativa.py`, em Python e não em JavaScript, porque assim
 a regra vira teste: **campo que não existe some da frase**. Round decisivo que foi
 o round 1 não ganha "Empate em 0-0"; AWPer sem pick de abertura não ganha "0 picks
 de abertura"; papel sem sustentação nenhuma devolve string vazia em vez de "AWP na

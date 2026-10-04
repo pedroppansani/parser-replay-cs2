@@ -135,7 +135,7 @@ def _segundos(tick: int, t0: int, tickrate: int, contexto: str) -> float:
             f"{contexto}: evento no tick {tick} é anterior ao fim do freeze time "
             f"({t0}), {delta / tickrate:.1f}s antes do round começar a ser jogado. "
             "Isso não é arredondamento — o evento não pertence a este round. Rode "
-            "`py -3.12 -m scripts.debug_timeline` e veja parsing.kills_do_round_jogado."
+            "`py -3.12 -m pesquisa.debug_timeline` e veja parsing.kills_do_round_jogado."
         )
     # Duas casas, não uma: o relógio do replay anda em posição contínua, e
     # arredondar o timeline para o décimo deixava os dois com até 0,05s de

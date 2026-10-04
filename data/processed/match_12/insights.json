@@ -4012,8 +4012,8 @@
     "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 18 moveu praticamente o mesmo (14% contra 14%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
     "mvp_card": "KSCERATO teve o maior rating (1,61), empatado com ZywOo (1,58) dentro do erro do rating (0,079); 106,7 de ADR contra 99,1 de ZywOo e 91% de KAST contra 87% de ZywOo, jogando de rotativo.",
     "highlight_card": "YEKINDAR: 17% de brigas no mesmo ângulo, contra 9% de mediana dos outros desta partida. molodoy pontuou praticamente o mesmo como repick: houve mais de um destaque equivalente nesta partida.",
-    "spectacle": "Round 12: 3K de ZywOo e virou com 2 jogadores a menos. Não foi o round decisivo -- quem mais moveu a partida foi o 17, e o round mais bonito daqui não mudou o resultado.",
-    "economy": "Equipamento médio no round: 200$ de quem venceu contra 2.290$ de quem perdeu. Quem perdeu estava com o equipamento melhor, então a derrota não tem desculpa de economia -- custou mais do que um round no placar.",
+    "spectacle": "Round 12: 3K de ZywOo e virou com 2 jogadores a menos. Não foi o round decisivo — quem mais moveu a partida foi o 17, e o round mais bonito daqui não mudou o resultado.",
+    "economy": "Equipamento médio no round: 200$ de quem venceu contra 2.290$ de quem perdeu. Quem perdeu estava com o equipamento melhor, então a derrota não tem desculpa de economia — custou mais do que um round no placar.",
     "carry": "ZywOo é o retrato do papel nesta partida: leva o time nas costas. 27% do dano do time, 2 rounds de multikill, 1 clutch fechado.",
     "highlight": "KSCERATO é o retrato do papel nesta partida: reaparece no mesmo ângulo em vez de ocupar espaço. 21% dos engajamentos saindo e voltando, em 33 brigas."
   }

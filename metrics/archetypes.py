@@ -129,7 +129,7 @@ CONTEXTO_SEM_FUNCAO = "sem_funcao"
 # Pisos do eixo. 0,5 = meia distribuição de diferença entre as duas pontas (por
 # exemplo, quartil de cima no sacrifício e quartil de baixo na isca). Medido no
 # corpus: 91 jogador-partidas do lado do piano e 86 do lado do baiter, de 520.
-# Ponto de calibração do Pedro -- ver scripts/calibration_report.py.
+# Ponto de calibração do Pedro -- ver scripts/calibracao/calibration_report.py.
 PISO_CARREGA_PIANO = 0.5
 PISO_BAITER = -0.5
 

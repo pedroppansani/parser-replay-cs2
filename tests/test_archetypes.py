@@ -36,7 +36,7 @@ from metrics.archetypes import (
     repick_engagements,
     solo_hold_signals,
 )
-from scripts.narrative import (
+from leitura.narrativa import (
     contexto_placar,
     criterio_do_decisivo,
     historia_round_decisivo,

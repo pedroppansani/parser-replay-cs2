@@ -182,8 +182,8 @@ def arremessos() -> dict:
     import numpy as np
 
     import metrics.grenade_throws as gt
-    from scripts.constantes_do_gabarito import calcula as constantes, carrega_gabarito
-    from scripts.valida_rota_a import metas_da_partida
+    from metrics.gabarito import calcula as constantes, carrega_gabarito
+    from metrics.gabarito import metas_da_partida
 
     todos, partidas = carrega_gabarito()
     por: dict[str, list[dict]] = {}

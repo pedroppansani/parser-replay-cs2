@@ -81,9 +81,28 @@ def origem_da_partida(match_id: str) -> str | None:
     return None
 
 
-def dados_da_pagina(match_id: str) -> dict:
+def titulo_da_partida(base: Path) -> str | None:
+    """O h1 da página da partida: mapa e placar ("Mirage 13–9"). Cada partida
+    tem o seu -- o "Uma partida, round a round" é o da landing (auditoria 5.2)."""
+    from metrics.constantes import NOME_DO_MAPA
+    try:
+        mapa = json.loads((base / "match_meta.json").read_text(encoding="utf-8")).get("map_name") or ""
+        m = json.loads((base / "web_payload.json").read_text(encoding="utf-8")).get("match") or {}
+    except (OSError, ValueError):
+        return None
+    nome = NOME_DO_MAPA.get(mapa, mapa.removeprefix("de_").capitalize())
+    if not nome:
+        return None
+    if m.get("score_a") is None or m.get("score_b") is None:
+        return nome
+    return f"{nome} {m['score_a']}–{m['score_b']}"
+
+
+def dados_da_pagina(match_id: str, base: Path | None = None) -> dict:
     from scripts.numeros_citaveis import carrega
-    return {"origem": origem_da_partida(match_id), "rodape_html": rodape_html(carrega())}
+    base = base or PROJECT_ROOT / "data" / "processed" / match_id
+    return {"origem": origem_da_partida(match_id), "rodape_html": rodape_html(carrega()),
+            "titulo": titulo_da_partida(base)}
 
 
 def build_html(match_id: str, site: dict | None = None, base: Path | None = None) -> str:
@@ -133,7 +152,7 @@ def build_html(match_id: str, site: dict | None = None, base: Path | None = None
         # discordam sobre qual calibração um traço usou.
         radar["calibracao"] = impressao_da_calibracao(radar)
         # o `||` mantém o `null` do template como fallback quando o mapa não tem radar
-        radar_js = js(radar, compacto=False) + " ||"
+        radar_js = js(radar) + " ||"
     html = html.replace("/*__RADAR__*/", radar_js)
     # Botão "Criar tática": só quando o mapa desta partida tem prancheta. O link
     # é relativo e funciona igual em dashboard/web/ e em docs/, que têm as duas
@@ -142,9 +161,14 @@ def build_html(match_id: str, site: dict | None = None, base: Path | None = None
     prancheta = arquivo_da_pagina(map_name) if map_name in mapas_disponiveis() else None
     html = html.replace("/*__PRANCHETA__*/null", js(prancheta))
     import html as _html
-    html = html.replace("/*__PAGINA__*/null", js(dados_da_pagina(match_id), compacto=False))
+    html = html.replace("/*__PAGINA__*/null", js(dados_da_pagina(match_id, base)))
     html = html.replace("<!--__TITULO__-->", _html.escape(titulo_da_pagina(match_id)))
-    html = html.replace("/*__SITE__*/", js(site, compacto=False) + " ||" if site else "")
+    from scripts.meta_da_pagina import meta_tags, url_do_site
+    titulo = titulo_da_pagina(match_id)
+    html = html.replace("<!--__META__-->", meta_tags(
+        titulo, f"{titulo}: replay no radar, placar round a round e a leitura da partida.",
+        url_do_site((site or {}).get("repo")), f"{match_id}.html"))
+    html = html.replace("/*__SITE__*/", js(site) + " ||" if site else "")
     return html
 
 

@@ -41,6 +41,7 @@ apareceu ainda. Apertá-los agora seria calibrar no ruído de 18 amostras.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Callable
 
 import numpy as np
@@ -63,7 +64,7 @@ MIN_ROUNDS_AWP_DO_TIME = 4
 # CORTE ESTATÍSTICO (decisão do Pedro, 2026-09-26): entre os 102 líderes de time
 # das 43 partidas profissionais, maior vazio e Otsu caem os dois em 1,284 e o
 # vale da densidade em 1,028 -- espalhamento 0,14 amplitude interquartil,
-# dentro do limite de 0,25 (scripts/proposta_pisos.py). Mesmo critério do AWPer:
+# dentro do limite de 0,25 (pesquisa/proposta_pisos.py). Mesmo critério do AWPer:
 # quando os métodos concordam, vale o corte. Substituiu o 1,5x de convenção.
 # Efeito medido nas 52: característica Lurker 55 -> 56, um título muda
 # (Jimpphat, match_41, 1,494x: Âncora -> Lurker); m0NESY segue com 0 rótulos
@@ -108,7 +109,7 @@ MIN_ROUNDS_SEM_AWP = 8
 # Taxa ESPERADA de "fora da área do time" por função estrutural, nos rounds sem
 # AWP. Medida no corpus (43 partidas profissionais, 2026-09-24); função com
 # menos de 100 rounds e round sem função reconhecida caem no padrão. Refazer
-# quando o corpus crescer -- `py -3.12 -m scripts.proposta_pisos` mostra a
+# quando o corpus crescer -- `py -3.12 -m pesquisa.proposta_pisos` mostra a
 # distribuição, e há teste que recalcula e falha se a tabela envelhecer.
 OFF_TEAM_ESPERADO_POR_FUNCAO = {"trader": 0.175, "suporte": 0.203, "entry": 0.291}
 OFF_TEAM_ESPERADO_SEM_FUNCAO = 0.232
@@ -159,7 +160,7 @@ TRAIT_SPECS: list[Trait] = [
         column="awp_share",
         high_is=True,
         # Piso na escala NOVA (a AWP do time era dele), recalibrado em 2026-09-24
-        # com os três métodos de scripts/proposta_pisos.py: maior vazio 0,533,
+        # com os três métodos de pesquisa/proposta_pisos.py: maior vazio 0,533,
         # Otsu 0,533 e vale da densidade 0,577 sobre os 430 jogador-partidas
         # profissionais -- espalhamento 0,13 amplitude interquartil, dentro do
         # limite de 0,25. Mediana dos três.
@@ -783,6 +784,20 @@ def awpers_do_time(traits: pl.DataFrame) -> set:
     if traits is None or traits.height == 0 or "trait" not in traits.columns:
         return set()
     return set(traits.filter(pl.col("trait") == "awp")["steamid"].to_list())
+
+
+# As tabelas por round que a reamostragem lê de uma partida JÁ processada
+# (pesquisa e testes; o pipeline passa as suas na memória).
+TABELAS_POR_ROUND = ["trade_kills_per_round", "awp_per_round", "lurk_per_round", "anchor_per_round",
+           "grenades_per_round", "adr_per_round", "structural_roles"]
+
+
+def entradas_da_partida_processada(d: Path) -> tuple[dict, pl.DataFrame, pl.DataFrame, dict]:
+    """(outputs, features, signals, team_of) de uma partida processada."""
+    outputs = {t: pl.read_parquet(d / f"{t}.parquet") for t in TABELAS_POR_ROUND if (d / f"{t}.parquet").exists()}
+    signals = pl.read_parquet(d / "player_roles.parquet")
+    features = pl.read_parquet(d / "cluster_features.parquet")
+    return outputs, features, signals, dict(zip(signals["steamid"].to_list(), signals["team"].to_list()))
 
 
 def build_player_roles(

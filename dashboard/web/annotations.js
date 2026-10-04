@@ -716,9 +716,12 @@ window.MapAnnotations = (function () {
   /* ---------------------------------------------------------------------
      Barra de ferramentas
      --------------------------------------------------------------------- */
-  function grupo(id, sempre) {
+  // `fixo`: continua à vista com a barra recolhida (auditoria 5.1). Só o botão
+  // "Desenhar" e os dois controles de VER o replay (direção e tela cheia); o
+  // resto mora atrás do "Desenhar", para o play caber na tela sem rolar.
+  function grupo(id, sempre, fixo) {
     var g = document.createElement("div");
-    g.className = "anot-grupo" + (sempre ? " sempre" : "");
+    g.className = "anot-grupo" + (sempre ? " sempre" : "") + (fixo ? " fixo" : "");
     if (id) g.id = id;
     return g;
   }
@@ -735,13 +738,17 @@ window.MapAnnotations = (function () {
     barra.className = "anot-barra";
     barra.id = "anot-barra";
 
-    var liga = grupo(null, true);
+    var liga = grupo(null, true, true);
     var alterna = botao("Desenhar", "Ligar o modo de desenho (D)", function () {
       ligaDesenho(!S.ligado);
     }, "principal");
     alterna.id = "anot-toggle";
+    alterna.setAttribute("aria-controls", "anot-barra");
+    alterna.setAttribute("aria-expanded", "false");
     liga.appendChild(alterna);
     barra.appendChild(liga);
+    var ver = grupo("anot-ver", true, true);
+    barra.appendChild(ver);
 
     var ferr = grupo("anot-ferramentas");
     FERRAMENTAS.forEach(function (f) {
@@ -814,7 +821,7 @@ window.MapAnnotations = (function () {
       if (opts.redraw) opts.redraw();
     });
     dir.id = "anot-direcao";
-    vista.appendChild(dir);
+    ver.appendChild(dir);
     // "Criar tática": abre a prancheta do mesmo mapa com uma tática nova
     // (`?nova`), não a última que ficou aberta.
     if (opts.prancheta) {
@@ -840,7 +847,7 @@ window.MapAnnotations = (function () {
     }
     var fs = botao("Tela cheia", "Mapa em tela cheia (F)", alternaTelaCheia);
     fs.id = "anot-fs";
-    vista.appendChild(fs);
+    ver.appendChild(fs);
     barra.appendChild(vista);
 
     var status = document.createElement("span");
@@ -865,6 +872,7 @@ window.MapAnnotations = (function () {
       t.classList.toggle("on", S.ligado);
       t.textContent = S.ligado ? "Desenhando" : "Desenhar";
       t.setAttribute("aria-pressed", S.ligado ? "true" : "false");
+      t.setAttribute("aria-expanded", S.ligado ? "true" : "false");
       t.title = S.ligado ? "Sair do modo de desenho (D ou Esc)" : "Ligar o modo de desenho (D)";
     }
     var barra = document.getElementById("anot-barra");

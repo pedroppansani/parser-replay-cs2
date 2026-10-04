@@ -21,21 +21,10 @@ import polars as pl
 RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ))
 from metrics.player_roles import (LIMIAR_DE_TENDENCIA, TRAIT_SPECS, assign_traits,  # noqa: E402
+                                  entradas_da_partida_processada as partida,
                                   estabilidade_dos_rotulos, rotulos_na_partida_inteira)
 
 PROCESSED = RAIZ / "data" / "processed"
-TABELAS = ["trade_kills_per_round", "awp_per_round", "lurk_per_round", "anchor_per_round",
-           "grenades_per_round", "adr_per_round", "structural_roles"]
-
-
-def partida(d: Path) -> tuple[dict, pl.DataFrame, pl.DataFrame, dict]:
-    """(outputs, features, signals, team_of) de uma partida processada."""
-    outputs = {t: pl.read_parquet(d / f"{t}.parquet") for t in TABELAS if (d / f"{t}.parquet").exists()}
-    signals = pl.read_parquet(d / "player_roles.parquet")
-    features = pl.read_parquet(d / "cluster_features.parquet")
-    return outputs, features, signals, dict(zip(signals["steamid"].to_list(), signals["team"].to_list()))
-
-
 def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8")
     difere, linhas = [], []

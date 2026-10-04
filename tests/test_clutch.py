@@ -2,7 +2,7 @@
 Testes das situações de último vivo.
 
 A regressão central: antes disto, clutch só era registrado quando o jogador
-GANHAVA (scripts/build_insights.py só guardava o vencedor). Com isso não existia
+GANHAVA (leitura/insights.py só guardava o vencedor). Com isso não existia
 denominador, e "quem chega muito em último vivo e não converte" era impossível de
 medir. Contar só as vitórias é o mesmo erro de contar só os tiros que acertaram.
 """

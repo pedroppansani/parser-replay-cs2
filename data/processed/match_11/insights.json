@@ -3888,11 +3888,11 @@
     "evidence": "AWP na mão em 10 rounds, 100% de conversão na primeira briga, 2 picks de abertura"
   },
   "narrative": {
-    "decisive": "Partida sem round decisivo: a diferença se construiu ao longo do jogo, e o placar terminou em 13-8. O round de maior peso moveu 12% da chance de vitória, abaixo dos 12% que o modelo exige para chamar um round de decisivo.",
+    "decisive": "Partida sem round decisivo: a diferença se construiu ao longo do jogo, e o placar terminou em 13-8. O round de maior peso moveu 11,7% da chance de vitória, abaixo dos 12,1% que o modelo exige para chamar um round de decisivo.",
     "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário.",
     "mvp_card": "sh1ro foi o MVP, com rating 2,06 contra 1,60 de b1t; 2 clutches fechados contra 1 de w0nderful, jogando de awper.",
     "highlight_card": "magixx: 9 de 9 rounds como Coringa no lado CT.",
-    "spectacle": "Round 4: clutch de sh1ro em 1v2, 4K de b1t e virou com 2 jogadores a menos. Não foi o round decisivo porque esta partida não teve um -- a diferença se construiu ao longo do jogo.",
+    "spectacle": "Round 4: clutch de sh1ro em 1v2, 4K de b1t e virou com 2 jogadores a menos. Não foi o round decisivo porque esta partida não teve um — a diferença se construiu ao longo do jogo.",
     "economy": null,
     "carry": "sh1ro é o retrato do papel nesta partida: leva o time nas costas. 27% do dano do time, 3 rounds de multikill, 2 clutches fechados.",
     "highlight": "w0nderful é o retrato do papel nesta partida: jogou de AWP e produziu com ela. AWP na mão em 10 rounds, 100% de conversão na primeira briga, 2 picks de abertura."

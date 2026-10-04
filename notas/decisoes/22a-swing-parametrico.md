@@ -36,9 +36,9 @@ lado, entram a razão de vivos, a eliminação de um lado, o tempo do round e o 
 
 As duas condições do Pedro para adotar:
 
-1. Fora da dobra, agrupado por partida (`scripts/valida_modelo_de_round.py`): Brier 0,1287 →
+1. Fora da dobra, agrupado por partida (`scripts/calibracao/valida_modelo_de_round.py`): Brier 0,1287 →
    0,1245, AUC 0,900 → 0,907; o 1v0 deixa de ser previsto em 74% (vence 94%).
-2. Erro do rating contra a HLTV no "deixa uma partida fora" completo (`scripts/valida_rating.py`,
+2. Erro do rating contra a HLTV no "deixa uma partida fora" completo (`scripts/calibracao/valida_rating.py`,
    modelo de round, economia, referência e pesos refeitos por dobra) não piora mais que +0,001:
 
 | validação (430 jogador-partidas) | quatro entradas | completo |

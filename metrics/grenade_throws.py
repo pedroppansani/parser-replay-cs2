@@ -604,7 +604,7 @@ VELOCIDADE_BOTAO = {0.0: 202.5, 0.5: 438.7, 1.0: 675.0}
 ROTULO_DO_BOTAO = {0.0: "curto", 0.5: "médio", 1.0: "longo"}
 
 # Constantes CALCULADAS do gabarito (nunca digitadas): `gabarito_constantes.json`,
-# gerado por `py -3.12 -m scripts.constantes_do_gabarito`; um teste confere que o
+# gerado por `py -3.12 -m metrics.gabarito`; um teste confere que o
 # arquivo bate com o recálculo a partir de tests/fixtures/gabarito_arremessos_*.json.
 _CONSTANTES_DO_GABARITO = json.loads(
     (Path(__file__).with_name("gabarito_constantes.json")).read_text(encoding="utf-8"))
@@ -918,7 +918,7 @@ ARMA_DO_EVENTO = {"smokegrenade": "smoke", "flashbang": "flash", "hegrenade": "h
 # evento é o do primeiro ponto do projétil em 100%, e a mira e os pés do evento
 # são os da tabela de ticks em t-1 em 100% (20.862; 1 sem o tick). A ancoragem,
 # que era a fonte do tick nessas demos, acerta o tick em só 41%.
-# `scripts/investiga_faceit.py` e `tests/test_tick_pelo_projetil.py`.
+# `pesquisa/investiga_faceit.py` e `tests/test_tick_pelo_projetil.py`.
 # DESLIGADA até o Pedro aprovar: ligá-la muda o que dois testes existentes de
 # test_grenade_throws.py afirmam ("sem evento, a ancoragem continua valendo" e
 # "a ancoragem acha o tick da soltura"), e exige subir VERSAO_DAS_METRICAS,
@@ -1143,7 +1143,8 @@ def grenade_throws(
         if janela is not None and a["traj"].shape[0] >= 2 and a.get("pitch") is not None:
             z, xy = janela
             # os pés no TICK DA SOLTURA na tabela (o jogo usa esses; os do evento
-            # oficial são os do tick anterior -- decisão 5 do item 7)
+            # oficial são os do tick anterior -- decisão do Pedro "pés em t", 2026-09-27,
+            # em notas/investigacoes/2026-09-27-rota-a.md)
             pes_t = np.array([xy[-2, 0], xy[-2, 1], z[-2]], dtype=float)
             dt = (a["ticks"][1] - a["ticks"][0]) / tickrate
             vp = (a["traj"][1] - a["traj"][0]) / dt
