@@ -44,6 +44,7 @@ from pathlib import Path
 
 import polars as pl
 
+from metrics.impacto import TAXAS_DE_IMPACTO, TEMPO_DA_TROCA
 from metrics.timing import detect_tickrate
 from metrics.constantes import JANELA_DE_TRADE_S
 
@@ -569,6 +570,14 @@ TAXAS_TODAS = [c for c, _, _ in TAXAS_POR_ROUND] + [
 # eventos, mais baixo, em vez do piso de rounds.
 TAXAS_POR_EVENTO = ("pct_kills_de_awp", "pct_mortes_trocadas", "taxa_conversao_clutch")
 
+# As métricas de impacto (metrics/impacto.py, fase 7): utilidade por granada,
+# tempo da troca, pós-plant/retake e aberturas por lado. Entram no perfil com a
+# mesma régua do corpus e a mesma marca de amostra fraca; o denominador delas é
+# sempre um EVENTO (granadas, trocas, rounds vivo no plant, duelos), então usam
+# o piso de eventos. Ficam numa lista à parte de TAXAS_TODAS porque só existem
+# quando o resumo de impacto é passado ao perfil.
+IMPACTO_CHAVES = [c for c, _, _ in TAXAS_DE_IMPACTO] + [TEMPO_DA_TROCA]
+
 
 def _por_lado(flags: pl.DataFrame) -> pl.DataFrame:
     """As taxas sensíveis a lado, em colunas `_ct` e `_t`.
@@ -678,7 +687,7 @@ def _marca_amostra_fraca(df: pl.DataFrame, colunas: list[str]) -> pl.DataFrame:
         den = f"{col}_d"
         if col not in df.columns or den not in df.columns:
             continue
-        piso = MIN_EVENTOS_PARA_TAXA if col in TAXAS_POR_EVENTO else MIN_ROUNDS_PARA_TAXA
+        piso = MIN_EVENTOS_PARA_TAXA if col in TAXAS_POR_EVENTO or col in IMPACTO_CHAVES else MIN_ROUNDS_PARA_TAXA
         expr.append((pl.col(den) < piso).alias(f"{col}_fraco"))
     return df.with_columns(expr) if expr else df
 
@@ -812,6 +821,7 @@ def player_profile(
     clutch_round: pl.DataFrame,
     cluster_assignments: pl.DataFrame | None = None,
     match_id: str = "",
+    impacto_resumo: pl.DataFrame | None = None,
 ) -> tuple[pl.DataFrame, pl.DataFrame]:
     """Perfil de uma partida. Devolve (per_match, round_flags).
 
@@ -833,9 +843,17 @@ def player_profile(
 
     sensiveis = [c for c, _, por_l in TAXAS_POR_ROUND if por_l]
     colunas_ref = TAXAS_TODAS + [f"{c}_{lado}" for c in sensiveis for lado in ("ct", "t")]
+    colunas_fraco = list(TAXAS_TODAS)
+    if impacto_resumo is not None:
+        manter = ["steamid"] + [c for c in impacto_resumo.columns
+                                if any(c == k or c in (f"{k}_n", f"{k}_d") for k in IMPACTO_CHAVES)]
+        perfil = perfil.join(impacto_resumo.select(manter).with_columns(
+            pl.col("steamid").cast(perfil.schema["steamid"])), on="steamid", how="left")
+        colunas_ref += IMPACTO_CHAVES
+        colunas_fraco += IMPACTO_CHAVES
 
     perfil = _com_referencia(perfil, colunas_ref, carrega_regua())
-    perfil = _marca_amostra_fraca(perfil, TAXAS_TODAS)
+    perfil = _marca_amostra_fraca(perfil, colunas_fraco)
     perfil = perfil.with_columns(
         pl.lit(match_id).alias("match_id"),
         pl.lit(tickrate).alias("tickrate"),
@@ -871,11 +889,14 @@ def accumulate(perfis: list[pl.DataFrame]) -> pl.DataFrame:
     # guardar todos os rounds, e a diferença entre as duas não muda leitura.
     if "tempo_mediano_ate_contato_s" in colunas:
         agg.append(pl.col("tempo_mediano_ate_contato_s").median())
+    if TEMPO_DA_TROCA in colunas:   # idem para o tempo da troca
+        agg.append(pl.col(TEMPO_DA_TROCA).median())
 
     somado = todos.group_by("steamid", maintain_order=True).agg(agg)
 
     sensiveis = [c for c, _, por_l in TAXAS_POR_ROUND if por_l]
     recalcular = TAXAS_TODAS + [f"{c}_{lado}" for c in sensiveis for lado in ("ct", "t")]
+    recalcular += [c for c in IMPACTO_CHAVES if c != TEMPO_DA_TROCA]
     somado = somado.with_columns(
         [
             _taxa(pl.col(f"{c}_n"), pl.col(f"{c}_d")).alias(c)
@@ -885,8 +906,8 @@ def accumulate(perfis: list[pl.DataFrame]) -> pl.DataFrame:
     )
 
     somado = _recalcula_grupo_dominante(somado)
-    somado = _com_referencia(somado, recalcular)
-    somado = _marca_amostra_fraca(somado, TAXAS_TODAS)
+    somado = _com_referencia(somado, recalcular + ([TEMPO_DA_TROCA] if TEMPO_DA_TROCA in somado.columns else []))
+    somado = _marca_amostra_fraca(somado, TAXAS_TODAS + IMPACTO_CHAVES)
     return somado.sort("name")
 
 

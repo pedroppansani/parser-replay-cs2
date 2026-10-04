@@ -39,6 +39,7 @@ from metrics.player_profile import player_profile
 from metrics.rating import PESOS_FILE, ModeloDeRound, carrega_referencia
 from metrics.rating import rating as calcula_rating
 from metrics.positioning import position_samples
+from metrics.impacto import impacto
 from metrics.match_highlights import match_highlights
 from metrics.player_roles import awpers_do_time
 from metrics.round_spectacle import round_spectacle
@@ -479,6 +480,14 @@ def build(match_id: str) -> Path:
     # médias de um grupo não pertencem a jogador nenhum -- os rounds de um mesmo
     # jogador se espalham por todos os grupos.
     clutch_round, _ = clutch_situations(kills, rounds, team_of, vencedor_por_round)
+    # Impacto além do placar (metrics/impacto.py, fase 7): utilidade que rendeu,
+    # tempo da troca, pós-plant/retake e aberturas por lado. Entra no perfil para
+    # ganhar a régua do corpus e a marca de amostra fraca.
+    impacto_round, impacto_resumo = impacto(
+        pl.read_parquet(processed / "grenades_per_round.parquet"), kills, rounds,
+        features.select("round_num", "steamid", "side"), tickrate)
+    impacto_round.write_parquet(processed / "impacto_per_round.parquet")
+    impacto_resumo.write_parquet(processed / "impacto_summary.parquet")
     perfil, perfil_rounds = player_profile(
         features,
         positions,
@@ -489,6 +498,7 @@ def build(match_id: str) -> Path:
         clutch_round,
         cluster_assignments=pl.read_parquet(processed / "cluster_assignments.parquet"),
         match_id=match_id,
+        impacto_resumo=impacto_resumo,
     )
     perfil.write_parquet(processed / "player_profile.parquet")
     perfil_rounds.write_parquet(processed / "player_profile_rounds.parquet")
