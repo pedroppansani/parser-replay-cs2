@@ -113,7 +113,7 @@ python -m pytest tests/
 ```
 
 Uma demo só: `python -m scripts.process_demo caminho/da/partida.dem --match-id match_99`.
-São <!-- numeros:inicio testes -->1.191 testes<!-- numeros:fim testes -->, e o CI
+São <!-- numeros:inicio testes -->1.193 testes<!-- numeros:fim testes -->, e o CI
 roda a suíte antes de publicar o site.
 
 ## Limitações

@@ -779,3 +779,1197 @@ Até você revisar: nada entra em `MANUAL_ENTRY_ANGLES`, e o ângulo visto em me
 | 38 | BombsiteA | CT | -135° | esquerda-baixo | 6 | 32 | — | ____ |
 
 **Sua resposta:** para cada linha, *confirma*, *descarta* (não é ângulo de verdade) ou *corrige* o yaw.
+
+<!-- decisivo:inicio -->
+## 6. Round decisivo (fase 6)
+
+Gerado por `py -3.12 -m scripts.calibracao.material_decisivo` (regras em `metrics/decisivo_candidatas.py`, diagnóstico em `notas/investigacoes/2026-10-04-piso-do-decisivo.md`).
+
+**As regras candidatas:**
+- **A, piso absoluto (a de hoje):** o maior salto da chance de vitória, se passar de 1,5x o round mais barato do formato (12% no MR12).
+- **B, proeminência:** o maior salto tem de valer pelo menos k vezes o round típico da partida (a mediana dos saltos dela). Aqui k = 1,68 (a mediana no corpus) só para mostrar; o k de verdade sai das suas respostas.
+- **C, virada definitiva:** o round depois do qual o vencedor nunca mais teve menos de 50% de chance, se antes dele esteve abaixo. Sem virada, não há round decisivo.
+- **D, combinação:** C quando houve virada; senão, B.
+- **Empate no topo** (A, B): o 1º e o 2º maiores saltos que a frase da página escreve com a mesma porcentagem.
+
+As candidatas discordam em 41 das 52 partidas, mais do que as 25 que cabem aqui: entram 21 discordâncias, escolhidas em rodízio pelo tipo de desacordo, e 4 partidas em que as quatro concordam.
+
+| partida | mapa | placar | virada | A | B | C | D |
+|---|---|---|---|---|---|---|---|
+| match_01 | de_ancient | 13-9 | sim | R19 (empate) | — | R14 | R14 |
+| match_02 | de_mirage | 13-9 | sim | R15 (empate) | — | R14 | R14 |
+| match_03 | de_anubis | 13-7 | sim | — | R5 (empate) | R4 | R4 |
+| match_05 | de_nuke | 4-13 | sim | — | — | R6 | R6 |
+| match_06 | de_mirage | 13-5 | não | — | — | — | — |
+| match_10 | de_dust2 | 13-1 | não | — | R1 (empate) | — | R1 (empate) |
+| match_16 | de_nuke | 13-16 | sim | R24 | R24 | R24 | R24 |
+| match_17 | de_dust2 | 13-4 | não | — | R1 (empate) | — | R1 (empate) |
+| match_19 | de_inferno | 4-13 | não | — | R1 (empate) | — | R1 (empate) |
+| match_20 | de_mirage | 14-16 | sim | R23 (empate) | R23 (empate) | R28 | R28 |
+| match_21 | de_nuke | 13-8 | sim | R15 (empate) | — | R14 | R14 |
+| match_22 | de_mirage | 7-13 | não | — | R1 (empate) | — | R1 (empate) |
+| match_26 | de_anubis | 13-6 | sim | — | — | R6 | R6 |
+| match_27 | de_nuke | 5-13 | sim | — | — | R4 | R4 |
+| match_28 | de_mirage | 13-10 | sim | R19 (empate) | — | R18 | R18 |
+| match_30 | de_nuke | 9-13 | não | R16 | — | — | — |
+| match_32 | de_mirage | 16-19 | sim | R23 (empate) | R23 (empate) | R32 | R32 |
+| match_34 | de_mirage | 9-13 | não | R21 (empate) | R21 (empate) | — | R21 (empate) |
+| match_36 | de_mirage | 8-13 | não | R16 (empate) | — | — | — |
+| match_37 | de_dust2 | 16-14 | sim | R24 (empate) | R24 (empate) | R24 | R24 |
+| match_40 | de_nuke | 16-14 | sim | R24 (empate) | R24 (empate) | R26 | R26 |
+| match_41 | de_inferno | 16-14 | sim | R23 (empate) | R23 (empate) | R16 | R16 |
+| match_42 | de_dust2 | 17-19 | sim | R24 (empate) | R24 (empate) | R24 | R24 |
+| match_48 | de_dust2 | 13-6 | sim | — | — | R2 | R2 |
+| match_51 | de_nuke | 10-13 | não | R21 (empate) | — | — | — |
+
+### match_01 — de_ancient, 13-9 (22 rounds)
+
+```
+round  placar   chance do vencedor (Time A) depois do round   |ΔP|
+R1      0-1    ########............  42%     8%  vence B
+R2      0-2    #######.............  34%     8%  vence B
+R3      0-3    #####...............  26%     8%  vence B
+R4      0-4    ####................  19%     7%  vence B
+R5      1-4    #####...............  25%     6%  vence A
+R6      2-4    ######..............  32%     7%  vence A
+R7      3-4    ########............  41%     8%  vence A
+R8      4-4    ##########..........  50%     9%  vence A
+R9      5-4    ############........  60%    10%  vence A
+R10     5-5    ##########..........  50%    10%  vence B
+R11     6-5    ############........  60%    10%  vence A
+R12     6-6    ##########..........  50%    10%  vence B
+R13     6-7    ########............  39%    11%  vence B
+R14     7-7    ##########..........  50%    11%  vence A
+R15     8-7    ############........  62%    12%  vence A
+R16     9-7    ###############.....  75%    12%  vence A
+R17     9-8    #############.......  64%    11%  vence B
+R18     9-9    ##########..........  50%    14%  vence B
+R19    10-9    #############.......  66%    16%  vence A
+R20    11-9    ################....  81%    16%  vence A
+R21    12-9    ###################.  94%    12%  vence A
+R22    13-9    #################### 100%     6%  vence A
+```
+
+Os três maiores saltos:
+
+- **R19** (16%): 9-9 → 10-9, vence o Time A; compra: quem venceu 5.360$, quem perdeu 5.080$; 4K de _AmadeuS; bomba plantada.
+- **R20** (16%): 10-9 → 11-9, vence o Time A; compra: quem venceu 5.810$, quem perdeu 4.690$; 3K de rol1ng-; bomba plantada.
+- **R18** (14%): 9-8 → 9-9, vence o Time B; compra: quem venceu 4.940$, quem perdeu 5.890$; bomba plantada.
+
+O que cada regra diria:
+
+- **A:** R19 (empate no topo) — maior salto da partida, 16%, acima do piso de 12%.
+- **B:** nenhum round — nenhum round se destaca: o maior salto vale 1,54x o round típico da partida (exigido 1,68x).
+- **C:** R14 — virada definitiva: o vencedor passou de 39% para 50% e não ficou mais abaixo de 50%.
+- **D:** R14 — houve virada (regra C): virada definitiva: o vencedor passou de 39% para 50% e não ficou mais abaixo de 50%.
+
+**Esta partida teve round decisivo? Qual? Ou foi construída ao longo do jogo?**
+
+Sua resposta: ____
+
+### match_02 — de_mirage, 13-9 (22 rounds)
+
+```
+round  placar   chance do vencedor (Time A) depois do round   |ΔP|
+R1      1-0    ############........  58%     8%  vence A
+R2      2-0    #############.......  66%     8%  vence A
+R3      2-1    ############........  58%     8%  vence B
+R4      3-1    #############.......  67%     8%  vence A
+R5      3-2    ############........  59%     8%  vence B
+R6      4-2    ##############......  68%     9%  vence A
+R7      4-3    ############........  59%     8%  vence B
+R8      4-4    ##########..........  50%     9%  vence B
+R9      4-5    ########............  40%    10%  vence B
+R10     4-6    ######..............  30%    10%  vence B
+R11     4-7    ####................  21%     9%  vence B
+R12     5-7    ######..............  29%     8%  vence A
+R13     6-7    ########............  39%    10%  vence A
+R14     7-7    ##########..........  50%    11%  vence A
+R15     8-7    ############........  62%    12%  vence A
+R16     9-7    ###############.....  75%    12%  vence A
+R17    10-7    #################...  86%    11%  vence A
+R18    10-8    ###############.....  77%     8%  vence B
+R19    11-8    ##################..  89%    12%  vence A
+R20    12-8    ###################.  97%     8%  vence A
+R21    12-9    ###################.  94%     3%  vence B
+R22    13-9    #################### 100%     6%  vence A
+```
+
+Os três maiores saltos:
+
+- **R15** (12%): 7-7 → 8-7, vence o Time A; compra: quem venceu 4.910$, quem perdeu 4.080$; 3K de donk666.
+- **R16** (12%): 8-7 → 9-7, vence o Time A; compra: quem venceu 5.520$, quem perdeu 1.330$; bomba plantada. Frase do round: "Round de economia: o time entrou com 1.330$ de equipamento médio contra 5.520$ do adversário, 4.190$ de diferença. Perder aqui é esperado, e o que vale olhar é quanto dano o time conseguiu tirar."
+- **R19** (12%): 10-8 → 11-8, vence o Time A; compra: quem venceu 4.080$, quem perdeu 5.430$.
+
+O que cada regra diria:
+
+- **A:** R15 (empate no topo) — maior salto da partida, 12%, acima do piso de 12%.
+- **B:** nenhum round — nenhum round se destaca: o maior salto vale 1,43x o round típico da partida (exigido 1,68x).
+- **C:** R14 — virada definitiva: o vencedor passou de 39% para 50% e não ficou mais abaixo de 50%.
+- **D:** R14 — houve virada (regra C): virada definitiva: o vencedor passou de 39% para 50% e não ficou mais abaixo de 50%.
+
+**Esta partida teve round decisivo? Qual? Ou foi construída ao longo do jogo?**
+
+Sua resposta: ____
+
+### match_03 — de_anubis, 13-7 (20 rounds)
+
+```
+round  placar   chance do vencedor (Time A) depois do round   |ΔP|
+R1      0-1    ########............  42%     8%  vence B
+R2      0-2    #######.............  34%     8%  vence B
+R3      1-2    ########............  42%     8%  vence A
+R4      2-2    ##########..........  50%     8%  vence A
+R5      3-2    ############........  59%     9%  vence A
+R6      4-2    ##############......  68%     9%  vence A
+R7      5-2    ###############.....  76%     8%  vence A
+R8      6-2    #################...  83%     7%  vence A
+R9      7-2    ##################..  89%     6%  vence A
+R10     8-2    ###################.  94%     5%  vence A
+R11     9-2    ###################.  97%     3%  vence A
+R12    10-2    ####################  99%     2%  vence A
+R13    10-3    ####################  98%     1%  vence B
+R14    10-4    ###################.  97%     1%  vence B
+R15    10-5    ###################.  95%     2%  vence B
+R16    11-5    ####################  98%     4%  vence A
+R17    11-6    ###################.  96%     2%  vence B
+R18    11-7    ###################.  94%     3%  vence B
+R19    12-7    ####################  98%     5%  vence A
+R20    13-7    #################### 100%     2%  vence A
+```
+
+Os três maiores saltos:
+
+- **R5** (9%): 2-2 → 3-2, vence o Time A; compra: quem venceu 5.220$, quem perdeu 1.480$; bomba plantada. Frase do round: "Round de economia: o time entrou com 1.480$ de equipamento médio contra 5.220$ do adversário, 3.740$ de diferença. Perder aqui é esperado, e o que vale olhar é quanto dano o time conseguiu tirar."
+- **R6** (9%): 3-2 → 4-2, vence o Time A; compra: quem venceu 5.060$, quem perdeu 4.840$; bomba plantada.
+- **R4** (8%): 1-2 → 2-2, vence o Time A; compra: quem venceu 4.620$, quem perdeu 3.690$; 3K de donk666; bomba plantada.
+
+O que cada regra diria:
+
+- **A:** nenhum round — o maior salto (9%) não passa do piso de 12%.
+- **B:** R5 (empate no topo) — o maior salto vale 1,90x o round típico da partida (exigido 1,68x).
+- **C:** R4 — virada definitiva: o vencedor passou de 42% para 50% e não ficou mais abaixo de 50%.
+- **D:** R4 — houve virada (regra C): virada definitiva: o vencedor passou de 42% para 50% e não ficou mais abaixo de 50%.
+
+**Esta partida teve round decisivo? Qual? Ou foi construída ao longo do jogo?**
+
+Sua resposta: ____
+
+### match_05 — de_nuke, 4-13 (17 rounds)
+
+```
+round  placar   chance do vencedor (Time B) depois do round   |ΔP|
+R1      1-0    ########............  42%     8%  vence A
+R2      2-0    #######.............  34%     8%  vence A
+R3      3-0    #####...............  26%     8%  vence A
+R4      3-1    #######.............  33%     7%  vence B
+R5      3-2    ########............  41%     8%  vence B
+R6      3-3    ##########..........  50%     9%  vence B
+R7      3-4    ############........  59%     9%  vence B
+R8      3-5    ##############......  69%     9%  vence B
+R9      3-6    ###############.....  77%     9%  vence B
+R10     3-7    #################...  85%     8%  vence B
+R11     3-8    ##################..  91%     6%  vence B
+R12     4-8    #################...  87%     4%  vence A
+R13     4-9    ###################.  93%     6%  vence B
+R14     4-10   ###################.  97%     4%  vence B
+R15     4-11   ####################  99%     2%  vence B
+R16     4-12   #################### 100%     1%  vence B
+R17     4-13   #################### 100%     0%  vence B
+```
+
+Os três maiores saltos:
+
+- **R7** (9%): 3-3 → 3-4, vence o Time B; compra: quem venceu 6.230$, quem perdeu 4.310$; 4K de lilpeepfan-.
+- **R8** (9%): 3-4 → 3-5, vence o Time B; compra: quem venceu 6.050$, quem perdeu 1.730$; clutch de lilpeepfan- contra 1; 3K de gwizdakk. Frase do round: "Round de economia: o time entrou com 1.730$ de equipamento médio contra 6.050$ do adversário, 4.320$ de diferença. Perder aqui é esperado, e o que vale olhar é quanto dano o time conseguiu tirar."
+- **R6** (9%): 3-2 → 3-3, vence o Time B; compra: quem venceu 6.190$, quem perdeu 640$. Frase do round: "Round de economia: o time entrou com 640$ de equipamento médio contra 6.190$ do adversário, 5.550$ de diferença. Perder aqui é esperado, e o que vale olhar é quanto dano o time conseguiu tirar."
+
+O que cada regra diria:
+
+- **A:** nenhum round — o maior salto (9%) não passa do piso de 12%.
+- **B:** nenhum round — nenhum round se destaca: o maior salto vale 1,21x o round típico da partida (exigido 1,68x).
+- **C:** R6 — virada definitiva: o vencedor passou de 41% para 50% e não ficou mais abaixo de 50%.
+- **D:** R6 — houve virada (regra C): virada definitiva: o vencedor passou de 41% para 50% e não ficou mais abaixo de 50%.
+
+**Esta partida teve round decisivo? Qual? Ou foi construída ao longo do jogo?**
+
+Sua resposta: ____
+
+### match_06 — de_mirage, 13-5 (18 rounds)
+
+```
+round  placar   chance do vencedor (Time A) depois do round   |ΔP|
+R1      1-0    ############........  58%     8%  vence A
+R2      2-0    #############.......  66%     8%  vence A
+R3      2-1    ############........  58%     8%  vence B
+R4      3-1    #############.......  67%     8%  vence A
+R5      4-1    ###############.....  75%     8%  vence A
+R6      5-1    ################....  82%     7%  vence A
+R7      5-2    ###############.....  76%     6%  vence B
+R8      6-2    #################...  83%     7%  vence A
+R9      6-3    ###############.....  77%     6%  vence B
+R10     7-3    #################...  85%     8%  vence A
+R11     8-3    ##################..  91%     6%  vence A
+R12     8-4    #################...  87%     4%  vence B
+R13     9-4    ###################.  93%     6%  vence A
+R14    10-4    ###################.  97%     4%  vence A
+R15    10-5    ###################.  95%     2%  vence B
+R16    11-5    ####################  98%     4%  vence A
+R17    12-5    #################### 100%     2%  vence A
+R18    13-5    #################### 100%     0%  vence A
+```
+
+Os três maiores saltos:
+
+- **R4** (8%): 2-1 → 3-1, vence o Time A; compra: quem venceu 3.630$, quem perdeu 5.320$; clutch de Etaliqe contra 1.
+- **R1** (8%): 0-0 → 1-0, vence o Time A; compra: quem venceu 850$, quem perdeu 850$; 4K de adamS; bomba plantada. Frase do round: "Round de economia: o time entrou com 850$ de equipamento médio contra 850$ do adversário. Os dois entraram com equipamento parecido, então a economia não explica a derrota — o round foi decidido no confronto."
+- **R2** (8%): 1-0 → 2-0, vence o Time A; compra: quem venceu 4.130$, quem perdeu 580$; 3K de pradablade. Frase do round: "Round de economia: o time entrou com 580$ de equipamento médio contra 4.130$ do adversário, 3.550$ de diferença. Perder aqui é esperado, e o que vale olhar é quanto dano o time conseguiu tirar."
+
+O que cada regra diria:
+
+- **A:** nenhum round — o maior salto (8%) não passa do piso de 12%.
+- **B:** nenhum round — nenhum round se destaca: o maior salto vale 1,38x o round típico da partida (exigido 1,68x).
+- **C:** nenhum round — sem virada: o vencedor nunca esteve abaixo de 50% de chance.
+- **D:** nenhum round — sem virada (regra B): nenhum round se destaca: o maior salto vale 1,38x o round típico da partida (exigido 1,68x).
+
+**Esta partida teve round decisivo? Qual? Ou foi construída ao longo do jogo?**
+
+Sua resposta: ____
+
+### match_10 — de_dust2, 13-1 (14 rounds)
+
+```
+round  placar   chance do vencedor (Time A) depois do round   |ΔP|
+R1      1-0    ############........  58%     8%  vence A
+R2      2-0    #############.......  66%     8%  vence A
+R3      3-0    ###############.....  74%     8%  vence A
+R4      4-0    ################....  81%     7%  vence A
+R5      5-0    #################...  87%     6%  vence A
+R6      6-0    ##################..  92%     5%  vence A
+R7      7-0    ###################.  95%     4%  vence A
+R8      8-0    ####################  98%     2%  vence A
+R9      9-0    ####################  99%     1%  vence A
+R10    10-0    #################### 100%     1%  vence A
+R11    10-1    ####################  99%     0%  vence B
+R12    11-1    #################### 100%     0%  vence A
+R13    12-1    #################### 100%     0%  vence A
+R14    13-1    #################### 100%     0%  vence A
+```
+
+Os três maiores saltos:
+
+- **R1** (8%): 0-0 → 1-0, vence o Time A; compra: quem venceu 1.050$, quem perdeu 930$; 3K de zont1x; bomba plantada. Frase do round: "Round de economia: o time entrou com 930$ de equipamento médio contra 1.050$ do adversário. Os dois entraram com equipamento parecido, então a economia não explica a derrota — o round foi decidido no confronto."
+- **R2** (8%): 1-0 → 2-0, vence o Time A; compra: quem venceu 3.850$, quem perdeu 2.320$; bomba plantada.
+- **R3** (8%): 2-0 → 3-0, vence o Time A; compra: quem venceu 4.380$, quem perdeu 790$; bomba plantada. Frase do round: "Round de economia: o time entrou com 790$ de equipamento médio contra 4.380$ do adversário, 3.590$ de diferença. Perder aqui é esperado, e o que vale olhar é quanto dano o time conseguiu tirar."
+
+O que cada regra diria:
+
+- **A:** nenhum round — o maior salto (8%) não passa do piso de 12%.
+- **B:** R1 (empate no topo) — o maior salto vale 2,73x o round típico da partida (exigido 1,68x).
+- **C:** nenhum round — sem virada: o vencedor nunca esteve abaixo de 50% de chance.
+- **D:** R1 (empate no topo) — sem virada (regra B): o maior salto vale 2,73x o round típico da partida (exigido 1,68x).
+
+**Esta partida teve round decisivo? Qual? Ou foi construída ao longo do jogo?**
+
+Sua resposta: ____
+
+### match_16 — de_nuke, 13-16 (29 rounds)
+
+```
+round  placar   chance do vencedor (Time B) depois do round   |ΔP|
+R1      1-0    ########............  42%     8%  vence A
+R2      2-0    #######.............  34%     8%  vence A
+R3      3-0    #####...............  26%     8%  vence A
+R4      4-0    ####................  19%     7%  vence A
+R5      5-0    ###.................  13%     6%  vence A
+R6      5-1    ####................  18%     5%  vence B
+R7      6-1    ##..................  12%     6%  vence A
+R8      7-1    #...................   7%     5%  vence A
+R9      8-1    #...................   4%     3%  vence A
+R10     8-2    #...................   6%     2%  vence B
+R11     9-2    #...................   3%     3%  vence A
+R12     9-3    #...................   5%     2%  vence B
+R13     9-4    #...................   7%     3%  vence B
+R14     9-5    ##..................  11%     4%  vence B
+R15     9-6    ###.................  17%     6%  vence B
+R16    10-6    ##..................   9%     8%  vence A
+R17    10-7    ###.................  14%     5%  vence B
+R18    10-8    #####...............  23%     8%  vence B
+R19    10-9    #######.............  34%    12%  vence B
+R20    10-10   ##########..........  50%    16%  vence B
+R21    11-10   ######..............  31%    19%  vence A
+R22    12-10   ##..................  12%    19%  vence A
+R23    12-11   #####...............  25%    12%  vence B
+R24    12-12   ##########..........  50%    25%  vence B
+R25    12-13   #############.......  66%    16%  vence B
+R26    12-14   ################....  81%    16%  vence B
+R27    12-15   ###################.  94%    12%  vence B
+R28    13-15   ##################..  88%     6%  vence A
+R29    13-16   #################### 100%    12%  vence B
+```
+
+Os três maiores saltos:
+
+- **R24** (25%): 12-11 → 12-12, vence o Time B; compra: quem venceu 5.320$, quem perdeu 6.290$; 3K de FalleN; bomba plantada.
+- **R21** (19%): 10-10 → 11-10, vence o Time A; compra: quem venceu 5.610$, quem perdeu 5.330$; bomba plantada.
+- **R22** (19%): 11-10 → 12-10, vence o Time A; compra: quem venceu 5.570$, quem perdeu 3.460$.
+
+O que cada regra diria:
+
+- **A:** R24 — maior salto da partida, 25%, acima do piso de 12%.
+- **B:** R24 — o maior salto vale 3,24x o round típico da partida (exigido 1,68x).
+- **C:** R24 — virada definitiva: o vencedor passou de 25% para 50% e não ficou mais abaixo de 50%.
+- **D:** R24 — houve virada (regra C): virada definitiva: o vencedor passou de 25% para 50% e não ficou mais abaixo de 50%.
+
+**Esta partida teve round decisivo? Qual? Ou foi construída ao longo do jogo?**
+
+Sua resposta: ____
+
+### match_17 — de_dust2, 13-4 (17 rounds)
+
+```
+round  placar   chance do vencedor (Time A) depois do round   |ΔP|
+R1      1-0    ############........  58%     8%  vence A
+R2      2-0    #############.......  66%     8%  vence A
+R3      3-0    ###############.....  74%     8%  vence A
+R4      4-0    ################....  81%     7%  vence A
+R5      5-0    #################...  87%     6%  vence A
+R6      6-0    ##################..  92%     5%  vence A
+R7      7-0    ###################.  95%     4%  vence A
+R8      8-0    ####################  98%     2%  vence A
+R9      8-1    ###################.  96%     1%  vence B
+R10     8-2    ###################.  94%     2%  vence B
+R11     9-2    ###################.  97%     3%  vence A
+R12    10-2    ####################  99%     2%  vence A
+R13    11-2    #################### 100%     1%  vence A
+R14    11-3    ####################  99%     0%  vence B
+R15    11-4    ####################  99%     0%  vence B
+R16    12-4    #################### 100%     1%  vence A
+R17    13-4    #################### 100%     0%  vence A
+```
+
+Os três maiores saltos:
+
+- **R1** (8%): 0-0 → 1-0, vence o Time A; compra: quem venceu 950$, quem perdeu 890$; clutch de yuurih contra 2; 3K de makazze; bomba plantada. Frase do round: "Round de economia: o time entrou com 890$ de equipamento médio contra 950$ do adversário. Os dois entraram com equipamento parecido, então a economia não explica a derrota — o round foi decidido no confronto."
+- **R2** (8%): 1-0 → 2-0, vence o Time A; compra: quem venceu 3.940$, quem perdeu 2.440$; 4K de molodoy; bomba plantada.
+- **R3** (8%): 2-0 → 3-0, vence o Time A; compra: quem venceu 4.800$, quem perdeu 600$; bomba plantada. Frase do round: "Round de economia: o time entrou com 600$ de equipamento médio contra 4.800$ do adversário, 4.200$ de diferença. Perder aqui é esperado, e o que vale olhar é quanto dano o time conseguiu tirar."
+
+O que cada regra diria:
+
+- **A:** nenhum round — o maior salto (8%) não passa do piso de 12%.
+- **B:** R1 (empate no topo) — o maior salto vale 3,41x o round típico da partida (exigido 1,68x).
+- **C:** nenhum round — sem virada: o vencedor nunca esteve abaixo de 50% de chance.
+- **D:** R1 (empate no topo) — sem virada (regra B): o maior salto vale 3,41x o round típico da partida (exigido 1,68x).
+
+**Esta partida teve round decisivo? Qual? Ou foi construída ao longo do jogo?**
+
+Sua resposta: ____
+
+### match_19 — de_inferno, 4-13 (17 rounds)
+
+```
+round  placar   chance do vencedor (Time B) depois do round   |ΔP|
+R1      0-1    ############........  58%     8%  vence B
+R2      0-2    #############.......  66%     8%  vence B
+R3      0-3    ###############.....  74%     8%  vence B
+R4      0-4    ################....  81%     7%  vence B
+R5      0-5    #################...  87%     6%  vence B
+R6      1-5    ################....  82%     5%  vence A
+R7      1-6    ##################..  88%     6%  vence B
+R8      1-7    ###################.  93%     5%  vence B
+R9      1-8    ###################.  96%     3%  vence B
+R10     1-9    ####################  98%     2%  vence B
+R11     1-10   ####################  99%     1%  vence B
+R12     1-11   #################### 100%     0%  vence B
+R13     1-12   #################### 100%     0%  vence B
+R14     2-12   #################### 100%     0%  vence A
+R15     3-12   #################### 100%     0%  vence A
+R16     4-12   #################### 100%     0%  vence A
+R17     4-13   #################### 100%     0%  vence B
+```
+
+Os três maiores saltos:
+
+- **R1** (8%): 0-0 → 0-1, vence o Time B; compra: quem venceu 850$, quem perdeu 1.280$; 3K de m0NESY; bomba plantada. Frase do round: "Round de economia: o time entrou com 1.280$ de equipamento médio contra 850$ do adversário. Os dois entraram com equipamento parecido, então a economia não explica a derrota — o round foi decidido no confronto."
+- **R2** (8%): 0-1 → 0-2, vence o Time B; compra: quem venceu 4.530$, quem perdeu 3.020$.
+- **R3** (8%): 0-2 → 0-3, vence o Time B; compra: quem venceu 5.540$, quem perdeu 980$; 3K de kyousuke. Frase do round: "Round de economia: o time entrou com 980$ de equipamento médio contra 5.540$ do adversário, 4.560$ de diferença. Perder aqui é esperado, e o que vale olhar é quanto dano o time conseguiu tirar."
+
+O que cada regra diria:
+
+- **A:** nenhum round — o maior salto (8%) não passa do piso de 12%.
+- **B:** R1 (empate no topo) — o maior salto vale 2,42x o round típico da partida (exigido 1,68x).
+- **C:** nenhum round — sem virada: o vencedor nunca esteve abaixo de 50% de chance.
+- **D:** R1 (empate no topo) — sem virada (regra B): o maior salto vale 2,42x o round típico da partida (exigido 1,68x).
+
+**Esta partida teve round decisivo? Qual? Ou foi construída ao longo do jogo?**
+
+Sua resposta: ____
+
+### match_20 — de_mirage, 14-16 (30 rounds)
+
+```
+round  placar   chance do vencedor (Time B) depois do round   |ΔP|
+R1      0-1    ############........  58%     8%  vence B
+R2      0-2    #############.......  66%     8%  vence B
+R3      1-2    ############........  58%     8%  vence A
+R4      2-2    ##########..........  50%     8%  vence A
+R5      3-2    ########............  41%     9%  vence A
+R6      4-2    ######..............  32%     9%  vence A
+R7      5-2    #####...............  24%     8%  vence A
+R8      6-2    ###.................  17%     7%  vence A
+R9      6-3    #####...............  23%     6%  vence B
+R10     6-4    ######..............  30%     8%  vence B
+R11     6-5    ########............  40%     9%  vence B
+R12     6-6    ##########..........  50%    10%  vence B
+R13     6-7    ############........  61%    11%  vence B
+R14     6-8    ###############.....  73%    11%  vence B
+R15     7-8    ############........  62%    10%  vence A
+R16     8-8    ##########..........  50%    12%  vence A
+R17     9-8    #######.............  36%    14%  vence A
+R18     9-9    ##########..........  50%    14%  vence B
+R19    10-9    #######.............  34%    16%  vence A
+R20    10-10   ##########..........  50%    16%  vence B
+R21    11-10   ######..............  31%    19%  vence A
+R22    11-11   ##########..........  50%    19%  vence B
+R23    11-12   ###############.....  75%    25%  vence B
+R24    12-12   ##########..........  50%    25%  vence A
+R25    13-12   #######.............  34%    16%  vence A
+R26    13-13   ##########..........  50%    16%  vence B
+R27    14-13   ######..............  31%    19%  vence A
+R28    14-14   ##########..........  50%    19%  vence B
+R29    14-15   ###############.....  75%    25%  vence B
+R30    14-16   #################### 100%    25%  vence B
+```
+
+Os três maiores saltos:
+
+- **R23** (25%): 11-11 → 11-12, vence o Time B; compra: quem venceu 5.760$, quem perdeu 4.950$; clutch de molodoy contra 1; 3K de molodoy; bomba plantada.
+- **R24** (25%): 11-12 → 12-12, vence o Time A; compra: quem venceu 2.900$, quem perdeu 5.470$; 3K de TeSeS.
+- **R29** (25%): 14-14 → 14-15, vence o Time B; compra: quem venceu 6.520$, quem perdeu 5.600$; bomba plantada.
+
+O que cada regra diria:
+
+- **A:** R23 (empate no topo) — maior salto da partida, 25%, acima do piso de 12%.
+- **B:** R23 (empate no topo) — o maior salto vale 2,12x o round típico da partida (exigido 1,68x).
+- **C:** R28 — virada definitiva: o vencedor passou de 31% para 50% e não ficou mais abaixo de 50%.
+- **D:** R28 — houve virada (regra C): virada definitiva: o vencedor passou de 31% para 50% e não ficou mais abaixo de 50%.
+
+**Esta partida teve round decisivo? Qual? Ou foi construída ao longo do jogo?**
+
+Sua resposta: ____
+
+### match_21 — de_nuke, 13-8 (21 rounds)
+
+```
+round  placar   chance do vencedor (Time A) depois do round   |ΔP|
+R1      0-1    ########............  42%     8%  vence B
+R2      0-2    #######.............  34%     8%  vence B
+R3      0-3    #####...............  26%     8%  vence B
+R4      0-4    ####................  19%     7%  vence B
+R5      1-4    #####...............  25%     6%  vence A
+R6      2-4    ######..............  32%     7%  vence A
+R7      3-4    ########............  41%     8%  vence A
+R8      4-4    ##########..........  50%     9%  vence A
+R9      5-4    ############........  60%    10%  vence A
+R10     5-5    ##########..........  50%    10%  vence B
+R11     5-6    ########............  40%    10%  vence B
+R12     5-7    ######..............  29%    10%  vence B
+R13     6-7    ########............  39%    10%  vence A
+R14     7-7    ##########..........  50%    11%  vence A
+R15     8-7    ############........  62%    12%  vence A
+R16     9-7    ###############.....  75%    12%  vence A
+R17    10-7    #################...  86%    11%  vence A
+R18    11-7    ###################.  94%     8%  vence A
+R19    12-7    ####################  98%     5%  vence A
+R20    12-8    ###################.  97%     2%  vence B
+R21    13-8    #################### 100%     3%  vence A
+```
+
+Os três maiores saltos:
+
+- **R15** (12%): 7-7 → 8-7, vence o Time A; compra: quem venceu 5.260$, quem perdeu 4.450$; 3K de XANTARES.
+- **R16** (12%): 8-7 → 9-7, vence o Time A; compra: quem venceu 6.130$, quem perdeu 1.380$. Frase do round: "Round de economia: o time entrou com 1.380$ de equipamento médio contra 6.130$ do adversário, 4.750$ de diferença. Perder aqui é esperado, e o que vale olhar é quanto dano o time conseguiu tirar."
+- **R14** (11%): 6-7 → 7-7, vence o Time A; compra: quem venceu 4.330$, quem perdeu 400$. Frase do round: "Round de economia: o time entrou com 400$ de equipamento médio contra 4.330$ do adversário, 3.930$ de diferença. Perder aqui é esperado, e o que vale olhar é quanto dano o time conseguiu tirar."
+
+O que cada regra diria:
+
+- **A:** R15 (empate no topo) — maior salto da partida, 12%, acima do piso de 12%.
+- **B:** nenhum round — nenhum round se destaca: o maior salto vale 1,47x o round típico da partida (exigido 1,68x).
+- **C:** R14 — virada definitiva: o vencedor passou de 39% para 50% e não ficou mais abaixo de 50%.
+- **D:** R14 — houve virada (regra C): virada definitiva: o vencedor passou de 39% para 50% e não ficou mais abaixo de 50%.
+
+**Esta partida teve round decisivo? Qual? Ou foi construída ao longo do jogo?**
+
+Sua resposta: ____
+
+### match_22 — de_mirage, 7-13 (20 rounds)
+
+```
+round  placar   chance do vencedor (Time B) depois do round   |ΔP|
+R1      0-1    ############........  58%     8%  vence B
+R2      0-2    #############.......  66%     8%  vence B
+R3      0-3    ###############.....  74%     8%  vence B
+R4      0-4    ################....  81%     7%  vence B
+R5      0-5    #################...  87%     6%  vence B
+R6      0-6    ##################..  92%     5%  vence B
+R7      0-7    ###################.  95%     4%  vence B
+R8      1-7    ###################.  93%     2%  vence A
+R9      1-8    ###################.  96%     3%  vence B
+R10     1-9    ####################  98%     2%  vence B
+R11     2-9    ###################.  97%     1%  vence A
+R12     3-9    ###################.  95%     2%  vence A
+R13     3-10   ####################  98%     3%  vence B
+R14     3-11   ####################  99%     1%  vence B
+R15     3-12   #################### 100%     0%  vence B
+R16     4-12   #################### 100%     0%  vence A
+R17     5-12   #################### 100%     0%  vence A
+R18     6-12   ####################  99%     0%  vence A
+R19     7-12   ####################  98%     1%  vence A
+R20     7-13   #################### 100%     2%  vence B
+```
+
+Os três maiores saltos:
+
+- **R1** (8%): 0-0 → 0-1, vence o Time B; compra: quem venceu 800$, quem perdeu 900$. Frase do round: "Round de economia: o time entrou com 900$ de equipamento médio contra 800$ do adversário. Os dois entraram com equipamento parecido, então a economia não explica a derrota — o round foi decidido no confronto."
+- **R2** (8%): 0-1 → 0-2, vence o Time B; compra: quem venceu 4.060$, quem perdeu 400$. Frase do round: "Round de economia: o time entrou com 400$ de equipamento médio contra 4.060$ do adversário, 3.660$ de diferença. Perder aqui é esperado, e o que vale olhar é quanto dano o time conseguiu tirar."
+- **R3** (8%): 0-2 → 0-3, vence o Time B; compra: quem venceu 5.930$, quem perdeu 4.600$; 3K de kyxsan.
+
+O que cada regra diria:
+
+- **A:** nenhum round — o maior salto (8%) não passa do piso de 12%.
+- **B:** R1 (empate no topo) — o maior salto vale 3,63x o round típico da partida (exigido 1,68x).
+- **C:** nenhum round — sem virada: o vencedor nunca esteve abaixo de 50% de chance.
+- **D:** R1 (empate no topo) — sem virada (regra B): o maior salto vale 3,63x o round típico da partida (exigido 1,68x).
+
+**Esta partida teve round decisivo? Qual? Ou foi construída ao longo do jogo?**
+
+Sua resposta: ____
+
+### match_26 — de_anubis, 13-6 (19 rounds)
+
+```
+round  placar   chance do vencedor (Time A) depois do round   |ΔP|
+R1      0-1    ########............  42%     8%  vence B
+R2      0-2    #######.............  34%     8%  vence B
+R3      0-3    #####...............  26%     8%  vence B
+R4      1-3    #######.............  33%     7%  vence A
+R5      2-3    ########............  41%     8%  vence A
+R6      3-3    ##########..........  50%     9%  vence A
+R7      4-3    ############........  59%     9%  vence A
+R8      5-3    ##############......  69%     9%  vence A
+R9      6-3    ###############.....  77%     9%  vence A
+R10     7-3    #################...  85%     8%  vence A
+R11     8-3    ##################..  91%     6%  vence A
+R12     9-3    ###################.  95%     4%  vence A
+R13    10-3    ####################  98%     3%  vence A
+R14    11-3    ####################  99%     1%  vence A
+R15    12-3    #################### 100%     0%  vence A
+R16    12-4    #################### 100%     0%  vence B
+R17    12-5    #################### 100%     0%  vence B
+R18    12-6    ####################  99%     0%  vence B
+R19    13-6    #################### 100%     1%  vence A
+```
+
+Os três maiores saltos:
+
+- **R7** (9%): 3-3 → 4-3, vence o Time A; compra: quem venceu 5.510$, quem perdeu 2.640$; 3K de flameZ; bomba plantada.
+- **R8** (9%): 4-3 → 5-3, vence o Time A; compra: quem venceu 5.510$, quem perdeu 5.730$; bomba plantada.
+- **R6** (9%): 2-3 → 3-3, vence o Time A; compra: quem venceu 5.510$, quem perdeu 5.590$; bomba plantada.
+
+O que cada regra diria:
+
+- **A:** nenhum round — o maior salto (9%) não passa do piso de 12%.
+- **B:** nenhum round — nenhum round se destaca: o maior salto vale 1,32x o round típico da partida (exigido 1,68x).
+- **C:** R6 — virada definitiva: o vencedor passou de 41% para 50% e não ficou mais abaixo de 50%.
+- **D:** R6 — houve virada (regra C): virada definitiva: o vencedor passou de 41% para 50% e não ficou mais abaixo de 50%.
+
+**Esta partida teve round decisivo? Qual? Ou foi construída ao longo do jogo?**
+
+Sua resposta: ____
+
+### match_27 — de_nuke, 5-13 (18 rounds)
+
+```
+round  placar   chance do vencedor (Time B) depois do round   |ΔP|
+R1      1-0    ########............  42%     8%  vence A
+R2      1-1    ##########..........  50%     8%  vence B
+R3      2-1    ########............  42%     8%  vence A
+R4      2-2    ##########..........  50%     8%  vence B
+R5      2-3    ############........  59%     9%  vence B
+R6      2-4    ##############......  68%     9%  vence B
+R7      3-4    ############........  59%     8%  vence A
+R8      3-5    ##############......  69%     9%  vence B
+R9      3-6    ###############.....  77%     9%  vence B
+R10     3-7    #################...  85%     8%  vence B
+R11     3-8    ##################..  91%     6%  vence B
+R12     3-9    ###################.  95%     4%  vence B
+R13     3-10   ####################  98%     3%  vence B
+R14     3-11   ####################  99%     1%  vence B
+R15     3-12   #################### 100%     0%  vence B
+R16     4-12   #################### 100%     0%  vence A
+R17     5-12   #################### 100%     0%  vence A
+R18     5-13   #################### 100%     0%  vence B
+```
+
+Os três maiores saltos:
+
+- **R8** (9%): 3-4 → 3-5, vence o Time B; compra: quem venceu 5.890$, quem perdeu 3.980$.
+- **R5** (9%): 2-2 → 2-3, vence o Time B; compra: quem venceu 5.130$, quem perdeu 2.180$; 3K de magixx.
+- **R6** (9%): 2-3 → 2-4, vence o Time B; compra: quem venceu 5.420$, quem perdeu 220$; 3K de sh1ro. Frase do round: "Round de economia: o time entrou com 220$ de equipamento médio contra 5.420$ do adversário, 5.200$ de diferença. Perder aqui é esperado, e o que vale olhar é quanto dano o time conseguiu tirar."
+
+O que cada regra diria:
+
+- **A:** nenhum round — o maior salto (9%) não passa do piso de 12%.
+- **B:** nenhum round — nenhum round se destaca: o maior salto vale 1,18x o round típico da partida (exigido 1,68x).
+- **C:** R4 — virada definitiva: o vencedor passou de 42% para 50% e não ficou mais abaixo de 50%.
+- **D:** R4 — houve virada (regra C): virada definitiva: o vencedor passou de 42% para 50% e não ficou mais abaixo de 50%.
+
+**Esta partida teve round decisivo? Qual? Ou foi construída ao longo do jogo?**
+
+Sua resposta: ____
+
+### match_28 — de_mirage, 13-10 (23 rounds)
+
+```
+round  placar   chance do vencedor (Time A) depois do round   |ΔP|
+R1      0-1    ########............  42%     8%  vence B
+R2      0-2    #######.............  34%     8%  vence B
+R3      0-3    #####...............  26%     8%  vence B
+R4      1-3    #######.............  33%     7%  vence A
+R5      1-4    #####...............  25%     8%  vence B
+R6      2-4    ######..............  32%     7%  vence A
+R7      3-4    ########............  41%     8%  vence A
+R8      4-4    ##########..........  50%     9%  vence A
+R9      5-4    ############........  60%    10%  vence A
+R10     6-4    ##############......  70%    10%  vence A
+R11     7-4    ################....  79%     9%  vence A
+R12     7-5    ##############......  71%     8%  vence B
+R13     7-6    ############........  61%    10%  vence B
+R14     7-7    ##########..........  50%    11%  vence B
+R15     7-8    ########............  38%    12%  vence B
+R16     7-9    #####...............  25%    12%  vence B
+R17     8-9    #######.............  36%    11%  vence A
+R18     9-9    ##########..........  50%    14%  vence A
+R19    10-9    #############.......  66%    16%  vence A
+R20    11-9    ################....  81%    16%  vence A
+R21    12-9    ###################.  94%    12%  vence A
+R22    12-10   ##################..  88%     6%  vence B
+R23    13-10   #################### 100%    12%  vence A
+```
+
+Os três maiores saltos:
+
+- **R19** (16%): 9-9 → 10-9, vence o Time A; compra: quem venceu 6.300$, quem perdeu 1.840$; 3K de donk. Frase do round: "Round de economia: o time entrou com 1.840$ de equipamento médio contra 6.300$ do adversário, 4.460$ de diferença. Perder aqui é esperado, e o que vale olhar é quanto dano o time conseguiu tirar."
+- **R20** (16%): 10-9 → 11-9, vence o Time A; compra: quem venceu 6.180$, quem perdeu 4.440$.
+- **R18** (14%): 8-9 → 9-9, vence o Time A; compra: quem venceu 5.410$, quem perdeu 4.910$; 3K de apEX.
+
+O que cada regra diria:
+
+- **A:** R19 (empate no topo) — maior salto da partida, 16%, acima do piso de 12%.
+- **B:** nenhum round — nenhum round se destaca: o maior salto vale 1,62x o round típico da partida (exigido 1,68x).
+- **C:** R18 — virada definitiva: o vencedor passou de 36% para 50% e não ficou mais abaixo de 50%.
+- **D:** R18 — houve virada (regra C): virada definitiva: o vencedor passou de 36% para 50% e não ficou mais abaixo de 50%.
+
+**Esta partida teve round decisivo? Qual? Ou foi construída ao longo do jogo?**
+
+Sua resposta: ____
+
+### match_30 — de_nuke, 9-13 (22 rounds)
+
+```
+round  placar   chance do vencedor (Time B) depois do round   |ΔP|
+R1      0-1    ############........  58%     8%  vence B
+R2      1-1    ##########..........  50%     8%  vence A
+R3      1-2    ############........  58%     8%  vence B
+R4      1-3    #############.......  67%     8%  vence B
+R5      1-4    ###############.....  75%     8%  vence B
+R6      1-5    ################....  82%     7%  vence B
+R7      1-6    ##################..  88%     6%  vence B
+R8      2-6    #################...  83%     5%  vence A
+R9      3-6    ###############.....  77%     6%  vence A
+R10     4-6    ##############......  70%     8%  vence A
+R11     5-6    ############........  60%     9%  vence A
+R12     6-6    ##########..........  50%    10%  vence A
+R13     6-7    ############........  61%    11%  vence B
+R14     6-8    ###############.....  73%    11%  vence B
+R15     7-8    ############........  62%    10%  vence A
+R16     7-9    ###############.....  75%    12%  vence B
+R17     7-10   #################...  86%    11%  vence B
+R18     7-11   ###################.  94%     8%  vence B
+R19     8-11   ##################..  89%     5%  vence A
+R20     8-12   ###################.  97%     8%  vence B
+R21     9-12   ###################.  94%     3%  vence A
+R22     9-13   #################### 100%     6%  vence B
+```
+
+Os três maiores saltos:
+
+- **R16** (12%): 7-8 → 7-9, vence o Time B; compra: quem venceu 4.160$, quem perdeu 5.860$; clutch de YEKINDAR contra 1; 3K de YEKINDAR; bomba plantada.
+- **R13** (11%): 6-6 → 6-7, vence o Time B; compra: quem venceu 870$, quem perdeu 800$; bomba plantada. Frase do round: "Round de economia: o time entrou com 800$ de equipamento médio contra 870$ do adversário. Os dois entraram com equipamento parecido, então a economia não explica a derrota — o round foi decidido no confronto."
+- **R14** (11%): 6-7 → 6-8, vence o Time B; compra: quem venceu 3.720$, quem perdeu 2.690$.
+
+O que cada regra diria:
+
+- **A:** R16 — maior salto da partida, 12%, acima do piso de 12%.
+- **B:** nenhum round — nenhum round se destaca: o maior salto vale 1,53x o round típico da partida (exigido 1,68x).
+- **C:** nenhum round — sem virada: o vencedor nunca esteve abaixo de 50% de chance.
+- **D:** nenhum round — sem virada (regra B): nenhum round se destaca: o maior salto vale 1,53x o round típico da partida (exigido 1,68x).
+
+**Esta partida teve round decisivo? Qual? Ou foi construída ao longo do jogo?**
+
+Sua resposta: ____
+
+### match_32 — de_mirage, 16-19 (35 rounds)
+
+```
+round  placar   chance do vencedor (Time B) depois do round   |ΔP|
+R1      1-0    ########............  42%     8%  vence A
+R2      2-0    #######.............  34%     8%  vence A
+R3      3-0    #####...............  26%     8%  vence A
+R4      4-0    ####................  19%     7%  vence A
+R5      4-1    #####...............  25%     6%  vence B
+R6      4-2    ######..............  32%     7%  vence B
+R7      4-3    ########............  41%     8%  vence B
+R8      4-4    ##########..........  50%     9%  vence B
+R9      4-5    ############........  60%    10%  vence B
+R10     4-6    ##############......  70%    10%  vence B
+R11     5-6    ############........  60%     9%  vence A
+R12     5-7    ##############......  71%    10%  vence B
+R13     6-7    ############........  61%    10%  vence A
+R14     7-7    ##########..........  50%    11%  vence A
+R15     8-7    ########............  38%    12%  vence A
+R16     8-8    ##########..........  50%    12%  vence B
+R17     9-8    #######.............  36%    14%  vence A
+R18    10-8    #####...............  23%    14%  vence A
+R19    10-9    #######.............  34%    12%  vence B
+R20    10-10   ##########..........  50%    16%  vence B
+R21    10-11   ##############......  69%    19%  vence B
+R22    11-11   ##########..........  50%    19%  vence A
+R23    11-12   ###############.....  75%    25%  vence B
+R24    12-12   ##########..........  50%    25%  vence A
+R25    13-12   #######.............  34%    16%  vence A
+R26    14-12   ####................  19%    16%  vence A
+R27    15-12   #...................   6%    12%  vence A
+R28    15-13   ##..................  12%     6%  vence B
+R29    15-14   #####...............  25%    12%  vence B
+R30    15-15   ##########..........  50%    25%  vence B
+R31    16-15   #######.............  34%    16%  vence A
+R32    16-16   ##########..........  50%    16%  vence B
+R33    16-17   ##############......  69%    19%  vence B
+R34    16-18   ##################..  88%    19%  vence B
+R35    16-19   #################### 100%    12%  vence B
+```
+
+Os três maiores saltos:
+
+- **R23** (25%): 11-11 → 11-12, vence o Time B; compra: quem venceu 5.230$, quem perdeu 5.820$; bomba plantada.
+- **R24** (25%): 11-12 → 12-12, vence o Time A; compra: quem venceu 5.150$, quem perdeu 5.630$; 3K de kyxsan.
+- **R30** (25%): 15-14 → 15-15, vence o Time B; compra: quem venceu 6.620$, quem perdeu 5.730$; 3K de yuurih.
+
+O que cada regra diria:
+
+- **A:** R23 (empate no topo) — maior salto da partida, 25%, acima do piso de 12%.
+- **B:** R23 (empate no topo) — o maior salto vale 2,03x o round típico da partida (exigido 1,68x).
+- **C:** R32 — virada definitiva: o vencedor passou de 34% para 50% e não ficou mais abaixo de 50%.
+- **D:** R32 — houve virada (regra C): virada definitiva: o vencedor passou de 34% para 50% e não ficou mais abaixo de 50%.
+
+**Esta partida teve round decisivo? Qual? Ou foi construída ao longo do jogo?**
+
+Sua resposta: ____
+
+### match_34 — de_mirage, 9-13 (22 rounds)
+
+```
+round  placar   chance do vencedor (Time B) depois do round   |ΔP|
+R1      0-1    ############........  58%     8%  vence B
+R2      0-2    #############.......  66%     8%  vence B
+R3      1-2    ############........  58%     8%  vence A
+R4      1-3    #############.......  67%     8%  vence B
+R5      1-4    ###############.....  75%     8%  vence B
+R6      1-5    ################....  82%     7%  vence B
+R7      1-6    ##################..  88%     6%  vence B
+R8      1-7    ###################.  93%     5%  vence B
+R9      1-8    ###################.  96%     3%  vence B
+R10     2-8    ###################.  94%     2%  vence A
+R11     2-9    ###################.  97%     3%  vence B
+R12     2-10   ####################  99%     2%  vence B
+R13     3-10   ####################  98%     1%  vence A
+R14     4-10   ###################.  97%     1%  vence A
+R15     5-10   ###################.  95%     2%  vence A
+R16     6-10   ##################..  91%     4%  vence A
+R17     7-10   #################...  86%     5%  vence A
+R18     8-10   ###############.....  77%     8%  vence A
+R19     8-11   ##################..  89%    12%  vence B
+R20     9-11   ################....  81%     8%  vence A
+R21     9-12   ###################.  94%    12%  vence B
+R22     9-13   #################### 100%     6%  vence B
+```
+
+Os três maiores saltos:
+
+- **R21** (12%): 9-11 → 9-12, vence o Time B; compra: quem venceu 2.450$, quem perdeu 5.380$; clutch de flameZ contra 1; bomba plantada.
+- **R19** (12%): 8-10 → 8-11, vence o Time B; compra: quem venceu 4.800$, quem perdeu 6.050$; clutch de mezii contra 2; 3K de mezii; bomba plantada.
+- **R4** (8%): 1-2 → 1-3, vence o Time B; compra: quem venceu 5.290$, quem perdeu 5.020$.
+
+O que cada regra diria:
+
+- **A:** R21 (empate no topo) — maior salto da partida, 12%, acima do piso de 12%.
+- **B:** R21 (empate no topo) — o maior salto vale 2,03x o round típico da partida (exigido 1,68x).
+- **C:** nenhum round — sem virada: o vencedor nunca esteve abaixo de 50% de chance.
+- **D:** R21 (empate no topo) — sem virada (regra B): o maior salto vale 2,03x o round típico da partida (exigido 1,68x).
+
+**Esta partida teve round decisivo? Qual? Ou foi construída ao longo do jogo?**
+
+Sua resposta: ____
+
+### match_36 — de_mirage, 8-13 (21 rounds)
+
+```
+round  placar   chance do vencedor (Time B) depois do round   |ΔP|
+R1      0-1    ############........  58%     8%  vence B
+R2      0-2    #############.......  66%     8%  vence B
+R3      0-3    ###############.....  74%     8%  vence B
+R4      1-3    #############.......  67%     7%  vence A
+R5      1-4    ###############.....  75%     8%  vence B
+R6      1-5    ################....  82%     7%  vence B
+R7      1-6    ##################..  88%     6%  vence B
+R8      1-7    ###################.  93%     5%  vence B
+R9      2-7    ##################..  89%     3%  vence A
+R10     2-8    ###################.  94%     5%  vence B
+R11     3-8    ##################..  91%     3%  vence A
+R12     4-8    #################...  87%     4%  vence A
+R13     5-8    ################....  81%     6%  vence A
+R14     6-8    ###############.....  73%     8%  vence A
+R15     7-8    ############........  62%    10%  vence A
+R16     7-9    ###############.....  75%    12%  vence B
+R17     7-10   #################...  86%    11%  vence B
+R18     8-10   ###############.....  77%     8%  vence A
+R19     8-11   ##################..  89%    12%  vence B
+R20     8-12   ###################.  97%     8%  vence B
+R21     8-13   #################### 100%     3%  vence B
+```
+
+Os três maiores saltos:
+
+- **R16** (12%): 7-8 → 7-9, vence o Time B; compra: quem venceu 4.820$, quem perdeu 5.010$; bomba plantada.
+- **R19** (12%): 8-10 → 8-11, vence o Time B; compra: quem venceu 1.970$, quem perdeu 5.880$; clutch de sh1ro contra 2; 3K de sh1ro; bomba plantada.
+- **R17** (11%): 7-9 → 7-10, vence o Time B; compra: quem venceu 5.060$, quem perdeu 5.000$; bomba plantada.
+
+O que cada regra diria:
+
+- **A:** R16 (empate no topo) — maior salto da partida, 12%, acima do piso de 12%.
+- **B:** nenhum round — nenhum round se destaca: o maior salto vale 1,60x o round típico da partida (exigido 1,68x).
+- **C:** nenhum round — sem virada: o vencedor nunca esteve abaixo de 50% de chance.
+- **D:** nenhum round — sem virada (regra B): nenhum round se destaca: o maior salto vale 1,60x o round típico da partida (exigido 1,68x).
+
+**Esta partida teve round decisivo? Qual? Ou foi construída ao longo do jogo?**
+
+Sua resposta: ____
+
+### match_37 — de_dust2, 16-14 (30 rounds)
+
+```
+round  placar   chance do vencedor (Time A) depois do round   |ΔP|
+R1      1-0    ############........  58%     8%  vence A
+R2      1-1    ##########..........  50%     8%  vence B
+R3      2-1    ############........  58%     8%  vence A
+R4      3-1    #############.......  67%     8%  vence A
+R5      3-2    ############........  59%     8%  vence B
+R6      4-2    ##############......  68%     9%  vence A
+R7      5-2    ###############.....  76%     8%  vence A
+R8      6-2    #################...  83%     7%  vence A
+R9      6-3    ###############.....  77%     6%  vence B
+R10     6-4    ##############......  70%     8%  vence B
+R11     6-5    ############........  60%     9%  vence B
+R12     6-6    ##########..........  50%    10%  vence B
+R13     6-7    ########............  39%    11%  vence B
+R14     7-7    ##########..........  50%    11%  vence A
+R15     7-8    ########............  38%    12%  vence B
+R16     7-9    #####...............  25%    12%  vence B
+R17     7-10   ###.................  14%    11%  vence B
+R18     8-10   #####...............  23%     8%  vence A
+R19     9-10   #######.............  34%    12%  vence A
+R20    10-10   ##########..........  50%    16%  vence A
+R21    10-11   ######..............  31%    19%  vence B
+R22    10-12   ##..................  12%    19%  vence B
+R23    11-12   #####...............  25%    12%  vence A
+R24    12-12   ##########..........  50%    25%  vence A
+R25    13-12   #############.......  66%    16%  vence A
+R26    13-13   ##########..........  50%    16%  vence B
+R27    14-13   ##############......  69%    19%  vence A
+R28    15-13   ##################..  88%    19%  vence A
+R29    15-14   ###############.....  75%    12%  vence B
+R30    16-14   #################### 100%    25%  vence A
+```
+
+Os três maiores saltos:
+
+- **R24** (25%): 11-12 → 12-12, vence o Time A; compra: quem venceu 4.170$, quem perdeu 2.900$.
+- **R30** (25%): 15-14 → 16-14, vence o Time A; compra: quem venceu 5.590$, quem perdeu 6.450$; bomba plantada.
+- **R21** (19%): 10-10 → 10-11, vence o Time B; compra: quem venceu 5.370$, quem perdeu 6.310$; clutch de b1t contra 2; 3K de magixx.
+
+O que cada regra diria:
+
+- **A:** R24 (empate no topo) — maior salto da partida, 25%, acima do piso de 12%.
+- **B:** R24 (empate no topo) — o maior salto vale 2,22x o round típico da partida (exigido 1,68x).
+- **C:** R24 — virada definitiva: o vencedor passou de 25% para 50% e não ficou mais abaixo de 50%.
+- **D:** R24 — houve virada (regra C): virada definitiva: o vencedor passou de 25% para 50% e não ficou mais abaixo de 50%.
+
+**Esta partida teve round decisivo? Qual? Ou foi construída ao longo do jogo?**
+
+Sua resposta: ____
+
+### match_40 — de_nuke, 16-14 (30 rounds)
+
+```
+round  placar   chance do vencedor (Time A) depois do round   |ΔP|
+R1      1-0    ############........  58%     8%  vence A
+R2      2-0    #############.......  66%     8%  vence A
+R3      3-0    ###############.....  74%     8%  vence A
+R4      4-0    ################....  81%     7%  vence A
+R5      4-1    ###############.....  75%     6%  vence B
+R6      4-2    ##############......  68%     7%  vence B
+R7      4-3    ############........  59%     8%  vence B
+R8      4-4    ##########..........  50%     9%  vence B
+R9      4-5    ########............  40%    10%  vence B
+R10     4-6    ######..............  30%    10%  vence B
+R11     4-7    ####................  21%     9%  vence B
+R12     5-7    ######..............  29%     8%  vence A
+R13     6-7    ########............  39%    10%  vence A
+R14     7-7    ##########..........  50%    11%  vence A
+R15     7-8    ########............  38%    12%  vence B
+R16     8-8    ##########..........  50%    12%  vence A
+R17     8-9    #######.............  36%    14%  vence B
+R18     8-10   #####...............  23%    14%  vence B
+R19     8-11   ##..................  11%    12%  vence B
+R20     9-11   ####................  19%     8%  vence A
+R21    10-11   ######..............  31%    12%  vence A
+R22    10-12   ##..................  12%    19%  vence B
+R23    11-12   #####...............  25%    12%  vence A
+R24    12-12   ##########..........  50%    25%  vence A
+R25    12-13   #######.............  34%    16%  vence B
+R26    13-13   ##########..........  50%    16%  vence A
+R27    14-13   ##############......  69%    19%  vence A
+R28    14-14   ##########..........  50%    19%  vence B
+R29    15-14   ###############.....  75%    25%  vence A
+R30    16-14   #################### 100%    25%  vence A
+```
+
+Os três maiores saltos:
+
+- **R24** (25%): 11-12 → 12-12, vence o Time A; compra: quem venceu 5.800$, quem perdeu 3.450$.
+- **R29** (25%): 14-14 → 15-14, vence o Time A; compra: quem venceu 5.060$, quem perdeu 6.620$; 3K de w0nderful; bomba plantada.
+- **R30** (25%): 15-14 → 16-14, vence o Time A; compra: quem venceu 5.160$, quem perdeu 6.170$; bomba plantada.
+
+O que cada regra diria:
+
+- **A:** R24 (empate no topo) — maior salto da partida, 25%, acima do piso de 12%.
+- **B:** R24 (empate no topo) — o maior salto vale 2,17x o round típico da partida (exigido 1,68x).
+- **C:** R26 — virada definitiva: o vencedor passou de 34% para 50% e não ficou mais abaixo de 50%.
+- **D:** R26 — houve virada (regra C): virada definitiva: o vencedor passou de 34% para 50% e não ficou mais abaixo de 50%.
+
+**Esta partida teve round decisivo? Qual? Ou foi construída ao longo do jogo?**
+
+Sua resposta: ____
+
+### match_41 — de_inferno, 16-14 (30 rounds)
+
+```
+round  placar   chance do vencedor (Time A) depois do round   |ΔP|
+R1      1-0    ############........  58%     8%  vence A
+R2      2-0    #############.......  66%     8%  vence A
+R3      3-0    ###############.....  74%     8%  vence A
+R4      3-1    #############.......  67%     7%  vence B
+R5      3-2    ############........  59%     8%  vence B
+R6      3-3    ##########..........  50%     9%  vence B
+R7      3-4    ########............  41%     9%  vence B
+R8      3-5    ######..............  31%     9%  vence B
+R9      4-5    ########............  40%     9%  vence A
+R10     4-6    ######..............  30%    10%  vence B
+R11     5-6    ########............  40%     9%  vence A
+R12     5-7    ######..............  29%    10%  vence B
+R13     5-8    ####................  19%    10%  vence B
+R14     6-8    #####...............  27%     8%  vence A
+R15     7-8    ########............  38%    10%  vence A
+R16     8-8    ##########..........  50%    12%  vence A
+R17     9-8    #############.......  64%    14%  vence A
+R18     9-9    ##########..........  50%    14%  vence B
+R19    10-9    #############.......  66%    16%  vence A
+R20    10-10   ##########..........  50%    16%  vence B
+R21    11-10   ##############......  69%    19%  vence A
+R22    11-11   ##########..........  50%    19%  vence B
+R23    12-11   ###############.....  75%    25%  vence A
+R24    12-12   ##########..........  50%    25%  vence B
+R25    13-12   #############.......  66%    16%  vence A
+R26    14-12   ################....  81%    16%  vence A
+R27    14-13   ##############......  69%    12%  vence B
+R28    15-13   ##################..  88%    19%  vence A
+R29    15-14   ###############.....  75%    12%  vence B
+R30    16-14   #################### 100%    25%  vence A
+```
+
+Os três maiores saltos:
+
+- **R23** (25%): 11-11 → 12-11, vence o Time A; compra: quem venceu 5.510$, quem perdeu 4.110$; clutch de xertioN contra 1; 3K de kyousuke; bomba plantada.
+- **R24** (25%): 12-11 → 12-12, vence o Time B; compra: quem venceu 2.690$, quem perdeu 5.680$.
+- **R30** (25%): 15-14 → 16-14, vence o Time A; compra: quem venceu 5.780$, quem perdeu 6.350$; bomba plantada.
+
+O que cada regra diria:
+
+- **A:** R23 (empate no topo) — maior salto da partida, 25%, acima do piso de 12%.
+- **B:** R23 (empate no topo) — o maior salto vale 2,20x o round típico da partida (exigido 1,68x).
+- **C:** R16 — virada definitiva: o vencedor passou de 38% para 50% e não ficou mais abaixo de 50%.
+- **D:** R16 — houve virada (regra C): virada definitiva: o vencedor passou de 38% para 50% e não ficou mais abaixo de 50%.
+
+**Esta partida teve round decisivo? Qual? Ou foi construída ao longo do jogo?**
+
+Sua resposta: ____
+
+### match_42 — de_dust2, 17-19 (36 rounds)
+
+```
+round  placar   chance do vencedor (Time B) depois do round   |ΔP|
+R1      1-0    ########............  42%     8%  vence A
+R2      2-0    #######.............  34%     8%  vence A
+R3      3-0    #####...............  26%     8%  vence A
+R4      4-0    ####................  19%     7%  vence A
+R5      4-1    #####...............  25%     6%  vence B
+R6      4-2    ######..............  32%     7%  vence B
+R7      5-2    #####...............  24%     8%  vence A
+R8      6-2    ###.................  17%     7%  vence A
+R9      6-3    #####...............  23%     6%  vence B
+R10     7-3    ###.................  15%     8%  vence A
+R11     7-4    ####................  21%     6%  vence B
+R12     7-5    ######..............  29%     8%  vence B
+R13     8-5    ####................  19%    10%  vence A
+R14     9-5    ##..................  11%     8%  vence A
+R15     9-6    ###.................  17%     6%  vence B
+R16     9-7    #####...............  25%     8%  vence B
+R17     9-8    #######.............  36%    11%  vence B
+R18    10-8    #####...............  23%    14%  vence A
+R19    10-9    #######.............  34%    12%  vence B
+R20    11-9    ####................  19%    16%  vence A
+R21    11-10   ######..............  31%    12%  vence B
+R22    12-10   ##..................  12%    19%  vence A
+R23    12-11   #####...............  25%    12%  vence B
+R24    12-12   ##########..........  50%    25%  vence B
+R25    12-13   #############.......  66%    16%  vence B
+R26    12-14   ################....  81%    16%  vence B
+R27    13-14   ##############......  69%    12%  vence A
+R28    13-15   ##################..  88%    19%  vence B
+R29    14-15   ###############.....  75%    12%  vence A
+R30    15-15   ##########..........  50%    25%  vence A
+R31    15-16   #############.......  66%    16%  vence B
+R32    15-17   ################....  81%    16%  vence B
+R33    16-17   ##############......  69%    12%  vence A
+R34    17-17   ##########..........  50%    19%  vence A
+R35    17-18   ###############.....  75%    25%  vence B
+R36    17-19   #################### 100%    25%  vence B
+```
+
+Os três maiores saltos:
+
+- **R24** (25%): 12-11 → 12-12, vence o Time B; compra: quem venceu 5.170$, quem perdeu 4.140$; clutch de Jimpphat contra 1; 3K de Jimpphat; bomba plantada.
+- **R30** (25%): 14-15 → 15-15, vence o Time A; compra: quem venceu 6.180$, quem perdeu 6.680$; 4K de m0NESY; bomba plantada.
+- **R35** (25%): 17-17 → 17-18, vence o Time B; compra: quem venceu 5.550$, quem perdeu 6.070$; bomba plantada.
+
+O que cada regra diria:
+
+- **A:** R24 (empate no topo) — maior salto da partida, 25%, acima do piso de 12%.
+- **B:** R24 (empate no topo) — o maior salto vale 2,06x o round típico da partida (exigido 1,68x).
+- **C:** R24 — virada definitiva: o vencedor passou de 25% para 50% e não ficou mais abaixo de 50%.
+- **D:** R24 — houve virada (regra C): virada definitiva: o vencedor passou de 25% para 50% e não ficou mais abaixo de 50%.
+
+**Esta partida teve round decisivo? Qual? Ou foi construída ao longo do jogo?**
+
+Sua resposta: ____
+
+### match_48 — de_dust2, 13-6 (19 rounds)
+
+```
+round  placar   chance do vencedor (Time A) depois do round   |ΔP|
+R1      0-1    ########............  42%     8%  vence B
+R2      1-1    ##########..........  50%     8%  vence A
+R3      2-1    ############........  58%     8%  vence A
+R4      3-1    #############.......  67%     8%  vence A
+R5      3-2    ############........  59%     8%  vence B
+R6      4-2    ##############......  68%     9%  vence A
+R7      5-2    ###############.....  76%     8%  vence A
+R8      6-2    #################...  83%     7%  vence A
+R9      6-3    ###############.....  77%     6%  vence B
+R10     6-4    ##############......  70%     8%  vence B
+R11     7-4    ################....  79%     9%  vence A
+R12     7-5    ##############......  71%     8%  vence B
+R13     8-5    ################....  81%    10%  vence A
+R14     9-5    ##################..  89%     8%  vence A
+R15    10-5    ###################.  95%     6%  vence A
+R16    11-5    ####################  98%     4%  vence A
+R17    12-5    #################### 100%     2%  vence A
+R18    12-6    ####################  99%     0%  vence B
+R19    13-6    #################### 100%     1%  vence A
+```
+
+Os três maiores saltos:
+
+- **R13** (10%): 7-5 → 8-5, vence o Time A; compra: quem venceu 920$, quem perdeu 930$. Frase do round: "Round de economia: o time entrou com 930$ de equipamento médio contra 920$ do adversário. Os dois entraram com equipamento parecido, então a economia não explica a derrota — o round foi decidido no confronto."
+- **R11** (9%): 6-4 → 7-4, vence o Time A; compra: quem venceu 5.210$, quem perdeu 6.050$; 3K de flameZ; bomba plantada.
+- **R6** (9%): 3-2 → 4-2, vence o Time A; compra: quem venceu 4.770$, quem perdeu 5.360$; bomba plantada.
+
+O que cada regra diria:
+
+- **A:** nenhum round — o maior salto (10%) não passa do piso de 12%.
+- **B:** nenhum round — nenhum round se destaca: o maior salto vale 1,21x o round típico da partida (exigido 1,68x).
+- **C:** R2 — virada definitiva: o vencedor passou de 42% para 50% e não ficou mais abaixo de 50%.
+- **D:** R2 — houve virada (regra C): virada definitiva: o vencedor passou de 42% para 50% e não ficou mais abaixo de 50%.
+
+**Esta partida teve round decisivo? Qual? Ou foi construída ao longo do jogo?**
+
+Sua resposta: ____
+
+### match_51 — de_nuke, 10-13 (23 rounds)
+
+```
+round  placar   chance do vencedor (Time B) depois do round   |ΔP|
+R1      0-1    ############........  58%     8%  vence B
+R2      1-1    ##########..........  50%     8%  vence A
+R3      1-2    ############........  58%     8%  vence B
+R4      1-3    #############.......  67%     8%  vence B
+R5      1-4    ###############.....  75%     8%  vence B
+R6      1-5    ################....  82%     7%  vence B
+R7      1-6    ##################..  88%     6%  vence B
+R8      1-7    ###################.  93%     5%  vence B
+R9      2-7    ##################..  89%     3%  vence A
+R10     2-8    ###################.  94%     5%  vence B
+R11     3-8    ##################..  91%     3%  vence A
+R12     4-8    #################...  87%     4%  vence A
+R13     4-9    ###################.  93%     6%  vence B
+R14     5-9    ##################..  89%     4%  vence A
+R15     6-9    #################...  83%     6%  vence A
+R16     7-9    ###############.....  75%     8%  vence A
+R17     7-10   #################...  86%    11%  vence B
+R18     8-10   ###############.....  77%     8%  vence A
+R19     8-11   ##################..  89%    12%  vence B
+R20     9-11   ################....  81%     8%  vence A
+R21     9-12   ###################.  94%    12%  vence B
+R22    10-12   ##################..  88%     6%  vence A
+R23    10-13   #################### 100%    12%  vence B
+```
+
+Os três maiores saltos:
+
+- **R21** (12%): 9-11 → 9-12, vence o Time B; compra: quem venceu 2.280$, quem perdeu 5.970$; bomba plantada.
+- **R23** (12%): 10-12 → 10-13, vence o Time B; compra: quem venceu 2.560$, quem perdeu 5.880$; 3K de Jimpphat; bomba plantada.
+- **R19** (12%): 8-10 → 8-11, vence o Time B; compra: quem venceu 4.700$, quem perdeu 6.170$.
+
+O que cada regra diria:
+
+- **A:** R21 (empate no topo) — maior salto da partida, 12%, acima do piso de 12%.
+- **B:** nenhum round — nenhum round se destaca: o maior salto vale 1,60x o round típico da partida (exigido 1,68x).
+- **C:** nenhum round — sem virada: o vencedor nunca esteve abaixo de 50% de chance.
+- **D:** nenhum round — sem virada (regra B): nenhum round se destaca: o maior salto vale 1,60x o round típico da partida (exigido 1,68x).
+
+**Esta partida teve round decisivo? Qual? Ou foi construída ao longo do jogo?**
+
+Sua resposta: ____
+
+<!-- decisivo:fim -->

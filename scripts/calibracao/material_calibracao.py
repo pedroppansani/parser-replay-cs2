@@ -262,6 +262,9 @@ def main() -> None:
               "pergunta que só você responde; as respostas viram constante com data e tamanho de "
               "corpus no CLAUDE.md.", ""]
     partes += secao_pisos() + secao_grupos() + secao_forca() + secao_console() + secao_angulos_nuke()
+    # fase 6: o round decisivo (gerado também sozinho, sem mexer no resto)
+    from scripts.calibracao.material_decisivo import secao as secao_decisivo
+    partes += [""] + secao_decisivo() + [""]
     SAIDA.write_text("\n".join(partes), encoding="utf-8")
     print(f"Gravado em {SAIDA.relative_to(PROJECT_ROOT)} ({SAIDA.stat().st_size / 1024:.0f} KB)")
 
