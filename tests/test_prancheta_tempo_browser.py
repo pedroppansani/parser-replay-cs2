@@ -154,3 +154,56 @@ def test_funcao_muda_o_rotulo_e_a_velocidade_padrao_do_caminho(contexto, pagina)
     v_awp = interno(pg, "I.velocidade('AWPer', 'correndo')")
     assert pt["t"] == pytest.approx(ini["t"] + math.hypot(pt["x"] - ini["x"], pt["y"] - ini["y"]) / v_awp, abs=0.01)
     assert v_awp < interno(pg, "I.velocidade(null, 'correndo')")
+
+
+def _no_radar(pg, px, py):
+    c = pg.locator("#pr-mapa").bounding_box()
+    w = interno(pg, "I.radar().width")
+    return c["x"] + px * c["width"] / w, c["y"] + py * c["height"] / w
+
+
+def test_granada_real_no_horario_do_cabecote_poe_o_ponto_no_caminho_e_avisa_o_atraso(contexto, pagina):
+    pg = abre(contexto, pagina)
+    arrasta_do_banco(pg, "ct", "1", 0.15, 0.85)            # longe de onde se joga a smoke
+    pid = interno(pg, "S.sel.id")
+    interno(pg, f"(S.sel = {{tipo: 'peca', id: '{pid}'}}, I.defineTempo(10), 0)")
+    pg.evaluate("() => document.activeElement && document.activeElement.blur()")
+    pg.keyboard.press("1")
+    assert interno(pg, "I.estadoDaInteracao()") == "granada_destino"
+    r = interno(pg, "I.biblioteca().arremessos.filter(a => a.arma === 'smoke')[0]")
+    px = interno(pg, f"I.jogoParaPixel({r['destino'][0]}, {r['destino'][1]})")
+    pg.mouse.click(*_no_radar(pg, *px))
+    # a lista abre; a primeira opção é manter a desenhada, a escolhida é o arremesso real
+    itens = pg.locator(".pr-lista li")
+    assert itens.count() >= 2
+    itens.nth(1).click()
+    reais = [g for g in interno(pg, "S.e3.granadas").values() if g["arremesso"]]
+    assert len(reais) == 1 and reais[0]["t"] == 10 and reais[0]["jogador"] == pid
+    real = reais[0]["arremesso"]
+    pts = [p for p in interno(pg, f"S.e3.pecas['{pid}'].pontos") if not p["fora"] and abs(p["t"] - 10) < 1e-6]
+    assert len(pts) == 1 and (pts[0]["x"], pts[0]["y"]) == (real["origem"][0], real["origem"][1])
+    # ele não chega lá em 10 s: o aviso diz quanto atrasa, e adiar move granada e ponto
+    assert "s depois do arremesso" in pg.text_content("#pr-atraso")
+    novo = interno(pg, "S.atraso.t")
+    pg.click("#pr-adiar")
+    g = [g for g in interno(pg, "S.e3.granadas").values() if g["arremesso"]][0]
+    assert g["t"] == novo and g["jogador"] == pid
+    assert any(abs(p["t"] - novo) < 1e-6 and p["x"] == real["origem"][0] for p in interno(pg, f"S.e3.pecas['{pid}'].pontos"))
+    # cada ação é UM Ctrl+Z: desfaz o adiar e depois a escolha do arremesso inteira
+    pg.keyboard.press("Control+z")
+    assert [g for g in interno(pg, "S.e3.granadas").values() if g["arremesso"]][0]["t"] == 10
+    pg.keyboard.press("Control+z")
+    assert not [g for g in interno(pg, "S.e3.granadas").values() if g["arremesso"]]
+    assert not [p for p in interno(pg, f"S.e3.pecas['{pid}'].pontos") if abs(p["t"] - 10) < 1e-6]
+
+
+def test_botoes_de_granada_ficam_no_painel_da_direita_e_nao_na_barra(contexto, pagina):
+    pg = abre(contexto, pagina)
+    assert pg.locator("#pr-barra [data-arma]").count() == 0
+    assert pg.locator("aside [data-arma]").count() == 4
+    assert pg.locator("aside #pr-granadas canvas.pr-glifo").count() == 4
+    assert pg.locator('aside [data-ferramenta="buscar"]').count() == 1
+    # cor e espessura só com um pincel ativo
+    assert not pg.locator("#pr-contexto-desenho").is_visible()
+    pg.click('#pr-barra [data-ferramenta="caneta"]')
+    assert pg.locator("#pr-contexto-desenho").is_visible()

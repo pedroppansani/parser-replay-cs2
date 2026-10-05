@@ -842,6 +842,7 @@ var Prancheta = (function () {
   var CENTRO = null;
   var S = {
     doc: null, estado: null, passo: 0,     // índice do passo na lista
+    atraso: null,                           // arremesso real que o jogador não alcança a tempo
     t: 0,                                   // o CABEÇOTE: segundos desde o fim do freeze (formato 3)
     e3: null,                               // a tática no tempo (taticaNoTempo)
     caminho: null,                          // caminho sendo traçado: {peca, inicio, pontos, mao}
@@ -1515,9 +1516,13 @@ var Prancheta = (function () {
       arremesso real para o destino -- a primeira opção é manter a desenhada. */
   function criaGranadaDaAcao(destino) {
     var a = S.acao;
-    var op = emite("cria_granada", { granada: novoId(), arma: a.arma, passo: passoAtual(),
-                                     nivel: a.nivel === undefined ? S.andar : a.nivel,
-                                     origem: [a.origem[0], a.origem[1]], destino: [destino[0], destino[1]], arremesso: null });
+    var dados = { granada: novoId(), arma: a.arma, passo: passoAtual(),
+                  nivel: a.nivel === undefined ? S.andar : a.nivel,
+                  origem: [a.origem[0], a.origem[1]], destino: [destino[0], destino[1]], arremesso: null };
+    // formato 3: o horário é o do cabeçote e o arremessador, o jogador de onde
+    // ela sai (no marco os dois já saem da conversão dos passos)
+    if (M3 && (!noMarco() || a.de)) { dados.t = S.t; if (a.de) dados.jogador = a.de; }
+    var op = emite("cria_granada", dados);
     if (a.legado) {
       // "Desenhar à mão" do painel: a ferramenta fica, como sempre foi
       S.acao = { tipo: "granada", arma: a.arma, de: null, origem: null, legado: true };
@@ -1528,7 +1533,7 @@ var Prancheta = (function () {
       S.acao = null; S.sel = { tipo: "granada", id: op.granada };
     }
     if (cfg.biblioteca && !a.legado) {
-      S.sugestao = { granada: op.granada, de: a.de ? nomePeca(a.de) : "o ponto escolhido" };
+      S.sugestao = { granada: op.granada, de: a.de ? nomePeca(a.de) : "o ponto escolhido", peca: a.de || null };
       busca(destino, a.arma);
     } else if (!cfg.biblioteca && !a.legado) {
       S.aviso = "Sem arremessos reais neste mapa: não há partidas dele no corpus, então a granada fica desenhada à mão.";
@@ -1538,10 +1543,35 @@ var Prancheta = (function () {
 
   /** Trocar a granada desenhada pelo arremesso real escolhido na lista. */
   function trocaPorArremesso(r) {
-    var s = S.sugestao;
-    if (s && S.estado.granadas[s.granada]) emite("remove_granada", { granada: s.granada });
+    var s = S.sugestao, antes = [];
+    if (s && S.estado.granadas[s.granada]) antes.push(["remove_granada", { granada: s.granada }]);
+    var pid = s ? s.peca : null;
     S.sugestao = null;
-    usaArremesso(r);
+    usaArremesso(r, pid, antes);
+  }
+
+  /** Quando o arremessador consegue chegar à posição do arremesso: do último
+      ponto-chave dele antes do cabeçote, na velocidade da função dele. */
+  function chegadaPossivel(pid, x, y) {
+    var p = S.e3 && S.e3.pecas[pid];
+    if (!p) return null;
+    var antes = p.pontos.filter(function (pt) { return !pt.fora && pt.t < S.t - EPS_T; });
+    var base = antes.length ? antes[antes.length - 1] : null;
+    if (!base) { var q = quadro().pecas[pid]; if (!q) return null; base = { t: S.t, x: q.x, y: q.y }; }
+    return base.t + Math.hypot(x - base.x, y - base.y) / velocidade(funcaoDe(pid), "correndo");
+  }
+
+  /** As operações que põem a peça em (x, y) com o yaw NO HORÁRIO t: no marco,
+      move_peca e gira_peca do passo; fora dele, o ponto daquele horário ou um novo. */
+  function opsDoPonto(pid, t, x, y, nivel, yaw) {
+    var m = S.e3.marcos[marcoQueContem(t)];
+    if (m && Math.abs(m.t - t) < EPS_T) {
+      return [["move_peca", { peca: pid, passo: m.passo, x: x, y: y, nivel: nivel }],
+              ["gira_peca", { peca: pid, passo: m.passo, yaw: yaw }]];
+    }
+    var p = S.e3.pecas[pid], pt = p && p.pontos.filter(function (q) { return !q.fora && Math.abs(q.t - t) < EPS_T; }).pop();
+    if (pt) return [["move_ponto", { peca: pid, ponto: pt.id, t: t, x: x, y: y, nivel: nivel, yaw: yaw }]];
+    return [["cria_caminho", { peca: pid, pontos: [{ t: t, x: x, y: y, nivel: nivel, yaw: yaw }] }]];
   }
 
   /** Um nível para trás: ação pendente -> ferramenta de desenho -> seleção. */
@@ -2010,14 +2040,71 @@ var Prancheta = (function () {
     desenha(); atualizaBusca();
   }
 
-  function usaArremesso(r) {
-    var op = emite("cria_granada", {
-      granada: novoId(), arma: r.arma, passo: passoAtual(), nivel: nivelDoZ(r.origem[2]),
-      origem: r.origem.slice(0, 2), destino: r.destino.slice(0, 2), arremesso: r
-    });
-    S.sel = { tipo: "granada", id: op.granada };
+  /** Arremesso real escolhido. Com arremessador: a granada sai no horário do
+      cabeçote, o caminho dele ganha um ponto-chave na posição do arremesso (com
+      o yaw do arremesso), e se não dá tempo de chegar lá a interface AVISA
+      quanto atrasa e oferece adiar -- nunca teleporta em silêncio. Tudo é UMA
+      ação no desfazer (o lote inclui a granada desenhada que ele substitui). */
+  function usaArremesso(r, pid, antes) {
+    pid = pid === undefined ? (S.sel && S.sel.tipo === "peca" ? S.sel.id : null) : pid;
+    var dados = { granada: novoId(), arma: r.arma, passo: passoAtual(), nivel: nivelDoZ(r.origem[2]),
+                  origem: r.origem.slice(0, 2), destino: r.destino.slice(0, 2), arremesso: r };
+    var ops = (antes || []).slice();
+    S.atraso = null;
+    if (M3 && pid && S.estado.pecas[pid]) {
+      dados.t = S.t; dados.jogador = pid;
+      ops.push(["cria_granada", dados]);
+      var yaw = ((Math.round(r.yaw) % 360) + 360) % 360;
+      ops = ops.concat(opsDoPonto(pid, S.t, r.origem[0], r.origem[1], dados.nivel, yaw));
+      var chega = chegadaPossivel(pid, r.origem[0], r.origem[1]);
+      if (chega !== null && chega > S.t + 0.05) {
+        S.atraso = { granada: dados.granada, peca: pid, segundos: chega - S.t, t: Math.round(chega * 100) / 100,
+                     dados: dados, yaw: yaw };
+      }
+    } else {
+      if (M3 && !noMarco()) dados.t = S.t;
+      ops.push(["cria_granada", dados]);
+    }
+    emiteLote(ops);
+    S.sel = { tipo: "granada", id: dados.granada };
     S.busca = null; S.sugestao = null; S.acao = null; S.ferramenta = "mover";
     atualizaTudo();
+  }
+
+  /** "Adiar o arremesso": a granada passa para o horário em que ele chega, e o
+      ponto do arremesso vai junto. Uma ação no desfazer. */
+  function adiaArremesso() {
+    var a = S.atraso;
+    if (!a || !S.estado.granadas[a.granada]) return;
+    var dados = Object.assign({}, a.dados, { t: a.t });
+    S.atraso = null;
+    var t0 = S.t;
+    S.t = a.t; S.passo = marcoQueContem(S.t);
+    var ops = [["remove_granada", { granada: a.granada }], ["cria_granada", dados]];
+    // o ponto do horário antigo sai (se era ponto de caminho) e entra no novo
+    var p = S.e3.pecas[a.peca], velho = p && p.pontos.filter(function (q) {
+      return q.caminho && !q.fora && Math.abs(q.t - t0) < EPS_T && q.x === a.dados.origem[0] && q.y === a.dados.origem[1];
+    }).pop();
+    if (velho) ops.push(["move_ponto", { peca: a.peca, ponto: velho.id, t: a.t, x: velho.x, y: velho.y, nivel: velho.nivel, yaw: a.yaw }]);
+    else ops = ops.concat(opsDoPonto(a.peca, a.t, a.dados.origem[0], a.dados.origem[1], a.dados.nivel, a.yaw));
+    emiteLote(ops);
+    S.sel = { tipo: "granada", id: a.granada };
+    atualizaTudo();
+  }
+
+  /** Muda o horário de uma granada: sai e entra de novo com o MESMO id (as
+      notas e a seleção continuam valendo). Uma ação no desfazer. */
+  function mudaHorarioDaGranada(gid, t) {
+    var op = S.doc.operacoes.filter(function (o) { return o.tipo === "cria_granada" && o.granada === gid; }).pop();
+    var g = S.e3 && S.e3.granadas[gid];
+    if (!op || !g) return;
+    var dados = {};
+    Object.keys(op).forEach(function (k) { if (["id", "seq", "autor", "em", "tipo"].indexOf(k) < 0) dados[k] = op[k]; });
+    var est = S.estado.granadas[gid];
+    dados.origem = est.origem.slice(); dados.destino = est.destino.slice(); dados.nivel = est.nivel;
+    dados.arremesso = est.arremesso; dados.t = Math.max(0, Math.round(t * 100) / 100);
+    if (g.jogador) dados.jogador = g.jogador;
+    emiteLote([["remove_granada", { granada: gid }], ["cria_granada", dados]]);
   }
 
   /* ---------------------------------------------------------------------
@@ -2253,6 +2340,23 @@ var Prancheta = (function () {
     }
     var g = S.estado.granadas[S.sel.id];
     box.appendChild(el("h3", { texto: NOME_ARMA[g.arma] + " · passo " + (indiceDoPasso(g.passo) + 1) }));
+    var g3 = S.e3 && S.e3.granadas[S.sel.id];
+    if (g3) {
+      var gid = S.sel.id;
+      var hora = el("input", { type: "number", id: "pr-granada-t", step: "0.1", min: "0", value: String(g3.t),
+                               "aria-label": "Horário do arremesso (s)" });
+      hora.addEventListener("change", function () { var v = parseFloat(hora.value); if (isFinite(v)) mudaHorarioDaGranada(gid, v); });
+      box.appendChild(el("div", { class: "linha" }, [el("label", { for: "pr-granada-t", texto: "Jogada às" }), hora,
+        el("span", { class: "pr-meta", texto: MapCore.relogio(g3.t, S.e3.bomba ? S.e3.bomba.t : null, null, M3.SEGUNDOS_DO_ROUND, M3.SEGUNDOS_DA_BOMBA) +
+          (g3.jogador && S.estado.pecas[g3.jogador] ? " · " + nomePeca(g3.jogador) : "") })]));
+    }
+    if (S.atraso && S.atraso.granada === S.sel.id) {
+      var at = S.atraso;
+      box.appendChild(el("p", { class: "pr-alerta", id: "pr-atraso",
+        texto: nomePeca(at.peca) + " chega " + at.segundos.toFixed(1).replace(".", ",") + " s depois do arremesso." }));
+      box.appendChild(el("button", { class: "pr-b", id: "pr-adiar", onclick: adiaArremesso,
+        texto: "Adiar o arremesso para " + MapCore.relogio(at.t, S.e3.bomba ? S.e3.bomba.t : null, null, M3.SEGUNDOS_DO_ROUND, M3.SEGUNDOS_DA_BOMBA) }));
+    }
     if (g.arremesso) {
       var r = g.arremesso;
       box.appendChild(el("p", { class: "pr-meta", texto: r.jogador + " · " + r.partida + " round " + r.round + " (" + tempo(r.segundos_no_round) + ")" }));
@@ -2471,13 +2575,8 @@ var Prancheta = (function () {
     ferramentas.appendChild(sel);
     barra.appendChild(ferramentas);
 
-    var granadas = el("div", { class: "anot-grupo sempre", id: "pr-granadas" });
-    ["smoke", "flash", "he", "molotov"].forEach(function (a) {
-      granadas.appendChild(el("button", { "data-arma": a, texto: NOME_ARMA[a],
-        title: comAtalho(NOME_ARMA[a] + ": com um jogador selecionado sai dele; senão, clique em quem joga", ATALHO_DA_ARMA[a]),
-        onclick: function () { escolheArma(a); } }));
-    });
-    barra.appendChild(granadas);
+    // As granadas moram no painel da direita (seção Granadas, item 8.4): a barra
+    // de cima fica com vista, andares, pincéis, desfazer/refazer e Reproduzir.
 
     var desenho = el("div", { class: "anot-grupo sempre", id: "pr-desenho" });
     Object.keys(ROTULO_FERRAMENTA).forEach(function (id) {
@@ -2553,11 +2652,21 @@ var Prancheta = (function () {
     caixa("Jogadores", [el("div", { id: "pr-banco" }), el("div", { id: "pr-funcoes-banco", class: "pr-funcoes-banco" }),
       el("p", { class: "pr-dica", texto: "Clique numa ficha e depois no mapa, ou arraste." })]);
     caixa("Selecionado", [el("div", { id: "pr-selecao" })]);
-    caixa("Arremessos reais", [
+    var botoesDeGranada = el("div", { class: "pr-granadas-grandes", id: "pr-granadas" });
+    ["smoke", "flash", "he", "molotov"].forEach(function (a) {
+      var simbolo = el("canvas", { width: "56", height: "56", class: "pr-glifo", "aria-hidden": "true" });
+      var g2 = simbolo.getContext && simbolo.getContext("2d");
+      if (g2) MapCore.nadeGlyph(g2, a, 28, 28, 18, MapCore.NADE_COLOR[a], 0);
+      botoesDeGranada.appendChild(el("button", { "data-arma": a, class: "pr-granada-grande",
+        title: comAtalho(NOME_ARMA[a] + ": com um jogador selecionado sai dele, no horário do cabeçote; senão, clique em quem joga",
+                         ATALHO_DA_ARMA[a]),
+        onclick: function () { escolheArma(a); } }, [simbolo, el("span", { texto: NOME_ARMA[a] })]));
+    });
+    caixa("Granadas", [botoesDeGranada,
       el("div", { class: "linha", id: "pr-modos" }, [
         el("button", { "data-ferramenta": "mover", texto: "Selecionar", title: comAtalho("Selecionar e mover", "Selecionar"),
           onclick: function () { escolheFerramenta("mover"); } }),
-        el("button", { "data-ferramenta": "buscar", texto: "Buscar arremesso",
+        el("button", { "data-ferramenta": "buscar", texto: "Buscar arremesso real",
           title: "Clique onde a granada deve cair e veja os arremessos reais (o mesmo que escolher a granada na barra)",
           onclick: function () { escolheFerramenta("buscar"); } }),
         el("button", { "data-ferramenta": "granada", texto: "Desenhar à mão",
@@ -2980,7 +3089,8 @@ var Prancheta = (function () {
       problemasNoTempo: problemasNoTempo,
       vooEstimado: vooEstimado, velocidade: velocidade, M3: function () { return M3; },
       defineTempo: defineTempo, douglasPeucker: douglasPeucker, noMarco: noMarco, emiteLote: emiteLote,
-      TOLERANCIA_DP_PX: TOLERANCIA_DP_PX, ligaCaminhoPorClique: ligaCaminhoPorClique, reproduzAte: function (t) { reproduzAte(t); },
+      TOLERANCIA_DP_PX: TOLERANCIA_DP_PX, ligaCaminhoPorClique: ligaCaminhoPorClique,
+      adiaArremesso: adiaArremesso, mudaHorarioDaGranada: mudaHorarioDaGranada, reproduzAte: function (t) { reproduzAte(t); },
       comecaReproducao: comecaReproducao, editaAqui: editaAqui, toca: function (s) { toca(s); },
       problemas: problemas, problemasDaOrigem: problemasDaOrigem, textoDaOrigem: textoDaOrigem,
       centro: function () { return CENTRO; },
@@ -2994,7 +3104,8 @@ var Prancheta = (function () {
       ATALHOS: ATALHOS.map(function (x) { return { tecla: x.tecla, rotulo: x.rotulo, acao: x.acao }; }),
       LIMIAR_ARRASTO_PX: LIMIAR_ARRASTO_PX,
       armazem: function () { return Armazem; },
-      radar: function () { return cfg.radar; }
+      radar: function () { return cfg.radar; },
+      biblioteca: function () { return cfg.biblioteca; }
     }
   };
 })();
