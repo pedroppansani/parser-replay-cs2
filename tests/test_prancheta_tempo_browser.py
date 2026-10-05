@@ -387,3 +387,33 @@ def test_nome_do_lugar_e_o_mesmo_no_python_e_no_navegador(contexto, pagina):
     ev = {e["alvo"]: e for e in interno(pg, "I.eventosDe(S.e3)")}
     nome = interno(pg, "I.lugarDe(-500, -400, 0)")
     assert nome and ev["s"]["texto"].endswith("em " + nome)
+
+
+# --- 8.6: o que faltava da lista de testes da fase 8 -----------------------------
+
+def test_no_horario_da_smoke_o_arremessador_esta_na_origem_e_ela_dura_o_real(contexto, pagina):
+    pg = abre(contexto, pagina)
+    _tatica_no_tempo(pg)
+    g = interno(pg, "S.e3.granadas.s")
+    pg.click("#pr-reproduzir"); pg.click("#pr-toca")
+    interno(pg, f"(I.reproduzAte({g['t']}), 0)")
+    assert pg.text_content("#pr-relogio-grande") == interno(pg, f"I.relogioEm({g['t']})")
+    a = interno(pg, "S.reproducao.cena.pecas.a")
+    # o caminho passa pela origem do arremesso aos 8 s (5 s -> 12 s, linear)
+    assert math.hypot(a["x"] - g["origem"][0], a["y"] - g["origem"][1]) < 1.0
+    duracao = interno(pg, "I.M3().DURACAO_EFEITO_S.smoke")
+    chegada = g["t"] + g["voo_s"]
+    for t, vista in ((chegada + 0.1, True), (chegada + duracao - 0.1, True), (chegada + duracao + 0.1, False)):
+        interno(pg, f"(I.reproduzAte({t}), 0)")
+        assert ("s" in interno(pg, "S.reproducao.cena.granadas")) is vista, t
+        desenhada = [d for d in interno(pg, "S.ultimoDesenho") if d["tipo"] == "granada" and d["id"] == "s"]
+        assert bool(desenhada and desenhada[0]["area"]) is vista, t
+
+
+def test_a_funcao_aparece_no_roteiro(contexto, pagina):
+    pg = abre(contexto, pagina)
+    _tatica_no_tempo(pg)
+    interno(pg, "(I.emiteLote([['define_funcao', {peca: 'a', funcao: 'AWPer'}]]), 0)")
+    textos = [e["texto"] for e in interno(pg, "I.eventosDe(S.e3)") if e["tipo"] == "ponto"]
+    assert textos and all(t.startswith("TR 1 (AWPer) ") for t in textos)
+    assert "TR 1 (AWPer)" in pg.text_content("#pr-roteiro")
