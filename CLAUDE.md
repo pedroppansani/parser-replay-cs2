@@ -57,8 +57,8 @@ texto completo de cada uma está na nota do link (`notas/decisoes/`).
 - [1](notas/decisoes/1-peek-hold-liquido.md) Peek ou hold pelo deslocamento LÍQUIDO; jiggle (sair e voltar) é hold.
 - [2](notas/decisoes/2-peek-hold-posicao.md) Peek/hold usa a posição medida, não a flag `is_scoped`.
 - [3](notas/decisoes/3-awp-no-trade.md) Tiro de AWP que erra sem custar a vida é `no_trade`, fora da conversão.
-- [4](notas/decisoes/4-crosshair-contato.md) Crosshair placement só cobrado nas amostras antes de contato real (1 s).
-- [5](notas/decisoes/5-angulos-por-moda.md) Ângulos de pré-fire: moda circular dos dados; nunca bins fixos.
+- [4](notas/decisoes/4-crosshair-contato.md) Crosshair cobrado só nas amostras antes do contato real (1 s).
+- [5](notas/decisoes/5-angulos-por-moda.md) Pré-fire: moda circular dos dados; nunca bins fixos.
 - [6](notas/decisoes/6-desvio-de-setup.md) Desvio de setup: contra o padrão do próprio time, não um setup certo.
 - [7](notas/decisoes/7-cluster-por-round.md) Clustering é por (jogador, round), não por jogador.
 - [7a](notas/decisoes/7a-perfil-por-jogador.md) Perfil é a leitura; taxa com bruto, referência e amostra fraca.
@@ -80,10 +80,10 @@ texto completo de cada uma está na nota do link (`notas/decisoes/`).
 - [8h](notas/decisoes/8h-cegueira-reconstruida.md) Cegueira reconstruída de `flash_duration` sem `player_blind`.
 - [8i](notas/decisoes/8i-economia-do-corpus.md) Economia do rating estimada no corpus, por arma mais cara e colete.
 - [8j](notas/decisoes/8j-dano-no-mesmo-tick.md) `dmg_health_real` recalculado: acertos no mesmo tick não passam da vida.
-- [9](notas/decisoes/9-convencao-de-angulos.md) Pitch positivo olha para baixo; o teste roda a invertida de controle.
+- [9](notas/decisoes/9-convencao-de-angulos.md) Pitch positivo olha para baixo; o teste roda a invertida.
 - [10](notas/decisoes/10-paleta.md) Paleta validada (daltonismo, contraste); não trocar cor sem `valida_paleta`.
 - [11](notas/decisoes/11-kmeans-global.md) KMeans ajustado uma vez no corpus (`global_model.json`), não por partida.
-- [12](notas/decisoes/12-ancora-e-lurk-por-area.md) Âncora e lurk: por área do mapa (A/Mid/B), não por distância.
+- [12](notas/decisoes/12-ancora-e-lurk-por-area.md) Âncora e lurk por área (A/Mid/B), não por distância.
 - [13](notas/decisoes/13-entry-e-acao.md) Entry é quem dá o primeiro contato do time, não quem chega cedo.
 - [14](notas/decisoes/14-spawn-fora-da-particao.md) Spawn não é área de jogo; passagem rápida não é rotação.
 - [15](notas/decisoes/15-carrega-piano.md) Carrega piano é produto de esforço por benefício, em três formas.
@@ -126,7 +126,7 @@ texto completo de cada uma está na nota do link (`notas/decisoes/`).
 - [24](notas/decisoes/24-saida-fora-do-git.md) `docs/` fica fora do repositório; o Pages é artefato do CI.
 - [25](notas/decisoes/25-identidade-steamid.md) Identidade é o steamid; o nome é rótulo (`metrics/identidade.py`).
 - [26](notas/decisoes/26-invariantes.md) Dez invariantes sobre o corpus inteiro (`test_invariantes_corpus.py`).
-- [27](notas/decisoes/27-versoes.md) Cada partida grava a versão do parser (do interim), das métricas e o commit.
+- [27](notas/decisoes/27-versoes.md) Cada partida grava versão do parser, das métricas e o commit.
 - [28](notas/decisoes/28-determinismo.md) Processamento determinístico: `group_by`/`unique` com ordem declarada.
 - [29](notas/decisoes/29-lurker.md) Lurker: sem os rounds de AWP, relativo à função, mínimo de 8 rounds.
 - [30](notas/decisoes/30-tres-niveis.md) Página da partida: números só dela; régua anônima do corpus; sem seletor.
@@ -169,6 +169,7 @@ Não resolva nenhum destes sozinho; pergunte. Detalhe e histórico de cada um em
 
 ## Pendências
 
+- Decisões abertas: [cartões](notas/PENDENCIAS_PARA_O_PEDRO.md).
 - No jogo: [`PENDENCIAS_NO_JOGO.md`](PENDENCIAS_NO_JOGO.md).
 - Demos a baixar: [`RECUPERACAO_DEMOS.md`](RECUPERACAO_DEMOS.md).
 - Limitações conhecidas: [`notas/limitacoes.md`](notas/limitacoes.md).
