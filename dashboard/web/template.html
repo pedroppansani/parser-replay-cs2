@@ -1839,16 +1839,11 @@
     var b = bombState();
     var main, armed = false;
 
-    if (b.plant !== null && elapsed >= b.plant) {
-      // Depois do plant o relógio do round deixa de existir: o que importa é a
-      // bomba. Congela no defuse/explosão — passado esse ponto o número não
-      // significaria mais nada.
-      var since = Math.min(elapsed, b.stop === null ? elapsed : b.stop) - b.plant;
-      main = mmss(Math.max(0, CLOCK.bomb_seconds - since));
-      armed = true;
-    } else {
-      main = mmss(Math.max(0, CLOCK.round_seconds - elapsed));
-    }
+    // Depois do plant o relógio do round deixa de existir: o que importa é a
+    // bomba, congelada no defuse/explosão. A conta é a do map_core.js, a mesma
+    // que a prancheta usa (MapCore.relogio).
+    main = MapCore.relogio(elapsed, b.plant, b.stop, CLOCK.round_seconds, CLOCK.bomb_seconds);
+    armed = b.plant !== null && elapsed >= b.plant;
     return { main: main, armed: armed };
   }
 

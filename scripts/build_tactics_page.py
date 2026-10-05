@@ -42,6 +42,7 @@ def mapas_disponiveis() -> list[str]:
 
 
 from scripts.meta_da_pagina import meta_tags  # noqa: E402
+from metrics.tactics import modelo3_para_a_pagina  # noqa: E402
 
 
 def _js(valor) -> str:
@@ -72,6 +73,7 @@ def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | Non
         .replace("/*__RADAR__*/null", _js(radar))
         .replace("/*__LINEUPS__*/null", _js(biblioteca))
         .replace("/*__MAPAS__*/[]", _js(mapas))
+        .replace("/*__MODELO3__*/null", _js(modelo3_para_a_pagina()))
         .replace("<!--__META__-->", meta_tags(
             f"Prancheta tática · {rotulos.get(mapa, mapa)}",
             f"Monte uma tática na {rotulos.get(mapa, mapa)}: jogadores, granadas reais do corpus e passos.",

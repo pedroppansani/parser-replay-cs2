@@ -30,6 +30,8 @@ o conflito, porque ela é uma constante exata do jogo e a outra é estatística.
 """
 from __future__ import annotations
 
+from metrics.constantes import SEGUNDOS_DA_BOMBA
+
 import numpy as np
 import polars as pl
 
@@ -37,7 +39,7 @@ import polars as pl
 CANDIDATES = (64, 128)
 
 # Constantes físicas do jogo usadas como gabarito.
-C4_TIMER_SECONDS = 40.0
+C4_TIMER_SECONDS = SEGUNDOS_DA_BOMBA   # metrics/constantes.py
 MAX_PLAYER_SPEED = 250.0  # correndo com faca; qualquer arma é mais lento
 
 DEFAULT_TICKRATE = 64

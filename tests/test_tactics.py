@@ -206,12 +206,12 @@ def test_a_fixture_v2_gerada_pela_interface_reproduz_o_estado_gravado():
     """Fase 8, item 8.0: a base da migração para o formato 3. Gerada pela
     interface do código do formato 2 (tests/fixtures/gera_tatica_v2.py), com
     todas as operações e a origem do instante."""
-    from metrics.tactics import OPERACOES
+    from metrics.tactics import OPERACOES, OPERACOES_DO_FORMATO_3
 
     doc = json.loads((FIXTURES / "tatica_v2.json").read_text(encoding="utf-8"))
     esperado = json.loads((FIXTURES / "tatica_v2_estado.json").read_text(encoding="utf-8"))
     assert doc["versao"] == 2 and doc.get("origem")
-    assert set(OPERACOES) <= {o["tipo"] for o in doc["operacoes"]}
+    assert set(OPERACOES) - set(OPERACOES_DO_FORMATO_3) <= {o["tipo"] for o in doc["operacoes"]}
     assert any(o["tipo"] == "cria_granada" and o.get("arremesso") for o in doc["operacoes"])
     assert valida(doc) == esperado
 
