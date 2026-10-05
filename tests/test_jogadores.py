@@ -61,14 +61,24 @@ from tests.test_annotations_browser import abre, contexto, navegador, partida  #
 
 
 def test_a_comparacao_na_partida_so_oferece_jogadores_daquela_partida(contexto, partida):
+    # resposta 6 do Pedro: "comparar dois" fica na aba Jogadores, não na Perfil
     pg = abre(contexto, partida)
-    pg.click('[role=tab][data-tab="perfil"]')
-    opcoes = pg.eval_on_selector_all("#pf-b option", "os => os.map(o => o.value).filter(Boolean)")
+    pg.click('[role=tab][data-tab="jogadores"]')
     nomes = pg.evaluate("() => JSON.parse(document.getElementById('payload').textContent).player_profile.map(p => p.name)")
-    assert sorted(opcoes) == sorted(nomes) and len(opcoes) == 10
-    # as métricas de impacto entram na comparação, com o rótulo do Python
-    pg.select_option("#pf-b", opcoes[1])
-    assert "Dano por HE" in pg.inner_text("#pf-tabela")
+    for sel in ("#cmp-a", "#cmp-b"):
+        opcoes = pg.eval_on_selector_all(sel + " option", "os => os.map(o => o.value).filter(Boolean)")
+        assert sorted(opcoes) == sorted(nomes) and len(opcoes) == 10
+    url = pg.url
+    pg.select_option("#cmp-b", nomes[1])
+    tabela = pg.inner_text("#cmp-tabela")
+    # as métricas de impacto e as do perfil entram, com o rótulo do Python e a régua do corpus
+    assert "Dano por HE" in tabela and "Joga longe do time" in tabela and "régua do corpus" in tabela
+    assert "Rating com o time em compra cheia" in tabela
+    assert pg.url == url                                   # a seleção é estado da tela
+    assert pg.locator("#comparar .pfbarra, #comparar canvas, #comparar svg").count() == 0   # sem faixa
+    # a aba Perfil não ganhou as métricas de impacto
+    pg.click('[role=tab][data-tab="perfil"]')
+    assert "Dano por HE" not in pg.inner_text("#pf-tabela")
     pg.close()
 
 

@@ -130,3 +130,53 @@ def test_o_perfil_traz_as_metricas_novas_com_bruto_regua_e_amostra():
     for c in [c for c, _, _ in TAXAS_DE_IMPACTO]:
         for sufixo in ("", "_n", "_d", "_ref", "_fraco"):
             assert c + sufixo in p.columns, c + sufixo
+
+
+# --- economia (7.2.3): grupos de compra da regra 8i ----------------------------
+
+def test_os_grupos_de_compra_sao_a_tabela_da_8i_sem_limiar_novo():
+    from metrics.economia import ROUND_DE_PISTOLA, grupo_de_compra
+    from metrics.rating import GRUPOS
+    esperado = {
+        ("pistola_inicial", False): "eco", ("pistola_melhorada", False): "eco",
+        ("pistola_inicial", True): ROUND_DE_PISTOLA, ("pistola_melhorada", True): "forca",
+        ("smg_shotgun", True): "forca", ("smg_shotgun", False): "forca",
+        ("rifle_t2", True): "forca", ("rifle_t2", False): "forca",
+        ("rifle_t1", False): "forca", ("sniper", False): "forca",
+        ("rifle_t1", True): "cheia", ("sniper", True): "cheia",
+    }
+    assert {(g, c) for g in GRUPOS for c in (True, False)} == set(esperado)   # toda classe da 8i coberta
+    for (g, c), grupo in esperado.items():
+        assert grupo_de_compra(g, c) == grupo, (g, c)
+
+
+def test_o_empate_da_8i_divide_o_round_entre_os_grupos():
+    from metrics.economia import grupos_de_compra
+    compra = pl.DataFrame({
+        "round_num": [5] * 10,
+        "steamid": list(range(1, 11)),
+        # time A: dois de rifle, dois de pistola melhorada, um de SMG, todos com colete (empate rifle x pistola)
+        "inventory": [["AK-47"], ["AK-47"], ["Desert Eagle"], ["Desert Eagle"], ["MP9"],
+                      ["M4A4"]] + [["M4A4"]] * 4,
+        "armor_value": [100] * 10,
+    })
+    team_of = {i: ("A" if i <= 5 else "B") for i in range(1, 11)}
+    g = grupos_de_compra(compra, team_of)
+    a = {r["grupo_compra"]: r["peso"] for r in g.filter(pl.col("time") == "A").iter_rows(named=True)}
+    b = {r["grupo_compra"]: r["peso"] for r in g.filter(pl.col("time") == "B").iter_rows(named=True)}
+    assert a == {"cheia": 0.5, "forca": 0.5} and b == {"cheia": 1.0}
+
+
+def test_economia_fica_dentro_dos_limites_do_jogo():
+    for f in _corpus():
+        imp = pl.read_parquet(f)
+        if "rounds_cheia" not in imp.columns:
+            pytest.skip("processado sem a economia (VERSAO_DAS_METRICAS < 21)")
+        perfil = pl.read_parquet(f.parent / "player_profile.parquet").select("steamid", "rounds_jogados")
+        j = imp.join(perfil, on="steamid")
+        soma = j["rounds_eco"] + j["rounds_forca"] + j["rounds_cheia"]
+        assert ((soma <= j["rounds_jogados"] + 1e-9)).all(), f.parent.name
+        for g in ("eco", "forca", "cheia"):
+            assert (j[f"rounds_inteiros_{g}"].fill_null(0) <= j[f"rounds_{g}"] + 1e-9).all(), (f.parent.name, g)
+            assert (j[f"kast_rounds_{g}"] <= j[f"rounds_{g}"] + 1e-9).all()
+        assert (imp["rounds_contra_cheia"] + imp["rounds_contra_eco"] <= j["rounds_jogados"] + 1e-9).all()

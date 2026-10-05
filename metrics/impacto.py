@@ -13,6 +13,14 @@ JUSTIFICATIVA DE JOGO. A pergunta não é "quantas granadas ele jogou" nem
   A fração das mortes trocadas e as kills de troca já existem (perfil e
   `basic_metrics`); o que faltava é QUANTO ele demora para trocar, em segundos,
   com a janela de trade única do projeto (`metrics/constantes.py`).
+- ECONOMIA. Duas kills de rifle contra time de pistola não dizem o mesmo que
+  duas contra rifle. Rating, ADR e KAST separados pela COMPRA DO TIME DELE
+  (eco, força, compra cheia: os grupos da regra 8i, `metrics/economia.py`), e
+  as kills contra adversário em compra cheia à parte das kills em anti-eco. O
+  round de pistola não entra em nenhum dos três. Rounds em que o time se divide
+  entre dois grupos (empate da 8i) contam em partes iguais no ADR, no KAST e
+  nas kills; o rating, que só existe sobre rounds inteiros, usa os rounds em
+  que o time está inteiro no grupo (o denominador diz quantos).
 - SITUAÇÕES. Pós-plant (TR defendendo a bomba) e retake (CT) são rounds com
   regra própria: quem está vivo no plant joga outro jogo. Para cada lado: em
   quantos rounds ele estava vivo no plant, quantos o time venceu, quantas kills
@@ -29,6 +37,7 @@ import polars as pl
 
 from metrics.basic_metrics import _pares_de_trade
 from metrics.constantes import JANELA_DE_TRADE_S
+from metrics.economia import GRUPOS_DE_COMPRA
 
 # Cada taxa nova: (chave, numerador, denominador). O denominador é a amostra, e
 # é um EVENTO (granadas, trocas, rounds vivo no plant, duelos), não "rounds
@@ -50,6 +59,13 @@ TAXAS_DE_IMPACTO = [
     ("pct_retake_sobreviveu", "retake_sobreviveu", "rounds_vivo_no_plant_ct"),
     ("pct_aberturas_vencidas_tr", "aberturas_vencidas_tr", "duelos_de_abertura_tr"),
     ("pct_aberturas_vencidas_ct", "aberturas_vencidas_ct", "duelos_de_abertura_ct"),
+    # economia (grupos de compra da 8i); o rating por grupo é a média ponderada
+    # pelos rounds: numerador = rating x rounds, denominador = rounds inteiros
+    *[(f"rating_{g}", f"rating_x_rounds_{g}", f"rounds_inteiros_{g}") for g in GRUPOS_DE_COMPRA],
+    *[(f"adr_{g}", f"dano_{g}", f"rounds_{g}") for g in GRUPOS_DE_COMPRA],
+    *[(f"kast_{g}", f"kast_rounds_{g}", f"rounds_{g}") for g in GRUPOS_DE_COMPRA],
+    ("kills_contra_compra_cheia", "kills_contra_cheia", "rounds_contra_cheia"),
+    ("kills_contra_eco", "kills_contra_eco_", "rounds_contra_eco"),
 ]
 # Medida sem numerador/denominador: a mediana, com o número de trocas ao lado.
 TEMPO_DA_TROCA = "tempo_mediano_da_troca_s"
@@ -58,6 +74,8 @@ CATEGORIAS_DE_IMPACTO = {
     "Utilidade": ["dano_por_he", "dano_por_molotov", "inimigos_cegos_por_flash", "segundos_de_cegueira_por_flash",
                   "kills_de_flash_por_flash", "cegueira_em_companheiros_por_flash"],
     "Trocas": [TEMPO_DA_TROCA],
+    "Economia": [*[f"rating_{g}" for g in GRUPOS_DE_COMPRA], *[f"adr_{g}" for g in GRUPOS_DE_COMPRA],
+                 *[f"kast_{g}" for g in GRUPOS_DE_COMPRA], "kills_contra_compra_cheia", "kills_contra_eco"],
     "Situações": ["pct_pos_plant_vencidos", "kills_por_pos_plant", "pct_pos_plant_sobreviveu",
                   "pct_retakes_vencidos", "kills_por_retake", "pct_retake_sobreviveu",
                   "pct_aberturas_vencidas_tr", "pct_aberturas_vencidas_ct"],
@@ -131,10 +149,76 @@ def _aberturas_por_round(kills: pl.DataFrame) -> pl.DataFrame:
     return pl.concat([vence, perde])
 
 
+def economia_por_round(grupos_compra: pl.DataFrame, team_of: dict[int, str], presentes: pl.DataFrame,
+                       dano: pl.DataFrame, kast: pl.DataFrame, kills: pl.DataFrame) -> pl.DataFrame:
+    """(round_num, steamid): peso do time dele em cada grupo de compra (somam 1,
+    ou 0 no round de pistola), peso do adversário em compra cheia e em eco, dano,
+    KAST do round e kills. `grupos_compra` vem de economia.grupos_de_compra."""
+    peso = {}
+    for r in grupos_compra.iter_rows(named=True):
+        peso[(int(r["round_num"]), r["time"], r["grupo_compra"])] = float(r["peso"])
+    times = sorted(set(team_of.values()))
+    dano_de = {(int(r["round_num"]), int(r["steamid"])): float(r["damage"] or 0) for r in dano.iter_rows(named=True)}
+    kast_de = {(int(r["round_num"]), int(r["steamid"])): float(bool(r["kast_round"])) for r in kast.iter_rows(named=True)}
+    kills_de: dict = {}
+    for r in kills.iter_rows(named=True):
+        a, v = r["attacker_steamid"], r["victim_steamid"]
+        if a is None or v is None or team_of.get(int(a)) == team_of.get(int(v)):
+            continue
+        k = (int(r["round_num"]), int(a))
+        kills_de[k] = kills_de.get(k, 0) + 1
+    linhas = []
+    for r in presentes.iter_rows(named=True):
+        rn, sid = int(r["round_num"]), int(r["steamid"])
+        meu = team_of.get(sid)
+        if meu is None:
+            continue
+        dele = next((t for t in times if t != meu), None)
+        linha = {"round_num": rn, "steamid": sid, "dano": dano_de.get((rn, sid), 0.0),
+                 "kast": kast_de.get((rn, sid), 0.0), "kills": float(kills_de.get((rn, sid), 0))}
+        for g in GRUPOS_DE_COMPRA:
+            linha[f"peso_{g}"] = peso.get((rn, meu, g), 0.0)
+        linha["peso_contra_cheia"] = peso.get((rn, dele, "cheia"), 0.0)
+        linha["peso_contra_eco"] = peso.get((rn, dele, "eco"), 0.0)
+        linhas.append(linha)
+    if not linhas:
+        return pl.DataFrame()
+    return pl.DataFrame(linhas).with_columns(pl.col("round_num").cast(presentes.schema["round_num"]),
+                                              pl.col("steamid").cast(presentes.schema["steamid"]))
+
+
+def _resumo_da_economia(eco: pl.DataFrame, rating_por_compra: pl.DataFrame | None) -> pl.DataFrame:
+    """Numeradores e denominadores das taxas de economia, por jogador."""
+    agg = []
+    for g in GRUPOS_DE_COMPRA:
+        agg += [(pl.col(f"peso_{g}") * pl.col("dano")).sum().alias(f"dano_{g}"),
+                (pl.col(f"peso_{g}") * pl.col("kast")).sum().alias(f"kast_rounds_{g}"),
+                pl.col(f"peso_{g}").sum().alias(f"rounds_{g}")]
+    agg += [(pl.col("peso_contra_cheia") * pl.col("kills")).sum().alias("kills_contra_cheia"),
+            pl.col("peso_contra_cheia").sum().alias("rounds_contra_cheia"),
+            (pl.col("peso_contra_eco") * pl.col("kills")).sum().alias("kills_contra_eco_"),
+            pl.col("peso_contra_eco").sum().alias("rounds_contra_eco")]
+    resumo = eco.group_by("steamid", maintain_order=True).agg(agg)
+    for g in GRUPOS_DE_COMPRA:
+        if rating_por_compra is not None and rating_por_compra.height:
+            r = (rating_por_compra.filter(pl.col("grupo_compra") == g)
+                 .select(pl.col("steamid").cast(resumo.schema["steamid"]),
+                         (pl.col("rating") * pl.col("rounds")).alias(f"rating_x_rounds_{g}"),
+                         pl.col("rounds").cast(pl.Float64).alias(f"rounds_inteiros_{g}")))
+            resumo = resumo.join(r, on="steamid", how="left")
+        else:
+            resumo = resumo.with_columns(pl.lit(0.0).alias(f"rating_x_rounds_{g}"),
+                                         pl.lit(0.0).alias(f"rounds_inteiros_{g}"))
+    return resumo
+
+
 def impacto(granadas: pl.DataFrame, kills: pl.DataFrame, rounds: pl.DataFrame,
-            presentes: pl.DataFrame, tickrate: int) -> tuple[pl.DataFrame, pl.DataFrame]:
+            presentes: pl.DataFrame, tickrate: int, economia: pl.DataFrame | None = None,
+            rating_por_compra: pl.DataFrame | None = None) -> tuple[pl.DataFrame, pl.DataFrame]:
     """(per_round, summary). `presentes` é (round_num, steamid, side) dos rounds que
-    cada um jogou; `kills` já vem recortado nos rounds jogados."""
+    cada um jogou; `kills` já vem recortado nos rounds jogados. `economia` é a
+    tabela de economia_por_round e `rating_por_compra` (steamid, grupo_compra,
+    rating, rounds); sem elas, as taxas de economia saem com amostra zero."""
     presentes = presentes.select("round_num", "steamid", "side").unique(maintain_order=True, keep="first")
     ids = presentes.select("steamid").unique(maintain_order=True, keep="first")
     util = _utilidade_por_round(granadas)
@@ -166,7 +250,11 @@ def impacto(granadas: pl.DataFrame, kills: pl.DataFrame, rounds: pl.DataFrame,
         resumo = resumo.join(lado(aber, s).group_by("steamid", maintain_order=True).agg(
             pl.len().alias(f"duelos_de_abertura_{sufixo}"),
             pl.col("venceu_abertura").sum().alias(f"aberturas_vencidas_{sufixo}")), on="steamid", how="left")
+    if economia is not None and economia.height:
+        resumo = resumo.join(_resumo_da_economia(economia, rating_por_compra), on="steamid", how="left")
+        por_round = por_round.join(economia, on=["round_num", "steamid"], how="left")
     contagens = sorted({n for _, n, _ in TAXAS_DE_IMPACTO} | {d for _, _, d in TAXAS_DE_IMPACTO} | {"trocas_feitas"})
+    resumo = resumo.with_columns([pl.lit(0.0).alias(c) for c in contagens if c not in resumo.columns])
     resumo = resumo.with_columns([pl.col(c).fill_null(0) for c in contagens if c in resumo.columns])
     resumo = resumo.with_columns(
         [pl.col(n).cast(pl.Float64).alias(f"{chave}_n") for chave, n, _ in TAXAS_DE_IMPACTO]
@@ -196,6 +284,17 @@ ROTULOS = {
     "pct_retake_sobreviveu": ("Sobreviveu ao retake", "pct", "rounds vivo no plant (CT)"),
     "pct_aberturas_vencidas_tr": ("Duelos de abertura vencidos (TR)", "pct", "duelos de abertura (TR)"),
     "pct_aberturas_vencidas_ct": ("Duelos de abertura vencidos (CT)", "pct", "duelos de abertura (CT)"),
+    "rating_eco": ("Rating com o time em eco", "num2", "rounds inteiros em eco"),
+    "rating_forca": ("Rating com o time em força", "num2", "rounds inteiros em força"),
+    "rating_cheia": ("Rating com o time em compra cheia", "num2", "rounds inteiros em compra cheia"),
+    "adr_eco": ("ADR com o time em eco", "num1", "rounds em eco"),
+    "adr_forca": ("ADR com o time em força", "num1", "rounds em força"),
+    "adr_cheia": ("ADR com o time em compra cheia", "num1", "rounds em compra cheia"),
+    "kast_eco": ("KAST com o time em eco", "pct", "rounds em eco"),
+    "kast_forca": ("KAST com o time em força", "pct", "rounds em força"),
+    "kast_cheia": ("KAST com o time em compra cheia", "pct", "rounds em compra cheia"),
+    "kills_contra_compra_cheia": ("Kills por round contra compra cheia", "num2", "rounds contra compra cheia"),
+    "kills_contra_eco": ("Kills por round em anti-eco", "num2", "rounds contra eco"),
 }
 # Aberto por padrão: só Utilidade. É o grupo com mais eventos por partida (toda
 # granada conta) e o que já estava calculado e nunca tinha ido para a tela.
@@ -204,20 +303,40 @@ ROTULOS = {
 # célula sai marcada como amostra fraca -- abertas, dominariam a leitura com
 # números que não sustentam conclusão.
 ABERTOS_POR_PADRAO = {"Utilidade"}
-TEXTO_DO_BLOCO = ("O que a utilidade, as trocas e as situações de cada jogador produziram nesta partida. "
+TEXTO_DO_BLOCO = ("O que a utilidade, as trocas, a economia e as situações de cada jogador produziram nesta partida. "
                   "Cada número vem com o bruto e com a régua anônima do corpus; amostra pequena aparece "
                   "esmaecida. A cegueira nos companheiros conta contra.")
 
 
+# "Comparar dois" (fase 7, 7.3; resposta 6 do Pedro: na aba Jogadores, não na
+# Perfil). Só jogadores DESTA partida, de qualquer time; a seleção é estado da
+# tela; a régua anônima do corpus fica ao lado de cada número; sem faixa
+# desenhada (só números, bruto e régua).
+COMPARAR = {
+    "titulo": "Comparar dois",
+    "texto": ("Escolha dois jogadores desta partida, de qualquer time. Cada número vem com o bruto e com a "
+              "régua anônima do corpus; amostra pequena aparece esmaecida."),
+    "rotulo_a": "Jogador",
+    "rotulo_b": "contra",
+    "rotulo_regua": "régua do corpus",
+    "amostra_fraca": "amostra fraca",
+}
+
+
 def para_a_pagina() -> dict:
-    """Grupos, rótulos e texto do bloco "Impacto além do placar" da aba Jogadores."""
+    """Grupos, rótulos e texto do bloco "Impacto além do placar" da aba Jogadores,
+    e os textos do "Comparar dois"."""
     return {
         "titulo": "Impacto além do placar",
         "texto": TEXTO_DO_BLOCO,
+        "comparar": COMPARAR,
         "grupos": [
             {"nome": nome, "aberto": nome in ABERTOS_POR_PADRAO,
              "metricas": [{"chave": c, "rotulo": ROTULOS[c][0], "formato": ROTULOS[c][1],
-                           "unidade_do_bruto": ROTULOS[c][2], "pior_quanto_maior": c in PIOR_QUANTO_MAIOR}
+                           "unidade_do_bruto": ROTULOS[c][2], "pior_quanto_maior": c in PIOR_QUANTO_MAIOR,
+                           # o numerador do rating por compra é rating x rounds: sem leitura
+                           # sozinho, o bruto mostra só os rounds
+                           "bruto_so_denominador": c.startswith("rating_")}
                           for c in chaves]}
             for nome, chaves in CATEGORIAS_DE_IMPACTO.items()
         ],

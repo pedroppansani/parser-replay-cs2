@@ -833,6 +833,18 @@
   .imp-grupo .seta { font-size: 10px; margin-left: 3px; }
   .imp-grupo .seta.bom { color: var(--ct); }
   .imp-grupo .seta.ruim { color: var(--t); }
+  /* Comparar dois (fase 7): dois jogadores da partida, sem faixa desenhada */
+  .comparar { margin-top: 26px; }
+  .comparar > p { color: var(--ink-2); max-width: 760px; }
+  .cmp-escolha { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 10px 0; }
+  .cmp-escolha select { font: inherit; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; }
+  .cmp-tabela { padding: 0; overflow-x: auto; }
+  .cmp-tabela table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  .cmp-tabela th, .cmp-tabela td { padding: 7px 10px; text-align: right; border-top: 1px solid var(--line); }
+  .cmp-tabela th:first-child, .cmp-tabela td:first-child { text-align: left; }
+  .cmp-tabela tr.grupo td { font-weight: 600; background: var(--paper-2, transparent); }
+  .cmp-tabela td small { display: block; color: var(--dim); font-family: var(--mono); font-size: 10.5px; }
+  .cmp-tabela td.fraco { color: var(--dim); }
   .prow.hd button:focus-visible { outline: 2px solid var(--ct); outline-offset: 2px; border-radius: 3px; }
   .prow .n.rt { font-weight: 600; }
   .prow .n.rt.fraca { color: var(--dim); font-weight: 400; }
@@ -1183,6 +1195,8 @@
     <!-- Impacto além do placar (metrics/impacto.py): grupos recolhíveis; título,
          texto e rótulos vêm do Python (D.impacto) -->
     <div id="impacto" class="impacto"></div>
+    <!-- Comparar dois (fase 7, 7.3): textos do Python (D.impacto.comparar) -->
+    <div id="comparar" class="comparar"></div>
   </section>
 
   <!-- ESTILOS -->
@@ -2894,7 +2908,7 @@
         return "<tr><td>" + esc(r.name) + " <small>Time " + esc(time[r.name] || "?") + "</small></td>" +
           g.metricas.map(function (m) {
             var v = r[m.chave], ref = r[m.chave + "_ref"], fraco = r[m.chave + "_fraco"];
-            var n = r[m.chave + "_n"], d = r[m.chave + "_d"];
+            var n = m.bruto_so_denominador ? null : r[m.chave + "_n"], d = r[m.chave + "_d"];
             var seta = "";
             if (v != null && ref != null && !fraco && v !== ref) {
               var acima = v > ref, bom = m.pior_quanto_maior ? !acima : acima;
@@ -2909,6 +2923,81 @@
       det.innerHTML = "<summary>" + esc(g.nome) + "</summary><table>" + cab + corpo + "</table>";
       host.appendChild(det);
     });
+  })();
+
+  /* ================= COMPARAR DOIS (fase 7, 7.3) ================= */
+  // Dois jogadores DESTA partida lado a lado, nas taxas do perfil e nas métricas
+  // de impacto, com o bruto e a régua anônima do corpus de cada número. A
+  // seleção é estado da tela (não vai para o endereço). Sem faixa desenhada.
+  (function comparar() {
+    var host = document.getElementById("comparar");
+    var cfg = (D.impacto || {}).comparar;
+    var linhas = D.player_profile || [];
+    if (!host || !cfg || linhas.length < 2) return;
+    var time = {}; (D.players || []).forEach(function (p) { time[p.name] = p.team; });
+    var ordem = linhas.slice().sort(function (a, b) {
+      return (time[a.name] || "").localeCompare(time[b.name] || "") || a.name.localeCompare(b.name);
+    });
+    var grupos = (D.perfil_categorias || []).map(function (g) {
+      return { nome: g.nome, metricas: g.taxas.map(function (t) { return { chave: t[0], rotulo: t[1], formato: "pct", unidade: "" }; }) };
+    }).concat(((D.impacto || {}).grupos || []).map(function (g) {
+      return { nome: g.nome, metricas: g.metricas.map(function (m) {
+        return { chave: m.chave, rotulo: m.rotulo, formato: m.formato, unidade: m.unidade_do_bruto,
+                 so_denominador: m.bruto_so_denominador }; }) };
+    }));
+    function num(v, formato) {
+      if (v === null || v === undefined) return "—";
+      if (formato === "pct") return Math.round(v * 100) + "%";
+      return v.toFixed(formato === "num2" ? 2 : 1).replace(".", ",");
+    }
+    var h = document.createElement("h3"); h.className = "sec"; h.textContent = cfg.titulo;
+    var t = document.createElement("p"); t.textContent = cfg.texto;
+    var escolha = document.createElement("div"); escolha.className = "cmp-escolha";
+    function seletor(id, rotulo, inicial) {
+      var l = document.createElement("label");
+      l.appendChild(document.createTextNode(rotulo + " "));
+      var s = document.createElement("select"); s.id = id;
+      ordem.forEach(function (r) {
+        var o = document.createElement("option"); o.value = r.name;
+        o.textContent = r.name + " (Time " + (time[r.name] || "?") + ")";
+        s.appendChild(o);
+      });
+      s.value = inicial;
+      s.addEventListener("change", desenha);
+      l.appendChild(s); escolha.appendChild(l);
+      return s;
+    }
+    // o padrão: o primeiro de cada time (a comparação mais comum é entre times)
+    var outroTime = ordem.filter(function (r) { return time[r.name] !== time[ordem[0].name]; })[0] || ordem[1];
+    var sa = seletor("cmp-a", cfg.rotulo_a, ordem[0].name);
+    var sb = seletor("cmp-b", cfg.rotulo_b, outroTime.name);
+    var tab = document.createElement("div"); tab.className = "card cmp-tabela"; tab.id = "cmp-tabela";
+    host.appendChild(h); host.appendChild(t); host.appendChild(escolha); host.appendChild(tab);
+    function celula(r, m) {
+      var v = r[m.chave], ref = r[m.chave + "_ref"], fraco = r[m.chave + "_fraco"];
+      var n = m.so_denominador ? null : r[m.chave + "_n"], d = r[m.chave + "_d"];
+      var bruto = d === null || d === undefined ? "" :
+        (n === null || n === undefined ? "" : String(Math.round(n * 10) / 10).replace(".", ",") + " de ") +
+        String(Math.round(d * 10) / 10).replace(".", ",") + (m.unidade ? " " + m.unidade : "");
+      var regua = ref === null || ref === undefined ? "" : cfg.rotulo_regua + " " + num(ref, m.formato);
+      return "<td class='" + (fraco ? "fraco" : "") + "' data-chave='" + esc(m.chave) + "'>" + esc(num(v, m.formato)) +
+        "<small>" + esc(bruto) + "</small><small>" + esc(regua) + (fraco ? " · " + esc(cfg.amostra_fraca) : "") +
+        "</small></td>";
+    }
+    function desenha() {
+      var a = linhas.filter(function (r) { return r.name === sa.value; })[0];
+      var b = linhas.filter(function (r) { return r.name === sb.value; })[0];
+      if (!a || !b) return;
+      var html = "<table><tr><th></th><th>" + esc(a.name) + "</th><th>" + esc(b.name) + "</th></tr>";
+      grupos.forEach(function (g) {
+        var ms = g.metricas.filter(function (m) { return a[m.chave + "_d"] !== undefined || b[m.chave + "_d"] !== undefined; });
+        if (!ms.length) return;
+        html += "<tr class='grupo'><td colspan='3'>" + esc(g.nome) + "</td></tr>";
+        ms.forEach(function (m) { html += "<tr><td>" + esc(m.rotulo) + "</td>" + celula(a, m) + celula(b, m) + "</tr>"; });
+      });
+      tab.innerHTML = html + "</table>";
+    }
+    desenha();
   })();
 
   (function roles() {
@@ -2978,23 +3067,35 @@
   /* ================= PERFIL DO JOGADOR ================= */
 
   (function perfil() {
-    // Categorias e rótulos vêm do Python (metrics/player_profile.ROTULOS_DAS_TAXAS).
-    var CAT = {};
-    (D.perfil_categorias || []).forEach(function (g) { CAT[g.nome] = g.taxas; });
-    // As métricas de impacto (fase 7) entram na mesma comparação, com os grupos
-    // e rótulos do Python (D.impacto). FORMATO diz como escrever cada uma: só as
-    // porcentagens têm barra cheia de 0 a 100% e destaque pela margem abaixo.
-    var FORMATO = {};
-    ((D.impacto || {}).grupos || []).forEach(function (g) {
-      CAT[g.nome] = g.metricas.map(function (m) { FORMATO[m.chave] = m; return [m.chave, m.rotulo]; });
-    });
-    function ehPct(chave) { return !FORMATO[chave] || FORMATO[chave].formato === "pct"; }
-    function valor(chave, v) {
-      if (v === null || v === undefined) return "—";
-      if (ehPct(chave)) return Math.round(v * 100) + "%";
-      return v.toFixed(FORMATO[chave].formato === "num2" ? 2 : 1).replace(".", ",");
-    }
-
+    var CAT = {
+      "Posicionamento": [
+        ["pct_rounds_longe_do_time", "Joga longe do time"],
+        ["pct_rounds_isolado", "Fica isolado"],
+        ["pct_rounds_ancorado", "Ancora num lugar só"],
+        ["pct_rounds_rotacionando", "Passa por muitas regiões"]
+      ],
+      "Arma e abertura": [
+        ["pct_rounds_com_awp", "Pega a AWP"],
+        ["pct_kills_de_awp", "Kills que saíram de AWP"],
+        ["pct_rounds_abertura_awp", "Abre o round de AWP"],
+        ["pct_rounds_smg_ou_pistola_com_time_de_rifle", "Fica com a arma pior que o time"]
+      ],
+      "Tempo e contato": [
+        ["pct_rounds_contato_cedo", "Encosta cedo no adversário"],
+        ["pct_rounds_contato_tarde", "Encosta depois do time"],
+        ["pct_rounds_primeiro_contato_do_time", "É o primeiro do time a encostar"]
+      ],
+      "Resultado e trade": [
+        ["pct_rounds_sobreviveu", "Sobrevive ao round"],
+        ["pct_mortes_trocadas", "Mortes dele que o time trocou"],
+        ["pct_rounds_trade_kill", "Troca a morte do companheiro"],
+        ["pct_rounds_em_clutch", "Fica por último"],
+        ["taxa_conversao_clutch", "Converte quando fica por último"]
+      ],
+      "Lurk": [
+        ["pct_rounds_lurk", "Lurk: isolado, longe do time e encostando depois"]
+      ]
+    };
     // Quanto o jogador precisa se afastar da mediana dos outros para o número
     // ser destacado. Abaixo disso, destacar seria transformar ruido em achado.
     var MARGEM_DESTAQUE = 0.15;
@@ -3089,19 +3190,14 @@
         return "<td class='num'>—<span class='bruto'>sem denominador</span></td>";
       }
       var fraco = p[chave + "_fraco"];
-      var fora = ehPct(chave) && !fraco && v !== null && ref !== null && ref !== undefined &&
+      var fora = !fraco && v !== null && ref !== null && ref !== undefined &&
                  Math.abs(v - ref) >= MARGEM_DESTAQUE;
-      // fora das porcentagens a barra é relativa à régua: a mediana do corpus
-      // fica no meio dela
-      var escala = ehPct(chave) ? 1 : (ref ? 0.5 / ref : 0);
-      var largura = v === null ? 0 : Math.max(2, Math.min(100, v * escala * 100));
-      var unidade = FORMATO[chave] ? " " + FORMATO[chave].unidade_do_bruto : "";
-      var bruto = (n === null || n === undefined ? "" : String(Math.round(n * 10) / 10).replace(".", ",") + " de ") + d + unidade;
+      var largura = v === null ? 0 : Math.max(2, Math.min(100, v * 100));
       return "<td class='num'>" +
         "<span class='pfbarra'><i class='" + (fora ? "destaque" : "") +
         "' style='width:" + largura + "%'></i></span>" +
-        "<b>" + valor(chave, v) + "</b>" +
-        "<span class='bruto'>" + esc(bruto) + "</span>" +
+        "<b>" + pct(v) + "</b>" +
+        "<span class='bruto'>" + n + " de " + d + "</span>" +
         (fraco ? "<span class='fraco'>amostra fraca</span>" : "") +
         "</td>";
     }
@@ -3188,13 +3284,13 @@
           var chave = par[0], rotulo = par[1];
           if (!a || a[chave + "_d"] === undefined) return "";
           var ref = a[chave + "_ref"];
-          var destaque = ehPct(chave) && a[chave] !== null && ref !== null && ref !== undefined &&
+          var destaque = a[chave] !== null && ref !== null && ref !== undefined &&
                          Math.abs(a[chave] - ref) >= MARGEM_DESTAQUE && !a[chave + "_fraco"];
           return "<tr class='" + (destaque ? "fora" : "") + "'>" +
             "<td>" + esc(rotulo) + "</td>" +
             celula(a, chave) +
             (b ? celula(b, chave) : "") +
-            "<td class='refv'>" + valor(chave, ref) + "</td></tr>";
+            "<td class='refv'>" + pct(ref) + "</td></tr>";
         }).join("");
 
         html += "<div class='pfcat'><h3>" + esc(cat) + "</h3><table class='pf'>" +

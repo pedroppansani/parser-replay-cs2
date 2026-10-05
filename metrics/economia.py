@@ -186,3 +186,64 @@ def celulas_para_o_rating(tabela: dict) -> dict:
         lado, meu, dele = chave.split("||")
         out.setdefault((lado, meu, dele), v)
     return out
+
+
+# ---------------------------------------------------------------------------
+# Os três GRUPOS DE COMPRA (fase 7, item 7.2.3): eco, força e compra cheia.
+#
+# São AGREGAÇÃO das classes desta regra (resposta 5 do Pedro: a 8i é a fonte
+# única de economia; nenhum limiar novo). A agregação usa só a ordem de força
+# dos grupos de arma que a 8i já tem (`FORCA_DO_GRUPO`) e o colete:
+#
+#   classe da 8i (grupo|colete)        -> grupo de compra
+#   pistola_inicial|sem_colete         -> eco
+#   pistola_melhorada|sem_colete       -> eco
+#   pistola_inicial|colete             -> fora dos três: round de pistola
+#   pistola_melhorada|colete           -> força
+#   smg_shotgun|colete, |sem_colete    -> força
+#   rifle_t2|colete, |sem_colete       -> força
+#   rifle_t1|sem_colete                -> força
+#   sniper|sem_colete                  -> força
+#   rifle_t1|colete                    -> compra cheia
+#   sniper|colete                      -> compra cheia
+#
+# Em palavras: compra cheia é a arma de primeira linha COM colete; eco é só
+# pistola e SEM colete; força é o resto -- a compra parcial (arma intermediária
+# com colete, ou arma boa sem colete). "Pistola inicial com colete" é o round
+# de pistola (no corpus, 200,5 dos 206,7 time-rounds dessa classe são o round 1
+# ou o primeiro depois da troca de lado) e não é nenhum dos três: os dois times
+# têm a mesma compra limitada. Tabela com as contagens na nota da decisão 8i.
+GRUPOS_DE_COMPRA = ("eco", "forca", "cheia")
+ROUND_DE_PISTOLA = "pistola"
+
+
+def grupo_de_compra(grupo: str, colete: bool) -> str:
+    if grupo == "pistola_inicial" and colete:
+        return ROUND_DE_PISTOLA
+    if grupo in ("pistola_inicial", "pistola_melhorada") and not colete:
+        return "eco"
+    if grupo in ("rifle_t1", "sniper") and colete:
+        return "cheia"
+    return "forca"
+
+
+def grupos_de_compra(compra: pl.DataFrame, team_of: dict[int, str]) -> pl.DataFrame:
+    """(round_num, time, grupo_compra, peso): o grupo de compra de cada time em
+    cada round, com o EMPATE DIVIDIDO da regra (as classes empatadas valem
+    partes iguais). Os pesos de um (round, time) somam 1."""
+    j = compra_por_jogador(compra).with_columns(
+        pl.col("steamid").map_elements(lambda s: team_of.get(int(s)), return_dtype=pl.Utf8).alias("time")
+    ).drop_nulls("time")
+    linhas = []
+    for (rn, time), g in j.group_by(["round_num", "time"], maintain_order=True):
+        classes = classes_do_time(g["grupo"].to_list())
+        colete = bool(g["colete"].mean() >= 0.5)
+        pesos: dict[str, float] = {}
+        for c in classes:
+            gc = grupo_de_compra(c, colete)
+            pesos[gc] = pesos.get(gc, 0.0) + 1.0 / len(classes)
+        for gc, p in pesos.items():
+            linhas.append({"round_num": int(rn), "time": time, "grupo_compra": gc, "peso": p})
+    if not linhas:
+        return pl.DataFrame(schema={"round_num": pl.Int64, "time": pl.Utf8, "grupo_compra": pl.Utf8, "peso": pl.Float64})
+    return pl.DataFrame(linhas).sort(["round_num", "time", "grupo_compra"])
