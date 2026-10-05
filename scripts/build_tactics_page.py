@@ -21,6 +21,7 @@ from metrics.annotations import impressao_da_calibracao
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 WEB = PROJECT_ROOT / "dashboard" / "web"
 LINEUPS_DIR = PROJECT_ROOT / "data" / "lineups"
+LUGARES_DIR = PROJECT_ROOT / "data" / "lugares"
 RADARS_DIR = PROJECT_ROOT / "assets" / "radars"
 
 
@@ -59,6 +60,9 @@ def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | Non
     radar["calibracao"] = impressao_da_calibracao(radar)
     caminho_bib = LINEUPS_DIR / f"{mapa}.json"
     biblioteca = json.loads(caminho_bib.read_text(encoding="utf-8")) if caminho_bib.exists() else None
+    # nomes de lugar do roteiro (scripts/build_lugares.py); sem tabela, sem nome
+    caminho_lug = LUGARES_DIR / f"{mapa}.json"
+    lugares = json.loads(caminho_lug.read_text(encoding="utf-8")) if caminho_lug.exists() else None
     if rotulos is None:
         from metrics.constantes import NOME_DO_MAPA
         rotulos = NOME_DO_MAPA
@@ -74,6 +78,7 @@ def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | Non
         .replace("/*__LINEUPS__*/null", _js(biblioteca))
         .replace("/*__MAPAS__*/[]", _js(mapas))
         .replace("/*__MODELO3__*/null", _js(modelo3_para_a_pagina()))
+        .replace("/*__LUGARES__*/null", _js(lugares))
         .replace("<!--__META__-->", meta_tags(
             f"Prancheta tática · {rotulos.get(mapa, mapa)}",
             f"Monte uma tática na {rotulos.get(mapa, mapa)}: jogadores, granadas reais do corpus e passos.",

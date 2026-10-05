@@ -1168,6 +1168,9 @@ var Prancheta = (function () {
     var alto = emTelaCheia()
       ? tela.clientHeight - parseFloat(est.paddingTop) - parseFloat(est.paddingBottom)
       : window.innerHeight - 40;
+    // a linha do tempo (8.5) divide a altura com o mapa: os dois cabem juntos
+    var linha = $("pr-linha");
+    if (linha && !linha.hidden) alto -= linha.offsetHeight;
     if (util <= 0 || alto <= 0) return;
     // a proporção é a do radar, nunca a do espaço disponível: nada de mapa esticado
     var cx = MapCore.caixaDoMapa(cfg.radar, util, Math.max(200, alto));
@@ -1220,6 +1223,7 @@ var Prancheta = (function () {
     if (editando && S.caminho) desenhaCaminho();
     var ant = editando && S.passo > 0 && noMarco() ? quadro(S.passo - 1) : null;
     Object.keys(cena.pecas).forEach(function (id) { desenhaPeca(id, cena.pecas[id], ant && ant.pecas[id], editando); });
+    desenhaBalao();
   }
 
   /** O passo aberto no editor, no mesmo formato da cena da reprodução: a
@@ -1266,6 +1270,10 @@ var Prancheta = (function () {
     }
     if (g.efeito > 0) {
       MapCore.nadeGlyph(ctx, g.arma, b[0], b[1], RAIO_GRANADA * g.efeito, cor, Math.atan2(b[1] - a[1], b[0] - a[0]));
+    } else if (g.voando && g.linha > 0) {
+      // no ar: a granada na ponta da linha, no tempo de voo
+      var ponta = [a[0] + (b[0] - a[0]) * g.linha, a[1] + (b[1] - a[1]) * g.linha];
+      MapCore.nadeGlyph(ctx, g.arma, ponta[0], ponta[1], RAIO_GRANADA * 0.6, cor, Math.atan2(b[1] - a[1], b[0] - a[0]));
     }
     if (editando && S.sel && S.sel.id === id) {
       ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2;
@@ -2165,6 +2173,7 @@ var Prancheta = (function () {
     if (bancoDe !== S.doc.id) { bancoDe = S.doc.id; montaBanco(); }
     atualizaBiblioteca(); atualizaPassos(); atualizaPainel(); atualizaBusca(); atualizaFerramentas();
     atualizaBanco(); atualizaBarra(); atualizaAviso(); atualizaContexto(); atualizaDica(); desenha();
+    atualizaRelogioGrande(); atualizaLinhaDoTempo();
   }
 
   function atualizaAviso() { $("pr-aviso").textContent = S.aviso; $("pr-aviso").hidden = !S.aviso; }
@@ -2704,37 +2713,401 @@ var Prancheta = (function () {
       el("p", { id: "pr-aviso", hidden: "" })]);
   }
 
+
+  /* ---------------------------------------------------------------------
+     Linha do tempo, relógio grande e roteiro (fase 8, item 8.5)
+     A linha do tempo embaixo do mapa mostra a tática no relógio do round: a
+     régua (1:55 descendo; depois do plant, os 40 s da bomba), o cabeçote, os
+     marcos (passos) e uma faixa por jogador com os pontos-chave e as granadas.
+     Arrastar uma marca muda o horário dela numa ação só (um desfazer). O
+     roteiro é a lista dos eventos da tática em ordem de horário, com o nome do
+     lugar quando a tabela do mapa sabe (data/lugares, metrics/lugares.py).
+     --------------------------------------------------------------------- */
+  var LUGARES = null;   // preenchido no init com cfg.lugares (ou null: sem nome)
+
+  /** O nome do lugar no ponto (unidades do jogo), ou null. Espelho de
+      metrics/lugares.lugar. */
+  function lugarDe(x, y, nivel) {
+    if (!LUGARES || !(nivel < LUGARES.andares.length)) return null;
+    var px = jogoParaPixel(x, y), lado = LUGARES.lado;
+    var cx = Math.floor(px[0] / lado), cy = Math.floor(px[1] / lado);
+    var rle = LUGARES.andares[nivel][String(cy)];
+    if (!rle) return null;
+    for (var i = 0; i < rle.length; i += 3) if (rle[i] <= cx && cx < rle[i] + rle[i + 2]) return LUGARES.nomes[rle[i + 1]];
+    return null;
+  }
+
+  /** A tática tem horário (alguma operação do formato 3, ou granada com `t`):
+      toca no relógio do round. A que só tem passos -- toda tática das versões 1
+      e 2, que a migração sobe de versão sem mudar nada -- continua tocando
+      passo a passo, como sempre: o significado das operações dela não muda. */
+  function tocaNoRelogio() {
+    if (!(M3 && S.e3 && S.doc)) return false;
+    var fora = anuladas(S.doc.operacoes);
+    return S.doc.operacoes.some(function (op) {
+      return !fora[op.id] && (OPERACOES_DO_FORMATO_3.indexOf(op.tipo) >= 0 || (op.tipo === "cria_granada" && tem(op, "t")));
+    });
+  }
+
+  function plantDe(e3) { return e3 && e3.bomba ? e3.bomba.t : null; }
+  function relogioEm(t) { return MapCore.relogio(t, plantDe(S.e3), null, M3.SEGUNDOS_DO_ROUND, M3.SEGUNDOS_DA_BOMBA); }
+
+  /** Os eventos da tática, em ordem de horário: cada ponto-chave de cada peça,
+      cada granada, o plant e cada marco. `alvo` é a chave da nota de evento
+      (nota_de_evento): "<peça>/<ponto>", "<granada>", "bomba" ou "marco:<passo>". */
+  function eventosDe(e3) {
+    var ev = [];
+    if (!e3) return ev;
+    e3.marcos.forEach(function (m, k) {
+      ev.push({ alvo: "marco:" + m.passo, tipo: "marco", ordem: 0, t: m.t, x: null, y: null, nivel: 0,
+                texto: "Passo " + (k + 1) + (m.titulo ? " · " + m.titulo : "") });
+    });
+    Object.keys(e3.pecas).forEach(function (pid) {
+      var p = e3.pecas[pid], nome = rotuloDaPeca(p);
+      p.pontos.forEach(function (pt, i) {
+        if (pt.fora) return;
+        var lugar = lugarDe(pt.x, pt.y, pt.nivel);
+        var acao = i === 0 || p.pontos[i - 1].fora ? "começa" : "chega";
+        ev.push({ alvo: pid + "/" + pt.id, tipo: "ponto", peca: pid, ponto: pt.id, ordem: 1, t: pt.t,
+                  x: pt.x, y: pt.y, nivel: pt.nivel,
+                  texto: nome + (p.funcao ? " (" + p.funcao + ")" : "") + " " + acao + (lugar ? " em " + lugar : "") });
+      });
+    });
+    Object.keys(e3.granadas).forEach(function (gid) {
+      var g = e3.granadas[gid], quem = g.jogador && e3.pecas[g.jogador] ? rotuloDaPeca(e3.pecas[g.jogador]) : null;
+      var lugar = lugarDe(g.destino[0], g.destino[1], g.nivel);
+      ev.push({ alvo: gid, tipo: "granada", granada: gid, ordem: 2, t: g.t, x: g.destino[0], y: g.destino[1], nivel: g.nivel,
+                texto: (quem ? quem + " joga " : "") + NOME_ARMA[g.arma] + (lugar ? " em " + lugar : "") });
+    });
+    if (e3.bomba) {
+      var lb = lugarDe(e3.bomba.x, e3.bomba.y, e3.bomba.nivel);
+      ev.push({ alvo: "bomba", tipo: "bomba", ordem: 3, t: e3.bomba.t, x: e3.bomba.x, y: e3.bomba.y, nivel: e3.bomba.nivel,
+                texto: "Bomba plantada" + (lb ? " em " + lb : "") });
+    }
+    ev.forEach(function (e) { e.nota = tem(e3.notas, e.alvo) ? e3.notas[e.alvo] : ""; });
+    ev.sort(function (a, b) { return a.t - b.t || a.ordem - b.ordem || (a.alvo < b.alvo ? -1 : a.alvo > b.alvo ? 1 : 0); });
+    return ev;
+  }
+
+  /** O evento aceso em t: o último que já aconteceu. */
+  function eventoEm(eventos, t) {
+    var atual = null;
+    eventos.forEach(function (e) { if (e.t <= t + EPS_T) atual = e; });
+    return atual;
+  }
+
+  /** O fim da tática no relógio: o último horário em que algo acontece ou
+      termina (ponto-chave, granada com voo e efeito, plant, marcos). */
+  function fimDaTatica(e3) {
+    var fim = e3.duracao_s;
+    Object.keys(e3.pecas).forEach(function (pid) {
+      e3.pecas[pid].pontos.forEach(function (pt) { fim = Math.max(fim, pt.t); });
+    });
+    Object.keys(e3.granadas).forEach(function (gid) {
+      var g = e3.granadas[gid];
+      fim = Math.max(fim, g.t + g.voo_s + g.efeito_s);
+    });
+    if (e3.bomba) fim = Math.max(fim, e3.bomba.t);
+    return Math.min(fim, e3.bomba ? e3.bomba.t + M3.SEGUNDOS_DA_BOMBA : M3.SEGUNDOS_DO_ROUND);
+  }
+
+  /** A cena da reprodução no relógio: o quadro do formato 3 em t, no formato
+      que o desenho usa. A granada voa no tempo de voo (a linha cresce até o
+      destino), abre o efeito pela duração real e o arremessador vira para o
+      ângulo do arremesso (do arremesso real; sem ele, para o destino) do
+      instante em que joga até a granada cair. */
+  function cenaNoRelogio(t) {
+    var f = quadroNoTempo(S.e3, t, CENTRO), c = { pecas: {}, granadas: {}, tracos: {}, total: fimDaTatica(S.e3),
+      indice: marcoQueContem(t), relogio: f.relogio, bomba: f.bomba };
+    Object.keys(f.pecas).forEach(function (id) { c.pecas[id] = Object.assign({}, f.pecas[id], { alfa: 1 }); });
+    Object.keys(f.granadas).forEach(function (id) {
+      var g = f.granadas[id], voando = g.fase === "voo";
+      c.granadas[id] = Object.assign({}, g, {
+        linha: voando && !g.origem_desconhecida ? g.progresso : 0,
+        efeito: voando ? 0 : 1, voando: voando, alfa: 1 });
+      if (voando && g.jogador && c.pecas[g.jogador]) {
+        var yaw = g.arremesso && ehNumero(g.arremesso.yaw) ? g.arremesso.yaw
+          : (((Math.atan2(g.destino[1] - g.origem[1], g.destino[0] - g.origem[0]) * 180 / Math.PI) % 360) + 360) % 360;
+        c.pecas[g.jogador].yaw = yaw;
+        c.pecas[g.jogador].jogando = id;
+      }
+    });
+    Object.keys(f.tracos).forEach(function (id) { c.tracos[id] = Object.assign({}, f.tracos[id], { progresso: 1, alfa: 1 }); });
+    return c;
+  }
+
+  /** O horário que a linha do tempo, o relógio grande e o roteiro mostram. */
+  function tempoMostrado() {
+    if (S.reproducao) return S.reproducao.modo === "relogio" ? S.reproducao.t : null;
+    return M3 ? S.t : null;
+  }
+
+  function atualizaRelogioGrande() {
+    var r = $("pr-relogio-grande");
+    if (!r) return;
+    var t = tempoMostrado();
+    r.hidden = t === null;
+    if (t === null) return;
+    r.textContent = relogioEm(t);
+    r.classList.toggle("bomba", plantDe(S.e3) !== null && t >= plantDe(S.e3));
+  }
+
+  function pctDe(t, limite) { return (100 * Math.max(0, Math.min(1, t / limite))).toFixed(4) + "%"; }
+
+  /** Monta a linha do tempo inteira a partir do estado (chamada a cada mudança). */
+  function atualizaLinhaDoTempo() {
+    var caixa = $("pr-linha");
+    if (!caixa) return;
+    var t = tempoMostrado(), antes = caixa.hidden ? 0 : caixa.offsetHeight;
+    caixa.hidden = t === null || !S.e3;
+    if (caixa.hidden) { if (antes) reprojeta(); return; }
+    var e3 = S.e3, limite = limiteDoTempo(), plant = plantDe(e3);
+    var regua = limpa($("pr-regua")), faixas = limpa($("pr-faixas"));
+    // régua: um rótulo a cada 5 s de relógio (no relógio do jogo; convenção de
+    // leitura, como as marcas de um cronômetro)
+    for (var s = 0; s <= limite + EPS_T; s += 5) {
+      regua.appendChild(el("span", { class: "pr-regua-marca" + (plant !== null && s >= plant ? " bomba" : ""),
+        style: "left:" + pctDe(s, limite), texto: s % 15 === 0 ? relogioEm(s) : "" }));
+    }
+    if (plant !== null) regua.appendChild(el("span", { class: "pr-regua-plant", style: "left:" + pctDe(plant, limite),
+      title: "Bomba plantada · " + relogioEm(plant) }));
+    // marcos
+    var marcos = el("div", { class: "pr-faixa pr-faixa-marcos" }, [el("span", { class: "pr-faixa-nome", texto: "Passos" })]);
+    var trilho = el("div", { class: "pr-trilho" });
+    e3.marcos.forEach(function (m, k) {
+      trilho.appendChild(el("button", { class: "pr-marco" + (k === S.passo && !S.reproducao ? " ativo" : ""),
+        "data-marco": m.passo, style: "left:" + pctDe(m.t, limite), title: relogioEm(m.t) + (m.titulo ? " · " + m.titulo : ""),
+        texto: String(k + 1) }));
+    });
+    marcos.appendChild(trilho);
+    faixas.appendChild(marcos);
+    // uma faixa por jogador, na ordem do banco (lado, rótulo)
+    var porJogador = {};
+    Object.keys(e3.granadas).forEach(function (gid) {
+      var j = e3.granadas[gid].jogador || "";
+      (porJogador[j] = porJogador[j] || []).push(gid);
+    });
+    var ids = Object.keys(e3.pecas).sort(function (a, b) {
+      var pa = e3.pecas[a], pb = e3.pecas[b];
+      return pa.lado.localeCompare(pb.lado) || rotuloDaPeca(pa).localeCompare(rotuloDaPeca(pb));
+    });
+    var linhas = ids.map(function (pid) { return [pid, rotuloDaPeca(e3.pecas[pid]), e3.pecas[pid].lado]; });
+    if (porJogador[""]) linhas.push(["", "Sem jogador", ""]);
+    linhas.forEach(function (l) {
+      var pid = l[0], faixa = el("div", { class: "pr-faixa", "data-faixa": pid },
+        [el("span", { class: "pr-faixa-nome " + l[2], texto: l[1] })]);
+      var tr = el("div", { class: "pr-trilho" });
+      if (pid) e3.pecas[pid].pontos.forEach(function (pt) {
+        if (pt.fora) return;
+        tr.appendChild(el("button", { class: "pr-marca " + l[2], "data-peca": pid, "data-ponto": pt.id,
+          style: "left:" + pctDe(pt.t, limite), title: l[1] + " · " + relogioEm(pt.t), "aria-label": l[1] + " " + relogioEm(pt.t) }));
+      });
+      (porJogador[pid] || []).forEach(function (gid) {
+        var g = e3.granadas[gid];
+        tr.appendChild(el("button", { class: "pr-marca granada", "data-granada": gid, "data-arma": g.arma,
+          style: "left:" + pctDe(g.t, limite) + ";--cor:" + MapCore.NADE_COLOR[g.arma],
+          title: NOME_ARMA[g.arma] + " · " + relogioEm(g.t), "aria-label": NOME_ARMA[g.arma] + " " + relogioEm(g.t) }));
+      });
+      faixa.appendChild(tr);
+      faixas.appendChild(faixa);
+    });
+    var cab = $("pr-linha-cabecote");
+    cab.style.left = pctDe(t, limite);
+    cab.setAttribute("data-relogio", relogioEm(t));
+    atualizaRoteiro();
+    // mudou a altura (apareceu, ganhou ou perdeu faixa): o mapa se ajusta
+    if (caixa.offsetHeight !== antes) reprojeta();
+  }
+
+  function atualizaRoteiro() {
+    var lista = $("pr-roteiro");
+    if (!lista) return;
+    var t = tempoMostrado();
+    if (t === null || !S.e3) { limpa(lista); return; }
+    var ev = eventosDe(S.e3), aceso = eventoEm(ev, t), editando = !S.reproducao;
+    // a nota que está sendo digitada não é refeita embaixo do dedo
+    var foco = document.activeElement && document.activeElement.getAttribute && document.activeElement.getAttribute("data-nota");
+    if (foco && lista.contains(document.activeElement)) return;
+    limpa(lista);
+    ev.forEach(function (e) {
+      var li = el("li", { class: "pr-evento" + (e === aceso ? " aceso" : ""), "data-evento": e.alvo }, [
+        el("button", { class: "pr-evento-hora", texto: relogioEm(e.t), title: "Ir para " + relogioEm(e.t),
+          onclick: function () { irPara(e.t); } }),
+        el("span", { class: "pr-evento-texto", texto: e.texto })]);
+      if (editando) {
+        var nota = el("input", { type: "text", class: "pr-evento-nota", "data-nota": e.alvo, placeholder: "nota",
+                                 "aria-label": "Nota: " + e.texto, maxlength: "140" });
+        nota.value = e.nota;
+        nota.addEventListener("change", function () {
+          if ((nota.value || "") !== e.nota) emite("nota_de_evento", { alvo: e.alvo, texto: nota.value.trim() });
+        });
+        li.appendChild(nota);
+      } else if (e.nota) li.appendChild(el("span", { class: "pr-evento-nota-texto", texto: e.nota }));
+      lista.appendChild(li);
+    });
+    var vivo = lista.querySelector(".aceso");
+    if (vivo && !editando && vivo.scrollIntoView) vivo.scrollIntoView({ block: "nearest" });
+  }
+
+  /** Leva o horário mostrado a t: no editor, o cabeçote; tocando, a reprodução. */
+  function irPara(t) {
+    if (S.reproducao) { if (S.reproducao.modo === "relogio") { toca(false); reproduzAte(t); } return; }
+    defineTempo(t);
+  }
+
+  /** O balão do evento aceso, no mapa, durante a reprodução no relógio. */
+  function desenhaBalao() {
+    S.ultimoBalao = null;
+    var r = S.reproducao;
+    if (!r || r.modo !== "relogio") return;
+    var e = eventoEm(eventosDe(S.e3), r.t);
+    if (!e || e.x === null) return;
+    var c = jogoParaPixel(e.x, e.y), texto = e.texto + (e.nota ? " — " + e.nota : "");
+    ctx.save();
+    ctx.font = "600 13px Figtree, system-ui, sans-serif";
+    var w = ctx.measureText(texto).width + 16, h = 24, x = c[0] - w / 2, y = c[1] - RAIO_PECA - h - 10;
+    ctx.globalAlpha = alfaDoAndar(e.nivel);
+    ctx.fillStyle = "rgba(15,22,32,0.92)"; ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.rect(x, y, w, h); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(c[0] - 6, y + h); ctx.lineTo(c[0], y + h + 7); ctx.lineTo(c[0] + 6, y + h); ctx.fill();
+    ctx.fillStyle = "#ffffff"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(texto, c[0], y + h / 2);
+    ctx.restore();
+    S.ultimoBalao = { alvo: e.alvo, texto: texto };
+  }
+
+  /* --- arrastar na linha do tempo ----------------------------------------- */
+  function tempoDoPonteiro(e) {
+    var tr = $("pr-linha").querySelector(".pr-trilho") || $("pr-regua");
+    var r = tr.getBoundingClientRect();
+    return Math.round(limiteDoTempo() * Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * 100) / 100;
+  }
+
+  function linhaPointerDown(e) {
+    if (e.button !== 0) return;
+    var alvo = e.target, editando = !S.reproducao;
+    var marca = alvo.closest && alvo.closest(".pr-marca");
+    var marco = alvo.closest && alvo.closest(".pr-marco");
+    e.preventDefault();
+    if (marca && editando) {
+      S.arrastoLinha = { marca: marca, x0: e.clientX, moveu: false,
+        peca: marca.getAttribute("data-peca"), ponto: marca.getAttribute("data-ponto"),
+        granada: marca.getAttribute("data-granada") };
+    } else if (marco && editando) {
+      var k = S.e3.marcos.map(function (m) { return m.passo; }).indexOf(marco.getAttribute("data-marco"));
+      if (k >= 0) defineTempo(S.e3.marcos[k].t);
+      return;
+    } else {
+      S.arrastoLinha = { cabecote: true };
+      irPara(tempoDoPonteiro(e));
+    }
+    if ($("pr-linha").setPointerCapture) { try { $("pr-linha").setPointerCapture(e.pointerId); } catch (_) {} }
+  }
+
+  function linhaPointerMove(e) {
+    var a = S.arrastoLinha;
+    if (!a) return;
+    if (a.cabecote) { irPara(tempoDoPonteiro(e)); return; }
+    if (!a.moveu && Math.abs(e.clientX - a.x0) < LIMIAR_ARRASTO_PX) return;
+    a.moveu = true;
+    a.t = tempoDoPonteiro(e);
+    a.marca.style.left = pctDe(a.t, limiteDoTempo());
+    a.marca.classList.add("arrastando");
+    a.marca.setAttribute("data-relogio", relogioEm(a.t));
+  }
+
+  /** Solta a marca: o novo horário vira UMA ação (move_ponto para o ponto-chave;
+      a troca da granada, em lote, para a granada). Sem arrastar, é um clique:
+      o cabeçote vai até a marca. */
+  function linhaPointerUp(e) {
+    var a = S.arrastoLinha;
+    S.arrastoLinha = null;
+    if (!a || a.cabecote) return;
+    if (!a.moveu) {
+      var t0 = a.granada ? S.e3.granadas[a.granada].t
+        : S.e3.pecas[a.peca].pontos.filter(function (pt) { return pt.id === a.ponto; })[0].t;
+      defineTempo(t0);
+      return;
+    }
+    var t = tempoDoPonteiro(e);
+    if (a.granada) { mudaHorarioDaGranada(a.granada, t); return; }
+    var pt = S.e3.pecas[a.peca].pontos.filter(function (x) { return x.id === a.ponto; })[0];
+    if (!pt || Math.abs(pt.t - t) < EPS_T) { atualizaTudo(); return; }
+    emite("move_ponto", { peca: a.peca, ponto: a.ponto, t: t, x: pt.x, y: pt.y, nivel: pt.nivel });
+  }
+
+  function montaLinhaDoTempo() {
+    var linha = el("div", { id: "pr-linha", class: "pr-linha", role: "group", "aria-label": "Linha do tempo do round" }, [
+      el("div", { class: "pr-linha-corpo" }, [
+        el("div", { class: "pr-faixa pr-faixa-regua" }, [el("span", { class: "pr-faixa-nome", texto: "Relógio" }),
+          el("div", { class: "pr-trilho pr-regua", id: "pr-regua" })]),
+        el("div", { id: "pr-faixas" }),
+        el("div", { class: "pr-linha-cabecote-trilho" }, [el("div", { id: "pr-linha-cabecote", class: "pr-linha-cabecote" })])]),
+      el("ol", { id: "pr-roteiro", class: "pr-roteiro", "aria-label": "Roteiro da tática" })]);
+    linha.hidden = true;
+    linha.addEventListener("pointerdown", function (e) {
+      if (e.target.closest && e.target.closest(".pr-roteiro")) return;
+      linhaPointerDown(e);
+    });
+    linha.addEventListener("pointermove", linhaPointerMove);
+    linha.addEventListener("pointerup", linhaPointerUp);
+    linha.addEventListener("pointercancel", function () { S.arrastoLinha = null; atualizaLinhaDoTempo(); });
+    $("pr-palco").appendChild(linha);
+    $("pr-tela").appendChild(el("div", { id: "pr-relogio-grande", class: "pr-relogio-grande", role: "timer",
+                                         "aria-label": "Relógio do round", hidden: "" }));
+  }
+
   /* ---------------------------------------------------------------------
      Reprodução: tocar, pausar, velocidade, barra de tempo, passos, Editar
      --------------------------------------------------------------------- */
   var quadroPedido = null;
 
   function reproduzAte(t) {
-    S.reproducao.t = t;
-    S.reproducao.cena = estadoNoTempo(S.estado, t, CENTRO);
+    var r = S.reproducao;
+    if (r.modo === "relogio") {
+      r.t = Math.max(0, Math.min(fimDaTatica(S.e3), t));
+      r.cena = cenaNoRelogio(r.t);
+    } else {
+      r.t = t;
+      r.cena = estadoNoTempo(S.estado, t, CENTRO);
+    }
     desenha();
     atualizaPlayer();
+    atualizaRelogioGrande();
+    atualizaLinhaDoTempo();
   }
 
   function comecaReproducao() {
     if (S.reproducao) return;
     confirmaGiro();
     S.sel = null; S.arrasto = null; S.tracando = null; S.origemPendente = null; S.busca = null;
-    S.reproducao = { t: 0, tocando: false, velocidade: 1, cena: null, ultimo: 0 };
+    // versão 3: no relógio do round, do começo; versões 1 e 2: passo a passo
+    var relogio = tocaNoRelogio();
+    S.reproducao = { t: 0, tocando: false, velocidade: 1, cena: null, ultimo: 0, modo: relogio ? "relogio" : "passos" };
     $("pr-barra").hidden = true; $("pr-player").hidden = false;
     if ($("pr-dica-estado")) $("pr-dica-estado").hidden = true;
     // durante a reprodução nada é editável
     document.querySelector("aside").setAttribute("inert", "");
-    reproduzAte(0);
+    reproduzAte(relogio ? primeiroEvento() : 0);
     toca(true);
+  }
+
+  /** A reprodução no relógio começa no primeiro evento (round que começa no
+      meio, como o que vem de um instante do replay, não toca segundos vazios). */
+  function primeiroEvento() {
+    var ev = eventosDe(S.e3);
+    return ev.length ? ev[0].t : 0;
   }
 
   function editaAqui() {
     if (!S.reproducao) return;
     toca(false);
-    S.passo = S.reproducao.cena.indice;
+    var r = S.reproducao;
+    S.passo = r.cena.indice;
+    if (r.modo === "relogio") S.t = Math.round(r.t * 100) / 100;
     S.reproducao = null;
     $("pr-barra").hidden = false; $("pr-player").hidden = true;
+    S.ultimoBalao = null;
     if ($("pr-dica-estado")) $("pr-dica-estado").hidden = false;
     document.querySelector("aside").removeAttribute("inert");
     atualizaTudo();
@@ -2743,7 +3116,7 @@ var Prancheta = (function () {
   function toca(sim) {
     var r = S.reproducao;
     if (!r) return;
-    if (sim && r.t >= r.cena.total) reproduzAte(0);   // no fim, tocar recomeça
+    if (sim && r.t >= r.cena.total) reproduzAte(r.modo === "relogio" ? primeiroEvento() : 0);   // no fim, tocar recomeça
     r.tocando = sim;
     r.ultimo = performance.now();
     cancelAnimationFrame(quadroPedido);
@@ -2767,6 +3140,14 @@ var Prancheta = (function () {
   function vaiParaPasso(delta) {
     var r = S.reproducao;
     if (!r) return;
+    if (r.modo === "relogio") {
+      // no relógio, o próximo (ou o anterior) EVENTO do roteiro
+      var hs = eventosDe(S.e3).map(function (e) { return e.t; });
+      var vai = delta > 0 ? hs.filter(function (h) { return h > r.t + EPS_T; })[0]
+                          : hs.filter(function (h) { return h < r.t - EPS_T; }).pop();
+      reproduzAte(vai === undefined ? (delta > 0 ? r.cena.total : primeiroEvento()) : vai);
+      return;
+    }
     var lt = linhaDoTempo(S.estado), EPS = 1e-9;
     var fins = S.estado.passos.map(function (p, k) { return lt.inicios[k] + p.duracao_s; });
     var alvo;
@@ -2792,6 +3173,11 @@ var Prancheta = (function () {
     $("pr-toca").textContent = r.tocando ? "Pausar" : "Tocar";
     $("pr-velocidade").textContent = String(r.velocidade).replace(".", ",") + "x";
     var c = r.cena;
+    if (r.modo === "relogio") {
+      $("pr-rotulo-passo").textContent = relogioEm(r.t) + "  (" + r.t.toFixed(1).replace(".", ",") + " s de " +
+        c.total.toFixed(1).replace(".", ",") + " s)";
+      return;
+    }
     $("pr-rotulo-passo").textContent = "Passo " + (c.indice + 1) + " de " + S.estado.passos.length +
       (c.titulo ? " · " + c.titulo : "") + "  (" + r.t.toFixed(1).replace(".", ",") + " de " +
       c.total.toFixed(1).replace(".", ",") + " s)";
@@ -2913,6 +3299,7 @@ var Prancheta = (function () {
   function init(opcoes) {
     cfg = opcoes;
     M3 = cfg.modelo3;
+    LUGARES = cfg.lugares || null;
     Armazem = opcoes.armazem || ArmazemDoNavegador("prancheta:");
     ANDARES = andaresDoRadar(cfg.radar);
     CENTRO = centroDoRadar(cfg.radar);
@@ -2932,6 +3319,7 @@ var Prancheta = (function () {
     montaLateral();
     montaBarra();
     montaPlayer();
+    if (M3) montaLinhaDoTempo();
     montaBanco();
     cv.addEventListener("pointerdown", pointerDown);
     // o botão direito no mapa é "virar para lá": sem o menu do navegador
@@ -3090,7 +3478,8 @@ var Prancheta = (function () {
       vooEstimado: vooEstimado, velocidade: velocidade, M3: function () { return M3; },
       defineTempo: defineTempo, douglasPeucker: douglasPeucker, noMarco: noMarco, emiteLote: emiteLote,
       TOLERANCIA_DP_PX: TOLERANCIA_DP_PX, ligaCaminhoPorClique: ligaCaminhoPorClique,
-      adiaArremesso: adiaArremesso, mudaHorarioDaGranada: mudaHorarioDaGranada, reproduzAte: function (t) { reproduzAte(t); },
+      adiaArremesso: adiaArremesso, lugarDe: lugarDe, eventosDe: eventosDe, eventoEm: eventoEm,
+      fimDaTatica: fimDaTatica, cenaNoRelogio: cenaNoRelogio, tocaNoRelogio: tocaNoRelogio, relogioEm: relogioEm, mudaHorarioDaGranada: mudaHorarioDaGranada, reproduzAte: function (t) { reproduzAte(t); },
       comecaReproducao: comecaReproducao, editaAqui: editaAqui, toca: function (s) { toca(s); },
       problemas: problemas, problemasDaOrigem: problemasDaOrigem, textoDaOrigem: textoDaOrigem,
       centro: function () { return CENTRO; },

@@ -129,3 +129,45 @@ h3 { margin: 0 0 4px; font-size: 15px; }
   border-radius: 9px; background: var(--card); cursor: pointer; font: inherit; font-size: 12px; color: var(--ink); }
 .pr-granada-grande.on, .pr-granada-grande[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
 .pr-glifo { width: 28px; height: 28px; }
+
+/* Linha do tempo, relógio grande e roteiro (fase 8, item 8.5) */
+.pr-relogio-grande { position: absolute; left: 16px; top: 12px; z-index: 4; pointer-events: none;
+                     font-family: var(--mono); font-size: 34px; font-weight: 600; line-height: 1;
+                     color: #ffffff; background: rgba(15,22,32,0.78); padding: 6px 12px; border-radius: 8px; }
+.pr-relogio-grande.bomba { color: #ff8a7a; }
+.pr-relogio-grande[hidden], .pr-linha[hidden] { display: none; }
+.pr-linha { display: grid; grid-template-columns: minmax(0, 1fr) minmax(200px, 300px); gap: 10px;
+            padding: 8px 10px 10px; background: #0f1620; color: #e8edf3; border-top: 1px solid #2a3440;
+            touch-action: none; user-select: none; }
+.pr-linha-corpo { position: relative; display: grid; gap: 3px; min-width: 0; }
+.pr-faixa { display: grid; grid-template-columns: 78px minmax(0, 1fr); align-items: center; gap: 6px; min-height: 18px; }
+.pr-faixa-nome { font-size: 11px; color: #aab6c3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pr-faixa-nome.ct { color: var(--ct); } .pr-faixa-nome.t { color: var(--t); }
+.pr-trilho { position: relative; height: 16px; background: #18212c; border-radius: 4px; cursor: pointer; }
+.pr-regua { background: transparent; height: 18px; }
+.pr-regua-marca { position: absolute; top: 0; bottom: 0; border-left: 1px solid #3a4756; padding-left: 3px;
+                  font-family: var(--mono); font-size: 10px; color: #aab6c3; white-space: nowrap; }
+.pr-regua-marca.bomba { border-left-color: #7a3a33; color: #ff8a7a; }
+.pr-regua-plant { position: absolute; top: 0; bottom: 0; width: 3px; margin-left: -1px; background: #ff8a7a; }
+.pr-marca, .pr-marco { position: absolute; top: 50%; transform: translate(-50%, -50%); padding: 0; cursor: grab;
+                       border: 2px solid #0f1620; }
+.pr-marca { width: 12px; height: 12px; border-radius: 50%; background: #e8edf3; }
+.pr-marca.ct { background: var(--ct); } .pr-marca.t { background: var(--t); }
+.pr-marca.granada { border-radius: 2px; transform: translate(-50%, -50%) rotate(45deg); background: var(--cor, #e8edf3); }
+.pr-marca.arrastando { outline: 2px solid #ffffff; cursor: grabbing; }
+.pr-marco { min-width: 18px; height: 16px; border-radius: 4px; font-size: 10px; line-height: 12px; color: #0f1620;
+            background: #e8edf3; cursor: pointer; }
+.pr-marco.ativo { background: #ffd34d; }
+.pr-linha-cabecote-trilho { position: absolute; left: 84px; right: 0; top: 0; bottom: 0; pointer-events: none; }
+.pr-linha-cabecote { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: #ffd34d; }
+.pr-roteiro { margin: 0; padding: 0; list-style: none; max-height: 160px; overflow: auto; display: grid;
+              gap: 2px; align-content: start; font-size: 12px; }
+.pr-evento { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; padding: 2px 4px; border-radius: 4px; }
+.pr-evento.aceso { background: #2a3440; outline: 1px solid #ffd34d; }
+.pr-evento-hora { font-family: var(--mono); font-size: 11px; padding: 0 4px; background: transparent; color: #ffd34d;
+                  border: 1px solid #3a4756; border-radius: 4px; cursor: pointer; }
+.pr-evento-texto { flex: 1; min-width: 0; }
+.pr-evento-nota { width: 100%; font: inherit; font-size: 11px; padding: 2px 4px; background: #18212c; color: #e8edf3;
+                  border: 1px solid #3a4756; border-radius: 4px; }
+.pr-evento-nota-texto { width: 100%; font-size: 11px; color: #aab6c3; font-style: italic; }
+@media (max-width: 760px) { .pr-linha { grid-template-columns: minmax(0, 1fr); } }
