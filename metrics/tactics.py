@@ -135,7 +135,9 @@ OPCIONAIS = {
     "move_peca": ("nivel",),
     # origem_desconhecida: granada vinda de um instante do replay cujo efeito
     # não se liga a arremesso nenhum -- só o efeito é conhecido
-    "cria_granada": ("nivel", "dura_passos", "arremesso", "origem_desconhecida", "t", "jogador"),
+    # voo_s e efeito_s (fase 9): o voo e o efeito medidos no replay, na granada
+    # de um round aberto; ausentes, valem a estimativa e a duração padrão
+    "cria_granada": ("nivel", "dura_passos", "arremesso", "origem_desconhecida", "t", "jogador", "voo_s", "efeito_s"),
     "move_ponto": ("nivel", "yaw"),
     "planta_bomba": ("nivel",),
     "move_granada": ("nivel",),
@@ -659,6 +661,10 @@ def linha_do_tempo(operacoes: list[dict], centro: list[float]) -> dict:
                 g["jogador"] = op["jogador"]
             if g.get("arremesso") and g["arremesso"].get("voo_s") is not None:
                 g["voo_s"] = float(g["arremesso"]["voo_s"])
+            if "voo_s" in op:
+                g["voo_s"] = float(op["voo_s"])
+            if "efeito_s" in op:
+                g["efeito_s"] = float(op["efeito_s"])
     for peca in estado["pecas"].values():
         # ordem estável: horário e, no mesmo horário, a ordem em que entrou na lista
         peca["pontos"] = [pt for _, pt in sorted(enumerate(peca["pontos"]), key=lambda x: (x[1]["t"], x[0]))]
@@ -991,6 +997,8 @@ def _problemas_da_operacao(op: dict, onde: str, andares: int, por_id: dict) -> l
         erros.append(f"{onde}: t, x e y precisam ser números")
     if t == "cria_granada" and "t" in op and not _eh_numero(op["t"]):
         erros.append(f"{onde}: horário da granada não é número")
+    if t == "cria_granada" and any(k in op and not (_eh_numero(op[k]) and op[k] >= 0) for k in ("voo_s", "efeito_s")):
+        erros.append(f"{onde}: voo e efeito da granada precisam ser números >= 0")
     if t in DESFAZER:
         alvo = por_id.get(op["alvo"])
         if alvo is None:

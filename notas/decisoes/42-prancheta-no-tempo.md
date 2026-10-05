@@ -29,3 +29,10 @@ sobre o radar com o lugar mais comum de cada célula (`metrics/lugares.py`), ger
 fase 8. Célula sem tick não tem nome. Mapa com menos de 2 partidas não tem medida fora da amostra
 e fica sem tabela (hoje o Train). Números em
 `notas/investigacoes/2026-10-04-nome-do-lugar.md`.
+
+**Critério para um mapa ganhar (ou voltar a ter) nome de lugar** (resposta do Pedro, 2026-10-05):
+pelo menos 2 partidas do mapa no corpus (`MIN_PARTIDAS`: uma monta a tabela e a outra confere) e
+acerto fora da amostra de pelo menos 93% (`MIN_ACERTO`, o piso dos mapas aceitos: o menor medido
+foi 93,4%, no Overpass). `scripts/build_lugares.py` aplica as duas condições. O Train volta quando
+tiver a segunda partida e passar dos 93%. Abaixo disso, a tela fica sem o nome do lugar e não
+inventa nada. Os nomes são os do jogo, em inglês, porque é como quem joga fala.

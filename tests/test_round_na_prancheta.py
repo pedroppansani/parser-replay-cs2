@@ -269,3 +269,83 @@ def test_espelho_do_round_aberto_e_da_origem(navegador, site):
         assert problemas_da_origem({**o, "base_real": 0})
     finally:
         ctx.close()
+
+
+def _pixel(pg, x, y):
+    px = interno(pg, f"I.jogoParaPixel({x}, {y})")
+    c = pg.locator("#pr-mapa").bounding_box()
+    w = interno(pg, "I.radar().width")
+    return c["x"] + px[0] * c["width"] / w, c["y"] + px[1] * c["height"] / w
+
+
+def test_no_replay_so_existe_o_botao_do_round(navegador, site):
+    ctx = navegador.new_context(viewport={"width": 1400, "height": 1000})
+    try:
+        pg = ctx.new_page()
+        _abre_replay(pg, site, "match_02", 6, 40)
+        pg.click("#anot-toggle")
+        assert pg.locator("#anot-tatica-instante").count() == 0
+        assert pg.locator("#anot-abrir-round").text_content() == "Abrir round na prancheta"
+    finally:
+        ctx.close()
+
+
+def test_clicar_num_jogador_em_t_traca_o_caminho_a_partir_de_t(navegador, site):
+    from tests.test_tactics_tempo import _arredonda
+    ctx, pg = _abre_round(navegador, site)
+    try:
+        pg.locator("#pr-mapa").scroll_into_view_if_needed()
+        t0 = interno(pg, "S.t")
+        pecas = interno(pg, "I.quadroNoTempo(S.e3, S.t, I.centro()).pecas")
+        pid = sorted(pecas)[0]
+        q = pecas[pid]
+        pg.mouse.click(*_pixel(pg, q["x"], q["y"]))
+        assert interno(pg, "I.estadoDaInteracao()") == "tracando_caminho"
+        # dois pontos no vazio: longe de toda peça (e da alça de girar da selecionada)
+        livres = []
+        for dx, dy in [(a, b) for a in range(-600, 601, 150) for b in range(-600, 601, 150) if (a, b) != (0, 0)]:
+            x, y = q["x"] + dx, q["y"] + dy
+            if all(math.hypot(x - o["x"], y - o["y"]) > 150 for o in pecas.values()) and                     interno(pg, f"I.lugarDe({x}, {y}, 0)") is not None:          # dentro do mapa jogável
+                livres.append((x, y))
+        assert len(livres) >= 2
+        for x, y in livres[:2]:
+            pg.mouse.click(*_pixel(pg, x, y))
+        pg.keyboard.press("Enter")
+        (op,) = [o for o in interno(pg, "S.doc.operacoes") if o["tipo"] == "cria_caminho"
+                 and o["seq"] > interno(pg, "S.doc.origem.base_real") and len(o["pontos"]) == 2]
+        assert op["peca"] == pid and all(p["t"] > t0 for p in op["pontos"])
+        # tudo antes de t igual ao real, amostra por amostra (4 por segundo)
+        horarios = [i / 4 for i in range(int(t0 * 4))]
+        real = _arredonda(interno(pg, f"{json.dumps(horarios)}.map(t => I.quadroNoTempo(I.e3Real(), t, I.centro()).pecas)"))
+        agora = _arredonda(interno(pg, f"{json.dumps(horarios)}.map(t => I.quadroNoTempo(S.e3, t, I.centro()).pecas)"))
+        assert len(horarios) == 40 and real == agora
+        # e depois de t ele segue o caminho do usuário
+        fim = op["pontos"][-1]
+        p_fim = interno(pg, f"I.quadroNoTempo(S.e3, {fim['t']}, I.centro()).pecas['{pid}']")
+        assert (p_fim["x"], p_fim["y"]) == (fim["x"], fim["y"])
+    finally:
+        ctx.close()
+
+
+def test_arrastar_no_round_mostra_quando_o_jogador_chega(navegador, site):
+    ctx, pg = _abre_round(navegador, site)
+    try:
+        pg.locator("#pr-mapa").scroll_into_view_if_needed()
+        pid = sorted(interno(pg, "Object.keys(I.quadroNoTempo(S.e3, S.t, I.centro()).pecas)"))[0]
+        _arrasta_peca(pg, pid, 80, 30)
+        ch = interno(pg, "S.chegada")
+        rel = interno(pg, f"I.relogioEm({ch['t']})")
+        assert ch["peca"] == pid and ch["t"] > 10.0
+        assert interno(pg, "S.ultimaChegada") == "chega " + rel
+        nome = interno(pg, f"S.estado.pecas['{pid}'].rotulo")
+        dica = pg.locator("#pr-dica-estado").inner_text()
+        segundos = f"{round(ch['t'] - 10.0, 1):.1f}".replace(".", ",")
+        assert dica == f"{nome} anda até o ponto: chega {rel}, {segundos} s depois de agora"
+        # a peça continua no lugar em t e chega lá no horário
+        p = interno(pg, f"I.quadroNoTempo(S.e3, {ch['t']}, I.centro()).pecas['{pid}']")
+        assert (round(p["x"], 6), round(p["y"], 6)) == (round(ch["x"], 6), round(ch["y"], 6))
+        # a próxima ação apaga o aviso
+        interno(pg, "(I.defineTempo(12), 0)")
+        assert interno(pg, "S.chegada") is None
+    finally:
+        ctx.close()

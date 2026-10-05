@@ -72,7 +72,7 @@ def test_a_landing_escapa_os_nicks():
 
 sync_api = pytest.importorskip("playwright.sync_api")
 
-from tests.test_tactics_browser import navegador  # noqa: E402,F401  (fixture)
+from tests.test_tactics_browser import abre_round_pelo_replay, navegador  # noqa: E402,F401  (fixture)
 
 INJETADOS = """() => ({
   x: window.__x,
@@ -151,10 +151,9 @@ def test_o_nome_malicioso_chega_literal_a_prancheta_pelo_instante(navegador, pag
         pg.locator("#strip button", has_text="1").first.click()
         pg.evaluate("() => { const s = document.getElementById('scrub'); s.value = 8; s.dispatchEvent(new Event('input')); }")
         pg.click("#anot-toggle")   # a barra de desenho abre recolhida (auditoria 5.1)
-        pg.click("#anot-tatica-instante")
-        pg.wait_for_function("() => window.Prancheta && Prancheta._interno.S.estado !== null")
+        abre_round_pelo_replay(pg)          # fase 9: o round inteiro, parado no instante
         rotulos = pg.evaluate("""() => { const I = Prancheta._interno;
-            return Object.values(I.quadroDoPasso(I.S.estado, 0, I.centro()).pecas).map(p => p.rotulo); }""")
+            return Object.values(I.quadroNoTempo(I.S.e3, I.S.t, I.centro()).pecas).map(p => p.rotulo); }""")
         # a prancheta limita o tamanho do rótulo: o nome longo chega LITERAL e cortado
         assert MAU_NEGRITO in rotulos
         assert any(r.startswith("</script><img") and MAU_SCRIPT.startswith(r) for r in rotulos), rotulos

@@ -20,7 +20,7 @@ TOLERANCIAS_U = (0, 2, 4, 8, 16, 32)
 # sincronizada no tempo) fica abaixo do que o próprio replay já não vê entre duas
 # amostras -- um jogador correndo de rifle anda 210,6 u/s (VELOCIDADE_U_S, medida
 # no corpus) / 4 amostras por segundo = 52,6 u. Com 32 u: maior round do corpus
-# com 11,0 KB no hash (limite 150 KB) e 46 pontos por jogador na mediana (contra
+# com 11,5 KB no hash (limite 150 KB) e 46 pontos por jogador na mediana (contra
 # 288 sem simplificar). Tabela em notas/investigacoes/2026-10-05-round-no-hash.md.
 TOLERANCIA_U = 32
 
@@ -58,28 +58,30 @@ def douglas_peucker(pontos: list[tuple[float, float, float]], tol: float) -> lis
     return [i for i in range(n) if fica[i]]
 
 
-def caminho_do_jogador(p: dict, tol: float) -> tuple[list[list], int | None]:
+def caminho_do_jogador(p: dict, tol: float, fixos: tuple[int, ...] = ()) -> tuple[list[list], int | None]:
     """Pontos [quadro, x, y, direção, andar] do trecho vivo e o quadro da morte
-    (None se terminou vivo). Troca de andar sempre vira ponto: a prancheta não
-    interpola entre andares."""
+    (None se terminou vivo). Ficam sempre: o primeiro e o último quadro vivo, os
+    dois lados de cada troca de andar (a prancheta não interpola entre andares)
+    e os quadros `fixos` -- o instante de onde a prancheta veio, para que ali a
+    posição e a direção sejam as gravadas, sem o erro da simplificação. Entre
+    dois pontos que sempre ficam, Douglas-Peucker sincronizado no tempo."""
     vivos = [i for i, v in enumerate(p["alive"]) if v]
     if not vivos:
         return [], None
     ini, fim = vivos[0], vivos[-1]
     lv = p.get("lv") or [0] * len(p["x"])
-    idx = list(range(ini, fim + 1))
-    # corta o trecho nas trocas de andar e simplifica cada pedaço
-    pedacos, comeco = [], 0
-    for k in range(1, len(idx)):
-        if lv[idx[k]] != lv[idx[k - 1]]:
-            pedacos.append(idx[comeco:k])
-            comeco = k
-    pedacos.append(idx[comeco:])
-    ficam: list[int] = []
-    for ped in pedacos:
-        sel = douglas_peucker([(i, p["x"][i], p["y"][i]) for i in ped], tol)
-        ficam.extend(ped[s] for s in sel)
-    pontos = [[i, p["x"][i], p["y"][i], p["d"][i], lv[i]] for i in ficam]
+    marcos = {ini, fim}
+    for k in range(ini + 1, fim + 1):
+        if lv[k] != lv[k - 1]:
+            marcos.update((k - 1, k))
+    marcos.update(q for q in fixos if ini <= q <= fim)
+    marcos = sorted(marcos)
+    ficam = set(marcos)
+    for a, b in zip(marcos, marcos[1:]):
+        trecho = list(range(a, b + 1))
+        sel = douglas_peucker([(i, p["x"][i], p["y"][i]) for i in trecho], tol)
+        ficam.update(trecho[s] for s in sel)
+    pontos = [[i, p["x"][i], p["y"][i], p["d"][i], lv[i]] for i in sorted(ficam)]
     morte = fim + 1 if fim + 1 < len(p["alive"]) else None
     return pontos, morte
 
@@ -95,20 +97,34 @@ def posicao_no_caminho(pontos: list[list], quadro: float) -> tuple[float, float]
     return pontos[-1][1], pontos[-1][2]
 
 
-def payload_do_round(rep: dict, rd: dict, tol: float, partida: str) -> dict:
-    """O round no formato que viaja na URL (quadros, não segundos: inteiros)."""
+def payload_do_round(rep: dict, rd: dict, tol: float, partida: str, quadro: int | None = None) -> dict:
+    """O round no formato que viaja na URL (quadros, não segundos). `quadro` é o
+    instante de onde a prancheta veio (fica como ponto de todo jogador vivo).
+
+    Granada: k, by, f (quadro do arremesso), o e d (começo e fim da trajetória),
+    l (id do arremesso real), lo (posição da soltura gravada pelo export), v (voo
+    em quadros: até o efeito ligado, para smoke e molotov; senão até o fim da
+    trajetória) e e (duração do efeito ligado, em quadros, ou None)."""
+    fixos = () if quadro is None else (quadro,)
     jogadores = []
     for p in rd["players"]:
-        pontos, morte = caminho_do_jogador(p, tol)
+        pontos, morte = caminho_do_jogador(p, tol, fixos)
         jogadores.append({"nome": p["name"], "lado": p["side"], "pontos": pontos, "morte": morte})
+    efeitos = {}
+    for z in rd.get("smokes", []) + rd.get("fires", []):
+        if z.get("l"):
+            efeitos.setdefault(z["l"]["id"], z)
     granadas = []
     for g in rd.get("nades", []):
         if not g.get("x"):
             continue
         lance = g.get("l") or {}
+        z = efeitos.get(lance.get("id")) if g["k"] in ("smoke", "molotov") else None
         granadas.append({"k": g["k"], "by": g.get("by"), "f": g["f0"],
                          "o": [g["x"][0], g["y"][0]], "d": [g["x"][-1], g["y"][-1]],
-                         "l": lance.get("id")})
+                         "l": lance.get("id"), "lo": lance["o"][:2] if lance.get("o") else None,
+                         "v": (z["f0"] - g["f0"]) if z else len(g["x"]) - 1,
+                         "e": (z["f1"] - z["f0"]) if z else None})
     plant = next((e for e in rd.get("events", []) if e["type"] == "plant"), None)
     return {"partida": partida, "round": rd["round"], "hz": rep["sample_hz"], "jogadores": jogadores,
             "granadas": granadas,

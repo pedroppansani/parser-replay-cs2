@@ -31,7 +31,20 @@
   esmaecido com o alfa do rastro (`ALFA_RASTRO`).
 - **Voltar ao real.** Anula toda operação do usuário ainda ativa numa ação só, pelo `anula`, e
   refazer devolve tudo.
-- **Botão.** "Abrir round na prancheta" entra AO LADO de "Tática deste instante", e não no lugar
-  dele: seis testes existentes afirmam a semântica do instante (só vivos, granadas ativas, o
-  `#instante=` no endereço), e mudá-los está fora das autorizações da fase 9. Trocar um botão
-  pelo outro, migrando esses testes, é decisão do Pedro.
+- **Botão.** "Abrir round na prancheta" SUBSTITUIU "Tática deste instante", na mesma posição
+  (resposta do Pedro, 2026-10-05): o instante passa a ser o ponto de partida dentro do round
+  inteiro. Os seis testes do instante foram migrados e verificam o mesmo no round aberto, parado
+  no instante de onde veio: posições, direção do olhar, quem está vivo, granadas ativas e andar.
+  Para isso:
+  - o quadro do instante sempre fica como ponto do caminho simplificado, então posição e direção
+    ali são as gravadas, sem o erro de 32 u;
+  - cada granada leva o voo e o efeito medidos no replay (`voo_s` e `efeito_s`, campos opcionais
+    novos da `cria_granada`), então fica ativa nos mesmos quadros;
+  - a origem da granada é o arremesso real da biblioteca, ou a soltura gravada pelo export, como
+    no instante.
+
+  A prancheta continua aceitando `#instante=` de links antigos.
+- **Quem arrasta vê quando o jogador chega** (condição do Pedro para o andar até o ponto). Ao
+  soltar, o ponto de chegada mostra "chega 1:31", e a linha de dica diz "Spinx anda até o ponto:
+  chega 1:31, 2,4 s depois de agora". Sem isso, como a peça continua no lugar em t, pareceria
+  que o arrasto não funcionou. O aviso some na próxima ação (clique, cabeçote ou desfazer).

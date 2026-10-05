@@ -550,6 +550,9 @@ var Prancheta = (function () {
         if (tem(op, "t")) g.t = op.t;
         if (tem(op, "jogador")) g.jogador = op.jogador;
         if (g.arremesso && g.arremesso.voo_s !== undefined && g.arremesso.voo_s !== null) g.voo_s = g.arremesso.voo_s;
+        // fase 9: voo e efeito medidos no replay (granada de um round aberto)
+        if (tem(op, "voo_s")) g.voo_s = op.voo_s;
+        if (tem(op, "efeito_s")) g.efeito_s = op.efeito_s;
       }
     });
     Object.keys(estado.pecas).forEach(function (pid) {
@@ -674,6 +677,9 @@ var Prancheta = (function () {
       }
       if (op.tipo === "define_duracao" && !(ehNumero(op.segundos) && op.segundos > 0)) erros.push(onde + ": duração não é positiva");
       if (op.tipo === "cria_granada" && ARMAS.indexOf(op.arma) < 0) erros.push(onde + ": granada desconhecida: " + op.arma);
+      if (op.tipo === "cria_granada" && ["voo_s", "efeito_s"].some(function (k) { return tem(op, k) && !(ehNumero(op[k]) && op[k] >= 0); })) {
+        erros.push(onde + ": voo e efeito da granada precisam ser números >= 0");
+      }
       if (op.tipo === "cria_granada" && tem(op, "origem_desconhecida")) {
         if (typeof op.origem_desconhecida !== "boolean") erros.push(onde + ": origem_desconhecida não é verdadeiro/falso");
         else if (op.origem_desconhecida) {
@@ -942,6 +948,7 @@ var Prancheta = (function () {
 
   function desfaz() {
     confirmaGiro();
+    S.chegada = null;
     var fora = anuladas(S.doc.operacoes);
     while (S.pilhaDesfazer.length) {
       var item = S.pilhaDesfazer.pop();
@@ -1048,6 +1055,7 @@ var Prancheta = (function () {
   /** Leva o cabeçote a t (e o passo atual ao marco que contém t). */
   function defineTempo(t) {
     confirmaGiro();
+    S.chegada = null;
     S.t = Math.max(0, Math.min(limiteDoTempo(), Math.round(t * 100) / 100));
     S.passo = marcoQueContem(S.t);
     if (S.caminho && !S.caminho.pontos.length) iniciaCaminho(S.caminho.peca);
@@ -1070,6 +1078,10 @@ var Prancheta = (function () {
       if (!q) return;
       var chega = Math.round((S.t + Math.hypot(x - q.x, y - q.y) / velocidade(funcaoDe(pid), "correndo")) * 100) / 100;
       emiteNaPeca(pid, S.t, [["cria_caminho", { peca: pid, pontos: [{ t: chega, x: x, y: y, nivel: nivel }] }]]);
+      // quem arrastou VÊ quando ele chega (resposta 3 do Pedro): a peça continua
+      // no lugar em t, e sem isso pareceria que o arrasto não funcionou
+      S.chegada = { peca: pid, t: chega, desde: S.t, x: x, y: y, nivel: nivel };
+      atualizaDica(); desenha();
       return;
     }
     if (noMarco()) { emiteNaPeca(pid, S.t, [["move_peca", { peca: pid, passo: passoAtual(), x: x, y: y, nivel: nivel }]]); return; }
@@ -1393,6 +1405,8 @@ var Prancheta = (function () {
     }
     if (editando && S.caminho) desenhaCaminho();
     var ant = editando && S.passo > 0 && noMarco() ? quadro(S.passo - 1) : null;
+    S.ultimaChegada = null;
+    desenhaChegada();
     desenhaMortos(cena.mortos);
     Object.keys(cena.pecas).forEach(function (id) { desenhaPeca(id, cena.pecas[id], ant && ant.pecas[id], editando); });
     desenhaBalao();
@@ -1664,7 +1678,31 @@ var Prancheta = (function () {
     };
   }
 
-  function dicaAtual() { return ESTADOS[estadoDaInteracao()].dica(contextoDaDica()); }
+  function dicaAtual() {
+    if (S.chegada && !S.reproducao) return textoDaChegada();
+    return ESTADOS[estadoDaInteracao()].dica(contextoDaDica());
+  }
+  /** "Spinx anda até o ponto: chega 1:31, 2,4 s depois de agora" */
+  function textoDaChegada() {
+    var c = S.chegada;
+    return nomePeca(c.peca) + " anda até o ponto: chega " + relogioEm(c.t) + ", " +
+      (Math.round((c.t - c.desde) * 10) / 10).toFixed(1).replace(".", ",") + " s depois de agora";
+  }
+  /** O rótulo "chega 1:31" no ponto de chegada, até a próxima ação. */
+  function desenhaChegada() {
+    if (!S.chegada || S.reproducao) return;
+    var c = S.chegada, px = jogoParaPixel(c.x, c.y), texto = "chega " + relogioEm(c.t);
+    ctx.save();
+    ctx.globalAlpha = alfaDoAndar(c.nivel);
+    ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.arc(px[0], px[1], RAIO_PECA, 0, 2 * Math.PI); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.font = "600 13px Figtree, system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+    ctx.lineWidth = 3; ctx.strokeStyle = "rgba(15,22,32,0.9)"; ctx.fillStyle = "#ffffff";
+    ctx.strokeText(texto, px[0], px[1] - RAIO_PECA - 4); ctx.fillText(texto, px[0], px[1] - RAIO_PECA - 4);
+    ctx.restore();
+    S.ultimaChegada = texto;
+  }
 
   function atualizaDica() {
     var d = $("pr-dica-estado");
@@ -1772,6 +1810,7 @@ var Prancheta = (function () {
   /* --- ponteiro ------------------------------------------------------------------ */
   function pointerDown(e) {
     if (!S.doc) return;
+    if (S.chegada) { S.chegada = null; atualizaDica(); }
     if (S.reproducao) { if (S.espaco || e.button === 1) comecaPan(e); return; }
     if (S.espaco || e.button === 1) { comecaPan(e); e.preventDefault(); return; }
     var px = eventoParaPixel(e), g = eventoParaJogo(e);
@@ -3548,10 +3587,17 @@ var Prancheta = (function () {
       var ok = g && ARMAS.indexOf(g.k) >= 0 && ehNumero(g.f) && g.f >= 0 && Array.isArray(g.o) && Array.isArray(g.d) &&
         g.o.length === 2 && g.d.length === 2 && g.o.concat(g.d).every(ehNumero);
       if (!ok || hz === null) { foraGranadas++; return; }
-      var quem = pecaDe[g.by];
-      var dados = { granada: novoId(), arma: g.k, passo: passo, t: tDe(g.f), origem: g.o.slice(), destino: g.d.slice(),
-                    nivel: nivelEm(g.by, g.f), arremesso: (typeof g.l === "string" && bib[g.l]) || null };
+      var quem = pecaDe[g.by], real = (typeof g.l === "string" && bib[g.l]) || null;
+      // a origem: o arremesso real da biblioteca; sem ele, a soltura gravada
+      // pelo export; sem ela, o começo da trajetória (como no instante)
+      var origem = real ? real.origem.slice(0, 2)
+        : (Array.isArray(g.lo) && g.lo.length === 2 && g.lo.every(ehNumero) ? g.lo.slice() : g.o.slice());
+      var dados = { granada: novoId(), arma: g.k, passo: passo, t: tDe(g.f), origem: origem, destino: g.d.slice(),
+                    nivel: real ? nivelDoZ(real.origem[2]) : nivelEm(g.by, g.f), arremesso: real };
       if (quem) dados.jogador = quem.id;
+      // voo e efeito medidos no replay: a granada fica ativa nos mesmos quadros
+      if (ehNumero(g.v) && g.v >= 0) dados.voo_s = Math.round(g.v / hz * 1000) / 1000;
+      if (ehNumero(g.e) && g.e >= 0) dados.efeito_s = Math.round(g.e / hz * 1000) / 1000;
       emite("cria_granada", dados, false);
     });
     if (r && r.bomba && hz !== null && ehNumero(r.bomba.f) && ehNumero(r.bomba.x) && ehNumero(r.bomba.y)) {
@@ -3564,6 +3610,7 @@ var Prancheta = (function () {
     // a base real termina aqui: o que vier depois é do usuário
     origem.base_real = S.doc.contador;
     if (!problemasDaOrigem(origem).length) S.doc.origem = origem;
+    bancoDe = null;   // o banco é refeito com o elenco do round (os nomes reais)
     S.pilhaDesfazer = []; S.pilhaRefazer = [];
     reaplica();
     // abre parada no instante do replay

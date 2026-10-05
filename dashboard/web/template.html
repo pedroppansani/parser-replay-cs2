@@ -2271,8 +2271,9 @@
       roundInteiro: function () {
         var cfgRound = PAGINA.round_na_prancheta;
         if (!cfgRound) return null;
-        var pl = MapCore.roundParaPrancheta(R.sample_hz, cur, cfgRound.tolerancia_u, (M && M.match_id) || "");
-        pl.instante = this.instante();
+        var inst = this.instante();
+        var pl = MapCore.roundParaPrancheta(R.sample_hz, cur, cfgRound.tolerancia_u, (M && M.match_id) || "", inst.quadro);
+        pl.instante = inst;
         var rotulos = D.structural_role_labels || {}, funcoes = {};
         (D.structural_roles || []).forEach(function (s) {
           cur.players.forEach(function (p) {

@@ -18,17 +18,21 @@ horário. Com ela, o erro máximo é a própria tolerância:
 
 | tolerância (u) | erro p50 (u) | erro p95 (u) | erro máx (u) | pontos por jogador (mediana / máx) | maior round no hash (KB) | mediana (KB) |
 |---|---|---|---|---|---|---|
-| 0 | 0.0 | 0.0 | 0.0 | 288 / 630 | 47.5 | 27.1 |
-| 2 | 0.0 | 1.4 | 2.0 | 198 / 528 | 38.4 | 21.1 |
-| 4 | 0.0 | 3.0 | 4.0 | 164 / 463 | 32.4 | 17.9 |
-| 8 | 0.5 | 6.5 | 8.0 | 121 / 375 | 24.8 | 13.8 |
-| 16 | 3.3 | 13.0 | 16.0 | 77 / 247 | 16.7 | 9.4 |
-| **32** | 7.8 | 24.8 | 32.0 | 46 / 157 | **11.0** | 6.2 |
+| 0 | 0.0 | 0.0 | 0.0 | 288 / 630 | 48.0 | 27.6 |
+| 2 | 0.0 | 1.4 | 2.0 | 198 / 528 | 39.0 | 21.5 |
+| 4 | 0.0 | 3.0 | 4.0 | 164 / 463 | 32.9 | 18.4 |
+| 8 | 0.5 | 6.5 | 8.0 | 121 / 375 | 25.4 | 14.2 |
+| 16 | 3.3 | 13.0 | 16.0 | 77 / 247 | 17.3 | 9.9 |
+| **32** | 7.8 | 24.8 | 32.0 | 46 / 157 | **11.5** | 6.6 |
+
+(Medido de novo depois da resposta 2 do Pedro. A granada passou a levar a soltura e o voo e o efeito
+medidos no replay, e o instante de onde a prancheta veio fica sempre como ponto. Isso acrescenta
+um ponto por jogador e meio KB no maior round.)
 
 **Escolha: 32 u.** É a maior tolerância medida cujo erro máximo fica abaixo do que o próprio replay
 já não vê entre duas amostras: um jogador correndo de rifle anda 210,6 u/s (velocidade medida no
 corpus, fase 8) ÷ 4 amostras por segundo = 52,6 u. O maior round (match_16, round 24) fica com
-11,0 KB no hash, menos de um décimo do limite. Até sem simplificar nada ele cabe (47,5 KB). Cada
+11,5 KB no hash, menos de um décimo do limite. Até sem simplificar nada ele cabe (48,0 KB). Cada
 jogador fica com 46 pontos na mediana, e cada ponto vira uma marca na linha do tempo.
 
 **Limites.** A direção entre dois pontos que ficaram é interpolada. O erro de direção não foi

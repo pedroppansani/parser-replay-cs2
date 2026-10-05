@@ -832,25 +832,16 @@ window.MapAnnotations = (function () {
       tatica.textContent = "Criar tática";
       tatica.title = "Abrir a prancheta deste mapa com uma tática nova";
       vista.appendChild(tatica);
-      // "Tática deste instante": a tática nova já nasce com os jogadores vivos
-      // do quadro atual. O retrato vai na própria URL (#instante=...), que
+      // "Abrir round na prancheta" (fase 9; substituiu "Tática deste instante"):
+      // o round inteiro, aberto PARADO no instante atual -- o instante é o ponto
+      // de partida dentro do round. Vai compactado no hash (#round=...), que
       // funciona igual no arquivo local e no site.
-      if (opts.instante) {
-        var porSegundo = opts.amostrasPorSegundo || 4;
-        vista.appendChild(botao("Tática deste instante",
-          "Abrir a prancheta com os jogadores vivos deste instante do replay. O instante usado é a " +
-          "amostra gravada imediatamente anterior (" + porSegundo + " por segundo)", function () {
-            if (opts.pause) opts.pause();
-            window.location.href = opts.prancheta + "#instante=" + encodeURIComponent(JSON.stringify(opts.instante()));
-          })).id = "anot-tatica-instante";
-      }
-      // "Abrir round na prancheta" (fase 9): o round inteiro, para assistir,
-      // pausar e editar a partir de qualquer ponto. Vai compactado no hash
-      // (#round=...), como o instante: funciona no arquivo local e no site.
       if (opts.roundInteiro && window.CompressionStream) {
+        var porSegundo = opts.amostrasPorSegundo || 4;
         vista.appendChild(botao("Abrir round na prancheta",
-          "Abrir a prancheta com o round inteiro: os caminhos reais, as mortes, as granadas e o plant, " +
-          "parada neste instante", function () {
+          "Abrir a prancheta com o round inteiro (caminhos reais, mortes, granadas e plant), parada neste " +
+          "instante. O instante usado é a amostra gravada imediatamente anterior (" + porSegundo + " por segundo)",
+          function () {
             if (opts.pause) opts.pause();
             var dado = opts.roundInteiro();
             if (!dado) return;
