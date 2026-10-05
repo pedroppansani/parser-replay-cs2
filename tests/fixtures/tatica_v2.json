@@ -1,0 +1,720 @@
+{
+ "formato": "prancheta-cs2",
+ "versao": 2,
+ "id": "4d6a93c624f842c4b21ef6bf1b618dd1",
+ "mapa": "de_mirage",
+ "criada_por": "anônimo",
+ "criada_em": "2026-10-05T00:53:49.740Z",
+ "calibracao": "2ee75d404e49",
+ "contador": 39,
+ "operacoes": [
+  {
+   "id": "c0de0ceb1db74b54aea55ab36832ddd3",
+   "seq": 1,
+   "autor": "anônimo",
+   "em": "2026-10-05T00:53:49.740Z",
+   "tipo": "renomeia",
+   "titulo": "Nova tática"
+  },
+  {
+   "id": "679707ea74164c83aef1f2b91ff13f66",
+   "seq": 2,
+   "autor": "anônimo",
+   "em": "2026-10-05T00:53:49.741Z",
+   "tipo": "cria_passo",
+   "passo": "5fa0703cfd2e473291f4e589e4a8f6a7",
+   "titulo": ""
+  },
+  {
+   "id": "02d16ce6fc1c4c25abcdda5d31d639d4",
+   "seq": 3,
+   "autor": "anônimo",
+   "em": "2026-10-05T00:53:49.742Z",
+   "tipo": "cria_peca",
+   "peca": "0e15fa7c99204044b2b1f47d9507916e",
+   "lado": "t",
+   "rotulo": "donk666",
+   "passo": "5fa0703cfd2e473291f4e589e4a8f6a7",
+   "x": -456,
+   "y": 591,
+   "nivel": 0,
+   "yaw": 210
+  },
+  {
+   "id": "ac3e4eb986d74d4c95fa5a8d865e4499",
+   "seq": 4,
+   "autor": "anônimo",
+   "em": "2026-10-05T00:53:49.746Z",
+   "tipo": "cria_peca",
+   "peca": "aa67ad4f482a4a54bcd15d051990171a",
+   "lado": "ct",
+   "rotulo": "-h4wkkk",
+   "passo": "5fa0703cfd2e473291f4e589e4a8f6a7",
+   "x": -995,
+   "y": -2336,
+   "nivel": 0,
+   "yaw": 35
+  },
+  {
+   "id": "4a7264e0f3f84a8d84d698d745dd76f1",
+   "seq": 5,
+   "autor": "anônimo",
+   "em": "2026-10-05T00:53:49.747Z",
+   "tipo": "cria_peca",
+   "peca": "a752a798f736463b8b4f5f32aa6c4367",
+   "lado": "t",
+   "rotulo": "Eleyes",
+   "passo": "5fa0703cfd2e473291f4e589e4a8f6a7",
+   "x": -742,
+   "y": 612,
+   "nivel": 0,
+   "yaw": 177
+  },
+  {
+   "id": "5062219b0388415eaecb28ffe739d1c1",
+   "seq": 6,
+   "autor": "anônimo",
+   "em": "2026-10-05T00:53:49.748Z",
+   "tipo": "cria_peca",
+   "peca": "c2b5a5f1bed14e28b10ba5845a05d376",
+   "lado": "ct",
+   "rotulo": "Dyshbert",
+   "passo": "5fa0703cfd2e473291f4e589e4a8f6a7",
+   "x": 52,
+   "y": -2004,
+   "nivel": 0,
+   "yaw": 17
+  },
+  {
+   "id": "35765d7d55e14516a1d5a895c092d0eb",
+   "seq": 7,
+   "autor": "anônimo",
+   "em": "2026-10-05T00:53:49.749Z",
+   "tipo": "cria_peca",
+   "peca": "08563e94e7214a548483e8a38aaec89f",
+   "lado": "t",
+   "rotulo": "-olik",
+   "passo": "5fa0703cfd2e473291f4e589e4a8f6a7",
+   "x": 176,
+   "y": -117,
+   "nivel": 0,
+   "yaw": 277
+  },
+  {
+   "id": "28c3a2b04da5424ebe39ca4f763d79e3",
+   "seq": 8,
+   "autor": "anônimo",
+   "em": "2026-10-05T00:53:49.749Z",
+   "tipo": "cria_peca",
+   "peca": "390fab682bd5476f867e230d32b4034c",
+   "lado": "ct",
+   "rotulo": "S3NSEYZjE",
+   "passo": "5fa0703cfd2e473291f4e589e4a8f6a7",
+   "x": -1177,
+   "y": -706,
+   "nivel": 0,
+   "yaw": 18
+  },
+  {
+   "id": "017a81aef3b44aebb87052429869d520",
+   "seq": 9,
+   "autor": "anônimo",
+   "em": "2026-10-05T00:53:49.750Z",
+   "tipo": "cria_peca",
+   "peca": "7f808ca2c613421daf9bbf52c739ae89",
+   "lado": "ct",
+   "rotulo": "Krimbo",
+   "passo": "5fa0703cfd2e473291f4e589e4a8f6a7",
+   "x": -1008,
+   "y": -391,
+   "nivel": 0,
+   "yaw": 87
+  },
+  {
+   "id": "fb00dc9729ba44818c4364adbc4da86b",
+   "seq": 10,
+   "autor": "anônimo",
+   "em": "2026-10-05T00:53:49.751Z",
+   "tipo": "cria_peca",
+   "peca": "c89b8e19888b4e01bcbba34cede6d519",
+   "lado": "t",
+   "rotulo": "lilpeepfan-",
+   "passo": "5fa0703cfd2e473291f4e589e4a8f6a7",
+   "x": 835,
+   "y": -1134,
+   "nivel": 0,
+   "yaw": 17
+  },
+  {
+   "id": "d6a2d25d493345ad9709d3faad500fa6",
+   "seq": 11,
+   "autor": "anônimo",
+   "em": "2026-10-05T00:53:49.751Z",
+   "tipo": "cria_peca",
+   "peca": "829ff696863c44bdb4224354fac0e79e",
+   "lado": "t",
+   "rotulo": "OG_Pablo_",
+   "passo": "5fa0703cfd2e473291f4e589e4a8f6a7",
+   "x": 625,
+   "y": -1670,
+   "nivel": 0,
+   "yaw": 164
+  },
+  {
+   "id": "5ddd47582a874f8d9c7ed87d7681042b",
+   "seq": 12,
+   "autor": "anônimo",
+   "em": "2026-10-05T00:53:49.753Z",
+   "tipo": "cria_granada",
+   "granada": "102887e6f3c34ae484e6400e38e573f5",
+   "arma": "smoke",
+   "passo": "5fa0703cfd2e473291f4e589e4a8f6a7",
+   "origem": [
+    1422.95,
+    36.47
+   ],
+   "destino": [
+    73.7,
+    -488.6
+   ],
+   "nivel": 0,
+   "arremesso": {
+    "id": "match_02:6:369",
+    "arma": "smoke",
+    "origem": [
+     1422.95,
+     36.47,
+     -167.97
+    ],
+    "destino": [
+     73.7,
+     -488.6,
+     -176.8
+    ],
+    "pitch": -42.13,
+    "yaw": -160.61,
+    "comando": "setpos 1422.95 36.47 -167.97; setang -42.13 -160.61 0",
+    "forca": "longo",
+    "botao": "botão esquerdo",
+    "velocidade": 669,
+    "velocidade_estimada": true,
+    "estado_vertical": "chão",
+    "postura": "em pé",
+    "movimento": "parado",
+    "no_ar": false,
+    "fontes": {
+     "botao": "inferido",
+     "postura": "inferido",
+     "no_ar": "inferido",
+     "origem": "inferido"
+    },
+    "jogador": "-olik",
+    "partida": "match_02",
+    "round": 6,
+    "segundos_no_round": 2.1
+   }
+  },
+  {
+   "id": "471c8aed6eb64abb878b04d790d7fd02",
+   "seq": 13,
+   "autor": "anônimo",
+   "em": "2026-10-05T00:53:49.754Z",
+   "tipo": "cria_granada",
+   "granada": "d04ec5733b014bd08babbadbb3cf6a04",
+   "arma": "molotov",
+   "passo": "5fa0703cfd2e473291f4e589e4a8f6a7",
+   "origem": [
+    -888.21,
+    -2328.06
+   ],
+   "destino": [
+    307.4,
+    -1554.1
+   ],
+   "nivel": 0,
+   "arremesso": {
+    "id": "match_02:6:475",
+    "arma": "molotov",
+    "origem": [
+     -888.21,
+     -2328.06,
+     -167.97
+    ],
+    "destino": [
+     307.4,
+     -1554.1,
+     -169.9
+    ],
+    "pitch": -13.73,
+    "yaw": 42.89,
+    "comando": "setpos -888.21 -2328.06 -167.97; setang -13.73 42.89 0",
+    "forca": "longo",
+    "botao": "botão esquerdo",
+    "velocidade": 673,
+    "velocidade_estimada": true,
+    "estado_vertical": "chão",
+    "postura": "em pé",
+    "movimento": "correndo",
+    "no_ar": false,
+    "fontes": {
+     "botao": "inferido",
+     "postura": "inferido",
+     "no_ar": "inferido",
+     "origem": "inferido"
+    },
+    "jogador": "Dyshbert",
+    "partida": "match_02",
+    "round": 6,
+    "segundos_no_round": 4.3
+   }
+  },
+  {
+   "id": "8a4345abd6df477e9158cf79e3bdf238",
+   "seq": 14,
+   "autor": "anônimo",
+   "em": "2026-10-05T00:53:49.755Z",
+   "tipo": "cria_granada",
+   "granada": "a131aa14f7f24475b0ccdb4a7397f5ee",
+   "arma": "smoke",
+   "passo": "5fa0703cfd2e473291f4e589e4a8f6a7",
+   "origem": [
+    -143.08,
+    -2077
+   ],
+   "destino": [
+    6,
+    -2311.3
+   ],
+   "nivel": 0,
+   "arremesso": {
+    "id": "match_02:6:427",
+    "arma": "smoke",
+    "origem": [
+     -143.08,
+     -2077,
+     -167.97
+    ],
+    "destino": [
+     6,
+     -2311.3,
+     -38
+    ],
+    "pitch": -33.69,
+    "yaw": -33.28,
+    "comando": "setpos -143.08 -2077.00 -167.97; setang -33.69 -33.28 0",
+    "forca": "longo",
+    "botao": "botão esquerdo",
+    "velocidade": 670,
+    "velocidade_estimada": true,
+    "estado_vertical": "chão",
+    "postura": "em pé",
+    "movimento": "parado",
+    "no_ar": false,
+    "fontes": {
+     "botao": "inferido",
+     "postura": "inferido",
+     "no_ar": "inferido",
+     "origem": "inferido"
+    },
+    "jogador": "Dyshbert",
+    "partida": "match_02",
+    "round": 6,
+    "segundos_no_round": 8.2
+   }
+  },
+  {
+   "id": "d4598fab6c5b4dc1a2921f1f6d774e46",
+   "seq": 15,
+   "autor": "anônimo",
+   "em": "2026-10-05T00:53:49.755Z",
+   "tipo": "renomeia",
+   "titulo": "match_02 · round 6 · 1:45 · 5v4"
+  },
+  {
+   "id": "2fa54cc7f006455783f1a81057be25e7",
+   "seq": 16,
+   "autor": "pedro",
+   "em": "2026-10-05T00:53:49.838Z",
+   "tipo": "renomeia",
+   "titulo": "Fixture v2: do replay"
+  },
+  {
+   "id": "33864ed9f5224fafa422f9cc676b6d38",
+   "seq": 17,
+   "autor": "pedro",
+   "em": "2026-10-05T00:53:49.852Z",
+   "tipo": "renomeia_passo",
+   "passo": "5fa0703cfd2e473291f4e589e4a8f6a7",
+   "titulo": "posições"
+  },
+  {
+   "id": "bb5f10157ca54bc6b2ac9c02f9aa4c58",
+   "seq": 18,
+   "autor": "pedro",
+   "em": "2026-10-05T00:53:49.878Z",
+   "tipo": "define_duracao",
+   "passo": "5fa0703cfd2e473291f4e589e4a8f6a7",
+   "segundos": 3
+  },
+  {
+   "id": "2081b46f58064d82838742b6e606a8d7",
+   "seq": 19,
+   "autor": "pedro",
+   "em": "2026-10-05T00:53:49.897Z",
+   "tipo": "cria_passo",
+   "passo": "6829c58991184237a2f3902e0ec116e4",
+   "titulo": ""
+  },
+  {
+   "id": "a18728741616451da3356d8bae494272",
+   "seq": 20,
+   "autor": "pedro",
+   "em": "2026-10-05T00:53:49.920Z",
+   "tipo": "renomeia_passo",
+   "passo": "6829c58991184237a2f3902e0ec116e4",
+   "titulo": "entrada"
+  },
+  {
+   "id": "1508456f915944dcba44480b37bec82c",
+   "seq": 21,
+   "autor": "pedro",
+   "em": "2026-10-05T00:53:49.930Z",
+   "tipo": "define_duracao",
+   "passo": "6829c58991184237a2f3902e0ec116e4",
+   "segundos": 4.5
+  },
+  {
+   "id": "e1e4a0a18a4d4a69833e99855a55e096",
+   "seq": 22,
+   "autor": "pedro",
+   "em": "2026-10-05T00:53:49.994Z",
+   "tipo": "move_peca",
+   "peca": "0e15fa7c99204044b2b1f47d9507916e",
+   "passo": "6829c58991184237a2f3902e0ec116e4",
+   "x": -256,
+   "y": 741,
+   "nivel": 0
+  },
+  {
+   "id": "e0c72ca6de3246c0a4ea6fe3417f9626",
+   "seq": 23,
+   "autor": "pedro",
+   "em": "2026-10-05T00:53:50.044Z",
+   "tipo": "gira_peca",
+   "peca": "0e15fa7c99204044b2b1f47d9507916e",
+   "passo": "6829c58991184237a2f3902e0ec116e4",
+   "yaw": 289
+  },
+  {
+   "id": "45b83bce7aad44c48f58748a89a53813",
+   "seq": 24,
+   "autor": "pedro",
+   "em": "2026-10-05T00:53:50.084Z",
+   "tipo": "tira_peca",
+   "peca": "aa67ad4f482a4a54bcd15d051990171a",
+   "passo": "6829c58991184237a2f3902e0ec116e4"
+  },
+  {
+   "id": "cd76237831a0437db86abee3071f7368",
+   "seq": 25,
+   "autor": "pedro",
+   "em": "2026-10-05T00:53:50.107Z",
+   "tipo": "remove_peca",
+   "peca": "a752a798f736463b8b4f5f32aa6c4367"
+  },
+  {
+   "id": "1ebb972e86434d10a01fefe0c3203916",
+   "seq": 26,
+   "autor": "pedro",
+   "em": "2026-10-05T00:53:50.175Z",
+   "tipo": "cria_granada",
+   "granada": "43ce91e1c7084dfca00579618ae99764",
+   "arma": "smoke",
+   "passo": "6829c58991184237a2f3902e0ec116e4",
+   "nivel": 0,
+   "origem": [
+    -513.12,
+    -671.3
+   ],
+   "destino": [
+    -726.7,
+    -957.4
+   ],
+   "arremesso": {
+    "id": "match_20:5:356",
+    "arma": "smoke",
+    "origem": [
+     -513.12,
+     -671.3,
+     -271.97
+    ],
+    "destino": [
+     -726.7,
+     -957.4,
+     -214.2
+    ],
+    "pitch": 4.59,
+    "yaw": -127.12,
+    "comando": "setpos -513.12 -671.30 -271.97; setang 4.59 -127.12 0",
+    "forca": "longo",
+    "botao": "botão esquerdo",
+    "velocidade": 675,
+    "velocidade_estimada": true,
+    "estado_vertical": "chão",
+    "postura": "em pé",
+    "movimento": "correndo",
+    "no_ar": false,
+    "fontes": {
+     "botao": "lido",
+     "postura": "lido",
+     "no_ar": "lido",
+     "origem": "lido"
+    },
+    "jogador": "kyxsan",
+    "partida": "match_20",
+    "round": 5,
+    "segundos_no_round": 69.6
+   }
+  },
+  {
+   "id": "ce5b6f574a41491c85fce8467ee98dba",
+   "seq": 27,
+   "autor": "pedro",
+   "em": "2026-10-05T00:53:50.243Z",
+   "tipo": "cria_granada",
+   "granada": "e6f5768f06d341c081bb39c6f7bdbb2d",
+   "arma": "molotov",
+   "passo": "6829c58991184237a2f3902e0ec116e4",
+   "nivel": 0,
+   "origem": [
+    -1694,
+    -1161.7
+   ],
+   "destino": [
+    -1438,
+    -1673.7
+   ],
+   "arremesso": null
+  },
+  {
+   "id": "881b6ea463fc42e7b054d5067be26bc1",
+   "seq": 28,
+   "autor": "pedro",
+   "em": "2026-10-05T00:53:50.264Z",
+   "tipo": "move_granada",
+   "granada": "e6f5768f06d341c081bb39c6f7bdbb2d",
+   "origem": [
+    -1694,
+    -1161.7
+   ],
+   "destino": [
+    -1438,
+    -1871
+   ],
+   "nivel": 0
+  },
+  {
+   "id": "9230f468541647bf9af1ec4e1b7146df",
+   "seq": 29,
+   "autor": "pedro",
+   "em": "2026-10-05T00:53:50.272Z",
+   "tipo": "define_vida",
+   "alvo": "e6f5768f06d341c081bb39c6f7bdbb2d",
+   "dura_passos": 2
+  },
+  {
+   "id": "c2088996379c4a44be465cc2461745d1",
+   "seq": 30,
+   "autor": "pedro",
+   "em": "2026-10-05T00:53:50.356Z",
+   "tipo": "cria_granada",
+   "granada": "ea0e643122fe4ff59594c3c86cac9bb6",
+   "arma": "he",
+   "passo": "6829c58991184237a2f3902e0ec116e4",
+   "nivel": 0,
+   "origem": [
+    -55.6,
+    177
+   ],
+   "destino": [
+    149.2,
+    -27.8
+   ],
+   "arremesso": null
+  },
+  {
+   "id": "0caee751a2a945d4872c1c16e821a31a",
+   "seq": 31,
+   "autor": "pedro",
+   "em": "2026-10-05T00:53:50.398Z",
+   "tipo": "remove_granada",
+   "granada": "ea0e643122fe4ff59594c3c86cac9bb6"
+  },
+  {
+   "id": "8fcc6cf6df5a4cc8ad118478a423c35e",
+   "seq": 32,
+   "autor": "pedro",
+   "em": "2026-10-05T00:53:50.466Z",
+   "tipo": "cria_traco",
+   "traco": "cfb77a161cfc45eca9ce4814cda7430e",
+   "passo": "6829c58991184237a2f3902e0ec116e4",
+   "ferramenta": "seta",
+   "cor": "#eb6834",
+   "espessura": 4,
+   "pontos": [
+    [
+     -2206,
+     710.3
+    ],
+    [
+     -1694,
+     454.3
+    ]
+   ],
+   "nivel": 0
+  },
+  {
+   "id": "9d92709ee26f4ecf958bd843ad702e48",
+   "seq": 33,
+   "autor": "pedro",
+   "em": "2026-10-05T00:53:50.544Z",
+   "tipo": "cria_traco",
+   "traco": "766337add7ba4912878ed3093fc0d873",
+   "passo": "6829c58991184237a2f3902e0ec116e4",
+   "ferramenta": "caneta",
+   "cor": "#eb6834",
+   "espessura": 4,
+   "pontos": [
+    [
+     354,
+     -1849.7
+    ],
+    [
+     456.4,
+     -1798.5
+    ],
+    [
+     558.8,
+     -1644.9
+    ],
+    [
+     661.2,
+     -1388.9
+    ],
+    [
+     763.6,
+     -1030.5
+    ],
+    [
+     866,
+     -569.7
+    ]
+   ],
+   "nivel": 0
+  },
+  {
+   "id": "e6393ed5585249fdb45c37bf83b10560",
+   "seq": 34,
+   "autor": "pedro",
+   "em": "2026-10-05T00:53:50.567Z",
+   "tipo": "remove_traco",
+   "traco": "cfb77a161cfc45eca9ce4814cda7430e"
+  },
+  {
+   "id": "a7e5073932ae4f6e9eebc95de8e74d48",
+   "seq": 35,
+   "autor": "pedro",
+   "em": "2026-10-05T00:53:50.592Z",
+   "tipo": "anula",
+   "alvo": "e6393ed5585249fdb45c37bf83b10560"
+  },
+  {
+   "id": "f26f11f2cb9b4844a6899d431b0d0291",
+   "seq": 36,
+   "autor": "pedro",
+   "em": "2026-10-05T00:53:50.595Z",
+   "tipo": "reativa",
+   "alvo": "e6393ed5585249fdb45c37bf83b10560"
+  },
+  {
+   "id": "ffb97ec7856443c0af0e6362d016a00f",
+   "seq": 37,
+   "autor": "pedro",
+   "em": "2026-10-05T00:53:50.600Z",
+   "tipo": "anula",
+   "alvo": "e6393ed5585249fdb45c37bf83b10560"
+  },
+  {
+   "id": "da28cc2c5c9f437aae375898d95940ca",
+   "seq": 38,
+   "autor": "pedro",
+   "em": "2026-10-05T00:53:50.620Z",
+   "tipo": "cria_passo",
+   "passo": "0e0d745e77d141d7a67da65ce3bf9ea4",
+   "titulo": ""
+  },
+  {
+   "id": "18031023eb3f4b5f8e095ddb50ec7307",
+   "seq": 39,
+   "autor": "pedro",
+   "em": "2026-10-05T00:53:50.640Z",
+   "tipo": "remove_passo",
+   "passo": "0e0d745e77d141d7a67da65ce3bf9ea4"
+  }
+ ],
+ "origem": {
+  "partida": "match_02",
+  "round": 6,
+  "quadro": 40,
+  "relogio": "1:45",
+  "elenco": [
+   {
+    "nome": "donk666",
+    "lado": "t"
+   },
+   {
+    "nome": "-h4wkkk",
+    "lado": "ct"
+   },
+   {
+    "nome": "Eleyes",
+    "lado": "t"
+   },
+   {
+    "nome": "Dyshbert",
+    "lado": "ct"
+   },
+   {
+    "nome": "-olik",
+    "lado": "t"
+   },
+   {
+    "nome": "bezimienny",
+    "lado": "ct"
+   },
+   {
+    "nome": "S3NSEYZjE",
+    "lado": "ct"
+   },
+   {
+    "nome": "Krimbo",
+    "lado": "ct"
+   },
+   {
+    "nome": "lilpeepfan-",
+    "lado": "t"
+   },
+   {
+    "nome": "OG_Pablo_",
+    "lado": "t"
+   }
+  ],
+  "mortos": [
+   {
+    "nome": "bezimienny",
+    "lado": "ct",
+    "ordem": 1
+   }
+  ]
+ }
+}

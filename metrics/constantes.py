@@ -16,6 +16,19 @@ JANELA_DE_TRADE_S = 5.0
 # (MR3) e o formato lido da demo ficam em metrics/sides.py.
 HALFTIME_ROUND = 12
 
+# Relógio do jogo (CS2 competitivo). O round dura 1:55 a partir do fim do freeze
+# time -- MEDIDO: os rounds que acabaram em `time_ran_out` (match_02 r19, match_04
+# r4) duram exatamente 115,00 s de `freeze_end` ao fim. A bomba: mp_c4timer, 40 s
+# fixos (a mesma âncora que metrics/timing.py usa para detectar o tickrate).
+SEGUNDOS_DO_ROUND = 115.0
+SEGUNDOS_DA_BOMBA = 40.0
+
+# Duração do efeito das granadas de área no jogo: a smoke dura 20 s; o fogo da
+# molotov, 7,03125 s. Usadas pelo replay (scripts/export_replay.py) e pela
+# prancheta (metrics/tactics.py).
+DURACAO_SMOKE_S = 20.0
+DURACAO_MOLOTOV_S = 7.03125
+
 # Nome do mapa como a página escreve (seletor, índice, título da partida).
 NOME_DO_MAPA = {
     "de_ancient": "Ancient",

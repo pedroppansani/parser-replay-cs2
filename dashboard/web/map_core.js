@@ -643,6 +643,23 @@ window.MapCore = (function () {
       prancheta): nome de jogador, arma, lugar e frase gerada passam por aqui
       antes de qualquer innerHTML. Onde der, prefira textContent. */
   var ESCAPES = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+  // O relógio do jogo num instante (segundos desde o fim do freeze): 1:55
+  // descendo e, depois do plant, os 40 s da bomba, congelados no desarme ou na
+  // explosão (`fim`). Uma função só para o replay e a prancheta; o espelho em
+  // Python é metrics/tactics.relogio.
+  function relogio(t, plant, fim, segundosDoRound, segundosDaBomba) {
+    function mmss(s) {
+      s = Math.max(0, s);
+      var m = Math.floor(s / 60), r = Math.floor(s % 60);
+      return m + ":" + (r < 10 ? "0" : "") + r;
+    }
+    if (plant !== null && plant !== undefined && t >= plant) {
+      var desde = (fim === null || fim === undefined ? t : Math.min(t, fim)) - plant;
+      return mmss(segundosDaBomba - desde);
+    }
+    return mmss(segundosDoRound - t);
+  }
+
   function esc(v) {
     if (v === null || v === undefined) return "";
     return String(v).replace(/[&<>"']/g, function (ch) { return ESCAPES[ch]; });
@@ -940,7 +957,7 @@ window.MapCore = (function () {
   }
 
   return {
-    esc: esc,
+    esc: esc, relogio: relogio,
     MAX_LADO_INTERNO: MAX_LADO_INTERNO,
     ZOOM_MIN: ZOOM_MIN, ZOOM_MAX: ZOOM_MAX, ZOOM_PASSO: ZOOM_PASSO,
     VELOCIDADES: VELOCIDADES,

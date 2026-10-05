@@ -40,6 +40,8 @@ import numpy as np
 import polars as pl
 
 from metrics.constantes import JANELA_DE_TRADE_S
+from metrics.constantes import SEGUNDOS_DA_BOMBA as SEGUNDOS_DA_BOMBA_DO_JOGO
+from metrics.constantes import SEGUNDOS_DO_ROUND as SEGUNDOS_DO_ROUND_DO_JOGO
 
 # ---------------------------------------------------------------------------
 # Grupos de equipamento
@@ -453,8 +455,8 @@ def _estado(dif_vivos: int, dif_equip: float, bomba: bool, eh_ct: bool) -> list[
 MODELO_DE_ROUND_COMPLETO = True
 # Relógio do round competitivo (1:55) e da bomba (40 s, a mesma constante que
 # metrics/timing.py usa para achar o tickrate).
-SEGUNDOS_DO_ROUND = 115.0
-SEGUNDOS_DA_BOMBA = 40.0
+SEGUNDOS_DO_ROUND = SEGUNDOS_DO_ROUND_DO_JOGO
+SEGUNDOS_DA_BOMBA = SEGUNDOS_DA_BOMBA_DO_JOGO
 
 
 def _estado_completo(vivos_meu: int, vivos_dele: int, dif_equip: float, bomba: bool, eh_ct: bool,

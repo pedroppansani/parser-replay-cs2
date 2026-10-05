@@ -20,6 +20,8 @@ from pathlib import Path
 
 import polars as pl
 
+from metrics.constantes import DURACAO_MOLOTOV_S, DURACAO_SMOKE_S, SEGUNDOS_DA_BOMBA, SEGUNDOS_DO_ROUND
+
 from metrics.round_breakdown import frase_da_morte
 from metrics.sides import team_of_side
 from parsing.parser import kills_do_round_jogado
@@ -64,8 +66,8 @@ TAIL_TICKS = int(4.0 * TICKRATE)
 # teleportados pro spawn.
 RESET_MARGIN_TICKS = int(1.5 * TICKRATE)
 
-SMOKE_TICKS = int(20.0 * TICKRATE)
-INFERNO_TICKS = int(7.03125 * TICKRATE)
+SMOKE_TICKS = int(DURACAO_SMOKE_S * TICKRATE)        # metrics/constantes.py
+INFERNO_TICKS = int(DURACAO_MOLOTOV_S * TICKRATE)
 
 # Relógio do jogo. No CS2 o round dura 1:55 e o cronômetro só começa a correr
 # quando o freeze time acaba — que é exatamente onde o replay começa (`t0` é o
@@ -77,10 +79,10 @@ INFERNO_TICKS = int(7.03125 * TICKRATE)
 # as duas coisas de uma vez — a duração do round E o ponto onde o cronômetro
 # começa. De quebra é uma terceira confirmação independente do tickrate: a 128
 # esse intervalo daria 57,5s, que não corresponde a nenhuma configuração do CS2.
-ROUND_SECONDS = 115.0
+ROUND_SECONDS = SEGUNDOS_DO_ROUND      # metrics/constantes.py
 # mp_c4timer: 40s fixos no CS2. É a mesma constante que metrics/timing.py usa
 # como âncora pra detectar o tickrate.
-BOMB_SECONDS = 40.0
+BOMB_SECONDS = SEGUNDOS_DA_BOMBA
 
 
 def map_levels(map_name: str) -> list[dict]:
