@@ -135,3 +135,22 @@ def test_desligado_o_clique_continua_movendo_no_horario_do_cabecote(contexto, pa
     pg.mouse.click(*no_mapa(pg, 0.6, 0.55))
     (op,) = _ops(pg, "cria_caminho")
     assert op["pontos"][0]["t"] == 15 and interno(pg, "S.caminho") is None
+
+
+def test_funcao_muda_o_rotulo_e_a_velocidade_padrao_do_caminho(contexto, pagina):
+    pg = abre(contexto, pagina)
+    pid = _com_peca(pg)
+    pg.mouse.click(*_pixel_da_peca(pg, pid))               # seleciona (e entra em caminho)
+    pg.select_option("#pr-funcao", "AWPer")
+    (op,) = _ops(pg, "define_funcao")
+    assert op["peca"] == pid and op["funcao"] == "AWPer"
+    assert interno(pg, f"I.quadroNoTempo(S.e3, S.t, I.centro()).pecas['{pid}'].funcao") == "AWPer"
+    # o banco mostra o mesmo campo, já com a função
+    assert pg.locator(f'#pr-funcoes-banco select[data-peca="{pid}"]').input_value() == "AWPer"
+    # a velocidade padrão do caminho passa a ser a da AWP
+    pg.mouse.click(*no_mapa(pg, 0.6, 0.5))
+    pt = interno(pg, "S.caminho.pontos[0]")
+    ini = interno(pg, "S.caminho.inicio")
+    v_awp = interno(pg, "I.velocidade('AWPer', 'correndo')")
+    assert pt["t"] == pytest.approx(ini["t"] + math.hypot(pt["x"] - ini["x"], pt["y"] - ini["y"]) / v_awp, abs=0.01)
+    assert v_awp < interno(pg, "I.velocidade(null, 'correndo')")

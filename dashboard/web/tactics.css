@@ -113,3 +113,12 @@ h3 { margin: 0 0 4px; font-size: 15px; }
 :where(button, a[href], select, input, textarea, summary, [tabindex]):focus-visible {
   outline: 2px solid var(--ct); outline-offset: 2px;
 }
+
+/* Funções dos jogadores (fase 8, item 8.3) */
+.pr-funcoes-banco { display: grid; gap: 4px; margin-top: 8px; }
+.pr-funcao-linha { display: flex; gap: 8px; align-items: center; }
+.pr-funcao-nome { font-family: var(--mono); font-size: 11px; min-width: 72px; color: var(--ink-2); }
+.pr-funcao { font: inherit; font-size: 12px; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; }
+.pr-pontos { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; font-size: 12px; }
+.pr-pontos li { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.pr-pontos input { width: 64px; }

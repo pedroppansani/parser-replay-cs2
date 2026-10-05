@@ -1313,6 +1313,13 @@ var Prancheta = (function () {
     ctx.globalAlpha = alfa;
     MapCore.desenhaJogador(ctx, c[0], c[1], { cor: cor, estado: "vivo", hp: 100, cego: false,
                                               nome: rotuloDaPeca(p), yaw: yaw, escala: ESCALA_PECA });
+    if (p.funcao) {
+      // a função embaixo do nome (8.3): texto do vocabulário do projeto
+      ctx.font = "600 12px Figtree, system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "top";
+      ctx.lineWidth = 3; ctx.strokeStyle = "rgba(15,22,32,0.85)"; ctx.fillStyle = "#ffffff";
+      ctx.strokeText(p.funcao, c[0], c[1] + RAIO_PECA + 4);
+      ctx.fillText(p.funcao, c[0], c[1] + RAIO_PECA + 4);
+    }
     if (editando && S.sel && S.sel.id === id) {
       var h = alca(c, yaw);
       ctx.globalAlpha = 1;
@@ -2152,6 +2159,17 @@ var Prancheta = (function () {
 
   function atualizaBanco() {
     var q = quadro();
+    var lista = $("pr-funcoes-banco");
+    if (lista && M3) {
+      limpa(lista);
+      Object.keys(S.estado.pecas).sort(function (a, b) {
+        var pa = S.estado.pecas[a], pb = S.estado.pecas[b];
+        return pa.lado.localeCompare(pb.lado) || rotuloDaPeca(pa).localeCompare(rotuloDaPeca(pb));
+      }).forEach(function (pid) {
+        lista.appendChild(el("div", { class: "linha pr-funcao-linha" }, [
+          el("span", { class: "pr-funcao-nome " + S.estado.pecas[pid].lado, texto: nomePeca(pid) }), campoDeFuncao(pid)]));
+      });
+    }
     Array.prototype.forEach.call(document.querySelectorAll(".pr-ficha"), function (f) {
       var noMapa = Object.keys(q.pecas).some(function (id) {
         return q.pecas[id].lado === f.getAttribute("data-lado") && q.pecas[id].rotulo === f.getAttribute("data-rotulo");
@@ -2218,7 +2236,11 @@ var Prancheta = (function () {
       } else {
         box.appendChild(el("p", { class: "pr-meta", texto: "Fora do mapa neste passo: arraste do banco para recolocar." }));
       }
-      if (M3) box.appendChild(painelDoCaminho(S.sel.id));
+      if (M3) {
+        box.appendChild(el("div", { class: "linha" }, [el("label", { for: "pr-funcao", texto: "Função" }),
+                                                       campoDeFuncao(S.sel.id, "pr-funcao")]));
+        box.appendChild(painelDoCaminho(S.sel.id));
+      }
       box.appendChild(el("button", { class: "pr-b", id: "pr-apaga-peca", texto: "Apagar peça da tática", onclick: removeSelecionado }));
       return;
     }
@@ -2257,6 +2279,19 @@ var Prancheta = (function () {
     }
     box.appendChild(controleDeVida(S.sel.id, g.dura_passos));
     box.appendChild(el("button", { class: "pr-b", texto: "Apagar granada", onclick: removeSelecionado }));
+  }
+
+  /** O campo de função de uma peça: o vocabulário do projeto (player_roles +
+      structural_roles + IGL), injetado no build -- nada digitado aqui. */
+  function campoDeFuncao(pid, id) {
+    var atual = S.e3 && S.e3.pecas[pid] ? S.e3.pecas[pid].funcao : null;
+    var s = el("select", { class: "pr-funcao", "data-peca": pid, "aria-label": "Função de " + nomePeca(pid) });
+    if (id) s.id = id;
+    s.appendChild(el("option", { value: "", texto: "sem função" }));
+    M3.FUNCOES.forEach(function (f) { s.appendChild(el("option", { value: f, texto: f })); });
+    s.value = atual || "";
+    s.addEventListener("change", function () { emite("define_funcao", { peca: pid, funcao: s.value || null }); });
+    return s;
   }
 
   /** Modo do próximo trecho e a lista de pontos-chave, com o horário editável e
@@ -2515,7 +2550,7 @@ var Prancheta = (function () {
       lado.appendChild(s);
       return s;
     };
-    caixa("Jogadores", [el("div", { id: "pr-banco" }),
+    caixa("Jogadores", [el("div", { id: "pr-banco" }), el("div", { id: "pr-funcoes-banco", class: "pr-funcoes-banco" }),
       el("p", { class: "pr-dica", texto: "Clique numa ficha e depois no mapa, ou arraste." })]);
     caixa("Selecionado", [el("div", { id: "pr-selecao" })]);
     caixa("Arremessos reais", [
