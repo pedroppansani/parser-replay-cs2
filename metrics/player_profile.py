@@ -500,6 +500,36 @@ CATEGORIAS = {
     "Lurk": ["pct_rounds_lurk"],
 }
 
+# O nome de cada taxa na tela. Um lugar só (fase 7): a aba Perfil da partida e a
+# página jogadores.html leem daqui, pelo payload -- antes estes rótulos estavam
+# escritos à mão no template.
+ROTULOS_DAS_TAXAS = {
+    "pct_rounds_longe_do_time": "Joga longe do time",
+    "pct_rounds_isolado": "Fica isolado",
+    "pct_rounds_ancorado": "Ancora num lugar só",
+    "pct_rounds_rotacionando": "Passa por muitas regiões",
+    "pct_rounds_com_awp": "Pega a AWP",
+    "pct_kills_de_awp": "Kills que saíram de AWP",
+    "pct_rounds_abertura_awp": "Abre o round de AWP",
+    "pct_rounds_smg_ou_pistola_com_time_de_rifle": "Fica com a arma pior que o time",
+    "pct_rounds_contato_cedo": "Encosta cedo no adversário",
+    "pct_rounds_contato_tarde": "Encosta depois do time",
+    "pct_rounds_primeiro_contato_do_time": "É o primeiro do time a encostar",
+    "pct_rounds_sobreviveu": "Sobrevive ao round",
+    "pct_mortes_trocadas": "Mortes dele que o time trocou",
+    "pct_rounds_trade_kill": "Troca a morte do companheiro",
+    "pct_rounds_em_clutch": "Fica por último",
+    "taxa_conversao_clutch": "Converte quando fica por último",
+    "pct_rounds_lurk": "Lurk: isolado, longe do time e encostando depois",
+}
+
+
+def categorias_para_a_pagina() -> list[dict]:
+    """As categorias do perfil com o rótulo de cada taxa (o tempo até o contato
+    não é taxa e a página o mostra à parte)."""
+    return [{"nome": nome, "taxas": [[c, ROTULOS_DAS_TAXAS[c]] for c in chaves if c in ROTULOS_DAS_TAXAS]}
+            for nome, chaves in CATEGORIAS.items()]
+
 
 def _taxa(n: pl.Expr, d: pl.Expr) -> pl.Expr:
     """Taxa que devolve null (e não 0) quando o denominador é zero.

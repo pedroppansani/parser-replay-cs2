@@ -19,7 +19,7 @@ import polars as pl
 from clustering.playstyle import describe_clusters, load_cluster_names
 from metrics.crosshair import DICA_MIRA
 from metrics.impacto import para_a_pagina as impacto_para_a_pagina
-from metrics.player_profile import cards_de_estilo
+from metrics.player_profile import cards_de_estilo, categorias_para_a_pagina
 from metrics.player_roles import evidencia_exibida, rotulo_exibido
 from metrics.structural_roles import FUNCOES, texto_empate
 from leitura.narrativa import descreve_jogador
@@ -146,6 +146,8 @@ def build(match_id: str) -> Path:
         "dica_mira": DICA_MIRA,
         # bloco "Impacto além do placar" da aba Jogadores (metrics/impacto.py, fase 7)
         "impacto": impacto_para_a_pagina(),
+        # categorias e rótulos da aba Perfil (metrics/player_profile.ROTULOS_DAS_TAXAS)
+        "perfil_categorias": categorias_para_a_pagina(),
         **insights,
         "heatmap": heat.to_dicts(),
         "damage_by_player": damage_by_player,
