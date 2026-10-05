@@ -842,6 +842,10 @@ var Prancheta = (function () {
   var CENTRO = null;
   var S = {
     doc: null, estado: null, passo: 0,     // índice do passo na lista
+    t: 0,                                   // o CABEÇOTE: segundos desde o fim do freeze (formato 3)
+    e3: null,                               // a tática no tempo (taticaNoTempo)
+    caminho: null,                          // caminho sendo traçado: {peca, inicio, pontos, mao}
+    modoCaminho: "correndo",                // correndo | andando | agachado (velocidade do próximo trecho)
     ferramenta: "mover", arma: "smoke",
     sel: null,                              // {tipo: "peca"|"granada"|"traco", id}
     arrasto: null, tracando: null,
@@ -890,6 +894,7 @@ var Prancheta = (function () {
 
   function reaplica() {
     S.estado = aplica(S.doc.operacoes);
+    S.e3 = M3 ? taticaNoTempo(S.doc.operacoes) : null;
     S.passo = Math.max(0, Math.min(S.passo, S.estado.passos.length - 1));
     if (S.sel) {
       var grupo = { peca: "pecas", granada: "granadas", traco: "tracos" }[S.sel.tipo];
@@ -898,14 +903,24 @@ var Prancheta = (function () {
     atualizaTudo();
   }
 
+  // Uma AÇÃO pode emitir mais de uma operação (o caminho com o ponto do
+  // arremesso, o "esperar aqui" que empurra os pontos seguintes): a pilha guarda
+  // o lote, e desfazer anula o lote inteiro -- uma ação, um Ctrl+Z.
+  function emiteLote(lista) {
+    var ids = lista.map(function (par) { return emite(par[0], par[1], false).id; });
+    if (ids.length) { S.pilhaDesfazer.push(ids.length === 1 ? ids[0] : ids); S.pilhaRefazer = []; }
+    return ids;
+  }
+
   function desfaz() {
     confirmaGiro();
     var fora = anuladas(S.doc.operacoes);
     while (S.pilhaDesfazer.length) {
-      var id = S.pilhaDesfazer.pop();
-      if (fora[id]) continue;
-      emite("anula", { alvo: id });
-      S.pilhaRefazer.push(id);
+      var item = S.pilhaDesfazer.pop();
+      var ids = [].concat(item).filter(function (id) { return !fora[id]; });
+      if (!ids.length) continue;
+      ids.forEach(function (id) { emite("anula", { alvo: id }); });
+      S.pilhaRefazer.push(item);
       return true;
     }
     return false;
@@ -914,9 +929,9 @@ var Prancheta = (function () {
   function refaz() {
     confirmaGiro();
     if (!S.pilhaRefazer.length) return false;
-    var id = S.pilhaRefazer.pop();
-    emite("reativa", { alvo: id });
-    S.pilhaDesfazer.push(id);
+    var item = S.pilhaRefazer.pop();
+    [].concat(item).forEach(function (id) { emite("reativa", { alvo: id }); });
+    S.pilhaDesfazer.push(item);
     return true;
   }
 
@@ -967,7 +982,150 @@ var Prancheta = (function () {
     for (var i = 0; i < S.estado.passos.length; i++) if (S.estado.passos[i].passo === passo) return i;
     return -1;
   }
-  function quadro(i) { return quadroDoPasso(S.estado, i === undefined ? S.passo : i, CENTRO); }
+  // O editor mostra a tática NO CABEÇOTE (formato 3). `quadro(i)` com o índice
+  // de um passo continua sendo o quadro daquele passo (o rastro do anterior).
+  var EPS_T = 1e-6;
+  function quadro(i) {
+    if (i !== undefined || !S.e3) return quadroDoPasso(S.estado, i === undefined ? S.passo : i, CENTRO);
+    var f = quadroNoTempo(S.e3, S.t, CENTRO), p = S.estado.passos[S.passo] || {}, granadas = {};
+    Object.keys(f.granadas).forEach(function (id) {
+      var g = f.granadas[id];
+      // "nasceu aqui": jogada no horário do cabeçote -- é a que se edita
+      granadas[id] = Object.assign({}, g, { nasceu_neste_passo: Math.abs(g.t - S.t) < EPS_T });
+    });
+    return { indice: S.passo, passo: p.passo, titulo: p.titulo, duracao_s: p.duracao_s,
+             pecas: f.pecas, granadas: granadas, tracos: f.tracos, relogio: f.relogio, bomba: f.bomba };
+  }
+
+  /** O cabeçote está no horário de um marco (passo)? Ali, editar emite as
+      operações do formato 2, que viram pontos-chave naquele horário. */
+  function noMarco() {
+    if (!S.e3) return true;
+    var m = S.e3.marcos[S.passo];
+    return !!m && Math.abs(m.t - S.t) < EPS_T;
+  }
+  function marcoQueContem(t) {
+    var k = 0;
+    (S.e3 ? S.e3.marcos : []).forEach(function (m, i) { if (m.t <= t + EPS_T) k = i; });
+    return k;
+  }
+  function pontoNoHorario(pid) {
+    var p = S.e3 && S.e3.pecas[pid];
+    if (!p) return null;
+    return p.pontos.filter(function (pt) { return !pt.fora && Math.abs(pt.t - S.t) < EPS_T; }).pop() || null;
+  }
+  function limiteDoTempo() {
+    return S.e3 && S.e3.bomba ? S.e3.bomba.t + M3.SEGUNDOS_DA_BOMBA : (M3 ? M3.SEGUNDOS_DO_ROUND : 0);
+  }
+  /** Leva o cabeçote a t (e o passo atual ao marco que contém t). */
+  function defineTempo(t) {
+    confirmaGiro();
+    S.t = Math.max(0, Math.min(limiteDoTempo(), Math.round(t * 100) / 100));
+    S.passo = marcoQueContem(S.t);
+    if (S.caminho && !S.caminho.pontos.length) iniciaCaminho(S.caminho.peca);
+    atualizaTudo();
+  }
+
+  /** Grava a posição da peça NO HORÁRIO DO CABEÇOTE: no marco, o move_peca de
+      sempre; fora dele, o ponto-chave daquele horário (move_ponto) ou um novo. */
+  function gravaPosicao(pid, x, y, nivel) {
+    if (noMarco()) { emite("move_peca", { peca: pid, passo: passoAtual(), x: x, y: y, nivel: nivel }); return; }
+    var pt = pontoNoHorario(pid);
+    if (pt) emite("move_ponto", { peca: pid, ponto: pt.id, t: S.t, x: x, y: y, nivel: nivel });
+    else emite("cria_caminho", { peca: pid, pontos: [{ t: S.t, x: x, y: y, nivel: nivel }] });
+  }
+  /** O mesmo para a direção (botão direito, alça, Q/E). */
+  function gravaYaw(pid, yaw) {
+    if (noMarco()) { emite("gira_peca", { peca: pid, passo: passoAtual(), yaw: yaw }); return; }
+    var q = quadro().pecas[pid];
+    if (!q) return;
+    var pt = pontoNoHorario(pid);
+    if (pt) emite("move_ponto", { peca: pid, ponto: pt.id, t: S.t, x: pt.x, y: pt.y, nivel: pt.nivel, yaw: yaw });
+    else emite("cria_caminho", { peca: pid, pontos: [{ t: S.t, x: q.x, y: q.y, nivel: q.nivel, yaw: yaw }] });
+  }
+
+  /* --- traçar caminho (8.2) ------------------------------------------------- */
+  // Tolerância da simplificação do traço à mão livre (Douglas-Peucker), em
+  // pixel do RADAR: 2 px é menos que o raio da peça (15) e tira o tremor da mão
+  // sem cortar curva -- convenção de interface, como os outros raios daqui.
+  var TOLERANCIA_DP_PX = 2;
+
+  // TRAÇAR CAMINHO POR CLIQUE (8.2): PRONTO E DESLIGADO. Ligado, clicar na peça
+  // entra em "traçando caminho" e o mover por clique deixa de existir, como o
+  // documento da fase 8 pede -- mas três testes existentes afirmam o mover por
+  // clique e a lista de estados (tests/test_prancheta_fluida.py), e mudá-los está
+  // fora das autorizações da fase. Desligado, clicar no vazio com a peça
+  // selecionada continua movendo (agora no horário do cabeçote). Ligar e migrar
+  // os três testes é decisão do Pedro.
+  var CAMINHO_POR_CLIQUE = false;
+
+  function iniciaCaminho(pid) {
+    var q = quadro().pecas[pid];
+    if (!q) { S.caminho = null; return; }
+    S.caminho = { peca: pid, inicio: { t: S.t, x: q.x, y: q.y, nivel: q.nivel }, pontos: [], mao: null };
+  }
+  function funcaoDe(pid) { return S.e3 && S.e3.pecas[pid] ? S.e3.pecas[pid].funcao : null; }
+  function horarioDoProximo(x, y) {
+    var c = S.caminho, ult = c.pontos.length ? c.pontos[c.pontos.length - 1] : c.inicio;
+    var v = velocidade(funcaoDe(c.peca), S.modoCaminho);
+    return Math.round((ult.t + Math.hypot(x - ult.x, y - ult.y) / v) * 100) / 100;
+  }
+  function adicionaPonto(g) {
+    if (!S.caminho) return;
+    S.caminho.pontos.push({ t: horarioDoProximo(g[0], g[1]), x: g[0], y: g[1], nivel: S.andar, modo: S.modoCaminho });
+    atualizaDica(); desenha();
+  }
+  function concluiCaminho() {
+    var c = S.caminho;
+    if (!c) return;
+    if (!c.pontos.length) { S.caminho = null; atualizaTudo(); return; }
+    emite("cria_caminho", { peca: c.peca, pontos: c.pontos.map(function (pt) { return Object.assign({}, pt); }) });
+    // a peça segue selecionada e o cabeçote vai para o fim: dá para emendar
+    S.t = c.pontos[c.pontos.length - 1].t;
+    S.passo = marcoQueContem(S.t);
+    iniciaCaminho(c.peca);
+    atualizaTudo();
+  }
+  function douglasPeucker(pts, tol) {
+    if (pts.length < 3) return pts.slice();
+    var a = pts[0], b = pts[pts.length - 1], maior = -1, k = 0;
+    for (var i = 1; i < pts.length - 1; i++) {
+      var p = pts[i], dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy);
+      var d = L === 0 ? Math.hypot(p[0] - a[0], p[1] - a[1]) : Math.abs(dy * p[0] - dx * p[1] + b[0] * a[1] - b[1] * a[0]) / L;
+      if (d > maior) { maior = d; k = i; }
+    }
+    if (maior <= tol) return [a, b];
+    var esq = douglasPeucker(pts.slice(0, k + 1), tol), dir = douglasPeucker(pts.slice(k), tol);
+    return esq.slice(0, -1).concat(dir);
+  }
+  function terminaMao() {
+    var c = S.caminho, mao = c && c.mao;
+    if (!mao) return;
+    c.mao = null;
+    douglasPeucker(mao, TOLERANCIA_DP_PX).slice(1).forEach(function (px) { adicionaPonto(pixelParaJogo(px[0], px[1])); });
+    atualizaTudo();
+  }
+  function desenhaCaminho() {
+    var c = S.caminho;
+    if (!c) return;
+    var pts = [c.inicio].concat(c.pontos);
+    ctx.save();
+    ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2; ctx.setLineDash([5, 4]);
+    ctx.beginPath();
+    pts.forEach(function (pt, i) { var px = jogoParaPixel(pt.x, pt.y); if (i) ctx.lineTo(px[0], px[1]); else ctx.moveTo(px[0], px[1]); });
+    if (c.mao) c.mao.forEach(function (px) { ctx.lineTo(px[0], px[1]); });
+    ctx.stroke(); ctx.setLineDash([]);
+    ctx.font = "600 13px DM Mono, monospace"; ctx.textAlign = "left"; ctx.textBaseline = "bottom";
+    c.pontos.forEach(function (pt) {
+      var px = jogoParaPixel(pt.x, pt.y);
+      ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(px[0], px[1], 4, 0, 2 * Math.PI); ctx.fill();
+      // o horário em que o jogador chega ali, no relógio do jogo
+      var rotulo = MapCore.relogio(pt.t, S.e3 && S.e3.bomba ? S.e3.bomba.t : null, null, M3.SEGUNDOS_DO_ROUND, M3.SEGUNDOS_DA_BOMBA);
+      ctx.lineWidth = 3; ctx.strokeStyle = "rgba(15,22,32,0.85)"; ctx.strokeText(rotulo, px[0] + 7, px[1] - 5);
+      ctx.fillText(rotulo, px[0] + 7, px[1] - 5);
+    });
+    ctx.restore();
+  }
 
   /* ---------------------------------------------------------------------
      Projeção e andares
@@ -1058,7 +1216,8 @@ var Prancheta = (function () {
       ctx.fillStyle = MapCore.NADE_COLOR[S.arma];
       ctx.beginPath(); ctx.arc(o[0], o[1], 5, 0, 2 * Math.PI); ctx.fill();
     }
-    var ant = editando && S.passo > 0 ? quadro(S.passo - 1) : null;
+    if (editando && S.caminho) desenhaCaminho();
+    var ant = editando && S.passo > 0 && noMarco() ? quadro(S.passo - 1) : null;
     Object.keys(cena.pecas).forEach(function (id) { desenhaPeca(id, cena.pecas[id], ant && ant.pecas[id], editando); });
   }
 
@@ -1069,7 +1228,10 @@ var Prancheta = (function () {
     Object.keys(q.pecas).forEach(function (id) { c.pecas[id] = Object.assign({}, q.pecas[id], { alfa: 1 }); });
     Object.keys(q.granadas).forEach(function (id) {
       var g = q.granadas[id];
-      c.granadas[id] = Object.assign({}, g, { linha: g.nasceu_neste_passo && !g.origem_desconhecida ? 1 : 0, efeito: 1, alfa: 1 });
+      var nasceu = g.nasceu_neste_passo && !g.origem_desconhecida;
+      c.granadas[id] = Object.assign({}, g, {
+        linha: nasceu ? 1 : (g.fase === "voo" && !g.origem_desconhecida ? g.progresso : 0),
+        efeito: g.nasceu_neste_passo || g.fase !== "voo" ? 1 : 0, alfa: 1 });
     });
     Object.keys(q.tracos).forEach(function (id) { c.tracos[id] = Object.assign({}, q.tracos[id], { alfa: 1 }); });
     return c;
@@ -1247,6 +1409,7 @@ var Prancheta = (function () {
   function estadoDaInteracao() {
     if (ROTULO_FERRAMENTA[S.ferramenta] || S.ferramenta === "borracha") return "desenhando";
     var a = S.acao;
+    if (S.caminho && !(a && (a.tipo === "granada" || a.tipo === "busca" || a.tipo === "colocar"))) return "tracando_caminho";
     if (a && a.tipo === "colocar") return "colocando_peca";
     if (a && a.tipo === "busca") return "buscando";
     if (a && a.tipo === "granada") return a.origem ? "granada_destino" : "granada_origem";
@@ -1261,8 +1424,9 @@ var Prancheta = (function () {
     livre: { entra: "padrão; Esc", clique: "seleciona peça, granada ou traço; no vazio, nada",
       dica: function () { return "Clique num jogador para selecionar, ou escolha uma ferramenta"; } },
     peca_selecionada: { entra: "clique numa peça, ou no nome dela no banco",
-      clique: "no vazio: a peça vai para lá (move_peca); em outra peça: seleciona a outra; botão direito: vira para o ponto (gira_peca)",
+      clique: "no vazio: a peça vai para lá no horário do cabeçote (move_peca no marco); em outra peça: seleciona a outra; botão direito: vira para o ponto (gira_peca)",
       dica: function (c) { return c.peca + " selecionado · clique no mapa para mover · botão direito para virar · 1–4 joga granada"; } },
+
     colocando_peca: { entra: "clique numa ficha do banco fora do mapa neste passo",
       clique: "cria (ou recoloca) a peça ali e a seleciona",
       dica: function (c) { return "Clique no mapa para colocar " + c.ficha + " · Esc cancela"; } },
@@ -1282,6 +1446,21 @@ var Prancheta = (function () {
       clique: "lista os arremessos reais que caem perto do ponto",
       dica: function (c) { return "Buscar " + c.arma + " · clique onde ela deve cair"; } }
   };
+
+  // os textos com o caminho por clique ligado (ver CAMINHO_POR_CLIQUE)
+  var ESTADO_TRACANDO = { entra: "clique numa peça, sem arrastar",
+    clique: "acrescenta um ponto ao caminho (arrastar desenha à mão); Enter ou duplo clique conclui (um cria_caminho); Backspace tira o último ponto; Esc cancela o trecho",
+    dica: function (c) { return c.peca + " · clique para marcar o caminho · arraste para desenhar à mão · Enter conclui · Esc cancela"; } };
+  var PECA_COM_CAMINHO = { entra: "Esc durante um caminho, ou o nome dela no banco",
+    clique: "no vazio: começa um caminho até lá (não teleporta: teleportar é arrastar); em outra peça: seleciona a outra; botão direito: vira para o ponto no horário do cabeçote",
+    dica: function (c) { return c.peca + " selecionado · clique no mapa para traçar o caminho · arraste a peça para mover · botão direito para virar · 1–4 joga granada"; } };
+  var PECA_SEM_CAMINHO = ESTADOS.peca_selecionada;
+  function ligaCaminhoPorClique(on) {
+    CAMINHO_POR_CLIQUE = !!on;
+    if (on) { ESTADOS.tracando_caminho = ESTADO_TRACANDO; ESTADOS.peca_selecionada = PECA_COM_CAMINHO; }
+    else { delete ESTADOS.tracando_caminho; ESTADOS.peca_selecionada = PECA_SEM_CAMINHO; S.caminho = null; }
+    if (S.doc) atualizaTudo();
+  }
 
   function contextoDaDica() {
     var a = S.acao || {}, g = S.sel && S.sel.tipo === "granada" ? S.estado.granadas[S.sel.id] : null;
@@ -1361,6 +1540,7 @@ var Prancheta = (function () {
   /** Um nível para trás: ação pendente -> ferramenta de desenho -> seleção. */
   function volta() {
     if (S.editor) { fechaEditorTexto(false); return; }
+    if (S.caminho && !S.acao) { S.caminho = null; atualizaTudo(); return; }
     if (S.ajuda) { alternaAjuda(false); return; }
     if (S.busca || S.sugestao) { S.busca = null; S.sugestao = null; atualizaTudo(); return; }
     if (S.acao) { S.acao = null; atualizaTudo(); return; }
@@ -1381,8 +1561,7 @@ var Prancheta = (function () {
       if (S.sel && S.sel.tipo === "peca" && q.pecas[S.sel.id]) {
         var p = q.pecas[S.sel.id];
         confirmaGiro();
-        emite("gira_peca", { peca: S.sel.id, passo: passoAtual(),
-                             yaw: yawInteiro(Math.atan2(g[1] - p.y, g[0] - p.x) * (180 / Math.PI)) });
+        gravaYaw(S.sel.id, yawInteiro(Math.atan2(g[1] - p.y, g[0] - p.x) * (180 / Math.PI)));
       }
       return;
     }
@@ -1393,9 +1572,15 @@ var Prancheta = (function () {
     cv.setPointerCapture(e.pointerId);
     var alvo = acha(px);
     S.toque = { x: e.clientX, y: e.clientY, px: px, g: g, alvo: alvo, estado: estado, arrastou: false };
+    if (estado === "tracando_caminho" && !(alvo && alvo.tipo === "peca")) {
+      S.arrasto = { tipo: "mao", mexeu: false };
+      S.caminho.mao = [px];
+      return;
+    }
     // arrastar peça, alça ou ponta de granada continua como sempre (quando não
     // há ação pendente): o arrasto é armado aqui e só vira operação se andar
-    if (alvo && (estado === "livre" || estado === "peca_selecionada" || estado === "granada_selecionada")) {
+    if (alvo && (estado === "livre" || estado === "peca_selecionada" || estado === "granada_selecionada" ||
+                 (estado === "tracando_caminho" && alvo.tipo !== "granada"))) {
       S.sel = { tipo: alvo.tipo === "giro" ? "peca" : alvo.tipo, id: alvo.id };
       var q2 = quadro();
       if (alvo.tipo === "giro") S.arrasto = { tipo: "giro", id: alvo.id, yaw: null, mexeu: false };
@@ -1430,6 +1615,7 @@ var Prancheta = (function () {
     }
     if (!S.toque || !S.toque.arrastou) return;
     var g = eventoParaJogo(e);
+    if (S.arrasto.tipo === "mao") { S.arrasto.mexeu = true; S.caminho.mao.push(eventoParaPixel(e)); desenha(); return; }
     S.arrasto.mexeu = true;
     if (S.arrasto.tipo === "peca") S.arrasto.jogo = g;
     else if (S.arrasto.tipo === "giro") {
@@ -1446,9 +1632,11 @@ var Prancheta = (function () {
     if (S.tracando) { terminaTraco(); return; }
     var a = S.arrasto, t = S.toque;
     S.arrasto = null; S.toque = null;
+    if (a && a.tipo === "mao") { if (a.mexeu) terminaMao(); else if (t) clique(t); return; }
     if (a && a.mexeu) {
-      if (a.tipo === "peca") emite("move_peca", { peca: a.id, passo: passoAtual(), x: a.jogo[0], y: a.jogo[1], nivel: S.andar });
-      else if (a.tipo === "giro") { if (a.yaw !== null) emite("gira_peca", { peca: a.id, passo: passoAtual(), yaw: a.yaw }); }
+      // arrastar a peça MOVE livremente: o ponto-chave do horário do cabeçote
+      if (a.tipo === "peca") { gravaPosicao(a.id, a.jogo[0], a.jogo[1], S.andar); if (S.caminho) iniciaCaminho(S.caminho.peca); }
+      else if (a.tipo === "giro") { if (a.yaw !== null) gravaYaw(a.id, a.yaw); }
       else emite("move_granada", { granada: a.id, origem: a.origem, destino: a.destino, nivel: S.estado.granadas[a.id].nivel });
       return;
     }
@@ -1483,10 +1671,21 @@ var Prancheta = (function () {
         return;
       case "peca_selecionada":
         if (!alvo) {
-          // no vazio: a peça selecionada vai para lá, no andar ativo
-          emite("move_peca", { peca: S.sel.id, passo: passoAtual(), x: g[0], y: g[1], nivel: S.andar });
+          if (CAMINHO_POR_CLIQUE) {
+            // no vazio: começa um caminho até lá (teleportar é arrastar)
+            iniciaCaminho(S.sel.id);
+            adicionaPonto(g);
+            atualizaTudo();
+            return;
+          }
+          // no vazio: a peça vai para lá, no andar ativo e no horário do cabeçote
+          gravaPosicao(S.sel.id, g[0], g[1], S.andar);
           return;
         }
+        break;
+      case "tracando_caminho":
+        if (S.caminho) S.caminho.mao = null;
+        if (!alvo || alvo.tipo !== "peca" || alvo.id === S.caminho.peca) { adicionaPonto(g); atualizaTudo(); return; }
         break;
       case "granada_selecionada":
         if (!alvo) {
@@ -1500,6 +1699,9 @@ var Prancheta = (function () {
     }
     // livre, ou clique num item: seleciona o que está sob o ponteiro
     S.sel = alvo ? { tipo: alvo.tipo === "giro" ? "peca" : alvo.tipo, id: alvo.id } : (t.estado === "livre" ? null : S.sel);
+    // clicar numa peça, sem arrastar, entra em "traçando caminho" (8.2)
+    if (alvo && alvo.tipo === "peca" && M3 && CAMINHO_POR_CLIQUE) iniciaCaminho(alvo.id);
+    else if (!(S.sel && S.sel.tipo === "peca")) S.caminho = null;
     if (!alvo && t.estado === "livre") {
       var tr = tracoSob(t.px);
       if (tr) S.sel = { tipo: "traco", id: tr };
@@ -1555,13 +1757,15 @@ var Prancheta = (function () {
     if (!S.sel || S.sel.tipo !== "peca" || !q.pecas[S.sel.id]) return;
     var base = yawDaPeca(S.sel.id, q.pecas[S.sel.id]);
     confirmaGiro();
-    emite("gira_peca", { peca: S.sel.id, passo: passoAtual(), yaw: yawInteiro(base + delta) });
+    gravaYaw(S.sel.id, yawInteiro(base + delta));
   }
 
   /** Muda de passo mantendo a seleção quando a peça existe no passo novo. */
   function mudaPasso(i) {
     confirmaGiro();
     S.passo = Math.max(0, Math.min(i, S.estado.passos.length - 1));
+    if (S.e3 && S.e3.marcos[S.passo]) S.t = S.e3.marcos[S.passo].t;
+    if (S.caminho) iniciaCaminho(S.caminho.peca);
     if (S.sel) {
       var q = quadro();
       var grupo = { peca: "pecas", granada: "granadas", traco: "tracos" }[S.sel.tipo];
@@ -1708,7 +1912,7 @@ var Prancheta = (function () {
     if (!g) return;
     clearTimeout(g.timer);
     S.giro = null;
-    if (S.estado.pecas[g.peca]) emite("gira_peca", { peca: g.peca, passo: passoAtual(), yaw: g.yaw });
+    if (S.estado.pecas[g.peca]) gravaYaw(g.peca, g.yaw);
   }
 
   /* --- desenho livre --------------------------------------------------------- */
@@ -1907,6 +2111,13 @@ var Prancheta = (function () {
     if (document.activeElement !== $("pr-passo-titulo")) $("pr-passo-titulo").value = atual ? atual.titulo : "";
     if (document.activeElement !== $("pr-passo-duracao")) $("pr-passo-duracao").value = atual ? String(atual.duracao_s) : "";
     $("pr-remove-passo").disabled = S.estado.passos.length <= 1;
+    var cab = $("pr-cabecote");
+    if (cab && M3) {
+      cab.max = String(limiteDoTempo());
+      if (document.activeElement !== cab) cab.value = String(S.t);
+      $("pr-cabecote-relogio").textContent = MapCore.relogio(S.t, S.e3 && S.e3.bomba ? S.e3.bomba.t : null, null,
+        M3.SEGUNDOS_DO_ROUND, M3.SEGUNDOS_DA_BOMBA) + " · " + String(S.t).replace(".", ",") + " s";
+    }
   }
 
   function atualizaFerramentas() {
@@ -2007,6 +2218,7 @@ var Prancheta = (function () {
       } else {
         box.appendChild(el("p", { class: "pr-meta", texto: "Fora do mapa neste passo: arraste do banco para recolocar." }));
       }
+      if (M3) box.appendChild(painelDoCaminho(S.sel.id));
       box.appendChild(el("button", { class: "pr-b", id: "pr-apaga-peca", texto: "Apagar peça da tática", onclick: removeSelecionado }));
       return;
     }
@@ -2045,6 +2257,44 @@ var Prancheta = (function () {
     }
     box.appendChild(controleDeVida(S.sel.id, g.dura_passos));
     box.appendChild(el("button", { class: "pr-b", texto: "Apagar granada", onclick: removeSelecionado }));
+  }
+
+  /** Modo do próximo trecho e a lista de pontos-chave, com o horário editável e
+      o "esperar aqui", que empurra os pontos seguintes (uma ação no desfazer). */
+  function painelDoCaminho(pid) {
+    var caixaC = el("div", { class: "pr-caminho", id: "pr-caminho" });
+    var modos = el("div", { class: "linha", id: "pr-modos-caminho" });
+    M3.MODOS_DE_ANDAR.forEach(function (m) {
+      modos.appendChild(el("button", { class: "pr-b" + (S.modoCaminho === m ? " on" : ""), "data-modo": m,
+        texto: m.charAt(0).toUpperCase() + m.slice(1), "aria-pressed": S.modoCaminho === m ? "true" : "false",
+        onclick: function () { S.modoCaminho = m; atualizaPainel(); } }));
+    });
+    caixaC.appendChild(modos);
+    var pontos = (S.e3.pecas[pid] || { pontos: [] }).pontos.filter(function (pt) { return !pt.fora; });
+    var lista = el("ol", { class: "pr-pontos", id: "pr-pontos" });
+    pontos.forEach(function (pt) {
+      var hora = el("input", { type: "number", step: "0.1", min: "0", value: String(pt.t), "data-ponto": pt.id,
+                               class: "pr-ponto-t", "aria-label": "Horário do ponto (s)" });
+      hora.addEventListener("change", function () {
+        var v = parseFloat(hora.value);
+        if (isFinite(v)) emite("move_ponto", { peca: pid, ponto: pt.id, t: v, x: pt.x, y: pt.y, nivel: pt.nivel });
+      });
+      var espera = el("input", { type: "number", step: "0.5", min: "0", placeholder: "0", "data-espera": pt.id,
+                                 class: "pr-ponto-espera", "aria-label": "Esperar aqui (s)" });
+      espera.addEventListener("change", function () {
+        var w = parseFloat(espera.value);
+        if (!(isFinite(w) && w > 0)) return;
+        var seguintes = pontos.filter(function (q) { return q.t > pt.t + EPS_T; });
+        emiteLote(seguintes.map(function (q) {
+          return ["move_ponto", { peca: pid, ponto: q.id, t: Math.round((q.t + w) * 100) / 100, x: q.x, y: q.y, nivel: q.nivel }];
+        }));
+      });
+      lista.appendChild(el("li", {}, [
+        el("span", { texto: MapCore.relogio(pt.t, S.e3.bomba ? S.e3.bomba.t : null, null, M3.SEGUNDOS_DO_ROUND, M3.SEGUNDOS_DA_BOMBA) }),
+        hora, el("label", { texto: "esperar aqui (s)" }), espera]));
+    });
+    caixaC.appendChild(lista);
+    return caixaC;
   }
 
   function atualizaBusca() {
@@ -2118,7 +2368,7 @@ var Prancheta = (function () {
     var local = (S.doc && S.doc.id === doc.id) ? S.doc : Armazem.carrega(doc.id);
     var mesma = S.doc && S.doc.id === doc.id;
     S.doc = local ? mescla(migra(local), doc) : doc;
-    if (!mesma) { S.passo = 0; S.pilhaDesfazer = []; S.pilhaRefazer = []; }
+    if (!mesma) { S.passo = 0; S.t = 0; S.caminho = null; S.pilhaDesfazer = []; S.pilhaRefazer = []; }
     S.sel = null; S.busca = null;
     S.aviso = "";
     reaplica();
@@ -2287,6 +2537,10 @@ var Prancheta = (function () {
       el("div", { id: "pr-resultados" })]);
     caixa("Passos", [
       el("div", { class: "linha", id: "pr-passos" }),
+      // o cabeçote: o horário do round que o editor mostra e edita (formato 3)
+      el("div", { class: "linha" }, [el("label", { for: "pr-cabecote", texto: "Horário" }),
+        el("input", { type: "range", id: "pr-cabecote", min: "0", step: "0.25", "aria-label": "Horário do round" }),
+        el("output", { id: "pr-cabecote-relogio", for: "pr-cabecote" })]),
       el("div", { class: "linha" }, [el("input", { type: "text", id: "pr-passo-titulo", "aria-label": "Título do passo",
                                                    placeholder: "o que acontece neste passo" })]),
       el("div", { class: "linha" }, [el("label", { for: "pr-passo-duracao", texto: "Duração (s)" }),
@@ -2620,6 +2874,14 @@ var Prancheta = (function () {
         return;
       }
       if (/^(INPUT|TEXTAREA|SELECT)$/.test((e.target || {}).tagName || "") || (e.target || {}).isContentEditable) return;
+      if (S.caminho && !S.acao) {
+        if (e.key === "Enter") { e.preventDefault(); concluiCaminho(); return; }
+        if (e.key === "Backspace") {
+          e.preventDefault();
+          if (S.caminho.pontos.length) { S.caminho.pontos.pop(); atualizaDica(); desenha(); }
+          return;
+        }
+      }
       if (e.code === "Space" && (S.sobreMapa || S.espaco) && !e.ctrlKey && !e.metaKey) {
         e.preventDefault();
         if (!S.espaco) { S.espaco = true; palco.classList.add("pr-pan"); }
@@ -2636,6 +2898,16 @@ var Prancheta = (function () {
       if (e.code === "Space" && S.espaco) { S.espaco = false; palco.classList.remove("pr-pan"); S.pan = null; }
     });
     window.addEventListener("blur", function () { S.espaco = false; palco.classList.remove("pr-pan"); });
+    // duplo clique conclui o caminho: o segundo clique já marcou um ponto em
+    // cima do primeiro, e esse ponto repetido sai antes de concluir
+    cv.addEventListener("dblclick", function () {
+      var c = S.caminho;
+      if (!c || S.acao) return;
+      var n = c.pontos.length;
+      if (n >= 2 && c.pontos[n - 1].x === c.pontos[n - 2].x && c.pontos[n - 1].y === c.pontos[n - 2].y) c.pontos.pop();
+      concluiCaminho();
+    });
+    $("pr-cabecote").addEventListener("input", function () { defineTempo(parseFloat($("pr-cabecote").value) || 0); });
 
     // Todos os gatilhos de tamanho caem na mesma função.
     pedeReprojecao = MapCore.agrupaPorQuadro(reprojeta);
@@ -2671,7 +2943,9 @@ var Prancheta = (function () {
       estadoNoTempo: estadoNoTempo, linhaDoTempo: linhaDoTempo,
       taticaNoTempo: taticaNoTempo, quadroNoTempo: quadroNoTempo, posicaoNoTempo: posicaoNoTempo,
       problemasNoTempo: problemasNoTempo,
-      vooEstimado: vooEstimado, velocidade: velocidade, M3: function () { return M3; }, reproduzAte: function (t) { reproduzAte(t); },
+      vooEstimado: vooEstimado, velocidade: velocidade, M3: function () { return M3; },
+      defineTempo: defineTempo, douglasPeucker: douglasPeucker, noMarco: noMarco, emiteLote: emiteLote,
+      TOLERANCIA_DP_PX: TOLERANCIA_DP_PX, ligaCaminhoPorClique: ligaCaminhoPorClique, reproduzAte: function (t) { reproduzAte(t); },
       comecaReproducao: comecaReproducao, editaAqui: editaAqui, toca: function (s) { toca(s); },
       problemas: problemas, problemasDaOrigem: problemasDaOrigem, textoDaOrigem: textoDaOrigem,
       centro: function () { return CENTRO; },
