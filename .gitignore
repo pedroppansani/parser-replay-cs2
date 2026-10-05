@@ -12,6 +12,7 @@ data/interim/
 # local). O que é publicado é o site em docs/, gerado por build_site.py -- manter
 # as duas cópias no git seria ~900KB duplicados por partida.
 dashboard/web/match_*.html
+dashboard/web/jogadores_gerada.html
 
 # PNGs dos radares: o painel lê a imagem embutida no .json ao lado, então o PNG
 # solto é só pra conferir a olho. Versionar os dois dobraria o peso à toa.

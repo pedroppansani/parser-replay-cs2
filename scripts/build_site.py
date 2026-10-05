@@ -35,6 +35,11 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
 DOCS_DIR = PROJECT_ROOT / "docs"
 
+# Link para a página jogadores.html, na landing e no cabeçalho das partidas, com
+# o aviso de que ela é a visão do corpus e não de uma partida (decisão 30).
+LINK_JOGADORES = {"texto": "Jogadores no corpus",
+                  "aviso": "Visão do corpus: os números somam todas as partidas de cada jogador, não uma partida."}
+
 # Nome bonito do mapa pro seletor e pro índice (metrics/constantes.py).
 MAP_LABEL = NOME_DO_MAPA
 
@@ -282,6 +287,7 @@ def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | Non
   <section class="nums" id="tres-numeros">
 {tres}  </section>
 
+  <p class="corpus"><a id="link-jogadores" href="jogadores.html" title="{e(LINK_JOGADORES["aviso"])}">{e(LINK_JOGADORES["texto"])}</a> · {e(LINK_JOGADORES["aviso"])}</p>
   <div class="filtro" id="filtro" role="group" aria-label="Filtrar as partidas por mapa">
     <button type="button" data-filtro="" aria-pressed="true">Todos os mapas</button>{filtro}
   </div>
@@ -364,7 +370,7 @@ def build(repo_url: str) -> Path:
     nav = [{"id": m["id"], "file": m["file"], "label": m["label"]} for m in matches]
 
     for m in matches:
-        site = {"matches": nav, "current": m["id"], "repo": repo_url}
+        site = {"matches": nav, "current": m["id"], "repo": repo_url, "jogadores": LINK_JOGADORES}
         html = build_html(m["id"], site=site)
         (DOCS_DIR / m["file"]).write_text(html, encoding="utf-8")
         print(f"  {m['file']}  ({len(html) / 1024:.0f} KB)  {m['map_label']} {m['score_a']}-{m['score_b']}")
@@ -376,6 +382,12 @@ def build(repo_url: str) -> Path:
         (DOCS_DIR / arquivo_da_pagina(mapa)).write_text(html, encoding="utf-8")
         pranchetas.append({"mapa": mapa, "file": arquivo_da_pagina(mapa), "label": MAP_LABEL.get(mapa, mapa)})
         print(f"  {arquivo_da_pagina(mapa)}  ({len(html) / 1024:.0f} KB)  prancheta")
+
+    # visão agregada por jogador no corpus (fase 7): página separada da partida
+    from scripts.build_jogadores import ARQUIVO as ARQUIVO_JOGADORES, build_html as build_jogadores
+    pagina_jogadores = build_jogadores(url_do_site(repo_url))
+    (DOCS_DIR / ARQUIVO_JOGADORES).write_text(pagina_jogadores, encoding="utf-8")
+    print(f"  {ARQUIVO_JOGADORES}  ({len(pagina_jogadores) / 1024:.0f} KB)  jogadores no corpus")
 
     # os números do topo vêm de numeros_citaveis.json; a imagem do replay é a
     # captura versionada do README (scripts/capturas_readme.py), copiada para o site

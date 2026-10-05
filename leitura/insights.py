@@ -39,6 +39,7 @@ from metrics.player_profile import player_profile
 from metrics.rating import PESOS_FILE, ModeloDeRound, carrega_referencia
 from metrics.rating import rating as calcula_rating
 from metrics.positioning import position_samples
+from metrics.impacto import impacto
 from metrics.match_highlights import match_highlights
 from metrics.player_roles import awpers_do_time
 from metrics.round_spectacle import round_spectacle
@@ -320,18 +321,60 @@ def build_player_indices(
 FRACAO_MINIMA_DE_ROUNDS = 0.75
 
 
-def _rating_da_partida(tabelas, interim, rounds, team_of, vencedor_por_round, kast, tickrate):
-    """(informação do rating para a página, {steamid: rating do jogador})."""
-    referencia = carrega_referencia()
-    modelo = ModeloDeRound.da_referencia((referencia or {}).get("modelo_de_round"))
+def _entrada_do_rating(tabelas, interim, rounds):
     blind = interim / "player_blind.parquet"
-    entrada = {
+    return {
         **tabelas,
         "player_blind": (eventos_do_round_jogado(pl.read_parquet(blind), rounds)
                          if blind.exists() else None),
         "compra": (pl.read_parquet(interim / "compra.parquet")
                    if (interim / "compra.parquet").exists() else None),
     }
+
+
+def _rating_por_compra(tabelas, interim, rounds, team_of, vencedor_por_round, kast, tickrate,
+                       grupos_compra) -> pl.DataFrame:
+    """(steamid, grupo_compra, rating, rounds): o rating de cada jogador só nos
+    rounds em que o time DELE estava INTEIRO naquele grupo de compra (fase 7,
+    7.2.3). O rating é o mesmo cálculo da partida, com a mesma referência e o
+    mesmo modelo global, sobre o subconjunto de rounds: nada é reajustado."""
+    from metrics.economia import GRUPOS_DE_COMPRA
+    referencia = carrega_referencia()
+    modelo = ModeloDeRound.da_referencia((referencia or {}).get("modelo_de_round"))
+    entrada = _entrada_do_rating(tabelas, interim, rounds)
+    inteiros = grupos_compra.filter(pl.col("peso") >= 1.0 - 1e-9)
+    linhas = []
+    for time in sorted(set(team_of.values())):
+        for g in GRUPOS_DE_COMPRA:
+            rs = set(inteiros.filter((pl.col("time") == time) & (pl.col("grupo_compra") == g))["round_num"].to_list())
+            if not rs:
+                continue
+            def recorta(df):
+                if df is None or "round_num" not in df.columns:
+                    return df
+                return df.filter(pl.col("round_num").cast(pl.Int64).is_in(sorted(rs)))
+            sub = {k: recorta(v) for k, v in entrada.items()}
+            sub_rounds = recorta(rounds)
+            try:
+                _, resumo = calcula_rating(sub, team_of, vencedor_por_round, recorta(kast), tickrate,
+                                           referencia=referencia, modelo=modelo)
+            except Exception:     # subconjunto sem evento nenhum: sem rating naquele grupo
+                continue
+            for j in resumo["jogadores"]:
+                if team_of.get(int(j["steamid"])) == time and j["rounds"] > 0:
+                    linhas.append({"steamid": int(j["steamid"]), "grupo_compra": g,
+                                   "rating": float(j["rating"]), "rounds": int(j["rounds"])})
+            del sub_rounds
+    if not linhas:
+        return pl.DataFrame(schema={"steamid": pl.Int64, "grupo_compra": pl.Utf8, "rating": pl.Float64, "rounds": pl.Int64})
+    return pl.DataFrame(linhas)
+
+
+def _rating_da_partida(tabelas, interim, rounds, team_of, vencedor_por_round, kast, tickrate):
+    """(informação do rating para a página, {steamid: rating do jogador})."""
+    referencia = carrega_referencia()
+    modelo = ModeloDeRound.da_referencia((referencia or {}).get("modelo_de_round"))
+    entrada = _entrada_do_rating(tabelas, interim, rounds)
     _, resumo = calcula_rating(entrada, team_of, vencedor_por_round, kast, tickrate,
                                referencia=referencia, modelo=modelo)
     por_jogador = {
@@ -479,6 +522,28 @@ def build(match_id: str) -> Path:
     # médias de um grupo não pertencem a jogador nenhum -- os rounds de um mesmo
     # jogador se espalham por todos os grupos.
     clutch_round, _ = clutch_situations(kills, rounds, team_of, vencedor_por_round)
+    # Impacto além do placar (metrics/impacto.py, fase 7): utilidade que rendeu,
+    # tempo da troca, pós-plant/retake e aberturas por lado. Entra no perfil para
+    # ganhar a régua do corpus e a marca de amostra fraca.
+    # Economia (7.2.3): os grupos de compra da regra 8i, por round e por time
+    economia_round, rating_compra = None, None
+    if (interim / "compra.parquet").exists():
+        from metrics.economia import grupos_de_compra
+        from metrics.impacto import economia_por_round
+        grupos_compra = grupos_de_compra(pl.read_parquet(interim / "compra.parquet"), team_of)
+        economia_round = economia_por_round(
+            grupos_compra, team_of, features.select("round_num", "steamid", "side"),
+            pl.read_parquet(processed / "adr_per_round.parquet"),
+            basic.get("kast_per_round", basic["kast_summary"]), kills)
+        rating_compra = _rating_por_compra(tabelas, interim, rounds, team_of, vencedor_por_round,
+                                           basic.get("kast_per_round", basic["kast_summary"]), tickrate,
+                                           grupos_compra)
+    impacto_round, impacto_resumo = impacto(
+        pl.read_parquet(processed / "grenades_per_round.parquet"), kills, rounds,
+        features.select("round_num", "steamid", "side"), tickrate,
+        economia=economia_round, rating_por_compra=rating_compra)
+    impacto_round.write_parquet(processed / "impacto_per_round.parquet")
+    impacto_resumo.write_parquet(processed / "impacto_summary.parquet")
     perfil, perfil_rounds = player_profile(
         features,
         positions,
@@ -489,6 +554,7 @@ def build(match_id: str) -> Path:
         clutch_round,
         cluster_assignments=pl.read_parquet(processed / "cluster_assignments.parquet"),
         match_id=match_id,
+        impacto_resumo=impacto_resumo,
     )
     perfil.write_parquet(processed / "player_profile.parquet")
     perfil_rounds.write_parquet(processed / "player_profile_rounds.parquet")

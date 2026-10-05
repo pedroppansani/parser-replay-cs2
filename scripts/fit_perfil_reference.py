@@ -36,7 +36,7 @@ import polars as pl
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from metrics.player_profile import TAXAS_POR_ROUND, TAXAS_TODAS  # noqa: E402
+from metrics.player_profile import IMPACTO_CHAVES, TAXAS_POR_ROUND, TAXAS_TODAS  # noqa: E402
 
 PROCESSED = PROJECT_ROOT / "data" / "processed"
 SAIDA = PROJECT_ROOT / "metrics" / "perfil_reference.json"
@@ -49,7 +49,7 @@ MIN_JOGADOR_PARTIDAS = 50
 
 def colunas_de_taxa() -> list[str]:
     sensiveis = [c for c, _, por_lado in TAXAS_POR_ROUND if por_lado]
-    return TAXAS_TODAS + [f"{c}_{lado}" for c in sensiveis for lado in ("ct", "t")]
+    return TAXAS_TODAS + [f"{c}_{lado}" for c in sensiveis for lado in ("ct", "t")] + IMPACTO_CHAVES
 
 
 def carrega() -> pl.DataFrame:
