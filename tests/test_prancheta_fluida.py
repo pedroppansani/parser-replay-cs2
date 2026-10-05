@@ -51,8 +51,11 @@ def test_clique_para_mover_emite_um_move_peca_na_posicao_do_segundo_clique(conte
     pg = abre(contexto, pagina)
     pid = coloca(pg, "ct", "1", 0.4, 0.4)
     antes = len(ops(pg, "move_peca"))
-    pg.mouse.click(*no_mapa(pg, 0.4, 0.4))            # clica na peça: continua selecionada
-    pg.mouse.click(*no_mapa(pg, 0.6, 0.55))           # no vazio: vai para lá
+    # fase 8a: mover é ARRASTAR (clicar na peça traça caminho); a peça vai do
+    # lugar dela até o ponto onde é solta, acima do limiar de arrasto
+    x0, y0 = no_mapa(pg, 0.4, 0.4)
+    x1, y1 = no_mapa(pg, 0.6, 0.55)
+    pg.mouse.move(x0, y0); pg.mouse.down(); pg.mouse.move(x1, y1, steps=8); pg.mouse.up()
     movs = ops(pg, "move_peca")
     assert len(movs) == antes + 1
     alvo = jogo_do_ponto(pg, 0.6, 0.55)
@@ -148,10 +151,15 @@ def test_clique_contra_arrasto_pelo_limiar(contexto, pagina):
     pg = abre(contexto, pagina)
     pid = coloca(pg, "t", "1", 0.4, 0.4)
     limiar = interno(pg, "I.LIMIAR_ARRASTO_PX")
-    # abaixo do limiar, no vazio: é CLIQUE (a peça vai para o ponto)
+    # fase 8a: a peça chega a (0.6, 0.6) por arrasto (mover por clique saiu)
+    x0, y0 = no_mapa(pg, 0.4, 0.4)
     x, y = no_mapa(pg, 0.6, 0.6)
-    pg.mouse.move(x, y); pg.mouse.down(); pg.mouse.move(x + limiar / 2, y, steps=2); pg.mouse.up()
+    pg.mouse.move(x0, y0); pg.mouse.down(); pg.mouse.move(x, y, steps=8); pg.mouse.up()
     assert len(ops(pg, "move_peca")) == 1
+    # abaixo do limiar, sobre a peça: é CLIQUE (traça caminho, não move)
+    pg.mouse.move(x, y); pg.mouse.down(); pg.mouse.move(x + limiar / 2, y, steps=2); pg.mouse.up()
+    assert len(ops(pg, "move_peca")) == 1 and interno(pg, "I.estadoDaInteracao()") == "tracando_caminho"
+    pg.keyboard.press("Escape")
     # acima do limiar, sobre a peça: é ARRASTO, e continua emitindo UM move_peca
     px, py = no_mapa(pg, 0.6, 0.6)
     pg.mouse.move(px, py); pg.mouse.down(); pg.mouse.move(px + 60, py + 30, steps=6); pg.mouse.up()
@@ -187,6 +195,9 @@ def test_a_dica_mostra_o_texto_do_estado_em_cada_estado_da_tabela(contexto, pagi
     clica_ficha(pg, "ct", "3"); confere("colocando_peca")
     pg.mouse.click(*no_mapa(pg, 0.5, 0.5)); confere("peca_selecionada")
     assert "CT 3 selecionado" in pg.locator("#pr-dica-estado").inner_text()
+    # fase 8a: clicar na peça traça caminho; Esc volta à peça selecionada
+    pg.mouse.click(*no_mapa(pg, 0.5, 0.5)); confere("tracando_caminho")
+    pg.keyboard.press("Escape"); confere("peca_selecionada")
     solta_foco(pg)
     pg.keyboard.press("1"); confere("granada_destino")
     pg.mouse.click(*no_mapa(pg, 0.6, 0.4))
@@ -298,3 +309,20 @@ def test_metrica_de_fluidez_o_roteiro_fica_mais_curto(contexto, pagina):
         pg.close()
     print(f"\nmétrica de fluidez (ações): antes {resultados['antes']}, depois {resultados['depois']}")
     assert resultados["depois"] < resultados["antes"], resultados
+
+
+def test_clique_sem_movimento_nunca_move_a_peca_e_esc_nao_cria_operacao(contexto, pagina):
+    """Fase 8a: um clique na peça (abaixo do limiar) entra em traçando caminho;
+    Esc sai sem nada no log."""
+    pg = abre(contexto, pagina)
+    pid = coloca(pg, "ct", "1", 0.45, 0.45)
+    antes = interno(pg, "S.doc.operacoes.length")
+    pos = pos_da_peca(pg, pid)
+    limiar = interno(pg, "I.LIMIAR_ARRASTO_PX")
+    x, y = no_mapa(pg, 0.45, 0.45)
+    pg.mouse.move(x, y); pg.mouse.down(); pg.mouse.move(x + limiar * 0.75, y, steps=3); pg.mouse.up()
+    assert interno(pg, "I.estadoDaInteracao()") == "tracando_caminho"
+    assert pos_da_peca(pg, pid) == pos
+    pg.keyboard.press("Escape")
+    assert interno(pg, "I.estadoDaInteracao()") != "tracando_caminho"
+    assert interno(pg, "S.doc.operacoes.length") == antes and pos_da_peca(pg, pid) == pos

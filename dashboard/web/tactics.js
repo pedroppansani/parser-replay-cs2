@@ -1051,14 +1051,11 @@ var Prancheta = (function () {
   // sem cortar curva -- convenção de interface, como os outros raios daqui.
   var TOLERANCIA_DP_PX = 2;
 
-  // TRAÇAR CAMINHO POR CLIQUE (8.2): PRONTO E DESLIGADO. Ligado, clicar na peça
-  // entra em "traçando caminho" e o mover por clique deixa de existir, como o
-  // documento da fase 8 pede -- mas três testes existentes afirmam o mover por
-  // clique e a lista de estados (tests/test_prancheta_fluida.py), e mudá-los está
-  // fora das autorizações da fase. Desligado, clicar no vazio com a peça
-  // selecionada continua movendo (agora no horário do cabeçote). Ligar e migrar
-  // os três testes é decisão do Pedro.
-  var CAMINHO_POR_CLIQUE = false;
+  // TRAÇAR CAMINHO POR CLIQUE (8.2, ligado na 8a por decisão do Pedro): clicar
+  // na peça, sem arrastar, entra em "traçando caminho"; segurar e arrastar move
+  // livremente. O mover por clique no vazio deixou de existir. Desligado (só os
+  // testes antigos do caminho usam o interruptor), volta o comportamento da 8.2.
+  var CAMINHO_POR_CLIQUE = true;
 
   function iniciaCaminho(pid) {
     var q = quadro().pecas[pid];
@@ -1471,6 +1468,7 @@ var Prancheta = (function () {
     clique: "no vazio: começa um caminho até lá (não teleporta: teleportar é arrastar); em outra peça: seleciona a outra; botão direito: vira para o ponto no horário do cabeçote",
     dica: function (c) { return c.peca + " selecionado · clique no mapa para traçar o caminho · arraste a peça para mover · botão direito para virar · 1–4 joga granada"; } };
   var PECA_SEM_CAMINHO = ESTADOS.peca_selecionada;
+  if (CAMINHO_POR_CLIQUE) { ESTADOS.tracando_caminho = ESTADO_TRACANDO; ESTADOS.peca_selecionada = PECA_COM_CAMINHO; }
   function ligaCaminhoPorClique(on) {
     CAMINHO_POR_CLIQUE = !!on;
     if (on) { ESTADOS.tracando_caminho = ESTADO_TRACANDO; ESTADOS.peca_selecionada = PECA_COM_CAMINHO; }

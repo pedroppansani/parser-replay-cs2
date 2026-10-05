@@ -127,6 +127,7 @@ def test_botao_direito_fora_do_marco_grava_yaw_no_horario(contexto, pagina):
 
 def test_desligado_o_clique_continua_movendo_no_horario_do_cabecote(contexto, pagina):
     pg = abre(contexto, pagina)
+    interno(pg, "(I.ligaCaminhoPorClique(false), 0)")      # fase 8a: o padrão agora é ligado
     arrasta_do_banco(pg, "ct", "1", 0.5, 0.5)
     pid = interno(pg, "S.sel.id")
     assert "tracando_caminho" not in interno(pg, "Object.keys(I.ESTADOS)")
