@@ -632,7 +632,8 @@ def linha_do_tempo(operacoes: list[dict], centro: list[float]) -> dict:
                 peca["pontos"].append({"id": f"{op['id']}:{i}", "t": float(pt["t"]), "x": float(pt["x"]),
                                        "y": float(pt["y"]), "nivel": int(pt.get("nivel", 0)),
                                        "yaw": None if pt.get("yaw") is None else float(pt["yaw"]),
-                                       "fora": False, "caminho": True, "modo": pt.get("modo")})
+                                       "fora": bool(pt.get("fora", False)), "caminho": True, "modo": pt.get("modo"),
+                                       "morte": bool(pt.get("morte", False))})
         elif t == "move_ponto" and peca is not None:
             for pt in peca["pontos"]:
                 if pt["id"] == op["ponto"] and not pt["fora"]:
@@ -756,6 +757,18 @@ def estado_no_tempo(estado3: dict, t: float, centro: list[float]) -> dict:
                 granadas[gid] = {**g, "fase": "marca", "progresso": 1.0}
     tracos = {tid: tr for tid, tr in estado3["tracos"].items()
               if tr["t_inicio"] <= t and (tr["t_fim"] is None or t < tr["t_fim"])}
+    # a marca de morte (fase 9): quem saiu morto até t e não voltou ao mapa
+    mortos = {}
+    for pid, p in estado3["pecas"].items():
+        if pid in pecas:
+            continue
+        ultimo = None
+        for pt in p["pontos"]:
+            if pt["t"] <= t:
+                ultimo = pt
+        if ultimo is not None and ultimo.get("morte"):
+            mortos[pid] = {"lado": p["lado"], "rotulo": p["rotulo"], "x": ultimo["x"], "y": ultimo["y"],
+                           "nivel": ultimo["nivel"], "t": ultimo["t"]}
     bomba = estado3["bomba"] if estado3["bomba"] is not None and t >= estado3["bomba"]["t"] else None
     marco = None
     for m in estado3["marcos"]:
@@ -763,7 +776,7 @@ def estado_no_tempo(estado3: dict, t: float, centro: list[float]) -> dict:
             marco = m["passo"]
     plant = estado3["bomba"]["t"] if estado3["bomba"] is not None else None
     return {"t": t, "relogio": relogio(t, plant), "marco": marco, "pecas": pecas, "granadas": granadas,
-            "tracos": tracos, "bomba": bomba}
+            "tracos": tracos, "bomba": bomba, "mortos": mortos}
 
 
 def problemas_no_tempo(estado3: dict, vocabulario: list[str] | None = None) -> list[str]:
@@ -911,6 +924,11 @@ def problemas_da_origem(origem) -> list[str]:
     for lado in LADOS:
         if sum(1 for v in nomes.values() if v == lado) > PECAS_POR_LADO:
             erros.append(f"origem: mais de {PECAS_POR_LADO} jogadores de {lado} no elenco")
+    # fase 9: tática do round inteiro. `base_real` é o número de ordem da última
+    # operação do round real; o que vem depois é do usuário (o fantasma e o
+    # "voltar ao real" se apoiam nisso)
+    if "base_real" in origem and (not _eh_inteiro(origem["base_real"]) or origem["base_real"] < 1):
+        erros.append("origem: base_real não é um número de ordem")
     mortos = origem.get("mortos", [])
     if not isinstance(mortos, list):
         return erros + ["origem: mortos não é uma lista"]
@@ -963,6 +981,12 @@ def _problemas_da_operacao(op: dict, onde: str, andares: int, por_id: dict) -> l
                     break
                 if pt.get("modo") is not None and pt["modo"] not in MODOS_DE_ANDAR:
                     erros.append(f"{onde}: modo {pt['modo']!r} fora de {list(MODOS_DE_ANDAR)}")
+                # fase 9: `fora` tira a peça do mapa naquele horário; `morte` diz
+                # que saiu morta (a marca de morte fica no último lugar)
+                if any(k in pt and not isinstance(pt[k], bool) for k in ("fora", "morte")):
+                    erros.append(f"{onde}: fora e morte do ponto precisam ser verdadeiro ou falso")
+                if pt.get("morte") and not pt.get("fora"):
+                    erros.append(f"{onde}: ponto de morte sem sair do mapa (fora)")
     if t in ("move_ponto", "planta_bomba") and not all(_eh_numero(op[k]) for k in ("t", "x", "y")):
         erros.append(f"{onde}: t, x e y precisam ser números")
     if t == "cria_granada" and "t" in op and not _eh_numero(op["t"]):

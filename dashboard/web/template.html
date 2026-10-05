@@ -2264,6 +2264,24 @@
       // `alive`; o relógio é o DESSE quadro, não o da tela (que anda com o
       // pos fracionário entre dois quadros).
       amostrasPorSegundo: R.sample_hz,
+      // O ROUND INTEIRO para a prancheta (fase 9): o caminho de cada jogador
+      // (simplificado com a tolerância medida, metrics/round_na_prancheta.py),
+      // as mortes, as granadas e o plant, mais o instante de agora (onde a
+      // prancheta abre) e a função estrutural de cada jogador naquele lado.
+      roundInteiro: function () {
+        var cfgRound = PAGINA.round_na_prancheta;
+        if (!cfgRound) return null;
+        var pl = MapCore.roundParaPrancheta(R.sample_hz, cur, cfgRound.tolerancia_u, (M && M.match_id) || "");
+        pl.instante = this.instante();
+        var rotulos = D.structural_role_labels || {}, funcoes = {};
+        (D.structural_roles || []).forEach(function (s) {
+          cur.players.forEach(function (p) {
+            if (p.name === s.name && p.side === s.side && rotulos[s.funcao]) funcoes[p.name] = rotulos[s.funcao];
+          });
+        });
+        pl.funcoes = funcoes;
+        return pl;
+      },
       instante: function () {
         var i0 = Math.floor(pos);
         return {

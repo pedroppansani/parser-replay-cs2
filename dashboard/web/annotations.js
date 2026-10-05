@@ -844,6 +844,21 @@ window.MapAnnotations = (function () {
             window.location.href = opts.prancheta + "#instante=" + encodeURIComponent(JSON.stringify(opts.instante()));
           })).id = "anot-tatica-instante";
       }
+      // "Abrir round na prancheta" (fase 9): o round inteiro, para assistir,
+      // pausar e editar a partir de qualquer ponto. Vai compactado no hash
+      // (#round=...), como o instante: funciona no arquivo local e no site.
+      if (opts.roundInteiro && window.CompressionStream) {
+        vista.appendChild(botao("Abrir round na prancheta",
+          "Abrir a prancheta com o round inteiro: os caminhos reais, as mortes, as granadas e o plant, " +
+          "parada neste instante", function () {
+            if (opts.pause) opts.pause();
+            var dado = opts.roundInteiro();
+            if (!dado) return;
+            MapCore.compactaParaUrl(dado).then(function (texto) {
+              window.location.href = opts.prancheta + "#round=" + texto;
+            });
+          })).id = "anot-abrir-round";
+      }
     }
     var fs = botao("Tela cheia", "Mapa em tela cheia (F)", alternaTelaCheia);
     fs.id = "anot-fs";

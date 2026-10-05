@@ -956,8 +956,104 @@ window.MapCore = (function () {
     };
   }
 
+
+  /* ---------------------------------------------------------------------
+     O round inteiro para a prancheta (fase 9). Espelho de
+     metrics/round_na_prancheta.py: o mesmo round do replay dá o mesmo dado
+     nos dois lados (há teste).
+     --------------------------------------------------------------------- */
+  /** Índices dos pontos [t, x, y] que ficam no Douglas-Peucker com a distância
+      SINCRONIZADA no tempo (o erro de posição no horário fica <= tol). */
+  function douglasPeuckerNoTempo(pontos, tol) {
+    var n = pontos.length, i;
+    if (n <= 2 || tol <= 0) { var todos = []; for (i = 0; i < n; i++) todos.push(i); return todos; }
+    var fica = new Array(n).fill(false);
+    fica[0] = fica[n - 1] = true;
+    var pilha = [[0, n - 1]];
+    while (pilha.length) {
+      var ab = pilha.pop(), a = ab[0], b = ab[1];
+      var ta = pontos[a][0], ax = pontos[a][1], ay = pontos[a][2];
+      var tb = pontos[b][0], bx = pontos[b][1], by = pontos[b][2];
+      var pior = -1, ip = -1;
+      for (i = a + 1; i < b; i++) {
+        var f = tb > ta ? (pontos[i][0] - ta) / (tb - ta) : 0;
+        var d = Math.hypot(pontos[i][1] - (ax + (bx - ax) * f), pontos[i][2] - (ay + (by - ay) * f));
+        if (d > pior) { pior = d; ip = i; }
+      }
+      if (ip >= 0 && pior > tol) { fica[ip] = true; pilha.push([a, ip]); pilha.push([ip, b]); }
+    }
+    var out = [];
+    for (i = 0; i < n; i++) if (fica[i]) out.push(i);
+    return out;
+  }
+
+  /** Pontos [quadro, x, y, direção, andar] do trecho vivo de um jogador do
+      replay e o quadro da morte (null se terminou vivo). Troca de andar sempre
+      vira ponto. */
+  function caminhoDoJogador(p, tol) {
+    var vivos = [], i;
+    for (i = 0; i < p.alive.length; i++) if (p.alive[i]) vivos.push(i);
+    if (!vivos.length) return { pontos: [], morte: null };
+    var ini = vivos[0], fim = vivos[vivos.length - 1];
+    var lv = p.lv || p.x.map(function () { return 0; });
+    var idx = [];
+    for (i = ini; i <= fim; i++) idx.push(i);
+    var pedacos = [], comeco = 0;
+    for (var k = 1; k < idx.length; k++) {
+      if (lv[idx[k]] !== lv[idx[k - 1]]) { pedacos.push(idx.slice(comeco, k)); comeco = k; }
+    }
+    pedacos.push(idx.slice(comeco));
+    var ficam = [];
+    pedacos.forEach(function (ped) {
+      douglasPeuckerNoTempo(ped.map(function (q) { return [q, p.x[q], p.y[q]]; }), tol)
+        .forEach(function (s) { ficam.push(ped[s]); });
+    });
+    return { pontos: ficam.map(function (q) { return [q, p.x[q], p.y[q], p.d[q], lv[q]]; }),
+             morte: fim + 1 < p.alive.length ? fim + 1 : null };
+  }
+
+  /** O round no formato que viaja na URL (quadros inteiros, não segundos). */
+  function roundParaPrancheta(hz, rd, tol, partida) {
+    var plant = (rd.events || []).filter(function (e) { return e.type === "plant"; })[0] || null;
+    return {
+      partida: partida, round: rd.round, hz: hz,
+      jogadores: rd.players.map(function (p) {
+        var c = caminhoDoJogador(p, tol);
+        return { nome: p.name, lado: p.side, pontos: c.pontos, morte: c.morte };
+      }),
+      granadas: (rd.nades || []).filter(function (g) { return g.x && g.x.length; }).map(function (g) {
+        return { k: g.k, by: g.by === undefined ? null : g.by, f: g.f0, o: [g.x[0], g.y[0]],
+                 d: [g.x[g.x.length - 1], g.y[g.y.length - 1]], l: g.l && g.l.id !== undefined ? g.l.id : null };
+      }),
+      bomba: plant ? { f: plant.f, x: plant.x, y: plant.y, por: plant.player === undefined ? null : plant.player } : null
+    };
+  }
+
+  /** Objeto -> deflate (CompressionStream, formato zlib) -> base64url, para ir
+      no hash. Assíncrono (devolve uma Promise). */
+  function compactaParaUrl(obj) {
+    var bruto = new Blob([JSON.stringify(obj)]).stream().pipeThrough(new CompressionStream("deflate"));
+    return new Response(bruto).arrayBuffer().then(function (buf) {
+      var bytes = new Uint8Array(buf), s = "";
+      for (var i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+      return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    });
+  }
+
+  /** O caminho de volta: base64url -> inflate -> objeto (Promise). */
+  function descompactaDaUrl(texto) {
+    var b64 = String(texto).replace(/-/g, "+").replace(/_/g, "/");
+    while (b64.length % 4) b64 += "=";
+    var bin = atob(b64), bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    var fluxo = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate"));
+    return new Response(fluxo).text().then(JSON.parse);
+  }
+
   return {
     esc: esc, relogio: relogio,
+    douglasPeuckerNoTempo: douglasPeuckerNoTempo, caminhoDoJogador: caminhoDoJogador,
+    roundParaPrancheta: roundParaPrancheta, compactaParaUrl: compactaParaUrl, descompactaDaUrl: descompactaDaUrl,
     MAX_LADO_INTERNO: MAX_LADO_INTERNO,
     ZOOM_MIN: ZOOM_MIN, ZOOM_MAX: ZOOM_MAX, ZOOM_PASSO: ZOOM_PASSO,
     VELOCIDADES: VELOCIDADES,
