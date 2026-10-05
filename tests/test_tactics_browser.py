@@ -699,10 +699,9 @@ def test_tatica_deste_instante_leva_os_jogadores_vivos_do_quadro(navegador, tmp_
         pg.locator("#strip button", has_text="6").first.click()
         pg.evaluate(f"() => {{ const s = document.getElementById('scrub'); s.value = {quadro}; s.dispatchEvent(new Event('input')); }}")
         pg.click("#anot-toggle")   # a barra de desenho abre recolhida (auditoria 5.1)
-        pg.click("#anot-tatica-instante")
-        pg.wait_for_function("() => window.Prancheta && Prancheta._interno.S.estado !== null")
-        assert pg.url.endswith("prancheta_de_mirage.html")            # o #instante foi consumido
-        pecas = interno(pg, "I.quadroDoPasso(S.estado, 0, I.centro()).pecas")
+        abre_round_pelo_replay(pg)          # fase 9: o round inteiro, parado no instante
+        assert pg.url.endswith("prancheta_de_mirage.html")            # o #round foi consumido
+        pecas = interno(pg, NO_INSTANTE + ".pecas")
         obtido = sorted((p["rotulo"], p["lado"], p["x"], p["y"], p["yaw"]) for p in pecas.values())
         assert obtido == esperado and len(obtido) >= 1
         assert "round 6" in interno(pg, "S.estado.titulo")
@@ -735,6 +734,17 @@ def test_instante_ilegivel_abre_tatica_nova_e_avisa(contexto, pagina):
     assert "não pôde ser lido" in pg.locator("#pr-aviso").text_content()
 
 
+def abre_round_pelo_replay(pg):
+    """Fase 9: "Abrir round na prancheta" substituiu "Tática deste instante".
+    Clica, espera o round chegar (o hash é descompactado de forma assíncrona)."""
+    pg.click("#anot-abrir-round")
+    pg.wait_for_function("() => window.Prancheta && Prancheta._interno.S.doc && Prancheta._interno.S.doc.origem"
+                         " && Prancheta._interno.S.doc.origem.base_real")
+
+
+NO_INSTANTE = "I.quadroNoTempo(S.e3, S.t, I.centro())"   # o que está no mapa no instante de onde veio
+
+
 def _site_instante(tmp_path_factory, nome="instante2"):
     from scripts.build_tactics_page import build_html as prancheta
     from scripts.build_web_page import build_html as partida
@@ -761,9 +771,8 @@ def test_recarregar_a_prancheta_do_instante_nao_duplica_a_tatica(navegador, tmp_
         pg = ctx.new_page()
         _abre_replay(pg, pasta, "match_02", 6, 40)
         pg.click("#anot-toggle")   # a barra de desenho abre recolhida (auditoria 5.1)
-        pg.click("#anot-tatica-instante")
-        pg.wait_for_function("() => window.Prancheta && Prancheta._interno.S.estado !== null")
-        assert "#instante" not in pg.url
+        abre_round_pelo_replay(pg)          # fase 9: o round inteiro, parado no instante
+        assert "#round" not in pg.url
         doc = interno(pg, "S.doc.id")
         pg.reload()
         pg.wait_for_function("() => Prancheta._interno.S.estado !== null")
@@ -793,7 +802,7 @@ def test_o_relogio_do_titulo_e_o_do_quadro_usado(navegador, tmp_path_factory):
         assert int(pg.evaluate("() => document.getElementById('scrub').value")) == quadro
         pg.evaluate(f"() => {{ const s = document.getElementById('scrub'); s.value = {quadro}; s.dispatchEvent(new Event('input')); }}")
         assert inst["relogio"] == pg.locator("#clock b").text_content()
-        assert "4 por segundo" in pg.locator("#anot-tatica-instante").get_attribute("title")
+        assert "4 por segundo" in pg.locator("#anot-abrir-round").get_attribute("title")
     finally:
         ctx.close()
 
@@ -899,12 +908,11 @@ def test_instante_com_mortos_mostra_o_placar_e_a_ordem_das_mortes(navegador, tmp
         pg = ctx.new_page()
         _abre_replay(pg, pasta, "match_02", rodada["round"], quadro)
         pg.click("#anot-toggle")   # a barra de desenho abre recolhida (auditoria 5.1)
-        pg.click("#anot-tatica-instante")
-        pg.wait_for_function("() => window.Prancheta && Prancheta._interno.S.estado !== null")
+        abre_round_pelo_replay(pg)          # fase 9: o round inteiro, parado no instante
         mortos = interno(pg, "S.doc.origem.mortos")
         assert [m["nome"] for m in sorted(mortos, key=lambda m: m["ordem"])] == ordem
-        pecas = {p["rotulo"] for p in interno(pg, "S.estado.pecas").values()}
-        assert not pecas & set(ordem)                          # morto não vira peça
+        pecas = {p["rotulo"] for p in interno(pg, NO_INSTANTE + ".pecas").values()}
+        assert not pecas & set(ordem)                          # morto não está no mapa no instante
         titulo = interno(pg, "S.estado.titulo")
         assert titulo.endswith(f"· {vivos['t']}v{vivos['ct']}")
         assert f"round {rodada['round']}" in titulo
@@ -973,9 +981,8 @@ def test_instante_com_smoke_ativa_e_granada_no_ar_liga_ao_arremesso(navegador, t
         pg = ctx.new_page()
         _abre_replay(pg, pasta, "match_02", r["round"], q)
         pg.click("#anot-toggle")   # a barra de desenho abre recolhida (auditoria 5.1)
-        pg.click("#anot-tatica-instante")
-        pg.wait_for_function("() => window.Prancheta && Prancheta._interno.S.estado !== null")
-        granadas = list(interno(pg, "S.estado.granadas").values())
+        abre_round_pelo_replay(pg)          # fase 9: o round inteiro, parado no instante
+        granadas = list(interno(pg, NO_INSTANTE + ".granadas").values())   # as ativas no instante
         assert len(granadas) == 2
         for alvo in (smoke, voo):
             arma = "smoke" if alvo is smoke else voo["k"]

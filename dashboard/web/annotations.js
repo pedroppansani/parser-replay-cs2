@@ -832,17 +832,23 @@ window.MapAnnotations = (function () {
       tatica.textContent = "Criar tática";
       tatica.title = "Abrir a prancheta deste mapa com uma tática nova";
       vista.appendChild(tatica);
-      // "Tática deste instante": a tática nova já nasce com os jogadores vivos
-      // do quadro atual. O retrato vai na própria URL (#instante=...), que
+      // "Abrir round na prancheta" (fase 9; substituiu "Tática deste instante"):
+      // o round inteiro, aberto PARADO no instante atual -- o instante é o ponto
+      // de partida dentro do round. Vai compactado no hash (#round=...), que
       // funciona igual no arquivo local e no site.
-      if (opts.instante) {
+      if (opts.roundInteiro && window.CompressionStream) {
         var porSegundo = opts.amostrasPorSegundo || 4;
-        vista.appendChild(botao("Tática deste instante",
-          "Abrir a prancheta com os jogadores vivos deste instante do replay. O instante usado é a " +
-          "amostra gravada imediatamente anterior (" + porSegundo + " por segundo)", function () {
+        vista.appendChild(botao("Abrir round na prancheta",
+          "Abrir a prancheta com o round inteiro (caminhos reais, mortes, granadas e plant), parada neste " +
+          "instante. O instante usado é a amostra gravada imediatamente anterior (" + porSegundo + " por segundo)",
+          function () {
             if (opts.pause) opts.pause();
-            window.location.href = opts.prancheta + "#instante=" + encodeURIComponent(JSON.stringify(opts.instante()));
-          })).id = "anot-tatica-instante";
+            var dado = opts.roundInteiro();
+            if (!dado) return;
+            MapCore.compactaParaUrl(dado).then(function (texto) {
+              window.location.href = opts.prancheta + "#round=" + texto;
+            });
+          })).id = "anot-abrir-round";
       }
     }
     var fs = botao("Tela cheia", "Mapa em tela cheia (F)", alternaTelaCheia);

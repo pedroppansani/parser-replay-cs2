@@ -101,8 +101,11 @@ def titulo_da_partida(base: Path) -> str | None:
 def dados_da_pagina(match_id: str, base: Path | None = None) -> dict:
     from scripts.numeros_citaveis import carrega
     base = base or PROJECT_ROOT / "data" / "processed" / match_id
+    from metrics.round_na_prancheta import TOLERANCIA_U
     return {"origem": origem_da_partida(match_id), "rodape_html": rodape_html(carrega()),
-            "titulo": titulo_da_partida(base)}
+            "titulo": titulo_da_partida(base),
+            # "Abrir round na prancheta" (fase 9): a tolerância medida do caminho
+            "round_na_prancheta": {"tolerancia_u": TOLERANCIA_U}}
 
 
 def build_html(match_id: str, site: dict | None = None, base: Path | None = None) -> str:

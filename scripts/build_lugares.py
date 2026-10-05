@@ -21,7 +21,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from metrics.lugares import (  # noqa: E402
-    LADOS_DA_CELULA, LIMITE_BYTES, MIN_PARTIDAS, PASSO_TICKS, acerto, amostras, grade, tabela_compacta,
+    LADOS_DA_CELULA, LIMITE_BYTES, MIN_ACERTO, MIN_PARTIDAS, PASSO_TICKS, acerto, amostras, grade, tabela_compacta,
 )
 
 INTERIM = PROJECT_ROOT / "data" / "interim"
@@ -53,7 +53,7 @@ def medicao(partidas: list[str], mapa: str) -> list[dict]:
 def escolhe(linhas: list[dict]) -> dict | None:
     """O lado de maior acerto fora da amostra entre os que cabem no limite
     (acerto arredondado a 3 casas; empate: a célula maior, a tabela menor)."""
-    cabem = [l for l in linhas if l["bytes"] <= LIMITE_BYTES and l["acerto"] is not None]
+    cabem = [l for l in linhas if l["bytes"] <= LIMITE_BYTES and l["acerto"] is not None and l["acerto"] >= MIN_ACERTO]
     return max(cabem, key=lambda l: (round(l["acerto"], 3), l["lado"])) if cabem else None
 
 
@@ -89,7 +89,9 @@ def main() -> None:
                       f"{'sim' if esc is l else ''} |")
             continue
         if esc is None:
-            print(f"{mapa}: nenhum lado cabe em {LIMITE_BYTES} bytes -- sem tabela")
+            print(f"{mapa}: nenhum lado cabe em {LIMITE_BYTES} bytes com acerto >= {MIN_ACERTO} -- sem tabela")
+            if destino.exists():
+                destino.unlink()
             continue
         doc = dict(esc["tabela"], origem={
             "fonte": "campo place dos ticks do corpus", "partidas": len(partidas),

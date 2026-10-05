@@ -527,8 +527,8 @@ var Prancheta = (function () {
       if (t === "cria_caminho" && peca) {
         op.pontos.forEach(function (pt, i) {
           peca.pontos.push({ id: op.id + ":" + i, t: pt.t, x: pt.x, y: pt.y, nivel: pt.nivel || 0,
-                             yaw: pt.yaw === undefined || pt.yaw === null ? null : pt.yaw, fora: false, caminho: true,
-                             modo: pt.modo === undefined ? null : pt.modo });
+                             yaw: pt.yaw === undefined || pt.yaw === null ? null : pt.yaw, fora: !!pt.fora, caminho: true,
+                             modo: pt.modo === undefined ? null : pt.modo, morte: !!pt.morte });
         });
       } else if (t === "move_ponto" && peca) {
         peca.pontos.forEach(function (pt) {
@@ -550,6 +550,9 @@ var Prancheta = (function () {
         if (tem(op, "t")) g.t = op.t;
         if (tem(op, "jogador")) g.jogador = op.jogador;
         if (g.arremesso && g.arremesso.voo_s !== undefined && g.arremesso.voo_s !== null) g.voo_s = g.arremesso.voo_s;
+        // fase 9: voo e efeito medidos no replay (granada de um round aberto)
+        if (tem(op, "voo_s")) g.voo_s = op.voo_s;
+        if (tem(op, "efeito_s")) g.efeito_s = op.efeito_s;
       }
     });
     Object.keys(estado.pecas).forEach(function (pid) {
@@ -581,11 +584,20 @@ var Prancheta = (function () {
       var tr = e3.tracos[tid];
       if (tr.t_inicio <= t && (tr.t_fim === null || t < tr.t_fim)) tracos[tid] = tr;
     });
+    // a marca de morte (fase 9): quem saiu morto até t e não voltou ao mapa
+    var mortos = {};
+    Object.keys(e3.pecas).forEach(function (pid) {
+      if (pecas[pid]) return;
+      var p = e3.pecas[pid], ultimo = null;
+      p.pontos.forEach(function (pt) { if (pt.t <= t) ultimo = pt; });
+      if (ultimo && ultimo.morte) mortos[pid] = { lado: p.lado, rotulo: p.rotulo, x: ultimo.x, y: ultimo.y, nivel: ultimo.nivel, t: ultimo.t };
+    });
     var marco = null;
     e3.marcos.forEach(function (m) { if (m.t <= t) marco = m.passo; });
     var plant = e3.bomba ? e3.bomba.t : null;
     return { t: t, relogio: MapCore.relogio(t, plant, null, M3.SEGUNDOS_DO_ROUND, M3.SEGUNDOS_DA_BOMBA), marco: marco,
-             pecas: pecas, granadas: granadas, tracos: tracos, bomba: e3.bomba && t >= e3.bomba.t ? e3.bomba : null };
+             pecas: pecas, granadas: granadas, tracos: tracos, bomba: e3.bomba && t >= e3.bomba.t ? e3.bomba : null,
+             mortos: mortos };
   }
 
   function ordemDeCriacao(estado) {
@@ -665,6 +677,9 @@ var Prancheta = (function () {
       }
       if (op.tipo === "define_duracao" && !(ehNumero(op.segundos) && op.segundos > 0)) erros.push(onde + ": duração não é positiva");
       if (op.tipo === "cria_granada" && ARMAS.indexOf(op.arma) < 0) erros.push(onde + ": granada desconhecida: " + op.arma);
+      if (op.tipo === "cria_granada" && ["voo_s", "efeito_s"].some(function (k) { return tem(op, k) && !(ehNumero(op[k]) && op[k] >= 0); })) {
+        erros.push(onde + ": voo e efeito da granada precisam ser números >= 0");
+      }
       if (op.tipo === "cria_granada" && tem(op, "origem_desconhecida")) {
         if (typeof op.origem_desconhecida !== "boolean") erros.push(onde + ": origem_desconhecida não é verdadeiro/falso");
         else if (op.origem_desconhecida) {
@@ -677,6 +692,22 @@ var Prancheta = (function () {
         if (!/^#[0-9a-f]{6}$/.test(String(op.cor))) erros.push(onde + ": cor fora do formato #rrggbb");
         if (ESPESSURAS.indexOf(op.espessura) < 0) erros.push(onde + ": espessura fora de " + ESPESSURAS.join("/"));
         if (!Array.isArray(op.pontos) || !op.pontos.length) erros.push(onde + ": sem pontos");
+      }
+      if (op.tipo === "cria_caminho") {
+        // espelho de metrics/tactics.problemas (pontos do caminho)
+        if (!Array.isArray(op.pontos) || !op.pontos.length) erros.push(onde + ": caminho sem pontos");
+        else {
+          var ruim = op.pontos.filter(function (pt) { return !pt || !ehNumero(pt.t) || !ehNumero(pt.x) || !ehNumero(pt.y); });
+          if (ruim.length) erros.push(onde + ": ponto do caminho sem t, x ou y numéricos");
+          op.pontos.forEach(function (pt) {
+            if (!pt) return;
+            if (M3 && pt.modo !== undefined && pt.modo !== null && M3.MODOS_DE_ANDAR.indexOf(pt.modo) < 0) erros.push(onde + ": modo fora da lista");
+            if ((tem(pt, "fora") && typeof pt.fora !== "boolean") || (tem(pt, "morte") && typeof pt.morte !== "boolean")) {
+              erros.push(onde + ": fora e morte do ponto precisam ser verdadeiro ou falso");
+            }
+            if (pt.morte && !pt.fora) erros.push(onde + ": ponto de morte sem sair do mapa (fora)");
+          });
+        }
       }
       if (DESFAZER.indexOf(op.tipo) >= 0) {
         var alvo = porId[op.alvo];
@@ -739,6 +770,8 @@ var Prancheta = (function () {
       var n = Object.keys(nomes).filter(function (k) { return nomes[k] === lado; }).length;
       if (n > PECAS_POR_LADO) erros.push("origem: mais de " + PECAS_POR_LADO + " jogadores de " + lado + " no elenco");
     });
+    // fase 9: `base_real` é o número de ordem da última operação do round real
+    if (tem(o, "base_real") && !(ehInteiro(o.base_real) && o.base_real >= 1)) erros.push("origem: base_real não é um número de ordem");
     var mortos = o.mortos === undefined ? [] : o.mortos;
     if (!Array.isArray(mortos)) return erros.concat(["origem: mortos não é uma lista"]);
     var ordens = {};
@@ -915,6 +948,7 @@ var Prancheta = (function () {
 
   function desfaz() {
     confirmaGiro();
+    S.chegada = null;
     var fora = anuladas(S.doc.operacoes);
     while (S.pilhaDesfazer.length) {
       var item = S.pilhaDesfazer.pop();
@@ -995,7 +1029,7 @@ var Prancheta = (function () {
       granadas[id] = Object.assign({}, g, { nasceu_neste_passo: Math.abs(g.t - S.t) < EPS_T });
     });
     return { indice: S.passo, passo: p.passo, titulo: p.titulo, duracao_s: p.duracao_s,
-             pecas: f.pecas, granadas: granadas, tracos: f.tracos, relogio: f.relogio, bomba: f.bomba };
+             pecas: f.pecas, granadas: granadas, tracos: f.tracos, relogio: f.relogio, bomba: f.bomba, mortos: f.mortos };
   }
 
   /** O cabeçote está no horário de um marco (passo)? Ali, editar emite as
@@ -1021,6 +1055,7 @@ var Prancheta = (function () {
   /** Leva o cabeçote a t (e o passo atual ao marco que contém t). */
   function defineTempo(t) {
     confirmaGiro();
+    S.chegada = null;
     S.t = Math.max(0, Math.min(limiteDoTempo(), Math.round(t * 100) / 100));
     S.passo = marcoQueContem(S.t);
     if (S.caminho && !S.caminho.pontos.length) iniciaCaminho(S.caminho.peca);
@@ -1030,19 +1065,169 @@ var Prancheta = (function () {
   /** Grava a posição da peça NO HORÁRIO DO CABEÇOTE: no marco, o move_peca de
       sempre; fora dele, o ponto-chave daquele horário (move_ponto) ou um novo. */
   function gravaPosicao(pid, x, y, nivel) {
-    if (noMarco()) { emite("move_peca", { peca: pid, passo: passoAtual(), x: x, y: y, nivel: nivel }); return; }
+    if (baseReal() !== null && S.t > EPS_T) {
+      // Num round do replay, mover alguém em t não é teletransporte: ele sai de
+      // onde estava DE VERDADE em t e chega lá na velocidade medida da função
+      // dele (correndo). Antes de t, nada muda.
+      var meu = pontoNoHorario(pid);
+      if (meu && !ehPontoReal(pid, meu)) {
+        emite("move_ponto", { peca: pid, ponto: meu.id, t: S.t, x: x, y: y, nivel: nivel });
+        return;
+      }
+      var q = quadro().pecas[pid];
+      if (!q) return;
+      var chega = Math.round((S.t + Math.hypot(x - q.x, y - q.y) / velocidade(funcaoDe(pid), "correndo")) * 100) / 100;
+      emiteNaPeca(pid, S.t, [["cria_caminho", { peca: pid, pontos: [{ t: chega, x: x, y: y, nivel: nivel }] }]]);
+      // quem arrastou VÊ quando ele chega (resposta 3 do Pedro): a peça continua
+      // no lugar em t, e sem isso pareceria que o arrasto não funcionou
+      S.chegada = { peca: pid, t: chega, desde: S.t, x: x, y: y, nivel: nivel };
+      atualizaDica(); desenha();
+      return;
+    }
+    if (noMarco()) { emiteNaPeca(pid, S.t, [["move_peca", { peca: pid, passo: passoAtual(), x: x, y: y, nivel: nivel }]]); return; }
     var pt = pontoNoHorario(pid);
-    if (pt) emite("move_ponto", { peca: pid, ponto: pt.id, t: S.t, x: x, y: y, nivel: nivel });
-    else emite("cria_caminho", { peca: pid, pontos: [{ t: S.t, x: x, y: y, nivel: nivel }] });
+    if (pt) emiteNaPeca(pid, S.t, [["move_ponto", { peca: pid, ponto: pt.id, t: S.t, x: x, y: y, nivel: nivel }]]);
+    else emiteNaPeca(pid, S.t, [["cria_caminho", { peca: pid, pontos: [{ t: S.t, x: x, y: y, nivel: nivel }] }]]);
   }
   /** O mesmo para a direção (botão direito, alça, Q/E). */
   function gravaYaw(pid, yaw) {
-    if (noMarco()) { emite("gira_peca", { peca: pid, passo: passoAtual(), yaw: yaw }); return; }
+    if (noMarco() && !(baseReal() !== null && S.t > EPS_T)) {
+      emiteNaPeca(pid, S.t, [["gira_peca", { peca: pid, passo: passoAtual(), yaw: yaw }]]); return;
+    }
     var q = quadro().pecas[pid];
     if (!q) return;
     var pt = pontoNoHorario(pid);
-    if (pt) emite("move_ponto", { peca: pid, ponto: pt.id, t: S.t, x: pt.x, y: pt.y, nivel: pt.nivel, yaw: yaw });
-    else emite("cria_caminho", { peca: pid, pontos: [{ t: S.t, x: q.x, y: q.y, nivel: q.nivel, yaw: yaw }] });
+    if (baseReal() !== null && pt && ehPontoReal(pid, pt)) {
+      // o ponto real em t fica (âncora); a nova direção é um ponto do usuário no mesmo lugar
+      emiteNaPeca(pid, S.t, [["cria_caminho", { peca: pid, pontos: [{ t: S.t, x: pt.x, y: pt.y, nivel: pt.nivel, yaw: yaw }] }]]);
+      return;
+    }
+    if (pt) emiteNaPeca(pid, S.t, [["move_ponto", { peca: pid, ponto: pt.id, t: S.t, x: pt.x, y: pt.y, nivel: pt.nivel, yaw: yaw }]]);
+    else emiteNaPeca(pid, S.t, [["cria_caminho", { peca: pid, pontos: [{ t: S.t, x: q.x, y: q.y, nivel: q.nivel, yaw: yaw }] }]]);
+  }
+
+  /* --- o round real (fase 9) ------------------------------------------------
+     A tática aberta de um round do replay guarda em `origem.base_real` o número
+     de ordem da última operação do round real. Tudo até ali é o que aconteceu;
+     o que vem depois é do usuário. Editar um jogador em t troca o caminho REAL
+     dele DALI EM DIANTE pelo do usuário: os pontos reais depois de t saem
+     (remove_ponto) na mesma ação da edição. Antes de t, e nos outros jogadores,
+     nada muda. */
+  function baseReal() { return S.doc && S.doc.origem && ehInteiro(S.doc.origem.base_real) ? S.doc.origem.base_real : null; }
+  function idsDaBase() {
+    var b = baseReal(), ids = {};
+    if (b === null) return ids;
+    S.doc.operacoes.forEach(function (op) { if (op.seq <= b) ids[op.id] = true; });
+    return ids;
+  }
+  /** As remoções dos pontos REAIS da peça depois de t (vazio fora de um round). */
+  function cortaReal(pid, t) {
+    if (baseReal() === null || !S.e3 || !S.e3.pecas[pid]) return [];
+    var base = idsDaBase();
+    return S.e3.pecas[pid].pontos.filter(function (pt) {
+      return pt.t > t + EPS_T && (pt.id.indexOf("passo:") === 0 || base[pt.id.split(":")[0]]);
+    }).map(function (pt) { return ["remove_ponto", { peca: pid, ponto: pt.id }]; });
+  }
+  /** A âncora do corte: um ponto em t com o estado REAL naquele horário
+      (posição, andar e direção), quando não há ponto ali. Sem ela, o trecho
+      entre o último ponto real antes de t e o primeiro ponto do usuário
+      mudaria a posição e a direção ANTES de t. */
+  function ancoraReal(pid, t) {
+    if (baseReal() === null || !S.e3 || !S.e3.pecas[pid]) return [];
+    if (S.e3.pecas[pid].pontos.some(function (pt) { return !pt.fora && Math.abs(pt.t - t) < EPS_T; })) return [];
+    var q = quadroNoTempo(S.e3, t, CENTRO).pecas[pid];
+    if (!q) return [];
+    return [["cria_caminho", { peca: pid, pontos: [{ t: t, x: q.x, y: q.y, nivel: q.nivel, yaw: q.yaw }] }]];
+  }
+  function ehPontoReal(pid, pt) {
+    var base = idsDaBase();
+    return pt.id.indexOf("passo:") === 0 ? baseReal() !== null : !!base[pt.id.split(":")[0]];
+  }
+  /** Emite as operações de uma edição na peça, precedidas do corte do real e
+      da âncora: tudo numa ação só (um desfazer). */
+  function emiteNaPeca(pid, t, lista) {
+    var tudo = cortaReal(pid, t).concat(ancoraReal(pid, t)).concat(lista);
+    if (tudo.length === 1) emite(tudo[0][0], tudo[0][1]);
+    else emiteLote(tudo);
+  }
+  /** As operações do round real (até base_real), para o fantasma. */
+  var cacheReal = { chave: null, e3: null };
+  function e3Real() {
+    var b = baseReal();
+    if (b === null) return null;
+    var chave = S.doc.id + ":" + b;
+    if (cacheReal.chave !== chave) {
+      cacheReal = { chave: chave, e3: taticaNoTempo(S.doc.operacoes.filter(function (op) { return op.seq <= b; })) };
+    }
+    return cacheReal.e3;
+  }
+  /** "Voltar ao real": anula toda operação do usuário ainda ativa. É UMA ação
+      do mecanismo de desfazer (`anula`), e refazer devolve tudo. */
+  function voltaAoReal() {
+    var b = baseReal();
+    if (b === null || S.reproducao) return;
+    confirmaGiro();
+    var fora = anuladas(S.doc.operacoes);
+    var alvos = S.doc.operacoes.filter(function (op) {
+      return op.seq > b && DESFAZER.indexOf(op.tipo) < 0 && !fora[op.id];
+    }).map(function (op) { return op.id; });
+    if (!alvos.length) return;
+    alvos.forEach(function (id) { emite("anula", { alvo: id }); });
+    S.pilhaRefazer.push(alvos);
+    S.caminho = null;
+    atualizaTudo();
+  }
+  function alternaFantasma() {
+    S.fantasma = !S.fantasma;
+    desenha();
+    atualizaReal();
+  }
+  function atualizaReal() {
+    var barra = $("pr-real");
+    if (!barra) return;
+    barra.hidden = baseReal() === null;
+    var f = $("pr-fantasma");
+    f.textContent = S.fantasma ? "Esconder o que aconteceu" : "Mostrar o que aconteceu";
+    f.setAttribute("aria-pressed", S.fantasma ? "true" : "false");
+    $("pr-volta-real").disabled = !!S.reproducao;
+  }
+  /** O fantasma: o round real no mesmo horário, esmaecido (o alfa do rastro). */
+  function desenhaFantasma(t) {
+    S.ultimoFantasma = null;
+    if (!S.fantasma || t === null) return;
+    var e = e3Real();
+    if (!e) return;
+    var f = quadroNoTempo(e, t, CENTRO), n = 0;
+    ctx.save();
+    Object.keys(f.granadas).forEach(function (id) {
+      var g = f.granadas[id];
+      if (g.fase !== "efeito" || (g.arma !== "smoke" && g.arma !== "molotov")) return;
+      var b = jogoParaPixel(g.destino[0], g.destino[1]);
+      var r = (g.arma === "smoke" ? MapCore.RAIO_SMOKE_UNIDADES : MapCore.RAIO_MOLOTOV_UNIDADES) * escalaUnidade();
+      ctx.globalAlpha = ALFA_RASTRO * alfaDoAndar(g.nivel);
+      MapCore.desenhaArea(ctx, g.arma, b[0], b[1], r);
+    });
+    Object.keys(f.pecas).forEach(function (id) {
+      var q = f.pecas[id], c2 = jogoParaPixel(q.x, q.y);
+      ctx.globalAlpha = ALFA_RASTRO * alfaDoAndar(q.nivel);
+      MapCore.desenhaJogador(ctx, c2[0], c2[1], { cor: cssVar(q.lado === "ct" ? "--ct" : "--t"), estado: "vivo", hp: 100,
+                                                  cego: false, nome: "", yaw: q.yaw, escala: ESCALA_PECA });
+      n++;
+    });
+    ctx.restore();
+    S.ultimoFantasma = { pecas: Object.keys(f.pecas).sort(), n: n };
+  }
+  /** A marca de morte: quem saiu morto fica marcado no último lugar. */
+  function desenhaMortos(mortos) {
+    Object.keys(mortos || {}).forEach(function (id) {
+      var m = mortos[id], c2 = jogoParaPixel(m.x, m.y);
+      ctx.save();
+      ctx.globalAlpha = alfaDoAndar(m.nivel);
+      MapCore.desenhaJogador(ctx, c2[0], c2[1], { cor: cssVar(m.lado === "ct" ? "--ct" : "--t"), estado: "morto", hp: 0,
+                                                  cego: false, nome: "", yaw: null, escala: ESCALA_PECA });
+      ctx.restore();
+      S.ultimoDesenho.push({ tipo: "morto", id: id });
+    });
   }
 
   /* --- traçar caminho (8.2) ------------------------------------------------- */
@@ -1077,7 +1262,7 @@ var Prancheta = (function () {
     var c = S.caminho;
     if (!c) return;
     if (!c.pontos.length) { S.caminho = null; atualizaTudo(); return; }
-    emite("cria_caminho", { peca: c.peca, pontos: c.pontos.map(function (pt) { return Object.assign({}, pt); }) });
+    emiteNaPeca(c.peca, c.inicio.t, [["cria_caminho", { peca: c.peca, pontos: c.pontos.map(function (pt) { return Object.assign({}, pt); }) }]]);
     // a peça segue selecionada e o cabeçote vai para o fim: dá para emendar
     S.t = c.pontos[c.pontos.length - 1].t;
     S.passo = marcoQueContem(S.t);
@@ -1208,6 +1393,7 @@ var Prancheta = (function () {
     // busca, rascunho, rastro do passo anterior e seleção.
     var editando = !S.reproducao;
     var cena = editando ? cenaDoEditor() : S.reproducao.cena;
+    desenhaFantasma(tempoMostrado());
     if (editando) desenhaBusca();
     Object.keys(cena.granadas).forEach(function (id) { desenhaGranada(id, cena.granadas[id], editando); });
     Object.keys(cena.tracos).forEach(function (id) { desenhaTraco(id, cena.tracos[id]); });
@@ -1219,6 +1405,9 @@ var Prancheta = (function () {
     }
     if (editando && S.caminho) desenhaCaminho();
     var ant = editando && S.passo > 0 && noMarco() ? quadro(S.passo - 1) : null;
+    S.ultimaChegada = null;
+    desenhaChegada();
+    desenhaMortos(cena.mortos);
     Object.keys(cena.pecas).forEach(function (id) { desenhaPeca(id, cena.pecas[id], ant && ant.pecas[id], editando); });
     desenhaBalao();
   }
@@ -1226,7 +1415,7 @@ var Prancheta = (function () {
   /** O passo aberto no editor, no mesmo formato da cena da reprodução: a
       linha do arremesso só no passo em que a granada nasceu. */
   function cenaDoEditor() {
-    var q = quadro(), c = { pecas: {}, granadas: {}, tracos: {} };
+    var q = quadro(), c = { pecas: {}, granadas: {}, tracos: {}, mortos: q.mortos || {} };
     Object.keys(q.pecas).forEach(function (id) { c.pecas[id] = Object.assign({}, q.pecas[id], { alfa: 1 }); });
     Object.keys(q.granadas).forEach(function (id) {
       var g = q.granadas[id];
@@ -1489,7 +1678,31 @@ var Prancheta = (function () {
     };
   }
 
-  function dicaAtual() { return ESTADOS[estadoDaInteracao()].dica(contextoDaDica()); }
+  function dicaAtual() {
+    if (S.chegada && !S.reproducao) return textoDaChegada();
+    return ESTADOS[estadoDaInteracao()].dica(contextoDaDica());
+  }
+  /** "Spinx anda até o ponto: chega 1:31, 2,4 s depois de agora" */
+  function textoDaChegada() {
+    var c = S.chegada;
+    return nomePeca(c.peca) + " anda até o ponto: chega " + relogioEm(c.t) + ", " +
+      (Math.round((c.t - c.desde) * 10) / 10).toFixed(1).replace(".", ",") + " s depois de agora";
+  }
+  /** O rótulo "chega 1:31" no ponto de chegada, até a próxima ação. */
+  function desenhaChegada() {
+    if (!S.chegada || S.reproducao) return;
+    var c = S.chegada, px = jogoParaPixel(c.x, c.y), texto = "chega " + relogioEm(c.t);
+    ctx.save();
+    ctx.globalAlpha = alfaDoAndar(c.nivel);
+    ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.arc(px[0], px[1], RAIO_PECA, 0, 2 * Math.PI); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.font = "600 13px Figtree, system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+    ctx.lineWidth = 3; ctx.strokeStyle = "rgba(15,22,32,0.9)"; ctx.fillStyle = "#ffffff";
+    ctx.strokeText(texto, px[0], px[1] - RAIO_PECA - 4); ctx.fillText(texto, px[0], px[1] - RAIO_PECA - 4);
+    ctx.restore();
+    S.ultimaChegada = texto;
+  }
 
   function atualizaDica() {
     var d = $("pr-dica-estado");
@@ -1570,14 +1783,17 @@ var Prancheta = (function () {
   /** As operações que põem a peça em (x, y) com o yaw NO HORÁRIO t: no marco,
       move_peca e gira_peca do passo; fora dele, o ponto daquele horário ou um novo. */
   function opsDoPonto(pid, t, x, y, nivel, yaw) {
+    // num round do replay, o real do jogador depois do cabeçote sai na mesma
+    // ação, com a âncora no estado real do cabeçote (antes dele nada muda)
+    var corte = baseReal() === null ? [] : cortaReal(pid, Math.min(S.t, t)).concat(t > S.t + EPS_T ? ancoraReal(pid, S.t) : []);
     var m = S.e3.marcos[marcoQueContem(t)];
     if (m && Math.abs(m.t - t) < EPS_T) {
-      return [["move_peca", { peca: pid, passo: m.passo, x: x, y: y, nivel: nivel }],
-              ["gira_peca", { peca: pid, passo: m.passo, yaw: yaw }]];
+      return corte.concat([["move_peca", { peca: pid, passo: m.passo, x: x, y: y, nivel: nivel }],
+                           ["gira_peca", { peca: pid, passo: m.passo, yaw: yaw }]]);
     }
     var p = S.e3.pecas[pid], pt = p && p.pontos.filter(function (q) { return !q.fora && Math.abs(q.t - t) < EPS_T; }).pop();
-    if (pt) return [["move_ponto", { peca: pid, ponto: pt.id, t: t, x: x, y: y, nivel: nivel, yaw: yaw }]];
-    return [["cria_caminho", { peca: pid, pontos: [{ t: t, x: x, y: y, nivel: nivel, yaw: yaw }] }]];
+    if (pt) return corte.concat([["move_ponto", { peca: pid, ponto: pt.id, t: t, x: x, y: y, nivel: nivel, yaw: yaw }]]);
+    return corte.concat([["cria_caminho", { peca: pid, pontos: [{ t: t, x: x, y: y, nivel: nivel, yaw: yaw }] }]]);
   }
 
   /** Um nível para trás: ação pendente -> ferramenta de desenho -> seleção. */
@@ -1594,6 +1810,7 @@ var Prancheta = (function () {
   /* --- ponteiro ------------------------------------------------------------------ */
   function pointerDown(e) {
     if (!S.doc) return;
+    if (S.chegada) { S.chegada = null; atualizaDica(); }
     if (S.reproducao) { if (S.espaco || e.button === 1) comecaPan(e); return; }
     if (S.espaco || e.button === 1) { comecaPan(e); e.preventDefault(); return; }
     var px = eventoParaPixel(e), g = eventoParaJogo(e);
@@ -2392,6 +2609,14 @@ var Prancheta = (function () {
     box.appendChild(el("button", { class: "pr-b", texto: "Apagar granada", onclick: removeSelecionado }));
   }
 
+  /** A função que o round do replay deu à peça (operação da base real), ou null. */
+  function funcaoDoReplay(pid) {
+    var b = baseReal();
+    if (b === null) return null;
+    var op = S.doc.operacoes.filter(function (o) { return o.seq <= b && o.tipo === "define_funcao" && o.peca === pid; }).pop();
+    return op ? op.funcao : null;
+  }
+
   /** O campo de função de uma peça: o vocabulário do projeto (player_roles +
       structural_roles + IGL), injetado no build -- nada digitado aqui. */
   function campoDeFuncao(pid, id) {
@@ -2399,7 +2624,13 @@ var Prancheta = (function () {
     var s = el("select", { class: "pr-funcao", "data-peca": pid, "aria-label": "Função de " + nomePeca(pid) });
     if (id) s.id = id;
     s.appendChild(el("option", { value: "", texto: "sem função" }));
-    M3.FUNCOES.forEach(function (f) { s.appendChild(el("option", { value: f, texto: f })); });
+    // num round do replay, a função que veio dos rótulos estruturais aparece
+    // marcada "do replay" enquanto o usuário não a trocar
+    var doReplay = funcaoDoReplay(pid);
+    M3.FUNCOES.forEach(function (f) {
+      s.appendChild(el("option", { value: f, texto: f + (f === doReplay && f === atual ? " (do replay)" : "") }));
+    });
+    if (doReplay && doReplay === atual) s.setAttribute("data-do-replay", "");
     s.value = atual || "";
     s.addEventListener("change", function () { emite("define_funcao", { peca: pid, funcao: s.value || null }); });
     return s;
@@ -2816,7 +3047,7 @@ var Prancheta = (function () {
       instante em que joga até a granada cair. */
   function cenaNoRelogio(t) {
     var f = quadroNoTempo(S.e3, t, CENTRO), c = { pecas: {}, granadas: {}, tracos: {}, total: fimDaTatica(S.e3),
-      indice: marcoQueContem(t), relogio: f.relogio, bomba: f.bomba };
+      indice: marcoQueContem(t), relogio: f.relogio, bomba: f.bomba, mortos: f.mortos };
     Object.keys(f.pecas).forEach(function (id) { c.pecas[id] = Object.assign({}, f.pecas[id], { alfa: 1 }); });
     Object.keys(f.granadas).forEach(function (id) {
       var g = f.granadas[id], voando = g.fase === "voo";
@@ -2909,6 +3140,7 @@ var Prancheta = (function () {
       faixa.appendChild(tr);
       faixas.appendChild(faixa);
     });
+    atualizaReal();
     var cab = $("pr-linha-cabecote");
     cab.style.left = pctDe(t, limite);
     cab.setAttribute("data-relogio", relogioEm(t));
@@ -2983,6 +3215,7 @@ var Prancheta = (function () {
 
   function linhaPointerDown(e) {
     if (e.button !== 0) return;
+    if (e.target.closest && e.target.closest(".pr-real")) return;
     var alvo = e.target, editando = !S.reproducao;
     var marca = alvo.closest && alvo.closest(".pr-marca");
     var marco = alvo.closest && alvo.closest(".pr-marco");
@@ -3037,6 +3270,13 @@ var Prancheta = (function () {
   function montaLinhaDoTempo() {
     var linha = el("div", { id: "pr-linha", class: "pr-linha", role: "group", "aria-label": "Linha do tempo do round" }, [
       el("div", { class: "pr-linha-corpo" }, [
+        el("div", { id: "pr-real", class: "pr-real", hidden: "" }, [
+          el("button", { type: "button", id: "pr-fantasma", class: "pr-b", "aria-pressed": "false",
+                         title: "Mostra, esmaecido, o que aconteceu de verdade neste round, junto da versão editada",
+                         onclick: function () { alternaFantasma(); } }),
+          el("button", { type: "button", id: "pr-volta-real", class: "pr-b", texto: "Voltar ao real",
+                         title: "Desfaz todas as suas mudanças e volta ao round como aconteceu (uma ação: refazer devolve)",
+                         onclick: function () { voltaAoReal(); } })]),
         el("div", { class: "pr-faixa pr-faixa-regua" }, [el("span", { class: "pr-faixa-nome", texto: "Relógio" }),
           el("div", { class: "pr-trilho pr-regua", id: "pr-regua" })]),
         el("div", { id: "pr-faixas" }),
@@ -3284,6 +3524,109 @@ var Prancheta = (function () {
     atualizaTudo();
   }
 
+  /** A tática do ROUND INTEIRO do replay (#round=..., fase 9): o caminho real
+      de cada jogador, a saída na morte, as granadas com horário, arremessador e
+      a ligação ao arremesso real, e o plant. Tudo isso é a base real (não
+      desfazível); a tática abre PARADA no instante em que o replay estava. Dado
+      que não fecha fica de fora com aviso, como no instante. */
+  function criaDoRound(r) {
+    var hz = r && ehNumero(r.hz) && r.hz > 0 ? r.hz : null;
+    var inst = r && r.instante && typeof r.instante === "object" ? r.instante : {};
+    var jogadores = r && Array.isArray(r.jogadores) ? r.jogadores : [];
+    function ponto(q) {
+      return Array.isArray(q) && q.length === 5 && q.every(ehNumero) && ehInteiro(q[4]) && q[4] >= 0 && q[4] < ANDARES.length;
+    }
+    var validos = hz === null ? [] : jogadores.filter(function (j) {
+      return j && typeof j.nome === "string" && j.nome && LADOS.indexOf(j.lado) >= 0 &&
+        Array.isArray(j.pontos) && j.pontos.length && j.pontos.every(ponto) &&
+        (j.morte === null || (ehNumero(j.morte) && j.morte > j.pontos[j.pontos.length - 1][0]));
+    });
+    novaTatica();
+    var elenco = jogadores.filter(function (j) { return j && typeof j.nome === "string" && j.nome && LADOS.indexOf(j.lado) >= 0; })
+      .map(function (j) { return { nome: j.nome.slice(0, 32), lado: j.lado }; });
+    var nomes = {};
+    elenco.forEach(function (j) { nomes[j.nome] = j.lado; });
+    var mortos = Array.isArray(inst.mortos) ? inst.mortos.filter(function (m) {
+      return m && nomes[m.nome] === m.lado && ehInteiro(m.ordem) && m.ordem >= 1;
+    }).map(function (m) { return { nome: m.nome, lado: m.lado, ordem: m.ordem }; }) : [];
+    var origem = { partida: String(r && r.partida || ""), round: r && r.round, quadro: inst.quadro,
+                   relogio: String(inst.relogio || ""), elenco: elenco, mortos: mortos };
+    bancoDe = null;
+    var passo = passoAtual(), pecaDe = {}, funcoes = (r && r.funcoes) || {};
+    function yawDe(d) { return ((d % 360) + 360) % 360; }
+    function tDe(f) { return Math.round(f / hz * 1000) / 1000; }
+    validos.forEach(function (j) {
+      var pid = novoId(), p0 = j.pontos[0];
+      pecaDe[j.nome] = { id: pid, pontos: j.pontos };
+      emite("cria_peca", { peca: pid, lado: j.lado, rotulo: j.nome.slice(0, 32), passo: passo,
+                           x: p0[1], y: p0[2], nivel: p0[4], yaw: yawDe(p0[3]) }, false);
+      if (M3 && typeof funcoes[j.nome] === "string" && M3.FUNCOES.indexOf(funcoes[j.nome]) >= 0) {
+        emite("define_funcao", { peca: pid, funcao: funcoes[j.nome] }, false);
+      }
+      var resto = j.pontos.slice(1).map(function (q) {
+        return { t: tDe(q[0]), x: q[1], y: q[2], nivel: q[4], yaw: yawDe(q[3]) };
+      });
+      if (j.morte !== null) {
+        var u = j.pontos[j.pontos.length - 1];
+        resto.push({ t: tDe(j.morte), x: u[1], y: u[2], nivel: u[4], fora: true, morte: true });
+      }
+      if (resto.length) emite("cria_caminho", { peca: pid, pontos: resto }, false);
+    });
+    // onde o jogador estava num quadro (para o andar da granada e do plant)
+    function nivelEm(nome, f) {
+      var p = pecaDe[nome];
+      if (!p) return 0;
+      var n = p.pontos[0][4];
+      p.pontos.forEach(function (q) { if (q[0] <= f) n = q[4]; });
+      return n;
+    }
+    var bib = {};
+    ((cfg.biblioteca && cfg.biblioteca.arremessos) || []).forEach(function (a) { bib[a.id] = a; });
+    var granadas = r && Array.isArray(r.granadas) ? r.granadas : [], foraGranadas = 0;
+    granadas.forEach(function (g) {
+      var ok = g && ARMAS.indexOf(g.k) >= 0 && ehNumero(g.f) && g.f >= 0 && Array.isArray(g.o) && Array.isArray(g.d) &&
+        g.o.length === 2 && g.d.length === 2 && g.o.concat(g.d).every(ehNumero);
+      if (!ok || hz === null) { foraGranadas++; return; }
+      var quem = pecaDe[g.by], real = (typeof g.l === "string" && bib[g.l]) || null;
+      // a origem: o arremesso real da biblioteca; sem ele, a soltura gravada
+      // pelo export; sem ela, o começo da trajetória (como no instante)
+      var origem = real ? real.origem.slice(0, 2)
+        : (Array.isArray(g.lo) && g.lo.length === 2 && g.lo.every(ehNumero) ? g.lo.slice() : g.o.slice());
+      var dados = { granada: novoId(), arma: g.k, passo: passo, t: tDe(g.f), origem: origem, destino: g.d.slice(),
+                    nivel: real ? nivelDoZ(real.origem[2]) : nivelEm(g.by, g.f), arremesso: real };
+      if (quem) dados.jogador = quem.id;
+      // voo e efeito medidos no replay: a granada fica ativa nos mesmos quadros
+      if (ehNumero(g.v) && g.v >= 0) dados.voo_s = Math.round(g.v / hz * 1000) / 1000;
+      if (ehNumero(g.e) && g.e >= 0) dados.efeito_s = Math.round(g.e / hz * 1000) / 1000;
+      emite("cria_granada", dados, false);
+    });
+    if (r && r.bomba && hz !== null && ehNumero(r.bomba.f) && ehNumero(r.bomba.x) && ehNumero(r.bomba.y)) {
+      emite("planta_bomba", { t: tDe(r.bomba.f), x: r.bomba.x, y: r.bomba.y, nivel: nivelEm(r.bomba.por, r.bomba.f) }, false);
+    }
+    var titulo = (origem.partida ? origem.partida + " · " : "") + "round " + origem.round +
+      (origem.relogio ? " · " + origem.relogio : "");
+    var v = placarDeVivos(origem);
+    emite("renomeia", { titulo: titulo + " · " + v.t + "v" + v.ct }, false);
+    // a base real termina aqui: o que vier depois é do usuário
+    origem.base_real = S.doc.contador;
+    if (!problemasDaOrigem(origem).length) S.doc.origem = origem;
+    bancoDe = null;   // o banco é refeito com o elenco do round (os nomes reais)
+    S.pilhaDesfazer = []; S.pilhaRefazer = [];
+    reaplica();
+    // abre parada no instante do replay
+    S.t = hz !== null && ehInteiro(inst.quadro) ? Math.min(limiteDoTempo(), Math.round(inst.quadro / hz * 100) / 100) : 0;
+    S.passo = marcoQueContem(S.t);
+    gravaAgora();
+    var avisos = [];
+    if (validos.length !== jogadores.length) {
+      avisos.push((jogadores.length - validos.length) + " jogador(es) do round não puderam ser lidos e ficaram de fora.");
+    }
+    if (foraGranadas) avisos.push(foraGranadas + " granada(s) do round não puderam ser lidas e ficaram de fora.");
+    if (!S.doc.origem) avisos.push("A origem do round não pôde ser lida.");
+    if (avisos.length) S.aviso = avisos.join(" ");
+    atualizaTudo();
+  }
+
   function escolheFerramenta(id) {
     confirmaGiro();
     if (S.editor) fechaEditorTexto(true);
@@ -3453,12 +3796,20 @@ var Prancheta = (function () {
     if (nova && window.history && history.replaceState) history.replaceState(null, "", location.pathname);
     var aberta = Armazem.aberta(cfg.mapa);
     var instante = /^#instante=/.test(location.hash) ? location.hash.slice("#instante=".length) : null;
+    // o round inteiro (fase 9): consumido como o instante, sem deixar rastro no endereço
+    var round = /^#round=/.test(location.hash) ? location.hash.slice("#round=".length) : null;
+    if (round !== null && window.history && history.replaceState) history.replaceState(null, "", location.pathname);
     if (instante !== null && window.history && history.replaceState) history.replaceState(null, "", location.pathname);
     var retrato = null;
     if (instante !== null) {
       try { retrato = JSON.parse(decodeURIComponent(instante)); } catch (e) { retrato = null; }
     }
-    if (instante !== null) {
+    if (round !== null) {
+      novaTatica();
+      S.carregandoRound = true;
+      MapCore.descompactaDaUrl(round).then(function (r) { S.carregandoRound = false; criaDoRound(r); reprojeta(); },
+        function () { S.carregandoRound = false; S.aviso = "O round do replay não pôde ser lido."; atualizaAviso(); });
+    } else if (instante !== null) {
       if (retrato) criaDoInstante(retrato);
       else { novaTatica(); S.aviso = "O instante do replay não pôde ser lido."; atualizaAviso(); }
     } else if (nova || !(aberta && abre(aberta))) novaTatica();
@@ -3476,6 +3827,8 @@ var Prancheta = (function () {
       vooEstimado: vooEstimado, velocidade: velocidade, M3: function () { return M3; },
       defineTempo: defineTempo, douglasPeucker: douglasPeucker, noMarco: noMarco, emiteLote: emiteLote,
       TOLERANCIA_DP_PX: TOLERANCIA_DP_PX, ligaCaminhoPorClique: ligaCaminhoPorClique,
+      criaDoRound: criaDoRound, voltaAoReal: voltaAoReal, alternaFantasma: alternaFantasma, e3Real: e3Real,
+      cortaReal: cortaReal, baseReal: baseReal,
       adiaArremesso: adiaArremesso, lugarDe: lugarDe, eventosDe: eventosDe, eventoEm: eventoEm,
       fimDaTatica: fimDaTatica, cenaNoRelogio: cenaNoRelogio, tocaNoRelogio: tocaNoRelogio, relogioEm: relogioEm, mudaHorarioDaGranada: mudaHorarioDaGranada, reproduzAte: function (t) { reproduzAte(t); },
       comecaReproducao: comecaReproducao, editaAqui: editaAqui, toca: function (s) { toca(s); },

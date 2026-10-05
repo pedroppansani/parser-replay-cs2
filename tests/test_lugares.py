@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from metrics.lugares import LIMITE_BYTES, MIN_PARTIDAS, grade, lugar, tabela_compacta
+from metrics.lugares import LIMITE_BYTES, MIN_ACERTO, MIN_PARTIDAS, grade, lugar, tabela_compacta
 from scripts.build_lugares import escolhe
 
 RAIZ = Path(__file__).resolve().parents[1]
@@ -43,7 +43,7 @@ def test_as_tabelas_gravadas_cabem_no_limite_e_dizem_de_onde_vieram():
         assert a.stat().st_size <= LIMITE_BYTES, a.name
         doc = json.loads(a.read_text(encoding="utf-8"))
         o = doc["origem"]
-        assert o["partidas"] >= MIN_PARTIDAS and 0 < o["acerto_fora_da_amostra"] <= 1
+        assert o["partidas"] >= MIN_PARTIDAS and MIN_ACERTO <= o["acerto_fora_da_amostra"] <= 1
         assert o["fonte"] == "campo place dos ticks do corpus"
         assert doc["lado"] in (4, 8, 16, 32) and doc["nomes"] == sorted(doc["nomes"])
 

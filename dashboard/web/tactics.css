@@ -32,7 +32,9 @@ header nav.pr-volta a { height: 23px; box-sizing: border-box; line-height: 17px;
 .pr-lado-rotulo::before { content: ""; width: 9px; height: 9px; border-radius: 50%; }
 .pr-lado-rotulo.ct::before { background: var(--ct); }
 .pr-lado-rotulo.t::before { background: var(--t); }
-.grade { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; padding: 16px; }
+/* align-items: start -- o palco não estica junto com o painel: sem isso, um painel
+   alto (o caminho real de um round tem dezenas de pontos) desce o mapa no meio do gesto */
+.grade { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; padding: 16px; align-items: start; }
 @media (max-width: 900px) { .grade { grid-template-columns: minmax(0, 1fr); } }
 
 /* Palco: barra do mapa em cima, mapa embaixo. Em tela cheia ele ocupa a tela
@@ -119,7 +121,8 @@ h3 { margin: 0 0 4px; font-size: 15px; }
 .pr-funcao-linha { display: flex; gap: 8px; align-items: center; }
 .pr-funcao-nome { font-family: var(--mono); font-size: 11px; min-width: 72px; color: var(--ink-2); }
 .pr-funcao { font: inherit; font-size: 12px; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; }
-.pr-pontos { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; font-size: 12px; }
+.pr-pontos { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; font-size: 12px;
+             max-height: 260px; overflow: auto; }
 .pr-pontos li { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 .pr-pontos input { width: 64px; }
 
@@ -171,3 +174,9 @@ h3 { margin: 0 0 4px; font-size: 15px; }
                   border: 1px solid #3a4756; border-radius: 4px; }
 .pr-evento-nota-texto { width: 100%; font-size: 11px; color: #aab6c3; font-style: italic; }
 @media (max-width: 760px) { .pr-linha { grid-template-columns: minmax(0, 1fr); } }
+
+/* O round real (fase 9): fantasma e voltar ao real */
+.pr-real { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+.pr-real[hidden] { display: none; }
+.pr-real .pr-b { font-size: 12px; padding: 3px 8px; }
+.pr-real [aria-pressed="true"] { background: #ffd34d; color: #0f1620; }

@@ -26,6 +26,10 @@ PASSO_TICKS = 16                   # 4 amostras por segundo a 64 tick
 LADOS_DA_CELULA = (4, 8, 16, 32)   # pixels do radar (1024 de lado)
 LIMITE_BYTES = 300 * 1024          # documento da fase 8: acréscimo máximo por mapa
 MIN_PARTIDAS = 2                   # uma para montar a tabela, outra para conferir
+# Acerto mínimo fora da amostra para um mapa ter nome de lugar (critério do
+# Pedro, resposta 4 das fases 7-9): o piso dos mapas aceitos na fase 8, cujo
+# menor acerto medido foi 93,4% (Overpass) -- abaixo disso, sem nome.
+MIN_ACERTO = 0.93
 
 
 def amostras(ticks_parquet: Path, radar: dict, mapa: str) -> list[tuple[float, float, int, str]]:
