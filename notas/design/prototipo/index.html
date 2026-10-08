@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parser de Replay CS2 · partidas lidas round a round</title>
+<meta name="description" content="Lê gravações de partidas de Counter-Strike 2 e mostra, round a round, o que decidiu o jogo. Cada número é conferido contra a estatística oficial.">
+<meta property="og:title" content="Parser de Replay CS2">
+<meta property="og:description" content="Partidas de CS2 lidas round a round, com cada número conferido contra o dado oficial.">
+<meta property="og:image" content="img/replay-heroi.webp">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%230b0f14'/%3E%3Ccircle cx='11' cy='16' r='6' fill='%234a90e8'/%3E%3Ccircle cx='21' cy='16' r='6' fill='%23e0a23a'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,400..700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="base.css">
+<style>
+  /* ---------- Landing ---------- */
+  .heroi { display: grid; gap: 24px; padding: 28px 0 8px; }
+  /* ordem no HTML = ordem do celular: texto, números, imagem; no desktop a imagem vai para a direita */
+  @media (min-width: 960px) { .heroi { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); grid-template-areas: 'texto figura' 'numeros figura'; align-items: start; gap: 24px 40px; padding-top: 48px; }
+    .heroi > .heroi-texto { grid-area: texto; } .heroi > .numeros-heroi { grid-area: numeros; } .heroi > .figura { grid-area: figura; } }
+  .heroi h1 {
+    margin: 10px 0 14px; font-size: clamp(2rem, 6.4vw, 3.4rem); line-height: 1.02; letter-spacing: -0.01em;
+    font-stretch: var(--larg-condensada); font-weight: 700; text-wrap: balance;
+  }
+  .heroi .lead { color: var(--tinta-2); font-size: 1.0625rem; max-width: 52ch; margin: 0 0 22px; }
+  .caminhos { display: flex; flex-wrap: wrap; gap: 10px; }
+  .figura { margin: 0; }
+  .figura .moldura { position: relative; border: 1px solid var(--borda); border-radius: var(--r-md); overflow: hidden; background: var(--radar); aspect-ratio: 1; }
+  .figura figcaption { font-size: var(--t-sm); color: var(--tinta-2); margin-top: 8px; }
+
+  .tres { display: grid; margin: 0; border: 1px solid var(--borda); border-radius: var(--r-md); background: var(--superficie); }
+  @media (min-width: 760px) { .tres { grid-template-columns: repeat(3, 1fr); } }
+  .figura img { display: block; width: 100%; height: auto; }
+  .tres > div { padding: 16px; border-top: 1px solid var(--linha); }
+  .tres > div:first-child { border-top: 0; }
+  @media (min-width: 760px) { .tres > div { border-top: 0; border-left: 1px solid var(--linha); } .tres > div:first-child { border-left: 0; } }
+  .tres dt { font-weight: 600; }
+  .tres dt .num { display: block; font-size: 2.1rem; line-height: 1.1; font-weight: 600; margin-bottom: 4px; }
+  .tres dd { margin: 6px 0 0; color: var(--tinta-2); font-size: var(--t-sm); }
+  .corpus { margin: 12px 0 0; color: var(--tinta-2); font-size: var(--t-sm); }
+
+  .grade-topo { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; margin: 48px 0 12px; }
+  .grade-topo h2 { margin: 0; font-stretch: var(--larg-condensada); text-transform: uppercase; font-size: var(--t-xl); letter-spacing: 0.02em; }
+  .filtros { display: grid; gap: 8px; }
+  @media (min-width: 960px) { .filtros { grid-auto-flow: column; } }
+  .filtro-mapas { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; padding-bottom: 2px; }
+  @media (min-width: 760px) { .filtro-mapas { flex-wrap: wrap; overflow: visible; } }
+  .filtro-mapas .chip { flex: none; }
+
+  .grade { display: grid; gap: 10px; }
+  @media (min-width: 640px) { .grade { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) { .grade { grid-template-columns: repeat(3, 1fr); } }
+  .cp {
+    display: grid; gap: 8px; padding: 14px 14px 12px; text-decoration: none; color: var(--tinta);
+    background: var(--superficie); border: 1px solid var(--linha); border-left: 3px solid var(--borda); border-radius: var(--r-md);
+    transition: border-color var(--dur), background var(--dur);
+  }
+  .cp:hover { background: var(--superficie-2); border-left-color: var(--tinta); }
+  .cp-topo { display: flex; justify-content: space-between; gap: 8px; font-size: var(--t-sm); color: var(--tinta-2); }
+  .cp-linha { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 8px; }
+  .cp-linha .nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+  .cp-linha .num { font-size: 1.2rem; font-weight: 600; }
+  .cp-linha.perdeu { color: var(--tinta-2); } .cp-linha.perdeu .nome, .cp-linha.perdeu .num { font-weight: 400; }
+  .cp-frase { font-size: var(--t-sm); color: var(--tinta-2); border-top: 1px solid var(--linha); padding-top: 8px; }
+  .cp-frase b { color: var(--decisivo); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="pagina">
+  <header class="site-topo">
+    <a class="marca" href="index.html" aria-label="Parser de Replay CS2, início"><span class="marca-longa">Parser de Replay</span><b>CS2</b></a>
+    <nav class="site-nav" aria-label="Principal">
+      <a href="index.html" aria-current="page">Partidas</a>
+      <a href="jogadores.html">Jogadores</a>
+      <a href="prancheta.html">Prancheta</a>
+      <a href="https://github.com/pedroppansani/parser-replay-cs2">GitHub</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="heroi" aria-labelledby="h-heroi">
+      <div class="heroi-texto">
+        <p class="rot">Projeto de portfólio · Python e JavaScript · site estático</p>
+        <h1 id="h-heroi">Lê gravações de partidas de Counter-Strike 2 e mostra o que decidiu cada jogo</h1>
+        <p class="lead">Cada partida vira uma página: o replay no mapa, o round que virou o jogo e o que cada jogador fez. Os números são conferidos contra a estatística oficial, e quando o dado não sustenta uma afirmação a página diz que não sabe.</p>
+        <div class="caminhos">
+          <a class="btn principal" href="partida.html">Ver uma partida</a>
+          <a class="btn" href="prancheta.html">Prancheta tática</a>
+          <a class="btn fantasma" href="https://github.com/pedroppansani/parser-replay-cs2">Código no GitHub ↗</a>
+        </div>
+        <p class="origem">título, frase e botões: texto da landing, no builder (scripts/build_site.py); o link "Ver uma partida" segue partida_de_exemplo()</p>
+      </div>
+      <section class="numeros-heroi" aria-label="Três números validados">
+      <dl class="tres">
+        <div><dt><span class="num">410 de 410</span>placares iguais aos oficiais</dt><dd>Kills e mortes de 410 jogadores em 41 mapas profissionais batem com a HLTV, um a um.</dd></div>
+        <div><dt><span class="num">0,079</span>de erro médio no rating</dt><dd>Em 430 jogador-partidas avaliadas fora da amostra (correlação 0,966). É uma implementação própria da metodologia publicada, não o número da HLTV.</dd></div>
+        <div><dt><span class="num">100%</span>de acerto no botão do arremesso</dt><dd>A força de 6.846 granadas inferida só pela posição e conferida contra o que a demo grava, em 13 partidas fora da amostra.</dd></div>
+      </dl>
+      <p class="corpus">52 partidas: 43 profissionais, de 9 times, e 9 da FACEIT, em 8 mapas.</p>
+      <p class="origem">valores, rótulos e frases: numeros_citaveis.json via tres_numeros() e blocos_de_texto(); o rótulo curto ("placares iguais aos oficiais") troca de texto no JSON, ver "Mudanças de dados e textos"</p>
+      </section>
+      <figure class="figura">
+        <div class="moldura"><img src="img/replay-heroi.webp" width="760" height="760" loading="lazy" decoding="async"
+          alt="Replay no mapa Dust II: posições dos jogadores no round 24 de Falcons × MOUZ, com a direção do olhar"></div>
+        <figcaption>Replay do round 24 de Falcons × MOUZ, em Dust II. Captura WebP (~12 KB), carregada sem pressa: o que conta nos primeiros 5 segundos são os números.</figcaption>
+      </figure>
+    </section>
+
+
+
+    <section aria-labelledby="h-grade">
+      <div class="grade-topo">
+        <h2 id="h-grade">Partidas <span class="num apagado" id="grade-contagem">9</span></h2>
+        <div class="filtros">
+          <div class="chips" role="group" aria-label="Origem" data-filtro-grupo="origem">
+            <button class="chip" aria-pressed="true" data-valor="profissional">Profissionais <span class="num">43</span></button>
+            <button class="chip" aria-pressed="false" data-valor="faceit">FACEIT <span class="num">9</span></button>
+            <button class="chip" aria-pressed="false" data-valor="">Todas <span class="num">52</span></button>
+          </div>
+          <div class="chips filtro-mapas" role="group" aria-label="Mapa" data-filtro-grupo="mapa">
+            <button class="chip" aria-pressed="true" data-valor="">Todos</button>
+            <button class="chip" aria-pressed="false" data-valor="mirage">Mirage <span class="num">16</span></button>
+            <button class="chip" aria-pressed="false" data-valor="dust2">Dust II <span class="num">10</span></button>
+            <button class="chip" aria-pressed="false" data-valor="nuke">Nuke <span class="num">9</span></button>
+            <button class="chip" aria-pressed="false" data-valor="inferno">Inferno <span class="num">6</span></button>
+            <button class="chip" aria-pressed="false" data-valor="anubis">Anubis <span class="num">5</span></button>
+            <button class="chip" aria-pressed="false" data-valor="ancient">Ancient <span class="num">3</span></button>
+            <button class="chip" aria-pressed="false" data-valor="overpass">Overpass <span class="num">2</span></button>
+            <button class="chip" aria-pressed="false" data-valor="train">Train <span class="num">1</span></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grade" id="grade">
+        <a class="cp" href="partida.html" data-card data-mapa="dust2" data-origem="profissional">
+          <span class="cp-topo"><span>Dust II</span><span>IEM Kraków 2026 · 36 rounds</span></span>
+          <span class="cp-linha perdeu"><span class="nome">Falcons</span><span class="num">17</span></span>
+          <span class="cp-linha"><span class="nome">MOUZ <span class="tag-venceu">venceu</span></span><span class="num">19</span></span>
+          <span class="cp-frase">Decidida no <b>round 24</b> · MVP m0NESY</span>
+        </a>
+        <a class="cp" href="partida.html" data-card data-mapa="dust2" data-origem="profissional">
+          <span class="cp-topo"><span>Dust II</span><span>14 rounds</span></span>
+          <span class="cp-linha"><span class="nome">Spirit <span class="tag-venceu">venceu</span></span><span class="num">13</span></span>
+          <span class="cp-linha perdeu"><span class="nome">Natus Vincere</span><span class="num">1</span></span>
+          <span class="cp-frase">Nenhum round decidiu sozinho</span>
+        </a>
+        <a class="cp" href="partida.html" data-card data-mapa="overpass" data-origem="profissional">
+          <span class="cp-topo"><span>Overpass</span><span>23 rounds</span></span>
+          <span class="cp-linha"><span class="nome">Vitality <span class="tag-venceu">venceu</span></span><span class="num">13</span></span>
+          <span class="cp-linha perdeu"><span class="nome">FURIA</span><span class="num">10</span></span>
+          <span class="cp-frase">Decidida no <b>round 19</b> · MVP ZywOo</span>
+        </a>
+        <a class="cp" href="partida.html" data-card data-mapa="anubis" data-origem="profissional">
+          <span class="cp-topo"><span>Anubis</span><span>21 rounds</span></span>
+          <span class="cp-linha"><span class="nome">Spirit <span class="tag-venceu">venceu</span></span><span class="num">13</span></span>
+          <span class="cp-linha perdeu"><span class="nome">Natus Vincere</span><span class="num">8</span></span>
+          <span class="cp-frase">Decidida no <b>round 15</b> · MVP donk</span>
+        </a>
+        <a class="cp" href="partida.html" data-card data-mapa="mirage" data-origem="profissional">
+          <span class="cp-topo"><span>Mirage</span><span>30 rounds · prorrogação</span></span>
+          <span class="cp-linha perdeu"><span class="nome">Falcons</span><span class="num">14</span></span>
+          <span class="cp-linha"><span class="nome">FURIA <span class="tag-venceu">venceu</span></span><span class="num">16</span></span>
+          <span class="cp-frase">Decidida no <b>round 27</b> · MVP KSCERATO</span>
+        </a>
+        <a class="cp" href="partida.html" data-card data-mapa="nuke" data-origem="profissional">
+          <span class="cp-topo"><span>Nuke</span><span>29 rounds · prorrogação</span></span>
+          <span class="cp-linha"><span class="nome">Natus Vincere <span class="tag-venceu">venceu</span></span><span class="num">16</span></span>
+          <span class="cp-linha perdeu"><span class="nome">Falcons</span><span class="num">13</span></span>
+          <span class="cp-frase">Decidida no <b>round 22</b> · MVP b1t</span>
+        </a>
+        <a class="cp" href="partida.html" data-card data-mapa="ancient" data-origem="faceit">
+          <span class="cp-topo"><span>Ancient · FACEIT</span><span>22 rounds</span></span>
+          <span class="cp-linha"><span class="nome" title="Time de _AmadeuS">Time de _AmadeuS <span class="tag-venceu">venceu</span></span><span class="num">13</span></span>
+          <span class="cp-linha perdeu"><span class="nome" title="Time de 9amaterasu9">Time de 9amaterasu9</span><span class="num">9</span></span>
+          <span class="cp-frase">Decidida no <b>round 17</b> · MVP donk666</span>
+        </a>
+        <a class="cp" href="partida.html" data-card data-mapa="mirage" data-origem="faceit">
+          <span class="cp-topo"><span>Mirage · FACEIT</span><span>24 rounds</span></span>
+          <span class="cp-linha perdeu"><span class="nome" title="Time de -EsD">Time de -EsD</span><span class="num">11</span></span>
+          <span class="cp-linha"><span class="nome" title="Time de certa1n">Time de certa1n <span class="tag-venceu">venceu</span></span><span class="num">13</span></span>
+          <span class="cp-frase">Nenhum round decidiu sozinho</span>
+        </a>
+        <a class="cp" href="partida.html" data-card data-mapa="nuke" data-origem="faceit">
+          <span class="cp-topo"><span>Nuke · FACEIT</span><span>17 rounds</span></span>
+          <span class="cp-linha perdeu"><span class="nome" title="Time de chiefkeef19">Time de chiefkeef19</span><span class="num">4</span></span>
+          <span class="cp-linha"><span class="nome" title="Time de donk666">Time de donk666 <span class="tag-venceu">venceu</span></span><span class="num">13</span></span>
+          <span class="cp-frase">Decidida no <b>round 9</b> · MVP donk666</span>
+        </a>
+      </div>
+      <div class="vazio" id="grade-vazia" hidden><strong>Nenhuma partida com esse filtro.</strong>O corpus não tem partida deste mapa nessa origem. <button class="btn fantasma" type="button" onclick="document.querySelector('[data-filtro-grupo=mapa] .chip').click()">Mostrar todos os mapas</button></div>
+      <p class="origem">cards: manifesto + insights de cada partida; nome do lado: nome canônico (decisão 38) ou "Time de &lt;nick&gt;" (regra nova, Python); frase: "Decidida no round N · MVP X" ou "Nenhum round decidiu sozinho", gerada em Python (decisão 18), no lugar de "X impôs Ns de cegueira". Ordem: profissionais primeiro, mais recentes antes.</p>
+      <div class="proto-nota"><b>Protótipo:</b> só a partida de Falcons × MOUZ tem dados reais (match_42); os outros cards são ilustrativos (placares reais do corpus, rounds decisivos e MVPs inventados para mostrar o formato). Todos levam à mesma página de exemplo. Catálogo de componentes e estados: <a href="estados.html">estados.html</a>; página nova do corpus: <a href="jogadores.html">jogadores.html</a>.</div>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <p><b>Como os números são conferidos.</b> Kills, mortes, aberturas e clutches são comparados com a HLTV jogador a jogador; o rating é refeito deixando uma partida de fora a cada vez. Detalhes no <a href="https://github.com/pedroppansani/parser-replay-cs2">README</a>.</p>
+    <p class="origem">rodapé: blocos_de_texto(numeros_citaveis.json)</p>
+  </footer>
+</div>
+<script src="proto.js"></script>
+<script>Proto.aplicaFiltros();</script>
+</body>
+</html>

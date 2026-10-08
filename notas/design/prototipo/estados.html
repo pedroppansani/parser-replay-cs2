@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Componentes e estados · Parser de Replay CS2</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%230b0f14'/%3E%3Ccircle cx='11' cy='16' r='6' fill='%234a90e8'/%3E%3Ccircle cx='21' cy='16' r='6' fill='%23e0a23a'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,400..700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="prancheta.css">
+<style>
+  h1 { font-stretch: var(--larg-condensada); text-transform: uppercase; margin: 20px 0 4px; }
+  h2 { font-stretch: 85%; font-size: var(--t-lg); margin: 32px 0 10px; padding-top: 12px; border-top: 1px solid var(--linha); }
+  .amostras { display: grid; gap: 12px; }
+  @media (min-width: 900px) { .amostras { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .amostra-c { background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--r-md); padding: 12px; min-width: 0; }
+  .amostra-c > .rot { margin-bottom: 8px; color: var(--tinta-2); }
+  .pecas-svg { width: 100%; max-width: 420px; background: var(--radar); border-radius: var(--r-sm); }
+  .pecas-svg text { font: 600 12px var(--f-texto); fill: #fff; paint-order: stroke; stroke: #05080b; stroke-width: 3px; }
+  .pecas-svg text.leg { fill: var(--tinta-2); stroke: none; font-weight: 400; }
+  .paleta { display: grid; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .sw { display: grid; grid-template-columns: 28px 1fr; gap: 8px; align-items: center; font-size: var(--t-sm); }
+  .sw i { width: 28px; height: 28px; border-radius: var(--r-sm); box-shadow: inset 0 0 0 1px rgba(255,255,255,.18); }
+  .sw small { display: block; color: var(--apagado); }
+  .simula-hover { background: var(--superficie-2) !important; border-color: var(--tinta-2) !important; }
+  .simula-foco { outline: 2px solid var(--foco); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<div class="pagina">
+  <header class="site-topo">
+    <a class="marca" href="index.html" aria-label="Parser de Replay CS2, início"><span class="marca-longa">Parser de Replay</span><b>CS2</b></a>
+    <nav class="site-nav" aria-label="Principal"><a href="index.html">Partidas</a><a href="jogadores.html">Jogadores</a><a href="prancheta.html">Prancheta</a><a href="estados.html" aria-current="page">Estados</a></nav>
+  </header>
+  <h1>Componentes e estados</h1>
+  <p class="secundario">Catálogo para a implementação: cada componente em todos os estados, com os tokens da direção 2. Esta página não existe no site; é referência.</p>
+
+  <h2>Cores e papéis</h2>
+  <div class="paleta">
+    <div class="sw"><i style="background:var(--fundo)"></i><span>fundo<small>#0b0f14</small></span></div>
+    <div class="sw"><i style="background:var(--superficie)"></i><span>superfície<small>#121820</small></span></div>
+    <div class="sw"><i style="background:var(--superficie-2)"></i><span>superfície 2<small>#1a222d</small></span></div>
+    <div class="sw"><i style="background:var(--radar)"></i><span>radar<small>#0f141b</small></span></div>
+    <div class="sw"><i style="background:var(--tl-fundo)"></i><span>linha do tempo<small>#0e131a</small></span></div>
+    <div class="sw"><i style="background:var(--tinta)"></i><span>tinta · vitória · link<small>#e8edf2</small></span></div>
+    <div class="sw"><i style="background:var(--tinta-2)"></i><span>tinta 2 · derrota<small>#aab5c1</small></span></div>
+    <div class="sw"><i style="background:var(--apagado)"></i><span>apagado · neutro<small>#8b97a5</small></span></div>
+    <div class="sw"><i style="background:var(--borda)"></i><span>borda de controle<small>#66758a</small></span></div>
+    <div class="sw"><i style="background:var(--ct)"></i><span>CT<small>#4a90e8 · texto #6ea8f2</small></span></div>
+    <div class="sw"><i style="background:var(--tr)"></i><span>TR<small>#e0a23a · texto #e9b65a</small></span></div>
+    <div class="sw"><i style="background:var(--decisivo)"></i><span>decisivo<small>#2fae7c</small></span></div>
+    <div class="sw"><i style="background:var(--smoke)"></i><span>smoke<small>#d1d9e0</small></span></div>
+    <div class="sw"><i style="background:var(--flash)"></i><span>flash<small>#f9f5b8</small></span></div>
+    <div class="sw"><i style="background:var(--he)"></i><span>HE<small>#ff4da6</small></span></div>
+    <div class="sw"><i style="background:var(--molotov)"></i><span>molotov<small>#d65d00</small></span></div>
+    <div class="sw"><i style="background:var(--aviso)"></i><span>aviso<small>#ffea3d</small></span></div>
+    <div class="sw"><i style="background:var(--erro)"></i><span>erro<small>#ff6b6b</small></span></div>
+    <div class="sw"><i style="background:var(--foco)"></i><span>foco<small>#ffffff</small></span></div>
+  </div>
+
+  <h2>Botões e chips</h2>
+  <div class="amostras">
+    <div class="amostra-c"><p class="rot">Botão</p><div class="chips"><button class="btn principal">Principal</button><button class="btn">Normal</button><button class="btn simula-hover">Hover</button><button class="btn simula-foco">Foco</button><button class="btn" disabled>Desativado</button><button class="btn fantasma">Fantasma</button></div></div>
+    <div class="amostra-c"><p class="rot">Chip de filtro</p><div class="chips"><button class="chip" aria-pressed="true">Ligado <span class="num">16</span></button><button class="chip" aria-pressed="false">Desligado</button><button class="chip simula-foco" aria-pressed="false">Foco</button><button class="chip" aria-disabled="true">Sem partidas</button></div></div>
+    <div class="amostra-c"><p class="rot">Botão de ícone (barra)</p><div class="chips"><button class="btn-icone" aria-pressed="false">Seta</button><button class="btn-icone" aria-pressed="true">Caneta</button><button class="btn-icone simula-foco">Foco</button><button class="btn-icone" disabled>↷</button></div></div>
+  </div>
+
+  <h2>Abas</h2>
+  <div class="amostras">
+    <div class="amostra-c" style="grid-column:1/-1"><p class="rot">Selecionada, normal, hover, foco; setas ← → trocam, Home e End vão às pontas</p>
+      <div class="abas-moldura"><div class="abas" role="tablist" aria-label="Exemplo"><button role="tab" data-aba="x1" aria-controls="x1">Resumo</button><button role="tab" data-aba="x2" aria-controls="x2">Replay</button><button role="tab" data-aba="x3" aria-controls="x3" class="simula-foco">Jogadores</button><button role="tab" data-aba="x4" aria-controls="x4">Placar</button></div></div>
+      <div id="x1"></div><div id="x2"></div><div id="x3"></div><div id="x4"></div>
+    </div>
+    <div class="amostra-c" style="max-width:340px"><p class="rot">Abas que não cabem (375 px): recorte, sombra e botão ›</p>
+      <div class="abas-moldura sobra-dir" style="width:300px"><div class="abas" role="tablist" aria-label="Exemplo estreito" style="padding-right:44px"><button role="tab" data-aba="y1" aria-controls="y1">Resumo</button><button role="tab" data-aba="y2" aria-controls="y2">Replay</button><button role="tab" data-aba="y3" aria-controls="y3">Jogadores</button><button role="tab" data-aba="y4" aria-controls="y4">Placar</button><button role="tab" data-aba="y5" aria-controls="y5">Perfil</button></div><button class="abas-mais" aria-label="Mostrar mais abas">›</button></div>
+      <div id="y1"></div><div id="y2"></div><div id="y3"></div><div id="y4"></div><div id="y5"></div>
+    </div>
+  </div>
+
+  <h2>Cartão de métrica</h2>
+  <div class="amostras">
+    <div class="amostra-c"><p class="rot">Rating na partida (erro em texto, sem barra)</p><p style="margin:0"><span class="num" style="font-size:1.6rem;font-weight:600">1,48</span> <span class="secundario">rating</span></p><p class="bruto" style="margin:0">erro típico contra o rating oficial: <span class="num">{erro_rating}</span> · <a href="#">método</a></p></div>
+    <div class="amostra-c"><p class="rot">Identidade do time (placar e tabelas)</p><p style="margin:0">Falcons <span class="tag tr">começou TR</span></p><p style="margin:4px 0 0">MOUZ <span class="tag ct">começou CT</span></p><p class="bruto">Só a etiqueta usa a cor do lado. O que é por round (replay, faixa de rounds, peças, eventos) usa o lado daquele round.</p></div>
+    <div class="amostra-c"><p class="rot">Normal: valor, bruto e referência</p><ul class="metricas"><li class="metrica"><span class="m-nome">KAST</span><span class="m-valor">75%</span><span class="m-ref"><span class="num">27 de 36</span> rounds · mediana <span class="num">73%</span></span></li></ul></div>
+    <div class="amostra-c"><p class="rot">Amostra pequena</p><ul class="metricas"><li class="metrica amostra"><span class="m-nome">Clutches</span><span class="m-valor">0 de 3</span><span class="m-ref"><span class="tag amostra">amostra pequena</span> 3 tentativas</span></li></ul></div>
+    <div class="amostra-c"><p class="rot">Neutro (sem afirmação, com o motivo)</p><ul class="metricas"><li class="metrica neutro"><span class="m-nome">Lurk</span><span class="m-valor">—</span><span class="m-ref"><span class="tag neutro">neutro</span> 6 rounds; mínimo 8</span></li></ul></div>
+    <div class="amostra-c"><p class="rot">Dado degradado (modo_degradado)</p><ul class="metricas"><li class="metrica"><span class="m-nome">Swing</span><span class="m-valor apagado">—</span><span class="m-ref"><span class="tag aviso">▲ degradado</span> modelo de round ausente; número escondido</span></li></ul></div>
+    <div class="amostra-c"><p class="rot">Carregando</p><div class="esqueleto" style="height:16px;margin:8px 0"></div><div class="esqueleto" style="height:16px;width:70%"></div></div>
+    <div class="amostra-c"><p class="rot">Erro</p><div class="aviso-bloco erro"><span class="ico" aria-hidden="true">✕</span><p><b>Erro:</b> não foi possível ler os dados desta métrica. <a href="#">Tentar de novo</a></p></div></div>
+  </div>
+
+  <h2>Grupo recolhível (aba Jogadores)</h2>
+  <div class="amostras">
+    <div class="amostra-c" style="grid-column:1/-1">
+      <details class="grupo"><summary>Utilidade <span class="apagado" style="text-align:right">mais cegueira imposta: m0NESY, <span class="num">154 s</span></span></summary><div class="grupo-corpo"><p class="secundario">conteúdo do grupo</p></div></details>
+      <details class="grupo"><summary>Economia <span class="apagado">sem dado de equipamento nesta partida</span></summary><div class="grupo-corpo"></div></details>
+      <p class="bruto">Fechado por padrão, com o destaque na própria linha (fechado não é escondido). Aberto/fechado é lembrado em localStorage, sempre em try/catch: se o armazenamento falhar, a página abre fechada e funciona igual.</p>
+    </div>
+  </div>
+
+  <h2>Barra com intervalo</h2>
+  <div class="amostras">
+    <div class="amostra-c" style="grid-column:1/-1"><div class="iv">
+      <div class="iv-linha"><span class="iv-nome">normal (CT)</span><span class="iv-trilho"><span class="iv-ref" style="left:40%"></span><span class="iv-faixa" style="left:45%;width:20%"></span><span class="iv-pt" style="left:55%"></span></span><span class="iv-num">1,21</span></div>
+      <div class="iv-linha"><span class="iv-nome">normal (TR)</span><span class="iv-trilho"><span class="iv-ref" style="left:40%"></span><span class="iv-faixa tr" style="left:35%;width:20%"></span><span class="iv-pt" style="left:45%"></span></span><span class="iv-num">1,08</span></div>
+      <div class="iv-linha"><span class="iv-nome">assimétrico</span><span class="iv-trilho"><span class="iv-ref" style="left:40%"></span><span class="iv-faixa" style="left:22%;width:34.8%"></span><span class="iv-pt" style="left:36.7%"></span></span><span class="iv-num">9/41</span></div>
+      <div class="iv-linha"><span class="iv-nome">abaixo do mínimo</span><span class="iv-num sem-barra"><span class="num">3 de 7</span> <span class="tag amostra">amostra pequena</span> sem % e sem barra</span></div>
+      <div class="iv-linha"><span class="iv-nome">sem dado</span><span class="iv-trilho"><span class="iv-ref" style="left:40%"></span></span><span class="iv-num apagado">—</span></div>
+      <div class="iv-escala"><span style="left:0%">0,8</span><span style="left:50%">1,2</span><span style="left:100%">1,6</span></div>
+    </div><p class="bruto">Só na página de jogadores (intervalo de verdade). Ponto = valor; faixa = intervalo, que pode ser assimétrico (o desenho nunca supõe o ponto no meio); linha tracejada = referência. Taxa com menos de 10 tentativas: só o bruto. Rating com menos de 3 partidas: "1 partida"/"2 partidas", sem barra. Nunca gráfico de radar.</p></div>
+  </div>
+
+  <h2>Controles do replay</h2>
+  <div class="amostras">
+    <div class="amostra-c"><p class="rot">Pausado</p><div style="display:flex;gap:8px;align-items:center"><button class="btn-icone" style="background:var(--tinta);color:var(--fundo);border-radius:50%">▶</button><span class="num">1:12</span><button class="btn-icone" style="border-color:var(--borda)">1×</button></div></div>
+    <div class="amostra-c"><p class="rot">Tocando</p><div style="display:flex;gap:8px;align-items:center"><button class="btn-icone" style="background:var(--tinta);color:var(--fundo);border-radius:50%" aria-label="Pausar">❚❚</button><span class="num">0:38</span><button class="btn-icone" style="border-color:var(--borda)">0,25×</button></div></div>
+    <div class="amostra-c"><p class="rot">Sem replay (partida sem radar calibrado)</p><div class="aviso-bloco info"><span class="ico">i</span><p>Este mapa não tem radar calibrado; o replay fica desligado e as outras abas funcionam.</p></div></div>
+  </div>
+
+  <h2>Peça no mapa (canvas do map_core.js)</h2>
+  <div class="amostras">
+    <div class="amostra-c" style="grid-column:1/-1">
+      <svg class="pecas-svg mapa-esc" viewBox="0 0 420 110" role="img" aria-label="Estados da peça">
+        <g class="pc ct"><path class="olhar" d="M30 45 L52 37 L52 53Z"/><circle class="halo" cx="30" cy="45" r="10"/><circle class="corpo" cx="30" cy="45" r="10"/></g><text class="leg" x="30" y="90" text-anchor="middle">normal</text>
+        <g class="pc tr sel"><circle class="anel" cx="100" cy="45" r="15"/><circle class="halo" cx="100" cy="45" r="10"/><circle class="corpo" cx="100" cy="45" r="10"/></g><text class="leg" x="100" y="90" text-anchor="middle">selecionada</text>
+        <g class="pc tr tracando"><circle class="anel" cx="170" cy="45" r="15"/><circle class="halo" cx="170" cy="45" r="10"/><circle class="corpo" cx="170" cy="45" r="10"/></g><text class="leg" x="170" y="90" text-anchor="middle">traçando</text>
+        <g class="pc ct fantasma"><circle class="halo-tr" cx="240" cy="45" r="10"/><circle class="contorno-tr" cx="240" cy="45" r="10"/><circle class="corpo" cx="240" cy="45" r="10"/></g><text class="leg" x="240" y="90" text-anchor="middle">fantasma real</text>
+        <g class="pc tr outro-andar"><circle class="halo" cx="310" cy="45" r="9"/><circle class="contorno-tr" cx="310" cy="45" r="9" style="stroke-dasharray:none"/><circle class="corpo" cx="310" cy="45" r="9"/><text x="310" y="50" text-anchor="middle" style="font-size:10px">▲</text></g><text class="leg" x="310" y="90" text-anchor="middle">outro andar</text>
+        <g><path class="x-halo" d="M372 37l16 16m0-16l-16 16"/><path class="x-contorno" d="M372 37l16 16m0-16l-16 16"/><path class="x-cor" d="M372 37l16 16m0-16l-16 16" stroke="var(--ct)"/></g><text class="leg" x="380" y="90" text-anchor="middle">morta</text>
+      </svg>
+      <p class="bruto">Anel duplo em toda peça: contorno escuro 2,5 px + halo claro 1,5 px por fora (em qualquer pixel do radar, um dos dois passa de 4,13:1). Rótulo branco 12,5 px de tela com contorno escuro de 5 px. Seleção e foco usam --foco (branco); fantasma é tracejado na cor do lado, sem preenchimento, com halo claro e contorno escuro também tracejados; outro andar é anel vazado com seta (▲ acima, ▼ abaixo) sobre o anel duplo; morta é ✕ na cor do lado a 60% sobre o anel duplo inteiro. Só a cor do lado chega a 1,00:1 em algum pixel de todo radar; com o anel duplo, ≥ 4,13:1 em todos.</p>
+    </div>
+    <div class="amostra-c" style="grid-column:1/-1">
+      <p class="rot">Granadas: forma própria em todo lugar (radar, linha do tempo, painel)</p>
+      <div class="chips"><span class="glifo-caixa"><svg class="glifo"><use href="#g-smoke"/></svg></span> nuvem <span class="glifo-caixa"><svg class="glifo"><use href="#g-flash"/></svg></span> estrela <span class="glifo-caixa"><svg class="glifo"><use href="#g-he"/></svg></span> anel serrilhado <span class="glifo-caixa"><svg class="glifo"><use href="#g-molotov"/></svg></span> gota</div>
+    </div>
+  </div>
+
+  <h2>Linha do tempo, dica e avisos</h2>
+  <div class="amostras">
+    <div class="amostra-c"><p class="rot">Linha de dica (o que o próximo clique faz)</p><p class="pr-dica" style="border:1px solid var(--linha)"><b>Traçando o caminho de Spinx.</b> Próximo clique: novo ponto. <kbd>Esc</kbd> termina.</p></div>
+    <div class="amostra-c"><p class="rot">Aviso</p><div class="aviso-bloco"><span class="ico">▲</span><p><b>Spinx chega 2,3 s atrasado</b> ao marco “entrada no A”.</p></div></div>
+    <div class="amostra-c"><p class="rot">Info / neutro / erro</p><div class="aviso-bloco info"><span class="ico">i</span><p>Comando de console ainda não conferido no jogo.</p></div><div class="aviso-bloco neutro" style="margin-top:6px"><span class="ico">–</span><p><span class="tag neutro">neutro</span> arremesso sem botão afirmado.</p></div><div class="aviso-bloco erro" style="margin-top:6px"><span class="ico">✕</span><p><b>Erro:</b> tática de outra calibração do radar; não foi importada.</p></div></div>
+    <div class="amostra-c" style="grid-column:1/-1"><p class="rot">Elementos da linha do tempo</p>
+      <div class="tl" style="margin:0"><div class="tl-rolagem"><div class="tl-grade" style="min-width:600px">
+        <div class="tl-faixa tr sel"><span class="tl-nome">selecionada<small>faixa do jogador</small></span><span class="tl-trilho"><span class="tl-vida" style="left:0;width:70%"></span><span class="tl-ponto" style="left:15%" title="ponto-chave"></span><span class="tl-ponto atraso" style="left:35%" title="atrasado"></span><span class="tl-gr" style="left:55%"><svg class="glifo"><use href="#g-smoke"/></svg></span><span class="tl-dur smoke" style="left:57%;width:20%"></span><span class="morte" style="left:70%">✕</span></span></div>
+        <div class="tl-faixa ct fantasma"><span class="tl-nome">fantasma<small>round real</small></span><span class="tl-trilho"><span class="tl-vida" style="left:0;width:100%;opacity:.25"></span><span class="tl-ponto" style="left:40%;border-style:dashed"></span></span></div>
+      </div></div></div>
+      <p class="bruto">Ponto-chave: anel branco; atrasado: preenchido em --aviso; granada: glifo na caixa escura, com a duração listrada (smoke e molotov); morte: ✕; marco: losango com nome e horário; cabeçote: linha branca com triângulo, área de arrasto de 24 px e alça de 44 px de altura útil; ao arrastar um ponto, ele segue o ponteiro e o horário se recalcula ao soltar.</p>
+    </div>
+  </div>
+
+  <h2>Carregar, vazio e erro (página inteira)</h2>
+  <div class="amostras">
+    <div class="amostra-c"><p class="rot">Carregando a partida (2 a 4 MB)</p><p class="secundario" style="margin:0 0 8px">Lendo os dados da partida…</p><div class="progresso" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" aria-label="Carregando a partida"><i style="width:60%"></i></div><p class="bruto" style="margin-top:6px">O cabeçalho (placar) é HTML gerado no build e aparece antes; as abas mostram esqueleto até o JSON ser lido.</p></div>
+    <div class="amostra-c"><p class="rot">Vazio</p><div class="vazio"><strong>Nenhuma partida com esse filtro.</strong>Mostrar todos os mapas</div></div>
+    <div class="amostra-c"><p class="rot">Erro</p><div class="aviso-bloco erro"><span class="ico">✕</span><p><b>Erro:</b> os dados desta partida não abriram. Recarregue a página; se continuar, <a href="#">abra uma issue</a>.</p></div></div>
+  </div>
+</div>
+<script src="proto.js"></script>
+</body>
+</html>

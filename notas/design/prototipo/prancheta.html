@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prancheta tática · Mirage · Parser de Replay CS2</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%230b0f14'/%3E%3Ccircle cx='11' cy='16' r='6' fill='%234a90e8'/%3E%3Ccircle cx='21' cy='16' r='6' fill='%23e0a23a'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,400..700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="prancheta.css">
+</head>
+<body>
+<div class="pagina pr">
+  <header class="site-topo">
+    <a class="marca" href="index.html" aria-label="Parser de Replay CS2, início"><span class="marca-longa">Parser de Replay</span><b>CS2</b></a>
+    <nav class="site-nav" aria-label="Principal">
+      <a href="index.html">Partidas</a>
+      <a href="jogadores.html">Jogadores</a>
+      <a href="prancheta.html" aria-current="page">Prancheta</a>
+      <a href="https://github.com/pedroppansani/parser-replay-cs2">GitHub</a>
+    </nav>
+  </header>
+
+  <!-- Cabeçalho: mapa, origem, round real -->
+  <div class="pr-cab">
+    <div class="pr-titulo">
+      <h1>Prancheta <span class="apagado">·</span>
+        <label class="sr" for="pr-mapa-sel">Mapa</label>
+        <select id="pr-mapa-sel" class="pr-mapa-sel">
+          <optgroup label="Com partidas no corpus">
+            <option>Ancient</option><option>Anubis</option><option>Dust II</option><option>Inferno</option><option selected>Mirage</option><option>Nuke</option><option>Overpass</option><option>Train</option>
+          </optgroup>
+          <optgroup label="Sem partidas no corpus">
+            <option value="cache">Cache · sem partidas no corpus</option><option value="vertigo">Vertigo · sem partidas no corpus</option>
+          </optgroup>
+        </select>
+      </h1>
+      <p class="pr-origem">De <a href="partida.html">Falcons × MOUZ · round 9</a> a partir de <span class="num">1:12</span> · <span class="num">4v3</span></p>
+    </div>
+    <div class="pr-real" role="group" aria-label="Round real">
+      <button class="btn-icone" id="b-fantasma" aria-pressed="true" title="Mostra o que aconteceu de verdade, travado, por baixo da tática">Round real: visível</button>
+    </div>
+  </div>
+  <div class="aviso-bloco info pr-sem-corpus" id="pr-sem-corpus" hidden><span class="ico" aria-hidden="true">i</span><p><b>Cache não tem partidas no corpus.</b> Dá para montar a tática; "Buscar arremesso real" e "Round real" ficam desligados porque não há arremesso nem round gravado deste mapa.</p></div>
+
+  <!-- Barra de cima: vista, andar, pincéis, histórico, reproduzir -->
+  <div class="pr-barra" role="toolbar" aria-label="Ferramentas da prancheta">
+    <div class="grp" role="group" aria-label="Vista">
+      <button class="btn-icone" aria-label="Diminuir zoom">−</button><span class="num pr-zoom">100%</span><button class="btn-icone" aria-label="Aumentar zoom">+</button><button class="btn-icone" aria-label="Tela cheia">⛶</button>
+    </div>
+    <div class="grp" role="group" aria-label="Andar">
+      <button class="btn-icone" aria-pressed="true" disabled title="Mirage tem um andar só">Andar único</button>
+    </div>
+    <div class="grp pr-pinceis" role="group" aria-label="Desenho">
+      <button class="btn-icone" data-pincel="caneta" aria-pressed="false">Caneta</button><button class="btn-icone" data-pincel="seta" aria-pressed="false">Seta</button><button class="btn-icone" data-pincel="forma" aria-pressed="false">Forma</button><button class="btn-icone" data-pincel="texto" aria-pressed="false">Texto</button><button class="btn-icone" data-pincel="borracha" aria-pressed="false">Borracha</button>
+      <span class="pr-ctx" id="pr-ctx" hidden><button class="pr-cor" aria-label="Cor: branco" style="--c:#ffffff"></button><button class="btn-icone" aria-pressed="false">fina</button><button class="btn-icone" aria-pressed="true">média</button><button class="btn-icone" aria-pressed="false">grossa</button></span>
+    </div>
+    <div class="grp" role="group" aria-label="Histórico">
+      <button class="btn-icone" aria-label="Desfazer" id="b-desfazer">↶</button><button class="btn-icone" aria-label="Refazer" disabled>↷</button>
+    </div>
+    <button class="btn principal pr-play" id="b-play">▶ Reproduzir</button>
+  </div>
+  <p class="pr-dica" id="pr-dica" role="status" aria-live="polite"></p>
+  <div class="aviso-bloco info pr-so-pc"><span class="ico" aria-hidden="true">i</span><p><b>No celular:</b> ver, tocar e mover jogadores, e granada pela aba Granadas. Desenho à mão e andares só no computador.</p></div>
+
+  <div class="pr-palco">
+    <div class="pr-mapa">
+      <svg id="pr-svg" class="mapa-esc" viewBox="0 0 760 760" role="application" aria-label="Mapa Mirage. Arraste um jogador para mover; clique nele para traçar o caminho; botão direito para ele olhar.">
+        <image href="img/radar-mirage.webp" width="760" height="760"/>
+        <g id="camada-real"></g>
+        <g id="camada-caminhos"></g>
+        <g id="camada-granadas"></g>
+        <g id="camada-pecas"></g>
+      </svg>
+      <div class="pr-relogio-grande" id="pr-relogio-grande" aria-hidden="true"><span class="num">1:55</span><small>tempo do round</small></div>
+      <div class="pr-avisos" id="pr-avisos" aria-live="polite"></div>
+    </div>
+
+    <aside class="pr-painel" aria-label="Painel da prancheta">
+      <div class="pr-painel-abas abas-moldura">
+        <div class="abas" role="tablist" aria-label="Painel">
+          <button role="tab" data-aba="pj" aria-controls="pp-jog" id="pt-jog">Jogadores</button>
+          <button role="tab" data-aba="pg" aria-controls="pp-gra" id="pt-gra">Granadas</button>
+          <button role="tab" data-aba="pt" aria-controls="pp-tat" id="pt-tat">Tática</button>
+        </div>
+      </div>
+      <section id="pp-jog" role="tabpanel" aria-labelledby="pt-jog" class="pr-sec">
+        <h2 class="rot">Jogadores <span class="apagado">do round real</span></h2>
+        <p class="rot pr-lado tr">TR · MOUZ</p>
+        <ul class="banco" id="banco-tr"></ul>
+        <p class="rot pr-lado ct">CT · Falcons</p>
+        <ul class="banco" id="banco-ct"></ul>
+        <div class="pr-sel" id="pr-sel"><h2 class="rot">Selecionado</h2><p class="apagado">Nenhum. Clique num jogador no mapa ou aqui.</p></div>
+      </section>
+      <section id="pp-gra" role="tabpanel" aria-labelledby="pt-gra" class="pr-sec" hidden>
+        <h2 class="rot">Granadas <span class="apagado">saem do jogador selecionado</span></h2>
+        <div class="granadas">
+          <button class="gr" data-gr="smoke"><span class="glifo-caixa"><svg class="glifo"><use href="#g-smoke"/></svg></span><span>Smoke</span><kbd>1</kbd></button>
+          <button class="gr" data-gr="flash"><span class="glifo-caixa"><svg class="glifo"><use href="#g-flash"/></svg></span><span>Flash</span><kbd>2</kbd></button>
+          <button class="gr" data-gr="he"><span class="glifo-caixa"><svg class="glifo"><use href="#g-he"/></svg></span><span>HE</span><kbd>3</kbd></button>
+          <button class="gr" data-gr="molotov"><span class="glifo-caixa"><svg class="glifo"><use href="#g-molotov"/></svg></span><span>Molotov</span><kbd>4</kbd></button>
+        </div>
+        <button class="btn largo" id="b-buscar">Buscar arremesso real</button>
+        <p class="pr-nota">Clique onde a granada deve cair: a lista mostra os arremessos do corpus que caem ali, com o comando de console.</p>
+      </section>
+      <section id="pp-tat" role="tabpanel" aria-labelledby="pt-tat" class="pr-sec" hidden>
+        <h2 class="rot">Tática</h2>
+        <label class="pr-campo">Nome <input type="text" value="Execução A com duas smokes"></label>
+        <label class="pr-campo">Autor <input type="text" placeholder="seu nome"></label>
+        <div class="linha-b"><button class="btn">Exportar</button><button class="btn">Importar</button><button class="btn">Nova</button></div>
+        <p class="pr-nota">Salva neste navegador. Exportar gera um arquivo .json que outra pessoa pode importar e mesclar.</p>
+        <details class="pr-tecnico"><summary>Detalhes técnicos</summary><p class="num">14 operações · formato 2</p></details>
+      </section>
+    </aside>
+  </div>
+
+  <!-- Linha do tempo -->
+  <section class="tl" aria-label="Linha do tempo da tática">
+    <div class="tl-topo">
+      <span class="tl-relogio num" id="tl-relogio">1:55</span>
+      <span class="apagado tl-ajuda">Arraste o cabeçote ou use ← → (Shift: 5 s)</span>
+    </div>
+    <div class="tl-rolagem">
+      <div class="tl-grade" id="tl-grade">
+        <div class="tl-regua" id="tl-regua" aria-hidden="true"></div>
+        <div class="tl-marcos" id="tl-marcos"></div>
+        <div id="tl-faixas"></div>
+        <div class="cabecote" id="cabecote" role="slider" tabindex="0" aria-label="Momento da tática" aria-valuemin="0" aria-valuemax="90" aria-valuenow="0" aria-valuetext="1:55"></div>
+      </div>
+    </div>
+    <ol class="roteiro" id="roteiro" aria-label="Roteiro sincronizado"></ol>
+  </section>
+
+  <p class="proto-nota"><b>Protótipo:</b> o mapa é uma imagem com SVG por cima só para mostrar a forma; no projeto continua canvas do map_core.js (restrição 6). Interações que funcionam aqui: arrastar jogador, clicar para traçar caminho (cada ponto mostra o horário), botão direito para olhar, Esc para sair, arrastar o cabeçote, setas no cabeçote, Reproduzir, mostrar ou esconder o round real, trocar o mapa para Cache. A reprodução roda a 3× para a demonstração.</p>
+</div>
+<script src="proto.js"></script>
+<script src="prancheta.js"></script>
+</body>
+</html>

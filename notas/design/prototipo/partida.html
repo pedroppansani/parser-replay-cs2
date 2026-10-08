@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Falcons 17 × 19 MOUZ · Dust II · Parser de Replay CS2</title>
+<meta name="description" content="MOUZ venceu a Falcons por 19 a 17 em Dust II (IEM Kraków 2026). Decidida no round 24.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%230b0f14'/%3E%3Ccircle cx='11' cy='16' r='6' fill='%234a90e8'/%3E%3Ccircle cx='21' cy='16' r='6' fill='%23e0a23a'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,400..700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="base.css">
+<style>
+  /* ---------- Cabeçalho da partida (compacto: o replay precisa caber na dobra) ---------- */
+  .cab { padding-top: 10px; }
+  .migalhas { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: var(--t-sm); color: var(--tinta-2); margin: 0 0 6px; line-height: var(--toque); }
+  .migalhas a { display: inline-block; }
+  .migalhas .sep { color: var(--apagado); margin: 0 6px; }
+  .decisor { margin: 8px 0 0; color: var(--tinta-2); font-size: var(--t-sm); }
+  .decisor b { color: var(--tinta); font-weight: 600; }
+  .decisor .dec { color: var(--decisivo); }
+  .comecou { display: flex; justify-content: space-between; font-size: var(--t-xs); color: var(--apagado); margin-top: 4px; }
+  .comecou .ct { color: var(--ct-texto); } .comecou .tr { color: var(--tr-texto); }
+
+  .painel { padding-top: 16px; }
+  .painel > h2 { margin: 0 0 4px; font-stretch: 85%; font-size: var(--t-xl); }
+  .painel > .lead { margin: 0 0 16px; color: var(--tinta-2); max-width: 70ch; font-size: var(--t-sm); }
+
+  /* ---------- Resumo ---------- */
+  .resumo { display: grid; gap: 12px; }
+  @media (min-width: 900px) { .resumo { grid-template-columns: 1fr 1fr; } .resumo .largo { grid-column: 1 / -1; } }
+  .dec-grade { display: grid; gap: 4px 20px; }
+  @media (min-width: 700px) { .dec-grade { grid-template-columns: auto minmax(0, 1fr); } }
+  .num-round { font-family: var(--f-num); font-weight: 600; font-size: 3.5rem; line-height: 1; color: var(--decisivo); margin: 0; }
+  .num-round small { display: block; font-family: var(--f-texto); font-size: var(--t-xs); color: var(--tinta-2); font-weight: 400; margin-top: 6px; }
+  .frase { font-size: 1.0625rem; margin: 0 0 8px; max-width: 64ch; }
+  .bruto { font-size: var(--t-sm); color: var(--tinta-2); margin: 0; }
+  .bruto + .bruto { margin-top: 4px; }
+  .componentes { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 6px; }
+  .componentes li { display: grid; grid-template-columns: 3.2em 1fr; gap: 10px; font-size: var(--t-sm); }
+  .componentes .num { color: var(--tinta-2); text-align: right; }
+  .seguir { margin-top: 4px; }
+
+  /* ---------- Replay ---------- */
+  .rodadas { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: thin; padding: 2px 0 6px; }
+  .rd {
+    flex: none; position: relative; width: var(--toque); min-height: var(--toque); border-radius: var(--r-sm);
+    border: 1px solid var(--linha); background: var(--superficie); color: var(--tinta-2); font-family: var(--f-num); font-size: var(--t-sm);
+  }
+  .rd::after { content: ""; position: absolute; left: 7px; right: 7px; bottom: 5px; height: 3px; border-radius: 2px; background: var(--vence, var(--borda)); }
+  .rd.ct { --vence: var(--ct); } .rd.tr { --vence: var(--tr); }
+  .rd[aria-pressed="true"] { border-color: var(--tinta); color: var(--tinta); box-shadow: inset 0 0 0 1px var(--tinta); }
+  .rd.dec::before { content: ""; position: absolute; top: 3px; right: 3px; width: 7px; height: 7px; background: var(--decisivo); transform: rotate(45deg); }
+  .meio-tempo { flex: none; width: 1px; background: var(--borda); margin: 6px 4px; }
+
+  .palco { display: grid; gap: 12px; margin-top: 4px; }
+  @media (min-width: 1024px) { .palco { grid-template-columns: 200px minmax(0, 1fr) 200px; align-items: start; } }
+  .quadro { position: relative; background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--r-md); padding: 8px; min-width: 0; }
+  .quadro-cab { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 12px; padding: 2px 4px 8px; }
+  .quadro-cab h3 { margin: 0; font-size: var(--t-base); font-stretch: 85%; }
+  .quadro-cab p { margin: 0; font-size: var(--t-sm); color: var(--tinta-2); }
+  .ferramentas { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; padding: 8px 0 0; border-top: 1px solid var(--linha); margin-top: 8px; }
+  .ferramentas .sep { flex: 1; }
+  .ferr-desenho { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px; margin-top: 8px; border: 1px solid var(--borda); border-radius: var(--r-sm); background: var(--superficie-2); }
+
+  /* o mapa nunca é maior que a tela menos o que vem antes e o controle de tocar (critério: tocar visível sem rolar) */
+  .mapa-caixa { position: relative; margin: 0 auto; width: min(100%, var(--mapa-max, 640px), calc(100svh - var(--reserva-replay, 340px))); aspect-ratio: 1; background: var(--radar); border-radius: var(--r-sm); overflow: hidden; }
+  @media (min-width: 1024px) { .mapa-caixa { --reserva-replay: 500px; } }
+  .mapa-caixa svg { width: 100%; height: 100%; }
+
+  /* o controle de tocar gruda no pé da tela enquanto o mapa está à vista: visível sem rolar em qualquer altura */
+  .transporte { position: sticky; bottom: 0; z-index: 6; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 8px; padding: 8px 4px; margin: 0 -8px; background: var(--superficie); border-top: 1px solid var(--linha); }
+  .tocar { width: var(--toque); height: var(--toque); border-radius: 50%; border: 0; background: var(--tinta); color: var(--fundo); font-size: 1rem; display: grid; place-items: center; }
+  .tocar:hover { background: #fff; }
+  .trilho-rep { position: relative; height: var(--toque); display: flex; align-items: center; }
+  .trilho-rep input { width: 100%; margin: 0; accent-color: var(--tinta); height: var(--toque); background: transparent; }
+  .marcas { position: absolute; left: 8px; right: 8px; top: 4px; height: 10px; pointer-events: none; }
+  .marcas i { position: absolute; top: 0; width: 2px; height: 10px; background: var(--tinta-2); }
+  .marcas i.k-ct { background: var(--ct); } .marcas i.k-tr { background: var(--tr); } .marcas i.bomba { width: 6px; height: 6px; top: 2px; transform: rotate(45deg); background: var(--tr); }
+  .relogio { font-family: var(--f-num); font-weight: 600; font-size: 1.1rem; min-width: 3.6em; text-align: right; }
+  .relogio small { display: block; font-family: var(--f-texto); font-size: var(--t-xs); color: var(--apagado); font-weight: 400; }
+  .vel { min-width: var(--toque); min-height: var(--toque); border: 1px solid var(--borda); border-radius: var(--r-sm); background: none; font-family: var(--f-num); font-size: var(--t-sm); }
+  .legenda { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: var(--t-xs); color: var(--tinta-2); padding: 8px 4px 2px; }
+  .legenda span { display: inline-flex; align-items: center; gap: 6px; }
+  .legenda .bola { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid #05080b; }
+  .legenda .glifo { width: 16px; height: 16px; }
+
+  .times { display: grid; gap: 12px; }
+  @media (min-width: 640px) and (max-width: 1023px) { .times { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1024px) { .times { display: contents; } .times .esq { grid-column: 1; grid-row: 1; } .times .dir { grid-column: 3; grid-row: 1; } .palco .quadro { grid-column: 2; grid-row: 1; } }
+  .time { background: var(--superficie); border: 1px solid var(--linha); border-top: 3px solid var(--lado); border-radius: var(--r-md); padding: 10px; }
+  .time.ct { --lado: var(--ct); --lado-t: var(--ct-texto); } .time.tr { --lado: var(--tr); --lado-t: var(--tr-texto); }
+  .time h3 { margin: 0 0 6px; display: flex; justify-content: space-between; font-size: var(--t-sm); }
+  .time h3 .rot { color: var(--lado-t); }
+  .jog { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 8px; padding: 6px 4px; font-size: var(--t-sm); }
+  .jog + .jog { border-top: 1px solid var(--linha); }
+  .jog .n { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .jog .hp { font-family: var(--f-num); color: var(--tinta-2); }
+  .jog .barra { grid-column: 1 / -1; height: 4px; background: var(--superficie-2); border-radius: 2px; overflow: hidden; }
+  .jog .barra i { display: block; height: 100%; background: var(--lado); }
+  .jog .arma { grid-column: 1 / -1; color: var(--apagado); font-size: var(--t-xs); }
+  .jog.morto { color: var(--apagado); } .jog.morto .n { text-decoration: line-through; font-weight: 400; }
+
+  .eventos { margin-top: 12px; background: var(--tl-fundo); border: 1px solid var(--linha); border-radius: var(--r-md); }
+  .eventos h3 { margin: 0; padding: 10px 12px; border-bottom: 1px solid var(--linha); }
+  .eventos ol { list-style: none; margin: 0; padding: 4px 0; display: grid; }
+  @media (min-width: 900px) { .eventos ol { grid-template-columns: 1fr 1fr; } }
+  .ev { display: grid; grid-template-columns: 3.4em auto minmax(0, 1fr); align-items: center; gap: 8px; min-height: var(--toque); padding: 0 12px; font-size: var(--t-sm); background: none; border: 0; text-align: left; width: 100%; color: var(--tinta); }
+  .ev:hover { background: var(--superficie-2); }
+  .ev .num { color: var(--tinta-2); }
+  .ev.futuro { color: var(--tinta-2); }   /* evento ainda não aconteceu: tinta-2 (8,95:1), nunca opacidade 0,38 */
+  .ev .ct { color: var(--ct-texto); } .ev .tr { color: var(--tr-texto); }
+  .ev-ico { width: 18px; height: 18px; display: grid; place-items: center; }
+
+  /* ---------- Jogadores ---------- */
+  .comparar { display: grid; gap: 12px; margin-top: 16px; }
+  .comparar-escolha { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .comparar-escolha select { min-height: var(--toque); padding: 0 10px; border: 1px solid var(--borda); border-radius: var(--r-sm); background: var(--superficie); color: var(--tinta); }
+  .grupos { margin-top: 16px; }
+
+  /* ---------- Placar ---------- */
+  .rating-linha { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin: 0 0 4px; }
+  .rating-valor { font-size: 2rem; font-weight: 600; }
+  .rating-rot { color: var(--tinta-2); font-size: var(--t-sm); }
+  .rating-erro { color: var(--apagado); font-size: var(--t-sm); }
+  .time-cel { display: block; color: var(--tinta-2); font-size: var(--t-xs); margin-top: 2px; }
+  .placar .comecou { font-size: var(--t-xs); margin-left: 4px; }
+  details.grupo > summary .resumo-grupo { margin-left: auto; font-stretch: var(--larg-normal); letter-spacing: 0; text-transform: none; font-weight: 400; color: var(--tinta-2); text-align: right; }
+  .cmp { display: grid; grid-template-columns: minmax(6em, auto) 1fr 1fr; gap: 0 12px; font-size: var(--t-sm); }
+  .cmp > * { padding: 8px 0; border-top: 1px solid var(--linha); }
+  .cmp .cab { color: var(--apagado); border-top: 0; }
+  .grafico { background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--r-md); padding: 12px; }
+  .grafico svg text { font: 12px var(--f-num); fill: var(--tinta-2); }
+</style>
+</head>
+<body>
+<div class="pagina">
+  <header class="site-topo">
+    <a class="marca" href="index.html" aria-label="Parser de Replay CS2, início"><span class="marca-longa">Parser de Replay</span><b>CS2</b></a>
+    <nav class="site-nav" aria-label="Principal">
+      <a href="index.html" aria-current="page">Partidas</a>
+      <a href="jogadores.html">Jogadores</a>
+      <a href="prancheta.html">Prancheta</a>
+      <a href="https://github.com/pedroppansani/parser-replay-cs2">GitHub</a>
+    </nav>
+  </header>
+
+  <header class="cab">
+    <p class="migalhas"><a href="index.html">Partidas</a><span class="sep" aria-hidden="true">/</span>Dust II<span class="sep" aria-hidden="true">/</span>IEM Kraków 2026<span class="sep" aria-hidden="true">/</span><span><span class="num">36</span> rounds, com prorrogação</span></p>
+    <h1 class="placar">
+      <span class="lado a perdeu"><span class="nome" title="Falcons">Falcons</span><span class="pts">17</span><span class="tag tr comecou">começou TR</span></span>
+      <span class="x" aria-hidden="true">×</span>
+      <span class="lado b venceu"><span class="pts">19</span><span class="nome" title="MOUZ">MOUZ</span><span class="tag-venceu">venceu</span><span class="tag ct comecou">começou CT</span></span>
+    </h1>
+    <p class="decisor">Decidida no <b class="dec">round 24</b> · MVP <b>m0NESY</b></p>
+    <p class="origem">placar e nomes: insights.json (nome canônico, decisão 38); "venceu", "começou CT/TR": rótulos do JS; a etiqueta "começou" é o ÚNICO uso da cor de lado na identidade do time; linha do decisor: Python (decisão 18)</p>
+
+    <div class="abas-moldura">
+      <div class="abas" role="tablist" aria-label="Seções da partida">
+        <button role="tab" id="t-resumo" data-aba="resumo" aria-controls="p-resumo">Resumo</button>
+        <button role="tab" id="t-replay" data-aba="replay" aria-controls="p-replay">Replay</button>
+        <button role="tab" id="t-jogadores" data-aba="jogadores" aria-controls="p-jogadores">Jogadores</button>
+        <button role="tab" id="t-placar" data-aba="placar" aria-controls="p-placar">Placar</button>
+        <button role="tab" id="t-perfil" data-aba="perfil" aria-controls="p-perfil">Perfil</button>
+        <button role="tab" id="t-estilos" data-aba="estilos" aria-controls="p-estilos">Estilos</button>
+      </div>
+      <button class="abas-mais" type="button" aria-label="Mostrar mais abas" tabindex="-1">›</button>
+    </div>
+  </header>
+
+  <!-- ===================== RESUMO ===================== -->
+  <section class="painel" id="p-resumo" role="tabpanel" aria-labelledby="t-resumo" tabindex="0">
+    <div class="resumo">
+      <article class="bloco decisivo largo" aria-labelledby="h-dec">
+        <p class="rot" id="h-dec">Round decisivo</p>
+        <div class="dec-grade">
+          <p class="num-round">24<small>placar antes: <span class="num">12–11</span> Falcons</small></p>
+          <div>
+            <p class="frase">Levou a MOUZ de <b class="num">25%</b> para <b class="num">50%</b> de chance de vencer a partida, com o 1v1 de Jimpphat; o round terminou com os CT eliminados.</p>
+            <div class="haltere" role="img" aria-label="Chance de a MOUZ vencer: 25% antes do round 24 e 50% depois">
+              <span class="eixo"></span><span class="seg" style="left:25%;width:25%"></span>
+              <span class="pt" style="left:25%"></span><span class="pt depois" style="left:50%"></span>
+              <span class="lbl" style="left:25%">25%</span><span class="lbl" style="left:50%">50%</span>
+              <span class="lbl" style="left:0%;transform:none">0%</span><span class="lbl" style="left:100%;transform:translateX(-100%)">100%</span>
+            </div>
+            <p class="bruto">Equipamento médio no round: <span class="num">1.440$</span> de quem venceu, contra <span class="num">200$</span> de quem perdeu.</p>
+            <p class="bruto"><span class="tag neutro">empate</span> O round 30 moveu quase o mesmo (<span class="num">25% → 25%</span>): houve mais de um round de peso parecido, e a escolha entre eles não é do modelo. <a href="#">Como é calculado</a></p>
+          </div>
+        </div>
+        <a class="btn principal seguir" href="#replay" onclick="document.getElementById('t-replay').click();return false;">Ver o round 24 no replay</a>
+        <p class="origem">frases: scripts/narrative.py (decisões 18, 19, 19b, 19d); números: insights.json</p>
+      </article>
+
+      <article class="bloco" aria-labelledby="h-mvp">
+        <p class="rot" id="h-mvp">MVP · maior rating</p>
+        <h3>m0NESY <small>Falcons · AWPer</small></h3>
+        <p class="rating-linha"><span class="num rating-valor">1,48</span> <span class="rating-rot">rating</span> <span class="rating-erro">erro típico contra o rating oficial: <span class="num">{erro_rating}</span> · <a href="#">método</a></span></p>
+        <p class="bruto">2º maior: xertioN, <span class="num">1,45</span>. A diferença é menor que o erro típico: os dois empatam na prática.</p>
+        <p class="origem">{erro_rating} sai do numeros_citaveis.json (chave a definir na fase 4, validação "deixa uma partida fora, completa"); o template só exibe. Sem barra: um ± desenhado seria lido como intervalo de confiança do jogador.</p>
+        <ul class="metricas" style="margin-top:8px">
+          <li class="metrica"><span class="m-nome">ADR</span><span class="m-valor">93,7</span><span class="m-ref">2º na partida: <span class="num">90,7</span> (xertioN)</span></li>
+          <li class="metrica"><span class="m-nome">KAST</span><span class="m-valor">75%</span><span class="m-ref"><span class="num">27 de 36</span> rounds · mediana da partida <span class="num">73%</span></span></li>
+          <li class="metrica"><span class="m-nome">Aberturas</span><span class="m-valor">5 de 6</span><span class="m-ref">duelos de abertura vencidos</span></li>
+          <li class="metrica amostra"><span class="m-nome">Clutches</span><span class="m-valor">0 de 3</span><span class="m-ref"><span class="tag amostra">amostra pequena</span> 3 tentativas</span></li>
+        </ul>
+        <p class="origem">nomes das métricas e "amostra pequena": JS; valores, brutos e referência: insights.json; MVP = maior rating (decisão 20)</p>
+      </article>
+
+      <article class="bloco" aria-labelledby="h-dest">
+        <p class="rot" id="h-dest">Outro destaque · AWPer</p>
+        <h3>torzsi <small>MOUZ</small></h3>
+        <p class="frase"><span class="num" style="font-size:1.6rem;font-weight:600">27</span> rounds com a AWP na mão, contra uma mediana de <span class="num">2</span> dos outros nesta partida.</p>
+        <div class="aviso-bloco neutro" role="note"><span class="ico" aria-hidden="true">–</span><p><span class="tag neutro">neutro</span> Spinx pontuou quase o mesmo como coringa: houve mais de um destaque equivalente, e a página não escolhe entre eles.</p></div>
+        <div class="aviso-bloco neutro" role="note" style="margin-top:8px"><span class="ico" aria-hidden="true">–</span><p><span class="tag neutro">neutro</span> Lurker: sem afirmação. Só <span class="num">6</span> rounds de lurk; o mínimo é <span class="num">8</span>.</p></div>
+        <p class="origem">frase e motivo do neutro: Python (decisões 18, 20d, 39)</p>
+      </article>
+
+      <article class="bloco largo" aria-labelledby="h-imp">
+        <p class="rot" id="h-imp">Round mais impressionante · pesos à mostra</p>
+        <h3>Round 23</h3>
+        <p class="frase">Clutch de xertioN em 1v2, 3K de kyousuke e virada com 2 jogadores a menos. Não foi o decisivo: quem mais moveu a partida foi o 24.</p>
+        <ul class="componentes">
+          <li><span class="num">26</span><span>clutch de xertioN em 1v2</span></li>
+          <li><span class="num">18</span><span>virou com 2 jogadores a menos</span></li>
+          <li><span class="num">8</span><span>3K de kyousuke</span></li>
+        </ul>
+        <p class="origem">componentes e pesos: round_spectacle.py (decisão 19a)</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ===================== REPLAY ===================== -->
+  <section class="painel" id="p-replay" role="tabpanel" aria-labelledby="t-replay" tabindex="0" hidden>
+    <div class="rodadas" id="rodadas" role="group" aria-label="Escolher round (a barra indica quem venceu; o losango verde marca o decisivo)"></div>
+    <div class="palco">
+      <div class="quadro">
+        <div class="quadro-cab">
+          <h3>Round 24</h3>
+          <p>MOUZ (TR) venceu · CT eliminados · 1v1 de Jimpphat</p>
+        </div>
+        <div class="mapa-caixa">
+          <svg class="mapa-esc" viewBox="0 0 760 760" role="img" aria-label="Mapa Dust II no round 24" id="mapa-replay">
+            <image href="img/radar-dust2.webp" width="760" height="760"/>
+            <g id="pecas"></g>
+          </svg>
+        </div>
+        <div class="transporte">
+          <button class="tocar" id="tocar" aria-label="Reproduzir">▶</button>
+          <div class="trilho-rep">
+            <div class="marcas" aria-hidden="true"><i class="k-tr" style="left:22%"></i><i class="k-ct" style="left:41%"></i><i class="bomba" style="left:58%"></i><i class="k-tr" style="left:73%"></i><i class="k-tr" style="left:96%"></i></div>
+            <input type="range" id="trilho" min="0" max="1000" value="318" aria-label="Momento do round" aria-valuetext="1:12">
+          </div>
+          <div class="relogio" id="relogio" aria-live="off">1:12<small>decorrido 0:43</small></div>
+          <button class="vel" id="vel" aria-label="Velocidade: 1x">1×</button>
+        </div>
+        <div class="legenda" aria-label="Legenda">
+          <span><i class="bola" style="background:var(--ct)"></i>CT</span>
+          <span><i class="bola" style="background:var(--tr)"></i>TR</span>
+          <span><svg class="glifo"><use href="#g-smoke"/></svg>Smoke</span>
+          <span><svg class="glifo"><use href="#g-flash"/></svg>Flash</span>
+          <span><svg class="glifo"><use href="#g-he"/></svg>HE</span>
+          <span><svg class="glifo"><use href="#g-molotov"/></svg>Molotov</span>
+          <span>✕ morto</span>
+        </div>
+        <div class="ferramentas" role="toolbar" aria-label="Ferramentas do mapa">
+          <button class="btn-icone" type="button" aria-pressed="false" id="b-desenhar">Desenhar</button>
+          <button class="btn-icone" type="button" aria-pressed="true">Direção</button>
+          <span class="sep"></span>
+          <a class="btn-icone" href="prancheta.html">Abrir round na prancheta</a>
+          <button class="btn-icone" type="button" aria-label="Tela cheia">⛶</button>
+          <button class="btn-icone" type="button" aria-label="Atalhos do teclado" aria-expanded="false" id="b-atalhos">?</button>
+        </div>
+        <div class="ferr-desenho" id="ferr-desenho" hidden role="group" aria-label="Desenho">
+          <button class="btn-icone" aria-pressed="true">Caneta</button><button class="btn-icone" aria-pressed="false">Seta</button><button class="btn-icone" aria-pressed="false">Linha</button><button class="btn-icone" aria-pressed="false">Forma</button><button class="btn-icone" aria-pressed="false">Texto</button><button class="btn-icone" aria-pressed="false">Borracha</button>
+          <button class="btn-icone" aria-label="Desfazer">↶</button><button class="btn-icone" aria-label="Refazer" disabled>↷</button>
+        </div>
+        <div class="popover" id="atalhos" hidden style="right:12px;bottom:56px">
+          <p class="rot">Atalhos</p>
+          <p>espaço toca e pausa · ← → quadro a quadro (Shift: 1 s) · [ ] velocidade, até 0,25× · clicar num evento começa 3 s antes</p>
+        </div>
+      </div>
+      <div class="times">
+        <aside class="time ct esq" aria-label="Contra-terroristas: Falcons">
+          <h3><span class="rot">CT · Falcons</span><span class="apagado"><span class="num">0</span> vivos</span></h3>
+          <div class="jog morto"><span class="n">m0NESY</span><span class="hp">0</span><span class="arma">morto 1:31 · AWP</span></div>
+          <div class="jog morto"><span class="n">NiKo</span><span class="hp">0</span><span class="arma">morto 1:20</span></div>
+          <div class="jog"><span class="n">kyousuke</span><span class="hp">42</span><span class="barra"><i style="width:42%"></i></span><span class="arma">AK-47 · cegueira 0 s</span></div>
+          <div class="jog morto"><span class="n">TeSeS</span><span class="hp">0</span><span class="arma">morto 1:05</span></div>
+          <div class="jog morto"><span class="n">kyxsan</span><span class="hp">0</span><span class="arma">morto 0:58</span></div>
+        </aside>
+        <aside class="time tr dir" aria-label="Terroristas: MOUZ">
+          <h3><span class="rot">TR · MOUZ</span><span class="apagado"><span class="num">1</span> vivo</span></h3>
+          <div class="jog"><span class="n">Jimpphat</span><span class="hp">61</span><span class="barra"><i style="width:61%"></i></span><span class="arma">Galil AR · bomba</span></div>
+          <div class="jog morto"><span class="n">xertioN</span><span class="hp">0</span><span class="arma">morto 1:22</span></div>
+          <div class="jog morto"><span class="n">Brollan</span><span class="hp">0</span><span class="arma">morto 1:15</span></div>
+          <div class="jog morto"><span class="n">torzsi</span><span class="hp">0</span><span class="arma">morto 0:51</span></div>
+          <div class="jog morto"><span class="n">Spinx</span><span class="hp">0</span><span class="arma">morto 0:47</span></div>
+        </aside>
+      </div>
+    </div>
+    <div class="eventos">
+      <h3 class="rot">Linha do tempo do round</h3>
+      <ol>
+        <li><button class="ev"><span class="num">1:46</span><span class="ev-ico"><svg class="glifo" width="16" height="16"><use href="#g-flash"/></svg></span><span><span class="tr">torzsi</span> cegou <span class="ct">kyousuke</span> · 2,0 s</span></button></li>
+        <li><button class="ev"><span class="num">1:31</span><span class="ev-ico">✕</span><span><span class="tr">Spinx</span> matou <span class="ct">m0NESY</span> · AK-47</span></button></li>
+        <li><button class="ev"><span class="num">1:22</span><span class="ev-ico">✕</span><span><span class="ct">kyousuke</span> matou <span class="tr">xertioN</span> · AWP</span></button></li>
+        <li><button class="ev"><span class="num">1:12</span><span class="ev-ico">◆</span><span><span class="tr">Jimpphat</span> plantou · bomba B</span></button></li>
+        <li><button class="ev futuro"><span class="num">0:51</span><span class="ev-ico">✕</span><span><span class="ct">TeSeS</span> matou <span class="tr">torzsi</span> · M4A1-S</span></button></li>
+        <li><button class="ev futuro"><span class="num">0:24</span><span class="ev-ico">✕</span><span><span class="tr">Jimpphat</span> matou <span class="ct">kyousuke</span> · Galil AR · 1v1 vencido</span></button></li>
+      </ol>
+    </div>
+    <p class="origem">rótulos ("Desenhar", "Abrir round na prancheta", legenda, atalhos): annotations.js e map_core.js; eventos: dado do replay; relógio do round: 1:55 descendo (0:40 da bomba depois do plant)</p>
+  </section>
+
+  <!-- ===================== JOGADORES ===================== -->
+  <section class="painel" id="p-jogadores" role="tabpanel" aria-labelledby="t-jogadores" tabindex="0" hidden>
+    <h2>Desempenho individual</h2>
+    <p class="lead">Números só desta partida (decisão 30). O rating é implementação própria da metodologia publicada do Rating 3.0, não o número oficial.</p>
+    <div class="tabela-rolagem">
+      <table class="dados">
+        <caption class="sr">Jogadores da partida, ordenados por rating</caption>
+        <thead><tr><th scope="col">Jogador</th><th scope="col" aria-sort="descending"><button>Rating ↓</button></th><th scope="col"><button>ADR</button></th><th scope="col"><button>KAST</button></th><th scope="col">K</th><th scope="col">A</th><th scope="col">M</th></tr></thead>
+        <tbody>
+          <tr><td>m0NESY <span class="time-cel">Falcons <span class="tag tr">começou TR</span></span></td><td class="num"><b>1,48</b></td><td class="num">93,7</td><td class="num">75%</td><td class="num">30</td><td class="num">15</td><td class="num">21</td></tr>
+          <tr><td>xertioN <span class="time-cel">MOUZ <span class="tag ct">começou CT</span></span></td><td class="num"><b>1,45</b></td><td class="num">90,7</td><td class="num">75%</td><td class="num">31</td><td class="num">8</td><td class="num">23</td></tr>
+          <tr><td>NiKo <span class="time-cel">Falcons <span class="tag tr">começou TR</span></span></td><td class="num"><b>1,17</b></td><td class="num">79,1</td><td class="num">78%</td><td class="num">24</td><td class="num">7</td><td class="num">20</td></tr>
+          <tr><td>Spinx <span class="time-cel">MOUZ <span class="tag ct">começou CT</span></span></td><td class="num"><b>1,14</b></td><td class="num">69,6</td><td class="num">78%</td><td class="num">24</td><td class="num">8</td><td class="num">22</td></tr>
+          <tr><td>kyousuke <span class="time-cel">Falcons <span class="tag tr">começou TR</span></span></td><td class="num"><b>1,13</b></td><td class="num">67,6</td><td class="num">69%</td><td class="num">27</td><td class="num">3</td><td class="num">24</td></tr>
+          <tr><td>Jimpphat <span class="time-cel">MOUZ <span class="tag ct">começou CT</span></span></td><td class="num"><b>1,08</b></td><td class="num">60,4</td><td class="num">67%</td><td class="num">19</td><td class="num">7</td><td class="num">23</td></tr>
+          <tr><td>torzsi <span class="time-cel">MOUZ <span class="tag ct">começou CT</span></span></td><td class="num"><b>1,03</b></td><td class="num">54,5</td><td class="num">69%</td><td class="num">21</td><td class="num">2</td><td class="num">24</td></tr>
+          <tr><td>TeSeS <span class="time-cel">Falcons <span class="tag tr">começou TR</span></span></td><td class="num"><b>0,98</b></td><td class="num">70,4</td><td class="num">75%</td><td class="num">21</td><td class="num">8</td><td class="num">27</td></tr>
+          <tr><td>kyxsan <span class="time-cel">Falcons <span class="tag tr">começou TR</span></span></td><td class="num"><b>0,76</b></td><td class="num">48,6</td><td class="num">72%</td><td class="num">18</td><td class="num">7</td><td class="num">22</td></tr>
+          <tr><td>Brollan <span class="time-cel">MOUZ <span class="tag ct">começou CT</span></span></td><td class="num"><b>0,68</b></td><td class="num">60,9</td><td class="num">58%</td><td class="num">17</td><td class="num">13</td><td class="num">29</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="origem">identidade do time: nome por extenso + etiqueta "começou CT/TR" (só a etiqueta usa a cor do lado). Valores: insights.json.</p>
+
+    <div class="grupos">
+      <details class="grupo" data-grupo="utilidade"><summary>Utilidade <span class="resumo-grupo">mais cegueira imposta: m0NESY, <span class="num">154 s</span></span></summary>
+        <div class="grupo-corpo"><div class="tabela-rolagem"><table class="dados"><thead><tr><th>Jogador</th><th>Cegueira imposta</th><th>Flashes que cegaram</th><th>Dano de utilidade</th></tr></thead><tbody>
+          <tr><td>m0NESY</td><td class="num">154 s</td><td class="num">21 de 34</td><td class="num">88</td></tr>
+          <tr><td>torzsi</td><td class="num">122 s</td><td class="num">17 de 29</td><td class="num">61</td></tr>
+          <tr><td>kyxsan</td><td class="num">104 s</td><td class="num">15 de 31</td><td class="num">142</td></tr>
+          <tr><td>Spinx</td><td class="num">15 s</td><td class="num">3 de 9 <span class="tag amostra">amostra pequena</span></td><td class="num">40</td></tr>
+        </tbody></table></div></div></details>
+      <details class="grupo" data-grupo="trocas"><summary>Trocas <span class="resumo-grupo">mais kills que foram trade: Jimpphat, <span class="num">9 de 19</span></span></summary>
+        <div class="grupo-corpo"><div class="tabela-rolagem"><table class="dados"><thead><tr><th>Jogador</th><th>Kills que foram trade</th><th>Mortes trocadas</th></tr></thead><tbody>
+          <tr><td>Jimpphat</td><td class="num">47% · 9 de 19</td><td class="num">10 de 23</td></tr>
+          <tr><td>Brollan</td><td class="num">29% · 5 de 17</td><td class="num">12 de 29</td></tr>
+        </tbody></table></div></div></details>
+      <details class="grupo" data-grupo="economia"><summary>Economia <span class="resumo-grupo">sem dado de equipamento nesta partida</span></summary>
+        <div class="grupo-corpo"><div class="vazio"><strong>Sem dado de equipamento nesta partida.</strong>O grupo aparece vazio em vez de mostrar zeros (estado "vazio").</div></div></details>
+      <details class="grupo" data-grupo="situacoes"><summary>Situações <span class="resumo-grupo"><span class="tag aviso">▲ degradado</span> escondido até o rebuild</span></summary>
+        <div class="grupo-corpo"><div class="aviso-bloco"><span class="ico" aria-hidden="true">▲</span><p><b>Dado degradado.</b> O modelo de round não carregou; os números de situação ficam escondidos até o rebuild (auditoria 12, "modo_degradado").</p></div></div></details>
+    </div>
+    <p class="origem">nomes dos grupos e textos de estado: JS; todos começam fechados; cada um mostra o destaque na própria linha; aberto/fechado é lembrado em localStorage (try/catch); valores ilustrativos fora da tabela principal</p>
+
+    <section class="comparar bloco" aria-labelledby="h-comp">
+      <p class="rot" id="h-comp">Comparar dois jogadores desta partida</p>
+      <div class="comparar-escolha">
+        <label>Jogador 1 <select id="c1"><option>m0NESY</option><option>xertioN</option><option>NiKo</option><option>Spinx</option></select></label>
+        <label>Jogador 2 <select id="c2"><option>m0NESY</option><option selected>xertioN</option><option>NiKo</option><option>Spinx</option></select></label>
+      </div>
+      <div id="comp-barras"></div>
+      <p class="bruto">Valores lado a lado, com o bruto. Sem faixa desenhada: intervalo de verdade só na página de jogadores (corpus). Abaixo de 10 tentativas aparece só o bruto, com "amostra pequena". Nunca gráfico de radar.</p>
+    </section>
+  </section>
+
+  <!-- ===================== PLACAR ===================== -->
+  <section class="painel" id="p-placar" role="tabpanel" aria-labelledby="t-placar" tabindex="0" hidden>
+    <h2>Vantagem round a round</h2>
+    <p class="lead">A linha é a diferença de rounds a favor da Falcons. Cada round tem a cor de quem venceu; o decisivo é um losango verde.</p>
+    <div class="grafico">
+      <svg viewBox="0 0 720 220" role="img" aria-label="Diferença de rounds ao longo da partida, com o round 24 marcado como decisivo" id="graf-placar"></svg>
+    </div>
+    <p class="origem">o gráfico da página é SVG do template; cores: --ct / --tr nas áreas e bolinhas, linha em --tinta-2, decisivo em --decisivo com forma de losango</p>
+  </section>
+
+  <!-- ===================== PERFIL ===================== -->
+  <section class="painel" id="p-perfil" role="tabpanel" aria-labelledby="t-perfil" tabindex="0" hidden>
+    <h2>Perfil do jogador</h2>
+    <p class="lead">Em que fração dos rounds dele cada comportamento aconteceu, com o bruto e a régua do corpus.</p>
+    <div class="bloco">
+      <h3>m0NESY <small>Falcons · 36 rounds</small></h3>
+      <ul class="metricas">
+        <li class="metrica"><span class="m-nome">Abriu o round</span><span class="m-valor">17%</span><span class="m-ref"><span class="num">6 de 36</span> · régua do corpus <span class="num">11%</span></span></li>
+        <li class="metrica"><span class="m-nome">Segurou ângulo</span><span class="m-valor">58%</span><span class="m-ref"><span class="num">21 de 36</span> · régua <span class="num">44%</span></span></li>
+        <li class="metrica neutro"><span class="m-nome">Lurk</span><span class="m-valor">—</span><span class="m-ref"><span class="tag neutro">neutro</span> 4 rounds sem AWP; mínimo 8</span></li>
+      </ul>
+    </div>
+    <p class="origem">estrutura atual mantida; só tokens, tipografia e estados (amostra pequena, neutro) mudam</p>
+  </section>
+
+  <!-- ===================== ESTILOS ===================== -->
+  <section class="painel" id="p-estilos" role="tabpanel" aria-labelledby="t-estilos" tabindex="0" hidden>
+    <h2>O que cada um faz no mapa</h2>
+    <p class="lead">Função medida round a round, sempre com a conta ao lado. IGL não aparece: quem chama o time não deixa rastro na demo.</p>
+    <div class="bloco">
+      <h3>torzsi <small>MOUZ</small> <span class="tag decisivo" style="margin-left:6px">AWPer</span></h3>
+      <p class="bruto">A AWP do time era dele em <span class="num">96%</span> dos rounds com AWP (<span class="num">27 de 28</span>).</p>
+    </div>
+    <div class="bloco" style="margin-top:8px">
+      <h3>Spinx <small>MOUZ</small> <span class="tag neutro" style="margin-left:6px">lurker · tendência</span></h3>
+      <p class="bruto">Fora da área do time em <span class="num">57%</span> dos rounds sem AWP (<span class="num">8 de 14</span>). Tendência: o rótulo se mantém em <span class="num">69%</span> das reamostragens (decisão 39).</p>
+    </div>
+    <p class="origem">rótulo de função usa --decisivo só quando afirmado; "tendência" e "sem função dominante" usam o estilo neutro (nunca a cor de CT, como hoje)</p>
+  </section>
+
+  <footer class="rodape">
+    <p><b>Metodologia.</b> Parsing com awpy sobre demoparser2; métricas próprias em Polars. A convenção de ângulos foi validada contra os dados: no tick de cada kill a mira do atacante fica a <span class="num">1,68°</span> da vítima, contra <span class="num">6,00°</span> na convenção invertida (<span class="num">7.652</span> kills).</p>
+    <p><b>Limites.</b> <span class="num">52</span> partidas (<span class="num">43</span> profissionais e <span class="num">9</span> da FACEIT; <span class="num">11.520</span> jogador-rounds). Os 4 jeitos de jogar têm separação fraca: os grupos descrevem, não classificam.</p>
+    <p class="origem">os dois parágrafos saem de numeros_citaveis.json (build_web_page.py); "43 profissionais e 9 da FACEIT" corrige o "todas de nível profissional"</p>
+  </footer>
+</div>
+<script src="proto.js"></script>
+<script src="partida.js"></script>
+</body>
+</html>
