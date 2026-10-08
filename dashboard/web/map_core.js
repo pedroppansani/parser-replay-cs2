@@ -30,6 +30,15 @@ window.MapCore = (function () {
 
   var ZOOM_MIN = 1, ZOOM_MAX = 6, ZOOM_PASSO = 1.18;
 
+  // Dessaturação do radar por mapa: [saturação, brilho]. Gerado por gera_radar_ajuste.py (design, 2026-10-04;
+  // refeito pelo projeto na design-B2b com os radares de assets/radars/, mesma saída; entrega-sala-de-demo §4.1):
+  // maior brilho e, dentro dele, maior saturação com dE2000 >= 8 contra TR, decisivo, molotov e HE; passos de
+  // 0,05; brilho >= 0,50. Os andares de um mapa usam o mesmo par.
+  var RADAR_AJUSTE = { ancient: [0.65, 1.0], anubis: [0.10, 0.80], cache: [0.95, 0.80], dust2: [0.90, 1.0], inferno: [1.0, 1.0],
+                       mirage: [1.0, 1.0], nuke: [0.45, 0.70], overpass: [0.80, 0.85], train: [1.0, 1.0], vertigo: [0.65, 1.0] };
+  // Mapa sem entrada: o par mais conservador da tabela (menor saturação e menor brilho) -- e o build avisa.
+  var RADAR_AJUSTE_PADRAO = [0.10, 0.70];
+
   // Velocidades de reprodução, do replay e da prancheta. (Convenção de interface.)
   var VELOCIDADES = [0.25, 0.5, 1, 2, 4];
 
@@ -472,6 +481,43 @@ window.MapCore = (function () {
     }
 
     ctx.restore();
+  }
+
+  /* ---------------------------------------------------------------------
+     Radar dessaturado por mapa (§4.1): UMA vez na carga, por pixel, e o resultado é reaproveitado com
+     drawImage -- nada de ctx.filter por quadro. Replay e prancheta chamam a mesma função (decisão 33).
+       L = 0,2126 R + 0,7152 G + 0,0722 B ;  saída = clamp(b × (L + s × (cor − L))) ; alfa intacto
+     --------------------------------------------------------------------- */
+  function ajusteDoRadar(mapa) {
+    var chave = String(mapa || "").replace(/^de_/, "");
+    return RADAR_AJUSTE[chave] || RADAR_AJUSTE_PADRAO;
+  }
+
+  /** O radar já processado: um canvas do tamanho natural da imagem (ou a própria imagem, quando o par é
+      1,00/1,00 ou o navegador não deixa ler os pixels). Guardado na imagem, por mapa. */
+  function radarProcessado(imagem, mapa) {
+    if (!imagem || !imagem.naturalWidth) return imagem;
+    var par = ajusteDoRadar(mapa), s = par[0], b = par[1];
+    if (s === 1 && b === 1) return imagem;
+    var guardados = imagem.__radarProcessado || (imagem.__radarProcessado = {});
+    var chave = s + "/" + b;
+    if (guardados[chave]) return guardados[chave];
+    var c = document.createElement("canvas");
+    c.width = imagem.naturalWidth; c.height = imagem.naturalHeight;
+    var g = c.getContext("2d");
+    g.drawImage(imagem, 0, 0);
+    var dados;
+    try { dados = g.getImageData(0, 0, c.width, c.height); } catch (e) { return imagem; }
+    var d = dados.data;
+    for (var i = 0; i < d.length; i += 4) {
+      var L = 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
+      d[i] = b * (L + s * (d[i] - L));            // o Uint8ClampedArray já faz o clamp e o arredondamento
+      d[i + 1] = b * (L + s * (d[i + 1] - L));
+      d[i + 2] = b * (L + s * (d[i + 2] - L));
+    }
+    g.putImageData(dados, 0, 0);
+    guardados[chave] = c;
+    return c;
   }
 
   /* ---------------------------------------------------------------------
@@ -1361,6 +1407,10 @@ window.MapCore = (function () {
     interpolaAngulo: interpolaAngulo,
     desenhaJogador: desenhaJogador,
     defineAnelDuplo: defineAnelDuplo,
+    RADAR_AJUSTE: RADAR_AJUSTE,
+    RADAR_AJUSTE_PADRAO: RADAR_AJUSTE_PADRAO,
+    ajusteDoRadar: ajusteDoRadar,
+    radarProcessado: radarProcessado,
     rotulosInicia: rotulosInicia,
     rotulo: rotulo,
     rotulosDesenha: rotulosDesenha,

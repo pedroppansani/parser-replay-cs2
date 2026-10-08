@@ -55,6 +55,8 @@ def _js(valor) -> str:
 
 def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | None = None) -> str:
     radar = json.loads((RADARS_DIR / f"{mapa}.json").read_text(encoding="utf-8"))
+    from scripts.radar_ajuste import avisa
+    avisa(mapa)   # mapa sem par em RADAR_AJUSTE (§4.1): a página usa o padrão, o build avisa
     # a mesma impressão que as anotações usam: tática feita sobre outra
     # calibração do radar é recusada na importação
     radar["calibracao"] = impressao_da_calibracao(radar)
