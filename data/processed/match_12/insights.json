@@ -5299,7 +5299,7 @@
   },
   "narrative": {
     "decisive": "Levou o Time A de 50% para 64% de chance de vencer a partida, a partir de um empate em 8-8, com a abertura de apEX sobre yuurih e o round terminou com os TRs eliminados.",
-    "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 18 moveu praticamente o mesmo (14% contra 14%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
+    "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 18 moveu praticamente o mesmo (13,7% contra 13,7%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
     "mvp_card": "KSCERATO teve o maior rating (1,61), empatado com ZywOo (1,58) dentro do erro do rating (0,079); 106,7 de ADR contra 99,1 de ZywOo e 91% de KAST contra 87% de ZywOo, jogando de rotativo.",
     "highlight_card": "YEKINDAR: 17% de brigas no mesmo ângulo, contra 9% de mediana dos outros desta partida. molodoy pontuou praticamente o mesmo como repick: houve mais de um destaque equivalente nesta partida.",
     "spectacle": "Round 12: 3K de ZywOo e virou com 2 jogadores a menos. Não foi o round decisivo — quem mais moveu a partida foi o 17, e o round mais bonito daqui não mudou o resultado.",

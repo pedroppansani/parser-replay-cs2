@@ -5220,7 +5220,7 @@
   },
   "narrative": {
     "decisive": "Levou o Time A de 50% para 62% de chance de vencer a partida, a partir de um empate em 7-7, com a abertura de jL sobre magixx e o round terminou no tempo.",
-    "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 16 moveu praticamente o mesmo (12% contra 12%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
+    "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 16 moveu praticamente o mesmo (12,3% contra 12,3%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
     "mvp_card": "zont1x teve o maior rating (1,54), empatado com donk (1,50) dentro do erro do rating (0,079), jogando de âncora.",
     "highlight_card": "SH1R0: 12 rounds com AWP na mão, contra 0 de mediana dos outros desta partida. chopper pontuou praticamente o mesmo como repick: houve mais de um destaque equivalente nesta partida.",
     "spectacle": "Round 13: clutch de donk em 1v3, 5K de donk e virou com 3 jogadores a menos. Não foi o round decisivo — quem mais moveu a partida foi o 15, e o round mais bonito daqui não mudou o resultado.",

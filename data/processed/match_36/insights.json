@@ -5210,7 +5210,7 @@
   },
   "narrative": {
     "decisive": "Levou o Time B de 62% para 75% de chance de vencer a partida, a partir da própria liderança por 8-7, com a abertura de donk sobre b1t e o round terminou com os CTs eliminados.",
-    "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 19 moveu praticamente o mesmo (12% contra 12%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
+    "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 19 moveu praticamente o mesmo (11,7% contra 12,3%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
     "mvp_card": "donk foi o MVP, com rating 1,74 contra 1,47 de zont1x; 106,6 de ADR contra 95,6 de sh1ro, jogando de âncora.",
     "highlight_card": "chopper: 12 de 12 rounds como Coringa no lado CT.",
     "spectacle": "Round 19: clutch de sh1ro em 1v2, 3K de sh1ro e virou com 2 jogadores a menos. Não foi o round decisivo — quem mais moveu a partida foi o 16, e o round mais bonito daqui não mudou o resultado.",

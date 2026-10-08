@@ -142,104 +142,76 @@
     background: var(--superficie-2); border: 1px solid var(--borda); border-bottom-width: 2px;
     border-radius: var(--r-sm); color: var(--tinta); font-weight: 600; }
 
-  .lockup {
-    margin-top: 18px;
-    display: flex;
-    align-items: flex-end;
-    gap: 26px;
-    flex-wrap: wrap;
+  /* Placar no formato do HUD (h1). Sem borda de lado: a cor de lado na identidade do time é só a
+     etiqueta "começou" (entrega-sala-de-demo §7.2). */
+  .placar {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center;
+    background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--r-md);
+    margin: 18px 0 0; font-size: var(--t-placar); line-height: 1.1;
+    font-family: var(--f-cond); font-stretch: var(--larg-condensada); letter-spacing: 0;
   }
-  .lockup h1 {
-    font-family: var(--f-cond); font-stretch: var(--larg-condensada);
-    font-weight: 700;
-    font-size: clamp(34px, 5.2vw, 54px);
-    line-height: 1.02;
-    letter-spacing: -0.025em;
-    margin: 0;
-    text-wrap: balance;
+  .placar .lado { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 10px 12px; }
+  .placar .lado.a { justify-content: flex-end; }
+  .placar .nome {
+    min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-weight: var(--peso-forte); text-transform: uppercase; letter-spacing: 0.01em; font-size: 0.62em;
   }
-  .scorebox {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    background: var(--superficie);
-    border: 1px solid var(--linha);
-    border-radius: var(--r-md);
-    padding: 12px 18px;
+  .placar .pts { font-family: var(--f-num); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .placar .x { color: var(--apagado); font-size: 0.5em; padding: 0 2px; }
+  .placar .perdeu { color: var(--tinta-2); }
+  .placar .perdeu .pts { font-weight: 400; }
+  .placar .venceu { color: var(--vitoria); }
+  .tag-venceu {
+    flex: none; font-weight: var(--peso-forte); text-transform: uppercase; letter-spacing: 0.08em;
+    font-size: var(--t-xs); line-height: 1; padding: 4px 6px;
+    border: 1.5px solid var(--vitoria); border-radius: var(--r-sm); color: var(--vitoria);
   }
-  .scorebox .s {
-    font-family: var(--f-num);
-    font-weight: 500;
-    font-size: 30px;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.02em;
-    line-height: 1;
-  }
-  .scorebox .s.win { color: var(--tinta); }
-  .scorebox .s.lose { color: var(--apagado); }
-  .scorebox .vs { color: var(--apagado); font-size: 18px; }
-  .scorebox .tm { font-size: 11px; color: var(--apagado); font-family: var(--f-cond); font-stretch: var(--larg-condensada); letter-spacing: 0.08em; font-weight: 600; }
-
-  .teams {
-    margin-top: 20px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
-    gap: 12px;
-  }
-  .teamcard {
-    background: var(--superficie);
-    border: 1px solid var(--linha);
-    border-radius: var(--r-md);
-    padding: 13px 16px;
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-  .teamcard b {
-    font-family: var(--f-cond); font-stretch: var(--larg-condensada);
-    font-weight: 600;
-    font-size: 15px;
-    letter-spacing: -0.01em;
-  }
-  .teamcard .nicks { font-family: var(--f-texto); font-size: 11.5px; color: var(--apagado); }
-  .teamcard.won { border-color: var(--borda); }
+  .placar .comecou { flex: none; }
+  .tag.ct { border-color: var(--ct); color: var(--ct-texto); }
+  .tag.tr { border-color: var(--tr); color: var(--tr-texto); }
+  .decisor { margin: 10px 0 0; font-family: var(--f-texto); font-size: var(--t-sm); color: var(--tinta-2); }
+  .decisor:empty { display: none; }
 
   /* ---------- Abas ---------- */
 
-  .tabs {
-    position: sticky;
-    top: env(safe-area-inset-top, 0px);
-    z-index: 10;
-    margin-top: 26px;
-    display: flex;
-    gap: 3px;
-    overflow-x: auto;
-    padding-block: 10px;
-    background: var(--fundo);
-    scrollbar-width: none;
-  }
+  .abas-moldura { position: relative; margin: 16px 0 0; border-bottom: 1px solid var(--borda); }
+  .tabs { display: flex; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; }
   .tabs::-webkit-scrollbar { display: none; }
-  .tabs button {
-    appearance: none;
-    border: 1px solid transparent;
-    background: none;
-    color: var(--tinta-2);
-    font-family: var(--f-texto);
-    font-weight: 500;
-    font-size: 13.5px;
-    padding: 8px 15px;
-    border-radius: var(--r-sm);
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+  .tabs [role="tab"] {
+    appearance: none; flex: none; min-height: var(--toque); padding: 0 14px; border: 0; background: none;
+    scroll-snap-align: start; cursor: pointer; white-space: nowrap;
+    color: var(--tinta-2); font-family: var(--f-cond); font-stretch: var(--larg-condensada);
+    font-weight: var(--peso-forte); font-size: var(--t-sm); letter-spacing: 0.08em; text-transform: uppercase;
+    box-shadow: inset 0 -3px 0 transparent; transition: color var(--dur), box-shadow var(--dur);
   }
-  .tabs button:hover { background: var(--superficie); }
-  .tabs button[aria-selected="true"] {
-    background: var(--tinta);
-    color: var(--fundo);
+  .tabs [role="tab"]:hover { color: var(--tinta); }
+  .tabs [role="tab"][aria-selected="true"] { color: var(--tinta); box-shadow: inset 0 -3px 0 var(--tinta); }
+  .tabs [role="tab"]:focus-visible { outline: 2px solid var(--foco); outline-offset: -2px; }
+  /* sombra e botão "›" quando sobra aba fora da tela (o JS liga .sobra-dir e .sobra-esq) */
+  .abas-moldura::before, .abas-moldura::after {
+    content: ""; position: absolute; top: 0; bottom: 1px; width: 40px; pointer-events: none; opacity: 0;
+    transition: opacity var(--dur);
   }
-  .tabs button:focus-visible { outline: 2px solid var(--foco); outline-offset: 2px; }
+  .abas-moldura::before { left: 0; background: linear-gradient(90deg, var(--fundo), transparent); }
+  .abas-moldura::after { right: var(--toque); background: linear-gradient(270deg, var(--fundo), transparent); }
+  .abas-moldura.sobra-esq::before, .abas-moldura.sobra-dir::after { opacity: 1; }
+  .abas-mais {
+    position: absolute; right: 0; top: 0; width: var(--toque); height: var(--toque); border: 0;
+    border-left: 1px solid var(--linha); background: var(--fundo); color: var(--tinta); display: none;
+    font-size: 1.1rem; cursor: pointer;
+  }
+  .abas-moldura.sobra-dir .abas-mais { display: grid; place-items: center; }
+  .abas-moldura.sobra-dir .tabs { padding-right: var(--toque); }
+
+  @media (max-width: 640px) {
+    .placar .lado { flex-direction: column; gap: 0; padding: 6px 10px; align-items: flex-start; }
+    .placar .lado.a { align-items: flex-end; }
+    .placar .nome { font-size: 0.5em; max-width: 100%; }
+    .placar .lado .pts { order: 2; }
+    .placar .tag-venceu { order: 3; margin-top: 4px; }
+    .placar .comecou { order: 4; margin: 4px 0 0; }
+  }
+
   /* Todo controle mostra o foco do teclado (auditoria 5.4); as regras próprias
      acima e abaixo continuam valendo onde já existiam. */
   :where(button, a[href], select, input, textarea, summary, [tabindex]):focus-visible {
@@ -954,10 +926,10 @@
 
   <header class="top">
     <div class="crumbs">
+      <a id="c-partidas" href="index.html" hidden></a><em id="c-partidas-sep" hidden>/</em>
       <span id="c-map"></span><em>/</em>
-      <span id="c-rounds"></span><em>/</em>
       <span id="c-origem"></span><em id="c-origem-sep">/</em>
-      <span>parser próprio · awpy + demoparser2</span>
+      <span id="c-rounds"></span>
     </div>
 
     <div class="demobar" id="demobar" hidden>
@@ -971,38 +943,24 @@
     </div>
     <div class="howto" id="howto" hidden></div>
 
-    <div class="lockup">
-      <h1 id="titulo-partida"></h1>
-      <div class="scorebox">
-        <div>
-          <div class="tm">TIME A</div>
-          <div class="s win" id="sa">13</div>
-        </div>
-        <div class="vs">—</div>
-        <div>
-          <div class="tm">TIME B</div>
-          <div class="s lose" id="sb">9</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="teams">
-      <div class="teamcard won" id="tc-a"></div>
-      <div class="teamcard" id="tc-b"></div>
-    </div>
+    <h1 class="placar" id="titulo-partida"></h1>
+    <p class="decisor" id="decisor"></p>
   </header>
 
-  <nav class="tabs" role="tablist" aria-label="Seções">
-    <button role="tab" aria-selected="true" data-tab="replay">Replay</button>
-    <button role="tab" aria-selected="false" data-tab="insights">Resumo</button>
-    <button role="tab" aria-selected="false" data-tab="rounds">Placar</button>
-    <button role="tab" aria-selected="false" data-tab="jogadores">Jogadores</button>
-    <button role="tab" aria-selected="false" data-tab="perfil">Perfil</button>
-    <button role="tab" aria-selected="false" data-tab="estilos">Estilos</button>
-  </nav>
+  <div class="abas-moldura" id="abas-moldura">
+    <nav class="tabs" role="tablist" aria-label="Seções">
+      <button role="tab" aria-selected="true" data-tab="insights">Resumo</button>
+      <button role="tab" aria-selected="false" data-tab="replay">Replay</button>
+      <button role="tab" aria-selected="false" data-tab="jogadores">Jogadores</button>
+      <button role="tab" aria-selected="false" data-tab="rounds">Placar</button>
+      <button role="tab" aria-selected="false" data-tab="perfil">Perfil</button>
+      <button role="tab" aria-selected="false" data-tab="estilos">Estilos</button>
+    </nav>
+    <button class="abas-mais" id="abas-mais" type="button" aria-label="Mostrar mais abas" tabindex="-1">›</button>
+  </div>
 
   <!-- REPLAY -->
-  <section class="panel" data-panel="replay">
+  <section class="panel" data-panel="replay" hidden>
     <div class="eyebrow">Reconstrução do round</div>
     <h2 class="sec">O que aconteceu no mapa</h2>
     <p class="lead">
@@ -1068,7 +1026,7 @@
   </section>
 
   <!-- INSIGHTS -->
-  <section class="panel" data-panel="insights" hidden>
+  <section class="panel" data-panel="insights">
     <div class="eyebrow">Leitura da partida</div>
     <h2 class="sec">O que decidiu o jogo</h2>
     <p class="lead">
@@ -1097,15 +1055,15 @@
     <div class="eyebrow">Vantagem round a round</div>
     <h2 class="sec">A virada em dois atos</h2>
     <p class="lead">
-      A linha é a diferença de rounds a favor do Time A. Abaixo de zero, o Time B estava na frente.
+      A linha é a diferença de rounds a favor do <span data-lado="A"></span>. Abaixo de zero, o <span data-lado="B"></span> estava na frente.
       <b>Passe o mouse por um round</b> para ver o que mais pesou nele, e clique para assistir esse
       round no mapa.
     </p>
     <div class="card plot">
       <svg id="swing" viewBox="0 0 900 290" role="img" aria-label="Diferença de rounds ao longo da partida"></svg>
       <div class="legend">
-        <span><i style="background:var(--ct)"></i> Time A na frente</span>
-        <span><i style="background:var(--tr)"></i> Time B na frente</span>
+        <span><i style="background:var(--ct)"></i> <span data-lado="A"></span> na frente</span>
+        <span><i style="background:var(--tr)"></i> <span data-lado="B"></span> na frente</span>
         <span><i style="background:var(--apagado)"></i> empate</span>
         <span><i style="background:var(--decisivo)"></i> round decisivo</span>
         <span><i style="background:var(--apagado);width:6px;height:6px"></i> bomba plantada</span>
@@ -1230,34 +1188,63 @@
   // por concatenação (nome de jogador, frase gerada, arma, lugar). A função é
   // uma só, a do map_core.js.
   var esc = MapCore.esc;
-  document.getElementById("c-map").textContent = M.map;
-  document.getElementById("c-rounds").textContent = M.rounds + " rounds";
-  // Origem da partida e números do corpus: montados no BUILD a partir do
-  // manifesto e de numeros_citaveis.json (nada de número de corpus escrito
-  // à mão aqui -- há teste).
+  // Origem da partida, nomes dos lados, linha do decisor e números do corpus: montados no BUILD a partir
+  // do manifesto, do payload e de numeros_citaveis.json (nada disso é escrito à mão aqui -- há teste).
   var PAGINA = /*__PAGINA__*/null || {};
+  var CAB = PAGINA.cabecalho || null;
+  // Nome de cada lado: o do cabeçalho; sem ele (payload sem placar) cai no identificador interno.
+  var LADO = { A: CAB ? CAB.lados.A.nome : "Lado A", B: CAB ? CAB.lados.B.nome : "Lado B" };
+  // O nome do lado em qualquer texto montado aqui; id desconhecido (jogador sem time) vira "?".
+  function nomeLado(t) { return LADO[t] || "?"; }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-lado]"), function (e) {
+    e.textContent = LADO[e.dataset.lado];
+  });
   (function () {
+    var ROTULO = { partidas: "Partidas", rounds: " rounds", venceu: "venceu", comecou: { ct: "começou CT", tr: "começou TR" } };
+    document.getElementById("c-map").textContent = PAGINA.mapa || M.map;
+    document.getElementById("c-rounds").textContent = M.rounds + ROTULO.rounds;
     var o = document.getElementById("c-origem"), sep = document.getElementById("c-origem-sep");
     if (PAGINA.origem) o.textContent = PAGINA.origem; else { o.hidden = true; sep.hidden = true; }
-    // h1: mapa e placar, montado no build (scripts/build_web_page.titulo_da_partida)
-    document.getElementById("titulo-partida").textContent = PAGINA.titulo || M.map;
+    if (window.__SITE__) {            // "Partidas" só existe no site; o arquivo solto não tem para onde voltar
+      var a = document.getElementById("c-partidas");
+      a.textContent = ROTULO.partidas; a.hidden = false;
+      document.getElementById("c-partidas-sep").hidden = false;
+    }
+    // h1: o placar no formato do HUD, montado com textContent (nome de time/jogador é dado, nunca HTML)
+    var h1 = document.getElementById("titulo-partida");
+    function el(tag, cls, txt) {
+      var e = document.createElement(tag);
+      if (cls) e.className = cls;
+      if (txt != null) e.textContent = txt;
+      return e;
+    }
+    function ladoDoPlacar(k, cls) {
+      var l = CAB.lados[k], venceu = CAB.venceu === k;
+      var s = el("span", "lado " + cls + " " + (venceu ? "venceu" : "perdeu"));
+      var nome = el("span", "nome", l.nome);
+      nome.title = l.nome;
+      var pts = el("span", "pts", String(k === "A" ? M.score_a : M.score_b));
+      var tag = el("span", "tag comecou " + l.comecou, ROTULO.comecou[l.comecou] || "");
+      s.appendChild(cls === "a" ? nome : pts);
+      s.appendChild(cls === "a" ? pts : nome);
+      if (venceu) s.appendChild(el("span", "tag-venceu", ROTULO.venceu));
+      s.appendChild(tag);
+      return s;
+    }
+    if (CAB) {
+      h1.appendChild(ladoDoPlacar("A", "a"));
+      var x = el("span", "x", "×");
+      x.setAttribute("aria-hidden", "true");
+      h1.appendChild(x);
+      h1.appendChild(ladoDoPlacar("B", "b"));
+      document.getElementById("decisor").textContent = CAB.decisor;
+    } else {
+      h1.textContent = PAGINA.mapa || M.map;
+    }
     var nJog = (D.players || []).length;
     document.getElementById("jog-eyebrow").textContent = nJog + " jogadores, " + M.rounds + " rounds";
     Array.prototype.forEach.call(document.querySelectorAll(".n-rounds"), function (e) { e.textContent = M.rounds; });
   })();
-  document.getElementById("sa").textContent = M.score_a;
-  document.getElementById("sb").textContent = M.score_b;
-  var aWins = M.score_a > M.score_b;
-  document.getElementById("sa").className = "s " + (aWins ? "win" : "lose");
-  document.getElementById("sb").className = "s " + (aWins ? "lose" : "win");
-  document.getElementById("tc-a").innerHTML =
-    "<b>Time A</b><span class='nicks'>" + M.rosters.A.map(esc).join(" · ") + "</span>";
-  document.getElementById("tc-b").innerHTML =
-    "<b>Time B</b><span class='nicks'>" + M.rosters.B.map(esc).join(" · ") + "</span>";
-  if (!aWins) {
-    document.getElementById("tc-a").classList.remove("won");
-    document.getElementById("tc-b").classList.add("won");
-  }
 
   /* ================= REPLAY ================= */
 
@@ -1417,7 +1404,7 @@
     b.textContent = r.round;
     b.dataset.w = r.winner_team;
     b.setAttribute("aria-pressed", String(r === cur));
-    b.title = "Round " + r.round + " — Time " + r.winner_team;
+    b.title = "Round " + r.round + " — " + nomeLado(r.winner_team);
     b.addEventListener("click", function () { selectRound(r); });
     strip.appendChild(b);
   });
@@ -1500,7 +1487,7 @@
     document.getElementById("scrub").value = 0;
     document.getElementById("rh-round").textContent = "Round " + r.round;
     document.getElementById("rh-res").textContent =
-      "Time " + r.winner_team + " · " + (REASON[r.reason] || r.reason) + " · " + br(r.seconds) + "s";
+      nomeLado(r.winner_team) + " · " + (REASON[r.reason] || r.reason) + " · " + br(r.seconds) + "s";
     buildLog();
     buildMarks();
     buildSquads();
@@ -1568,7 +1555,7 @@
     }).join("");
 
     host.innerHTML =
-      "<div class='ah'><h3>Por que o Time " + esc(b.loser_team) + " perdeu este round" +
+      "<div class='ah'><h3>Por que " + esc(nomeLado(b.loser_team)) + " perdeu este round" +
       (b.ultimo_round ? " <span class='borda'>último round da partida</span>"
         : (b.fim_de_metade ? " <span class='borda'>último round da primeira metade</span>" : "")) +
       "</h3>" +
@@ -2335,7 +2322,7 @@
   var econ = D.narrative.economy ? "<div class='econ'>" + esc(D.narrative.economy) + "</div>" : "";
   document.getElementById("decisive").innerHTML = dr
     ? "<div class='stamp'><div class='k'>Round decisivo</div><div class='n'>" + esc(dr.round) + "</div>" +
-      "<div class='s'>placar " + esc(dr.score_a) + "–" + esc(dr.score_b) + " · Time " + esc(dr.winner_team) + "</div></div>" +
+      "<div class='s'>placar " + esc(dr.score_a) + "–" + esc(dr.score_b) + " · " + esc(nomeLado(dr.winner_team)) + "</div></div>" +
       "<div class='story'><p class='t'>" + esc(D.narrative.decisive) + "</p>" +
       barraWp(dr) + econ +
       "<p class='lead tight' style='margin-top:14px'>" + esc(D.narrative.criterion) + "</p></div>"
@@ -2353,7 +2340,7 @@
       "<span class='track'><i class='was' style='left:0;width:" + (a * 100) + "%'></i>" +
       "<i class='now' style='left:0;width:" + (b * 100) + "%;opacity:.82'></i></span>" +
       "<span>" + pct(b) + "</span></div>" +
-      "<div class='cap'>chance de o Time " + esc(d.winner_team) + " vencer a partida, antes e depois deste round</div></div>";
+      "<div class='cap'>chance de " + esc(nomeLado(d.winner_team)) + " vencer a partida, antes e depois deste round</div></div>";
   }
 
   // --- Card do round mais impressionante --------------------------------
@@ -2404,7 +2391,7 @@
   document.getElementById("fig-mvp").innerHTML = mvpc
     ? "<div class='hd'><div><div class='role'>MVP da partida</div>" +
       "<div class='nm'>" + esc(mvpc.name) + "</div>" +
-      "<div class='sub'>Time " + esc(mvpc.team) +
+      "<div class='sub'>" + esc(nomeLado(mvpc.team)) +
       (mvpc.funcao ? " · " + esc(mvpc.funcao) : "") + "</div></div>" +
       // o anel cheio com o rating dentro: o número É o critério (não há escala 0-1)
       ring(1, C.ct, mvpc.rating_texto) + "</div>" +
@@ -2440,7 +2427,7 @@
       (dst.negativo ? "<div class='tagneg'>destaque negativo</div>" : "") +
       "<div class='role'>" + esc(dst.label) + "</div>" +
       "<div class='nm'>" + esc(dst.name) + "</div>" +
-      "<div class='sub'>" + (dst.team ? "Time " + esc(dst.team) + " · " : "") + esc(dst.meaning) + "</div>" +
+      "<div class='sub'>" + (dst.team ? esc(nomeLado(dst.team)) + " · " : "") + esc(dst.meaning) + "</div>" +
       "</div>" + ring(dst.index, dst.negativo ? C.tinta2 : C.decisivo) + "</div>" +
       "<p>" + esc(D.narrative.highlight_card) + "</p>" + linhaEv;
   }
@@ -2460,7 +2447,7 @@
       return info.multikill_player + " fez " + info.multikill_count + " kills no round";
     }
     if (info.worst_deficit_overcome >= 2) {
-      return "Time " + p.winner_team + " virou de " + info.worst_deficit_overcome +
+      return nomeLado(p.winner_team) + " virou de " + info.worst_deficit_overcome +
         " jogadores atrás";
     }
     if (info.opening) {
@@ -2580,8 +2567,8 @@
     var leg = document.getElementById("wplegend");
     if (leg) {
       leg.innerHTML =
-        "<span><i style='background:var(--ct)'></i> chance do Time A</span>" +
-        "<span><i style='background:var(--tr)'></i> Time B favorito (abaixo de 50%)</span>" +
+        "<span><i style='background:var(--ct)'></i> chance de " + esc(LADO.A) + "</span>" +
+        "<span><i style='background:var(--tr)'></i> " + esc(LADO.B) + " favorito (abaixo de 50%)</span>" +
         (decRound != null ? "<span><i style='background:var(--decisivo)'></i> round decisivo</span>" : "") +
         "<span style='color:var(--apagado)'>modelo neutro: cada round vale 50/50, " +
         "e a alavancagem vem só do placar</span>";
@@ -2655,7 +2642,7 @@
       var info = scored[p.round] || p;
 
       tip.innerHTML =
-        "<div class='rh'><span>Round " + esc(p.round) + "</span><span>Time " + esc(p.winner_team) + " venceu</span></div>" +
+        "<div class='rh'><span>Round " + esc(p.round) + "</span><span>" + esc(nomeLado(p.winner_team)) + " venceu</span></div>" +
         "<div class='rt'>" + esc(roundHeadline(info, p)) + "</div>" +
         "<div class='rs'>" + esc(p.score_a) + "–" + esc(p.score_b) + " · " + esc(REASON[p.reason] || p.reason) +
         (p.bomb_planted ? " · bomba plantada" : "") + "</div>" +
@@ -2852,7 +2839,7 @@
       if (g.aberto) det.open = true;
       var cab = "<tr><th></th>" + g.metricas.map(function (m) { return "<th>" + esc(m.rotulo) + "</th>"; }).join("") + "</tr>";
       var corpo = linhas.map(function (r) {
-        return "<tr><td>" + esc(r.name) + " <small>Time " + esc(time[r.name] || "?") + "</small></td>" +
+        return "<tr><td>" + esc(r.name) + " <small>" + esc(nomeLado(time[r.name])) + "</small></td>" +
           g.metricas.map(function (m) {
             var v = r[m.chave], ref = r[m.chave + "_ref"], fraco = r[m.chave + "_fraco"];
             var n = m.bruto_so_denominador ? null : r[m.chave + "_n"], d = r[m.chave + "_d"];
@@ -2906,7 +2893,7 @@
       var s = document.createElement("select"); s.id = id;
       ordem.forEach(function (r) {
         var o = document.createElement("option"); o.value = r.name;
-        o.textContent = r.name + " (Time " + (time[r.name] || "?") + ")";
+        o.textContent = r.name + " (" + nomeLado(time[r.name]) + ")";
         s.appendChild(o);
       });
       s.value = inicial;
@@ -2962,7 +2949,7 @@
       var col = document.createElement("div");
       col.className = "roster";
       var named = mine.filter(function (p) { return p.role; }).length;
-      col.innerHTML = "<h3><b>Time " + esc(team) + "</b> " + named + " de " + mine.length +
+      col.innerHTML = "<h3><b>" + esc(nomeLado(team)) + "</b> " + named + " de " + mine.length +
         " com função dominante</h3>";
 
       mine.sort(function (a, b) { return b.adr - a.adr; }).forEach(function (p) {
@@ -3103,7 +3090,7 @@
       ["A", "B", ""].forEach(function (t) {
         var lista = porTime[t].sort();
         if (!lista.length) return;
-        if (t) html += "<span class='timelab'>Time " + esc(t) + "</span>";
+        if (t) html += "<span class='timelab'>" + esc(nomeLado(t)) + "</span>";
         html += lista.map(function (n) {
           return "<button type='button' data-nome=\"" + esc(n) + "\" aria-pressed='" +
             (n === escolhido) + "'>" + esc(n) + "</button>";
@@ -3350,11 +3337,15 @@
 
   /* ================= ABAS ================= */
 
-  var tabs = document.querySelectorAll(".tabs button");
+  var tabs = document.querySelectorAll(".tabs [role=tab]");
+  // O hash da URL abre a aba direto (`#replay`); os nomes do hash são os da tela, os de dentro são os data-tab.
+  var HASH_DA_ABA = { resumo: "insights", replay: "replay", jogadores: "jogadores", placar: "rounds", perfil: "perfil", estilos: "estilos" };
+  var ABA_NO_HASH = {};
+  Object.keys(HASH_DA_ABA).forEach(function (k) { ABA_NO_HASH[HASH_DA_ABA[k]] = k; });
 
   // Nomeada (e não só um listener) porque o gráfico de vantagem também troca de
   // aba: clicar num round leva pro replay daquele round.
-  function selectTab(name) {
+  function selectTab(name, semHash) {
     Array.prototype.forEach.call(tabs, function (o) {
       o.setAttribute("aria-selected", String(o.dataset.tab === name));
       // tabindex itinerante: Tab entra na aba ativa, as setas andam entre elas
@@ -3363,6 +3354,9 @@
     Array.prototype.forEach.call(document.querySelectorAll("[data-panel]"), function (p) {
       p.hidden = p.dataset.panel !== name;
     });
+    if (!semHash) {
+      try { history.replaceState(null, "", "#" + ABA_NO_HASH[name]); } catch (e) { /* arquivo local: sem hash */ }
+    }
     if (name === "replay") draw();
   }
 
@@ -3381,10 +3375,26 @@
       tabs[j].focus();
     });
   });
-  // estado inicial do tabindex sem redesenhar nada (o replay desenha sozinho)
-  Array.prototype.forEach.call(tabs, function (o) {
-    o.tabIndex = o.getAttribute("aria-selected") === "true" ? 0 : -1;
-  });
+
+  // Sombra e "›" quando sobra aba fora da tela (375 px): o botão rola a lista até a próxima aba escondida.
+  (function () {
+    var moldura = document.getElementById("abas-moldura"), lista = document.querySelector(".tabs");
+    function atualiza() {
+      var max = lista.scrollWidth - lista.clientWidth;
+      moldura.classList.toggle("sobra-dir", lista.scrollLeft < max - 2);
+      moldura.classList.toggle("sobra-esq", lista.scrollLeft > 2);
+    }
+    document.getElementById("abas-mais").addEventListener("click", function () {
+      lista.scrollBy({ left: Math.max(lista.clientWidth * 0.6, 120), behavior: reduced ? "auto" : "smooth" });
+    });
+    lista.addEventListener("scroll", atualiza, { passive: true });
+    window.addEventListener("resize", atualiza);
+    atualiza();
+  })();
+
+  // Estado inicial: a aba do hash, ou o Resumo. Sem redesenhar nada (o replay desenha ao ser aberto).
+  var inicial = HASH_DA_ABA[(location.hash || "").replace("#", "")] || "insights";
+  selectTab(inicial, true);
 })();
 </script>
 </body>

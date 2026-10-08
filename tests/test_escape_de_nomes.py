@@ -137,7 +137,9 @@ def test_nome_malicioso_aparece_literal_e_nao_vira_marcacao(navegador, paginas, 
                 literais.add(aba + ":script")
         # o nome aparece, e aparece LITERAL (as abas de jogador o mostram)
         assert {"jogadores", "perfil", "estilos"} <= literais, literais
-        assert "onerror" in pg.inner_text("#tc-a") + pg.inner_text("#tc-b")
+        # design-B1: os cartões de time do cabeçalho (#tc-a/#tc-b) saíram; os nicks de cada lado agora
+        # aparecem nos esquadrões do Replay, e é lá que o nome literal é conferido
+        assert "replay:script" in literais, literais
         assert pg._erros == []
     finally:
         ctx.close()

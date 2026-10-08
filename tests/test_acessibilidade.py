@@ -73,18 +73,24 @@ from tests.test_annotations_browser import abre, contexto, navegador, partida  #
 
 
 def test_abas_andam_pelas_setas_e_so_a_ativa_entra_no_tab(contexto, partida):
-    pg = abre(contexto, partida)
+    # design-B1: o Resumo é a primeira aba e a aberta por padrão (antes era o Replay); o comportamento
+    # testado é o mesmo -- tabindex móvel, setas, End e volta ao começo.
+    pg = contexto.new_page()
+    pg.goto(partida["html"].as_uri())          # sem `abre`: ele já clica no Replay, e aqui vale o estado inicial
     tabs = pg.locator('[role="tab"]')
     assert [tabs.nth(i).get_attribute("tabindex") for i in range(tabs.count())] == ["0"] + ["-1"] * (tabs.count() - 1)
     tabs.first.focus()
-    pg.keyboard.press("ArrowRight")
     assert pg.evaluate("() => document.activeElement.dataset.tab") == "insights"
-    assert pg.get_attribute('[data-tab="insights"]', "aria-selected") == "true"
-    assert not pg.is_hidden('[data-panel="insights"]')
+    pg.keyboard.press("ArrowRight")
+    assert pg.evaluate("() => document.activeElement.dataset.tab") == "replay"
+    assert pg.get_attribute('[data-tab="replay"]', "aria-selected") == "true"
+    assert not pg.is_hidden('[data-panel="replay"]')
     pg.keyboard.press("End")
     assert pg.evaluate("() => document.activeElement.dataset.tab") == "estilos"
     pg.keyboard.press("ArrowRight")
-    assert pg.evaluate("() => document.activeElement.dataset.tab") == "replay"
+    assert pg.evaluate("() => document.activeElement.dataset.tab") == "insights"
+    pg.keyboard.press("Home")
+    assert pg.evaluate("() => document.activeElement.dataset.tab") == "insights"
     pg.close()
 
 
