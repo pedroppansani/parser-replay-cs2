@@ -5256,7 +5256,7 @@
   },
   "narrative": {
     "decisive": "Levou o Time A de 50% para 66% de chance de vencer a partida, a partir de um empate em 9-9, com os 4 kills de _AmadeuS e o round terminou no desarme.",
-    "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 20 moveu praticamente o mesmo (16% contra 16%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
+    "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 20 moveu praticamente o mesmo (15,6% contra 15,6%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
     "mvp_card": "donk666 foi o MVP, com rating 1,87 contra 1,67 de s-chilla; 126,1 de ADR contra 107,3 de s-chilla, jogando de rotativo.",
     "highlight_card": "rol1ng-: 19% de brigas no mesmo ângulo, contra 7% de mediana dos outros desta partida. xhx pontuou praticamente o mesmo como camper: houve mais de um destaque equivalente nesta partida.",
     "spectacle": "Round 5: clutch de donk666 em 1v4, 4K de donk666 e virou com 3 jogadores a menos. Não foi o round decisivo — quem mais moveu a partida foi o 19, e o round mais bonito daqui não mudou o resultado.",

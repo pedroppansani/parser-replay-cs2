@@ -5214,7 +5214,7 @@
   },
   "narrative": {
     "decisive": "Levou o Time A de 50% para 62% de chance de vencer a partida, a partir de um empate em 7-7, com os 3 kills de XANTARES e o round terminou com os TRs eliminados.",
-    "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 16 moveu praticamente o mesmo (12% contra 12%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
+    "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 16 moveu praticamente o mesmo (12,3% contra 12,3%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
     "mvp_card": "Jimpphat foi o MVP, com rating 1,68 contra 1,25 de b1t; 102,2 de ADR contra 85,9 de b1t, jogando de rotativo.",
     "highlight_card": "Aleksib: 11% de brigas no mesmo ângulo, contra 4% de mediana dos outros desta partida. woxic pontuou praticamente o mesmo como awper: houve mais de um destaque equivalente nesta partida.",
     "spectacle": "Round 20: clutch de iM em 1v2, 3K de iM e virou com 2 jogadores a menos. Não foi o round decisivo — quem mais moveu a partida foi o 15, e o round mais bonito daqui não mudou o resultado.",

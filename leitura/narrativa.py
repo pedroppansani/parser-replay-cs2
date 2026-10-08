@@ -214,9 +214,10 @@ def criterio_do_decisivo(resumo: dict) -> str:
 
     if resumo.get("empate_no_topo"):
         vice = outros[0]
+        do_vice, do_decisivo = format_pct_par(vice["wpa_abs"], decisivo["wpa_abs"])
         return (
             f"{base}. O round {vice['round']} moveu praticamente o mesmo "
-            f"({format_pct(vice['wpa_abs'])} contra {format_pct(decisivo['wpa_abs'])}): "
+            f"({do_vice} contra {do_decisivo}): "
             f"houve mais de um round de peso equivalente, e a escolha entre eles "
             f"não é do modelo."
         )
@@ -533,3 +534,12 @@ def descreve_jogador(perfil: dict) -> dict:
         "resumo": f"Em {base}, {nome} {lista}.",
         "caracteristicas": achados,
     }
+
+
+def linha_do_decisor(round_decisivo: int | None, mvp: str | None) -> str:
+    """A linha sob o placar: "Decidida no round 24 · MVP m0NESY" ou "Nenhum round decidiu sozinho · MVP m0NESY".
+
+    Sai pronta do Python (decisão 18). `round_decisivo` é None quando nenhum round passou do mínimo do modelo.
+    """
+    primeira = f"Decidida no round {round_decisivo}" if round_decisivo else "Nenhum round decidiu sozinho"
+    return f"{primeira} · MVP {mvp}" if mvp else primeira

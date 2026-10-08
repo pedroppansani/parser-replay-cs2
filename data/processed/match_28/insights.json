@@ -5294,7 +5294,7 @@
   },
   "narrative": {
     "decisive": "Levou o Time A de 50% para 66% de chance de vencer a partida, a partir de um empate em 9-9, com os 3 kills de donk e o round terminou com os TRs eliminados.",
-    "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 20 moveu praticamente o mesmo (16% contra 16%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
+    "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 20 moveu praticamente o mesmo (15,6% contra 15,6%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
     "mvp_card": "ZywOo foi o MVP, com rating 1,93 contra 1,49 de sh1ro; 104,5 de ADR contra 97,4 de donk e 2 clutches fechados contra 1 de sh1ro, jogando de awper.",
     "highlight_card": "chopper: 15% de brigas no mesmo ângulo, contra 5% de mediana dos outros desta partida.",
     "spectacle": "Round 4: clutch de ropz em 1v3, 4K de zont1x e virou com 2 jogadores a menos. Não foi o round decisivo — quem mais moveu a partida foi o 19, e o round mais bonito daqui não mudou o resultado.",

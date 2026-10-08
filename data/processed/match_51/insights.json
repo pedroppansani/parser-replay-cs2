@@ -5289,7 +5289,7 @@
   },
   "narrative": {
     "decisive": "Levou o Time B de 81% para 94% de chance de vencer a partida, a partir da própria liderança por 11-9, com a abertura de Brollan sobre kyousuke e o round terminou com a bomba explodindo.",
-    "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 23 moveu praticamente o mesmo (12% contra 12%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
+    "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 23 moveu praticamente o mesmo (12,5% contra 12,5%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
     "mvp_card": "Spinx foi o MVP, com rating 1,45 contra 1,37 de kyousuke; 87% de KAST contra 83% de m0NESY, jogando de rotativo.",
     "highlight_card": "xertioN: 12 de 12 rounds como Coringa no lado CT.",
     "spectacle": "Round 5: 3K de Jimpphat e torzsi abriu o round e o time fechou perdendo só um. Não foi o round decisivo — quem mais moveu a partida foi o 21, e o round mais bonito daqui não mudou o resultado.",

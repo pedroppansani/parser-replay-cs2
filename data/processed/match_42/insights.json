@@ -5850,7 +5850,7 @@
   },
   "narrative": {
     "decisive": "Levou o Time B de 25% para 50% de chance de vencer a partida, a partir do Time A na frente por 12-11, com o 1v1 de Jimpphat e o round terminou com os CTs eliminados.",
-    "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 30 moveu praticamente o mesmo (25% contra 25%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
+    "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 30 moveu praticamente o mesmo (25,0% contra 25,0%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
     "mvp_card": "m0NESY teve o maior rating (1,48), empatado com xertioN (1,45) dentro do erro do rating (0,079); 93,7 de ADR contra 90,7 de xertioN, jogando de awper.",
     "highlight_card": "torzsi: 27 rounds com AWP na mão, contra 2 de mediana dos outros desta partida. Spinx pontuou praticamente o mesmo como coringa: houve mais de um destaque equivalente nesta partida.",
     "spectacle": "Round 23: clutch de xertioN em 1v2, 3K de kyousuke e virou com 2 jogadores a menos. Não foi o round decisivo — quem mais moveu a partida foi o 24, e o round mais bonito daqui não mudou o resultado.",

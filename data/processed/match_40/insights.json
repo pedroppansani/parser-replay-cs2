@@ -5594,7 +5594,7 @@
   },
   "narrative": {
     "decisive": "Levou o Time A de 25% para 50% de chance de vencer a partida, a partir do Time B na frente por 12-11, com a abertura de Aleksib sobre SH1R0 e o round terminou com os TRs eliminados.",
-    "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 29 moveu praticamente o mesmo (25% contra 25%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
+    "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 29 moveu praticamente o mesmo (25,0% contra 25,0%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
     "mvp_card": "jL teve o maior rating (1,42), empatado com donk (1,35) dentro do erro do rating (0,079), jogando de rotativo.",
     "highlight_card": "magixx: 19% de brigas no mesmo ângulo, contra 7% de mediana dos outros desta partida.",
     "spectacle": "Round 2: clutch de Aleksib em 1v2, 4K de zont1x e virou com 2 jogadores a menos. Não foi o round decisivo — quem mais moveu a partida foi o 24, e o round mais bonito daqui não mudou o resultado.",

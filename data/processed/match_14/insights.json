@@ -5294,7 +5294,7 @@
   },
   "narrative": {
     "decisive": "Levou o Time B de 50% para 69% de chance de vencer a partida, a partir de um empate em 10-10, com os 3 kills de ZywOo e o round terminou com a bomba explodindo.",
-    "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 22 moveu praticamente o mesmo (19% contra 19%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
+    "criterion": "Critério: variação da probabilidade de vitória da partida, calculada por programação dinâmica sobre os estados de placar. Sem peso arbitrário. O round 22 moveu praticamente o mesmo (18,8% contra 18,8%): houve mais de um round de peso equivalente, e a escolha entre eles não é do modelo.",
     "mvp_card": "ZywOo teve o maior rating (1,44), empatado com flameZ (1,37) dentro do erro do rating (0,079); 96,7 de ADR contra 89,6 de yuurih, jogando de awper.",
     "highlight_card": "flameZ: 12 de 12 rounds como Coringa no lado CT. FalleN pontuou praticamente o mesmo como repick: houve mais de um destaque equivalente nesta partida.",
     "spectacle": "Round 3: clutch de FalleN em 1v2. Não foi o round decisivo — quem mais moveu a partida foi o 21, e o round mais bonito daqui não mudou o resultado.",
