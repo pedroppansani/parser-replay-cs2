@@ -43,14 +43,19 @@ def test_nenhuma_frase_do_corpus_tem_hifen_duplo_nem_porcentagens_iguais_compara
                 assert m.group(1) != m.group(2), (f.parent.name, m.group(0))
 
 
-def test_o_h1_da_partida_e_o_mapa_e_o_placar():
-    from scripts.build_web_page import titulo_da_partida
+def test_o_h1_da_partida_e_o_placar_no_formato_do_hud():
+    """design-B1: o h1 é o placar (nome, pontos, "venceu", "começou"); o mapa vai nas migalhas e no <title>."""
+    from scripts.build_web_page import cabecalho_da_partida, titulo_da_pagina
     assert "Uma partida,<br>round a round" not in TEMPLATE
     d = PROCESSED / "match_02"
     if not (d / "web_payload.json").exists():
         pytest.skip("sem o processado da match_02")
     m = json.loads((d / "web_payload.json").read_text(encoding="utf-8"))["match"]
-    assert titulo_da_partida(d) == f"Mirage {m['score_a']}–{m['score_b']}"
+    c = cabecalho_da_partida("match_02")
+    assert (c["lados"]["A"]["pontos"], c["lados"]["B"]["pontos"]) == (m["score_a"], m["score_b"])
+    assert c["mapa"] == "Mirage"
+    assert titulo_da_pagina("match_02") == (
+        f"{c['lados']['A']['nome']} {m['score_a']} × {m['score_b']} {c['lados']['B']['nome']} · Mirage · Parser de Replay CS2")
 
 
 def test_rotulos_da_mesma_tela_nao_se_repetem_e_os_textos_trocados():

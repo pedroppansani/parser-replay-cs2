@@ -42,3 +42,16 @@ def chave_de_semelhanca(nome: str) -> str:
     agregar -- quem agrega é a tabela."""
     n = re.sub(r"^team\s+", "", (nome or "").strip().casefold())
     return re.sub(r"[^a-z0-9]", "", n)
+
+
+def nome_do_lado_faceit(nicks: list[str]) -> str:
+    """"Time de <nick>" para um lado da FACEIT, onde o "time" da demo é um nome gerado (`team_<nick>`).
+
+    O nick escolhido é o PRIMEIRO em ordem alfabética (`casefold`, depois a ordem do código) entre os
+    jogadores que começaram a partida naquele lado: não depende de desempenho nem da ordem em que os
+    dados chegam, então o mesmo lado tem o mesmo nome em qualquer execução (decisão 28). É só nome de
+    exibição; o identificador interno do time (A/B) não muda.
+    """
+    if not nicks:
+        return ""
+    return "Time de " + min(nicks, key=lambda n: (n.casefold(), n))
