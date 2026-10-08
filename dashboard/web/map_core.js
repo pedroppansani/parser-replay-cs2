@@ -389,6 +389,7 @@ window.MapCore = (function () {
   function nadeGlyph(ctx, kind, x, y, r, col, ang) {
     ctx.save();
     ctx.translate(x, y);
+    if (ESTILO.anelDuplo) anelDoGlifo(ctx, kind, r, ang);
 
     // Contorno escuro por baixo do claro: o radar tem áreas claras E escuras, e
     // um traço branco sozinho sumia sobre o concreto claro da Mirage.
@@ -473,6 +474,169 @@ window.MapCore = (function () {
     ctx.restore();
   }
 
+  /* ---------------------------------------------------------------------
+     Anel duplo (entrega-sala-de-demo §4.1): contorno escuro --contorno de 2,5 px e halo claro --tinta
+     de 1,5 px por fora, em toda peça e todo glifo. Em qualquer pixel do radar um dos dois contrasta
+     >= 3:1 com o vizinho. Ligado por página (`MapCore.defineAnelDuplo`): o replay liga na design-B2,
+     a prancheta na design-E -- até lá ela desenha como antes.
+     --------------------------------------------------------------------- */
+  var ESTILO = { anelDuplo: false };
+  var ANEL_CONTORNO = 2.5, ANEL_HALO = 1.5;
+
+  function defineAnelDuplo(ligado) { ESTILO.anelDuplo = !!ligado; }
+
+  /** O mesmo caminho do glifo, só o contorno: halo claro (mais largo) e contorno escuro por cima. */
+  function caminhoDoGlifo(ctx, kind, r, ang) {
+    ctx.beginPath();
+    if (kind === "flash") {
+      for (var i = 0; i < 8; i++) {
+        var a1 = (Math.PI / 4) * i - Math.PI / 2, rad = i % 2 === 0 ? r * 1.55 : r * 0.42;
+        if (i === 0) ctx.moveTo(Math.cos(a1) * rad, Math.sin(a1) * rad); else ctx.lineTo(Math.cos(a1) * rad, Math.sin(a1) * rad);
+      }
+      ctx.closePath();
+    } else if (kind === "he") {
+      for (var j = 0; j < 14; j++) {
+        var a2 = (Math.PI / 7) * j - Math.PI / 2 + (ang || 0), r2 = j % 2 === 0 ? r * 1.2 : r * 0.72;
+        if (j === 0) ctx.moveTo(Math.cos(a2) * r2, Math.sin(a2) * r2); else ctx.lineTo(Math.cos(a2) * r2, Math.sin(a2) * r2);
+      }
+      ctx.closePath();
+    } else if (kind === "molotov") {
+      var c = Math.cos((ang || 0) + Math.PI / 2), s = Math.sin((ang || 0) + Math.PI / 2);
+      var t = function (px, py) { return [px * c - py * s, px * s + py * c]; };
+      var p0 = t(0, -r * 1.5), q1 = t(r * 0.95, -r * 0.15), p1 = t(0, r), q2 = t(-r * 0.95, -r * 0.15);
+      ctx.moveTo(p0[0], p0[1]); ctx.quadraticCurveTo(q1[0], q1[1], p1[0], p1[1]);
+      ctx.quadraticCurveTo(q2[0], q2[1], p0[0], p0[1]);
+    } else if (kind === "decoy") {
+      ctx.rect(-r * 0.82, -r * 0.82, r * 1.64, r * 1.64);
+    } else {
+      ctx.arc(-r * 0.52, r * 0.12, r * 0.62, 0, Math.PI * 2);
+      ctx.moveTo(r * 1.14, r * 0.12);
+      ctx.arc(r * 0.52, r * 0.12, r * 0.62, 0, Math.PI * 2);
+      ctx.moveTo(r * 0.78, -r * 0.3);
+      ctx.arc(0, -r * 0.3, r * 0.78, 0, Math.PI * 2);
+    }
+  }
+
+  function anelDoGlifo(ctx, kind, r, ang) {
+    ctx.save();
+    ctx.lineJoin = "round";
+    caminhoDoGlifo(ctx, kind, r, ang);
+    ctx.lineWidth = 2 * (ANEL_CONTORNO + ANEL_HALO) + (kind === "he" ? 2 : 0);
+    ctx.strokeStyle = token("tinta");
+    ctx.stroke();
+    ctx.lineWidth = 2 * ANEL_CONTORNO + (kind === "he" ? 2 : 0);
+    ctx.strokeStyle = token("contorno");
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  /** Disco com o anel duplo por baixo (peça viva): halo claro, contorno escuro e a cor do lado. */
+  function discoComAnel(ctx, X, Y, r, cor, caminho) {
+    ctx.fillStyle = token("tinta");
+    ctx.beginPath(); caminho(r + ANEL_CONTORNO + ANEL_HALO); ctx.fill();
+    ctx.fillStyle = token("contorno");
+    ctx.beginPath(); caminho(r + ANEL_CONTORNO); ctx.fill();
+    ctx.fillStyle = cor;
+    ctx.beginPath(); ctx.arc(X, Y, r, 0, Math.PI * 2); ctx.fill();
+  }
+
+  /* ---------------------------------------------------------------------
+     Rótulos do mapa (entrega-sala-de-demo §4.2): em px de TELA (12,5 px, peso 600), contorno escuro de
+     6 px, placa --contorno a 88 % atrás, numa camada própria por cima de tudo e com desvio de colisão.
+     Quem desenha um quadro chama `rotulosInicia(ctx, canvas)`, registra cada rótulo com `rotulo(...)`
+     (no ponto do mapa, já com o zoom do contexto) e no fim `rotulosDesenha()`.
+     --------------------------------------------------------------------- */
+  var ROT = { ativo: false, ctx: null, canvas: null, lista: [], caixas: [], modo: "normal", redesenha: null };
+  var ROT_TAM = 12.5, ROT_FOLGA_X = 4, ROT_FOLGA_Y = 3, ROT_CONTORNO = 6;
+
+  function rotulosInicia(ctx, canvas, redesenha) {
+    ROT.ativo = true; ROT.ctx = ctx; ROT.canvas = canvas; ROT.lista = [];
+    if (redesenha) ROT.redesenha = redesenha;
+  }
+
+  /** Registra um rótulo centrado acima de (X, Y) do contexto atual. o: {cor, fonte ("texto"|"num"),
+      italico, prioridade (maior desenha primeiro), dy (deslocamento para cima, em px de tela)}. */
+  function rotulo(texto, X, Y, o) {
+    if (!ROT.ativo || !texto) return;
+    o = o || {};
+    var m = ROT.ctx.getTransform();
+    ROT.lista.push({ txt: String(texto), x: m.a * X + m.c * Y + m.e, y: m.b * X + m.d * Y + m.f,
+                     cor: o.cor || token("tinta"), fonte: o.fonte || "texto", italico: !!o.italico,
+                     prioridade: o.prioridade || 0, dy: o.dy || 0, alfa: o.alfa == null ? 1 : o.alfa });
+  }
+
+  function corHex(c) {
+    var x = normalizaCor(c);
+    return x || c;
+  }
+
+  function rotulosDesenha() {
+    if (!ROT.ativo) return;
+    ROT.ativo = false;
+    var ctx = ROT.ctx, cv = ROT.canvas;
+    var largura = cv.getBoundingClientRect().width || cv.width;
+    var k = cv.width / largura;                 // px do canvas por px de tela
+    ROT.caixas = [];
+    if (ROT.modo === "sem_texto") return;
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.textAlign = "center";
+    ctx.textBaseline = "alphabetic";
+    ctx.lineJoin = "round";
+    var ocupadas = [];
+    var ordem = ROT.lista.slice().sort(function (a, b) { return b.prioridade - a.prioridade; });
+    ordem.forEach(function (r) {
+      ctx.font = (r.italico ? "italic " : "") + "600 " + (ROT_TAM * k) + "px " + token(r.fonte === "num" ? "f-num" : "f-texto");
+      var med = ctx.measureText(r.txt);
+      // a placa usa a altura da FONTE (maiúscula e descendente: "Hg"), não a do texto: "zecco" sem
+      // ascendente ficaria com a placa colada na letra e o contorno sem folga sobre o radar
+      var ref = ctx.measureText("Hgjy");
+      var asc = Math.max(ref.actualBoundingBoxAscent || ROT_TAM * 0.72 * k, med.actualBoundingBoxAscent || 0);
+      var desc = Math.max(ref.actualBoundingBoxDescent || ROT_TAM * 0.2 * k, med.actualBoundingBoxDescent || 0);
+      var ascT = med.actualBoundingBoxAscent || asc, descT = med.actualBoundingBoxDescent || desc;
+      var w = med.width + 2 * ROT_FOLGA_X * k, hh = asc + desc + 2 * ROT_FOLGA_Y * k;
+      var base = r.y - r.dy * k;
+      // acima, abaixo, mais acima, mais abaixo (§4.2); sem lugar, o rótulo some (aparece no hover/seleção)
+      var tentativas = [0, -hh, hh, -2 * hh, 2 * hh];
+      var caixa = null;
+      for (var i = 0; i < tentativas.length && !caixa; i++) {
+        var y0 = base + tentativas[i] - asc - ROT_FOLGA_Y * k;
+        var c = { x: r.x - w / 2, y: y0, w: w, h: hh };
+        if (c.x < 0 || c.y < 0 || c.x + c.w > cv.width || c.y + c.h > cv.height) continue;
+        var bate = ocupadas.some(function (o) {
+          return c.x < o.x + o.w && o.x < c.x + c.w && c.y < o.y + o.h && o.y < c.y + c.h;
+        });
+        if (!bate) caixa = c;
+      }
+      if (!caixa) return;
+      ocupadas.push(caixa);
+      var yTexto = caixa.y + ROT_FOLGA_Y * k + asc;
+      ctx.globalAlpha = r.alfa;
+      ctx.fillStyle = corComAlfa("contorno", 0.88);
+      ctx.fillRect(caixa.x, caixa.y, caixa.w, caixa.h);
+      ctx.lineWidth = ROT_CONTORNO * k;
+      ctx.strokeStyle = token("contorno");
+      ctx.strokeText(r.txt, r.x, yTexto);
+      if (ROT.modo !== "sem_preenchimento") {
+        ctx.fillStyle = r.cor;
+        ctx.fillText(r.txt, r.x, yTexto);
+      }
+      ctx.globalAlpha = 1;
+      ROT.caixas.push({ x: (r.x - med.width / 2) / k, y: (yTexto - ascT) / k, w: med.width / k, h: (ascT + descT) / k,
+                        txt: r.txt, cor: corHex(r.cor), peso: 600, alt: (ascT + descT) / k });
+    });
+    ctx.restore();
+  }
+
+  // Gancho de medição do A11 (scripts/design/mede_texto_mapa.py): o texto do canvas não está no DOM.
+  if (typeof window !== "undefined") {
+    window.__medicaoRotulos = {
+      get modo() { return ROT.modo; },
+      define: function (m) { ROT.modo = m; if (ROT.redesenha) ROT.redesenha(); },
+      caixas: function () { return ROT.caixas.slice(); }
+    };
+  }
+
   /** Área de efeito de smoke ou molotov (a zona que ela ocupa, não o símbolo),
       centrada em (X, Y) com raio r, em pixels do radar. O raio vem de
       RAIO_SMOKE_UNIDADES / RAIO_MOLOTOV_UNIDADES convertido pela escala. */
@@ -518,6 +682,7 @@ window.MapCore = (function () {
       desenhado depois passaria a herdar outro estado, e o replay mudaria sem
       ninguém perceber. Quem chamar e depender do estado anterior, salve antes. */
   function desenhaJogador(ctx, X, Y, o) {
+    if (ESTILO.anelDuplo) return desenhaJogadorComAnel(ctx, X, Y, o);
     var color = o.cor;
     var e = o.escala || 1;
     var comDirecao = o.yaw !== undefined && o.yaw !== null;
@@ -598,6 +763,84 @@ window.MapCore = (function () {
     ctx.strokeText(o.nome.slice(0, 9), X, yNome);
     ctx.fillStyle = token("tinta");
     ctx.fillText(o.nome.slice(0, 9), X, yNome);
+  }
+
+  /** A peça com o anel duplo em todos os estados (§4.1) e o nome na camada de rótulos (§4.2).
+      Restaura o estado do contexto (o efeito colateral do desenho antigo não vale aqui). */
+  function desenhaJogadorComAnel(ctx, X, Y, o) {
+    var color = o.cor;
+    var e = o.escala || 1;
+    var comDirecao = o.yaw !== undefined && o.yaw !== null;
+    ctx.save();
+    ctx.lineCap = "round"; ctx.lineJoin = "round";
+
+    if (o.estado === "morto") {
+      // ✕ com halo claro (8 px) e contorno escuro (5,5 px) inteiros por baixo; só o traço colorido a 60 %
+      var d = 3.5 * e;
+      var xis = function () {
+        ctx.beginPath();
+        ctx.moveTo(X - d, Y - d); ctx.lineTo(X + d, Y + d);
+        ctx.moveTo(X + d, Y - d); ctx.lineTo(X - d, Y + d);
+      };
+      xis(); ctx.lineWidth = 8 * e; ctx.strokeStyle = token("tinta"); ctx.stroke();
+      xis(); ctx.lineWidth = 5.5 * e; ctx.strokeStyle = token("contorno"); ctx.stroke();
+      ctx.globalAlpha = 0.6;
+      xis(); ctx.lineWidth = 3 * e; ctx.strokeStyle = color; ctx.stroke();
+      ctx.restore();
+      return;
+    }
+
+    if (o.estado === "outro_andar") {
+      // anel vazado sobre o anel duplo inteiro; a seta ▲/▼ com o mesmo contorno escuro
+      var rr = 5.5 * e;
+      ctx.lineWidth = 2 * e + 2 * (ANEL_CONTORNO + ANEL_HALO); ctx.strokeStyle = token("tinta");
+      ctx.beginPath(); ctx.arc(X, Y, rr, 0, Math.PI * 2); ctx.stroke();
+      ctx.lineWidth = 2 * e + 2 * ANEL_CONTORNO; ctx.strokeStyle = token("contorno");
+      ctx.beginPath(); ctx.arc(X, Y, rr, 0, Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = 0.5;
+      ctx.lineWidth = 2 * e; ctx.strokeStyle = color;
+      ctx.beginPath(); ctx.arc(X, Y, rr, 0, Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.font = "700 " + (9 * e) + "px " + token("f-num");
+      ctx.textAlign = "center";
+      ctx.lineWidth = ANEL_CONTORNO * 1.6; ctx.strokeStyle = token("contorno");
+      ctx.strokeText(o.acima ? "▼" : "▲", X, Y + 3 * e);
+      ctx.fillStyle = color;
+      ctx.fillText(o.acima ? "▼" : "▲", X, Y + 3 * e);
+      ctx.restore();
+      return;
+    }
+
+    var raio = 6 * e;
+    discoComAnel(ctx, X, Y, raio, color, function (r) {
+      if (comDirecao) caminhoDaGota(ctx, X, Y, r, PONTA_DISTANCIA * e + (r - raio), anguloDeTela(o.yaw));
+      else ctx.arc(X, Y, r, 0, Math.PI * 2);
+    });
+
+    if (o.cego) {
+      ctx.strokeStyle = NADE_COLOR.flash;
+      ctx.globalAlpha = 0.9;
+      ctx.lineWidth = 2.2 * e;
+      ctx.setLineDash([3 * e, 3 * e]);
+      ctx.beginPath(); ctx.arc(X, Y, 16 * e, 0, Math.PI * 2); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+    }
+
+    var hp = Math.max(0, Math.min(100, o.hp)) / 100;
+    if (hp < 1) {
+      ctx.strokeStyle = token("tinta");
+      ctx.lineWidth = 2.2 * e;
+      ctx.beginPath();
+      ctx.arc(X, Y, 12.6 * e, -Math.PI / 2, -Math.PI / 2 + hp * Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    if (o.nome) {
+      if (ROT.ativo) rotulo(o.nome.slice(0, 9), X, Y, { cor: token("tinta"), prioridade: o.selecionado ? 10 : 0,
+                                                       dy: (comDirecao ? NOME_ACIMA_COM_DIRECAO : NOME_ACIMA) - 4 });
+    }
   }
 
   /** Gota: círculo de raio r com uma ponta a `dist` do centro, no ângulo de
@@ -1117,6 +1360,10 @@ window.MapCore = (function () {
     anguloDeTela: anguloDeTela,
     interpolaAngulo: interpolaAngulo,
     desenhaJogador: desenhaJogador,
+    defineAnelDuplo: defineAnelDuplo,
+    rotulosInicia: rotulosInicia,
+    rotulo: rotulo,
+    rotulosDesenha: rotulosDesenha,
     normalizaCor: normalizaCor,
     botao: botao,
     seletorDeCor: seletorDeCor
