@@ -248,16 +248,18 @@
 
   /* ---------- Replay ---------- */
 
-  .roundstrip { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 18px; }
+  /* faixa de rounds numa linha só (rola na horizontal), chips de 44 px */
+  .roundstrip { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: thin; padding: 2px 0 6px; margin-top: 18px; }
   .rchip {
     appearance: none;
     cursor: pointer;
+    flex: none;
     font-family: var(--f-num);
-    font-size: 12px;
+    font-size: var(--t-sm);
     font-variant-numeric: tabular-nums;
-    width: 38px;
-    height: 34px;
-    border-radius: var(--r-md);
+    width: var(--toque);
+    height: var(--toque);
+    border-radius: var(--r-sm);
     border: 1px solid var(--borda);
     background: var(--superficie);
     color: var(--tinta-2);
@@ -280,7 +282,10 @@
     color: var(--tinta);
     font-weight: 500;
   }
-  .rchip.key { border-color: var(--decisivo); }
+  /* round decisivo: losango no canto (a cor de borda fica para a seleção) */
+  .rchip.key::before { content: ""; position: absolute; top: 4px; right: 4px; width: 7px; height: 7px;
+    background: var(--decisivo); transform: rotate(45deg); }
+  .meio-tempo { flex: none; width: 1px; background: var(--borda); margin: 6px 4px; }
   .rchip:focus-visible { outline: 2px solid var(--foco); outline-offset: 2px; }
 
   /* Visualizador: dois painéis de time ladeando o mapa, como num software de
@@ -299,7 +304,8 @@
   }
   @media (max-width: 560px) { .stage { grid-template-columns: 1fr; } }
 
-  .board { padding: 0 0 14px; overflow: hidden; }
+  /* `clip`, não `hidden`: hidden faz do quadro um contêiner de rolagem e o transporte deixaria de grudar no pé da tela */
+  .board { padding: 0 0 14px; overflow: clip; }
 
   /* Camada de desenho, seletor de cor e tela cheia: dashboard/web/annotations.css */
   /*__ANNOTATIONS_CSS__*/
@@ -346,16 +352,32 @@
 
   .maplegend {
     display: flex;
-    gap: 13px;
+    gap: 4px 14px;
     flex-wrap: wrap;
-    justify-content: center;
     font-family: var(--f-texto);
-    font-size: 10.5px;
-    color: var(--apagado);
-    margin-top: 10px;
-    padding-inline: 12px;
+    font-size: var(--t-xs);
+    color: var(--tinta-2);
+    margin-top: 8px;
+    padding-inline: 14px;
   }
-  .maplegend span { display: inline-flex; align-items: center; gap: 5px; }
+  .maplegend span { display: inline-flex; align-items: center; gap: 6px; }
+  .maplegend canvas { width: 18px; height: 18px; flex: none; margin: 0; background: none; border-radius: 0; }
+
+  /* ferramentas embaixo da legenda; "?" abre os atalhos num popover */
+  .atalhos-caixa { position: relative; }
+  #b-atalhos { position: absolute; right: 10px; bottom: 6px; min-width: var(--toque); min-height: var(--toque); }
+  .popover {
+    position: absolute; right: 10px; bottom: 56px; z-index: 8; width: min(360px, calc(100vw - 48px));
+    background: var(--superficie-2); border: 1px solid var(--borda); border-radius: var(--r-md);
+    padding: 10px 12px; box-shadow: var(--sombra-pop);
+    font-family: var(--f-texto); font-size: var(--t-sm); color: var(--tinta-2);
+  }
+  .popover p { margin: 0 0 6px; }
+  .popover p:last-child { margin-bottom: 0; }
+  .popover kbd {
+    font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: 12px; padding: 1px 5px; margin: 0 1px;
+    background: var(--superficie); border: 1px solid var(--borda); border-bottom-width: 2px;
+    border-radius: var(--r-sm); color: var(--tinta); font-weight: 600; }
   .sw { width: 9px; height: 9px; border-radius: 99px; display: inline-block; }
   .sw.ct { background: var(--ct); }
   .sw.t { background: var(--tr); }
@@ -449,18 +471,24 @@
     border-bottom: 1px solid var(--linha); font-weight: 600; }
   .feed .log { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 2px; padding: 8px; max-height: none; }
 
+  /* o controle de tocar gruda no pé da tela enquanto o mapa está à vista: visível sem rolar em qualquer altura (A1) */
   .transport {
-    margin-top: 16px;
-    padding-inline: 14px;
-    display: flex;
+    position: sticky;
+    bottom: 0;
+    z-index: 6;
+    margin-top: 8px;
+    padding: 6px 14px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
     align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
+    gap: 10px;
+    background: var(--superficie);
+    border-top: 1px solid var(--linha);
   }
   .play {
     appearance: none;
     cursor: pointer;
-    width: 40px; height: 40px;
+    width: var(--toque); height: var(--toque);
     border-radius: 99px;
     border: 0;
     background: var(--tinta);
@@ -474,7 +502,7 @@
   .play:hover { transform: scale(1.05); }
   .play:focus-visible { outline: 2px solid var(--foco); outline-offset: 2px; }
 
-  .scrub { flex: 1 1 180px; min-width: 140px; position: relative; }
+  .scrub { min-width: 0; position: relative; }
   input[type="range"] {
     width: 100%;
     accent-color: var(--tinta);
@@ -507,7 +535,8 @@
     color: var(--tinta-2);
     font-family: var(--f-num);
     font-size: 12px;
-    padding: 7px 11px;
+    min-width: var(--toque); min-height: var(--toque);
+    padding: 0 8px;
     border-radius: var(--r-md);
   }
   .speed:hover { border-color: var(--tinta-2); }
@@ -961,21 +990,7 @@
 
   <!-- REPLAY -->
   <section class="panel" data-panel="replay" hidden>
-    <div class="eyebrow">Reconstrução do round</div>
-    <h2 class="sec">O que aconteceu no mapa</h2>
-    <p class="lead">
-      Posições reais a 4 quadros por segundo, com kills, plant e defuse no lugar em que
-      aconteceram. Escolha um round — a barra colorida em cada botão indica quem venceu.
-      O contorno do mapa não foi desenhado: ele é a soma das posições da partida inteira.
-    </p>
-    <p class="lead keys">
-      <b>Para revisar com calma:</b> <kbd>espaço</kbd> toca e pausa, <kbd>←</kbd> <kbd>→</kbd> andam
-      quadro a quadro (com <kbd>Shift</kbd>, de segundo em segundo), <kbd>[</kbd> <kbd>]</kbd> mudam a
-      velocidade — que vai até <b>0.25×</b>. Clicar num evento da linha do tempo ou da autópsia
-      começa 3 segundos antes dele, para você ver a aproximação e não só o desfecho.
-    </p>
-
-    <div class="roundstrip" id="strip" role="group" aria-label="Escolher round"></div>
+    <div class="roundstrip" id="strip" role="group" aria-label="Escolher round (a barra indica o lado que venceu; o losango marca o round decisivo)"></div>
 
     <div class="stage">
       <aside class="card squad" id="squad-ct" aria-label="Contra-terroristas"></aside>
@@ -1002,15 +1017,13 @@
           <button class="speed" id="speed">1×</button>
         </div>
 
-        <div class="maplegend">
-          <span><i class="sw ct"></i>CT</span>
-          <span><i class="sw t"></i>T</span>
-          <span><i class="sw smoke"></i>Smoke ●</span>
-          <span><i class="sw fire"></i>Molotov ◆</span>
-          <span><i class="sw he"></i>HE ✷</span>
-          <span><i class="sw flash"></i>Flash ✦</span>
-          <span><i class="sw kill"></i>kill</span>
-          <span><i class="sw bomb"></i>C4</span>
+        <!-- legenda com os glifos REAIS do mapa: o JS desenha cada um com MapCore (mesma função do canvas) -->
+        <div class="maplegend" id="maplegend" aria-label="Legenda"></div>
+
+        <!-- a barra de ferramentas (annotations.js) entra aqui, embaixo da legenda -->
+        <div class="atalhos-caixa" id="atalhos-caixa">
+          <button type="button" class="anot-b" id="b-atalhos" aria-expanded="false" aria-controls="atalhos" aria-label="Atalhos do teclado">?</button>
+          <div class="popover" id="atalhos" role="dialog" aria-label="Atalhos do teclado" hidden></div>
         </div>
       </div>
 
@@ -1385,6 +1398,8 @@
   // Símbolo de cada tipo de granada: vive em map_core.js, que a prancheta
   // também usa.
   var nadeGlyph = MapCore.nadeGlyph;
+  // anel duplo em peça e glifo (entrega-sala-de-demo §4.1): o replay liga na design-B2
+  MapCore.defineAnelDuplo(true);
 
   var rounds = R.rounds;
   var cur = rounds[0];
@@ -1403,11 +1418,58 @@
     b.className = "rchip" + (r.round === decRound ? " key" : "");
     b.textContent = r.round;
     b.dataset.w = r.winner_team;
+    b.dataset.round = r.round;
     b.setAttribute("aria-pressed", String(r === cur));
     b.title = "Round " + r.round + " — " + nomeLado(r.winner_team);
+    b.setAttribute("aria-label", "Round " + r.round + ", " + nomeLado(r.winner_team) + " venceu" +
+                   (r.round === decRound ? ", round decisivo" : ""));
     b.addEventListener("click", function () { selectRound(r); });
     strip.appendChild(b);
+    // separador no fim de cada meio-tempo (12, 24) e de cada metade da prorrogação (MR3: 27, 30, ...)
+    var meio = M.halftime || 12, n = r.round;
+    if (r !== rounds[rounds.length - 1] && (n === meio || n === 2 * meio || (n > 2 * meio && (n - 2 * meio) % 3 === 0))) {
+      var s = document.createElement("span");
+      s.className = "meio-tempo";
+      s.setAttribute("aria-hidden", "true");
+      strip.appendChild(s);
+    }
   });
+
+  // Legenda com os glifos REAIS: cada um desenhado pela mesma função do mapa (MapCore), num canvas pequeno.
+  (function legenda() {
+    var caixa = document.getElementById("maplegend");
+    var ITENS = [["peca", C.ct, "CT"], ["peca", C.tr, "TR"], ["smoke", null, "Smoke"], ["flash", null, "Flash"],
+                 ["he", null, "HE"], ["molotov", null, "Molotov"], ["morto", C.apagado, "morto"]];
+    var dpr = window.devicePixelRatio || 1;
+    ITENS.forEach(function (it) {
+      var s = document.createElement("span"), c = document.createElement("canvas");
+      c.width = c.height = Math.round(18 * dpr);
+      c.setAttribute("aria-hidden", "true");
+      var g = c.getContext("2d");
+      g.scale(dpr, dpr);
+      if (it[0] === "peca") MapCore.desenhaJogador(g, 9, 9, { cor: it[1], estado: "vivo", hp: 100, nome: "" });
+      else if (it[0] === "morto") MapCore.desenhaJogador(g, 9, 9, { cor: C.tinta2, estado: "morto", hp: 0, nome: "" });
+      else MapCore.nadeGlyph(g, it[0], 9, 9, 4, MapCore.NADE_COLOR[it[0]], -Math.PI / 2);
+      s.appendChild(c);
+      s.appendChild(document.createTextNode(it[2]));
+      caixa.appendChild(s);
+    });
+  })();
+
+  // "?" abre os atalhos do teclado (antes eram dois parágrafos fixos acima do mapa)
+  (function atalhos() {
+    var b = document.getElementById("b-atalhos"), pop = document.getElementById("atalhos");
+    pop.innerHTML =
+      "<p><kbd>espaço</kbd> toca e pausa · <kbd>←</kbd> <kbd>→</kbd> quadro a quadro (com <kbd>Shift</kbd>, de " +
+      "segundo em segundo) · <kbd>[</kbd> <kbd>]</kbd> mudam a velocidade, até 0,25×</p>" +
+      "<p>Clicar num evento da linha do tempo ou da autópsia começa 3 segundos antes dele.</p>" +
+      "<p>Posições reais a 4 quadros por segundo. O contorno do mapa não foi desenhado: é a soma das " +
+      "posições da partida inteira.</p>";
+    function abre(sim) { pop.hidden = !sim; b.setAttribute("aria-expanded", String(sim)); }
+    b.addEventListener("click", function (e) { e.stopPropagation(); abre(pop.hidden); });
+    document.addEventListener("click", function (e) { if (!pop.hidden && !pop.contains(e.target)) abre(false); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !pop.hidden) { abre(false); b.focus(); } });
+  })();
 
   var REASON = {
     t_killed: "todos os T eliminados",
@@ -1480,8 +1542,9 @@
     if (window.MapAnnotations && MapAnnotations.setRound) MapAnnotations.setRound(r.round);
     indexBlinds(r);
     setPlaying(false);
-    Array.prototype.forEach.call(strip.children, function (b, i) {
-      b.setAttribute("aria-pressed", String(rounds[i] === r));
+    // só os chips (a faixa também tem os separadores de meio-tempo)
+    Array.prototype.forEach.call(strip.querySelectorAll(".rchip"), function (b) {
+      b.setAttribute("aria-pressed", String(+b.dataset.round === r.round));
     });
     document.getElementById("scrub").max = r.frames - 1;
     document.getElementById("scrub").value = 0;
@@ -1589,7 +1652,7 @@
       host.className = "card squad " + side;
       var mine = cur.players.filter(function (p) { return p.side === side; });
       var team = mine.length ? mine[0].team : "?";
-      host.innerHTML = "<h4>" + (side === "ct" ? "CT" : "T") + " <b>time " + esc(team) + "</b></h4>" +
+      host.innerHTML = "<h4>" + (side === "ct" ? "CT" : "TR") + " <b>" + esc(nomeLado(team)) + "</b></h4>" +
         mine.map(function (p, i) {
           return "<div class='plr' data-side='" + side + "' data-i='" + i + "'>" +
             "<div class='nm'>" + esc(p.name) + "</div><div class='hpn'>100</div>" +
@@ -1836,6 +1899,8 @@
     ctx.clearRect(0, 0, cv.width, cv.height);
     if (window.MapAnnotations) MapAnnotations.applyView(ctx);
     ctx.drawImage(plates[lvNow] || plates[0], 0, 0);
+    // nomes e etiquetas vão para a camada de rótulos (px de tela, por cima de tudo; §4.2)
+    MapCore.rotulosInicia(ctx, cv, draw);
 
     // Smoke e Molotov ocupam área, então são desenhados como zona e não como
     // ponto. O raio segue o raio real de efeito no jogo (constantes do
@@ -2000,14 +2065,8 @@
         var tag = flash
           ? blinded.length + (blinded.length > 1 ? " cegos" : " cego")
           : p.dmg + " dano";
-        ctx.globalAlpha = 1 - k;
-        ctx.font = "600 11.5px " + C.fNum;
-        ctx.textAlign = "center";
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = C.contorno;
-        ctx.strokeText(tag, X, Y - 16 - ease * 5);
-        ctx.fillStyle = col;
-        ctx.fillText(tag, X, Y - 16 - ease * 5);
+        // sem esmaecer: rótulo translúcido deixa o radar aparecer atrás da letra (A11); some quando o estouro acaba
+        MapCore.rotulo(tag, X, Y, { cor: C.tinta, prioridade: 5, dy: 16 + ease * 5 });
       }
       ctx.globalAlpha = 1;
     });
@@ -2105,6 +2164,7 @@
         yaw: yaw
       });
     });
+    MapCore.rotulosDesenha();
 
     // estado da interface
     var el = pos / R.sample_hz, tot = (cur.frames - 1) / R.sample_hz;
@@ -2210,6 +2270,7 @@
     MapAnnotations.init({
       mapCanvas: cv,
       palco: document.getElementById("palco"),
+      antesDe: document.getElementById("atalhos-caixa"),
       radar: RAD,
       // Identidade da PARTIDA. Cair no nome do mapa faria duas partidas na
       // mesma Mirage dividirem a mesma chave de anotacao.
