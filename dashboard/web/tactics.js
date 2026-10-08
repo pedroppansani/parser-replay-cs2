@@ -1387,7 +1387,8 @@ var Prancheta = (function () {
     ctx.clearRect(0, 0, cv.width, cv.height);
     MapCore.applyView(ctx, cfg.radar, S.view);
     var im = imgs[S.andar] || imgs[0];
-    if (im && im.complete && im.naturalWidth) ctx.drawImage(im, 0, 0, cfg.radar.width, cfg.radar.height);
+    // radar dessaturado por mapa (§4.1): processado uma vez e guardado na imagem; aqui só o drawImage
+    if (im && im.complete && im.naturalWidth) ctx.drawImage(MapCore.radarProcessado(im, cfg.radar.map), 0, 0, cfg.radar.width, cfg.radar.height);
 
     // O editor e a reprodução desenham a mesma CENA; só o editor põe por cima
     // busca, rascunho, rastro do passo anterior e seleção.

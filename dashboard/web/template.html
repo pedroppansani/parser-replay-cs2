@@ -1319,7 +1319,7 @@
       pending++;
       var im = new Image();
       im.onload = function () {
-        p.drawImage(im, 0, 0, c.width, c.height);
+        p.drawImage(MapCore.radarProcessado(im, RAD.map), 0, 0, c.width, c.height);   // dessaturado por mapa (§4.1)
         if (--pending === 0) { plateReady = true; draw(); }
       };
       im.src = src;

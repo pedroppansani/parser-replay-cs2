@@ -239,6 +239,8 @@ def build_html(match_id: str, site: dict | None = None, base: Path | None = None
     radar_path = PROJECT_ROOT / "assets" / "radars" / f"{map_name}.json"
     radar_js = ""
     if radar_path.exists():
+        from scripts.radar_ajuste import avisa
+        avisa(map_name)   # mapa sem par em RADAR_AJUSTE (§4.1): a página usa o padrão, o build avisa
         radar = json.loads(radar_path.read_text(encoding="utf-8"))
         # A impressão da calibração vai pronta para a página: é a mesma função que
         # valida um arquivo de anotações exportado, então as duas pontas nunca
