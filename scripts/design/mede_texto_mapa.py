@@ -47,10 +47,14 @@ def lum(rgb: np.ndarray) -> np.ndarray:
 
 
 def dilata(m: np.ndarray, r: int) -> np.ndarray:
-    out = m.copy()
+    """Dilatação SEM dar a volta na borda. Com `np.roll`, a borda de baixo do glifo (a perna do "g")
+    reaparecia na primeira linha do recorte, fora da placa, e o "fundo local" virava o radar acima dela."""
+    h, w = m.shape
+    pad = np.pad(m, r)
+    out = np.zeros_like(m)
     for dy in range(-r, r + 1):
         for dx in range(-r, r + 1):
-            out |= np.roll(np.roll(m, dy, 0), dx, 1)
+            out |= pad[r + dy:r + dy + h, r + dx:r + dx + w]
     return out
 
 
@@ -118,7 +122,7 @@ def main() -> int:
             pg.click('[data-tab="replay"]'); pg.wait_for_timeout(300)
             pg.evaluate("""(f) => { const s = document.getElementById('scrub'); s.value = Math.round(+s.max * f);
                                     s.dispatchEvent(new Event('input')); }""", FRACAO_DO_ROUND)
-            res = mede(pg, "#mapcanvas, canvas.board, #board canvas")
+            res = mede(pg, "#map")                 # o canvas do replay (template.html)
             if res:
                 pior = min(res)
                 linhas.append((w, h, f"replay {mapa}", len(res), pior, sum(1 for r in res if r[0] < r[4]), min(r[2] for r in res)))
