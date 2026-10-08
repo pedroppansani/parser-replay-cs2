@@ -1,0 +1,110 @@
+/* Tokens da direção visual "Sala de demo" (decisão 44). FONTE ÚNICA das cores, fontes, espaços e raios:
+   o build injeta este arquivo (pelo marcador de tokens) no template da partida, na prancheta, na
+   página de jogadores e na landing, e o validador da paleta (metrics/paleta.py) lê as linhas
+   "--nome: #hex;" daqui. Copiado de notas/design/prototipo/tokens.css (entrega-sala-de-demo §3). */
+
+/* Fallbacks com a largura medida da Archivo (fechamento, 2026-10-04): quando a fonte chega
+   (display=swap) o texto não muda de número de linhas, e o CLS da landing não sobe.
+   Razão medida no Chrome: Archivo 400 / Arial 400 = 0,973; Archivo 700 a 75% / Arial 700 = 0,774. */
+@font-face { font-family: "Archivo Fallback"; src: local("Arial"), local("Helvetica"), local("Liberation Sans"); size-adjust: 97.3%; }
+@font-face { font-family: "Archivo Cond Fallback"; src: local("Arial Bold"), local("Arial"), local("Helvetica"), local("Liberation Sans"); size-adjust: 77.4%; }
+
+/* =========================================================================
+   Parser de Replay CS2 · tokens da direção 2 "Sala de demo" (2026-10-04)
+   Tema único, escuro. Cada cor tem UM papel (tabela em projetos/parser-cs2.md).
+   As linhas "--nome: #hex;" são lidas pelo validador (validacao/paleta_v2.py):
+   mantenha um token por linha, com o hex de 6 dígitos.
+   ========================================================================= */
+:root {
+  color-scheme: dark;
+
+  /* ---- Fundos (contra eles o contraste é medido) ---- */
+  --fundo: #0b0f14;          /* página */
+  --superficie: #121820;     /* cards, painéis, barra de ferramentas */
+  --superficie-2: #1a222d;   /* elevado: hover, aba ativa, popover, aviso */
+  --radar: #0f141b;          /* fundo do canvas do mapa (peças e granadas) */
+  --tl-fundo: #0e131a;       /* fundo da linha do tempo (replay e prancheta) */
+
+  /* ---- Texto ---- */
+  --tinta: #e8edf2;          /* texto principal */
+  --tinta-2: #aab5c1;        /* texto secundário */
+  --apagado: #8b97a5;        /* rótulos, referência, "neutro", "amostra pequena" */
+
+  /* ---- Linhas ---- */
+  --linha: #222b37;          /* divisória decorativa (sem requisito de contraste) */
+  --borda: #66758a;          /* borda de controle (botão, campo, chip): >= 3:1 */
+
+  /* ---- Lados (marca = peça, barra, área; texto = rótulo) ---- */
+  --ct: #4a90e8;
+  --ct-texto: #6ea8f2;
+  --tr: #e0a23a;
+  --tr-texto: #e9b65a;
+
+  /* ---- Destaque: round decisivo, MVP, "o que decidiu" ---- */
+  --decisivo: #2fae7c;
+
+  /* ---- Granadas (sempre com forma própria) ---- */
+  --smoke: #d1d9e0;          /* nuvem de três arcos */
+  --flash: #f9f5b8;          /* estrela de quatro pontas com núcleo */
+  --he: #ff4da6;             /* anel serrilhado vazado */
+  --molotov: #d65d00;        /* gota com a ponta na direção do voo */
+
+  /* ---- Estados ---- */
+  --aviso: #ffea3d;          /* "chega 2,3 s atrasado", dado degradado; sempre com ícone ▲ e a palavra */
+  --erro: #ff6b6b;           /* falha de carga ou de arquivo; sempre com ícone e a palavra "Erro" */
+
+  /* ---- Foco e seleção ---- */
+  --foco: #ffffff;           /* anel de foco do teclado (2 px + 2 px de folga) e seleção no mapa */
+  --contorno: #05080b;       /* contorno escuro de peça e glifo no radar (não é cor de papel) */
+
+  /* ---- Papéis SEM cor própria (de propósito; justificativa no documento) ---- */
+  --vitoria: var(--tinta);   /* vencedor: tinta + a palavra "venceu"; perdedor: --tinta-2 */
+  --link: var(--tinta);      /* link: tinta + sublinhado sempre visível */
+  --neutro: var(--apagado);  /* neutro e amostra pequena: apagado + borda tracejada + rótulo */
+
+  /* ---- Translúcidos derivados (áreas no gráfico; nunca texto) ---- */
+  --ct-area: rgba(74, 144, 232, 0.22);
+  --tr-area: rgba(224, 162, 58, 0.22);
+  --decisivo-area: rgba(47, 174, 124, 0.16);
+  --aviso-area: rgba(255, 234, 61, 0.10);
+  --erro-area: rgba(255, 107, 107, 0.10);
+
+  /* ---- Tipografia: 2 famílias ---- */
+  --f-texto: "Archivo", "Archivo Fallback", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-cond: "Archivo", "Archivo Cond Fallback", "Archivo Fallback", sans-serif;  /* onde a Archivo usa largura 75% */
+  --f-num: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  /* Acréscimo do projeto (decisão 44): bloco de código e comando usam a mono do SISTEMA; a JetBrains Mono
+     fica só para número (A6). Não é uma terceira família carregada. */
+  --f-codigo: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  /* largura (eixo wdth da Archivo) */
+  --larg-condensada: 75%;
+  --larg-normal: 100%;
+  /* escala (Sistema-Base, razão 1.25, base 16) */
+  --t-xs: 0.75rem;    /* 12: rótulo condensado em caixa alta */
+  --t-sm: 0.875rem;   /* 14: texto secundário */
+  --t-base: 1rem;     /* 16: texto */
+  --t-lg: 1.25rem;    /* 20 */
+  --t-xl: 1.563rem;   /* 25 */
+  --t-2xl: 1.953rem;  /* 31 */
+  --t-3xl: 2.441rem;  /* 39 */
+  --t-placar: clamp(1.5rem, 6vw, 2.75rem);
+  --t-relogio: 1.75rem;
+  --peso-texto: 400;
+  --peso-medio: 600;
+  --peso-forte: 700;
+
+  /* ---- Espaço e raios (Sistema-Base) ---- */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-6: 24px; --s-8: 32px; --s-12: 48px;
+  --r-sm: 3px;   /* botão, chip, campo */
+  --r-md: 4px;   /* card, painel */
+  --r-full: 9999px; /* só peça e ficha de jogador */
+
+  /* ---- Sombras: quase nenhuma (tema escuro usa linha, não sombra) ---- */
+  --sombra-pop: 0 8px 24px rgba(0, 0, 0, 0.5);   /* popover, dica flutuante */
+  --sombra-peca: 0 0 0 1.5px #05080b;            /* contorno escuro da peça no radar */
+
+  /* ---- Alvos e movimento ---- */
+  --toque: 44px;
+  --dur: 120ms;
+}
+@media (prefers-reduced-motion: reduce) { :root { --dur: 0ms; } }

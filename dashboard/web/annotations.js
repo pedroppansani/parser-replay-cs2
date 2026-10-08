@@ -667,7 +667,7 @@ window.MapAnnotations = (function () {
     fora.width = W;
     fora.height = H + 46;
     var c = fora.getContext("2d");
-    c.fillStyle = "#0f1620";
+    c.fillStyle = MapCore.token("fundo");
     c.fillRect(0, 0, fora.width, fora.height);
     // Exporta o que está VISÍVEL agora -- inclusive o zoom e os traços que a
     // linha do tempo ainda não revelou. A resolução interna muda com a tela;
@@ -676,8 +676,8 @@ window.MapAnnotations = (function () {
     c.drawImage(camada, 0, 0, W, H);
 
     var ctx2 = opts.contexto ? opts.contexto() : {};
-    c.fillStyle = "#eef1f5";
-    c.font = "15px 'DM Mono', monospace";
+    c.fillStyle = MapCore.token("tinta");
+    c.font = "15px " + MapCore.token("f-num");   // o carimbo: partida, round e instante (mono nos números)
     c.textBaseline = "middle";
     var carimbo = [ctx2.partida, ctx2.mapa, "Round " + (S.round == null ? "?" : S.round),
                    ctx2.placar, ctx2.instante].filter(Boolean).join("  ·  ");

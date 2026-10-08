@@ -55,9 +55,28 @@ window.MapCore = (function () {
   var NOME_ACIMA = 14;
   var NOME_ACIMA_COM_DIRECAO = 19;
 
-  // Cor de cada tipo de granada no replay: a paleta validada para daltonismo e
-  // contraste da página da partida (decisão 10).
-  var NADE_COLOR = { smoke: "#9fb0c2", molotov: "#eb6834", he: "#d1495b", flash: "#e8b53a", decoy: "#7d8a99" };
+  /* Os tokens do CSS (dashboard/web/tokens.css) lidos uma vez e guardados: o canvas usa as MESMAS
+     cores do resto da página, sem copiar hex para cá (entrega-sala-de-demo §3.1). Só guarda leitura
+     não vazia: lida antes do CSS carregar, ela voltaria "" e ficaria presa. */
+  var _tokens = {};
+  function token(nome) {
+    if (_tokens[nome]) return _tokens[nome];
+    var v = getComputedStyle(document.documentElement).getPropertyValue("--" + nome).trim();
+    if (v) _tokens[nome] = v;
+    return v;
+  }
+  /** "#rrggbb" de um token e um alfa -> "rgba(r,g,b,a)" (sombra e contorno translúcidos). */
+  function corComAlfa(nome, alfa) {
+    var h = token(nome).replace("#", "");
+    return "rgba(" + parseInt(h.slice(0, 2), 16) + "," + parseInt(h.slice(2, 4), 16) + "," +
+      parseInt(h.slice(4, 6), 16) + "," + alfa + ")";
+  }
+
+  // Cor de cada tipo de granada: os tokens --smoke, --molotov, --he, --flash da direção "Sala de
+  // demo" (decisão 44; contraste e ΔE medidos por metrics/paleta.py). decoy: --apagado.
+  // Lidos dos tokens na carga: o `map_core.js` roda depois do <style> da página.
+  var NADE_COLOR = { smoke: token("smoke"), molotov: token("molotov"), he: token("he"),
+                     flash: token("flash"), decoy: token("apagado") };
 
   /* ---------------------------------------------------------------------
      Projeção. A mesma conta do resto do projeto (scripts/prepare_radar.py,
@@ -373,10 +392,10 @@ window.MapCore = (function () {
 
     // Contorno escuro por baixo do claro: o radar tem áreas claras E escuras, e
     // um traço branco sozinho sumia sobre o concreto claro da Mirage.
-    ctx.shadowColor = "rgba(10,16,24,0.55)";
+    ctx.shadowColor = corComAlfa("contorno", 0.55);
     ctx.shadowBlur = 3;
     ctx.fillStyle = col;
-    ctx.strokeStyle = "rgba(255,255,255,0.95)";
+    ctx.strokeStyle = corComAlfa("tinta", 0.95);
     ctx.lineWidth = 1.2;
     ctx.lineJoin = "round";
 
@@ -397,7 +416,7 @@ window.MapCore = (function () {
       ctx.shadowBlur = 0;
       ctx.beginPath();
       ctx.arc(0, 0, r * 0.3, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(255,255,255,0.95)";
+      ctx.fillStyle = corComAlfa("tinta", 0.95);
       ctx.fill();
     } else if (kind === "he") {
       // Anel serrilhado, VAZADO. Cheio virava uma bolota no tamanho em que ela
@@ -415,7 +434,7 @@ window.MapCore = (function () {
       ctx.stroke();
       ctx.shadowBlur = 0;
       ctx.lineWidth = 0.9;
-      ctx.strokeStyle = "rgba(255,255,255,0.85)";
+      ctx.strokeStyle = corComAlfa("tinta", 0.85);
       ctx.stroke();
     } else if (kind === "molotov") {
       // Gota com a ponta na direção do voo: é o único tipo em que a orientação
@@ -460,12 +479,12 @@ window.MapCore = (function () {
   function desenhaArea(ctx, arma, X, Y, r) {
     var g = ctx.createRadialGradient(X, Y, 0, X, Y, r);
     if (arma === "smoke") {
-      g.addColorStop(0, "rgba(214,223,233,0.78)");
-      g.addColorStop(0.7, "rgba(190,203,217,0.5)");
-      g.addColorStop(1, "rgba(190,203,217,0)");
+      g.addColorStop(0, corComAlfa("smoke", 0.78));
+      g.addColorStop(0.7, corComAlfa("smoke", 0.5));
+      g.addColorStop(1, corComAlfa("smoke", 0));
     } else {
-      g.addColorStop(0, "rgba(235,104,52,0.62)");
-      g.addColorStop(1, "rgba(235,104,52,0)");
+      g.addColorStop(0, corComAlfa("molotov", 0.62));
+      g.addColorStop(1, corComAlfa("molotov", 0));
     }
     ctx.fillStyle = g;
     ctx.beginPath(); ctx.arc(X, Y, r, 0, Math.PI * 2); ctx.fill();
@@ -525,7 +544,7 @@ window.MapCore = (function () {
       ctx.beginPath(); ctx.arc(X, Y, 5.5 * e, 0, Math.PI * 2); ctx.stroke();
       // seta indicando se está acima ou abaixo do andar mostrado
       ctx.fillStyle = color;
-      ctx.font = "700 " + (9 * e) + "px 'DM Mono', ui-monospace, monospace";
+      ctx.font = "700 " + (9 * e) + "px " + token("f-num");
       ctx.textAlign = "center";
       ctx.fillText(o.acima ? "▼" : "▲", X, Y + 3 * e);
       ctx.globalAlpha = 1;
@@ -535,10 +554,10 @@ window.MapCore = (function () {
     // Halo branco. Com a direção, ele vira a gota (morto e outro andar já
     // saíram acima, sem ponta).
     ctx.save();
-    ctx.shadowColor = "rgba(8,12,18,0.55)";
+    ctx.shadowColor = corComAlfa("contorno", 0.55);
     ctx.shadowBlur = 6 * e;
     ctx.shadowOffsetY = 1 * e;
-    ctx.fillStyle = "#fff";
+    ctx.fillStyle = token("tinta");
     ctx.beginPath();
     if (comDirecao) caminhoDaGota(ctx, X, Y, 8.2 * e, PONTA_DISTANCIA * e, anguloDeTela(o.yaw));
     else ctx.arc(X, Y, 8.2 * e, 0, Math.PI * 2);
@@ -564,7 +583,7 @@ window.MapCore = (function () {
     // anel de vida: encolhe conforme o jogador toma dano
     var hp = Math.max(0, Math.min(100, o.hp)) / 100;
     if (hp < 1) {
-      ctx.strokeStyle = "#fff";
+      ctx.strokeStyle = token("tinta");
       ctx.lineWidth = 2.4 * e;
       ctx.beginPath();
       ctx.arc(X, Y, 10.4 * e, -Math.PI / 2, -Math.PI / 2 + hp * Math.PI * 2);
@@ -572,12 +591,12 @@ window.MapCore = (function () {
     }
 
     var yNome = Y - (comDirecao ? NOME_ACIMA_COM_DIRECAO : NOME_ACIMA) * e;
-    ctx.font = "500 " + (12 * e) + "px 'DM Mono', ui-monospace, monospace";
+    ctx.font = "600 " + (12 * e) + "px " + token("f-texto");   // o nome é texto: Archivo (mono só em número)
     ctx.textAlign = "center";
     ctx.lineWidth = 3 * e;
-    ctx.strokeStyle = "rgba(14,20,27,0.85)";
+    ctx.strokeStyle = corComAlfa("contorno", 0.85);
     ctx.strokeText(o.nome.slice(0, 9), X, yNome);
-    ctx.fillStyle = "#eef2f7";
+    ctx.fillStyle = token("tinta");
     ctx.fillText(o.nome.slice(0, 9), X, yNome);
   }
 
@@ -1064,7 +1083,7 @@ window.MapCore = (function () {
   }
 
   return {
-    esc: esc, relogio: relogio,
+    esc: esc, relogio: relogio, token: token, corComAlfa: corComAlfa,
     douglasPeuckerNoTempo: douglasPeuckerNoTempo, caminhoDoJogador: caminhoDoJogador,
     roundParaPrancheta: roundParaPrancheta, compactaParaUrl: compactaParaUrl, descompactaDaUrl: descompactaDaUrl,
     MAX_LADO_INTERNO: MAX_LADO_INTERNO,

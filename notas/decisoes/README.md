@@ -31,7 +31,7 @@ Uma nota por decisão. O `CLAUDE.md` traz a lista curta das que estão em vigor.
 | [8i](8i-economia-do-corpus.md) | vigente | Economia do rating estimada no corpus, por arma mais cara e colete. |
 | [8j](8j-dano-no-mesmo-tick.md) | vigente | `dmg_health_real` é recalculado: vários acertos no tick não passam da vida. |
 | [9](9-convencao-de-angulos.md) | vigente | Pitch positivo olha para baixo; o teste roda a convenção invertida como controle. |
-| [10](10-paleta.md) | vigente | Paleta validada para daltonismo e contraste; não trocar cor sem `valida_paleta`. |
+| [10](10-paleta.md) | vigente | Paleta validada para daltonismo e contraste (tema escuro, decisão 44); cor só com `metrics.paleta`. |
 | [11](11-kmeans-global.md) | vigente | O KMeans é ajustado uma vez no corpus (`global_model.json`), não por partida. |
 | [12](12-ancora-e-lurk-por-area.md) | vigente | Âncora e lurk são medidos por área do mapa (A/Mid/B), não por distância. |
 | [13](13-entry-e-acao.md) | vigente | Entry é quem dá o primeiro contato do time, não quem chega cedo. |

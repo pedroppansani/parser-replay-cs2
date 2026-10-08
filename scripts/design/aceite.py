@@ -4,6 +4,7 @@ site gerado por `py -3.12 -m scripts.build_site` (adaptado do roteiro do protót
 
     py -3.12 -m scripts.design.aceite             # imprime o relatório e devolve 1 se algo falhar
     py -3.12 -m scripts.design.aceite --todas     # A7 em todas as partidas e abas (mais lento)
+    py -3.12 -m scripts.design.aceite --so A2,A3,A4,A6   # só alguns critérios (cada fase responde por uns)
 
 Os seletores que dependem da estrutura da página ficam em SEL, para acompanhar as fases.
 
@@ -36,6 +37,7 @@ ABAS = ["replay", "insights", "rounds", "jogadores", "perfil", "estilos"]   # da
 PAGINAS = [("index.html", None)] + [(PARTIDA, a) for a in ABAS] + [
     ("prancheta_de_mirage.html", None), ("prancheta_de_nuke.html", None), ("jogadores.html", None)]
 TELAS = [(375, 667), (375, 812), (1440, 900)]
+LISTA = 8   # quantos itens de cada falha entram no relatório
 
 JS = r"""
 () => {
@@ -113,12 +115,21 @@ def a7_todas(b):
     return len(ruins)
 
 
+def criterios() -> set[str]:
+    """Os critérios a medir: todos, ou os de `--so A2,A3,...`."""
+    if "--so" in sys.argv:
+        return {x.strip().upper() for x in sys.argv[sys.argv.index("--so") + 1].split(",")}
+    return {"A1", "A2", "A3", "A4", "A5", "A6", "A7"}
+
+
 def main():
+    sys.stdout.reconfigure(encoding="utf-8")
     todas = "--todas" in sys.argv
+    quais = criterios()
     falhas = 0
     p = sync_playwright().start(); b = chrome(p)
     print("== A1: controle de tocar visível sem rolar ==")
-    for w, h in TELAS:
+    for w, h in TELAS if "A1" in quais else ():
         for modo in ("abre #replay", "clica na aba Replay"):
             pg = b.new_page(viewport={"width": w, "height": h})
             pg.goto(url_de(PARTIDA + ("#replay" if modo == "abre #replay" else ""))); pg.wait_for_timeout(900)
@@ -140,14 +151,14 @@ def main():
             for d in pg.query_selector_all("details"): d.evaluate("d=>d.open=true")
             r = pg.evaluate(JS)
             erros = []
-            if r["sw"] > r["vw"]: erros.append(f"rolagem horizontal {r['sw']}>{r['vw']}")
-            if r["texto"]: erros.append(f"{len(r['texto'])} textos abaixo do limiar: " + "; ".join(r["texto"][:4]))
-            if r["borda"]: erros.append("borda < 3:1: " + "; ".join(r["borda"][:4]))
-            if r["toque"]: erros.append(f"{len(r['toque'])} alvos < 44px: " + "; ".join(r["toque"][:5]))
-            if r["mono"]: erros.append("mono com palavra: " + "; ".join(r["mono"][:4]))
-            if r["timeAB"]: erros.append('"Time A/B" na página')
+            if "A2" in quais and r["sw"] > r["vw"]: erros.append(f"A2 rolagem horizontal {r['sw']}>{r['vw']}")
+            if "A3" in quais and r["texto"]: erros.append(f"A3 {len(r['texto'])} textos abaixo do limiar: " + "; ".join(r["texto"][:LISTA]))
+            if "A4" in quais and r["borda"]: erros.append("A4 borda < 3:1: " + "; ".join(r["borda"][:LISTA]))
+            if "A5" in quais and r["toque"]: erros.append(f"A5 {len(r['toque'])} alvos < 44px: " + "; ".join(r["toque"][:LISTA]))
+            if "A6" in quais and r["mono"]: erros.append(f"A6 {len(r['mono'])} mono com palavra: " + "; ".join(r["mono"][:LISTA]))
+            if "A7" in quais and r["timeAB"]: erros.append('A7 "Time A/B" na página')
             fam = [f for f in r["fontes"]]
-            if len(fam) > 2: erros.append("familias: " + ", ".join(fam))
+            if "A6" in quais and len(fam) > 2: erros.append("A6 famílias: " + ", ".join(fam))
             falhas += bool(erros)
             print(f"{pag:<34} largura {r['sw']:>4}  texto min {r['textoMin']:5.2f}:1  fontes {'+'.join(fam) or '-'}  {'PASSA' if not erros else 'FALHA'}")
             for e in erros: print("    - " + e)

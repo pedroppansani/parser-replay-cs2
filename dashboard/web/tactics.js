@@ -1210,7 +1210,7 @@ var Prancheta = (function () {
     Object.keys(f.pecas).forEach(function (id) {
       var q = f.pecas[id], c2 = jogoParaPixel(q.x, q.y);
       ctx.globalAlpha = ALFA_RASTRO * alfaDoAndar(q.nivel);
-      MapCore.desenhaJogador(ctx, c2[0], c2[1], { cor: cssVar(q.lado === "ct" ? "--ct" : "--t"), estado: "vivo", hp: 100,
+      MapCore.desenhaJogador(ctx, c2[0], c2[1], { cor: cssVar(q.lado === "ct" ? "--ct" : "--tr"), estado: "vivo", hp: 100,
                                                   cego: false, nome: "", yaw: q.yaw, escala: ESCALA_PECA });
       n++;
     });
@@ -1223,7 +1223,7 @@ var Prancheta = (function () {
       var m = mortos[id], c2 = jogoParaPixel(m.x, m.y);
       ctx.save();
       ctx.globalAlpha = alfaDoAndar(m.nivel);
-      MapCore.desenhaJogador(ctx, c2[0], c2[1], { cor: cssVar(m.lado === "ct" ? "--ct" : "--t"), estado: "morto", hp: 0,
+      MapCore.desenhaJogador(ctx, c2[0], c2[1], { cor: cssVar(m.lado === "ct" ? "--ct" : "--tr"), estado: "morto", hp: 0,
                                                   cego: false, nome: "", yaw: null, escala: ESCALA_PECA });
       ctx.restore();
       S.ultimoDesenho.push({ tipo: "morto", id: id });
@@ -1298,7 +1298,7 @@ var Prancheta = (function () {
     pts.forEach(function (pt, i) { var px = jogoParaPixel(pt.x, pt.y); if (i) ctx.lineTo(px[0], px[1]); else ctx.moveTo(px[0], px[1]); });
     if (c.mao) c.mao.forEach(function (px) { ctx.lineTo(px[0], px[1]); });
     ctx.stroke(); ctx.setLineDash([]);
-    ctx.font = "600 13px DM Mono, monospace"; ctx.textAlign = "left"; ctx.textBaseline = "bottom";
+    ctx.font = "600 13px " + MapCore.token("f-num"); ctx.textAlign = "left"; ctx.textBaseline = "bottom";
     c.pontos.forEach(function (pt) {
       var px = jogoParaPixel(pt.x, pt.y);
       ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(px[0], px[1], 4, 0, 2 * Math.PI); ctx.fill();
@@ -1488,7 +1488,7 @@ var Prancheta = (function () {
     var pos = [p.x, p.y];
     if (editando && S.arrasto && S.arrasto.tipo === "peca" && S.arrasto.id === id) pos = S.arrasto.jogo;
     var c = jogoParaPixel(pos[0], pos[1]);
-    var cor = cssVar(p.lado === "ct" ? "--ct" : "--t");
+    var cor = cssVar(p.lado === "ct" ? "--ct" : "--tr");
     var alfa = alfaDoAndar(p.nivel) * p.alfa, yaw = editando ? yawDaPeca(id, p) : p.yaw;
     // rastro do passo anterior: onde estava e para onde olhava
     if (anterior && (anterior.x !== pos[0] || anterior.y !== pos[1] || anterior.yaw !== yaw)) {
@@ -1510,7 +1510,7 @@ var Prancheta = (function () {
                                               nome: rotuloDaPeca(p), yaw: yaw, escala: ESCALA_PECA });
     if (p.funcao) {
       // a função embaixo do nome (8.3): texto do vocabulário do projeto
-      ctx.font = "600 12px Figtree, system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "top";
+      ctx.font = "600 12px " + MapCore.token("f-texto"); ctx.textAlign = "center"; ctx.textBaseline = "top";
       ctx.lineWidth = 3; ctx.strokeStyle = "rgba(15,22,32,0.85)"; ctx.fillStyle = "#ffffff";
       ctx.strokeText(p.funcao, c[0], c[1] + RAIO_PECA + 4);
       ctx.fillText(p.funcao, c[0], c[1] + RAIO_PECA + 4);
@@ -1697,7 +1697,7 @@ var Prancheta = (function () {
     ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
     ctx.beginPath(); ctx.arc(px[0], px[1], RAIO_PECA, 0, 2 * Math.PI); ctx.stroke();
     ctx.setLineDash([]);
-    ctx.font = "600 13px Figtree, system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+    ctx.font = "600 13px " + MapCore.token("f-texto"); ctx.textAlign = "center"; ctx.textBaseline = "bottom";
     ctx.lineWidth = 3; ctx.strokeStyle = "rgba(15,22,32,0.9)"; ctx.fillStyle = "#ffffff";
     ctx.strokeText(texto, px[0], px[1] - RAIO_PECA - 4); ctx.fillText(texto, px[0], px[1] - RAIO_PECA - 4);
     ctx.restore();
@@ -3194,7 +3194,7 @@ var Prancheta = (function () {
     if (!e || e.x === null) return;
     var c = jogoParaPixel(e.x, e.y), texto = e.texto + (e.nota ? " — " + e.nota : "");
     ctx.save();
-    ctx.font = "600 13px Figtree, system-ui, sans-serif";
+    ctx.font = "600 13px " + MapCore.token("f-texto");
     var w = ctx.measureText(texto).width + 16, h = 24, x = c[0] - w / 2, y = c[1] - RAIO_PECA - h - 10;
     ctx.globalAlpha = alfaDoAndar(e.nivel);
     ctx.fillStyle = "rgba(15,22,32,0.92)"; ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 1;

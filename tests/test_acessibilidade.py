@@ -11,7 +11,10 @@ from metrics.paleta import (DICROMACIAS, contraste, delta_e_2000, hex_para_rgb, 
 
 RAIZ = Path(__file__).resolve().parent.parent
 WEB = RAIZ / "dashboard" / "web"
-FONTES = {"template": WEB / "template.html", "prancheta": WEB / "tactics.css", "landing": RAIZ / "scripts" / "build_site.py"}
+# O que cada página injeta: os tokens (dashboard/web/tokens.css) entram pelo marcador /*__TOKENS__*/
+FONTES = {"template": WEB / "template.html", "prancheta": WEB / "tactics.html", "landing": RAIZ / "scripts" / "build_site.py",
+          "jogadores": WEB / "jogadores.html"}
+TOKENS = WEB / "tokens.css"
 
 
 def _var(texto: str, nome: str) -> str:
@@ -20,19 +23,24 @@ def _var(texto: str, nome: str) -> str:
 
 @pytest.mark.parametrize("pagina", sorted(FONTES))
 def test_dim_tem_contraste_de_4_5_em_todo_fundo_claro(pagina):
+    # Migrado na design-A (decisão 44): o tema é escuro e a cor secundária é o token --apagado, medido
+    # contra TODOS os fundos do tema (antes: --dim contra o card e os dois papéis claros). Cada página
+    # recebe o MESMO token pelo marcador e não define o dela.
     texto = FONTES[pagina].read_text(encoding="utf-8")
-    dim = _var(texto, "dim")
-    for fundo in ("#ffffff", "#eef1f5", "#e7ebf1"):       # card, paper, paper-2
-        assert contraste(dim, fundo) >= 4.5, (pagina, dim, fundo, contraste(dim, fundo))
+    assert "/*__TOKENS__*/" in texto and not re.search(r"--apagado:", texto), pagina
+    apagado = _var(TOKENS.read_text(encoding="utf-8"), "apagado")
+    for fundo in ("fundo", "superficie", "superficie-2", "radar", "tl-fundo"):
+        cor = _var(TOKENS.read_text(encoding="utf-8"), fundo)
+        assert contraste(apagado, cor) >= 4.5, (pagina, apagado, fundo, contraste(apagado, cor))
 
 
 def test_o_dim_novo_nao_quebra_a_paleta_validada_da_decisao_10():
-    dim = _var(FONTES["template"].read_text(encoding="utf-8"), "dim")
+    apagado = _var(TOKENS.read_text(encoding="utf-8"), "apagado")
     for cor in paleta_em_uso().values():
         for tipo in DICROMACIAS:
-            de = delta_e_2000(rgb_para_lab(simula_dicromacia(dim, tipo)), rgb_para_lab(simula_dicromacia(cor, tipo)))
-            assert de >= 8.0, (dim, cor, tipo, de)
-    assert 'dim: "' + dim + '"' in FONTES["template"].read_text(encoding="utf-8")   # o C.dim dos gráficos
+            de = delta_e_2000(rgb_para_lab(simula_dicromacia(apagado, tipo)), rgb_para_lab(simula_dicromacia(cor, tipo)))
+            assert de >= 8.0, (apagado, cor, tipo, de)
+    assert 'apagado: tk("apagado")' in FONTES["template"].read_text(encoding="utf-8")   # o C.apagado dos gráficos
 
 
 @pytest.mark.parametrize("arquivo", [WEB / "template.html", WEB / "tactics.css", RAIZ / "scripts" / "build_site.py"])

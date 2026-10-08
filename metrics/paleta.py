@@ -1,9 +1,10 @@
 """
-Validador da paleta dos gráficos: ΔE2000 entre todos os pares, em visão normal
-e em daltonismo, mais o contraste no fundo branco.
+Validador da paleta (versão 2, direção visual "Sala de demo", decisão 44): ΔE2000 entre as cores
+que aparecem juntas, em visão normal e em daltonismo, e o contraste de cada cor contra os fundos
+do tema onde ela aparece.
 
-    py -3.12 -m metrics.paleta                     # a paleta em uso
-    py -3.12 -m metrics.paleta "#0b6b4a" "#4a3aa7"  # compara candidatos
+    py -3.12 -m metrics.paleta                     # a paleta em uso (dashboard/web/tokens.css)
+    py -3.12 -m metrics.paleta "#2fae7c" "#4a3aa7"  # candidatos para a cor do round decisivo
 
 POR QUE EXISTE
 --------------
@@ -13,9 +14,17 @@ vez por causa disso: o registro dizia que "esmeralda" estava reprovada, quando o
 reprovado era o esmeralda CLARO -- o defeito era luminância, não matiz, e a
 diferença só apareceu porque os números foram refeitos.
 
-CRITÉRIOS (os mesmos da decisão 10):
-  - pior par em dicromacia: ΔE2000 >= DELTA_E_MINIMO_DALTONICO
-  - contraste da cor no branco: >= CONTRASTE_MINIMO (WCAG para elemento gráfico)
+CRITÉRIOS (entrega-sala-de-demo §9; as contas de cor não mudaram, só o que é medido):
+  - contraste contra os FUNDOS do tema (FUNDOS), cada cor só onde aparece (PALETA):
+    >= 4,5:1 para cor de TEXTO e >= 3:1 para cor de MARCA (peça, ícone, barra, borda de
+    controle, foco); texto escuro sobre cor sólida entra como texto
+  - daltonismo, por GRUPO de cores que aparecem juntas (GRUPOS): pior par em dicromacia
+    com ΔE2000 >= DELTA_E_MINIMO_DALTONICO
+  - os pares nomeados (PARES_NOMEADOS) sempre impressos, nas três visões
+
+A paleta é LIDA do arquivo de tokens (nunca copiada à mão para cá): validar uma paleta diferente
+da que está no ar é o jeito clássico de aprovar uma cor que a página não usa. A saída com os
+tokens atuais está fixada em tests/fixtures/paleta_v2_saida.txt (a da §9.2 do documento).
 
 LIMITE DO MODELO, e ele importa: a simulação de dicromacia é Viénot, Brettel e
 Mollon (1999), em LMS. Ela APROXIMA protanopia e deuteranopia; não cobre
@@ -31,11 +40,12 @@ import sys
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
-TEMPLATE = RAIZ / "dashboard" / "web" / "template.html"
+TOKENS = RAIZ / "dashboard" / "web" / "tokens.css"
 
 # Alvos da decisão 10. Não são deste script: são do projeto.
 DELTA_E_MINIMO_DALTONICO = 8.0
-CONTRASTE_MINIMO = 3.0
+# Contraste mínimo por papel da cor (WCAG 1.4.3 e 1.4.11; fonte: entrega-sala-de-demo §9.1).
+LIMIAR = {"texto": 4.5, "marca": 3.0}
 
 # Viénot, Brettel e Mollon (1999): RGB linear -> LMS, projeção do eixo que o
 # cone ausente não distingue, e volta.
@@ -133,62 +143,131 @@ def simula_dicromacia(cor: str, tipo: str):
 
 # --- Avaliação ---------------------------------------------------------------
 
+# Fundos do tema: token -> onde aparece (fonte: entrega-sala-de-demo §9.1).
+FUNDOS = {
+    "fundo": "página",
+    "superficie": "cards e painéis",
+    "superficie-2": "elevado: hover, aba ativa, popover, aviso",
+    "radar": "canvas do mapa (peças e granadas)",
+    "tl-fundo": "linha do tempo (replay e prancheta)",
+}
+
+# token, papel, fundos onde aparece. Texto escuro sobre cor sólida (ficha, botão, "venceu")
+# entra como "texto", com o fundo sendo a própria cor sólida.
+PALETA = [
+    ("tinta",      "texto", ["fundo", "superficie", "superficie-2", "radar", "tl-fundo"]),
+    ("tinta-2",    "texto", ["fundo", "superficie", "superficie-2", "tl-fundo"]),
+    ("apagado",    "texto", ["fundo", "superficie", "superficie-2", "tl-fundo"]),
+    ("borda",      "marca", ["fundo", "superficie", "superficie-2"]),
+    ("ct",         "marca", ["fundo", "superficie", "radar", "tl-fundo"]),
+    ("ct-texto",   "texto", ["fundo", "superficie", "superficie-2"]),
+    ("tr",         "marca", ["fundo", "superficie", "radar", "tl-fundo"]),
+    ("tr-texto",   "texto", ["fundo", "superficie", "superficie-2"]),
+    ("decisivo",   "texto", ["fundo", "superficie", "superficie-2", "tl-fundo"]),
+    ("smoke",      "marca", ["radar", "tl-fundo"]),
+    ("flash",      "marca", ["radar", "tl-fundo"]),
+    ("he",         "marca", ["radar", "tl-fundo"]),
+    ("molotov",    "marca", ["radar", "tl-fundo"]),
+    ("aviso",      "texto", ["superficie", "superficie-2", "radar", "tl-fundo"]),
+    ("erro",       "texto", ["fundo", "superficie", "superficie-2"]),
+    ("foco",       "marca", ["fundo", "superficie", "superficie-2", "radar", "tl-fundo"]),
+    ("fundo",      "texto", ["ct", "tr", "decisivo", "aviso", "tinta"]),
+]
+
+# Grupos de cores que aparecem juntas (o ΔE é medido por grupo).
+GRUPOS = {
+    "graficos (decisao 10)": ["ct", "tr", "decisivo"],
+    "radar e linha do tempo": ["ct", "tr", "decisivo", "smoke", "flash", "he", "molotov", "aviso"],
+    "estados no painel": ["ct-texto", "tr-texto", "decisivo", "aviso", "erro"],
+}
+PARES_NOMEADOS = [("molotov", "tr"), ("molotov", "decisivo")]
+
+# Os três tokens que formam a paleta dos gráficos da partida (decisão 10).
+TOKENS_DOS_GRAFICOS = (("ct", "A_azul"), ("tr", "B_laranja"), ("decisivo", "decisivo"))
+
+
+def le_tokens(caminho: Path = TOKENS) -> dict[str, str]:
+    """Os tokens de cor do arquivo de estilo: linhas `--nome: #hex;` (um token por linha)."""
+    texto = caminho.read_text(encoding="utf-8")
+    return {m.group(1): m.group(2).lower()
+            for m in re.finditer(r"^\s*--([a-z0-9-]+):\s*(#[0-9a-fA-F]{6})\s*;", texto, re.M)}
+
+
 def paleta_em_uso() -> dict[str, str]:
-    """Lê as cores dos gráficos do próprio template.
-
-    O script nunca valida uma paleta diferente da que está no ar -- paleta
-    copiada à mão para dentro do validador é o jeito clássico de aprovar uma
-    cor que a página não usa.
-    """
-    texto = TEMPLATE.read_text(encoding="utf-8")
-    cores: dict[str, str] = {}
-    for var, rotulo in (("ct", "A_azul"), ("t", "B_laranja"), ("dec", "decisivo")):
-        m = re.search(rf"^\s*--{var}:\s*(#[0-9a-fA-F]{{6}});", texto, re.M)
-        if m:
-            cores[rotulo] = m.group(1)
-    return cores
+    """As cores dos gráficos da partida (CT, TR e decisivo), lidas dos tokens."""
+    tk = le_tokens()
+    return {rotulo: tk[token] for token, rotulo in TOKENS_DOS_GRAFICOS if token in tk}
 
 
-def avalia(rotulo: str, cores: dict[str, str], cor_avaliada: str) -> bool:
-    """Imprime a linha de uma paleta e devolve se ela passa nos dois critérios."""
-    lab = {k: rgb_para_lab(hex_para_rgb(v)) for k, v in cores.items()}
-    pares = list(itertools.combinations(cores, 2))
-    pior_normal = min((delta_e_2000(lab[a], lab[b]), f"{a} x {b}") for a, b in pares)
-
-    piores = []
-    for tipo in DICROMACIAS:
-        labs = {k: rgb_para_lab(simula_dicromacia(v, tipo)) for k, v in cores.items()}
-        piores.append(min((delta_e_2000(labs[a], labs[b]), f"{a} x {b} ({tipo})")
-                          for a, b in pares))
-    dalt, par_dalt = min(piores)
-
-    razao = contraste(cor_avaliada, "#ffffff")
-    passa = dalt >= DELTA_E_MINIMO_DALTONICO and razao >= CONTRASTE_MINIMO
-    print(f"{rotulo:<12} {cor_avaliada:<9} "
-          f"dE normal {pior_normal[0]:>5.1f} [{pior_normal[1]}]  "
-          f"dE daltonico {dalt:>5.1f} [{par_dalt}]  "
-          f"contraste {razao:>4.2f}:1  {'PASSA' if passa else 'FALHA'}")
-    return passa
+def _labs(cor: str) -> dict:
+    return {"normal": rgb_para_lab(hex_para_rgb(cor)),
+            **{t: rgb_para_lab(simula_dicromacia(cor, t)) for t in DICROMACIAS}}
 
 
-def main() -> None:
-    base = paleta_em_uso()
-    print("paleta em uso (lida de "
-          f"{TEMPLATE.relative_to(RAIZ).as_posix()}): "
-          + ", ".join(f"{k} {v}" for k, v in base.items()))
-    print(f"criterios: dE daltonico >= {DELTA_E_MINIMO_DALTONICO}, "
-          f"contraste no branco >= {CONTRASTE_MINIMO}:1")
-    print()
+def avalia(tk: dict[str, str], rotulo_da_origem: str) -> tuple[list[str], int]:
+    """O relatório completo (as linhas) e quantas verificações falharam."""
+    linhas = [f"tokens lidos de {rotulo_da_origem}: {len(tk)}",
+              f"criterios: texto >= {LIMIAR['texto']}:1 e marca >= {LIMIAR['marca']}:1 contra os fundos onde a cor aparece; "
+              f"dE daltonico >= {DELTA_E_MINIMO_DALTONICO} no pior par de cada grupo",
+              "fundos: " + ", ".join(f"{k} {tk[k]} ({v})" for k, v in FUNDOS.items()), ""]
+    falhas = 0
 
-    candidatos = sys.argv[1:]
-    if not candidatos:
-        avalia("em uso", base, base["decisivo"])
-        return
-    # candidato substitui só a cor do round decisivo; as dos times são fixas
-    fixas = {k: v for k, v in base.items() if k != "decisivo"}
-    for cor in candidatos:
-        avalia("candidato", {**fixas, "decisivo": cor}, cor)
+    linhas.append("== CONTRASTE ==")
+    for nome, tipo, fundos in PALETA:
+        lim = LIMIAR[tipo]
+        medidas = [(f, contraste(tk[nome], tk[f])) for f in fundos]
+        ok = min(r for _, r in medidas) >= lim
+        falhas += not ok
+        linhas.append(f"{nome:<13}{tk[nome]:<9}{tipo:<6}>= {lim:<4} "
+                      + "  ".join(f"{f} {r:5.2f}" for f, r in medidas)
+                      + f"   {'PASSA' if ok else 'FALHA'}")
+    linhas.append("")
+
+    linhas.append("== DALTONISMO (pior par de cada grupo) ==")
+    for grupo, nomes in GRUPOS.items():
+        labs = {n: _labs(tk[n]) for n in nomes}
+        pares = list(itertools.combinations(nomes, 2))
+        normal = min((delta_e_2000(labs[a]["normal"], labs[b]["normal"]), f"{a} x {b}") for a, b in pares)
+        dalt = min((delta_e_2000(labs[a][t], labs[b][t]), f"{a} x {b} ({t})")
+                   for a, b in pares for t in DICROMACIAS)
+        ok = dalt[0] >= DELTA_E_MINIMO_DALTONICO
+        falhas += not ok
+        linhas.append(f"{grupo:<26} dE normal {normal[0]:5.1f} [{normal[1]}]  "
+                      f"dE daltonico {dalt[0]:5.1f} [{dalt[1]}]  {'PASSA' if ok else 'FALHA'}")
+    linhas.append("")
+
+    linhas.append("== PARES NOMEADOS ==")
+    for a, b in PARES_NOMEADOS:
+        la, lb = _labs(tk[a]), _labs(tk[b])
+        vals = {t: delta_e_2000(la[t], lb[t]) for t in la}
+        ok = min(vals[t] for t in DICROMACIAS) >= DELTA_E_MINIMO_DALTONICO
+        falhas += not ok
+        linhas.append(f"{a} {tk[a]} x {b} {tk[b]}: "
+                      + "  ".join(f"{t} {d:5.1f}" for t, d in vals.items())
+                      + f"   {'PASSA' if ok else 'FALHA'}")
+    linhas.append("")
+    linhas.append("RESULTADO: " + ("PASSA" if falhas == 0 else f"FALHA ({falhas})"))
+    return linhas, falhas
+
+
+def main(argv: list[str] | None = None) -> int:
+    argv = sys.argv[1:] if argv is None else argv
+    tk = le_tokens()
+    origem = TOKENS.relative_to(RAIZ).as_posix()
+    if not argv:
+        linhas, falhas = avalia(tk, origem)
+        print("\n".join(linhas))
+        return 0 if falhas == 0 else 1
+    # candidatos: cada um substitui só a cor do round decisivo; as demais são as dos tokens
+    total = 0
+    for cor in argv:
+        print(f"== candidato para --decisivo: {cor}")
+        linhas, falhas = avalia({**tk, "decisivo": cor.lower()}, origem)
+        print("\n".join(linhas))
+        print()
+        total += falhas
+    return 0 if total == 0 else 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
