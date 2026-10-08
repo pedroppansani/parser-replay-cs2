@@ -179,92 +179,83 @@ def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | Non
     mapas = sorted({(m.get("map"), m.get("map_label")) for m in matches if m.get("map")}, key=lambda x: str(x[1]))
     filtro = "".join(f'<button type="button" data-filtro="{e(str(k))}">{e(str(rot))}</button>' for k, rot in mapas)
 
-    return f"""<!DOCTYPE html>
+    from scripts.design_head import aplica  # tokens e fontes (decisão 44)
+    return aplica(f"""<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CS2 Replay Stats — demonstração</title>
 {meta_tags("CS2 Replay Stats", "Parser de replay de CS2 com métricas autorais: utility por efeito, crosshair placement validado contra os dados e função de jogador derivada de limiar explícito.", url_do_site(repo_url))}
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=DM+Mono:wght@400;500&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!--__FONTES__-->
 <style>
-  :root {{
-    --paper: #eef1f5; --paper-2: #e7ebf1; --card: #fff; --ink: #0f1620; --ink-2: #4c5a6b;
-    --dim: #5f6b79; --line: #dde3eb; --ct: #2a78d6; --t: #eb6834; --aqua: #1baf7a;
-    --display: "Bricolage Grotesque", Georgia, sans-serif;
-    --body: "Figtree", system-ui, sans-serif;
-    --mono: "DM Mono", ui-monospace, Menlo, monospace;
-    --r: 10px;
-  }}
+  /* Os tokens (cores, fontes, espaços) vêm de dashboard/web/tokens.css, injetado no build. */
+  /*__TOKENS__*/
   * {{ box-sizing: border-box; }}
   :where(button, a[href], select, input, textarea, summary, [tabindex]):focus-visible {{
-    outline: 2px solid var(--ct); outline-offset: 2px;
+    outline: 2px solid var(--foco); outline-offset: 2px;
   }}
-  body {{ margin: 0; background: var(--paper); color: var(--ink); font-family: var(--body);
+  body {{ margin: 0; background: var(--fundo); color: var(--tinta); font-family: var(--f-texto);
     -webkit-font-smoothing: antialiased; }}
   .shell {{ max-width: 1120px; margin: 0 auto; padding: 0 20px 64px; }}
   header {{ padding: 56px 0 8px; }}
-  .eyebrow {{ font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
-    text-transform: uppercase; color: var(--dim); }}
-  h1 {{ font-family: var(--display); font-size: clamp(34px, 6vw, 58px); line-height: 1.02;
+  .eyebrow {{ font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--apagado); font-weight: 600; }}
+  h1 {{ font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: clamp(34px, 6vw, 58px); line-height: 1.02;
     letter-spacing: -0.03em; margin: 12px 0 0; font-weight: 800; }}
-  .lead {{ max-width: 62ch; font-size: 16px; line-height: 1.6; color: var(--ink-2); margin: 16px 0 0; }}
-  .lead b {{ color: var(--ink); font-weight: 600; }}
+  .lead {{ max-width: 62ch; font-size: 16px; line-height: 1.6; color: var(--tinta-2); margin: 16px 0 0; }}
+  .lead b {{ color: var(--tinta); font-weight: 600; }}
 
   .hero {{ display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; align-items: center; }}
-  .hero-img {{ width: 100%; height: auto; border-radius: var(--r); border: 1px solid var(--line);
-    box-shadow: 0 10px 30px rgba(15, 22, 32, .10); display: block; }}
+  .hero-img {{ width: 100%; height: auto; border-radius: var(--r-md); border: 1px solid var(--linha); display: block; }}
   .botoes {{ display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }}
-  .btn {{ display: inline-block; padding: 10px 18px; border-radius: 999px; border: 1px solid var(--line);
-    background: var(--card); color: var(--ink); text-decoration: none; font-weight: 600; font-size: 15px; }}
-  .btn:hover {{ border-color: var(--ct); }}
-  .btn.principal {{ background: var(--ink); color: #fff; border-color: var(--ink); }}
-  .corpus {{ font-family: var(--mono); font-size: 12px; color: var(--dim); margin: 16px 0 0; }}
+  .btn {{ display: inline-block; padding: 10px 18px; border-radius: var(--r-sm); border: 1px solid var(--borda);
+    background: var(--superficie); color: var(--tinta); text-decoration: none; font-weight: 600; font-size: 15px; }}
+  .btn:hover {{ border-color: var(--tinta-2); }}
+  .btn.principal {{ background: var(--tinta); color: var(--fundo); border-color: var(--tinta); }}
+  .corpus {{ font-family: var(--f-texto); font-size: 12px; color: var(--apagado); margin: 16px 0 0; }}
   .nums {{ margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 14px; }}
-  .num {{ background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 18px 20px; }}
-  .num b {{ display: block; font-family: var(--display); font-size: 30px; letter-spacing: -0.02em; line-height: 1.1; }}
+  .num {{ background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--r-md); padding: 18px 20px; }}
+  .num b {{ display: block; font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: 30px; letter-spacing: -0.02em; line-height: 1.1; }}
   .num span {{ display: block; font-weight: 600; font-size: 14px; margin-top: 6px; }}
-  .num p {{ margin: 8px 0 0; font-size: 13px; line-height: 1.5; color: var(--ink-2); }}
+  .num p {{ margin: 8px 0 0; font-size: 13px; line-height: 1.5; color: var(--tinta-2); }}
   .filtro {{ margin-top: 34px; display: flex; flex-wrap: wrap; gap: 8px; }}
-  .filtro button {{ font: inherit; font-size: 13px; padding: 6px 13px; border-radius: 999px; cursor: pointer;
-    border: 1px solid var(--line); background: var(--card); color: var(--ink-2); }}
-  .filtro button[aria-pressed="true"] {{ background: var(--ink); color: #fff; border-color: var(--ink); }}
+  .filtro button {{ font: inherit; font-size: 13px; padding: 6px 13px; border-radius: var(--r-sm); cursor: pointer;
+    border: 1px solid var(--borda); background: var(--superficie); color: var(--tinta-2); }}
+  .filtro button[aria-pressed="true"] {{ background: var(--tinta); color: var(--fundo); border-color: var(--tinta); }}
   .mcard[hidden] {{ display: none; }}
   @media (max-width: 760px) {{ .hero {{ grid-template-columns: 1fr; }} }}
 
   .grid {{ margin-top: 14px; display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 290px), 1fr)); gap: 14px; }}
-  .mcard {{ display: block; text-decoration: none; color: inherit; background: var(--card);
-    border: 1px solid var(--line); border-radius: var(--r); padding: 16px;
+  .mcard {{ display: block; text-decoration: none; color: inherit; background: var(--superficie);
+    border: 1px solid var(--linha); border-radius: var(--r-md); padding: 16px;
     transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease; }}
-  .mcard:hover {{ transform: translateY(-2px); border-color: var(--ct);
-    box-shadow: 0 6px 22px rgba(15,22,32,0.09); }}
+  .mcard:hover {{ transform: translateY(-2px); border-color: var(--tinta-2); }}
   .mtop {{ display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }}
-  .mmap {{ font-family: var(--display); font-weight: 700; font-size: 21px; letter-spacing: -0.02em; }}
-  .mscore {{ font-family: var(--mono); font-size: 19px; font-weight: 500; }}
-  .mscore em {{ font-style: normal; color: var(--dim); padding: 0 2px; }}
-  .mrosters {{ margin-top: 10px; font-family: var(--mono); font-size: 11px; color: var(--ink-2);
+  .mmap {{ font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-weight: 700; font-size: 21px; letter-spacing: -0.02em; }}
+  .mscore {{ font-family: var(--f-num); font-size: 19px; font-weight: 500; }}
+  .mscore em {{ font-style: normal; color: var(--apagado); padding: 0 2px; }}
+  .mrosters {{ margin-top: 10px; font-family: var(--f-texto); font-size: 11px; color: var(--tinta-2);
     line-height: 1.75; }}
-  .mrosters .vs {{ color: var(--dim); }}
-  .mfoot {{ margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line);
+  .mrosters .vs {{ color: var(--apagado); }}
+  .mfoot {{ margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--linha);
     display: flex; justify-content: space-between; gap: 8px;
-    font-family: var(--mono); font-size: 10.5px; color: var(--dim); }}
-  .noradar {{ margin-top: 8px; font-family: var(--mono); font-size: 10px; color: var(--dim);
+    font-family: var(--f-texto); font-size: 10.5px; color: var(--apagado); }}
+  .noradar {{ margin-top: 8px; font-family: var(--f-texto); font-size: 10px; color: var(--apagado);
     font-style: italic; }}
 
-  .box {{ margin-top: 34px; background: var(--card); border: 1px solid var(--line);
-    border-radius: var(--r); padding: 20px 22px; }}
-  .box h2 {{ font-family: var(--display); font-size: 22px; letter-spacing: -0.02em; margin: 0 0 8px; }}
-  .box p {{ font-size: 13.5px; line-height: 1.6; color: var(--ink-2); margin: 0 0 10px; max-width: 70ch; }}
-  .box b {{ color: var(--ink); font-weight: 600; }}
-  pre {{ margin: 0; padding: 13px 14px; background: var(--ink); color: #e6edf5; border-radius: 8px;
-    overflow-x: auto; font-family: var(--mono); font-size: 11.5px; line-height: 1.75; }}
-  .why {{ font-size: 12px; color: var(--dim); margin-top: 10px; }}
-  footer {{ margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--line);
-    font-size: 12px; color: var(--dim); line-height: 1.6; }}
-  footer a {{ color: var(--ct); }}
+  .box {{ margin-top: 34px; background: var(--superficie); border: 1px solid var(--linha);
+    border-radius: var(--r-md); padding: 20px 22px; }}
+  .box h2 {{ font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: 22px; letter-spacing: -0.02em; margin: 0 0 8px; }}
+  .box p {{ font-size: 13.5px; line-height: 1.6; color: var(--tinta-2); margin: 0 0 10px; max-width: 70ch; }}
+  .box b {{ color: var(--tinta); font-weight: 600; }}
+  pre {{ margin: 0; padding: 13px 14px; background: var(--superficie-2); color: var(--tinta); border-radius: var(--r-md);
+    overflow-x: auto; font-family: var(--f-codigo); font-size: 11.5px; line-height: 1.75; }}
+  .why {{ font-size: 12px; color: var(--apagado); margin-top: 10px; }}
+  footer {{ margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--linha);
+    font-size: 12px; color: var(--apagado); line-height: 1.6; }}
+  footer a {{ color: var(--link); text-decoration: underline; text-underline-offset: 3px; }}
 </style>
 </head>
 <body>
@@ -341,7 +332,7 @@ python -m scripts.build_site
 </script>
 </body>
 </html>
-"""
+""")
 
 
 def build(repo_url: str) -> Path:

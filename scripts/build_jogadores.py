@@ -56,8 +56,9 @@ TEXTOS = {
 
 
 def build_html(site: str | None = None) -> str:
+    from scripts.design_head import aplica  # tokens e fontes (decisão 44)
     dados = para_a_pagina()
-    return ((WEB / "jogadores.html").read_text(encoding="utf-8")
+    return aplica((WEB / "jogadores.html").read_text(encoding="utf-8")
             .replace("<!--__TITULO__-->", html.escape(TITULO))
             .replace("<!--__META__-->", meta_tags(TITULO, TEXTOS["aviso"], site, ARQUIVO))
             .replace("/*__MAP_CORE__*/", (WEB / "map_core.js").read_text(encoding="utf-8"))

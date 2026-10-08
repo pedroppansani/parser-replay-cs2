@@ -29,9 +29,9 @@ from scripts.build_web_page import build_html  # noqa: E402
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-# Fundo do painel (#161d26). É a cor que aparece onde o mapa NÃO está: com a
-# regressão, a área inteira do mapa ficava nesta cor.
-FUNDO = (22, 29, 38)
+# Fundo do canvas do mapa (--radar, #0f141b; era #161d26 antes da direção "Sala de demo", decisão 44).
+# É a cor que aparece onde o mapa NÃO está: com a regressão, a área inteira do mapa ficava nesta cor.
+FUNDO = (15, 20, 27)
 
 # Fração mínima da área do mapa, na tela, que não é o fundo do painel. O radar
 # tem muita área escura fora do caminhável, então o número não chega perto de

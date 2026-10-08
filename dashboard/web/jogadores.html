@@ -5,49 +5,42 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><!--__TITULO__--></title>
 <!--__META__-->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=DM+Mono:wght@400;500&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<!--__FONTES__-->
 <style>
-  :root {
-    --paper: #eef1f5; --paper-2: #e7ebf1; --card: #ffffff; --ink: #0f1620; --ink-2: #4c5a6b;
-    --dim: #5f6b79; --line: #dde3eb; --ct: #2a78d6; --t: #eb6834; --dec: #0b6b4a;
-    --display: "Bricolage Grotesque", Georgia, sans-serif;
-    --body: "Figtree", system-ui, sans-serif;
-    --mono: "DM Mono", ui-monospace, Menlo, monospace;
-  }
+  /* Os tokens (cores, fontes, espaços) vêm de dashboard/web/tokens.css, injetado no build. */
+  /*__TOKENS__*/
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--body); -webkit-font-smoothing: antialiased; }
+  body { margin: 0; background: var(--fundo); color: var(--tinta); font-family: var(--f-texto); -webkit-font-smoothing: antialiased; }
   .shell { max-width: 1180px; margin: 0 auto; padding: 0 20px 64px; }
   header { padding: 28px 0 8px; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: baseline; }
-  header nav a { color: var(--ink-2); text-decoration: none; margin-right: 12px; }
-  h1 { font-family: var(--display); font-size: clamp(28px, 4.5vw, 44px); margin: 6px 0 4px; letter-spacing: -0.02em; }
-  .aviso { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--dec); border-radius: 10px; padding: 12px 16px; margin: 10px 0 18px; color: var(--ink-2); }
+  header nav a { color: var(--tinta-2); text-decoration: none; margin-right: 12px; }
+  h1 { font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: clamp(28px, 4.5vw, 44px); margin: 6px 0 4px; letter-spacing: -0.02em; }
+  .aviso { background: var(--superficie); border: 1px solid var(--linha); border-left: 4px solid var(--decisivo); border-radius: var(--r-md); padding: 12px 16px; margin: 10px 0 18px; color: var(--tinta-2); }
   .grade { display: grid; grid-template-columns: 300px 1fr; gap: 18px; align-items: start; }
   @media (max-width: 860px) { .grade { grid-template-columns: 1fr; } }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .card { background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--r-md); padding: 14px 16px; }
   .lista { max-height: 70vh; overflow: auto; padding: 6px; }
-  .lista label { display: flex; gap: 8px; align-items: baseline; padding: 6px 8px; border-radius: 7px; cursor: pointer; }
-  .lista label:hover { background: var(--paper); }
-  .lista small { color: var(--dim); font-family: var(--mono); font-size: 10.5px; display: block; }
-  input[type=search], select { width: 100%; font: inherit; padding: 7px 9px; border: 1px solid var(--line); border-radius: 7px; background: var(--card); color: var(--ink); }
+  .lista label { display: flex; gap: 8px; align-items: baseline; padding: 6px 8px; border-radius: var(--r-md); cursor: pointer; }
+  .lista label:hover { background: var(--superficie-2); }
+  .lista small { color: var(--apagado); font-family: var(--f-texto); font-size: 10.5px; display: block; }
+  input[type=search], select { width: 100%; font: inherit; padding: 7px 9px; border: 1px solid var(--borda); border-radius: var(--r-sm); background: var(--fundo); color: var(--tinta); }
   .filtros { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
-  .filtros label { font-family: var(--mono); font-size: 11px; color: var(--dim); display: grid; gap: 4px; min-width: 150px; }
+  .filtros label { font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: 11px; color: var(--apagado); display: grid; gap: 4px; min-width: 150px; font-weight: 600; }
   .legenda { display: flex; flex-wrap: wrap; gap: 14px; margin: 6px 0 12px; font-size: 13px; }
   .legenda i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
-  .grupo h3 { font-family: var(--display); font-size: 17px; margin: 18px 0 6px; }
-  .metrica { display: grid; grid-template-columns: 210px 1fr; gap: 12px; padding: 8px 0; border-top: 1px solid var(--line); }
+  .grupo h3 { font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: 17px; margin: 18px 0 6px; }
+  .metrica { display: grid; grid-template-columns: 210px 1fr; gap: 12px; padding: 8px 0; border-top: 1px solid var(--linha); }
   .metrica .nome { font-size: 13px; }
-  .metrica .nome small { display: block; color: var(--dim); font-family: var(--mono); font-size: 10.5px; }
+  .metrica .nome small { display: block; color: var(--apagado); font-family: var(--f-texto); font-size: 10.5px; }
   .barras { display: grid; gap: 5px; position: relative; }
   .barra { position: relative; height: 18px; margin-right: 64px; }
   .barra .faixa { position: absolute; top: 3px; height: 12px; border-radius: 3px; opacity: .85; }
-  .barra .ic { position: absolute; top: 8px; height: 2px; background: var(--ink); }
-  .barra .bruto { position: absolute; top: 2px; width: 2px; height: 14px; background: var(--ink); }
-  .barra .val { position: absolute; top: 1px; right: -62px; width: 56px; text-align: right; font-family: var(--mono); font-size: 11px; color: var(--ink); white-space: nowrap; }
-  .media { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--dim); }
-  .nota { color: var(--dim); font-size: 12.5px; margin-top: 8px; }
-  :where(button, a[href], select, input, textarea, summary, [tabindex]):focus-visible { outline: 2px solid var(--ct); outline-offset: 2px; }
+  .barra .ic { position: absolute; top: 8px; height: 2px; background: var(--tinta); }
+  .barra .bruto { position: absolute; top: 2px; width: 2px; height: 14px; background: var(--tinta); }
+  .barra .val { position: absolute; top: 1px; right: -62px; width: 56px; text-align: right; font-family: var(--f-num); font-size: 11px; color: var(--tinta); white-space: nowrap; }
+  .media { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--apagado); }
+  .nota { color: var(--apagado); font-size: 12.5px; margin-top: 8px; }
+  :where(button, a[href], select, input, textarea, summary, [tabindex]):focus-visible { outline: 2px solid var(--foco); outline-offset: 2px; }
 </style>
 </head>
 <body>
@@ -85,7 +78,7 @@
   var esc = MapCore.esc;
   if (!D || !T) return;
   // as três cores da paleta validada (decisão 10); a média da função em cinza
-  var CORES = ["#2a78d6", "#eb6834", "#0b6b4a"];
+  var CORES = ["ct", "tr", "decisivo"].map(function (n) { return getComputedStyle(document.documentElement).getPropertyValue("--" + n).trim(); });
   var MAX_SELECIONADOS = CORES.length;
 
   function txt(id, s) { var e = document.getElementById(id); if (e) e.textContent = s; }

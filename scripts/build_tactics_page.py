@@ -67,7 +67,8 @@ def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | Non
         from metrics.constantes import NOME_DO_MAPA
         rotulos = NOME_DO_MAPA
     mapas = [{"mapa": m, "nome": rotulos.get(m, m), "arquivo": arquivo_da_pagina(m)} for m in mapas_disponiveis()]
-    return (
+    from scripts.design_head import aplica  # tokens e fontes (decisão 44)
+    return aplica(
         (WEB / "tactics.html").read_text(encoding="utf-8")
         .replace("/*__ANNOTATIONS_CSS__*/", (WEB / "annotations.css").read_text(encoding="utf-8"))
         .replace("/*__TACTICS_CSS__*/", (WEB / "tactics.css").read_text(encoding="utf-8"))

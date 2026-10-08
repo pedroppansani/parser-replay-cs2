@@ -81,7 +81,7 @@ texto completo de cada uma está na nota do link (`notas/decisoes/`).
 - [8i](notas/decisoes/8i-economia-do-corpus.md) Economia do rating estimada no corpus, por arma mais cara e colete.
 - [8j](notas/decisoes/8j-dano-no-mesmo-tick.md) `dmg_health_real` recalculado: acertos no tick não passam da vida.
 - [9](notas/decisoes/9-convencao-de-angulos.md) Pitch positivo olha para baixo; o teste usa a invertida.
-- [10](notas/decisoes/10-paleta.md) Paleta validada (daltonismo, contraste); não trocar cor sem `valida_paleta`.
+- [10](notas/decisoes/10-paleta.md) Paleta validada (daltonismo, contraste); cor só com `metrics.paleta`.
 - [11](notas/decisoes/11-kmeans-global.md) KMeans ajustado uma vez no corpus (`global_model.json`), não por partida.
 - [12](notas/decisoes/12-ancora-e-lurk-por-area.md) Âncora e lurk por área (A/Mid/B), não por distância.
 - [13](notas/decisoes/13-entry-e-acao.md) Entry é quem dá o primeiro contato do time, não quem chega cedo.

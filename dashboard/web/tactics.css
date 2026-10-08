@@ -4,34 +4,26 @@
    annotations.css (classes anot-*), que a página também carrega: é o mesmo
    seletor, vindo do MapCore.
    ========================================================================= */
-:root {
-  --paper: #eef1f5; --card: #ffffff; --ink: #0f1620; --ink-2: #4c5a6b; --dim: #5f6b79;
-  --line: #dde3eb; --line-2: #eaeef3;
-  --ct: #2a78d6; --t: #eb6834; --aqua: #1baf7a; --alerta: #9a5b00;
-  --display: "Bricolage Grotesque", Georgia, sans-serif;
-  --body: "Figtree", system-ui, -apple-system, sans-serif;
-  --mono: "DM Mono", ui-monospace, "SF Mono", Menlo, monospace;
-  --r: 10px;
-}
+/* Os tokens (cores, fontes, espaços) vêm de dashboard/web/tokens.css, injetado antes deste CSS. */
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 14px; }
+body { margin: 0; background: var(--fundo); color: var(--tinta); font-family: var(--f-texto); font-size: 14px; }
 header { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; padding: 12px 16px;
-         background: var(--card); border-bottom: 1px solid var(--line); }
-header h1 { font-family: var(--display); font-size: 20px; margin: 0; }
+         background: var(--superficie); border-bottom: 1px solid var(--linha); }
+header h1 { font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: 20px; margin: 0; }
 header nav { display: flex; flex-wrap: wrap; gap: 6px; }
-header nav a { color: var(--ink-2); text-decoration: none; padding: 3px 8px; border-radius: 6px; }
-header nav a[aria-current] { background: var(--ink); color: #fff; }
-header nav.pr-volta { padding-right: 10px; border-right: 1px solid var(--line); }
+header nav a { color: var(--tinta-2); text-decoration: none; padding: 3px 8px; border-radius: var(--r-md); }
+header nav a[aria-current] { background: var(--tinta); color: var(--fundo); }
+header nav.pr-volta { padding-right: 10px; border-right: 1px solid var(--linha); }
 /* a seta vem de outra fonte e esticava a linha (o cabeçalho crescia 1 px e o mapa encolhia) */
 header nav.pr-volta a { height: 23px; box-sizing: border-box; line-height: 17px; }
 /* Rótulo de lado no banco de peças (auditoria 5.3): a cor sozinha não diz qual é qual. */
 /* Texto na cor da tinta (o laranja do TR não passa 4,5:1 em letra pequena);
    a cor do lado vai na bolinha ao lado. */
-.pr-lado-rotulo { grid-column: 1 / -1; font-family: var(--mono); font-size: 10.5px; font-weight: 600;
-  letter-spacing: 0.08em; color: var(--ink-2); margin: 4px 0 0; display: flex; align-items: center; gap: 6px; }
+.pr-lado-rotulo { grid-column: 1 / -1; font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: 10.5px; font-weight: 600;
+  letter-spacing: 0.08em; color: var(--tinta-2); margin: 4px 0 0; display: flex; align-items: center; gap: 6px; }
 .pr-lado-rotulo::before { content: ""; width: 9px; height: 9px; border-radius: 50%; }
 .pr-lado-rotulo.ct::before { background: var(--ct); }
-.pr-lado-rotulo.t::before { background: var(--t); }
+.pr-lado-rotulo.t::before { background: var(--tr); }
 /* align-items: start -- o palco não estica junto com o painel: sem isso, um painel
    alto (o caminho real de um round tem dezenas de pontos) desce o mapa no meio do gesto */
 .grade { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; padding: 16px; align-items: start; }
@@ -39,88 +31,89 @@ header nav.pr-volta a { height: 23px; box-sizing: border-box; line-height: 17px;
 
 /* Palco: barra do mapa em cima, mapa embaixo. Em tela cheia ele ocupa a tela
    inteira, e o tamanho do mapa sai de MapCore.caixaDoMapa (nunca esticado). */
-.palco { background: #161d26; border-radius: var(--r); display: flex; flex-direction: column; min-width: 0; }
+.palco { background: var(--radar); border-radius: var(--r-md); display: flex; flex-direction: column; min-width: 0; }
 .palco:fullscreen { border-radius: 0; }
 .pr-barra { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px;
-            background: var(--card); border-radius: var(--r) var(--r) 0 0; border-bottom: 1px solid var(--line); }
+            background: var(--superficie); border-radius: var(--r-md) var(--r-md) 0 0; border-bottom: 1px solid var(--linha); }
 /* `hidden` tem que vencer o display: flex -- a barra do editor some durante a
    reprodução e a do player some no editor */
 .pr-barra[hidden] { display: none; }
 .pr-barra .anot-grupo { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; position: relative; }
 .pr-tela { flex: 1; display: flex; justify-content: center; align-items: center; padding: 8px; min-height: 0; }
-#pr-mapa { display: block; border-radius: 6px; touch-action: none; }
+#pr-mapa { display: block; border-radius: var(--r-md); touch-action: none; }
 .palco.pr-pan #pr-mapa { cursor: grab !important; }
 
 aside { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-.caixa { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 12px; }
-.caixa h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--dim); margin: 0 0 8px; }
+.caixa { background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--r-md); padding: 12px; }
+.caixa h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--apagado); margin: 0 0 8px; }
 .linha { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .linha + .linha { margin-top: 6px; }
-input[type=text], input[type=number], select { font: inherit; padding: 5px 8px; border: 1px solid var(--line);
-  border-radius: 6px; min-width: 0; flex: 1; background: #fff; color: var(--ink); }
+input[type=text], input[type=number], select { font: inherit; padding: 5px 8px; border: 1px solid var(--borda);
+  border-radius: var(--r-sm); min-width: 0; flex: 1; background: var(--fundo); color: var(--tinta); }
 input[type=number] { flex: 0 0 72px; }
 .pr-b, [data-ferramenta], [data-arma], .pr-passo, [data-andar] {
-  font: inherit; border: 1px solid var(--line); background: var(--card); color: var(--ink-2);
-  border-radius: 6px; padding: 5px 9px; cursor: pointer; }
+  font: inherit; border: 1px solid var(--borda); background: var(--superficie); color: var(--tinta-2);
+  border-radius: var(--r-sm); padding: 5px 9px; cursor: pointer; }
 [disabled] { opacity: 0.45; cursor: not-allowed; }
-.ativo { background: var(--ink) !important; color: #fff !important; border-color: var(--ink) !important; }
+.ativo { background: var(--tinta) !important; color: var(--fundo) !important; border-color: var(--tinta) !important; }
 .pr-passo { min-width: 32px; font-weight: 600; }
 #pr-banco { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-.pr-ficha { height: 32px; border-radius: 50%; display: grid; place-items: center; color: #fff;
+.pr-ficha { height: 32px; border-radius: 50%; display: grid; place-items: center; color: var(--fundo);
             font-weight: 600; cursor: grab; user-select: none; touch-action: none; aspect-ratio: 1; }
-.pr-ficha.ct { background: var(--ct); } .pr-ficha.t { background: var(--t); }
+.pr-ficha.ct { background: var(--ct); } .pr-ficha.t { background: var(--tr); }
 .pr-ficha.no-mapa { opacity: 0.45; }
 /* banco com os jogadores reais do round: pílula com o nome */
 #pr-banco.nomes { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); }
 .pr-ficha.nome { border-radius: 16px; aspect-ratio: auto; padding: 0 8px; font-size: 12px;
                  overflow: hidden; white-space: nowrap; text-overflow: ellipsis; display: block;
                  line-height: 32px; text-align: center; }
-.pr-ficha.arrastando { cursor: grabbing; outline: 2px solid var(--ink); }
-.pr-dica, .pr-meta { color: var(--ink-2); margin: 4px 0; }
-.pr-alerta { color: var(--alerta); margin: 6px 0; }
+.pr-ficha.arrastando { cursor: grabbing; outline: 2px solid var(--tinta); }
+.pr-dica, .pr-meta { color: var(--tinta-2); margin: 4px 0; }
+.pr-alerta { color: var(--aviso); margin: 6px 0; }
+.pr-alerta::before, #pr-aviso::before { content: "▲ "; }
 .pr-cmd { display: flex; gap: 6px; align-items: flex-start; margin: 8px 0; }
-.pr-cmd code { font-family: var(--mono); font-size: 12px; background: var(--paper); padding: 6px 8px;
-               border-radius: 6px; flex: 1; overflow-wrap: anywhere; }
+.pr-cmd code { font-family: var(--f-codigo); font-size: 12px; background: var(--superficie-2); padding: 6px 8px;
+               border-radius: var(--r-md); flex: 1; overflow-wrap: anywhere; }
 .pr-lista { margin: 6px 0 0; padding-left: 20px; max-height: 320px; overflow: auto; }
-.pr-lista li { padding: 4px 0; cursor: pointer; border-bottom: 1px solid var(--line-2); }
-.pr-lista li:hover { background: var(--paper); }
-#pr-aviso { color: var(--alerta); margin: 0; }
-#pr-historico { color: var(--dim); font-size: 12px; }
+.pr-lista li { padding: 4px 0; cursor: pointer; border-bottom: 1px solid var(--linha); }
+.pr-lista li:hover { background: var(--superficie-2); }
+#pr-aviso { color: var(--aviso); margin: 0; }
+#pr-historico { color: var(--apagado); font-size: 12px; }
 h3 { margin: 0 0 4px; font-size: 15px; }
 
 /* Prancheta fluida (2026-09-27): a linha de dica diz o que o próximo clique
    faz; o grupo de contexto (cor, espessura) só aparece quando serve. */
-.pr-dica-estado { margin: 0; padding: 6px 10px; background: #0f1620; color: #e8edf3;
-                  font-size: 13px; border-bottom: 1px solid #2a3440; min-height: 1.6em; }
+.pr-dica-estado { margin: 0; padding: 6px 10px; background: var(--superficie-2); color: var(--tinta);
+                  font-size: 13px; border-bottom: 1px solid var(--linha); min-height: 1.6em; }
 .pr-dica-estado[hidden] { display: none; }
 .pr-barra .anot-grupo[hidden], #pr-filtros-busca[hidden] { display: none; }
-.pr-separador { width: 1px; align-self: stretch; background: var(--line); margin: 0 4px; }
+.pr-separador { width: 1px; align-self: stretch; background: var(--linha); margin: 0 4px; }
 .pr-tela { position: relative; }
 .pr-editor-texto { position: absolute; transform: translate(-2px, -50%); min-width: 160px; z-index: 5;
-                   font: inherit; padding: 4px 6px; border: 2px solid var(--ink); border-radius: 6px; }
-.pr-ajuda { position: absolute; right: 16px; top: 64px; z-index: 10; background: var(--card); color: var(--ink);
-            border: 1px solid var(--line); border-radius: var(--r); padding: 12px 16px; max-height: 80%;
-            overflow: auto; box-shadow: 0 8px 24px rgba(0, 0, 0, .25); }
+                   font: inherit; padding: 4px 6px; border: 2px solid var(--tinta); border-radius: var(--r-sm); background: var(--fundo); color: var(--tinta); }
+.pr-ajuda { position: absolute; right: 16px; top: 64px; z-index: 10; background: var(--superficie-2); color: var(--tinta);
+            border: 1px solid var(--borda); border-radius: var(--r-md); padding: 12px 16px; max-height: 80%;
+            overflow: auto; box-shadow: var(--sombra-pop); }
 .palco { position: relative; }
 .pr-atalhos { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 8px 0; }
-.pr-atalhos dt { font-family: var(--mono); font-weight: 500; }
-.pr-atalhos dd { margin: 0; color: var(--ink-2); }
-.pr-ficha.armada { outline: 3px solid var(--ink); outline-offset: 2px; }
+.pr-atalhos dt { font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-weight: 500; }
+.pr-atalhos dd { margin: 0; color: var(--tinta-2); }
+.pr-ficha.armada { outline: 3px solid var(--tinta); outline-offset: 2px; }
 .pr-manter { display: block; width: 100%; text-align: left; margin-bottom: 6px; }
 
 /* Fonte de cada afirmação da ficha (rota B): discreta, sem sumir. */
-.pr-fonte { margin: 2px 0 6px; font-size: 11px; color: var(--ink-2); }
+.pr-fonte { margin: 2px 0 6px; font-size: 11px; color: var(--tinta-2); }
 
 /* Todo controle mostra o foco do teclado (auditoria 5.4). */
 :where(button, a[href], select, input, textarea, summary, [tabindex]):focus-visible {
-  outline: 2px solid var(--ct); outline-offset: 2px;
+  outline: 2px solid var(--foco); outline-offset: 2px;
 }
 
 /* Funções dos jogadores (fase 8, item 8.3) */
 .pr-funcoes-banco { display: grid; gap: 4px; margin-top: 8px; }
 .pr-funcao-linha { display: flex; gap: 8px; align-items: center; }
-.pr-funcao-nome { font-family: var(--mono); font-size: 11px; min-width: 72px; color: var(--ink-2); }
-.pr-funcao { font: inherit; font-size: 12px; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; }
+.pr-funcao-nome { font-family: var(--f-texto); font-size: 11px; min-width: 72px; color: var(--tinta-2); }
+.pr-funcao { font: inherit; font-size: 12px; padding: 3px 6px; border: 1px solid var(--borda); border-radius: var(--r-sm); background: var(--fundo); color: var(--tinta); }
 .pr-pontos { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; font-size: 12px;
              max-height: 260px; overflow: auto; }
 .pr-pontos li { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
@@ -128,55 +121,55 @@ h3 { margin: 0 0 4px; font-size: 15px; }
 
 /* Granadas no painel da direita (fase 8, item 8.4) */
 .pr-granadas-grandes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 8px; }
-.pr-granada-grande { display: grid; justify-items: center; gap: 2px; padding: 6px 4px; border: 1px solid var(--line);
-  border-radius: 9px; background: var(--card); cursor: pointer; font: inherit; font-size: 12px; color: var(--ink); }
-.pr-granada-grande.on, .pr-granada-grande[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.pr-granada-grande { display: grid; justify-items: center; gap: 2px; padding: 6px 4px; border: 1px solid var(--borda);
+  border-radius: var(--r-md); background: var(--superficie); cursor: pointer; font: inherit; font-size: 12px; color: var(--tinta); }
+.pr-granada-grande.on, .pr-granada-grande[aria-pressed="true"] { border-color: var(--foco); box-shadow: inset 0 0 0 1px var(--foco); }
 .pr-glifo { width: 28px; height: 28px; }
 
 /* Linha do tempo, relógio grande e roteiro (fase 8, item 8.5) */
 .pr-relogio-grande { position: absolute; left: 16px; top: 12px; z-index: 4; pointer-events: none;
-                     font-family: var(--mono); font-size: 34px; font-weight: 600; line-height: 1;
-                     color: #ffffff; background: rgba(15,22,32,0.78); padding: 6px 12px; border-radius: 8px; }
-.pr-relogio-grande.bomba { color: #ff8a7a; }
+                     font-family: var(--f-num); font-size: 34px; font-weight: 600; line-height: 1;
+                     color: var(--tinta); background: var(--tl-fundo); padding: 6px 12px; border-radius: var(--r-md); }
+.pr-relogio-grande.bomba { color: var(--tr-texto); }
 .pr-relogio-grande[hidden], .pr-linha[hidden] { display: none; }
 .pr-linha { display: grid; grid-template-columns: minmax(0, 1fr) minmax(200px, 300px); gap: 10px;
-            padding: 8px 10px 10px; background: #0f1620; color: #e8edf3; border-top: 1px solid #2a3440;
+            padding: 8px 10px 10px; background: var(--tl-fundo); color: var(--tinta); border-top: 1px solid var(--linha);
             touch-action: none; user-select: none; }
 .pr-linha-corpo { position: relative; display: grid; gap: 3px; min-width: 0; }
 .pr-faixa { display: grid; grid-template-columns: 78px minmax(0, 1fr); align-items: center; gap: 6px; min-height: 18px; }
-.pr-faixa-nome { font-size: 11px; color: #aab6c3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pr-faixa-nome.ct { color: var(--ct); } .pr-faixa-nome.t { color: var(--t); }
-.pr-trilho { position: relative; height: 16px; background: #18212c; border-radius: 4px; cursor: pointer; }
+.pr-faixa-nome { font-size: 11px; color: var(--tinta-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pr-faixa-nome.ct { color: var(--ct-texto); } .pr-faixa-nome.t { color: var(--tr-texto); }
+.pr-trilho { position: relative; height: 16px; background: var(--superficie); border-radius: var(--r-md); cursor: pointer; }
 .pr-regua { background: transparent; height: 18px; }
-.pr-regua-marca { position: absolute; top: 0; bottom: 0; border-left: 1px solid #3a4756; padding-left: 3px;
-                  font-family: var(--mono); font-size: 10px; color: #aab6c3; white-space: nowrap; }
-.pr-regua-marca.bomba { border-left-color: #7a3a33; color: #ff8a7a; }
-.pr-regua-plant { position: absolute; top: 0; bottom: 0; width: 3px; margin-left: -1px; background: #ff8a7a; }
+.pr-regua-marca { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--borda); padding-left: 3px;
+                  font-family: var(--f-num); font-size: 10px; color: var(--tinta-2); white-space: nowrap; }
+.pr-regua-marca.bomba { border-left-color: var(--tr); color: var(--tr-texto); }
+.pr-regua-plant { position: absolute; top: 0; bottom: 0; width: 3px; margin-left: -1px; background: var(--tr); }
 .pr-marca, .pr-marco { position: absolute; top: 50%; transform: translate(-50%, -50%); padding: 0; cursor: grab;
-                       border: 2px solid #0f1620; }
-.pr-marca { width: 12px; height: 12px; border-radius: 50%; background: #e8edf3; }
-.pr-marca.ct { background: var(--ct); } .pr-marca.t { background: var(--t); }
-.pr-marca.granada { border-radius: 2px; transform: translate(-50%, -50%) rotate(45deg); background: var(--cor, #e8edf3); }
-.pr-marca.arrastando { outline: 2px solid #ffffff; cursor: grabbing; }
-.pr-marco { min-width: 18px; height: 16px; border-radius: 4px; font-size: 10px; line-height: 12px; color: #0f1620;
-            background: #e8edf3; cursor: pointer; }
-.pr-marco.ativo { background: #ffd34d; }
+                       border: 2px solid var(--tl-fundo); }
+.pr-marca { width: 12px; height: 12px; border-radius: 50%; background: var(--tinta); }
+.pr-marca.ct { background: var(--ct); } .pr-marca.t { background: var(--tr); }
+.pr-marca.granada { border-radius: 2px; transform: translate(-50%, -50%) rotate(45deg); background: var(--cor, var(--tinta)); }
+.pr-marca.arrastando { outline: 2px solid var(--foco); cursor: grabbing; }
+.pr-marco { min-width: 18px; height: 16px; border-radius: 4px; font-size: 10px; line-height: 12px; color: var(--fundo);
+            background: var(--tinta); cursor: pointer; }
+.pr-marco.ativo { background: var(--foco); }
 .pr-linha-cabecote-trilho { position: absolute; left: 84px; right: 0; top: 0; bottom: 0; pointer-events: none; }
-.pr-linha-cabecote { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: #ffd34d; }
+.pr-linha-cabecote { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--foco); }
 .pr-roteiro { margin: 0; padding: 0; list-style: none; max-height: 160px; overflow: auto; display: grid;
               gap: 2px; align-content: start; font-size: 12px; }
 .pr-evento { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; padding: 2px 4px; border-radius: 4px; }
-.pr-evento.aceso { background: #2a3440; outline: 1px solid #ffd34d; }
-.pr-evento-hora { font-family: var(--mono); font-size: 11px; padding: 0 4px; background: transparent; color: #ffd34d;
-                  border: 1px solid #3a4756; border-radius: 4px; cursor: pointer; }
+.pr-evento.aceso { background: var(--superficie-2); outline: 1px solid var(--foco); }
+.pr-evento-hora { font-family: var(--f-num); font-size: 11px; padding: 0 4px; background: transparent; color: var(--tinta);
+                  border: 1px solid var(--borda); border-radius: var(--r-sm); cursor: pointer; }
 .pr-evento-texto { flex: 1; min-width: 0; }
-.pr-evento-nota { width: 100%; font: inherit; font-size: 11px; padding: 2px 4px; background: #18212c; color: #e8edf3;
-                  border: 1px solid #3a4756; border-radius: 4px; }
-.pr-evento-nota-texto { width: 100%; font-size: 11px; color: #aab6c3; font-style: italic; }
+.pr-evento-nota { width: 100%; font: inherit; font-size: 11px; padding: 2px 4px; background: var(--superficie); color: var(--tinta);
+                  border: 1px solid var(--borda); border-radius: var(--r-sm); }
+.pr-evento-nota-texto { width: 100%; font-size: 11px; color: var(--tinta-2); font-style: italic; }
 @media (max-width: 760px) { .pr-linha { grid-template-columns: minmax(0, 1fr); } }
 
 /* O round real (fase 9): fantasma e voltar ao real */
 .pr-real { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
 .pr-real[hidden] { display: none; }
 .pr-real .pr-b { font-size: 12px; padding: 3px 8px; }
-.pr-real [aria-pressed="true"] { background: #ffd34d; color: #0f1620; }
+.pr-real [aria-pressed="true"] { background: var(--tinta); color: var(--fundo); }

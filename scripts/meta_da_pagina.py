@@ -1,4 +1,4 @@
-"""Favicon e Open Graph das páginas do site (auditoria, item 5.4). Um lugar só,
+"""Favicon e Open Graph das páginas do site (auditoria, item 5.4; favicon novo na decisão 44). Um lugar só,
 usado pela landing, pelas páginas de partida e pela prancheta.
 
 O favicon é um SVG embutido (data URI): as páginas continuam autocontidas e
@@ -11,12 +11,12 @@ from __future__ import annotations
 import html
 from urllib.parse import quote
 
-# Uma mira (anel e cruz) na tinta da página, com o ponto no azul do Time A.
+# Duas bolinhas, CT e TR, no fundo do tema (entrega-sala-de-demo §10): as cores são os tokens
+# --fundo, --ct e --tr de dashboard/web/tokens.css (o favicon é um SVG embutido e não lê CSS).
 _FAVICON_SVG = (
     "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'>"
-    "<circle cx='16' cy='16' r='11' fill='none' stroke='#0f1620' stroke-width='3'/>"
-    "<path d='M16 1v8M16 23v8M1 16h8M23 16h8' stroke='#0f1620' stroke-width='3'/>"
-    "<circle cx='16' cy='16' r='3.5' fill='#2a78d6'/></svg>"
+    "<rect width='32' height='32' rx='6' fill='#0b0f14'/>"
+    "<circle cx='11' cy='16' r='6' fill='#4a90e8'/><circle cx='21' cy='16' r='6' fill='#e0a23a'/></svg>"
 )
 FAVICON = "data:image/svg+xml," + quote(_FAVICON_SVG, safe="/:=' ")
 IMAGEM_OG = "replay.png"

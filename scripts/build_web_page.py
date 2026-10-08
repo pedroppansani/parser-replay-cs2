@@ -172,7 +172,8 @@ def build_html(match_id: str, site: dict | None = None, base: Path | None = None
         titulo, f"{titulo}: replay no radar, placar round a round e a leitura da partida.",
         url_do_site((site or {}).get("repo")), f"{match_id}.html"))
     html = html.replace("/*__SITE__*/", js(site) + " ||" if site else "")
-    return html
+    from scripts.design_head import aplica
+    return aplica(html)  # tokens e fontes da direção "Sala de demo" (decisão 44)
 
 
 def build(match_id: str) -> Path:
