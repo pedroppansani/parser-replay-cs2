@@ -1,0 +1,1755 @@
+index.html::card[match_01.html] = placar 13 9 | rounds 22
+index.html::card[match_02.html] = placar 13 9 | rounds 22
+index.html::card[match_03.html] = placar 13 7 | rounds 20
+index.html::card[match_04.html] = placar 13 8 | rounds 21
+index.html::card[match_05.html] = placar 13 4 | rounds 17
+index.html::card[match_06.html] = placar 13 5 | rounds 18
+index.html::card[match_07.html] = placar 13 6 | rounds 19
+index.html::card[match_08.html] = placar 11 13 | rounds 24
+index.html::card[match_09.html] = placar 11 13 | rounds 24
+index.html::card[match_10.html] = placar 1 13 | rounds 14
+index.html::card[match_11.html] = placar 13 8 | rounds 21
+index.html::card[match_12.html] = placar 10 13 | rounds 23
+index.html::card[match_14.html] = placar 10 13 | rounds 23
+index.html::card[match_15.html] = placar 13 3 | rounds 16
+index.html::card[match_16.html] = placar 13 16 | rounds 29
+index.html::card[match_17.html] = placar 13 4 | rounds 17
+index.html::card[match_18.html] = placar 11 13 | rounds 24
+index.html::card[match_19.html] = placar 13 4 | rounds 17
+index.html::card[match_20.html] = placar 14 16 | rounds 30
+index.html::card[match_21.html] = placar 13 8 | rounds 21
+index.html::card[match_22.html] = placar 13 7 | rounds 20
+index.html::card[match_23.html] = placar 13 9 | rounds 22
+index.html::card[match_24.html] = placar 13 7 | rounds 20
+index.html::card[match_25.html] = placar 13 6 | rounds 19
+index.html::card[match_26.html] = placar 13 6 | rounds 19
+index.html::card[match_27.html] = placar 13 5 | rounds 18
+index.html::card[match_28.html] = placar 10 13 | rounds 23
+index.html::card[match_29.html] = placar 13 3 | rounds 16
+index.html::card[match_30.html] = placar 13 9 | rounds 22
+index.html::card[match_31.html] = placar 15 19 | rounds 34
+index.html::card[match_32.html] = placar 16 19 | rounds 35
+index.html::card[match_33.html] = placar 11 13 | rounds 24
+index.html::card[match_34.html] = placar 13 9 | rounds 22
+index.html::card[match_35.html] = placar 13 8 | rounds 21
+index.html::card[match_36.html] = placar 13 8 | rounds 21
+index.html::card[match_37.html] = placar 14 16 | rounds 30
+index.html::card[match_38.html] = placar 13 8 | rounds 21
+index.html::card[match_39.html] = placar 11 13 | rounds 24
+index.html::card[match_40.html] = placar 14 16 | rounds 30
+index.html::card[match_41.html] = placar 14 16 | rounds 30
+index.html::card[match_42.html] = placar 17 19 | rounds 36
+index.html::card[match_43.html] = placar 11 13 | rounds 24
+index.html::card[match_44.html] = placar 13 8 | rounds 21
+index.html::card[match_45.html] = placar 13 2 | rounds 15
+index.html::card[match_46.html] = placar 10 13 | rounds 23
+index.html::card[match_47.html] = placar 13 7 | rounds 20
+index.html::card[match_48.html] = placar 13 6 | rounds 19
+index.html::card[match_49.html] = placar 11 13 | rounds 24
+index.html::card[match_50.html] = placar 13 6 | rounds 19
+index.html::card[match_51.html] = placar 10 13 | rounds 23
+index.html::card[match_52.html] = placar 13 5 | rounds 18
+index.html::card[match_53.html] = placar 13 4 | rounds 17
+index.html::corpus = 43 52 8 9 9
+index.html::tres_numeros = 0,079 0,966 100 13 41 410 410 410 430 6.846
+jogadores.html::D.jogadores = itens n=116 sha256:41510ccd0d3f843d
+jogadores.html::D.k.adr = 1.744
+jogadores.html::D.k.adr_cheia = 2.589
+jogadores.html::D.k.adr_eco = 16.202
+jogadores.html::D.k.adr_forca = 4.714
+jogadores.html::D.k.cegueira_em_companheiros_por_flash = 11.37
+jogadores.html::D.k.dano_por_he = 8.628
+jogadores.html::D.k.dano_por_molotov = 11.658
+jogadores.html::D.k.kast = 3.816
+jogadores.html::D.k.kast_cheia = 3.301
+jogadores.html::D.k.kast_eco = 41.635
+jogadores.html::D.k.kast_forca = 8.428
+jogadores.html::D.k.kills_contra_compra_cheia = 3.531
+jogadores.html::D.k.kills_contra_eco = 7.44
+jogadores.html::D.k.kills_de_flash_por_flash = 22.07
+jogadores.html::D.k.kills_por_pos_plant = 15.536
+jogadores.html::D.k.kills_por_retake = 10.204
+jogadores.html::D.k.pct_aberturas_vencidas_ct = 4.616
+jogadores.html::D.k.pct_aberturas_vencidas_tr = 8.236
+jogadores.html::D.k.pct_kills_de_awp = 0.323
+jogadores.html::D.k.pct_mortes_trocadas = 4.135
+jogadores.html::D.k.pct_pos_plant_sobreviveu = 71.345
+jogadores.html::D.k.pct_retake_sobreviveu = 15.294
+jogadores.html::D.k.pct_retakes_vencidos = 3.167
+jogadores.html::D.k.pct_rounds_abertura_awp = 1.132
+jogadores.html::D.k.pct_rounds_ancorado = 16.079
+jogadores.html::D.k.pct_rounds_ancorado_ct = 38.865
+jogadores.html::D.k.pct_rounds_com_awp = 0.31
+jogadores.html::D.k.pct_rounds_contato_cedo = 1.026
+jogadores.html::D.k.pct_rounds_contato_cedo_ct = 1.354
+jogadores.html::D.k.pct_rounds_contato_cedo_t = 1.95
+jogadores.html::D.k.pct_rounds_contato_tarde = 3.357
+jogadores.html::D.k.pct_rounds_contato_tarde_ct = 5.338
+jogadores.html::D.k.pct_rounds_contato_tarde_t = 4.464
+jogadores.html::D.k.pct_rounds_em_clutch = 2.985
+jogadores.html::D.k.pct_rounds_isolado = 6.788
+jogadores.html::D.k.pct_rounds_isolado_ct = 7.378
+jogadores.html::D.k.pct_rounds_isolado_t = 2.879
+jogadores.html::D.k.pct_rounds_longe_do_time = 4.391
+jogadores.html::D.k.pct_rounds_longe_do_time_ct = 4.505
+jogadores.html::D.k.pct_rounds_longe_do_time_t = 4.329
+jogadores.html::D.k.pct_rounds_lurk = 8.87
+jogadores.html::D.k.pct_rounds_primeiro_contato_do_time = 5.065
+jogadores.html::D.k.pct_rounds_primeiro_contato_do_time_ct = 6.163
+jogadores.html::D.k.pct_rounds_primeiro_contato_do_time_t = 5.753
+jogadores.html::D.k.pct_rounds_rotacionando = 4.096
+jogadores.html::D.k.pct_rounds_rotacionando_ct = 29.207
+jogadores.html::D.k.pct_rounds_rotacionando_t = 3.75
+jogadores.html::D.k.pct_rounds_smg_ou_pistola_com_time_de_rifle = 1.798
+jogadores.html::D.k.pct_rounds_sobreviveu = 1.863
+jogadores.html::D.k.pct_rounds_trade_kill = 4.797
+jogadores.html::D.k.rating = 2.629
+jogadores.html::D.k.rating_cheia = 3.212
+jogadores.html::D.k.rating_eco = 11.545
+jogadores.html::D.k.rating_forca = 11.663
+jogadores.html::D.k.segundos_de_cegueira_por_flash = 94.05
+jogadores.html::D.k.taxa_conversao_clutch = 20.939
+jogadores.html::D.linhas = itens n=520 sha256:02cf2364af00495f
+jogadores.html::D.n_bootstrap = 400
+jogadores.html::D.semente = 20261004
+match_01.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_01.html::__RADAR__.height = 1024
+match_01.html::__RADAR__.origin_x = -2953.0
+match_01.html::__RADAR__.origin_y = 2164.0
+match_01.html::__RADAR__.scale_px_per_unit = 0.2
+match_01.html::__RADAR__.width = 1024
+match_02.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_02.html::__RADAR__.height = 1024
+match_02.html::__RADAR__.origin_x = -3230.0
+match_02.html::__RADAR__.origin_y = 1713.0
+match_02.html::__RADAR__.scale_px_per_unit = 0.2
+match_02.html::__RADAR__.width = 1024
+match_03.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_03.html::__RADAR__.height = 1024
+match_03.html::__RADAR__.origin_x = -2796.0
+match_03.html::__RADAR__.origin_y = 3328.0
+match_03.html::__RADAR__.scale_px_per_unit = 0.19157088122605365
+match_03.html::__RADAR__.width = 1024
+match_04.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_04.html::__RADAR__.height = 1024
+match_04.html::__RADAR__.origin_x = -2953.0
+match_04.html::__RADAR__.origin_y = 2164.0
+match_04.html::__RADAR__.scale_px_per_unit = 0.2
+match_04.html::__RADAR__.width = 1024
+match_05.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_05.html::__RADAR__.height = 1024
+match_05.html::__RADAR__.origin_x = -3453.0
+match_05.html::__RADAR__.origin_y = 2887.0
+match_05.html::__RADAR__.scale_px_per_unit = 0.14285714285714285
+match_05.html::__RADAR__.vertical_sections.default.max = 10000.0
+match_05.html::__RADAR__.vertical_sections.default.min = -495.0
+match_05.html::__RADAR__.vertical_sections.lower.max = -495.0
+match_05.html::__RADAR__.vertical_sections.lower.min = -10000.0
+match_05.html::__RADAR__.width = 1024
+match_06.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_06.html::__RADAR__.height = 1024
+match_06.html::__RADAR__.origin_x = -3230.0
+match_06.html::__RADAR__.origin_y = 1713.0
+match_06.html::__RADAR__.scale_px_per_unit = 0.2
+match_06.html::__RADAR__.width = 1024
+match_07.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_07.html::__RADAR__.height = 1024
+match_07.html::__RADAR__.origin_x = -3230.0
+match_07.html::__RADAR__.origin_y = 1713.0
+match_07.html::__RADAR__.scale_px_per_unit = 0.2
+match_07.html::__RADAR__.width = 1024
+match_08.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_08.html::__RADAR__.height = 1024
+match_08.html::__RADAR__.origin_x = -3230.0
+match_08.html::__RADAR__.origin_y = 1713.0
+match_08.html::__RADAR__.scale_px_per_unit = 0.2
+match_08.html::__RADAR__.width = 1024
+match_09.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_09.html::__RADAR__.height = 1024
+match_09.html::__RADAR__.origin_x = -3230.0
+match_09.html::__RADAR__.origin_y = 1713.0
+match_09.html::__RADAR__.scale_px_per_unit = 0.2
+match_09.html::__RADAR__.width = 1024
+match_10.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_10.html::__RADAR__.height = 1024
+match_10.html::__RADAR__.origin_x = -2476.0
+match_10.html::__RADAR__.origin_y = 3239.0
+match_10.html::__RADAR__.scale_px_per_unit = 0.22727272727272727
+match_10.html::__RADAR__.width = 1024
+match_11.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_11.html::__RADAR__.height = 1024
+match_11.html::__RADAR__.origin_x = -2796.0
+match_11.html::__RADAR__.origin_y = 3328.0
+match_11.html::__RADAR__.scale_px_per_unit = 0.19157088122605365
+match_11.html::__RADAR__.width = 1024
+match_12.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_12.html::__RADAR__.height = 1024
+match_12.html::__RADAR__.origin_x = -4831.0
+match_12.html::__RADAR__.origin_y = 1781.0
+match_12.html::__RADAR__.scale_px_per_unit = 0.1923076923076923
+match_12.html::__RADAR__.width = 1024
+match_14.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_14.html::__RADAR__.height = 1024
+match_14.html::__RADAR__.origin_x = -2953.0
+match_14.html::__RADAR__.origin_y = 2164.0
+match_14.html::__RADAR__.scale_px_per_unit = 0.2
+match_14.html::__RADAR__.width = 1024
+match_15.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_15.html::__RADAR__.height = 1024
+match_15.html::__RADAR__.origin_x = -3230.0
+match_15.html::__RADAR__.origin_y = 1713.0
+match_15.html::__RADAR__.scale_px_per_unit = 0.2
+match_15.html::__RADAR__.width = 1024
+match_16.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_16.html::__RADAR__.height = 1024
+match_16.html::__RADAR__.origin_x = -3453.0
+match_16.html::__RADAR__.origin_y = 2887.0
+match_16.html::__RADAR__.scale_px_per_unit = 0.14285714285714285
+match_16.html::__RADAR__.vertical_sections.default.max = 10000.0
+match_16.html::__RADAR__.vertical_sections.default.min = -495.0
+match_16.html::__RADAR__.vertical_sections.lower.max = -495.0
+match_16.html::__RADAR__.vertical_sections.lower.min = -10000.0
+match_16.html::__RADAR__.width = 1024
+match_17.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_17.html::__RADAR__.height = 1024
+match_17.html::__RADAR__.origin_x = -2476.0
+match_17.html::__RADAR__.origin_y = 3239.0
+match_17.html::__RADAR__.scale_px_per_unit = 0.22727272727272727
+match_17.html::__RADAR__.width = 1024
+match_18.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_18.html::__RADAR__.height = 1024
+match_18.html::__RADAR__.origin_x = -2796.0
+match_18.html::__RADAR__.origin_y = 3328.0
+match_18.html::__RADAR__.scale_px_per_unit = 0.19157088122605365
+match_18.html::__RADAR__.width = 1024
+match_19.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_19.html::__RADAR__.height = 1024
+match_19.html::__RADAR__.origin_x = -2087.0
+match_19.html::__RADAR__.origin_y = 3870.0
+match_19.html::__RADAR__.scale_px_per_unit = 0.2040816326530612
+match_19.html::__RADAR__.width = 1024
+match_20.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_20.html::__RADAR__.height = 1024
+match_20.html::__RADAR__.origin_x = -3230.0
+match_20.html::__RADAR__.origin_y = 1713.0
+match_20.html::__RADAR__.scale_px_per_unit = 0.2
+match_20.html::__RADAR__.width = 1024
+match_21.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_21.html::__RADAR__.height = 1024
+match_21.html::__RADAR__.origin_x = -3453.0
+match_21.html::__RADAR__.origin_y = 2887.0
+match_21.html::__RADAR__.scale_px_per_unit = 0.14285714285714285
+match_21.html::__RADAR__.vertical_sections.default.max = 10000.0
+match_21.html::__RADAR__.vertical_sections.default.min = -495.0
+match_21.html::__RADAR__.vertical_sections.lower.max = -495.0
+match_21.html::__RADAR__.vertical_sections.lower.min = -10000.0
+match_21.html::__RADAR__.width = 1024
+match_22.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_22.html::__RADAR__.height = 1024
+match_22.html::__RADAR__.origin_x = -3230.0
+match_22.html::__RADAR__.origin_y = 1713.0
+match_22.html::__RADAR__.scale_px_per_unit = 0.2
+match_22.html::__RADAR__.width = 1024
+match_23.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_23.html::__RADAR__.height = 1024
+match_23.html::__RADAR__.origin_x = -2476.0
+match_23.html::__RADAR__.origin_y = 3239.0
+match_23.html::__RADAR__.scale_px_per_unit = 0.22727272727272727
+match_23.html::__RADAR__.width = 1024
+match_24.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_24.html::__RADAR__.height = 1024
+match_24.html::__RADAR__.origin_x = -2476.0
+match_24.html::__RADAR__.origin_y = 3239.0
+match_24.html::__RADAR__.scale_px_per_unit = 0.22727272727272727
+match_24.html::__RADAR__.width = 1024
+match_25.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_25.html::__RADAR__.height = 1024
+match_25.html::__RADAR__.origin_x = -2796.0
+match_25.html::__RADAR__.origin_y = 3328.0
+match_25.html::__RADAR__.scale_px_per_unit = 0.19157088122605365
+match_25.html::__RADAR__.width = 1024
+match_26.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_26.html::__RADAR__.height = 1024
+match_26.html::__RADAR__.origin_x = -2796.0
+match_26.html::__RADAR__.origin_y = 3328.0
+match_26.html::__RADAR__.scale_px_per_unit = 0.19157088122605365
+match_26.html::__RADAR__.width = 1024
+match_27.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_27.html::__RADAR__.height = 1024
+match_27.html::__RADAR__.origin_x = -3453.0
+match_27.html::__RADAR__.origin_y = 2887.0
+match_27.html::__RADAR__.scale_px_per_unit = 0.14285714285714285
+match_27.html::__RADAR__.vertical_sections.default.max = 10000.0
+match_27.html::__RADAR__.vertical_sections.default.min = -495.0
+match_27.html::__RADAR__.vertical_sections.lower.max = -495.0
+match_27.html::__RADAR__.vertical_sections.lower.min = -10000.0
+match_27.html::__RADAR__.width = 1024
+match_28.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_28.html::__RADAR__.height = 1024
+match_28.html::__RADAR__.origin_x = -3230.0
+match_28.html::__RADAR__.origin_y = 1713.0
+match_28.html::__RADAR__.scale_px_per_unit = 0.2
+match_28.html::__RADAR__.width = 1024
+match_29.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_29.html::__RADAR__.height = 1024
+match_29.html::__RADAR__.origin_x = -2087.0
+match_29.html::__RADAR__.origin_y = 3870.0
+match_29.html::__RADAR__.scale_px_per_unit = 0.2040816326530612
+match_29.html::__RADAR__.width = 1024
+match_30.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_30.html::__RADAR__.height = 1024
+match_30.html::__RADAR__.origin_x = -3453.0
+match_30.html::__RADAR__.origin_y = 2887.0
+match_30.html::__RADAR__.scale_px_per_unit = 0.14285714285714285
+match_30.html::__RADAR__.vertical_sections.default.max = 10000.0
+match_30.html::__RADAR__.vertical_sections.default.min = -495.0
+match_30.html::__RADAR__.vertical_sections.lower.max = -495.0
+match_30.html::__RADAR__.vertical_sections.lower.min = -10000.0
+match_30.html::__RADAR__.width = 1024
+match_31.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_31.html::__RADAR__.height = 1024
+match_31.html::__RADAR__.origin_x = -2308.0
+match_31.html::__RADAR__.origin_y = 2078.0
+match_31.html::__RADAR__.scale_px_per_unit = 0.24497333097832305
+match_31.html::__RADAR__.vertical_sections.default.max = 20000.0
+match_31.html::__RADAR__.vertical_sections.default.min = -50.0
+match_31.html::__RADAR__.vertical_sections.lower.max = -50.0
+match_31.html::__RADAR__.vertical_sections.lower.min = -5000.0
+match_31.html::__RADAR__.width = 1024
+match_32.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_32.html::__RADAR__.height = 1024
+match_32.html::__RADAR__.origin_x = -3230.0
+match_32.html::__RADAR__.origin_y = 1713.0
+match_32.html::__RADAR__.scale_px_per_unit = 0.2
+match_32.html::__RADAR__.width = 1024
+match_33.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_33.html::__RADAR__.height = 1024
+match_33.html::__RADAR__.origin_x = -2476.0
+match_33.html::__RADAR__.origin_y = 3239.0
+match_33.html::__RADAR__.scale_px_per_unit = 0.22727272727272727
+match_33.html::__RADAR__.width = 1024
+match_34.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_34.html::__RADAR__.height = 1024
+match_34.html::__RADAR__.origin_x = -3230.0
+match_34.html::__RADAR__.origin_y = 1713.0
+match_34.html::__RADAR__.scale_px_per_unit = 0.2
+match_34.html::__RADAR__.width = 1024
+match_35.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_35.html::__RADAR__.height = 1024
+match_35.html::__RADAR__.origin_x = -2087.0
+match_35.html::__RADAR__.origin_y = 3870.0
+match_35.html::__RADAR__.scale_px_per_unit = 0.2040816326530612
+match_35.html::__RADAR__.width = 1024
+match_36.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_36.html::__RADAR__.height = 1024
+match_36.html::__RADAR__.origin_x = -3230.0
+match_36.html::__RADAR__.origin_y = 1713.0
+match_36.html::__RADAR__.scale_px_per_unit = 0.2
+match_36.html::__RADAR__.width = 1024
+match_37.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_37.html::__RADAR__.height = 1024
+match_37.html::__RADAR__.origin_x = -2476.0
+match_37.html::__RADAR__.origin_y = 3239.0
+match_37.html::__RADAR__.scale_px_per_unit = 0.22727272727272727
+match_37.html::__RADAR__.width = 1024
+match_38.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_38.html::__RADAR__.height = 1024
+match_38.html::__RADAR__.origin_x = -3230.0
+match_38.html::__RADAR__.origin_y = 1713.0
+match_38.html::__RADAR__.scale_px_per_unit = 0.2
+match_38.html::__RADAR__.width = 1024
+match_39.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_39.html::__RADAR__.height = 1024
+match_39.html::__RADAR__.origin_x = -2476.0
+match_39.html::__RADAR__.origin_y = 3239.0
+match_39.html::__RADAR__.scale_px_per_unit = 0.22727272727272727
+match_39.html::__RADAR__.width = 1024
+match_40.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_40.html::__RADAR__.height = 1024
+match_40.html::__RADAR__.origin_x = -3453.0
+match_40.html::__RADAR__.origin_y = 2887.0
+match_40.html::__RADAR__.scale_px_per_unit = 0.14285714285714285
+match_40.html::__RADAR__.vertical_sections.default.max = 10000.0
+match_40.html::__RADAR__.vertical_sections.default.min = -495.0
+match_40.html::__RADAR__.vertical_sections.lower.max = -495.0
+match_40.html::__RADAR__.vertical_sections.lower.min = -10000.0
+match_40.html::__RADAR__.width = 1024
+match_41.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_41.html::__RADAR__.height = 1024
+match_41.html::__RADAR__.origin_x = -2087.0
+match_41.html::__RADAR__.origin_y = 3870.0
+match_41.html::__RADAR__.scale_px_per_unit = 0.2040816326530612
+match_41.html::__RADAR__.width = 1024
+match_42.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_42.html::__RADAR__.height = 1024
+match_42.html::__RADAR__.origin_x = -2476.0
+match_42.html::__RADAR__.origin_y = 3239.0
+match_42.html::__RADAR__.scale_px_per_unit = 0.22727272727272727
+match_42.html::__RADAR__.width = 1024
+match_43.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_43.html::__RADAR__.height = 1024
+match_43.html::__RADAR__.origin_x = -3230.0
+match_43.html::__RADAR__.origin_y = 1713.0
+match_43.html::__RADAR__.scale_px_per_unit = 0.2
+match_43.html::__RADAR__.width = 1024
+match_44.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_44.html::__RADAR__.height = 1024
+match_44.html::__RADAR__.origin_x = -2087.0
+match_44.html::__RADAR__.origin_y = 3870.0
+match_44.html::__RADAR__.scale_px_per_unit = 0.2040816326530612
+match_44.html::__RADAR__.width = 1024
+match_45.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_45.html::__RADAR__.height = 1024
+match_45.html::__RADAR__.origin_x = -3453.0
+match_45.html::__RADAR__.origin_y = 2887.0
+match_45.html::__RADAR__.scale_px_per_unit = 0.14285714285714285
+match_45.html::__RADAR__.vertical_sections.default.max = 10000.0
+match_45.html::__RADAR__.vertical_sections.default.min = -495.0
+match_45.html::__RADAR__.vertical_sections.lower.max = -495.0
+match_45.html::__RADAR__.vertical_sections.lower.min = -10000.0
+match_45.html::__RADAR__.width = 1024
+match_46.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_46.html::__RADAR__.height = 1024
+match_46.html::__RADAR__.origin_x = -4831.0
+match_46.html::__RADAR__.origin_y = 1781.0
+match_46.html::__RADAR__.scale_px_per_unit = 0.1923076923076923
+match_46.html::__RADAR__.width = 1024
+match_47.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_47.html::__RADAR__.height = 1024
+match_47.html::__RADAR__.origin_x = -3453.0
+match_47.html::__RADAR__.origin_y = 2887.0
+match_47.html::__RADAR__.scale_px_per_unit = 0.14285714285714285
+match_47.html::__RADAR__.vertical_sections.default.max = 10000.0
+match_47.html::__RADAR__.vertical_sections.default.min = -495.0
+match_47.html::__RADAR__.vertical_sections.lower.max = -495.0
+match_47.html::__RADAR__.vertical_sections.lower.min = -10000.0
+match_47.html::__RADAR__.width = 1024
+match_48.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_48.html::__RADAR__.height = 1024
+match_48.html::__RADAR__.origin_x = -2476.0
+match_48.html::__RADAR__.origin_y = 3239.0
+match_48.html::__RADAR__.scale_px_per_unit = 0.22727272727272727
+match_48.html::__RADAR__.width = 1024
+match_49.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_49.html::__RADAR__.height = 1024
+match_49.html::__RADAR__.origin_x = -3230.0
+match_49.html::__RADAR__.origin_y = 1713.0
+match_49.html::__RADAR__.scale_px_per_unit = 0.2
+match_49.html::__RADAR__.width = 1024
+match_50.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_50.html::__RADAR__.height = 1024
+match_50.html::__RADAR__.origin_x = -2087.0
+match_50.html::__RADAR__.origin_y = 3870.0
+match_50.html::__RADAR__.scale_px_per_unit = 0.2040816326530612
+match_50.html::__RADAR__.width = 1024
+match_51.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_51.html::__RADAR__.height = 1024
+match_51.html::__RADAR__.origin_x = -3453.0
+match_51.html::__RADAR__.origin_y = 2887.0
+match_51.html::__RADAR__.scale_px_per_unit = 0.14285714285714285
+match_51.html::__RADAR__.vertical_sections.default.max = 10000.0
+match_51.html::__RADAR__.vertical_sections.default.min = -495.0
+match_51.html::__RADAR__.vertical_sections.lower.max = -495.0
+match_51.html::__RADAR__.vertical_sections.lower.min = -10000.0
+match_51.html::__RADAR__.width = 1024
+match_52.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_52.html::__RADAR__.height = 1024
+match_52.html::__RADAR__.origin_x = -3230.0
+match_52.html::__RADAR__.origin_y = 1713.0
+match_52.html::__RADAR__.scale_px_per_unit = 0.2
+match_52.html::__RADAR__.width = 1024
+match_53.html::PAGINA.round_na_prancheta.tolerancia_u = 32
+match_53.html::__RADAR__.height = 1024
+match_53.html::__RADAR__.origin_x = -2476.0
+match_53.html::__RADAR__.origin_y = 3239.0
+match_53.html::__RADAR__.scale_px_per_unit = 0.22727272727272727
+match_53.html::__RADAR__.width = 1024
+numeros_citaveis.json.arremessos.arremessos = 6846
+numeros_citaveis.json.arremessos.dentro_da_amostra.botao.acertos = 6682
+numeros_citaveis.json.arremessos.dentro_da_amostra.botao.de = 6682
+numeros_citaveis.json.arremessos.dentro_da_amostra.botao.melhor_partida = 1.0
+numeros_citaveis.json.arremessos.dentro_da_amostra.botao.pior_partida = 1.0
+numeros_citaveis.json.arremessos.dentro_da_amostra.cobertura_do_botao = 0.976
+numeros_citaveis.json.arremessos.dentro_da_amostra.no_ar.acertos = 6752
+numeros_citaveis.json.arremessos.dentro_da_amostra.no_ar.de = 6757
+numeros_citaveis.json.arremessos.dentro_da_amostra.no_ar.melhor_partida = 1.0
+numeros_citaveis.json.arremessos.dentro_da_amostra.no_ar.pior_partida = 0.9967
+numeros_citaveis.json.arremessos.dentro_da_amostra.postura.acertos = 5092
+numeros_citaveis.json.arremessos.dentro_da_amostra.postura.de = 5092
+numeros_citaveis.json.arremessos.dentro_da_amostra.postura.melhor_partida = 1.0
+numeros_citaveis.json.arremessos.dentro_da_amostra.postura.pior_partida = 1.0
+numeros_citaveis.json.arremessos.fora_da_amostra.botao.acertos = 6686
+numeros_citaveis.json.arremessos.fora_da_amostra.botao.de = 6686
+numeros_citaveis.json.arremessos.fora_da_amostra.botao.melhor_partida = 1.0
+numeros_citaveis.json.arremessos.fora_da_amostra.botao.pior_partida = 1.0
+numeros_citaveis.json.arremessos.fora_da_amostra.cobertura_do_botao = 0.9766
+numeros_citaveis.json.arremessos.fora_da_amostra.no_ar.acertos = 6752
+numeros_citaveis.json.arremessos.fora_da_amostra.no_ar.de = 6757
+numeros_citaveis.json.arremessos.fora_da_amostra.no_ar.melhor_partida = 1.0
+numeros_citaveis.json.arremessos.fora_da_amostra.no_ar.pior_partida = 0.9967
+numeros_citaveis.json.arremessos.fora_da_amostra.postura.acertos = 5098
+numeros_citaveis.json.arremessos.fora_da_amostra.postura.de = 5099
+numeros_citaveis.json.arremessos.fora_da_amostra.postura.melhor_partida = 1.0
+numeros_citaveis.json.arremessos.fora_da_amostra.postura.pior_partida = 0.9974
+numeros_citaveis.json.arremessos.partidas_do_gabarito = 13
+numeros_citaveis.json.convencao_de_angulos.erro_mediano_graus = 1.68
+numeros_citaveis.json.convencao_de_angulos.erro_mediano_invertida_graus = 6.0
+numeros_citaveis.json.convencao_de_angulos.kills = 7652
+numeros_citaveis.json.convencao_de_angulos.partidas = 52
+numeros_citaveis.json.corpus.jogador_partidas = 520
+numeros_citaveis.json.corpus.jogador_rounds = 11520
+numeros_citaveis.json.corpus.partidas = 52
+numeros_citaveis.json.corpus.por_origem.faceit = 9
+numeros_citaveis.json.corpus.por_origem.profissional = 43
+numeros_citaveis.json.corpus.times_profissionais = 9
+numeros_citaveis.json.escada.aberturas_feitas.de = 80
+numeros_citaveis.json.escada.aberturas_feitas.exatos = 80
+numeros_citaveis.json.escada.aberturas_sofridas.de = 80
+numeros_citaveis.json.escada.aberturas_sofridas.exatos = 80
+numeros_citaveis.json.escada.adr_exatos = 401
+numeros_citaveis.json.escada.clutches.de = 80
+numeros_citaveis.json.escada.clutches.exatos = 67
+numeros_citaveis.json.escada.headshots.de = 80
+numeros_citaveis.json.escada.headshots.exatos = 80
+numeros_citaveis.json.escada.jogador_partidas = 410
+numeros_citaveis.json.escada.kast_com_oficial = 330
+numeros_citaveis.json.escada.kast_exatos = 247
+numeros_citaveis.json.escada.kills_exatos = 410
+numeros_citaveis.json.escada.mortes_exatas = 410
+numeros_citaveis.json.escada.partidas = 41
+numeros_citaveis.json.escada.rounds_de_multikill.de = 80
+numeros_citaveis.json.escada.rounds_de_multikill.exatos = 80
+numeros_citaveis.json.escada.series_inteiras = 8
+numeros_citaveis.json.estilos.grupos = 4
+numeros_citaveis.json.rating.deixa_um_time_fora.correlacao = 0.9652
+numeros_citaveis.json.rating.deixa_um_time_fora.erro_medio = 0.0793
+numeros_citaveis.json.rating.deixa_um_time_fora.por_time[0].erro_medio = 0.0798
+numeros_citaveis.json.rating.deixa_um_time_fora.por_time[0].jogador_partidas = 85
+numeros_citaveis.json.rating.deixa_um_time_fora.por_time[1].erro_medio = 0.0726
+numeros_citaveis.json.rating.deixa_um_time_fora.por_time[1].jogador_partidas = 80
+numeros_citaveis.json.rating.deixa_um_time_fora.por_time[2].erro_medio = 0.0787
+numeros_citaveis.json.rating.deixa_um_time_fora.por_time[2].jogador_partidas = 70
+numeros_citaveis.json.rating.deixa_um_time_fora.por_time[3].erro_medio = 0.0816
+numeros_citaveis.json.rating.deixa_um_time_fora.por_time[3].jogador_partidas = 60
+numeros_citaveis.json.rating.deixa_um_time_fora.por_time[4].erro_medio = 0.0779
+numeros_citaveis.json.rating.deixa_um_time_fora.por_time[4].jogador_partidas = 60
+numeros_citaveis.json.rating.deixa_um_time_fora.por_time[5].erro_medio = 0.0798
+numeros_citaveis.json.rating.deixa_um_time_fora.por_time[5].jogador_partidas = 50
+numeros_citaveis.json.rating.deixa_um_time_fora.por_time[6].erro_medio = 0.121
+numeros_citaveis.json.rating.deixa_um_time_fora.por_time[6].jogador_partidas = 10
+numeros_citaveis.json.rating.deixa_um_time_fora.por_time[7].erro_medio = 0.0897
+numeros_citaveis.json.rating.deixa_um_time_fora.por_time[7].jogador_partidas = 10
+numeros_citaveis.json.rating.deixa_um_time_fora.por_time[8].erro_medio = 0.0686
+numeros_citaveis.json.rating.deixa_um_time_fora.por_time[8].jogador_partidas = 5
+numeros_citaveis.json.rating.fora_da_amostra.correlacao = 0.9658
+numeros_citaveis.json.rating.fora_da_amostra.erro_medio = 0.0788
+numeros_citaveis.json.rating.fora_da_amostra.partidas = 43
+numeros_citaveis.json.rating.jogador_partidas = 430
+numeros_citaveis.json.rating.na_pagina.correlacao = 0.967
+numeros_citaveis.json.rating.na_pagina.erro_medio = 0.077
+prancheta_de_ancient.html::biblioteca.arremessos = itens n=1248 sha256:2945b994ec4bb355
+prancheta_de_ancient.html::biblioteca.arremessos_exatos = 1248
+prancheta_de_ancient.html::biblioteca.arremessos_no_corpus = 1258
+prancheta_de_ancient.html::biblioteca.grupos_de_forca[0].centro = 202.0
+prancheta_de_ancient.html::biblioteca.grupos_de_forca[0].n = 29
+prancheta_de_ancient.html::biblioteca.grupos_de_forca[1].centro = 437.0
+prancheta_de_ancient.html::biblioteca.grupos_de_forca[1].n = 76
+prancheta_de_ancient.html::biblioteca.grupos_de_forca[2].centro = 673.0
+prancheta_de_ancient.html::biblioteca.grupos_de_forca[2].n = 1013
+prancheta_de_ancient.html::biblioteca.partidas = 3
+prancheta_de_ancient.html::biblioteca.versao = 1
+prancheta_de_ancient.html::lugares.andares[0].10 = lista n=3 sha256:31a4d7ba2909c4dd
+prancheta_de_ancient.html::lugares.andares[0].100 = lista n=12 sha256:9b895c69a67c0192
+prancheta_de_ancient.html::lugares.andares[0].101 = lista n=21 sha256:8a013cae628f71b0
+prancheta_de_ancient.html::lugares.andares[0].102 = lista n=6 sha256:718faa6387277ebf
+prancheta_de_ancient.html::lugares.andares[0].103 = lista n=9 sha256:2253d4e695b99d0d
+prancheta_de_ancient.html::lugares.andares[0].104 = lista n=12 sha256:5116bbf71845237d
+prancheta_de_ancient.html::lugares.andares[0].105 = lista n=9 sha256:b9800f3c0d4e19aa
+prancheta_de_ancient.html::lugares.andares[0].106 = lista n=9 sha256:b9800f3c0d4e19aa
+prancheta_de_ancient.html::lugares.andares[0].107 = lista n=6 sha256:527004e780ae1b9b
+prancheta_de_ancient.html::lugares.andares[0].108 = lista n=6 sha256:92430cba9996eba6
+prancheta_de_ancient.html::lugares.andares[0].109 = lista n=6 sha256:d933151b47060b78
+prancheta_de_ancient.html::lugares.andares[0].11 = lista n=3 sha256:2db689a98d5828d7
+prancheta_de_ancient.html::lugares.andares[0].110 = lista n=3 sha256:32e2b47c131ac75a
+prancheta_de_ancient.html::lugares.andares[0].111 = lista n=3 sha256:32e2b47c131ac75a
+prancheta_de_ancient.html::lugares.andares[0].112 = lista n=3 sha256:32e2b47c131ac75a
+prancheta_de_ancient.html::lugares.andares[0].113 = lista n=9 sha256:395c25d25b010836
+prancheta_de_ancient.html::lugares.andares[0].114 = lista n=9 sha256:6808e5ffbae0a05c
+prancheta_de_ancient.html::lugares.andares[0].115 = lista n=9 sha256:dc10f15fe5b91791
+prancheta_de_ancient.html::lugares.andares[0].116 = lista n=3 sha256:f3b6714b95727a4a
+prancheta_de_ancient.html::lugares.andares[0].12 = lista n=3 sha256:ec8267125198863d
+prancheta_de_ancient.html::lugares.andares[0].13 = lista n=3 sha256:1b811f3beacbd401
+prancheta_de_ancient.html::lugares.andares[0].14 = lista n=3 sha256:167f9cc54c19c328
+prancheta_de_ancient.html::lugares.andares[0].15 = lista n=3 sha256:cb6031064ca30b41
+prancheta_de_ancient.html::lugares.andares[0].16 = lista n=3 sha256:442b62fdf291e6a2
+prancheta_de_ancient.html::lugares.andares[0].17 = lista n=12 sha256:2f52a3181e2671f0
+prancheta_de_ancient.html::lugares.andares[0].18 = lista n=3 sha256:f4fcd1f49971127b
+prancheta_de_ancient.html::lugares.andares[0].19 = lista n=21 sha256:425e7368cb2e7f24
+prancheta_de_ancient.html::lugares.andares[0].20 = lista n=12 sha256:4eff888446128052
+prancheta_de_ancient.html::lugares.andares[0].21 = lista n=18 sha256:e79f8dcfa1491eb7
+prancheta_de_ancient.html::lugares.andares[0].22 = lista n=9 sha256:5ab62b55d8c43027
+prancheta_de_ancient.html::lugares.andares[0].23 = lista n=15 sha256:c41b558d4aae73c0
+prancheta_de_ancient.html::lugares.andares[0].24 = lista n=9 sha256:e25e78e673ca2560
+prancheta_de_ancient.html::lugares.andares[0].25 = lista n=9 sha256:591c81b65a37d402
+prancheta_de_ancient.html::lugares.andares[0].26 = lista n=15 sha256:d0ddd8c4b780d9f3
+prancheta_de_ancient.html::lugares.andares[0].27 = lista n=15 sha256:54a68b0838c71845
+prancheta_de_ancient.html::lugares.andares[0].28 = lista n=12 sha256:d9f6dcbe5c7ae54e
+prancheta_de_ancient.html::lugares.andares[0].29 = lista n=21 sha256:14f07eb73fa7d5a9
+prancheta_de_ancient.html::lugares.andares[0].30 = lista n=12 sha256:0021867e3e5c7f50
+prancheta_de_ancient.html::lugares.andares[0].31 = lista n=15 sha256:c3ac7ae5aca3a1f5
+prancheta_de_ancient.html::lugares.andares[0].32 = lista n=12 sha256:43893416dbcaa5a1
+prancheta_de_ancient.html::lugares.andares[0].33 = lista n=12 sha256:96a10eac818ab8a0
+prancheta_de_ancient.html::lugares.andares[0].34 = lista n=12 sha256:e0e80418008014e4
+prancheta_de_ancient.html::lugares.andares[0].35 = lista n=12 sha256:f1dd8cd7f79839fc
+prancheta_de_ancient.html::lugares.andares[0].36 = lista n=18 sha256:27bc68b303fa2e28
+prancheta_de_ancient.html::lugares.andares[0].37 = lista n=24 sha256:43f6c3aefa5ec18f
+prancheta_de_ancient.html::lugares.andares[0].38 = lista n=18 sha256:4a9bfb24c26d45f6
+prancheta_de_ancient.html::lugares.andares[0].39 = lista n=24 sha256:1539f665f131ae7f
+prancheta_de_ancient.html::lugares.andares[0].40 = lista n=24 sha256:e326de2d7d6af614
+prancheta_de_ancient.html::lugares.andares[0].41 = lista n=21 sha256:28be9b8a10d4e6b7
+prancheta_de_ancient.html::lugares.andares[0].42 = lista n=18 sha256:9b6cfbe9c47ba0da
+prancheta_de_ancient.html::lugares.andares[0].43 = lista n=27 sha256:9aa1ae3789ab7fb9
+prancheta_de_ancient.html::lugares.andares[0].44 = lista n=24 sha256:30f12347a5fea6ff
+prancheta_de_ancient.html::lugares.andares[0].45 = lista n=12 sha256:95af43c258ff7c5d
+prancheta_de_ancient.html::lugares.andares[0].46 = lista n=24 sha256:593bbf098ce8a2c6
+prancheta_de_ancient.html::lugares.andares[0].47 = lista n=18 sha256:d231e04795fc1e48
+prancheta_de_ancient.html::lugares.andares[0].48 = lista n=18 sha256:39589834bbd5e8a7
+prancheta_de_ancient.html::lugares.andares[0].49 = lista n=15 sha256:b8f6a86a98595db7
+prancheta_de_ancient.html::lugares.andares[0].50 = lista n=15 sha256:a4844aa1fd13bae6
+prancheta_de_ancient.html::lugares.andares[0].51 = lista n=18 sha256:c71bb124d16b9e41
+prancheta_de_ancient.html::lugares.andares[0].52 = lista n=18 sha256:2ebf182cedbd3ebe
+prancheta_de_ancient.html::lugares.andares[0].53 = lista n=18 sha256:7d6304919d57b05c
+prancheta_de_ancient.html::lugares.andares[0].54 = lista n=21 sha256:847ab334ffa32533
+prancheta_de_ancient.html::lugares.andares[0].55 = lista n=18 sha256:e01edb259a7eaa46
+prancheta_de_ancient.html::lugares.andares[0].56 = lista n=24 sha256:ef615b6ddb437bfb
+prancheta_de_ancient.html::lugares.andares[0].57 = lista n=24 sha256:cf9967998fbe965c
+prancheta_de_ancient.html::lugares.andares[0].58 = lista n=21 sha256:63f7c2052312e1f4
+prancheta_de_ancient.html::lugares.andares[0].59 = lista n=21 sha256:d6c1e1cc97f01948
+prancheta_de_ancient.html::lugares.andares[0].60 = lista n=24 sha256:3dca647e82a13b54
+prancheta_de_ancient.html::lugares.andares[0].61 = lista n=27 sha256:430b5cb1134a14fa
+prancheta_de_ancient.html::lugares.andares[0].62 = lista n=18 sha256:d4c4724463462232
+prancheta_de_ancient.html::lugares.andares[0].63 = lista n=18 sha256:6d3098b913426c0d
+prancheta_de_ancient.html::lugares.andares[0].64 = lista n=15 sha256:203e48a7b7e1f0d8
+prancheta_de_ancient.html::lugares.andares[0].65 = lista n=15 sha256:c1573e4566c50edd
+prancheta_de_ancient.html::lugares.andares[0].66 = lista n=15 sha256:c537dfdf933c64e3
+prancheta_de_ancient.html::lugares.andares[0].67 = lista n=15 sha256:c537dfdf933c64e3
+prancheta_de_ancient.html::lugares.andares[0].68 = lista n=15 sha256:748ef9ad94a44c03
+prancheta_de_ancient.html::lugares.andares[0].69 = lista n=15 sha256:9752cec3b034fa99
+prancheta_de_ancient.html::lugares.andares[0].70 = lista n=18 sha256:500d3bb2935a24e2
+prancheta_de_ancient.html::lugares.andares[0].71 = lista n=30 sha256:b759083bb21e2f9e
+prancheta_de_ancient.html::lugares.andares[0].72 = lista n=21 sha256:a82d1225b7296c3b
+prancheta_de_ancient.html::lugares.andares[0].73 = lista n=18 sha256:dc164b2620774d4d
+prancheta_de_ancient.html::lugares.andares[0].74 = lista n=21 sha256:17a59d555cf21561
+prancheta_de_ancient.html::lugares.andares[0].75 = lista n=18 sha256:9a96fff459f716ea
+prancheta_de_ancient.html::lugares.andares[0].76 = lista n=24 sha256:d6c4ca207986632f
+prancheta_de_ancient.html::lugares.andares[0].77 = lista n=12 sha256:575bbcd1507a662c
+prancheta_de_ancient.html::lugares.andares[0].78 = lista n=9 sha256:54f03a04d89cfd44
+prancheta_de_ancient.html::lugares.andares[0].79 = lista n=15 sha256:4d0baa6a6b964be9
+prancheta_de_ancient.html::lugares.andares[0].80 = lista n=6 sha256:3af7f880ed7abe43
+prancheta_de_ancient.html::lugares.andares[0].81 = lista n=6 sha256:350440ddb3cd1153
+prancheta_de_ancient.html::lugares.andares[0].82 = lista n=6 sha256:350440ddb3cd1153
+prancheta_de_ancient.html::lugares.andares[0].83 = lista n=6 sha256:fd4547935c1a4f73
+prancheta_de_ancient.html::lugares.andares[0].84 = lista n=9 sha256:72e0f6de04287d42
+prancheta_de_ancient.html::lugares.andares[0].85 = lista n=12 sha256:f3c400cd5b608612
+prancheta_de_ancient.html::lugares.andares[0].86 = lista n=12 sha256:fdf2121767347fd9
+prancheta_de_ancient.html::lugares.andares[0].87 = lista n=9 sha256:723d75aee326db49
+prancheta_de_ancient.html::lugares.andares[0].88 = lista n=9 sha256:c9ce58111af0c446
+prancheta_de_ancient.html::lugares.andares[0].89 = lista n=6 sha256:0ccce24127e28e97
+prancheta_de_ancient.html::lugares.andares[0].9 = lista n=6 sha256:df9f047c2370ff60
+prancheta_de_ancient.html::lugares.andares[0].90 = lista n=6 sha256:960e04bbe093ce1c
+prancheta_de_ancient.html::lugares.andares[0].91 = lista n=6 sha256:5602400b056d0838
+prancheta_de_ancient.html::lugares.andares[0].92 = lista n=9 sha256:7ed95aee82c63d80
+prancheta_de_ancient.html::lugares.andares[0].93 = lista n=9 sha256:97ea820810b0585a
+prancheta_de_ancient.html::lugares.andares[0].94 = lista n=15 sha256:541db185cb2f64e3
+prancheta_de_ancient.html::lugares.andares[0].95 = lista n=9 sha256:f8aa0cfc790245fc
+prancheta_de_ancient.html::lugares.andares[0].96 = lista n=9 sha256:500eb73a6fc54afe
+prancheta_de_ancient.html::lugares.andares[0].97 = lista n=12 sha256:e968936baf69d872
+prancheta_de_ancient.html::lugares.andares[0].98 = lista n=9 sha256:e3d7dc02b79520cc
+prancheta_de_ancient.html::lugares.andares[0].99 = lista n=9 sha256:e5d0475b1091a8c7
+prancheta_de_ancient.html::lugares.lado = 8
+prancheta_de_ancient.html::lugares.origem.acerto_fora_da_amostra = 0.9644
+prancheta_de_ancient.html::lugares.origem.amostras_teste = 56009
+prancheta_de_ancient.html::lugares.origem.partidas = 3
+prancheta_de_ancient.html::lugares.origem.passo_ticks = 16
+prancheta_de_ancient.html::modelo3.DURACAO_EFEITO_S.decoy = 0.0
+prancheta_de_ancient.html::modelo3.DURACAO_EFEITO_S.flash = 0.0
+prancheta_de_ancient.html::modelo3.DURACAO_EFEITO_S.he = 0.0
+prancheta_de_ancient.html::modelo3.DURACAO_EFEITO_S.molotov = 7.03125
+prancheta_de_ancient.html::modelo3.DURACAO_EFEITO_S.smoke = 20.0
+prancheta_de_ancient.html::modelo3.RAIO_DO_ARREMESSADOR_U = 16.0
+prancheta_de_ancient.html::modelo3.SEGUNDOS_DA_BOMBA = 40.0
+prancheta_de_ancient.html::modelo3.SEGUNDOS_DO_ROUND = 115.0
+prancheta_de_ancient.html::modelo3.VELOCIDADE_U_S.AWP|agachado = 82.4
+prancheta_de_ancient.html::modelo3.VELOCIDADE_U_S.AWP|andando = 104.0
+prancheta_de_ancient.html::modelo3.VELOCIDADE_U_S.AWP|correndo = 197.1
+prancheta_de_ancient.html::modelo3.VELOCIDADE_U_S.rifle|agachado = 90.4
+prancheta_de_ancient.html::modelo3.VELOCIDADE_U_S.rifle|andando = 111.8
+prancheta_de_ancient.html::modelo3.VELOCIDADE_U_S.rifle|correndo = 210.6
+prancheta_de_ancient.html::modelo3.VOO_MOLOTOV = lista n=2 sha256:9f34c9196a7083a8
+prancheta_de_ancient.html::modelo3.VOO_MOLOTOV_MAX_S = 2.0
+prancheta_de_ancient.html::modelo3.VOO_PAVIO_S = 1.62
+prancheta_de_ancient.html::modelo3.VOO_SMOKE = lista n=2 sha256:d8f061f7a7b8063a
+prancheta_de_ancient.html::radar.height = 1024
+prancheta_de_ancient.html::radar.origin_x = -2953.0
+prancheta_de_ancient.html::radar.origin_y = 2164.0
+prancheta_de_ancient.html::radar.scale_px_per_unit = 0.2
+prancheta_de_ancient.html::radar.width = 1024
+prancheta_de_anubis.html::biblioteca.arremessos = itens n=2176 sha256:2d44396ef9809d2d
+prancheta_de_anubis.html::biblioteca.arremessos_exatos = 2176
+prancheta_de_anubis.html::biblioteca.arremessos_no_corpus = 2187
+prancheta_de_anubis.html::biblioteca.grupos_de_forca[0].centro = 201.0
+prancheta_de_anubis.html::biblioteca.grupos_de_forca[0].n = 96
+prancheta_de_anubis.html::biblioteca.grupos_de_forca[1].centro = 436.0
+prancheta_de_anubis.html::biblioteca.grupos_de_forca[1].n = 92
+prancheta_de_anubis.html::biblioteca.grupos_de_forca[2].centro = 673.0
+prancheta_de_anubis.html::biblioteca.grupos_de_forca[2].n = 1908
+prancheta_de_anubis.html::biblioteca.partidas = 5
+prancheta_de_anubis.html::biblioteca.versao = 1
+prancheta_de_anubis.html::lugares.andares[0].10 = lista n=15 sha256:f69ed58275467d36
+prancheta_de_anubis.html::lugares.andares[0].100 = lista n=6 sha256:21a78065af3640ba
+prancheta_de_anubis.html::lugares.andares[0].101 = lista n=6 sha256:d1b21a8ee4c3b9b6
+prancheta_de_anubis.html::lugares.andares[0].102 = lista n=6 sha256:ad86b6ebb2678696
+prancheta_de_anubis.html::lugares.andares[0].103 = lista n=6 sha256:4c580507f0211b69
+prancheta_de_anubis.html::lugares.andares[0].104 = lista n=9 sha256:803720793d08b4a7
+prancheta_de_anubis.html::lugares.andares[0].105 = lista n=9 sha256:cd1ba48cfec03e67
+prancheta_de_anubis.html::lugares.andares[0].106 = lista n=12 sha256:ffb65e83dade47db
+prancheta_de_anubis.html::lugares.andares[0].107 = lista n=15 sha256:81ee6b8238f1236d
+prancheta_de_anubis.html::lugares.andares[0].108 = lista n=15 sha256:4f9b7b0d356ff417
+prancheta_de_anubis.html::lugares.andares[0].109 = lista n=12 sha256:2206c96cce810afb
+prancheta_de_anubis.html::lugares.andares[0].11 = lista n=9 sha256:5621cfca854b43cd
+prancheta_de_anubis.html::lugares.andares[0].110 = lista n=15 sha256:333622cbfd13f307
+prancheta_de_anubis.html::lugares.andares[0].111 = lista n=9 sha256:495b9243a3481569
+prancheta_de_anubis.html::lugares.andares[0].112 = lista n=3 sha256:f1b1ea745e595153
+prancheta_de_anubis.html::lugares.andares[0].113 = lista n=3 sha256:6a58f984cae07a72
+prancheta_de_anubis.html::lugares.andares[0].114 = lista n=3 sha256:5d110c097c82d4cb
+prancheta_de_anubis.html::lugares.andares[0].115 = lista n=3 sha256:65377fe557219013
+prancheta_de_anubis.html::lugares.andares[0].116 = lista n=3 sha256:54c6a998f1ccbfba
+prancheta_de_anubis.html::lugares.andares[0].117 = lista n=6 sha256:a5453fd8dc8e2644
+prancheta_de_anubis.html::lugares.andares[0].118 = lista n=6 sha256:ab560ca4577787d3
+prancheta_de_anubis.html::lugares.andares[0].119 = lista n=3 sha256:3b2fa9421d919056
+prancheta_de_anubis.html::lugares.andares[0].12 = lista n=54 sha256:65a63f49089fa575
+prancheta_de_anubis.html::lugares.andares[0].120 = lista n=3 sha256:fb6ee1ed78dc44eb
+prancheta_de_anubis.html::lugares.andares[0].121 = lista n=6 sha256:65eaabb5da137e2e
+prancheta_de_anubis.html::lugares.andares[0].13 = lista n=21 sha256:d0d53041f2fd46c0
+prancheta_de_anubis.html::lugares.andares[0].14 = lista n=18 sha256:56a565a1869a0db7
+prancheta_de_anubis.html::lugares.andares[0].15 = lista n=6 sha256:f55144913291204d
+prancheta_de_anubis.html::lugares.andares[0].16 = lista n=3 sha256:b995df62ee55c6bd
+prancheta_de_anubis.html::lugares.andares[0].17 = lista n=3 sha256:b995df62ee55c6bd
+prancheta_de_anubis.html::lugares.andares[0].18 = lista n=3 sha256:5aedc7b7dc937173
+prancheta_de_anubis.html::lugares.andares[0].19 = lista n=6 sha256:3ede44639a9a69b6
+prancheta_de_anubis.html::lugares.andares[0].20 = lista n=15 sha256:c339a58b5e83c703
+prancheta_de_anubis.html::lugares.andares[0].21 = lista n=12 sha256:b0b412692b844892
+prancheta_de_anubis.html::lugares.andares[0].22 = lista n=18 sha256:e7c062d87d3a9337
+prancheta_de_anubis.html::lugares.andares[0].23 = lista n=12 sha256:1ff7c3bf5801c8b9
+prancheta_de_anubis.html::lugares.andares[0].24 = lista n=12 sha256:f14b4725876fb76c
+prancheta_de_anubis.html::lugares.andares[0].25 = lista n=12 sha256:6b53be75ff3248ae
+prancheta_de_anubis.html::lugares.andares[0].26 = lista n=12 sha256:3108c686e972a624
+prancheta_de_anubis.html::lugares.andares[0].27 = lista n=12 sha256:df7382921e76b2b4
+prancheta_de_anubis.html::lugares.andares[0].28 = lista n=12 sha256:417dbe2f5e88c507
+prancheta_de_anubis.html::lugares.andares[0].29 = lista n=21 sha256:93eb96421a81b020
+prancheta_de_anubis.html::lugares.andares[0].30 = lista n=15 sha256:52d8a8df9f0a2365
+prancheta_de_anubis.html::lugares.andares[0].31 = lista n=21 sha256:78dcffa541c2cac1
+prancheta_de_anubis.html::lugares.andares[0].32 = lista n=21 sha256:cd72087d12eeec10
+prancheta_de_anubis.html::lugares.andares[0].33 = lista n=18 sha256:feac7e35896a991e
+prancheta_de_anubis.html::lugares.andares[0].34 = lista n=21 sha256:03f30ef10255df8a
+prancheta_de_anubis.html::lugares.andares[0].35 = lista n=21 sha256:c141c3286815b713
+prancheta_de_anubis.html::lugares.andares[0].36 = lista n=21 sha256:6c2570f3aa988e76
+prancheta_de_anubis.html::lugares.andares[0].37 = lista n=18 sha256:6086e0865b91d95c
+prancheta_de_anubis.html::lugares.andares[0].38 = lista n=18 sha256:1d8d1d2d2e576f4f
+prancheta_de_anubis.html::lugares.andares[0].39 = lista n=24 sha256:523a7e274861bbd0
+prancheta_de_anubis.html::lugares.andares[0].4 = lista n=6 sha256:511f5d5031924bab
+prancheta_de_anubis.html::lugares.andares[0].40 = lista n=21 sha256:bae286007955d82d
+prancheta_de_anubis.html::lugares.andares[0].41 = lista n=27 sha256:cf6751d9e3dc32db
+prancheta_de_anubis.html::lugares.andares[0].42 = lista n=24 sha256:3594a7fda2905ee2
+prancheta_de_anubis.html::lugares.andares[0].43 = lista n=24 sha256:b50b87d9f8beaaa9
+prancheta_de_anubis.html::lugares.andares[0].44 = lista n=24 sha256:9915a39059a384c3
+prancheta_de_anubis.html::lugares.andares[0].45 = lista n=18 sha256:aacdade718a4ab88
+prancheta_de_anubis.html::lugares.andares[0].46 = lista n=27 sha256:4157b600a7ac1a56
+prancheta_de_anubis.html::lugares.andares[0].47 = lista n=21 sha256:a8af9fafe186dd5b
+prancheta_de_anubis.html::lugares.andares[0].48 = lista n=15 sha256:270761f616de0c83
+prancheta_de_anubis.html::lugares.andares[0].49 = lista n=15 sha256:a49dde68cf925491
+prancheta_de_anubis.html::lugares.andares[0].5 = lista n=6 sha256:3eb7e6272fc66eb7
+prancheta_de_anubis.html::lugares.andares[0].50 = lista n=12 sha256:3ff61a3cbe0450b2
+prancheta_de_anubis.html::lugares.andares[0].51 = lista n=15 sha256:1a112fc64c0eac6f
+prancheta_de_anubis.html::lugares.andares[0].52 = lista n=15 sha256:1831de45b0ea3ae4
+prancheta_de_anubis.html::lugares.andares[0].53 = lista n=15 sha256:e3ea262d36b98f0b
+prancheta_de_anubis.html::lugares.andares[0].54 = lista n=15 sha256:1288cb9888d95186
+prancheta_de_anubis.html::lugares.andares[0].55 = lista n=18 sha256:24eb63415a558b49
+prancheta_de_anubis.html::lugares.andares[0].56 = lista n=9 sha256:b782499ddfdce92d
+prancheta_de_anubis.html::lugares.andares[0].57 = lista n=18 sha256:e35bd1b24a5c5132
+prancheta_de_anubis.html::lugares.andares[0].58 = lista n=15 sha256:7b34dfa5c2a862c2
+prancheta_de_anubis.html::lugares.andares[0].59 = lista n=15 sha256:f9eba2079fdb06aa
+prancheta_de_anubis.html::lugares.andares[0].6 = lista n=9 sha256:d30f99bc74684247
+prancheta_de_anubis.html::lugares.andares[0].60 = lista n=15 sha256:361392541765174c
+prancheta_de_anubis.html::lugares.andares[0].61 = lista n=12 sha256:c25f7f8f71ebaaea
+prancheta_de_anubis.html::lugares.andares[0].62 = lista n=18 sha256:7f3765f862e48776
+prancheta_de_anubis.html::lugares.andares[0].63 = lista n=21 sha256:7d4372178cebca9e
+prancheta_de_anubis.html::lugares.andares[0].64 = lista n=27 sha256:8c376bebc31c11f8
+prancheta_de_anubis.html::lugares.andares[0].65 = lista n=18 sha256:2544e2bcd9e238ad
+prancheta_de_anubis.html::lugares.andares[0].66 = lista n=18 sha256:826c09ab13a218e1
+prancheta_de_anubis.html::lugares.andares[0].67 = lista n=18 sha256:44c4d6302850be52
+prancheta_de_anubis.html::lugares.andares[0].68 = lista n=15 sha256:c9dce9afc3c0b46c
+prancheta_de_anubis.html::lugares.andares[0].69 = lista n=21 sha256:ff7dbe5a3982761e
+prancheta_de_anubis.html::lugares.andares[0].7 = lista n=9 sha256:0946cbd2443f90df
+prancheta_de_anubis.html::lugares.andares[0].70 = lista n=27 sha256:a6c0b12dbed23244
+prancheta_de_anubis.html::lugares.andares[0].71 = lista n=27 sha256:ce47069726c5a2ee
+prancheta_de_anubis.html::lugares.andares[0].72 = lista n=36 sha256:2ddbe5fad642d262
+prancheta_de_anubis.html::lugares.andares[0].73 = lista n=21 sha256:0047a329b017cbe1
+prancheta_de_anubis.html::lugares.andares[0].74 = lista n=18 sha256:38d1fcf78a204525
+prancheta_de_anubis.html::lugares.andares[0].75 = lista n=21 sha256:f512260e15cbdc10
+prancheta_de_anubis.html::lugares.andares[0].76 = lista n=27 sha256:63b9c988ebe21fe0
+prancheta_de_anubis.html::lugares.andares[0].77 = lista n=24 sha256:de456629dcf341ea
+prancheta_de_anubis.html::lugares.andares[0].78 = lista n=21 sha256:472820acf6a3d2b2
+prancheta_de_anubis.html::lugares.andares[0].79 = lista n=15 sha256:19737622a04500b2
+prancheta_de_anubis.html::lugares.andares[0].8 = lista n=6 sha256:eb82582f7e0acab2
+prancheta_de_anubis.html::lugares.andares[0].80 = lista n=12 sha256:ab6ba964bb75f9fa
+prancheta_de_anubis.html::lugares.andares[0].81 = lista n=12 sha256:83531a414976681b
+prancheta_de_anubis.html::lugares.andares[0].82 = lista n=15 sha256:61cbb0987b5159d1
+prancheta_de_anubis.html::lugares.andares[0].83 = lista n=12 sha256:d1a889f0561a6177
+prancheta_de_anubis.html::lugares.andares[0].84 = lista n=15 sha256:248ce2a5861c7ce4
+prancheta_de_anubis.html::lugares.andares[0].85 = lista n=15 sha256:7a7cd500e3ca14cb
+prancheta_de_anubis.html::lugares.andares[0].86 = lista n=18 sha256:c0331a97c3999af4
+prancheta_de_anubis.html::lugares.andares[0].87 = lista n=21 sha256:53ef6ef184123dc3
+prancheta_de_anubis.html::lugares.andares[0].88 = lista n=18 sha256:55c08a379cfd0f33
+prancheta_de_anubis.html::lugares.andares[0].89 = lista n=18 sha256:1f2c812158992564
+prancheta_de_anubis.html::lugares.andares[0].9 = lista n=6 sha256:b274d8934acf7d54
+prancheta_de_anubis.html::lugares.andares[0].90 = lista n=27 sha256:276752d513aa6187
+prancheta_de_anubis.html::lugares.andares[0].91 = lista n=24 sha256:d0598fe28e150108
+prancheta_de_anubis.html::lugares.andares[0].92 = lista n=18 sha256:3c9577c06ce6078c
+prancheta_de_anubis.html::lugares.andares[0].93 = lista n=6 sha256:92bdd0e0cdbe1359
+prancheta_de_anubis.html::lugares.andares[0].94 = lista n=6 sha256:e8e2a369295c9781
+prancheta_de_anubis.html::lugares.andares[0].95 = lista n=6 sha256:f8e2dc40e729055a
+prancheta_de_anubis.html::lugares.andares[0].96 = lista n=6 sha256:f8e2dc40e729055a
+prancheta_de_anubis.html::lugares.andares[0].97 = lista n=6 sha256:2b8f321af4a21b35
+prancheta_de_anubis.html::lugares.andares[0].98 = lista n=6 sha256:7cbeddf8897cb0d0
+prancheta_de_anubis.html::lugares.andares[0].99 = lista n=6 sha256:8ec4319aaffef1eb
+prancheta_de_anubis.html::lugares.lado = 8
+prancheta_de_anubis.html::lugares.origem.acerto_fora_da_amostra = 0.9658
+prancheta_de_anubis.html::lugares.origem.amostras_teste = 167208
+prancheta_de_anubis.html::lugares.origem.partidas = 5
+prancheta_de_anubis.html::lugares.origem.passo_ticks = 16
+prancheta_de_anubis.html::modelo3.DURACAO_EFEITO_S.decoy = 0.0
+prancheta_de_anubis.html::modelo3.DURACAO_EFEITO_S.flash = 0.0
+prancheta_de_anubis.html::modelo3.DURACAO_EFEITO_S.he = 0.0
+prancheta_de_anubis.html::modelo3.DURACAO_EFEITO_S.molotov = 7.03125
+prancheta_de_anubis.html::modelo3.DURACAO_EFEITO_S.smoke = 20.0
+prancheta_de_anubis.html::modelo3.RAIO_DO_ARREMESSADOR_U = 16.0
+prancheta_de_anubis.html::modelo3.SEGUNDOS_DA_BOMBA = 40.0
+prancheta_de_anubis.html::modelo3.SEGUNDOS_DO_ROUND = 115.0
+prancheta_de_anubis.html::modelo3.VELOCIDADE_U_S.AWP|agachado = 82.4
+prancheta_de_anubis.html::modelo3.VELOCIDADE_U_S.AWP|andando = 104.0
+prancheta_de_anubis.html::modelo3.VELOCIDADE_U_S.AWP|correndo = 197.1
+prancheta_de_anubis.html::modelo3.VELOCIDADE_U_S.rifle|agachado = 90.4
+prancheta_de_anubis.html::modelo3.VELOCIDADE_U_S.rifle|andando = 111.8
+prancheta_de_anubis.html::modelo3.VELOCIDADE_U_S.rifle|correndo = 210.6
+prancheta_de_anubis.html::modelo3.VOO_MOLOTOV = lista n=2 sha256:9f34c9196a7083a8
+prancheta_de_anubis.html::modelo3.VOO_MOLOTOV_MAX_S = 2.0
+prancheta_de_anubis.html::modelo3.VOO_PAVIO_S = 1.62
+prancheta_de_anubis.html::modelo3.VOO_SMOKE = lista n=2 sha256:d8f061f7a7b8063a
+prancheta_de_anubis.html::radar.height = 1024
+prancheta_de_anubis.html::radar.origin_x = -2796.0
+prancheta_de_anubis.html::radar.origin_y = 3328.0
+prancheta_de_anubis.html::radar.scale_px_per_unit = 0.19157088122605365
+prancheta_de_anubis.html::radar.width = 1024
+prancheta_de_cache.html::modelo3.DURACAO_EFEITO_S.decoy = 0.0
+prancheta_de_cache.html::modelo3.DURACAO_EFEITO_S.flash = 0.0
+prancheta_de_cache.html::modelo3.DURACAO_EFEITO_S.he = 0.0
+prancheta_de_cache.html::modelo3.DURACAO_EFEITO_S.molotov = 7.03125
+prancheta_de_cache.html::modelo3.DURACAO_EFEITO_S.smoke = 20.0
+prancheta_de_cache.html::modelo3.RAIO_DO_ARREMESSADOR_U = 16.0
+prancheta_de_cache.html::modelo3.SEGUNDOS_DA_BOMBA = 40.0
+prancheta_de_cache.html::modelo3.SEGUNDOS_DO_ROUND = 115.0
+prancheta_de_cache.html::modelo3.VELOCIDADE_U_S.AWP|agachado = 82.4
+prancheta_de_cache.html::modelo3.VELOCIDADE_U_S.AWP|andando = 104.0
+prancheta_de_cache.html::modelo3.VELOCIDADE_U_S.AWP|correndo = 197.1
+prancheta_de_cache.html::modelo3.VELOCIDADE_U_S.rifle|agachado = 90.4
+prancheta_de_cache.html::modelo3.VELOCIDADE_U_S.rifle|andando = 111.8
+prancheta_de_cache.html::modelo3.VELOCIDADE_U_S.rifle|correndo = 210.6
+prancheta_de_cache.html::modelo3.VOO_MOLOTOV = lista n=2 sha256:9f34c9196a7083a8
+prancheta_de_cache.html::modelo3.VOO_MOLOTOV_MAX_S = 2.0
+prancheta_de_cache.html::modelo3.VOO_PAVIO_S = 1.62
+prancheta_de_cache.html::modelo3.VOO_SMOKE = lista n=2 sha256:d8f061f7a7b8063a
+prancheta_de_cache.html::radar.height = 1024
+prancheta_de_cache.html::radar.origin_x = -2000.0
+prancheta_de_cache.html::radar.origin_y = 3250.0
+prancheta_de_cache.html::radar.scale_px_per_unit = 0.18181818181818182
+prancheta_de_cache.html::radar.width = 1024
+prancheta_de_dust2.html::biblioteca.arremessos = itens n=4933 sha256:16a028c872131cf3
+prancheta_de_dust2.html::biblioteca.arremessos_exatos = 4933
+prancheta_de_dust2.html::biblioteca.arremessos_no_corpus = 4975
+prancheta_de_dust2.html::biblioteca.grupos_de_forca[0].centro = 201.0
+prancheta_de_dust2.html::biblioteca.grupos_de_forca[0].n = 149
+prancheta_de_dust2.html::biblioteca.grupos_de_forca[1].centro = 435.0
+prancheta_de_dust2.html::biblioteca.grupos_de_forca[1].n = 222
+prancheta_de_dust2.html::biblioteca.grupos_de_forca[2].centro = 673.0
+prancheta_de_dust2.html::biblioteca.grupos_de_forca[2].n = 4422
+prancheta_de_dust2.html::biblioteca.partidas = 10
+prancheta_de_dust2.html::biblioteca.versao = 1
+prancheta_de_dust2.html::lugares.andares[0].10 = lista n=9 sha256:ff4c58173d18ceaf
+prancheta_de_dust2.html::lugares.andares[0].100 = lista n=12 sha256:e83e36288624ba88
+prancheta_de_dust2.html::lugares.andares[0].101 = lista n=12 sha256:f404a077a8e72fbf
+prancheta_de_dust2.html::lugares.andares[0].102 = lista n=15 sha256:ba227de20ff8198e
+prancheta_de_dust2.html::lugares.andares[0].103 = lista n=15 sha256:6ed6ac70f129829a
+prancheta_de_dust2.html::lugares.andares[0].104 = lista n=12 sha256:ac28d1fbab78eb70
+prancheta_de_dust2.html::lugares.andares[0].105 = lista n=15 sha256:955d2b0b2ae2e7d1
+prancheta_de_dust2.html::lugares.andares[0].106 = lista n=12 sha256:9345068785d4eed6
+prancheta_de_dust2.html::lugares.andares[0].107 = lista n=24 sha256:3831fb7444f432f8
+prancheta_de_dust2.html::lugares.andares[0].108 = lista n=21 sha256:ec4155511de88b12
+prancheta_de_dust2.html::lugares.andares[0].109 = lista n=33 sha256:d2c4cd78bc63fbcd
+prancheta_de_dust2.html::lugares.andares[0].11 = lista n=9 sha256:c191bb08c70200ff
+prancheta_de_dust2.html::lugares.andares[0].110 = lista n=15 sha256:2dd9cc73ae306e97
+prancheta_de_dust2.html::lugares.andares[0].111 = lista n=15 sha256:e035c05ab8ac8c0b
+prancheta_de_dust2.html::lugares.andares[0].112 = lista n=15 sha256:9497f0f27d8ac48a
+prancheta_de_dust2.html::lugares.andares[0].113 = lista n=15 sha256:575218a2162c1801
+prancheta_de_dust2.html::lugares.andares[0].114 = lista n=9 sha256:e42c0a2aada18712
+prancheta_de_dust2.html::lugares.andares[0].115 = lista n=18 sha256:d80998b0f5b8fc5a
+prancheta_de_dust2.html::lugares.andares[0].116 = lista n=21 sha256:0740d99732e37bcc
+prancheta_de_dust2.html::lugares.andares[0].117 = lista n=15 sha256:3f9bbbe7a2e5be96
+prancheta_de_dust2.html::lugares.andares[0].118 = lista n=9 sha256:6d5edc787167f368
+prancheta_de_dust2.html::lugares.andares[0].119 = lista n=24 sha256:4f17e7fcfa03df69
+prancheta_de_dust2.html::lugares.andares[0].12 = lista n=9 sha256:9e5a15061837d9f9
+prancheta_de_dust2.html::lugares.andares[0].120 = lista n=18 sha256:d1d0d9a8f44b2d3a
+prancheta_de_dust2.html::lugares.andares[0].121 = lista n=15 sha256:6245ee88bb9f139f
+prancheta_de_dust2.html::lugares.andares[0].122 = lista n=24 sha256:f25dc1451532cc9c
+prancheta_de_dust2.html::lugares.andares[0].123 = lista n=9 sha256:b92b0ba492ff9bab
+prancheta_de_dust2.html::lugares.andares[0].124 = lista n=6 sha256:675923d038b0ec8d
+prancheta_de_dust2.html::lugares.andares[0].125 = lista n=6 sha256:f8e5966e259bc493
+prancheta_de_dust2.html::lugares.andares[0].13 = lista n=15 sha256:3b38f1849cb6b1eb
+prancheta_de_dust2.html::lugares.andares[0].14 = lista n=15 sha256:4ea61f7ec7bf0a0d
+prancheta_de_dust2.html::lugares.andares[0].15 = lista n=18 sha256:3cec40eee5fc0581
+prancheta_de_dust2.html::lugares.andares[0].16 = lista n=18 sha256:3cec40eee5fc0581
+prancheta_de_dust2.html::lugares.andares[0].17 = lista n=24 sha256:a782bea14493fef3
+prancheta_de_dust2.html::lugares.andares[0].18 = lista n=15 sha256:c9a93b4c71cf6871
+prancheta_de_dust2.html::lugares.andares[0].19 = lista n=21 sha256:89ada2d8cf26ba6e
+prancheta_de_dust2.html::lugares.andares[0].20 = lista n=27 sha256:0bfe90b68dc857f8
+prancheta_de_dust2.html::lugares.andares[0].21 = lista n=27 sha256:793a77e29fe84320
+prancheta_de_dust2.html::lugares.andares[0].22 = lista n=27 sha256:e6045b813c4f5d10
+prancheta_de_dust2.html::lugares.andares[0].23 = lista n=27 sha256:6bee7561199439d8
+prancheta_de_dust2.html::lugares.andares[0].24 = lista n=30 sha256:6abe8e0a3e36362b
+prancheta_de_dust2.html::lugares.andares[0].25 = lista n=24 sha256:22f6a0f5f314f4ab
+prancheta_de_dust2.html::lugares.andares[0].26 = lista n=39 sha256:e821998aecdcef90
+prancheta_de_dust2.html::lugares.andares[0].27 = lista n=27 sha256:93f96fa81f79fd5e
+prancheta_de_dust2.html::lugares.andares[0].28 = lista n=27 sha256:505aa7ab04bee701
+prancheta_de_dust2.html::lugares.andares[0].29 = lista n=24 sha256:b2dd6f14329bccd3
+prancheta_de_dust2.html::lugares.andares[0].3 = lista n=3 sha256:ebd53eda90504774
+prancheta_de_dust2.html::lugares.andares[0].30 = lista n=30 sha256:1ab4820430471ab5
+prancheta_de_dust2.html::lugares.andares[0].31 = lista n=33 sha256:0d439477bc2687f8
+prancheta_de_dust2.html::lugares.andares[0].32 = lista n=27 sha256:b2a57cc5ef72a2b3
+prancheta_de_dust2.html::lugares.andares[0].33 = lista n=30 sha256:c93c2656305162dd
+prancheta_de_dust2.html::lugares.andares[0].34 = lista n=21 sha256:c37c447876a533e4
+prancheta_de_dust2.html::lugares.andares[0].35 = lista n=12 sha256:75528e206431a3bc
+prancheta_de_dust2.html::lugares.andares[0].36 = lista n=18 sha256:a570ce10f62e3b07
+prancheta_de_dust2.html::lugares.andares[0].37 = lista n=12 sha256:f99de4baa5bec4cb
+prancheta_de_dust2.html::lugares.andares[0].38 = lista n=12 sha256:7602ebadd07aeadd
+prancheta_de_dust2.html::lugares.andares[0].39 = lista n=12 sha256:f07df1194417605f
+prancheta_de_dust2.html::lugares.andares[0].4 = lista n=3 sha256:8b95ea2ca5fb622a
+prancheta_de_dust2.html::lugares.andares[0].40 = lista n=12 sha256:08f6dbbc2c5ceb7e
+prancheta_de_dust2.html::lugares.andares[0].41 = lista n=15 sha256:9ad66f0fcac88e53
+prancheta_de_dust2.html::lugares.andares[0].42 = lista n=15 sha256:ff864b1468794436
+prancheta_de_dust2.html::lugares.andares[0].43 = lista n=15 sha256:dfdae5875307095e
+prancheta_de_dust2.html::lugares.andares[0].44 = lista n=15 sha256:181edef0f14e30fd
+prancheta_de_dust2.html::lugares.andares[0].45 = lista n=15 sha256:ce7bc139f3a3da94
+prancheta_de_dust2.html::lugares.andares[0].46 = lista n=12 sha256:e70d1a0760d8b2f0
+prancheta_de_dust2.html::lugares.andares[0].47 = lista n=15 sha256:1ff61f4a30d59050
+prancheta_de_dust2.html::lugares.andares[0].48 = lista n=21 sha256:863170cf46eefb7e
+prancheta_de_dust2.html::lugares.andares[0].49 = lista n=24 sha256:23e1315529bce2e7
+prancheta_de_dust2.html::lugares.andares[0].5 = lista n=12 sha256:ff917306364f18f8
+prancheta_de_dust2.html::lugares.andares[0].50 = lista n=18 sha256:b9f35750609f309f
+prancheta_de_dust2.html::lugares.andares[0].51 = lista n=18 sha256:b9f35750609f309f
+prancheta_de_dust2.html::lugares.andares[0].52 = lista n=18 sha256:5851404289f2b35e
+prancheta_de_dust2.html::lugares.andares[0].53 = lista n=24 sha256:878dfe11bc8d7569
+prancheta_de_dust2.html::lugares.andares[0].54 = lista n=21 sha256:e59d34ecd23c8180
+prancheta_de_dust2.html::lugares.andares[0].55 = lista n=18 sha256:621e82dc522e8a74
+prancheta_de_dust2.html::lugares.andares[0].56 = lista n=15 sha256:53000ab74d10f512
+prancheta_de_dust2.html::lugares.andares[0].57 = lista n=18 sha256:0f5ee337cc4bb764
+prancheta_de_dust2.html::lugares.andares[0].58 = lista n=18 sha256:c7d5f5b54b9901be
+prancheta_de_dust2.html::lugares.andares[0].59 = lista n=18 sha256:5ccab0960da9d193
+prancheta_de_dust2.html::lugares.andares[0].6 = lista n=12 sha256:db84f78fce96cf81
+prancheta_de_dust2.html::lugares.andares[0].60 = lista n=24 sha256:3be7649528042d47
+prancheta_de_dust2.html::lugares.andares[0].61 = lista n=18 sha256:64453424888d1c53
+prancheta_de_dust2.html::lugares.andares[0].62 = lista n=27 sha256:2b36c00739f99edc
+prancheta_de_dust2.html::lugares.andares[0].63 = lista n=18 sha256:b91965c9e6869336
+prancheta_de_dust2.html::lugares.andares[0].64 = lista n=18 sha256:b91965c9e6869336
+prancheta_de_dust2.html::lugares.andares[0].65 = lista n=18 sha256:1714d3c4e96471d5
+prancheta_de_dust2.html::lugares.andares[0].66 = lista n=18 sha256:1714d3c4e96471d5
+prancheta_de_dust2.html::lugares.andares[0].67 = lista n=18 sha256:bf1813a0acb0624c
+prancheta_de_dust2.html::lugares.andares[0].68 = lista n=18 sha256:bf1813a0acb0624c
+prancheta_de_dust2.html::lugares.andares[0].69 = lista n=18 sha256:bf1813a0acb0624c
+prancheta_de_dust2.html::lugares.andares[0].7 = lista n=9 sha256:3f092fc080ca3a4b
+prancheta_de_dust2.html::lugares.andares[0].70 = lista n=21 sha256:9ea1aaf0cc9e290e
+prancheta_de_dust2.html::lugares.andares[0].71 = lista n=18 sha256:a473306506b7e6ce
+prancheta_de_dust2.html::lugares.andares[0].72 = lista n=18 sha256:9aa28b5b6e37e3d8
+prancheta_de_dust2.html::lugares.andares[0].73 = lista n=21 sha256:575283893bb421e5
+prancheta_de_dust2.html::lugares.andares[0].74 = lista n=18 sha256:e35591e654082d95
+prancheta_de_dust2.html::lugares.andares[0].75 = lista n=18 sha256:184276479383fbae
+prancheta_de_dust2.html::lugares.andares[0].76 = lista n=18 sha256:457eb307371e3804
+prancheta_de_dust2.html::lugares.andares[0].77 = lista n=18 sha256:a637dfd136c66932
+prancheta_de_dust2.html::lugares.andares[0].78 = lista n=24 sha256:a8c71bf8252dbf2c
+prancheta_de_dust2.html::lugares.andares[0].79 = lista n=21 sha256:cf4940a41f6e0542
+prancheta_de_dust2.html::lugares.andares[0].8 = lista n=12 sha256:db84f78fce96cf81
+prancheta_de_dust2.html::lugares.andares[0].80 = lista n=27 sha256:dd01861a7aa68893
+prancheta_de_dust2.html::lugares.andares[0].81 = lista n=24 sha256:b2fb1fc4ab6e5d8c
+prancheta_de_dust2.html::lugares.andares[0].82 = lista n=21 sha256:477a095b4de6e282
+prancheta_de_dust2.html::lugares.andares[0].83 = lista n=21 sha256:5da0351b158b580c
+prancheta_de_dust2.html::lugares.andares[0].84 = lista n=21 sha256:fe80a2db204d2839
+prancheta_de_dust2.html::lugares.andares[0].85 = lista n=15 sha256:3776583a0d1026c8
+prancheta_de_dust2.html::lugares.andares[0].86 = lista n=12 sha256:d87d950f0ee54e01
+prancheta_de_dust2.html::lugares.andares[0].87 = lista n=9 sha256:9380ee48c791409f
+prancheta_de_dust2.html::lugares.andares[0].88 = lista n=12 sha256:1d06cf8dabd7252e
+prancheta_de_dust2.html::lugares.andares[0].89 = lista n=9 sha256:9380ee48c791409f
+prancheta_de_dust2.html::lugares.andares[0].9 = lista n=9 sha256:3f092fc080ca3a4b
+prancheta_de_dust2.html::lugares.andares[0].90 = lista n=9 sha256:9380ee48c791409f
+prancheta_de_dust2.html::lugares.andares[0].91 = lista n=9 sha256:08b83e8a0218e3bc
+prancheta_de_dust2.html::lugares.andares[0].92 = lista n=9 sha256:1ef3195c204dda64
+prancheta_de_dust2.html::lugares.andares[0].93 = lista n=9 sha256:cd3fd507cd3fbaaa
+prancheta_de_dust2.html::lugares.andares[0].94 = lista n=9 sha256:27597c3f26225dad
+prancheta_de_dust2.html::lugares.andares[0].95 = lista n=27 sha256:52e43de82033f1fc
+prancheta_de_dust2.html::lugares.andares[0].96 = lista n=15 sha256:52a447694217a6c5
+prancheta_de_dust2.html::lugares.andares[0].97 = lista n=15 sha256:87a9376995dc0b93
+prancheta_de_dust2.html::lugares.andares[0].98 = lista n=15 sha256:17c16a40abe6de2f
+prancheta_de_dust2.html::lugares.andares[0].99 = lista n=18 sha256:0107d4729141730b
+prancheta_de_dust2.html::lugares.lado = 8
+prancheta_de_dust2.html::lugares.origem.acerto_fora_da_amostra = 0.9721
+prancheta_de_dust2.html::lugares.origem.amostras_teste = 506489
+prancheta_de_dust2.html::lugares.origem.partidas = 10
+prancheta_de_dust2.html::lugares.origem.passo_ticks = 16
+prancheta_de_dust2.html::modelo3.DURACAO_EFEITO_S.decoy = 0.0
+prancheta_de_dust2.html::modelo3.DURACAO_EFEITO_S.flash = 0.0
+prancheta_de_dust2.html::modelo3.DURACAO_EFEITO_S.he = 0.0
+prancheta_de_dust2.html::modelo3.DURACAO_EFEITO_S.molotov = 7.03125
+prancheta_de_dust2.html::modelo3.DURACAO_EFEITO_S.smoke = 20.0
+prancheta_de_dust2.html::modelo3.RAIO_DO_ARREMESSADOR_U = 16.0
+prancheta_de_dust2.html::modelo3.SEGUNDOS_DA_BOMBA = 40.0
+prancheta_de_dust2.html::modelo3.SEGUNDOS_DO_ROUND = 115.0
+prancheta_de_dust2.html::modelo3.VELOCIDADE_U_S.AWP|agachado = 82.4
+prancheta_de_dust2.html::modelo3.VELOCIDADE_U_S.AWP|andando = 104.0
+prancheta_de_dust2.html::modelo3.VELOCIDADE_U_S.AWP|correndo = 197.1
+prancheta_de_dust2.html::modelo3.VELOCIDADE_U_S.rifle|agachado = 90.4
+prancheta_de_dust2.html::modelo3.VELOCIDADE_U_S.rifle|andando = 111.8
+prancheta_de_dust2.html::modelo3.VELOCIDADE_U_S.rifle|correndo = 210.6
+prancheta_de_dust2.html::modelo3.VOO_MOLOTOV = lista n=2 sha256:9f34c9196a7083a8
+prancheta_de_dust2.html::modelo3.VOO_MOLOTOV_MAX_S = 2.0
+prancheta_de_dust2.html::modelo3.VOO_PAVIO_S = 1.62
+prancheta_de_dust2.html::modelo3.VOO_SMOKE = lista n=2 sha256:d8f061f7a7b8063a
+prancheta_de_dust2.html::radar.height = 1024
+prancheta_de_dust2.html::radar.origin_x = -2476.0
+prancheta_de_dust2.html::radar.origin_y = 3239.0
+prancheta_de_dust2.html::radar.scale_px_per_unit = 0.22727272727272727
+prancheta_de_dust2.html::radar.width = 1024
+prancheta_de_inferno.html::biblioteca.arremessos = itens n=2866 sha256:5487f72255fd2d29
+prancheta_de_inferno.html::biblioteca.arremessos_exatos = 2866
+prancheta_de_inferno.html::biblioteca.arremessos_no_corpus = 2874
+prancheta_de_inferno.html::biblioteca.grupos_de_forca[0].centro = 201.0
+prancheta_de_inferno.html::biblioteca.grupos_de_forca[0].n = 63
+prancheta_de_inferno.html::biblioteca.grupos_de_forca[1].centro = 435.0
+prancheta_de_inferno.html::biblioteca.grupos_de_forca[1].n = 155
+prancheta_de_inferno.html::biblioteca.grupos_de_forca[2].centro = 673.0
+prancheta_de_inferno.html::biblioteca.grupos_de_forca[2].n = 2602
+prancheta_de_inferno.html::biblioteca.partidas = 6
+prancheta_de_inferno.html::biblioteca.versao = 1
+prancheta_de_inferno.html::lugares.andares[0].10 = lista n=6 sha256:a5fa833a8d8627c3
+prancheta_de_inferno.html::lugares.andares[0].100 = lista n=33 sha256:6bc6b563b3461fab
+prancheta_de_inferno.html::lugares.andares[0].101 = lista n=33 sha256:5cd9cc2ebb8135a0
+prancheta_de_inferno.html::lugares.andares[0].102 = lista n=42 sha256:441ddb23a17ead34
+prancheta_de_inferno.html::lugares.andares[0].103 = lista n=24 sha256:8ad9f9ab1628bfea
+prancheta_de_inferno.html::lugares.andares[0].104 = lista n=30 sha256:4ede7e4bfe4f060f
+prancheta_de_inferno.html::lugares.andares[0].105 = lista n=36 sha256:b5a727836da868d0
+prancheta_de_inferno.html::lugares.andares[0].106 = lista n=39 sha256:9dc303bf575db0c2
+prancheta_de_inferno.html::lugares.andares[0].107 = lista n=24 sha256:01f42daf219f96cd
+prancheta_de_inferno.html::lugares.andares[0].108 = lista n=30 sha256:03cdde8d3257c65b
+prancheta_de_inferno.html::lugares.andares[0].109 = lista n=21 sha256:c52c17fffc8925d1
+prancheta_de_inferno.html::lugares.andares[0].11 = lista n=6 sha256:a5fa833a8d8627c3
+prancheta_de_inferno.html::lugares.andares[0].110 = lista n=18 sha256:6309ad6a0c9df028
+prancheta_de_inferno.html::lugares.andares[0].111 = lista n=12 sha256:de3d484ef810c030
+prancheta_de_inferno.html::lugares.andares[0].112 = lista n=27 sha256:77547a9247f656ab
+prancheta_de_inferno.html::lugares.andares[0].113 = lista n=12 sha256:0b2a1a594131c25b
+prancheta_de_inferno.html::lugares.andares[0].114 = lista n=12 sha256:942861406a00ac99
+prancheta_de_inferno.html::lugares.andares[0].115 = lista n=9 sha256:5fc36833d9ad184b
+prancheta_de_inferno.html::lugares.andares[0].116 = lista n=9 sha256:981c8f94cd7c3db9
+prancheta_de_inferno.html::lugares.andares[0].117 = lista n=3 sha256:4620a13512a17cfa
+prancheta_de_inferno.html::lugares.andares[0].118 = lista n=6 sha256:85b38f050b38c334
+prancheta_de_inferno.html::lugares.andares[0].12 = lista n=6 sha256:e2ab62fa3da17164
+prancheta_de_inferno.html::lugares.andares[0].13 = lista n=9 sha256:38d37a4c667a5839
+prancheta_de_inferno.html::lugares.andares[0].14 = lista n=6 sha256:a355e6361438c6d8
+prancheta_de_inferno.html::lugares.andares[0].15 = lista n=12 sha256:21a810e232bd37bc
+prancheta_de_inferno.html::lugares.andares[0].16 = lista n=12 sha256:165dee069043fbc4
+prancheta_de_inferno.html::lugares.andares[0].17 = lista n=12 sha256:9f18e4e9dfbb1e2f
+prancheta_de_inferno.html::lugares.andares[0].18 = lista n=9 sha256:5046208584ec01bd
+prancheta_de_inferno.html::lugares.andares[0].19 = lista n=6 sha256:04506a74152d2a04
+prancheta_de_inferno.html::lugares.andares[0].20 = lista n=15 sha256:104601e3a722ea36
+prancheta_de_inferno.html::lugares.andares[0].21 = lista n=9 sha256:6219a45fb23cf1d1
+prancheta_de_inferno.html::lugares.andares[0].22 = lista n=15 sha256:627251fa2306c220
+prancheta_de_inferno.html::lugares.andares[0].23 = lista n=15 sha256:e6ff71261c8fa6db
+prancheta_de_inferno.html::lugares.andares[0].24 = lista n=12 sha256:eb0454504498edc8
+prancheta_de_inferno.html::lugares.andares[0].25 = lista n=12 sha256:9c0c1bbc676d239f
+prancheta_de_inferno.html::lugares.andares[0].26 = lista n=9 sha256:a7682b13683a4612
+prancheta_de_inferno.html::lugares.andares[0].27 = lista n=9 sha256:05d4c78a45768d48
+prancheta_de_inferno.html::lugares.andares[0].28 = lista n=12 sha256:ede641a9cb2078a4
+prancheta_de_inferno.html::lugares.andares[0].29 = lista n=18 sha256:611a9fb9c9193ef6
+prancheta_de_inferno.html::lugares.andares[0].30 = lista n=18 sha256:b8f995e105b9f873
+prancheta_de_inferno.html::lugares.andares[0].31 = lista n=15 sha256:58490c41c5df6f1e
+prancheta_de_inferno.html::lugares.andares[0].32 = lista n=12 sha256:40f50133a25ccb77
+prancheta_de_inferno.html::lugares.andares[0].33 = lista n=9 sha256:aa6645b94806edcd
+prancheta_de_inferno.html::lugares.andares[0].34 = lista n=9 sha256:08a1e14a11830a16
+prancheta_de_inferno.html::lugares.andares[0].35 = lista n=9 sha256:81e5ad5ca0ac1e45
+prancheta_de_inferno.html::lugares.andares[0].36 = lista n=12 sha256:969bc0ae1e2ff8f2
+prancheta_de_inferno.html::lugares.andares[0].37 = lista n=6 sha256:e084dae011c055bd
+prancheta_de_inferno.html::lugares.andares[0].38 = lista n=12 sha256:e4afa9616d25159b
+prancheta_de_inferno.html::lugares.andares[0].39 = lista n=15 sha256:c8f7da08b3bedc0e
+prancheta_de_inferno.html::lugares.andares[0].40 = lista n=12 sha256:8149faf7443706e7
+prancheta_de_inferno.html::lugares.andares[0].41 = lista n=9 sha256:bd4be46f7d33a481
+prancheta_de_inferno.html::lugares.andares[0].42 = lista n=9 sha256:a3ff60480273414e
+prancheta_de_inferno.html::lugares.andares[0].43 = lista n=9 sha256:a3ff60480273414e
+prancheta_de_inferno.html::lugares.andares[0].44 = lista n=9 sha256:39b40f35e480987d
+prancheta_de_inferno.html::lugares.andares[0].45 = lista n=9 sha256:2ddc7e05354f9737
+prancheta_de_inferno.html::lugares.andares[0].46 = lista n=9 sha256:2ddc7e05354f9737
+prancheta_de_inferno.html::lugares.andares[0].47 = lista n=9 sha256:d36f88d767ad267f
+prancheta_de_inferno.html::lugares.andares[0].48 = lista n=9 sha256:62a5a5927b1e4fa6
+prancheta_de_inferno.html::lugares.andares[0].49 = lista n=12 sha256:b95597257f27fbe1
+prancheta_de_inferno.html::lugares.andares[0].50 = lista n=6 sha256:a79cc60951efde16
+prancheta_de_inferno.html::lugares.andares[0].51 = lista n=9 sha256:c334ec4db5797a6c
+prancheta_de_inferno.html::lugares.andares[0].52 = lista n=6 sha256:1ca1b76ea016f270
+prancheta_de_inferno.html::lugares.andares[0].53 = lista n=6 sha256:1ca1b76ea016f270
+prancheta_de_inferno.html::lugares.andares[0].54 = lista n=6 sha256:7a8fc49a6afdfcb5
+prancheta_de_inferno.html::lugares.andares[0].55 = lista n=6 sha256:c011b48cb2c83060
+prancheta_de_inferno.html::lugares.andares[0].56 = lista n=6 sha256:f8c18bfb03030ce2
+prancheta_de_inferno.html::lugares.andares[0].57 = lista n=9 sha256:4b8ca6dc8f8d21ba
+prancheta_de_inferno.html::lugares.andares[0].58 = lista n=9 sha256:da155cdbbbff3ec2
+prancheta_de_inferno.html::lugares.andares[0].59 = lista n=9 sha256:a7545358447f11f4
+prancheta_de_inferno.html::lugares.andares[0].60 = lista n=9 sha256:efe6aa874ce10b8e
+prancheta_de_inferno.html::lugares.andares[0].61 = lista n=9 sha256:0dee0348aa14ca77
+prancheta_de_inferno.html::lugares.andares[0].62 = lista n=9 sha256:b3cea80342aba8a1
+prancheta_de_inferno.html::lugares.andares[0].63 = lista n=9 sha256:ec30e20c4b2ceec8
+prancheta_de_inferno.html::lugares.andares[0].64 = lista n=9 sha256:ec30e20c4b2ceec8
+prancheta_de_inferno.html::lugares.andares[0].65 = lista n=9 sha256:c46a2fca5fc2c8f3
+prancheta_de_inferno.html::lugares.andares[0].66 = lista n=9 sha256:21168c4e70a9086b
+prancheta_de_inferno.html::lugares.andares[0].67 = lista n=15 sha256:b3269d2ae24a89c5
+prancheta_de_inferno.html::lugares.andares[0].68 = lista n=15 sha256:1088fd7d7d96e677
+prancheta_de_inferno.html::lugares.andares[0].69 = lista n=15 sha256:53b5337824906118
+prancheta_de_inferno.html::lugares.andares[0].7 = lista n=3 sha256:7804837d3d9d3edb
+prancheta_de_inferno.html::lugares.andares[0].70 = lista n=15 sha256:53b5337824906118
+prancheta_de_inferno.html::lugares.andares[0].71 = lista n=18 sha256:cb4c2430d45f6d47
+prancheta_de_inferno.html::lugares.andares[0].72 = lista n=12 sha256:5b3b594344c4ad1f
+prancheta_de_inferno.html::lugares.andares[0].73 = lista n=9 sha256:270035fb1e1511f0
+prancheta_de_inferno.html::lugares.andares[0].74 = lista n=12 sha256:2accca242e4fd0c7
+prancheta_de_inferno.html::lugares.andares[0].75 = lista n=12 sha256:2d43d4bf1806b7e3
+prancheta_de_inferno.html::lugares.andares[0].76 = lista n=15 sha256:99e3bf673afd9b1d
+prancheta_de_inferno.html::lugares.andares[0].77 = lista n=12 sha256:9edfe61f656cfaa0
+prancheta_de_inferno.html::lugares.andares[0].78 = lista n=18 sha256:0f8789c43d3a2268
+prancheta_de_inferno.html::lugares.andares[0].79 = lista n=12 sha256:525f6d0926ac53d4
+prancheta_de_inferno.html::lugares.andares[0].8 = lista n=6 sha256:cef83140af49e026
+prancheta_de_inferno.html::lugares.andares[0].80 = lista n=21 sha256:d18ceef8805a62c6
+prancheta_de_inferno.html::lugares.andares[0].81 = lista n=24 sha256:5b6783b2131b236a
+prancheta_de_inferno.html::lugares.andares[0].82 = lista n=24 sha256:c2950c17290abcff
+prancheta_de_inferno.html::lugares.andares[0].83 = lista n=30 sha256:f5291f556841c94d
+prancheta_de_inferno.html::lugares.andares[0].84 = lista n=24 sha256:407bab3c6dd43f47
+prancheta_de_inferno.html::lugares.andares[0].85 = lista n=30 sha256:68d73fcd85ebcc1c
+prancheta_de_inferno.html::lugares.andares[0].86 = lista n=27 sha256:92e9252008b96178
+prancheta_de_inferno.html::lugares.andares[0].87 = lista n=27 sha256:331ff44aff257546
+prancheta_de_inferno.html::lugares.andares[0].88 = lista n=33 sha256:6d6793e2c08c27ec
+prancheta_de_inferno.html::lugares.andares[0].89 = lista n=33 sha256:ad0c678df1c80a23
+prancheta_de_inferno.html::lugares.andares[0].9 = lista n=6 sha256:c6661cfdb0c1f652
+prancheta_de_inferno.html::lugares.andares[0].90 = lista n=39 sha256:14a39bd5d0b5dd65
+prancheta_de_inferno.html::lugares.andares[0].91 = lista n=39 sha256:165f099ac92fd942
+prancheta_de_inferno.html::lugares.andares[0].92 = lista n=39 sha256:7bfafab11a838edb
+prancheta_de_inferno.html::lugares.andares[0].93 = lista n=48 sha256:4cc6395eb0bd2f98
+prancheta_de_inferno.html::lugares.andares[0].94 = lista n=42 sha256:5e86708d2deafed3
+prancheta_de_inferno.html::lugares.andares[0].95 = lista n=39 sha256:6586a85b77229871
+prancheta_de_inferno.html::lugares.andares[0].96 = lista n=36 sha256:5c798f940a7e927f
+prancheta_de_inferno.html::lugares.andares[0].97 = lista n=42 sha256:8786fcf81aef8a5a
+prancheta_de_inferno.html::lugares.andares[0].98 = lista n=54 sha256:facbd2abad82df01
+prancheta_de_inferno.html::lugares.andares[0].99 = lista n=45 sha256:dc38909945db0374
+prancheta_de_inferno.html::lugares.lado = 8
+prancheta_de_inferno.html::lugares.origem.acerto_fora_da_amostra = 0.9638
+prancheta_de_inferno.html::lugares.origem.amostras_teste = 265023
+prancheta_de_inferno.html::lugares.origem.partidas = 6
+prancheta_de_inferno.html::lugares.origem.passo_ticks = 16
+prancheta_de_inferno.html::modelo3.DURACAO_EFEITO_S.decoy = 0.0
+prancheta_de_inferno.html::modelo3.DURACAO_EFEITO_S.flash = 0.0
+prancheta_de_inferno.html::modelo3.DURACAO_EFEITO_S.he = 0.0
+prancheta_de_inferno.html::modelo3.DURACAO_EFEITO_S.molotov = 7.03125
+prancheta_de_inferno.html::modelo3.DURACAO_EFEITO_S.smoke = 20.0
+prancheta_de_inferno.html::modelo3.RAIO_DO_ARREMESSADOR_U = 16.0
+prancheta_de_inferno.html::modelo3.SEGUNDOS_DA_BOMBA = 40.0
+prancheta_de_inferno.html::modelo3.SEGUNDOS_DO_ROUND = 115.0
+prancheta_de_inferno.html::modelo3.VELOCIDADE_U_S.AWP|agachado = 82.4
+prancheta_de_inferno.html::modelo3.VELOCIDADE_U_S.AWP|andando = 104.0
+prancheta_de_inferno.html::modelo3.VELOCIDADE_U_S.AWP|correndo = 197.1
+prancheta_de_inferno.html::modelo3.VELOCIDADE_U_S.rifle|agachado = 90.4
+prancheta_de_inferno.html::modelo3.VELOCIDADE_U_S.rifle|andando = 111.8
+prancheta_de_inferno.html::modelo3.VELOCIDADE_U_S.rifle|correndo = 210.6
+prancheta_de_inferno.html::modelo3.VOO_MOLOTOV = lista n=2 sha256:9f34c9196a7083a8
+prancheta_de_inferno.html::modelo3.VOO_MOLOTOV_MAX_S = 2.0
+prancheta_de_inferno.html::modelo3.VOO_PAVIO_S = 1.62
+prancheta_de_inferno.html::modelo3.VOO_SMOKE = lista n=2 sha256:d8f061f7a7b8063a
+prancheta_de_inferno.html::radar.height = 1024
+prancheta_de_inferno.html::radar.origin_x = -2087.0
+prancheta_de_inferno.html::radar.origin_y = 3870.0
+prancheta_de_inferno.html::radar.scale_px_per_unit = 0.2040816326530612
+prancheta_de_inferno.html::radar.width = 1024
+prancheta_de_mirage.html::biblioteca.arremessos = itens n=6712 sha256:eea97a5e743c31f6
+prancheta_de_mirage.html::biblioteca.arremessos_exatos = 6712
+prancheta_de_mirage.html::biblioteca.arremessos_no_corpus = 6781
+prancheta_de_mirage.html::biblioteca.grupos_de_forca[0].centro = 201.0
+prancheta_de_mirage.html::biblioteca.grupos_de_forca[0].n = 279
+prancheta_de_mirage.html::biblioteca.grupos_de_forca[1].centro = 436.0
+prancheta_de_mirage.html::biblioteca.grupos_de_forca[1].n = 231
+prancheta_de_mirage.html::biblioteca.grupos_de_forca[2].centro = 673.0
+prancheta_de_mirage.html::biblioteca.grupos_de_forca[2].n = 5844
+prancheta_de_mirage.html::biblioteca.partidas = 16
+prancheta_de_mirage.html::biblioteca.versao = 1
+prancheta_de_mirage.html::lugares.andares[0].100 = lista n=15 sha256:6f01a82184e127bf
+prancheta_de_mirage.html::lugares.andares[0].101 = lista n=9 sha256:23ff727e46da7775
+prancheta_de_mirage.html::lugares.andares[0].102 = lista n=18 sha256:cce04ae981b2bbfa
+prancheta_de_mirage.html::lugares.andares[0].103 = lista n=15 sha256:743c7b70bf680823
+prancheta_de_mirage.html::lugares.andares[0].104 = lista n=6 sha256:19fa8eb0cf28c7d1
+prancheta_de_mirage.html::lugares.andares[0].105 = lista n=18 sha256:e33dee0b3014b78e
+prancheta_de_mirage.html::lugares.andares[0].106 = lista n=18 sha256:b39fb3a45279fbc1
+prancheta_de_mirage.html::lugares.andares[0].107 = lista n=9 sha256:a6c58c706c8fe2e2
+prancheta_de_mirage.html::lugares.andares[0].20 = lista n=9 sha256:d442abb5944e2445
+prancheta_de_mirage.html::lugares.andares[0].21 = lista n=12 sha256:d2fdbc7b311305e7
+prancheta_de_mirage.html::lugares.andares[0].22 = lista n=15 sha256:77ce26278b6a709d
+prancheta_de_mirage.html::lugares.andares[0].23 = lista n=12 sha256:f7d5d00a5eb467e1
+prancheta_de_mirage.html::lugares.andares[0].24 = lista n=12 sha256:09808f4e44b9b43b
+prancheta_de_mirage.html::lugares.andares[0].25 = lista n=21 sha256:d233671edefba058
+prancheta_de_mirage.html::lugares.andares[0].26 = lista n=27 sha256:0010e8034d2d8c12
+prancheta_de_mirage.html::lugares.andares[0].27 = lista n=18 sha256:cf2287e719998db6
+prancheta_de_mirage.html::lugares.andares[0].28 = lista n=15 sha256:67f82b3fe9995934
+prancheta_de_mirage.html::lugares.andares[0].29 = lista n=18 sha256:89efdaab8d237b8a
+prancheta_de_mirage.html::lugares.andares[0].30 = lista n=21 sha256:2da0cf0049e7afcc
+prancheta_de_mirage.html::lugares.andares[0].31 = lista n=24 sha256:53746fb676ff7be1
+prancheta_de_mirage.html::lugares.andares[0].32 = lista n=36 sha256:c79ffb128bad69ec
+prancheta_de_mirage.html::lugares.andares[0].33 = lista n=30 sha256:cd3383f0ccc67ab2
+prancheta_de_mirage.html::lugares.andares[0].34 = lista n=18 sha256:39f249b43dda9c23
+prancheta_de_mirage.html::lugares.andares[0].35 = lista n=18 sha256:cb8ef672bcc10784
+prancheta_de_mirage.html::lugares.andares[0].36 = lista n=27 sha256:133cc434c9cbd297
+prancheta_de_mirage.html::lugares.andares[0].37 = lista n=27 sha256:21e11976a1ea12e8
+prancheta_de_mirage.html::lugares.andares[0].38 = lista n=21 sha256:de904c0f80845ac2
+prancheta_de_mirage.html::lugares.andares[0].39 = lista n=15 sha256:c91e0f666336d339
+prancheta_de_mirage.html::lugares.andares[0].40 = lista n=30 sha256:6906ce00aaa13e1f
+prancheta_de_mirage.html::lugares.andares[0].41 = lista n=21 sha256:952ad89ad4e62f19
+prancheta_de_mirage.html::lugares.andares[0].42 = lista n=24 sha256:25bb50121703c2a5
+prancheta_de_mirage.html::lugares.andares[0].43 = lista n=15 sha256:4f18be86728b1589
+prancheta_de_mirage.html::lugares.andares[0].44 = lista n=24 sha256:1e35dd856178e3e3
+prancheta_de_mirage.html::lugares.andares[0].45 = lista n=21 sha256:00698ff454fc6640
+prancheta_de_mirage.html::lugares.andares[0].46 = lista n=24 sha256:46c13cdfefa6094c
+prancheta_de_mirage.html::lugares.andares[0].47 = lista n=24 sha256:0ee3553bf54de9ce
+prancheta_de_mirage.html::lugares.andares[0].48 = lista n=18 sha256:7c7d384b055b1826
+prancheta_de_mirage.html::lugares.andares[0].49 = lista n=36 sha256:13b959e289d0fcbd
+prancheta_de_mirage.html::lugares.andares[0].50 = lista n=21 sha256:aa8986c54d28b376
+prancheta_de_mirage.html::lugares.andares[0].51 = lista n=21 sha256:7a0e012d8b82991c
+prancheta_de_mirage.html::lugares.andares[0].52 = lista n=24 sha256:1bc45c2f1b780253
+prancheta_de_mirage.html::lugares.andares[0].53 = lista n=21 sha256:bdf388449a3b6caa
+prancheta_de_mirage.html::lugares.andares[0].54 = lista n=30 sha256:112d6081cc0d896e
+prancheta_de_mirage.html::lugares.andares[0].55 = lista n=54 sha256:645505612d49c9cb
+prancheta_de_mirage.html::lugares.andares[0].56 = lista n=15 sha256:f2035db5f72d1135
+prancheta_de_mirage.html::lugares.andares[0].57 = lista n=15 sha256:f2035db5f72d1135
+prancheta_de_mirage.html::lugares.andares[0].58 = lista n=15 sha256:a83098443d804302
+prancheta_de_mirage.html::lugares.andares[0].59 = lista n=15 sha256:e14e3a195149816c
+prancheta_de_mirage.html::lugares.andares[0].60 = lista n=21 sha256:4e3300196b52b99e
+prancheta_de_mirage.html::lugares.andares[0].61 = lista n=18 sha256:05b3729baafe057d
+prancheta_de_mirage.html::lugares.andares[0].62 = lista n=15 sha256:158820e13dffcc94
+prancheta_de_mirage.html::lugares.andares[0].63 = lista n=18 sha256:e4e0d0d8ed16209e
+prancheta_de_mirage.html::lugares.andares[0].64 = lista n=30 sha256:b943c244c2305b3c
+prancheta_de_mirage.html::lugares.andares[0].65 = lista n=30 sha256:ae861d5a59176769
+prancheta_de_mirage.html::lugares.andares[0].66 = lista n=24 sha256:586821fe7e3f57cf
+prancheta_de_mirage.html::lugares.andares[0].67 = lista n=9 sha256:fac6611d71e35425
+prancheta_de_mirage.html::lugares.andares[0].68 = lista n=12 sha256:a9b0a09e0036f1cd
+prancheta_de_mirage.html::lugares.andares[0].69 = lista n=15 sha256:5fb480f8510270e4
+prancheta_de_mirage.html::lugares.andares[0].70 = lista n=12 sha256:829289700fd22365
+prancheta_de_mirage.html::lugares.andares[0].71 = lista n=12 sha256:db50f0f687a6b4d9
+prancheta_de_mirage.html::lugares.andares[0].72 = lista n=18 sha256:35df19df2fb8088c
+prancheta_de_mirage.html::lugares.andares[0].73 = lista n=21 sha256:587cd1f1ed24edc4
+prancheta_de_mirage.html::lugares.andares[0].74 = lista n=15 sha256:46f39463307b47e9
+prancheta_de_mirage.html::lugares.andares[0].75 = lista n=24 sha256:fcc56008c8294e49
+prancheta_de_mirage.html::lugares.andares[0].76 = lista n=24 sha256:9e4e40aea1691bb7
+prancheta_de_mirage.html::lugares.andares[0].77 = lista n=21 sha256:3389605ff85ee8bd
+prancheta_de_mirage.html::lugares.andares[0].78 = lista n=27 sha256:19d02bf81c9650ba
+prancheta_de_mirage.html::lugares.andares[0].79 = lista n=30 sha256:eb0e4728e946505c
+prancheta_de_mirage.html::lugares.andares[0].80 = lista n=36 sha256:e5f7c430b6001351
+prancheta_de_mirage.html::lugares.andares[0].81 = lista n=27 sha256:b15d5253c84cdd94
+prancheta_de_mirage.html::lugares.andares[0].82 = lista n=27 sha256:75d4946b2dc743a4
+prancheta_de_mirage.html::lugares.andares[0].83 = lista n=30 sha256:a2b53c8a1f3bc435
+prancheta_de_mirage.html::lugares.andares[0].84 = lista n=21 sha256:8c46be663f6e00b0
+prancheta_de_mirage.html::lugares.andares[0].85 = lista n=18 sha256:ae67a45108081cb4
+prancheta_de_mirage.html::lugares.andares[0].86 = lista n=12 sha256:d028e33961cb64a2
+prancheta_de_mirage.html::lugares.andares[0].87 = lista n=12 sha256:ae98c745ea2b7141
+prancheta_de_mirage.html::lugares.andares[0].88 = lista n=15 sha256:08375e208158c157
+prancheta_de_mirage.html::lugares.andares[0].89 = lista n=15 sha256:08375e208158c157
+prancheta_de_mirage.html::lugares.andares[0].90 = lista n=18 sha256:70c44cd74cd3e87f
+prancheta_de_mirage.html::lugares.andares[0].91 = lista n=12 sha256:593474bf17345571
+prancheta_de_mirage.html::lugares.andares[0].92 = lista n=12 sha256:a6035502da39c1fc
+prancheta_de_mirage.html::lugares.andares[0].93 = lista n=15 sha256:be270612b4c03474
+prancheta_de_mirage.html::lugares.andares[0].94 = lista n=18 sha256:674101595f4cecd8
+prancheta_de_mirage.html::lugares.andares[0].95 = lista n=12 sha256:572ef5fa880386fd
+prancheta_de_mirage.html::lugares.andares[0].96 = lista n=15 sha256:80b76ed3f9f49366
+prancheta_de_mirage.html::lugares.andares[0].97 = lista n=21 sha256:f44d0fb79ee805b4
+prancheta_de_mirage.html::lugares.andares[0].98 = lista n=18 sha256:a3954745cbe94438
+prancheta_de_mirage.html::lugares.andares[0].99 = lista n=15 sha256:da59a87917599fa2
+prancheta_de_mirage.html::lugares.lado = 8
+prancheta_de_mirage.html::lugares.origem.acerto_fora_da_amostra = 0.935
+prancheta_de_mirage.html::lugares.origem.amostras_teste = 628484
+prancheta_de_mirage.html::lugares.origem.partidas = 16
+prancheta_de_mirage.html::lugares.origem.passo_ticks = 16
+prancheta_de_mirage.html::modelo3.DURACAO_EFEITO_S.decoy = 0.0
+prancheta_de_mirage.html::modelo3.DURACAO_EFEITO_S.flash = 0.0
+prancheta_de_mirage.html::modelo3.DURACAO_EFEITO_S.he = 0.0
+prancheta_de_mirage.html::modelo3.DURACAO_EFEITO_S.molotov = 7.03125
+prancheta_de_mirage.html::modelo3.DURACAO_EFEITO_S.smoke = 20.0
+prancheta_de_mirage.html::modelo3.RAIO_DO_ARREMESSADOR_U = 16.0
+prancheta_de_mirage.html::modelo3.SEGUNDOS_DA_BOMBA = 40.0
+prancheta_de_mirage.html::modelo3.SEGUNDOS_DO_ROUND = 115.0
+prancheta_de_mirage.html::modelo3.VELOCIDADE_U_S.AWP|agachado = 82.4
+prancheta_de_mirage.html::modelo3.VELOCIDADE_U_S.AWP|andando = 104.0
+prancheta_de_mirage.html::modelo3.VELOCIDADE_U_S.AWP|correndo = 197.1
+prancheta_de_mirage.html::modelo3.VELOCIDADE_U_S.rifle|agachado = 90.4
+prancheta_de_mirage.html::modelo3.VELOCIDADE_U_S.rifle|andando = 111.8
+prancheta_de_mirage.html::modelo3.VELOCIDADE_U_S.rifle|correndo = 210.6
+prancheta_de_mirage.html::modelo3.VOO_MOLOTOV = lista n=2 sha256:9f34c9196a7083a8
+prancheta_de_mirage.html::modelo3.VOO_MOLOTOV_MAX_S = 2.0
+prancheta_de_mirage.html::modelo3.VOO_PAVIO_S = 1.62
+prancheta_de_mirage.html::modelo3.VOO_SMOKE = lista n=2 sha256:d8f061f7a7b8063a
+prancheta_de_mirage.html::radar.height = 1024
+prancheta_de_mirage.html::radar.origin_x = -3230.0
+prancheta_de_mirage.html::radar.origin_y = 1713.0
+prancheta_de_mirage.html::radar.scale_px_per_unit = 0.2
+prancheta_de_mirage.html::radar.width = 1024
+prancheta_de_nuke.html::biblioteca.arremessos = itens n=3797 sha256:6767e16f875a7ca5
+prancheta_de_nuke.html::biblioteca.arremessos_exatos = 3797
+prancheta_de_nuke.html::biblioteca.arremessos_no_corpus = 3809
+prancheta_de_nuke.html::biblioteca.grupos_de_forca[0].centro = 202.0
+prancheta_de_nuke.html::biblioteca.grupos_de_forca[0].n = 187
+prancheta_de_nuke.html::biblioteca.grupos_de_forca[1].centro = 438.0
+prancheta_de_nuke.html::biblioteca.grupos_de_forca[1].n = 94
+prancheta_de_nuke.html::biblioteca.grupos_de_forca[2].centro = 674.0
+prancheta_de_nuke.html::biblioteca.grupos_de_forca[2].n = 3395
+prancheta_de_nuke.html::biblioteca.partidas = 9
+prancheta_de_nuke.html::biblioteca.versao = 1
+prancheta_de_nuke.html::lugares.andares[0].100 = lista n=9 sha256:5f0535fa96f539bc
+prancheta_de_nuke.html::lugares.andares[0].101 = lista n=9 sha256:2bc6d209cf967e13
+prancheta_de_nuke.html::lugares.andares[0].102 = lista n=9 sha256:5f0535fa96f539bc
+prancheta_de_nuke.html::lugares.andares[0].103 = lista n=9 sha256:1f03659d2240fdbe
+prancheta_de_nuke.html::lugares.andares[0].104 = lista n=9 sha256:7aca0be0d3397d2f
+prancheta_de_nuke.html::lugares.andares[0].105 = lista n=9 sha256:23184eda02fc26ff
+prancheta_de_nuke.html::lugares.andares[0].106 = lista n=9 sha256:23184eda02fc26ff
+prancheta_de_nuke.html::lugares.andares[0].107 = lista n=9 sha256:1f03659d2240fdbe
+prancheta_de_nuke.html::lugares.andares[0].108 = lista n=9 sha256:1f03659d2240fdbe
+prancheta_de_nuke.html::lugares.andares[0].109 = lista n=12 sha256:34d09d4c270f84dd
+prancheta_de_nuke.html::lugares.andares[0].110 = lista n=12 sha256:2a5c4cee16aae610
+prancheta_de_nuke.html::lugares.andares[0].111 = lista n=12 sha256:0c27bd45c7d0ecb1
+prancheta_de_nuke.html::lugares.andares[0].112 = lista n=6 sha256:84cf7154b9cddb00
+prancheta_de_nuke.html::lugares.andares[0].113 = lista n=48 sha256:0c87173fa652e69c
+prancheta_de_nuke.html::lugares.andares[0].114 = lista n=36 sha256:04518970f6760421
+prancheta_de_nuke.html::lugares.andares[0].115 = lista n=54 sha256:63d2c159ffd4258b
+prancheta_de_nuke.html::lugares.andares[0].116 = lista n=51 sha256:653765b41e8ab0b6
+prancheta_de_nuke.html::lugares.andares[0].117 = lista n=60 sha256:166ff1fece63f9ea
+prancheta_de_nuke.html::lugares.andares[0].118 = lista n=60 sha256:ac648bd35db13653
+prancheta_de_nuke.html::lugares.andares[0].119 = lista n=42 sha256:e6185daf58961ddc
+prancheta_de_nuke.html::lugares.andares[0].120 = lista n=36 sha256:74fc2379cd64dc9c
+prancheta_de_nuke.html::lugares.andares[0].121 = lista n=48 sha256:9b2b41dfb6f62d14
+prancheta_de_nuke.html::lugares.andares[0].122 = lista n=57 sha256:87fac0f5fff6a884
+prancheta_de_nuke.html::lugares.andares[0].123 = lista n=75 sha256:224c1ca7d601ab73
+prancheta_de_nuke.html::lugares.andares[0].124 = lista n=57 sha256:2313fcc111a2ed68
+prancheta_de_nuke.html::lugares.andares[0].125 = lista n=81 sha256:0ad7cd2ff4f7f9cc
+prancheta_de_nuke.html::lugares.andares[0].126 = lista n=63 sha256:a83a1f450509db1a
+prancheta_de_nuke.html::lugares.andares[0].127 = lista n=51 sha256:27f3b6c4ba957cea
+prancheta_de_nuke.html::lugares.andares[0].128 = lista n=54 sha256:5ecbecbbb018ccd0
+prancheta_de_nuke.html::lugares.andares[0].129 = lista n=48 sha256:5e8bb48739df021c
+prancheta_de_nuke.html::lugares.andares[0].130 = lista n=75 sha256:8aa3dac4520a7d02
+prancheta_de_nuke.html::lugares.andares[0].131 = lista n=69 sha256:a3c66b0ed352aed9
+prancheta_de_nuke.html::lugares.andares[0].132 = lista n=48 sha256:9e7c2cddf38a67b1
+prancheta_de_nuke.html::lugares.andares[0].133 = lista n=57 sha256:9c4076cdf2a8d01f
+prancheta_de_nuke.html::lugares.andares[0].134 = lista n=72 sha256:7fcda8bc00bb36f4
+prancheta_de_nuke.html::lugares.andares[0].135 = lista n=75 sha256:53369a60bf49e2d7
+prancheta_de_nuke.html::lugares.andares[0].136 = lista n=72 sha256:6cc17853cd0a09e2
+prancheta_de_nuke.html::lugares.andares[0].137 = lista n=57 sha256:0d904ba23b686e3e
+prancheta_de_nuke.html::lugares.andares[0].138 = lista n=54 sha256:b50bb74795e7f26f
+prancheta_de_nuke.html::lugares.andares[0].139 = lista n=48 sha256:89b2c0812a778263
+prancheta_de_nuke.html::lugares.andares[0].140 = lista n=51 sha256:9caa757ca8046a1c
+prancheta_de_nuke.html::lugares.andares[0].141 = lista n=78 sha256:645c5b9aaf46ae6c
+prancheta_de_nuke.html::lugares.andares[0].142 = lista n=60 sha256:1fddd10d8a38ed45
+prancheta_de_nuke.html::lugares.andares[0].143 = lista n=45 sha256:0891f2f5e47ca4a7
+prancheta_de_nuke.html::lugares.andares[0].144 = lista n=45 sha256:6b9b15cffe3c5fb0
+prancheta_de_nuke.html::lugares.andares[0].145 = lista n=33 sha256:2f595a637cc89a50
+prancheta_de_nuke.html::lugares.andares[0].146 = lista n=18 sha256:1d81cd5251361af4
+prancheta_de_nuke.html::lugares.andares[0].147 = lista n=33 sha256:89e3323149c9a039
+prancheta_de_nuke.html::lugares.andares[0].148 = lista n=39 sha256:a08e962616efcd64
+prancheta_de_nuke.html::lugares.andares[0].149 = lista n=36 sha256:7480c1b67d902a83
+prancheta_de_nuke.html::lugares.andares[0].150 = lista n=24 sha256:1d5e87d0c09ceb8e
+prancheta_de_nuke.html::lugares.andares[0].151 = lista n=24 sha256:af898f4115c78a82
+prancheta_de_nuke.html::lugares.andares[0].152 = lista n=36 sha256:5ea8abffe3a5f9a9
+prancheta_de_nuke.html::lugares.andares[0].153 = lista n=54 sha256:40afe8fb0535f875
+prancheta_de_nuke.html::lugares.andares[0].154 = lista n=48 sha256:d7859fb64145c7e8
+prancheta_de_nuke.html::lugares.andares[0].155 = lista n=39 sha256:d3d6566997cc59fd
+prancheta_de_nuke.html::lugares.andares[0].156 = lista n=24 sha256:d138ba6adf532bd8
+prancheta_de_nuke.html::lugares.andares[0].157 = lista n=21 sha256:240ae643eabaee82
+prancheta_de_nuke.html::lugares.andares[0].158 = lista n=27 sha256:c5334c3bcd36156b
+prancheta_de_nuke.html::lugares.andares[0].159 = lista n=33 sha256:235c5cb2e6bd939a
+prancheta_de_nuke.html::lugares.andares[0].160 = lista n=39 sha256:25250aac094599cc
+prancheta_de_nuke.html::lugares.andares[0].161 = lista n=24 sha256:87c700af60b9b080
+prancheta_de_nuke.html::lugares.andares[0].162 = lista n=33 sha256:9bb5174261f81565
+prancheta_de_nuke.html::lugares.andares[0].163 = lista n=24 sha256:9e2023595cae63cb
+prancheta_de_nuke.html::lugares.andares[0].164 = lista n=24 sha256:895337238731128a
+prancheta_de_nuke.html::lugares.andares[0].165 = lista n=27 sha256:d69e4279c01615a5
+prancheta_de_nuke.html::lugares.andares[0].166 = lista n=27 sha256:3948bb7c9fa06fc2
+prancheta_de_nuke.html::lugares.andares[0].167 = lista n=21 sha256:d9e4f436882ccab4
+prancheta_de_nuke.html::lugares.andares[0].168 = lista n=21 sha256:70676b791d89ac3a
+prancheta_de_nuke.html::lugares.andares[0].169 = lista n=24 sha256:59cc58b2082bb750
+prancheta_de_nuke.html::lugares.andares[0].170 = lista n=15 sha256:ac6fde2675d8887a
+prancheta_de_nuke.html::lugares.andares[0].171 = lista n=15 sha256:f3bced9d490b26ad
+prancheta_de_nuke.html::lugares.andares[0].172 = lista n=15 sha256:b07ccea15a985f81
+prancheta_de_nuke.html::lugares.andares[0].173 = lista n=18 sha256:ad889e2c5d45b97a
+prancheta_de_nuke.html::lugares.andares[0].174 = lista n=6 sha256:3728b9f8fc06abd1
+prancheta_de_nuke.html::lugares.andares[0].175 = lista n=9 sha256:44c9b0e06aa86e50
+prancheta_de_nuke.html::lugares.andares[0].176 = lista n=9 sha256:47d3d11b28533dd6
+prancheta_de_nuke.html::lugares.andares[0].177 = lista n=9 sha256:16b3cf64a4c2b95e
+prancheta_de_nuke.html::lugares.andares[0].178 = lista n=9 sha256:d3b9c483a3bea1d3
+prancheta_de_nuke.html::lugares.andares[0].179 = lista n=9 sha256:64cbae9bdc45bbee
+prancheta_de_nuke.html::lugares.andares[0].180 = lista n=12 sha256:89f952b60ffce907
+prancheta_de_nuke.html::lugares.andares[0].181 = lista n=12 sha256:f8bddb102bb3e08f
+prancheta_de_nuke.html::lugares.andares[0].182 = lista n=12 sha256:4e6af00540ec2f63
+prancheta_de_nuke.html::lugares.andares[0].183 = lista n=15 sha256:1791db8dfebd6c2e
+prancheta_de_nuke.html::lugares.andares[0].184 = lista n=12 sha256:8e71a342a2e1400a
+prancheta_de_nuke.html::lugares.andares[0].185 = lista n=12 sha256:6ecf33a800015ca5
+prancheta_de_nuke.html::lugares.andares[0].186 = lista n=12 sha256:45ba1d107010a453
+prancheta_de_nuke.html::lugares.andares[0].187 = lista n=6 sha256:97deaf082f349c32
+prancheta_de_nuke.html::lugares.andares[0].188 = lista n=6 sha256:87e42fe80cac364e
+prancheta_de_nuke.html::lugares.andares[0].189 = lista n=6 sha256:6a5f09588879bf2e
+prancheta_de_nuke.html::lugares.andares[0].190 = lista n=12 sha256:b84631a7941f97d9
+prancheta_de_nuke.html::lugares.andares[0].191 = lista n=6 sha256:10f8c1e3a8efcd30
+prancheta_de_nuke.html::lugares.andares[0].69 = lista n=3 sha256:5447c1d69fa3e33c
+prancheta_de_nuke.html::lugares.andares[0].70 = lista n=3 sha256:d957f03454362986
+prancheta_de_nuke.html::lugares.andares[0].71 = lista n=3 sha256:d957f03454362986
+prancheta_de_nuke.html::lugares.andares[0].72 = lista n=3 sha256:d957f03454362986
+prancheta_de_nuke.html::lugares.andares[0].73 = lista n=6 sha256:649f5bddf24adc7c
+prancheta_de_nuke.html::lugares.andares[0].74 = lista n=6 sha256:3227a0ff87bb1d84
+prancheta_de_nuke.html::lugares.andares[0].75 = lista n=6 sha256:06101e6243d0b2ff
+prancheta_de_nuke.html::lugares.andares[0].76 = lista n=3 sha256:d957f03454362986
+prancheta_de_nuke.html::lugares.andares[0].77 = lista n=9 sha256:8131fc68b8c523c3
+prancheta_de_nuke.html::lugares.andares[0].78 = lista n=6 sha256:149fc9b92950ad39
+prancheta_de_nuke.html::lugares.andares[0].79 = lista n=6 sha256:ba76f53a73cd5f3a
+prancheta_de_nuke.html::lugares.andares[0].80 = lista n=3 sha256:9419a89d5c48908b
+prancheta_de_nuke.html::lugares.andares[0].81 = lista n=3 sha256:357351a0ea13bfcf
+prancheta_de_nuke.html::lugares.andares[0].82 = lista n=3 sha256:357351a0ea13bfcf
+prancheta_de_nuke.html::lugares.andares[0].83 = lista n=3 sha256:357351a0ea13bfcf
+prancheta_de_nuke.html::lugares.andares[0].84 = lista n=6 sha256:3e8bf678eb61586e
+prancheta_de_nuke.html::lugares.andares[0].85 = lista n=6 sha256:3e8bf678eb61586e
+prancheta_de_nuke.html::lugares.andares[0].86 = lista n=6 sha256:51e22ffb0dcdb80c
+prancheta_de_nuke.html::lugares.andares[0].87 = lista n=6 sha256:3e8bf678eb61586e
+prancheta_de_nuke.html::lugares.andares[0].88 = lista n=3 sha256:357351a0ea13bfcf
+prancheta_de_nuke.html::lugares.andares[0].89 = lista n=3 sha256:357351a0ea13bfcf
+prancheta_de_nuke.html::lugares.andares[0].90 = lista n=3 sha256:357351a0ea13bfcf
+prancheta_de_nuke.html::lugares.andares[0].91 = lista n=3 sha256:357351a0ea13bfcf
+prancheta_de_nuke.html::lugares.andares[0].92 = lista n=3 sha256:357351a0ea13bfcf
+prancheta_de_nuke.html::lugares.andares[0].93 = lista n=3 sha256:9419a89d5c48908b
+prancheta_de_nuke.html::lugares.andares[0].94 = lista n=3 sha256:9419a89d5c48908b
+prancheta_de_nuke.html::lugares.andares[0].95 = lista n=3 sha256:9419a89d5c48908b
+prancheta_de_nuke.html::lugares.andares[0].96 = lista n=3 sha256:9419a89d5c48908b
+prancheta_de_nuke.html::lugares.andares[0].97 = lista n=6 sha256:b0d539ff27e711cc
+prancheta_de_nuke.html::lugares.andares[0].98 = lista n=9 sha256:5f0535fa96f539bc
+prancheta_de_nuke.html::lugares.andares[0].99 = lista n=9 sha256:5f0535fa96f539bc
+prancheta_de_nuke.html::lugares.andares[1].100 = lista n=3 sha256:f1d5f50b7e7845a7
+prancheta_de_nuke.html::lugares.andares[1].101 = lista n=3 sha256:f1d5f50b7e7845a7
+prancheta_de_nuke.html::lugares.andares[1].102 = lista n=3 sha256:f1d5f50b7e7845a7
+prancheta_de_nuke.html::lugares.andares[1].103 = lista n=9 sha256:51abb92efe472213
+prancheta_de_nuke.html::lugares.andares[1].104 = lista n=6 sha256:db4c3883216debdf
+prancheta_de_nuke.html::lugares.andares[1].105 = lista n=6 sha256:db4c3883216debdf
+prancheta_de_nuke.html::lugares.andares[1].106 = lista n=12 sha256:52385b3b93b1c848
+prancheta_de_nuke.html::lugares.andares[1].107 = lista n=3 sha256:fee753745da544be
+prancheta_de_nuke.html::lugares.andares[1].108 = lista n=3 sha256:fee753745da544be
+prancheta_de_nuke.html::lugares.andares[1].109 = lista n=3 sha256:fee753745da544be
+prancheta_de_nuke.html::lugares.andares[1].110 = lista n=3 sha256:a67a5a5b37cc214f
+prancheta_de_nuke.html::lugares.andares[1].111 = lista n=3 sha256:ddbe1b5813ad58f2
+prancheta_de_nuke.html::lugares.andares[1].112 = lista n=3 sha256:ddbe1b5813ad58f2
+prancheta_de_nuke.html::lugares.andares[1].113 = lista n=3 sha256:ddbe1b5813ad58f2
+prancheta_de_nuke.html::lugares.andares[1].114 = lista n=3 sha256:ddbe1b5813ad58f2
+prancheta_de_nuke.html::lugares.andares[1].115 = lista n=3 sha256:ddbe1b5813ad58f2
+prancheta_de_nuke.html::lugares.andares[1].116 = lista n=6 sha256:ae35961f9ceddff7
+prancheta_de_nuke.html::lugares.andares[1].117 = lista n=6 sha256:c87fbbe70beacf3a
+prancheta_de_nuke.html::lugares.andares[1].118 = lista n=9 sha256:95f48a2c979e845b
+prancheta_de_nuke.html::lugares.andares[1].119 = lista n=9 sha256:dc57f284a6c6edac
+prancheta_de_nuke.html::lugares.andares[1].120 = lista n=12 sha256:24d654e220030537
+prancheta_de_nuke.html::lugares.andares[1].121 = lista n=9 sha256:4f3246f543fb4c08
+prancheta_de_nuke.html::lugares.andares[1].122 = lista n=9 sha256:448a3f2faf27e900
+prancheta_de_nuke.html::lugares.andares[1].123 = lista n=6 sha256:e951f1df4d909fc3
+prancheta_de_nuke.html::lugares.andares[1].124 = lista n=6 sha256:e951f1df4d909fc3
+prancheta_de_nuke.html::lugares.andares[1].125 = lista n=6 sha256:82dab73a4ba4378d
+prancheta_de_nuke.html::lugares.andares[1].126 = lista n=9 sha256:e3d7b2bb77f8fa39
+prancheta_de_nuke.html::lugares.andares[1].127 = lista n=12 sha256:c1d66d90731f5cc4
+prancheta_de_nuke.html::lugares.andares[1].128 = lista n=12 sha256:e969d95469e0ab6d
+prancheta_de_nuke.html::lugares.andares[1].129 = lista n=12 sha256:e969d95469e0ab6d
+prancheta_de_nuke.html::lugares.andares[1].130 = lista n=12 sha256:8c76e4d26f691928
+prancheta_de_nuke.html::lugares.andares[1].131 = lista n=9 sha256:e35771409acb4cd0
+prancheta_de_nuke.html::lugares.andares[1].132 = lista n=12 sha256:04fd772b82f916f6
+prancheta_de_nuke.html::lugares.andares[1].133 = lista n=9 sha256:82c48859f1192831
+prancheta_de_nuke.html::lugares.andares[1].134 = lista n=9 sha256:4c02900a0454147a
+prancheta_de_nuke.html::lugares.andares[1].135 = lista n=9 sha256:4c02900a0454147a
+prancheta_de_nuke.html::lugares.andares[1].136 = lista n=15 sha256:37c903f37c30cda5
+prancheta_de_nuke.html::lugares.andares[1].137 = lista n=6 sha256:a8bc67368500c6b4
+prancheta_de_nuke.html::lugares.andares[1].138 = lista n=6 sha256:5c37322aeacf213b
+prancheta_de_nuke.html::lugares.andares[1].139 = lista n=15 sha256:7d6de9fd4473c569
+prancheta_de_nuke.html::lugares.andares[1].140 = lista n=9 sha256:ea8f98eb1a2e8a67
+prancheta_de_nuke.html::lugares.andares[1].141 = lista n=6 sha256:222ccfb317694902
+prancheta_de_nuke.html::lugares.andares[1].142 = lista n=9 sha256:ea8f98eb1a2e8a67
+prancheta_de_nuke.html::lugares.andares[1].143 = lista n=12 sha256:413909897319845e
+prancheta_de_nuke.html::lugares.andares[1].144 = lista n=6 sha256:222ccfb317694902
+prancheta_de_nuke.html::lugares.andares[1].145 = lista n=9 sha256:13ed735cdb181254
+prancheta_de_nuke.html::lugares.andares[1].146 = lista n=6 sha256:222ccfb317694902
+prancheta_de_nuke.html::lugares.andares[1].147 = lista n=6 sha256:222ccfb317694902
+prancheta_de_nuke.html::lugares.andares[1].148 = lista n=6 sha256:222ccfb317694902
+prancheta_de_nuke.html::lugares.andares[1].149 = lista n=9 sha256:0fd664db1daf0524
+prancheta_de_nuke.html::lugares.andares[1].150 = lista n=9 sha256:0fd664db1daf0524
+prancheta_de_nuke.html::lugares.andares[1].151 = lista n=18 sha256:3e9e711eb88b60c3
+prancheta_de_nuke.html::lugares.andares[1].152 = lista n=9 sha256:fc32ae5f7cdb864d
+prancheta_de_nuke.html::lugares.andares[1].153 = lista n=9 sha256:9513abc5cceff896
+prancheta_de_nuke.html::lugares.andares[1].154 = lista n=9 sha256:9513abc5cceff896
+prancheta_de_nuke.html::lugares.andares[1].155 = lista n=9 sha256:a8f88cbfd33d77a7
+prancheta_de_nuke.html::lugares.andares[1].156 = lista n=9 sha256:e628d663d8e4a182
+prancheta_de_nuke.html::lugares.andares[1].157 = lista n=9 sha256:694034aa19e150ed
+prancheta_de_nuke.html::lugares.andares[1].158 = lista n=12 sha256:88cb8b1e5f390591
+prancheta_de_nuke.html::lugares.andares[1].159 = lista n=3 sha256:3eb521e02d8d82c1
+prancheta_de_nuke.html::lugares.andares[1].160 = lista n=3 sha256:3eb521e02d8d82c1
+prancheta_de_nuke.html::lugares.andares[1].161 = lista n=3 sha256:3eb521e02d8d82c1
+prancheta_de_nuke.html::lugares.andares[1].162 = lista n=3 sha256:3eb521e02d8d82c1
+prancheta_de_nuke.html::lugares.andares[1].163 = lista n=12 sha256:c764ecd7b43b747e
+prancheta_de_nuke.html::lugares.andares[1].164 = lista n=3 sha256:3b5c0ca9a8137e6e
+prancheta_de_nuke.html::lugares.andares[1].165 = lista n=3 sha256:3b5c0ca9a8137e6e
+prancheta_de_nuke.html::lugares.andares[1].166 = lista n=3 sha256:3b5c0ca9a8137e6e
+prancheta_de_nuke.html::lugares.andares[1].167 = lista n=9 sha256:d3dfd26cda03cc79
+prancheta_de_nuke.html::lugares.andares[1].168 = lista n=6 sha256:4b5ddcdfd05f3690
+prancheta_de_nuke.html::lugares.andares[1].169 = lista n=3 sha256:b3fa04c1ff418d6e
+prancheta_de_nuke.html::lugares.andares[1].170 = lista n=3 sha256:a38591b029a5d188
+prancheta_de_nuke.html::lugares.andares[1].171 = lista n=3 sha256:a38591b029a5d188
+prancheta_de_nuke.html::lugares.andares[1].172 = lista n=3 sha256:a38591b029a5d188
+prancheta_de_nuke.html::lugares.andares[1].173 = lista n=3 sha256:a38591b029a5d188
+prancheta_de_nuke.html::lugares.andares[1].174 = lista n=9 sha256:0a1eab965d5a445e
+prancheta_de_nuke.html::lugares.andares[1].175 = lista n=3 sha256:14db681564bc2d33
+prancheta_de_nuke.html::lugares.andares[1].176 = lista n=3 sha256:8b37b2a8c9e8b359
+prancheta_de_nuke.html::lugares.andares[1].177 = lista n=3 sha256:8b37b2a8c9e8b359
+prancheta_de_nuke.html::lugares.andares[1].178 = lista n=3 sha256:2cefe977dbe4e3a5
+prancheta_de_nuke.html::lugares.andares[1].179 = lista n=3 sha256:2cefe977dbe4e3a5
+prancheta_de_nuke.html::lugares.andares[1].180 = lista n=3 sha256:fb0054810d9f6973
+prancheta_de_nuke.html::lugares.andares[1].181 = lista n=3 sha256:2cefe977dbe4e3a5
+prancheta_de_nuke.html::lugares.andares[1].182 = lista n=3 sha256:8b37b2a8c9e8b359
+prancheta_de_nuke.html::lugares.andares[1].183 = lista n=3 sha256:96795a136e7afb78
+prancheta_de_nuke.html::lugares.andares[1].184 = lista n=3 sha256:96795a136e7afb78
+prancheta_de_nuke.html::lugares.andares[1].185 = lista n=3 sha256:96795a136e7afb78
+prancheta_de_nuke.html::lugares.andares[1].186 = lista n=3 sha256:96795a136e7afb78
+prancheta_de_nuke.html::lugares.andares[1].187 = lista n=3 sha256:96795a136e7afb78
+prancheta_de_nuke.html::lugares.andares[1].188 = lista n=3 sha256:7871864a6d73dda7
+prancheta_de_nuke.html::lugares.andares[1].189 = lista n=3 sha256:7871864a6d73dda7
+prancheta_de_nuke.html::lugares.andares[1].190 = lista n=3 sha256:7871864a6d73dda7
+prancheta_de_nuke.html::lugares.andares[1].83 = lista n=3 sha256:21873cfb41cb3cd9
+prancheta_de_nuke.html::lugares.andares[1].84 = lista n=3 sha256:21873cfb41cb3cd9
+prancheta_de_nuke.html::lugares.andares[1].85 = lista n=3 sha256:21873cfb41cb3cd9
+prancheta_de_nuke.html::lugares.andares[1].86 = lista n=3 sha256:21873cfb41cb3cd9
+prancheta_de_nuke.html::lugares.andares[1].87 = lista n=3 sha256:21873cfb41cb3cd9
+prancheta_de_nuke.html::lugares.andares[1].88 = lista n=3 sha256:21873cfb41cb3cd9
+prancheta_de_nuke.html::lugares.andares[1].89 = lista n=3 sha256:21873cfb41cb3cd9
+prancheta_de_nuke.html::lugares.andares[1].90 = lista n=3 sha256:21873cfb41cb3cd9
+prancheta_de_nuke.html::lugares.andares[1].91 = lista n=3 sha256:21873cfb41cb3cd9
+prancheta_de_nuke.html::lugares.andares[1].92 = lista n=3 sha256:21873cfb41cb3cd9
+prancheta_de_nuke.html::lugares.andares[1].93 = lista n=3 sha256:21873cfb41cb3cd9
+prancheta_de_nuke.html::lugares.andares[1].94 = lista n=3 sha256:21873cfb41cb3cd9
+prancheta_de_nuke.html::lugares.andares[1].95 = lista n=3 sha256:21873cfb41cb3cd9
+prancheta_de_nuke.html::lugares.andares[1].96 = lista n=3 sha256:21873cfb41cb3cd9
+prancheta_de_nuke.html::lugares.andares[1].97 = lista n=3 sha256:21873cfb41cb3cd9
+prancheta_de_nuke.html::lugares.andares[1].98 = lista n=3 sha256:21873cfb41cb3cd9
+prancheta_de_nuke.html::lugares.andares[1].99 = lista n=3 sha256:2ab961328985083a
+prancheta_de_nuke.html::lugares.lado = 4
+prancheta_de_nuke.html::lugares.origem.acerto_fora_da_amostra = 0.9362
+prancheta_de_nuke.html::lugares.origem.amostras_teste = 379839
+prancheta_de_nuke.html::lugares.origem.partidas = 9
+prancheta_de_nuke.html::lugares.origem.passo_ticks = 16
+prancheta_de_nuke.html::modelo3.DURACAO_EFEITO_S.decoy = 0.0
+prancheta_de_nuke.html::modelo3.DURACAO_EFEITO_S.flash = 0.0
+prancheta_de_nuke.html::modelo3.DURACAO_EFEITO_S.he = 0.0
+prancheta_de_nuke.html::modelo3.DURACAO_EFEITO_S.molotov = 7.03125
+prancheta_de_nuke.html::modelo3.DURACAO_EFEITO_S.smoke = 20.0
+prancheta_de_nuke.html::modelo3.RAIO_DO_ARREMESSADOR_U = 16.0
+prancheta_de_nuke.html::modelo3.SEGUNDOS_DA_BOMBA = 40.0
+prancheta_de_nuke.html::modelo3.SEGUNDOS_DO_ROUND = 115.0
+prancheta_de_nuke.html::modelo3.VELOCIDADE_U_S.AWP|agachado = 82.4
+prancheta_de_nuke.html::modelo3.VELOCIDADE_U_S.AWP|andando = 104.0
+prancheta_de_nuke.html::modelo3.VELOCIDADE_U_S.AWP|correndo = 197.1
+prancheta_de_nuke.html::modelo3.VELOCIDADE_U_S.rifle|agachado = 90.4
+prancheta_de_nuke.html::modelo3.VELOCIDADE_U_S.rifle|andando = 111.8
+prancheta_de_nuke.html::modelo3.VELOCIDADE_U_S.rifle|correndo = 210.6
+prancheta_de_nuke.html::modelo3.VOO_MOLOTOV = lista n=2 sha256:9f34c9196a7083a8
+prancheta_de_nuke.html::modelo3.VOO_MOLOTOV_MAX_S = 2.0
+prancheta_de_nuke.html::modelo3.VOO_PAVIO_S = 1.62
+prancheta_de_nuke.html::modelo3.VOO_SMOKE = lista n=2 sha256:d8f061f7a7b8063a
+prancheta_de_nuke.html::radar.height = 1024
+prancheta_de_nuke.html::radar.origin_x = -3453.0
+prancheta_de_nuke.html::radar.origin_y = 2887.0
+prancheta_de_nuke.html::radar.scale_px_per_unit = 0.14285714285714285
+prancheta_de_nuke.html::radar.vertical_sections.default.max = 10000.0
+prancheta_de_nuke.html::radar.vertical_sections.default.min = -495.0
+prancheta_de_nuke.html::radar.vertical_sections.lower.max = -495.0
+prancheta_de_nuke.html::radar.vertical_sections.lower.min = -10000.0
+prancheta_de_nuke.html::radar.width = 1024
+prancheta_de_overpass.html::biblioteca.arremessos = itens n=1130 sha256:77c211505918715b
+prancheta_de_overpass.html::biblioteca.arremessos_exatos = 1130
+prancheta_de_overpass.html::biblioteca.arremessos_no_corpus = 1143
+prancheta_de_overpass.html::biblioteca.grupos_de_forca[0].centro = 201.0
+prancheta_de_overpass.html::biblioteca.grupos_de_forca[0].n = 40
+prancheta_de_overpass.html::biblioteca.grupos_de_forca[1].centro = 436.0
+prancheta_de_overpass.html::biblioteca.grupos_de_forca[1].n = 129
+prancheta_de_overpass.html::biblioteca.grupos_de_forca[2].centro = 673.0
+prancheta_de_overpass.html::biblioteca.grupos_de_forca[2].n = 947
+prancheta_de_overpass.html::biblioteca.partidas = 2
+prancheta_de_overpass.html::biblioteca.versao = 1
+prancheta_de_overpass.html::lugares.andares[0].1 = lista n=3 sha256:2fea1bc36be7d8cf
+prancheta_de_overpass.html::lugares.andares[0].10 = lista n=9 sha256:89b1ee938295103a
+prancheta_de_overpass.html::lugares.andares[0].11 = lista n=9 sha256:4a2e1af21ae7e2b1
+prancheta_de_overpass.html::lugares.andares[0].12 = lista n=12 sha256:7dfb3199b0aba765
+prancheta_de_overpass.html::lugares.andares[0].13 = lista n=15 sha256:6b01b69470f39a07
+prancheta_de_overpass.html::lugares.andares[0].14 = lista n=12 sha256:813f33c3458ed0ee
+prancheta_de_overpass.html::lugares.andares[0].15 = lista n=24 sha256:41a8f5fc352d9a14
+prancheta_de_overpass.html::lugares.andares[0].16 = lista n=33 sha256:0b1b575eea7a9378
+prancheta_de_overpass.html::lugares.andares[0].17 = lista n=21 sha256:2a676810aacc71dc
+prancheta_de_overpass.html::lugares.andares[0].18 = lista n=18 sha256:654a832628c18d8d
+prancheta_de_overpass.html::lugares.andares[0].19 = lista n=21 sha256:844e47cec0411957
+prancheta_de_overpass.html::lugares.andares[0].2 = lista n=3 sha256:01f7bb74e77d89fb
+prancheta_de_overpass.html::lugares.andares[0].20 = lista n=21 sha256:f9ddb462df04d8aa
+prancheta_de_overpass.html::lugares.andares[0].21 = lista n=18 sha256:3b533c179c4b7cf3
+prancheta_de_overpass.html::lugares.andares[0].22 = lista n=18 sha256:2f70d29e46073712
+prancheta_de_overpass.html::lugares.andares[0].23 = lista n=21 sha256:4763e52f63e8b71d
+prancheta_de_overpass.html::lugares.andares[0].24 = lista n=18 sha256:6cfa35058bc5e4ab
+prancheta_de_overpass.html::lugares.andares[0].25 = lista n=18 sha256:ca7a3b1fab0ecb3c
+prancheta_de_overpass.html::lugares.andares[0].26 = lista n=18 sha256:aa46dea054573ec0
+prancheta_de_overpass.html::lugares.andares[0].27 = lista n=18 sha256:2ed8f722e4a0ab19
+prancheta_de_overpass.html::lugares.andares[0].28 = lista n=18 sha256:a13bd1def86877ee
+prancheta_de_overpass.html::lugares.andares[0].29 = lista n=18 sha256:e80b1175d6dc868c
+prancheta_de_overpass.html::lugares.andares[0].3 = lista n=3 sha256:c77fd9c5e8f3c7ec
+prancheta_de_overpass.html::lugares.andares[0].30 = lista n=18 sha256:79e666e91119c0e8
+prancheta_de_overpass.html::lugares.andares[0].31 = lista n=21 sha256:445055da66f070ca
+prancheta_de_overpass.html::lugares.andares[0].32 = lista n=21 sha256:d76ba493713641a1
+prancheta_de_overpass.html::lugares.andares[0].33 = lista n=21 sha256:fc6fd008d6d4c0eb
+prancheta_de_overpass.html::lugares.andares[0].34 = lista n=18 sha256:cb429ad7fec939d2
+prancheta_de_overpass.html::lugares.andares[0].35 = lista n=15 sha256:a3a9f4aa53e4b033
+prancheta_de_overpass.html::lugares.andares[0].36 = lista n=21 sha256:82ad660a4b0b55a5
+prancheta_de_overpass.html::lugares.andares[0].37 = lista n=21 sha256:92612d8f2fcc9997
+prancheta_de_overpass.html::lugares.andares[0].38 = lista n=21 sha256:29d2d3f1dbc57d1b
+prancheta_de_overpass.html::lugares.andares[0].39 = lista n=18 sha256:dc8a59bb16181182
+prancheta_de_overpass.html::lugares.andares[0].4 = lista n=6 sha256:1dc2440d866318db
+prancheta_de_overpass.html::lugares.andares[0].40 = lista n=21 sha256:6caefdfa73f185ab
+prancheta_de_overpass.html::lugares.andares[0].41 = lista n=24 sha256:0543c25f0d2b7683
+prancheta_de_overpass.html::lugares.andares[0].42 = lista n=18 sha256:bdd99cd4712f368c
+prancheta_de_overpass.html::lugares.andares[0].43 = lista n=21 sha256:3e9de191a8ad1b77
+prancheta_de_overpass.html::lugares.andares[0].44 = lista n=15 sha256:11f9e644c65e507f
+prancheta_de_overpass.html::lugares.andares[0].45 = lista n=15 sha256:788dab1012f155a7
+prancheta_de_overpass.html::lugares.andares[0].46 = lista n=24 sha256:62b9e6ec885062db
+prancheta_de_overpass.html::lugares.andares[0].47 = lista n=15 sha256:1cd62a49e78b9658
+prancheta_de_overpass.html::lugares.andares[0].48 = lista n=24 sha256:102d7e429d1d016e
+prancheta_de_overpass.html::lugares.andares[0].49 = lista n=21 sha256:ed60fc7374e4ff27
+prancheta_de_overpass.html::lugares.andares[0].5 = lista n=9 sha256:1fbd7fe717cbef2d
+prancheta_de_overpass.html::lugares.andares[0].50 = lista n=21 sha256:ada3044695b18287
+prancheta_de_overpass.html::lugares.andares[0].51 = lista n=15 sha256:b562725c1b0a850e
+prancheta_de_overpass.html::lugares.andares[0].52 = lista n=21 sha256:f2d81d613fadcefe
+prancheta_de_overpass.html::lugares.andares[0].53 = lista n=6 sha256:08edb8de4439ddfc
+prancheta_de_overpass.html::lugares.andares[0].54 = lista n=6 sha256:af5ed165f82371a6
+prancheta_de_overpass.html::lugares.andares[0].55 = lista n=6 sha256:783ded3435208a76
+prancheta_de_overpass.html::lugares.andares[0].56 = lista n=6 sha256:952051cb26d8ab98
+prancheta_de_overpass.html::lugares.andares[0].57 = lista n=3 sha256:e0b330bc061c8e62
+prancheta_de_overpass.html::lugares.andares[0].58 = lista n=3 sha256:0022011b81012838
+prancheta_de_overpass.html::lugares.andares[0].59 = lista n=3 sha256:c3ce4fb187c80e3a
+prancheta_de_overpass.html::lugares.andares[0].6 = lista n=9 sha256:658acc626fce9143
+prancheta_de_overpass.html::lugares.andares[0].60 = lista n=3 sha256:09c60d83a9fa93f7
+prancheta_de_overpass.html::lugares.andares[0].61 = lista n=3 sha256:7e2d8b1a205a8f99
+prancheta_de_overpass.html::lugares.andares[0].7 = lista n=9 sha256:031f48ca18da7012
+prancheta_de_overpass.html::lugares.andares[0].8 = lista n=12 sha256:e69a76d2bbf34ac8
+prancheta_de_overpass.html::lugares.andares[0].9 = lista n=21 sha256:ef78c03f941f2d2f
+prancheta_de_overpass.html::lugares.lado = 16
+prancheta_de_overpass.html::lugares.origem.acerto_fora_da_amostra = 0.9336
+prancheta_de_overpass.html::lugares.origem.amostras_teste = 90292
+prancheta_de_overpass.html::lugares.origem.partidas = 2
+prancheta_de_overpass.html::lugares.origem.passo_ticks = 16
+prancheta_de_overpass.html::modelo3.DURACAO_EFEITO_S.decoy = 0.0
+prancheta_de_overpass.html::modelo3.DURACAO_EFEITO_S.flash = 0.0
+prancheta_de_overpass.html::modelo3.DURACAO_EFEITO_S.he = 0.0
+prancheta_de_overpass.html::modelo3.DURACAO_EFEITO_S.molotov = 7.03125
+prancheta_de_overpass.html::modelo3.DURACAO_EFEITO_S.smoke = 20.0
+prancheta_de_overpass.html::modelo3.RAIO_DO_ARREMESSADOR_U = 16.0
+prancheta_de_overpass.html::modelo3.SEGUNDOS_DA_BOMBA = 40.0
+prancheta_de_overpass.html::modelo3.SEGUNDOS_DO_ROUND = 115.0
+prancheta_de_overpass.html::modelo3.VELOCIDADE_U_S.AWP|agachado = 82.4
+prancheta_de_overpass.html::modelo3.VELOCIDADE_U_S.AWP|andando = 104.0
+prancheta_de_overpass.html::modelo3.VELOCIDADE_U_S.AWP|correndo = 197.1
+prancheta_de_overpass.html::modelo3.VELOCIDADE_U_S.rifle|agachado = 90.4
+prancheta_de_overpass.html::modelo3.VELOCIDADE_U_S.rifle|andando = 111.8
+prancheta_de_overpass.html::modelo3.VELOCIDADE_U_S.rifle|correndo = 210.6
+prancheta_de_overpass.html::modelo3.VOO_MOLOTOV = lista n=2 sha256:9f34c9196a7083a8
+prancheta_de_overpass.html::modelo3.VOO_MOLOTOV_MAX_S = 2.0
+prancheta_de_overpass.html::modelo3.VOO_PAVIO_S = 1.62
+prancheta_de_overpass.html::modelo3.VOO_SMOKE = lista n=2 sha256:d8f061f7a7b8063a
+prancheta_de_overpass.html::radar.height = 1024
+prancheta_de_overpass.html::radar.origin_x = -4831.0
+prancheta_de_overpass.html::radar.origin_y = 1781.0
+prancheta_de_overpass.html::radar.scale_px_per_unit = 0.1923076923076923
+prancheta_de_overpass.html::radar.width = 1024
+prancheta_de_train.html::biblioteca.arremessos = itens n=860 sha256:9191e0a5766e2497
+prancheta_de_train.html::biblioteca.arremessos_exatos = 860
+prancheta_de_train.html::biblioteca.arremessos_no_corpus = 868
+prancheta_de_train.html::biblioteca.grupos_de_forca[0].centro = 202.0
+prancheta_de_train.html::biblioteca.grupos_de_forca[0].n = 53
+prancheta_de_train.html::biblioteca.grupos_de_forca[1].centro = 437.0
+prancheta_de_train.html::biblioteca.grupos_de_forca[1].n = 52
+prancheta_de_train.html::biblioteca.grupos_de_forca[2].centro = 673.0
+prancheta_de_train.html::biblioteca.grupos_de_forca[2].n = 743
+prancheta_de_train.html::biblioteca.partidas = 1
+prancheta_de_train.html::biblioteca.versao = 1
+prancheta_de_train.html::modelo3.DURACAO_EFEITO_S.decoy = 0.0
+prancheta_de_train.html::modelo3.DURACAO_EFEITO_S.flash = 0.0
+prancheta_de_train.html::modelo3.DURACAO_EFEITO_S.he = 0.0
+prancheta_de_train.html::modelo3.DURACAO_EFEITO_S.molotov = 7.03125
+prancheta_de_train.html::modelo3.DURACAO_EFEITO_S.smoke = 20.0
+prancheta_de_train.html::modelo3.RAIO_DO_ARREMESSADOR_U = 16.0
+prancheta_de_train.html::modelo3.SEGUNDOS_DA_BOMBA = 40.0
+prancheta_de_train.html::modelo3.SEGUNDOS_DO_ROUND = 115.0
+prancheta_de_train.html::modelo3.VELOCIDADE_U_S.AWP|agachado = 82.4
+prancheta_de_train.html::modelo3.VELOCIDADE_U_S.AWP|andando = 104.0
+prancheta_de_train.html::modelo3.VELOCIDADE_U_S.AWP|correndo = 197.1
+prancheta_de_train.html::modelo3.VELOCIDADE_U_S.rifle|agachado = 90.4
+prancheta_de_train.html::modelo3.VELOCIDADE_U_S.rifle|andando = 111.8
+prancheta_de_train.html::modelo3.VELOCIDADE_U_S.rifle|correndo = 210.6
+prancheta_de_train.html::modelo3.VOO_MOLOTOV = lista n=2 sha256:9f34c9196a7083a8
+prancheta_de_train.html::modelo3.VOO_MOLOTOV_MAX_S = 2.0
+prancheta_de_train.html::modelo3.VOO_PAVIO_S = 1.62
+prancheta_de_train.html::modelo3.VOO_SMOKE = lista n=2 sha256:d8f061f7a7b8063a
+prancheta_de_train.html::radar.height = 1024
+prancheta_de_train.html::radar.origin_x = -2308.0
+prancheta_de_train.html::radar.origin_y = 2078.0
+prancheta_de_train.html::radar.scale_px_per_unit = 0.24497333097832305
+prancheta_de_train.html::radar.vertical_sections.default.max = 20000.0
+prancheta_de_train.html::radar.vertical_sections.default.min = -50.0
+prancheta_de_train.html::radar.vertical_sections.lower.max = -50.0
+prancheta_de_train.html::radar.vertical_sections.lower.min = -5000.0
+prancheta_de_train.html::radar.width = 1024
+prancheta_de_vertigo.html::modelo3.DURACAO_EFEITO_S.decoy = 0.0
+prancheta_de_vertigo.html::modelo3.DURACAO_EFEITO_S.flash = 0.0
+prancheta_de_vertigo.html::modelo3.DURACAO_EFEITO_S.he = 0.0
+prancheta_de_vertigo.html::modelo3.DURACAO_EFEITO_S.molotov = 7.03125
+prancheta_de_vertigo.html::modelo3.DURACAO_EFEITO_S.smoke = 20.0
+prancheta_de_vertigo.html::modelo3.RAIO_DO_ARREMESSADOR_U = 16.0
+prancheta_de_vertigo.html::modelo3.SEGUNDOS_DA_BOMBA = 40.0
+prancheta_de_vertigo.html::modelo3.SEGUNDOS_DO_ROUND = 115.0
+prancheta_de_vertigo.html::modelo3.VELOCIDADE_U_S.AWP|agachado = 82.4
+prancheta_de_vertigo.html::modelo3.VELOCIDADE_U_S.AWP|andando = 104.0
+prancheta_de_vertigo.html::modelo3.VELOCIDADE_U_S.AWP|correndo = 197.1
+prancheta_de_vertigo.html::modelo3.VELOCIDADE_U_S.rifle|agachado = 90.4
+prancheta_de_vertigo.html::modelo3.VELOCIDADE_U_S.rifle|andando = 111.8
+prancheta_de_vertigo.html::modelo3.VELOCIDADE_U_S.rifle|correndo = 210.6
+prancheta_de_vertigo.html::modelo3.VOO_MOLOTOV = lista n=2 sha256:9f34c9196a7083a8
+prancheta_de_vertigo.html::modelo3.VOO_MOLOTOV_MAX_S = 2.0
+prancheta_de_vertigo.html::modelo3.VOO_PAVIO_S = 1.62
+prancheta_de_vertigo.html::modelo3.VOO_SMOKE = lista n=2 sha256:d8f061f7a7b8063a
+prancheta_de_vertigo.html::radar.height = 1024
+prancheta_de_vertigo.html::radar.origin_x = -3168.0
+prancheta_de_vertigo.html::radar.origin_y = 1762.0
+prancheta_de_vertigo.html::radar.scale_px_per_unit = 0.25
+prancheta_de_vertigo.html::radar.vertical_sections.default.max = 20000.0
+prancheta_de_vertigo.html::radar.vertical_sections.default.min = 11700.0
+prancheta_de_vertigo.html::radar.vertical_sections.lower.max = 11700.0
+prancheta_de_vertigo.html::radar.vertical_sections.lower.min = -10000.0
+prancheta_de_vertigo.html::radar.width = 1024

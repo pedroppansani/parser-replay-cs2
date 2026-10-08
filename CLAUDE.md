@@ -64,9 +64,9 @@ texto completo de cada uma está na nota do link (`notas/decisoes/`).
 - [7a](notas/decisoes/7a-perfil-por-jogador.md) Perfil é a leitura; taxa com bruto, referência e amostra fraca.
 - [7b](notas/decisoes/7b-features-comportamento.md) Clustering só com comportamento; resultado fica fora.
 - [7c](notas/decisoes/7c-longe-do-time.md) "Longe do time": piso absoluto e nenhum companheiro no raio de apoio.
-- [7d](notas/decisoes/7d-duas-camadas.md) Função estrutural (o trabalho) e traço comportamental (como) não se misturam.
+- [7d](notas/decisoes/7d-duas-camadas.md) Função estrutural (trabalho) e traço comportamental (como) não se misturam.
 - [7e](notas/decisoes/7e-funcoes-de-ct.md) Âncora, rotativo e coringa: dispersão do início × distância ao contato.
-- [7f](notas/decisoes/7f-posicao-de-setup.md) Posição inicial: a de setup (10 s após o freeze), não o tick do freeze.
+- [7f](notas/decisoes/7f-posicao-de-setup.md) Posição inicial: a de setup (10 s após o freeze), não do freeze.
 - [7g](notas/decisoes/7g-igl-manual.md) IGL nunca é atribuído automaticamente; vem de `roles_manual.json`.
 - [7h](notas/decisoes/7h-trader.md) Trader é o segundo homem do entry; proximidade sozinha fica abaixo do piso.
 - [8](notas/decisoes/8-kmeans-nao-nomeia.md) O KMeans não nomeia grupos; o nome é do Pedro (`cluster_names.json`).
@@ -79,8 +79,8 @@ texto completo de cada uma está na nota do link (`notas/decisoes/`).
 - [8g](notas/decisoes/8g-kast-morte-vingada.md) O T do KAST é de quem teve a morte vingada (janela de 5 s).
 - [8h](notas/decisoes/8h-cegueira-reconstruida.md) Cegueira reconstruída de `flash_duration` sem `player_blind`.
 - [8i](notas/decisoes/8i-economia-do-corpus.md) Economia do rating estimada no corpus, por arma mais cara e colete.
-- [8j](notas/decisoes/8j-dano-no-mesmo-tick.md) `dmg_health_real` recalculado: acertos no mesmo tick não passam da vida.
-- [9](notas/decisoes/9-convencao-de-angulos.md) Pitch positivo olha para baixo; o teste roda a invertida.
+- [8j](notas/decisoes/8j-dano-no-mesmo-tick.md) `dmg_health_real` recalculado: acertos no tick não passam da vida.
+- [9](notas/decisoes/9-convencao-de-angulos.md) Pitch positivo olha para baixo; o teste usa a invertida.
 - [10](notas/decisoes/10-paleta.md) Paleta validada (daltonismo, contraste); não trocar cor sem `valida_paleta`.
 - [11](notas/decisoes/11-kmeans-global.md) KMeans ajustado uma vez no corpus (`global_model.json`), não por partida.
 - [12](notas/decisoes/12-ancora-e-lurk-por-area.md) Âncora e lurk por área (A/Mid/B), não por distância.
@@ -92,20 +92,20 @@ texto completo de cada uma está na nota do link (`notas/decisoes/`).
 - [15c](notas/decisoes/15c-traco-dentro-da-funcao.md) Traço comportamental comparado dentro da função estrutural.
 - [15d](notas/decisoes/15d-repick.md) Repick é jiggle mais evento no ângulo; o desfecho é campo à parte.
 - [15e](notas/decisoes/15e-eixo-por-populacao.md) Cada braço do eixo piano/baiter contra a população da função.
-- [15f](notas/decisoes/15f-funcao-do-round-no-pipeline.md) O pipeline passa a função do round aos papéis de comportamento.
+- [15f](notas/decisoes/15f-funcao-do-round-no-pipeline.md) Pipeline passa a função do round aos papéis de comportamento.
 - [16](notas/decisoes/16-escala-dos-papeis.md) A escala dos papéis é do corpus (`archetype_reference.json`).
 - [17](notas/decisoes/17-empate-no-contato.md) Empate no primeiro contato não é abertura de ninguém.
 - [18](notas/decisoes/18-frases-em-python.md) Frases dos cards saem do Python; papel sem sustentação: vazio.
 - [19](notas/decisoes/19-round-decisivo.md) Round decisivo: maior variação da chance de vitória (modelo neutro).
-- [19a](notas/decisoes/19a-decisivo-e-impressionante.md) Decisivo e impressionante: dois cards; pesos do segundo expostos.
-- [19b](notas/decisoes/19b-sem-round-decisivo.md) Sem round decisivo é resultado; piso de 1,5× o round mais barato.
+- [19a](notas/decisoes/19a-decisivo-e-impressionante.md) Decisivo e impressionante: dois cards; pesos expostos.
+- [19b](notas/decisoes/19b-sem-round-decisivo.md) Sem decisivo é resultado; piso 1,5× o round mais barato.
 - [19c](notas/decisoes/19c-formato-pela-troca-de-lado.md) MR12 ou MR15 sai da troca de lado na demo.
 - [19d](notas/decisoes/19d-economia-e-leitura.md) Economia é leitura ao lado do round decisivo, nunca peso.
 - [19e](notas/decisoes/19e-prorrogacao.md) A prorrogação é modelada: o alvo sobe 4 a cada uma, até 5.
 - [20](notas/decisoes/20-tres-blocos.md) A aba de leitura tem três blocos fixos; o MVP é o maior rating.
 - [20a](notas/decisoes/20a-destaque-negativo.md) Destaque negativo só com número e referência.
 - [20b](notas/decisoes/20b-bottom-frag.md) Bottom frag exige distância destacada (MAD); mochila exige vitória.
-- [20c](notas/decisoes/20c-comparabilidade.md) Pontuação de função: "quanto acima do normal"; concentração ponderada.
+- [20c](notas/decisoes/20c-comparabilidade.md) Pontuação de função: "acima do normal"; concentração ponderada.
 - [20d](notas/decisoes/20d-empate-do-destaque.md) No empate do topo vence o destaque negativo.
 - [21a](notas/decisoes/21a-arremesso.md) Botão, "no ar" e postura: da demo com `.dem`; inferidos sem ela.
 - [21b](notas/decisoes/21b-console-no-jogo.md) Comando de console só é exato depois de conferido no jogo.
@@ -119,30 +119,31 @@ texto completo de cada uma está na nota do link (`notas/decisoes/`).
 - [22g](notas/decisoes/22g-escada.md) Escada de validação: contagem exata antes de olhar o rating.
 - [22h](notas/decisoes/22h-swing-oficial-soma-zero.md) Swing oficial soma zero; exceção: morte sem matador inimigo.
 - [22i](notas/decisoes/22i-media-ou-desvio.md) Dividir pela média ou padronizar: mesmo rating com pesos ajustados.
-- [22j](notas/decisoes/22j-detailed-stats.md) Degrau 4: aberturas, multi-kills e HS exatos; clutch é 1vX com X ≥ 1.
-- [22k](notas/decisoes/22k-swing-sem-corte.md) Swing é variação de probabilidade pura; soma zero testa a integridade.
+- [22j](notas/decisoes/22j-detailed-stats.md) Degrau 4: aberturas, multi-kills e HS exatos; clutch 1vX, X ≥ 1.
+- [22k](notas/decisoes/22k-swing-sem-corte.md) Swing é variação de probabilidade pura; soma zero é integridade.
 - [22l](notas/decisoes/22l-detalhes-do-rating.md) Escala alinhada, cálculo por lado, kill assistida e morte trocada.
-- [23](notas/decisoes/23-anotacao.md) Anotação em coordenada de jogo; um ponto de redimensionar; sem texto no template.
+- [23](notas/decisoes/23-anotacao.md) Anotação em coordenada de jogo; um ponto de redimensionar; sem texto fixo.
 - [24](notas/decisoes/24-saida-fora-do-git.md) `docs/` fica fora do repositório; o Pages é artefato do CI.
 - [25](notas/decisoes/25-identidade-steamid.md) Identidade é o steamid; o nome é rótulo (`metrics/identidade.py`).
 - [26](notas/decisoes/26-invariantes.md) Dez invariantes sobre o corpus inteiro (`test_invariantes_corpus.py`).
 - [27](notas/decisoes/27-versoes.md) Cada partida grava versão do parser, das métricas e o commit.
 - [28](notas/decisoes/28-determinismo.md) Processamento determinístico: `group_by`/`unique` com ordem declarada.
 - [29](notas/decisoes/29-lurker.md) Lurker: sem os rounds de AWP, relativo à função, mínimo de 8 rounds.
-- [30](notas/decisoes/30-tres-niveis.md) Página da partida: números só dela; régua anônima do corpus; sem seletor.
+- [30](notas/decisoes/30-tres-niveis.md) Página da partida: números só dela; régua anônima; sem seletor.
 - [31](notas/decisoes/31-pisos-de-funcao.md) Registro dos pisos de função e de onde veio cada um.
-- [32](notas/decisoes/32-prancheta.md) Tática é log de operações; desfazer é `anula`/`reativa`; máquina de estados.
+- [32](notas/decisoes/32-prancheta.md) Tática é log de operações; desfazer é `anula`/`reativa`; estados.
 - [33](notas/decisoes/33-map-core.md) Um núcleo só para o mapa (`map_core.js`), aceito por pixel idêntico.
 - [34](notas/decisoes/34-direcao-do-olhar.md) θ = −yaw; ângulo interpola linear pelo caminho curto.
 - [35](notas/decisoes/35-reproducao-pura.md) Reprodução da prancheta: função pura do tempo.
-- [36](notas/decisoes/36-preservacao-de-dados.md) Nenhum `.dem`, interim ou backup é apagado sem lista confirmada e cópia por sha256.
-- [37](notas/decisoes/37-pagina-e-dado.md) Número de corpus em `numeros_citaveis.json`; dado passa por `esc()`; CI testa.
+- [36](notas/decisoes/36-preservacao-de-dados.md) Nenhum `.dem`, interim ou backup sai sem lista e cópia por sha256.
+- [37](notas/decisoes/37-pagina-e-dado.md) Número de corpus em `numeros_citaveis.json`; dado por `esc()`; CI testa.
 - [38](notas/decisoes/38-times-canonicos.md) Agregado por time usa o nome canônico (`metrics/times.py`).
-- [39](notas/decisoes/39-rotulos-com-amostra-e-estabilidade.md) Rótulo: amostra mínima; estabilidade < 0,70 vira "tendência".
-- [40](notas/decisoes/40-uma-regra-um-lugar.md) Trade, troca de lado, contato e AWPer do time: definidos uma vez.
+- [39](notas/decisoes/39-rotulos-com-amostra-e-estabilidade.md) Rótulo: amostra mínima; estabilidade < 0,70: "tendência".
+- [40](notas/decisoes/40-uma-regra-um-lugar.md) Trade, troca de lado, contato e AWPer do time: uma definição.
 - [41](notas/decisoes/41-impacto-e-jogadores.md) Impacto no perfil; entre partidas só em `jogadores.html`.
 - [42](notas/decisoes/42-prancheta-no-tempo.md) Tática com horário toca no relógio; lugar pelo `place` do corpus.
-- [43](notas/decisoes/43-round-real-na-prancheta.md) Round real é base travada; editar em t troca o real dali em diante.
+- [43](notas/decisoes/43-round-real-na-prancheta.md) Round real é base travada; editar em t troca o real dali.
+- [44](notas/decisoes/44-direcao-visual-sala-de-demo.md) Direção visual "Sala de demo": forma do design, lógica do main.
 
 ## Números citáveis
 

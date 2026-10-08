@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jogadores no corpus · Parser de Replay CS2</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%230b0f14'/%3E%3Ccircle cx='11' cy='16' r='6' fill='%234a90e8'/%3E%3Ccircle cx='21' cy='16' r='6' fill='%23e0a23a'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,400..700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="base.css">
+<style>
+  .topo-j { padding: 20px 0 8px; }
+  .topo-j h1 { margin: 0 0 6px; font-stretch: var(--larg-condensada); text-transform: uppercase; font-size: var(--t-2xl); }
+  .topo-j .lead { margin: 0; color: var(--tinta-2); max-width: 70ch; }
+  .aviso-corpus { margin: 12px 0 16px; }
+  .controles { display: grid; gap: 10px; margin-bottom: 16px; }
+  @media (min-width: 900px) { .controles { grid-template-columns: auto auto 1fr; align-items: start; } }
+  .escolhidos { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .pessoa { display: inline-flex; align-items: center; gap: 6px; min-height: var(--toque); padding: 0 4px 0 10px; border: 1px solid var(--borda); border-radius: var(--r-sm); background: var(--superficie); }
+  .pessoa .marca-p { font-family: var(--f-num); font-weight: 600; color: var(--fundo); border-radius: 2px; padding: 0 5px; font-size: var(--t-xs); }
+  .pessoa button { min-width: var(--toque); min-height: var(--toque); border: 0; background: none; color: var(--tinta-2); }
+  .adicionar select { min-height: var(--toque); padding: 0 10px; border: 1px solid var(--borda); border-radius: var(--r-sm); background: var(--superficie); color: var(--tinta); }
+  .grade-m { display: grid; gap: 12px; }
+  @media (min-width: 900px) { .grade-m { grid-template-columns: 1fr 1fr; } }
+  .p1 { --cor-p: var(--tinta); } .p2 { --cor-p: var(--tinta-2); } .p3 { --cor-p: var(--apagado); }
+  .marca-p.p1 { background: var(--tinta); } .marca-p.p2 { background: var(--tinta-2); } .marca-p.p3 { background: var(--apagado); }
+  /* nos três jogadores a diferença é a LETRA (A, B, C) e o tom de cinza; a cor fica para lado e decisivo */
+  .iv-faixa.p { --faixa: var(--cor-p); --faixa-area: transparent; }
+  .iv-letra { display: inline-block; min-width: 1.4em; font-family: var(--f-num); font-weight: 600; }
+  .ref-funcao { font-size: var(--t-xs); color: var(--apagado); margin: 2px 0 0; }
+</style>
+</head>
+<body>
+<div class="pagina">
+  <header class="site-topo">
+    <a class="marca" href="index.html" aria-label="Parser de Replay CS2, início"><span class="marca-longa">Parser de Replay</span><b>CS2</b></a>
+    <nav class="site-nav" aria-label="Principal">
+      <a href="index.html">Partidas</a>
+      <a href="jogadores.html" aria-current="page">Jogadores</a>
+      <a href="prancheta.html">Prancheta</a>
+      <a href="https://github.com/pedroppansani/parser-replay-cs2">GitHub</a>
+    </nav>
+  </header>
+
+  <header class="topo-j">
+    <h1>Jogadores no corpus</h1>
+    <p class="lead">Compare até 3 jogadores em todas as partidas processadas. Cada número vem com a faixa de incerteza e a quantidade de rounds por trás dele.</p>
+  </header>
+  <div class="aviso-bloco info aviso-corpus" role="note"><span class="ico" aria-hidden="true">i</span><p><b>Esta é a visão do corpus, não de uma partida.</b> "40% em 22 rounds" e "40% em 180 rounds" não são a mesma afirmação: a página de cada partida mostra só os números dela (decisão 30).</p></div>
+
+  <div class="controles">
+    <div class="chips" role="group" aria-label="Mapa" data-filtro-grupo="mapa-j">
+      <button class="chip" aria-pressed="true" data-valor="">Todos os mapas</button>
+      <button class="chip" aria-pressed="false" data-valor="mirage">Mirage</button>
+      <button class="chip" aria-pressed="false" data-valor="dust2">Dust II</button>
+      <button class="chip" aria-pressed="false" data-valor="nuke">Nuke</button>
+      <button class="chip" aria-pressed="false" data-valor="train">Train</button>
+    </div>
+    <div class="chips" role="group" aria-label="Lado" data-filtro-grupo="lado-j">
+      <button class="chip" aria-pressed="true" data-valor="">CT e TR</button>
+      <button class="chip" aria-pressed="false" data-valor="ct">Só CT</button>
+      <button class="chip" aria-pressed="false" data-valor="tr">Só TR</button>
+    </div>
+    <div class="escolhidos" aria-label="Jogadores na comparação">
+      <span class="pessoa"><span class="marca-p p1">A</span>ZywOo <span class="apagado"><span class="num">14</span> partidas</span><button aria-label="Tirar ZywOo da comparação">✕</button></span>
+      <span class="pessoa"><span class="marca-p p2">B</span>m0NESY <span class="apagado"><span class="num">9</span> partidas</span><button aria-label="Tirar m0NESY da comparação">✕</button></span>
+      <span class="pessoa"><span class="marca-p p3">C</span>torzsi <span class="apagado"><span class="num">2</span> partidas</span><button aria-label="Tirar torzsi da comparação">✕</button></span>
+      <label class="adicionar"><span class="sr">Adicionar jogador</span><select disabled><option>Máximo de 3</option></select></label>
+    </div>
+  </div>
+
+  <div class="grade-m" id="grade-m">
+    <section class="bloco" aria-labelledby="m-rat">
+      <p class="rot" id="m-rat">Rating médio por partida</p>
+      <div class="iv">
+        <div class="iv-linha p1"><span class="iv-nome"><span class="iv-letra">A</span>ZywOo</span><span class="iv-trilho"><span class="iv-ref" style="left:37.5%"></span><span class="iv-faixa p" style="left:45%;width:21.3%"></span><span class="iv-pt" style="left:53.8%"></span></span><span class="iv-num">1,23</span></div>
+        <div class="iv-linha p2"><span class="iv-nome"><span class="iv-letra">B</span>m0NESY</span><span class="iv-trilho"><span class="iv-ref" style="left:37.5%"></span><span class="iv-faixa p" style="left:37.5%;width:25.0%"></span><span class="iv-pt" style="left:51.3%"></span></span><span class="iv-num">1,21</span></div>
+        <div class="iv-linha p3"><span class="iv-nome"><span class="iv-letra">C</span>torzsi</span><span class="iv-trilho"><span class="iv-ref" style="left:37.5%"></span></span><span class="iv-num sem-barra"><span class="num">2</span> partidas</span></div>
+        <div class="iv-escala"><span style="left:0%">0,8</span><span style="left:25%">1,0</span><span style="left:50%">1,2</span><span style="left:75%">1,4</span><span style="left:100%">1,6</span></div>
+      </div>
+      <p class="ref-funcao">Linha tracejada: média dos AWPers do corpus (<span class="num">1,10</span>). Faixa: 90% por reamostragem das partidas (proposta; método final na fase 7). O ponto não fica no meio da faixa: ela é assimétrica. <span class="tag amostra">amostra pequena</span> torzsi: menos de 3 partidas, sem faixa.</p>
+    </section>
+    <section class="bloco" aria-labelledby="m-kast">
+      <p class="rot" id="m-kast">KAST</p>
+      <div class="iv">
+        <div class="iv-linha p1"><span class="iv-nome"><span class="iv-letra">A</span>ZywOo</span><span class="iv-trilho"><span class="iv-ref" style="left:50%"></span><span class="iv-faixa p" style="left:48.0%;width:13.8%"></span><span class="iv-pt" style="left:55.2%"></span></span><span class="iv-num"><span class="num">73%</span><small class="num">226/309</small></span></div>
+        <div class="iv-linha p2"><span class="iv-nome"><span class="iv-letra">B</span>m0NESY</span><span class="iv-trilho"><span class="iv-ref" style="left:50%"></span><span class="iv-faixa p" style="left:42.0%;width:17.2%"></span><span class="iv-pt" style="left:51.0%"></span></span><span class="iv-num"><span class="num">71%</span><small class="num">149/211</small></span></div>
+        <div class="iv-linha p3"><span class="iv-nome"><span class="iv-letra">C</span>torzsi</span><span class="iv-trilho"><span class="iv-ref" style="left:50%"></span><span class="iv-faixa p" style="left:30.8%;width:29.7%"></span><span class="iv-pt" style="left:46.8%"></span></span><span class="iv-num"><span class="num">68%</span><small class="num">49/72</small></span></div>
+        <div class="iv-escala"><span style="left:0%">40%</span><span style="left:50%">70%</span><span style="left:100%">100%</span></div>
+      </div>
+      <p class="ref-funcao">Faixa: Wilson 90% sobre o bruto (rounds com KAST / rounds jogados). Linha tracejada: média da função.</p>
+    </section>
+    <section class="bloco" aria-labelledby="m-cl">
+      <p class="rot" id="m-cl">Clutches vencidos</p>
+      <div class="iv">
+        <div class="iv-linha p1"><span class="iv-nome"><span class="iv-letra">A</span>ZywOo</span><span class="iv-trilho"><span class="iv-faixa p" style="left:22.0%;width:34.8%"></span><span class="iv-pt" style="left:36.7%"></span></span><span class="iv-num"><span class="num">22%</span><small class="num">9/41</small></span></div>
+        <div class="iv-linha p2"><span class="iv-nome"><span class="iv-letra">B</span>m0NESY</span><span class="iv-trilho"><span class="iv-faixa p" style="left:20.0%;width:42.7%"></span><span class="iv-pt" style="left:37.0%"></span></span><span class="iv-num"><span class="num">22%</span><small class="num">6/27</small></span></div>
+        <div class="iv-linha p3"><span class="iv-nome"><span class="iv-letra">C</span>torzsi</span><span class="iv-trilho"></span><span class="iv-num sem-barra"><span class="num">1 de 4</span></span></div>
+        <div class="iv-escala"><span style="left:0%">0%</span><span style="left:50%">30%</span><span style="left:100%">60%</span></div>
+      </div>
+      <p class="ref-funcao">Caso assimétrico de propósito: com taxa baixa, o Wilson estica a faixa para cima (ZywOo: <span class="num">13%</span> a <span class="num">34%</span>, ponto em <span class="num">22%</span>). torzsi: <span class="tag amostra">amostra pequena</span> menos de 10 tentativas, só o bruto, sem porcentagem e sem barra.</p>
+    </section>
+    <section class="bloco" aria-labelledby="m-ce">
+      <p class="rot" id="m-ce">Cegueira imposta por round</p>
+      <div class="vazio"><strong>Carregando…</strong><div class="esqueleto" style="height:14px;margin:10px auto 6px;width:80%"></div><div class="esqueleto" style="height:14px;margin:0 auto;width:60%"></div></div>
+      <p class="ref-funcao">Estado "carregando": esqueleto do tamanho do conteúdo, sem saltos de layout (CLS).</p>
+    </section>
+  </div>
+  <div class="vazio" id="j-vazio" hidden style="margin-top:12px"><strong>Nenhum round desses jogadores com esse filtro.</strong>Tire o filtro de mapa ou de lado.</div>
+
+  <p class="proto-nota"><b>Protótipo:</b> números ilustrativos. Métodos de intervalo são PROPOSTA para a fase 7 (reamostragem por partida com semente fixa e 2000 repetições para o rating; Wilson 90% para taxas), a conciliar lá com o encolhimento. A página real lê um agregado novo do corpus (por steamid, decisão 25), gerado no build; a régua da função vem de <code>metrics/perfil_reference.json</code>. As letras A, B e C (e não cores) separam os jogadores, porque a cor já tem dono: CT, TR e decisivo.</p>
+</div>
+<script src="proto.js"></script>
+</body>
+</html>
