@@ -4,7 +4,9 @@
    dashboard/web/annotations.js -- a camada inteira vive fora do template.
    ========================================================================= */
 
-.mapwrap { position: relative; width: 100%; max-width: 520px; margin: 6px auto 0; }
+/* o mapa nunca passa da tela menos o que vem antes e o controle de tocar (A1); 820/950 é a proporção do canvas */
+.mapwrap { position: relative; width: min(100%, 640px, calc((100svh - var(--reserva-replay, 340px)) * 820 / 950)); margin: 6px auto 0; }
+@media (min-width: 1024px) { .mapwrap { --reserva-replay: 500px; } }
 .mapwrap canvas { margin: 0 !important; max-width: none !important; }
 
 /* Os dois canvas de anotação ficam EXATAMENTE sobre o mapa; posição e tamanho
@@ -77,6 +79,11 @@
   box-shadow: var(--sombra-pop);
 }
 .anot-seletor[hidden] { display: none; }
+/* No replay a barra fica EMBAIXO do mapa (entrega-sala-de-demo §7.2): linha em cima, espaço para o "?" à
+   direita, e o seletor de cor abre para CIMA -- para baixo ele sairia do quadro (que recorta o que passa). */
+.board > .anot-barra { border-bottom: 0; border-top: 1px solid var(--linha); margin-top: 8px; padding-right: 60px; }
+.board > .anot-barra .anot-seletor { top: auto; bottom: calc(100% + 6px); }
+.board.tela-cheia > .anot-barra .anot-seletor { top: calc(100% + 6px); bottom: auto; }   /* em tela cheia a barra flutua no topo */
 /* Espectro: o quadrado é saturação (esquerda -> direita) x brilho (cima ->
    baixo) sobre a matiz da barra. As duas camadas de gradiente vão por cima da
    cor de fundo, que o JS troca conforme a matiz. */
@@ -124,8 +131,9 @@
   background: var(--fundo); border-radius: 0; padding: 0;
 }
 .board.tela-cheia .roundhead { color: var(--tinta); }
+.board.tela-cheia .maplegend, .board.tela-cheia .atalhos-caixa { display: none; }
 .board.tela-cheia .mapwrap {
-  max-width: none; flex: 1; min-height: 0; margin: 0;
+  max-width: none; width: 100%; flex: 1; min-height: 0; margin: 0;
   display: flex; align-items: center; justify-content: center;
 }
 /* Controles com recuo automático: aparecem ao mover o ponteiro e somem depois,

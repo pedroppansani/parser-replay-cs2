@@ -949,7 +949,8 @@ window.MapAnnotations = (function () {
     if (S.recentes.length) S.cor = S.recentes[0];
     S.direcao = le("localStorage", CHAVE_DIRECAO) !== "0";
 
-    opts.palco.insertBefore(montaBarra(), opts.palco.firstChild);
+    // a barra entra antes de `opts.antesDe` (o replay a põe embaixo da legenda); sem ele, no topo do palco
+    opts.palco.insertBefore(montaBarra(), opts.antesDe || opts.palco.firstChild);
 
     S.rounds = carregaDoNavegador();
     S.pronto = true;
