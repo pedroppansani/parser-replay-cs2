@@ -187,11 +187,39 @@ def origem_da_partida(match_id: str) -> str | None:
     return None
 
 
-def dados_da_pagina(match_id: str, base: Path | None = None) -> dict:
+# "método" ao lado do erro do rating: a seção do README que conta como o rating foi conferido
+REPO = "https://github.com/pedroppansani/parser-replay-cs2"
+METODO_DO_RATING = "README.md#como-sei-que-os-números-estão-certos"
+
+
+def erro_do_rating(c: dict) -> str:
+    """O erro típico do rating contra o oficial, como a página escreve ("0,079"): o da validação
+    "deixa uma partida fora, completa" (numeros_citaveis.json), nunca um número fixo no template."""
+    return _br(c["rating"]["fora_da_amostra"]["erro_medio"], 3)
+
+
+def _vice_dentro_do_erro(mvp: dict | None, citaveis: dict) -> bool:
+    """O 2º maior rating está a menos de um erro típico do MVP? (`margem` do card é a margem de ruído, não a
+    diferença entre os dois.)"""
+    if not mvp or mvp.get("vice_rating") is None:
+        return False
+    return (mvp["rating"] - mvp["vice_rating"]) < citaveis["rating"]["fora_da_amostra"]["erro_medio"]
+
+
+def dados_da_pagina(match_id: str, base: Path | None = None, repo: str | None = None) -> dict:
+    from metrics.impacto import resumo_dos_grupos
     from scripts.numeros_citaveis import carrega
     base = base or PROJECT_ROOT / "data" / "processed" / match_id
     from metrics.round_na_prancheta import TOLERANCIA_U
-    return {"origem": origem_da_partida(match_id), "rodape_html": rodape_html(carrega()),
+    citaveis = carrega()
+    payload = _le_json(base / "web_payload.json")
+    return {"origem": origem_da_partida(match_id), "rodape_html": rodape_html(citaveis),
+            "erro_rating": erro_do_rating(citaveis),
+            # "a diferença é menor que o erro típico" (§7.2): decidido aqui, para a página não comparar números
+            "vice_dentro_do_erro": _vice_dentro_do_erro(payload.get("mvp_card"), citaveis),
+            "metodo_rating": f"{(repo or REPO).rstrip('/')}/blob/main/{METODO_DO_RATING}",
+            "resumo_dos_grupos": resumo_dos_grupos(payload.get("player_profile") or [],
+                                                   (payload.get("rating_info") or {}).get("modo_degradado")),
             "cabecalho": _cabecalho_para_a_pagina(cabecalho_da_partida(match_id, base)), "mapa": _nome_do_mapa(base, match_id),
             # "Abrir round na prancheta" (fase 9): a tolerância medida do caminho
             "round_na_prancheta": {"tolerancia_u": TOLERANCIA_U}}
@@ -256,7 +284,7 @@ def build_html(match_id: str, site: dict | None = None, base: Path | None = None
     prancheta = arquivo_da_pagina(map_name) if map_name in mapas_disponiveis() else None
     html = html.replace("/*__PRANCHETA__*/null", js(prancheta))
     import html as _html
-    html = html.replace("/*__PAGINA__*/null", js(dados_da_pagina(match_id, base)))
+    html = html.replace("/*__PAGINA__*/null", js(dados_da_pagina(match_id, base, (site or {}).get("repo"))))
     titulo = titulo_da_pagina(match_id, base)
     html = html.replace("<!--__TITULO__-->", _html.escape(titulo))
     from scripts.meta_da_pagina import meta_tags, url_do_site

@@ -13,7 +13,9 @@ def test_a_barra_abre_recolhida_e_o_desenhar_mostra_as_ferramentas(contexto, par
     pg = abre(contexto, partida)
     visiveis = pg.evaluate("""() => [...document.querySelectorAll('#anot-barra button, #anot-barra a')]
         .filter(b => b.offsetParent !== null).map(b => b.id || b.textContent)""")
-    assert visiveis == ["anot-toggle", "anot-direcao", "anot-fs"], visiveis
+    # design-B3 (§7.2): com a barra recolhida ficam à vista Desenhar, Direção, Abrir round na prancheta,
+    # Tela cheia e o "?" dos atalhos; as ferramentas de desenho continuam atrás do Desenhar
+    assert visiveis == ["anot-toggle", "anot-direcao", "anot-abrir-round", "anot-fs", "b-atalhos"], visiveis
     assert pg.get_attribute("#anot-toggle", "aria-expanded") == "false"
     assert not pg.is_visible('[data-ferramenta="caneta"]') and not pg.is_visible("#anot-exportar")
     pg.click("#anot-toggle")
@@ -33,7 +35,9 @@ def test_recolhida_a_barra_cabe_numa_linha_e_o_play_aparece_sem_rolar(navegador,
     pg.evaluate("() => document.getElementById('palco').scrollIntoView({block: 'start'})")
     barra = pg.evaluate("() => document.getElementById('anot-barra').getBoundingClientRect().height")
     play = pg.evaluate("() => document.getElementById('play').getBoundingClientRect().bottom")
-    assert barra < 50, barra
+    # uma linha só: os botões passaram a ter 44 px (A5, design-B3), então a linha tem 44 + respiro
+    alvo = pg.evaluate("() => document.getElementById('anot-toggle').getBoundingClientRect().height")
+    assert alvo >= 44 and barra < 2 * alvo, (barra, alvo)
     assert play <= 768, play
     ctx.close()
 

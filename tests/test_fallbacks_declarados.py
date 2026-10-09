@@ -117,5 +117,7 @@ def test_a_pagina_esconde_o_rating_degradado_e_diz_o_motivo(navegador, tmp_path)
     pg.goto(pagina.as_uri())
     pg.click('[role=tab][data-tab="jogadores"]')
     assert pg.text_content("#rating-degradado") == motivo
-    assert pg.locator(".prow .rt").count() == 0            # nenhuma célula de rating
+    # design-B3: a lista .prow virou a tabela .tabela-jog; a verificação é a mesma (nenhuma célula de rating)
+    assert pg.locator(".tabela-jog td.rt").count() == 0
+    assert pg.locator(".tabela-jog tbody tr").count() == 10
     pg.close()

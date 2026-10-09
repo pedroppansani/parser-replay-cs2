@@ -66,7 +66,8 @@ def test_toda_metrica_tem_rotulo_e_grupo_e_a_pagina_recebe_o_texto_do_python():
     assert set(chaves) == set(ROTULOS) == {c for cs in CATEGORIAS_DE_IMPACTO.values() for c in cs}
     pg = para_a_pagina()
     assert pg["titulo"] and pg["texto"]
-    assert [g["nome"] for g in pg["grupos"] if g["aberto"]] == ["Utilidade"]
+    # design-B3 (entrega-sala-de-demo §7.2): todos os grupos abrem fechados; antes a Utilidade abria aberta
+    assert [g["nome"] for g in pg["grupos"] if g["aberto"]] == []
 
 
 # --- invariantes no corpus -----------------------------------------------------

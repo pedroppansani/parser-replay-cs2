@@ -54,7 +54,8 @@ def gera() -> list[Path]:
         ctx = nav.new_context(viewport={"width": LARGURA, "height": ALTURA}, device_scale_factor=1)
         ctx.add_init_script("try { localStorage.setItem('replay:direcao', '1'); } catch (e) {}")
         pg = ctx.new_page()
-        pg.goto(partida.as_uri())
+        # o Resumo é a aba inicial desde a design-B1; o hash abre o Replay direto
+        pg.goto(partida.as_uri() + "#replay")
         pg.wait_for_load_state("networkidle")
         pg.evaluate("() => document.fonts.ready")
         # replay: o round fixo, a 45% dele

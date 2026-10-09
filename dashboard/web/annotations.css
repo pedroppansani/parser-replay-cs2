@@ -55,6 +55,8 @@
   background: var(--superficie); color: var(--tinta-2); cursor: pointer; font-weight: 600; }
 .anot-b:hover { border-color: var(--apagado); }
 .anot-b.on { background: var(--tinta); color: var(--fundo); border-color: var(--tinta); }
+/* no replay, todo botão da barra tem alvo de 44 px (A5, design-B3); a prancheta muda na design-E */
+.board .anot-b { min-height: var(--toque); min-width: var(--toque); font-size: var(--t-xs); }
 .anot-b[disabled] { opacity: 0.35; cursor: default; }
 .anot-b.principal { font-weight: 600; }
 .anot-status { font-family: var(--f-texto); font-size: 10.5px; color: var(--apagado); }
@@ -79,9 +81,28 @@
   box-shadow: var(--sombra-pop);
 }
 .anot-seletor[hidden] { display: none; }
+
+/* "?" com os atalhos do teclado (antes eram dois parágrafos fixos acima do mapa; entrega-sala-de-demo §7.2).
+   O grupo fica no fim da barra, à direita; o popover abre para cima (para baixo sairia do quadro). */
+.anot-barra { position: relative; }
+.anot-grupo.anot-ajuda { margin-left: auto; }
+.anot-pop {
+  position: absolute; right: 8px; bottom: calc(100% + 6px); z-index: 30; width: min(360px, calc(100vw - 48px));
+  background: var(--superficie-2); border: 1px solid var(--borda); border-radius: var(--r-md);
+  padding: 10px 12px; box-shadow: var(--sombra-pop);
+  font-family: var(--f-texto); font-size: var(--t-sm); color: var(--tinta-2);
+}
+.anot-pop[hidden] { display: none; }
+.anot-pop p { margin: 0 0 6px; }
+.anot-pop p:last-child { margin-bottom: 0; }
+.anot-pop kbd {
+  font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: 12px; padding: 1px 5px; margin: 0 1px;
+  background: var(--superficie); border: 1px solid var(--borda); border-bottom-width: 2px;
+  border-radius: var(--r-sm); color: var(--tinta); font-weight: 600; }
+.board.tela-cheia .anot-pop { bottom: auto; top: calc(100% + 6px); }
 /* No replay a barra fica EMBAIXO do mapa (entrega-sala-de-demo §7.2): linha em cima, espaço para o "?" à
    direita, e o seletor de cor abre para CIMA -- para baixo ele sairia do quadro (que recorta o que passa). */
-.board > .anot-barra { border-bottom: 0; border-top: 1px solid var(--linha); margin-top: 8px; padding-right: 60px; }
+.board > .anot-barra { border-bottom: 0; border-top: 1px solid var(--linha); margin-top: 8px; }
 .board > .anot-barra .anot-seletor { top: auto; bottom: calc(100% + 6px); }
 .board.tela-cheia > .anot-barra .anot-seletor { top: calc(100% + 6px); bottom: auto; }   /* em tela cheia a barra flutua no topo */
 /* Espectro: o quadrado é saturação (esquerda -> direita) x brilho (cima ->
@@ -131,7 +152,7 @@
   background: var(--fundo); border-radius: 0; padding: 0;
 }
 .board.tela-cheia .roundhead { color: var(--tinta); }
-.board.tela-cheia .maplegend, .board.tela-cheia .atalhos-caixa { display: none; }
+.board.tela-cheia .maplegend { display: none; }
 .board.tela-cheia .mapwrap {
   max-width: none; width: 100%; flex: 1; min-height: 0; margin: 0;
   display: flex; align-items: center; justify-content: center;
