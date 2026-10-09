@@ -883,9 +883,11 @@ window.MapCore = (function () {
     }
     ctx.restore();
 
-    if (o.nome) {
-      if (ROT.ativo) rotulo(o.nome.slice(0, 9), X, Y, { cor: token("tinta"), prioridade: o.selecionado ? 10 : 0,
-                                                       dy: (comDirecao ? NOME_ACIMA_COM_DIRECAO : NOME_ACIMA) - 4 });
+    if (o.nome && ROT.ativo) {
+      // `rotuloAcima` (px do contexto): quem desenha a peça maior (prancheta) diz onde o nome começa
+      if (o.rotuloAcima != null) rotulo(o.nome.slice(0, 9), X, Y - o.rotuloAcima, { cor: token("tinta"), prioridade: o.selecionado ? 10 : 1, dy: 2 });
+      else rotulo(o.nome.slice(0, 9), X, Y, { cor: token("tinta"), prioridade: o.selecionado ? 10 : 0,
+                                              dy: (comDirecao ? NOME_ACIMA_COM_DIRECAO : NOME_ACIMA) - 4 });
     }
   }
 

@@ -1293,7 +1293,7 @@ var Prancheta = (function () {
     if (!c) return;
     var pts = [c.inicio].concat(c.pontos);
     ctx.save();
-    ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2; ctx.setLineDash([5, 4]);
+    ctx.strokeStyle = MapCore.token("tinta"); ctx.lineWidth = 2; ctx.setLineDash([5, 4]);
     ctx.beginPath();
     pts.forEach(function (pt, i) { var px = jogoParaPixel(pt.x, pt.y); if (i) ctx.lineTo(px[0], px[1]); else ctx.moveTo(px[0], px[1]); });
     if (c.mao) c.mao.forEach(function (px) { ctx.lineTo(px[0], px[1]); });
@@ -1301,11 +1301,10 @@ var Prancheta = (function () {
     ctx.font = "600 13px " + MapCore.token("f-num"); ctx.textAlign = "left"; ctx.textBaseline = "bottom";
     c.pontos.forEach(function (pt) {
       var px = jogoParaPixel(pt.x, pt.y);
-      ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(px[0], px[1], 4, 0, 2 * Math.PI); ctx.fill();
+      ctx.fillStyle = MapCore.token("tinta"); ctx.beginPath(); ctx.arc(px[0], px[1], 4, 0, 2 * Math.PI); ctx.fill();
       // o horário em que o jogador chega ali, no relógio do jogo
       var rotulo = MapCore.relogio(pt.t, S.e3 && S.e3.bomba ? S.e3.bomba.t : null, null, M3.SEGUNDOS_DO_ROUND, M3.SEGUNDOS_DA_BOMBA);
-      ctx.lineWidth = 3; ctx.strokeStyle = "rgba(15,22,32,0.85)"; ctx.strokeText(rotulo, px[0] + 7, px[1] - 5);
-      ctx.fillText(rotulo, px[0] + 7, px[1] - 5);
+      MapCore.rotulo(rotulo, px[0], px[1], { fonte: "num", dy: 6, prioridade: 2 });
     });
     ctx.restore();
   }
@@ -1347,9 +1346,13 @@ var Prancheta = (function () {
   function reprojeta() {
     var tela = $("pr-tela"), est = getComputedStyle(tela);
     var util = tela.clientWidth - parseFloat(est.paddingLeft) - parseFloat(est.paddingRight);
+    // fora da tela cheia, o mapa e a linha do tempo cabem na janela a partir de onde o mapa COMEÇA (§14:
+    // min(100%, 100svh - reserva)); com o topo do site e a barra de 44 px, "janela - 40" passava da tela e o
+    // navegador rolava até a linha do tempo no meio do gesto
+    var topo = tela.getBoundingClientRect().top + window.scrollY;
     var alto = emTelaCheia()
       ? tela.clientHeight - parseFloat(est.paddingTop) - parseFloat(est.paddingBottom)
-      : window.innerHeight - 40;
+      : window.innerHeight - topo - parseFloat(est.paddingTop) - parseFloat(est.paddingBottom) - 8;
     // a linha do tempo (8.5) divide a altura com o mapa: os dois cabem juntos
     var linha = $("pr-linha");
     if (linha && !linha.hidden) alto -= linha.offsetHeight;
@@ -1394,6 +1397,8 @@ var Prancheta = (function () {
     // busca, rascunho, rastro do passo anterior e seleção.
     var editando = !S.reproducao;
     var cena = editando ? cenaDoEditor() : S.reproducao.cena;
+    // nomes, funções e horários vão para a camada de rótulos (px de tela, por cima de tudo; §4.2)
+    MapCore.rotulosInicia(ctx, cv, desenha);
     desenhaFantasma(tempoMostrado());
     if (editando) desenhaBusca();
     Object.keys(cena.granadas).forEach(function (id) { desenhaGranada(id, cena.granadas[id], editando); });
@@ -1410,6 +1415,7 @@ var Prancheta = (function () {
     desenhaChegada();
     desenhaMortos(cena.mortos);
     Object.keys(cena.pecas).forEach(function (id) { desenhaPeca(id, cena.pecas[id], ant && ant.pecas[id], editando); });
+    MapCore.rotulosDesenha();
     desenhaBalao();
   }
 
@@ -1463,7 +1469,7 @@ var Prancheta = (function () {
       MapCore.nadeGlyph(ctx, g.arma, ponta[0], ponta[1], RAIO_GRANADA * 0.6, cor, Math.atan2(b[1] - a[1], b[0] - a[0]));
     }
     if (editando && S.sel && S.sel.id === id) {
-      ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2;
+      ctx.strokeStyle = MapCore.token("foco"); ctx.lineWidth = 3;
       ctx.beginPath(); ctx.arc(b[0], b[1], RAIO_GRANADA * 1.9, 0, 2 * Math.PI); ctx.stroke();
     }
     ctx.restore();
@@ -1507,19 +1513,23 @@ var Prancheta = (function () {
     }
     ctx.save();
     ctx.globalAlpha = alfa;
+    var selecionada = editando && S.sel && S.sel.id === id;
     MapCore.desenhaJogador(ctx, c[0], c[1], { cor: cor, estado: "vivo", hp: 100, cego: false,
-                                              nome: rotuloDaPeca(p), yaw: yaw, escala: ESCALA_PECA });
+                                              nome: rotuloDaPeca(p), yaw: yaw, escala: ESCALA_PECA,
+                                              rotuloAcima: RAIO_PECA + 6, selecionado: selecionada });
+    if (selecionada) {
+      // selecionada: anel --foco de 3 px no raio 15 da escala da peça (§14)
+      ctx.strokeStyle = MapCore.token("foco"); ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(c[0], c[1], RAIO_PECA + 4, 0, 2 * Math.PI); ctx.stroke();
+    }
     if (p.funcao) {
-      // a função embaixo do nome (8.3): texto do vocabulário do projeto
-      ctx.font = "600 12px " + MapCore.token("f-texto"); ctx.textAlign = "center"; ctx.textBaseline = "top";
-      ctx.lineWidth = 3; ctx.strokeStyle = "rgba(15,22,32,0.85)"; ctx.fillStyle = "#ffffff";
-      ctx.strokeText(p.funcao, c[0], c[1] + RAIO_PECA + 4);
-      ctx.fillText(p.funcao, c[0], c[1] + RAIO_PECA + 4);
+      // a função embaixo da peça (8.3): texto do vocabulário do projeto, na camada de rótulos
+      MapCore.rotulo(p.funcao, c[0], c[1] + RAIO_PECA + 6, { dy: -16, prioridade: selecionada ? 9 : 0 });
     }
     if (editando && S.sel && S.sel.id === id) {
       var h = alca(c, yaw);
       ctx.globalAlpha = 1;
-      ctx.fillStyle = "#ffffff"; ctx.strokeStyle = "#0f1620"; ctx.lineWidth = 2;
+      ctx.fillStyle = MapCore.token("tinta"); ctx.strokeStyle = MapCore.token("contorno"); ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(h[0], h[1], RAIO_ALCA, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
     }
     ctx.restore();
@@ -1542,7 +1552,7 @@ var Prancheta = (function () {
     if (!S.busca) return;
     var c = jogoParaPixel(S.busca.ponto[0], S.busca.ponto[1]);
     ctx.save();
-    ctx.strokeStyle = "rgba(255,255,255,0.8)"; ctx.setLineDash([6, 5]); ctx.lineWidth = 2;
+    ctx.strokeStyle = MapCore.corComAlfa("tinta", 0.8); ctx.setLineDash([6, 5]); ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(c[0], c[1], S.busca.raio * escalaUnidade(), 0, 2 * Math.PI); ctx.stroke();
     ctx.setLineDash([]);
     S.busca.resultados.forEach(function (r, n) {
@@ -1695,13 +1705,11 @@ var Prancheta = (function () {
     var c = S.chegada, px = jogoParaPixel(c.x, c.y), texto = "chega " + relogioEm(c.t);
     ctx.save();
     ctx.globalAlpha = alfaDoAndar(c.nivel);
-    ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = MapCore.token("tinta"); ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
     ctx.beginPath(); ctx.arc(px[0], px[1], RAIO_PECA, 0, 2 * Math.PI); ctx.stroke();
     ctx.setLineDash([]);
-    ctx.font = "600 13px " + MapCore.token("f-texto"); ctx.textAlign = "center"; ctx.textBaseline = "bottom";
-    ctx.lineWidth = 3; ctx.strokeStyle = "rgba(15,22,32,0.9)"; ctx.fillStyle = "#ffffff";
-    ctx.strokeText(texto, px[0], px[1] - RAIO_PECA - 4); ctx.fillText(texto, px[0], px[1] - RAIO_PECA - 4);
     ctx.restore();
+    MapCore.rotulo(texto, px[0], px[1] - RAIO_PECA - 4, { dy: 2, prioridade: 8 });
     S.ultimaChegada = texto;
   }
 
@@ -3198,10 +3206,10 @@ var Prancheta = (function () {
     ctx.font = "600 13px " + MapCore.token("f-texto");
     var w = ctx.measureText(texto).width + 16, h = 24, x = c[0] - w / 2, y = c[1] - RAIO_PECA - h - 10;
     ctx.globalAlpha = alfaDoAndar(e.nivel);
-    ctx.fillStyle = "rgba(15,22,32,0.92)"; ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 1;
+    ctx.fillStyle = MapCore.corComAlfa("contorno", 0.92); ctx.strokeStyle = MapCore.token("tinta"); ctx.lineWidth = 1;
     ctx.beginPath(); ctx.rect(x, y, w, h); ctx.fill(); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(c[0] - 6, y + h); ctx.lineTo(c[0], y + h + 7); ctx.lineTo(c[0] + 6, y + h); ctx.fill();
-    ctx.fillStyle = "#ffffff"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillStyle = MapCore.token("tinta"); ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText(texto, c[0], y + h / 2);
     ctx.restore();
     S.ultimoBalao = { alvo: e.alvo, texto: texto };
@@ -3646,6 +3654,8 @@ var Prancheta = (function () {
     ANDARES = andaresDoRadar(cfg.radar);
     CENTRO = centroDoRadar(cfg.radar);
     cv = $("pr-mapa"); ctx = cv.getContext("2d");
+    // anel duplo em peça e glifo (entrega-sala-de-demo §4.1), como no replay desde a design-B2
+    MapCore.defineAnelDuplo(true);
     imgs = ANDARES.map(function (a, i) {
       var src = i === 0 ? cfg.radar.image : (cfg.radar.layers || {})[a.nome];
       var im = new Image();
@@ -3675,10 +3685,18 @@ var Prancheta = (function () {
       // sem partida deste mapa no corpus, não há arremesso real para buscar
       var buscar = document.querySelector('aside [data-ferramenta="buscar"]');
       buscar.disabled = true;
+      var nomeDoMapa = ((cfg.mapas || []).filter(function (m) { return m.mapa === cfg.mapa; })[0] || {}).nome || cfg.mapa;
       var motivo = "Sem arremessos reais neste mapa: não há partidas dele no corpus.";
       buscar.title = motivo;
       $("pr-sem-biblioteca").textContent = motivo;
       $("pr-sem-biblioteca").hidden = false;
+      // aviso info no cabeçalho (§14): dá para montar a tática; o que fica desligado e por quê
+      var aviso = $("pr-aviso-mapa");
+      if (aviso) {
+        aviso.textContent = nomeDoMapa + " não tem partidas no corpus. Dá para montar a tática; \u201cBuscar arremesso " +
+          "real\u201d e \u201cRound real\u201d ficam desligados porque não há arremesso nem round gravado deste mapa.";
+        aviso.hidden = false;
+      }
       $("pr-raio").disabled = true; $("pr-so-parado").disabled = true;
     }
     $("pr-raio").value = String(S.raioBusca);
