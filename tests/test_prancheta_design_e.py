@@ -157,3 +157,26 @@ def test_linha_do_tempo_faixa_de_44_zona_da_bomba_marco_nomeado_e_cabecote_slide
         assert cab.get_attribute("aria-valuenow") == cab.get_attribute("aria-valuemax")
     finally:
         pg.close()
+
+
+def test_no_celular_some_o_desenho_reproduzir_ocupa_a_largura_e_nao_ha_rolagem_lateral(navegador, pagina):
+    ctx = navegador.new_context(viewport={"width": 375, "height": 667}, is_mobile=True)
+    pg = abre(ctx, pagina)
+    try:
+        assert pg.is_visible("#pr-aviso-celular") and "só no computador" in pg.inner_text("#pr-aviso-celular")
+        assert pg.locator('#pr-barra [data-ferramenta="caneta"]').is_hidden() and pg.locator("#pr-andares").count() in (0, 1)
+        if pg.locator("#pr-andares").count():
+            assert pg.locator("#pr-andares").is_hidden()
+        assert pg.is_visible("#pr-reproduzir") and pg.locator("#pr-reproduzir").bounding_box()["width"] >= 375 - 40
+        assert pg.evaluate("() => document.documentElement.scrollWidth") <= 375
+        # mapa em largura total (menos o respiro da página)
+        assert pg.locator("#pr-mapa").bounding_box()["width"] >= 375 - 40
+        # no computador o aviso não aparece
+    finally:
+        ctx.close()
+    ctx = navegador.new_context(viewport={"width": 1300, "height": 900})
+    pg = abre(ctx, pagina)
+    try:
+        assert not pg.is_visible("#pr-aviso-celular")
+    finally:
+        ctx.close()

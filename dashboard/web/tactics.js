@@ -79,6 +79,7 @@ var Prancheta = (function () {
   var PASSO_MIN_CANETA = 1.5;   // o mesmo da anotação
   var ALFA_OUTRO_ANDAR = 0.35;  // elemento de outro andar: esmaecido, como no replay
   // duração do efeito, para a faixa listrada da linha do tempo (§14: smoke 18 s, molotov 7 s; convenção do jogo)
+  var LARGURA_DO_CELULAR_PX = 640;   // fonte: entrega-sala-de-demo §14 ("Celular (≤ 640 px)")
   var DURACAO_SMOKE_S = 18, DURACAO_MOLOTOV_S = 7;
   var ALFA_FANTASMA = 0.9;      // o fantasma do round real é só o anel tracejado: precisa ler (entrega-sala-de-demo §14)
   var ALFA_RASTRO = 0.3;        // posição e direção do passo anterior
@@ -1361,6 +1362,8 @@ var Prancheta = (function () {
     // a linha do tempo (8.5) divide a altura com o mapa: os dois cabem juntos
     var linha = $("pr-linha");
     if (linha && !linha.hidden) alto -= linha.offsetHeight;
+    // celular (<= 640 px, §14): o mapa ocupa a largura toda e a página rola até o painel e a linha do tempo
+    if (!emTelaCheia() && window.innerWidth <= LARGURA_DO_CELULAR_PX) alto = util;
     if (util <= 0 || alto <= 0) return;
     // a proporção é a do radar, nunca a do espaço disponível: nada de mapa esticado
     var cx = MapCore.caixaDoMapa(cfg.radar, util, Math.max(200, alto));
@@ -3417,7 +3420,8 @@ var Prancheta = (function () {
     // versão 3: no relógio do round, do começo; versões 1 e 2: passo a passo
     var relogio = tocaNoRelogio();
     S.reproducao = { t: 0, tocando: false, velocidade: 1, cena: null, ultimo: 0, modo: relogio ? "relogio" : "passos" };
-    $("pr-barra").hidden = true; $("pr-player").hidden = false;
+    // a barra de edição e o painel ficam à vista a 45% e inertes (§14); o controle é o do player ("Pausar e editar")
+    $("pr-barra").setAttribute("inert", ""); $("pr-player").hidden = false;
     if ($("pr-dica-estado")) $("pr-dica-estado").hidden = true;
     // durante a reprodução nada é editável
     document.querySelector("aside").setAttribute("inert", "");
@@ -3439,7 +3443,7 @@ var Prancheta = (function () {
     S.passo = r.cena.indice;
     if (r.modo === "relogio") S.t = Math.round(r.t * 100) / 100;
     S.reproducao = null;
-    $("pr-barra").hidden = false; $("pr-player").hidden = true;
+    $("pr-barra").removeAttribute("inert"); $("pr-player").hidden = true;
     S.ultimoBalao = null;
     if ($("pr-dica-estado")) $("pr-dica-estado").hidden = false;
     document.querySelector("aside").removeAttribute("inert");
@@ -3536,7 +3540,7 @@ var Prancheta = (function () {
     });
     player.appendChild(tempo);
     player.appendChild(el("span", { id: "pr-rotulo-passo", class: "pr-meta" }));
-    var editar = MapCore.botao("Editar", "Voltar ao editor no passo em que parou", editaAqui);
+    var editar = MapCore.botao("❚❚ Pausar e editar", "Pausar e voltar ao editor no passo em que parou", editaAqui);
     editar.id = "pr-editar";
     player.appendChild(editar);
     $("pr-palco").insertBefore(player, $("pr-tela"));

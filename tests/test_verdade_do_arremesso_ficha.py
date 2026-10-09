@@ -9,7 +9,7 @@ import pytest
 
 sync_api = pytest.importorskip("playwright.sync_api")
 
-from tests.test_tactics_browser import (  # noqa: E402,F401  (fixtures)
+from tests.test_tactics_browser import (clica,   # noqa: E402,F401  (fixtures)
     abre, contexto, interno, navegador, no_mapa, pagina,
 )
 
@@ -21,7 +21,7 @@ def test_ficha_do_arremesso_real_mostra_a_fonte(contexto, pagina):
     assert interno(pg, "I.descreveFontes({botao: 'inferido', postura: 'lido', no_ar: 'inferido', origem: 'lido'})") == \
         "lido da demo: postura, saída · inferido pela rotina do jogo: botão, no ar"
     assert interno(pg, "I.descreveFontes(undefined)") == ""
-    pg.click('[data-arma="smoke"]')
+    clica(pg, '[data-arma="smoke"]')
     pg.click('[data-ferramenta="buscar"]')
     pg.mouse.click(*no_mapa(pg, 0.48, 0.52))
     pg.locator(".pr-lista li").first.click()

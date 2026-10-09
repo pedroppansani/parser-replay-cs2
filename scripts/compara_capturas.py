@@ -193,6 +193,8 @@ def _captura(paginas: Path, saida: Path, sufixo: str, direcao: str) -> dict:
         pg.wait_for_function("() => Prancheta._interno.S.estado !== null")
         if not pg.evaluate("(t) => Prancheta._interno.importaTexto(t)", FIXTURE.read_text(encoding="utf-8")):
             raise SystemExit("a prancheta recusou a fixture v1")
+        # design-E2: o painel da direita tem abas; os passos ficam na aba Tática (a página antiga não tem as abas)
+        pg.evaluate("() => { if (Prancheta._interno.abaDoPainel) Prancheta._interno.abaDoPainel('tatica'); }")
         pg.click('[data-passo="2"]')
         pg.mouse.move(2, 2)
         pg.wait_for_timeout(400)

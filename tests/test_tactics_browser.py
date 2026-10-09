@@ -670,7 +670,8 @@ def test_durante_a_reproducao_nada_e_editavel_e_editar_volta_no_passo(contexto, 
     n = len(interno(pg, "S.doc.operacoes"))
     pg.click("#pr-reproduzir"); pg.click("#pr-toca")
     assert interno(pg, "document.querySelector('aside').hasAttribute('inert')")
-    assert not pg.locator("#pr-barra").is_visible() and pg.locator("#pr-player").is_visible()
+    # design-E2 (§14): a barra de edição fica à vista, a 45% e inerte (antes sumia); quem responde é o player
+    assert pg.locator("#pr-barra").get_attribute("inert") is not None and pg.locator("#pr-player").is_visible()
     pg.mouse.move(*no_mapa(pg, 0.5, 0.5)); pg.mouse.down()
     pg.mouse.move(*no_mapa(pg, 0.6, 0.6), steps=5); pg.mouse.up()
     arrasta_do_banco(pg, "ct", "5", 0.4, 0.4)
@@ -680,7 +681,7 @@ def test_durante_a_reproducao_nada_e_editavel_e_editar_volta_no_passo(contexto, 
     pg.click("#pr-editar")
     assert interno(pg, "S.reproducao") is None and interno(pg, "S.passo") == 1
     assert not interno(pg, "document.querySelector('aside').hasAttribute('inert')")
-    assert pg.locator("#pr-barra").is_visible() and not pg.locator("#pr-player").is_visible()
+    assert pg.locator("#pr-barra").get_attribute("inert") is None and not pg.locator("#pr-player").is_visible()
 
 
 def test_atalhos_do_replay_na_reproducao(contexto, pagina):

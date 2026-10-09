@@ -235,3 +235,29 @@ h3 { margin: 0 0 4px; font-size: 15px; }
 /* o marcador de PASSO tem alvo de 44 px com o mesmo desenho pequeno (o fundo pinta só o conteúdo); passos ficam
    a pelo menos 1 s um do outro e não se sobrepõem como as marcas de ação */
 .pr-marco, .pr-marco.ativo { min-width: var(--toque); height: var(--toque); padding: 14px 13px; line-height: 16px; border: 0; background-clip: content-box !important; }
+
+/* reprodução (§14): a barra de edição e o painel ficam a 45% e inertes; só o player responde */
+#pr-barra[inert], aside[inert] { opacity: 0.45; }
+
+/* ---------- Celular (<= 640 px), desenhado e não abandonado (§14) ----------
+   Some o desenho à mão e a troca de andar; Reproduzir ocupa a largura toda no topo; o mapa em largura total; o painel em
+   abas vai para baixo do mapa; a linha do tempo rola na horizontal DENTRO da caixa (a página não rola). */
+.pr-aviso-celular { display: none; }
+@media (max-width: 640px) {
+  .pr-aviso-celular { display: block; margin: 8px 16px 0; padding: 8px 12px; border: 1px solid var(--borda); border-radius: var(--r-md);
+    background: var(--superficie); color: var(--tinta-2); font-size: var(--t-sm); }
+  .pr-aviso-celular::before { content: "i"; display: inline-grid; place-items: center; width: 1.3em; height: 1.3em; margin-right: 8px;
+    border-radius: 50%; border: 1.5px solid var(--tinta-2); color: var(--tinta); font-weight: 700; font-size: 0.85em; }
+  .pr-barra [data-ferramenta="caneta"], .pr-barra [data-ferramenta="seta"], .pr-barra [data-ferramenta="linha"],
+  .pr-barra [data-ferramenta="retangulo"], .pr-barra [data-ferramenta="elipse"], .pr-barra [data-ferramenta="texto"],
+  .pr-barra [data-ferramenta="borracha"], .pr-barra [data-andar], .pr-barra .anot-cor, #pr-andares, #pr-desenho, #pr-contexto-desenho { display: none !important; }
+  .pr-barra { display: flex; }
+  #pr-reproduzir, #pr-editar { order: -1; flex: 1 0 100%; }
+  .grade { padding: 8px; }
+  .pr-linha { grid-template-columns: minmax(0, 1fr); overflow-x: auto; }
+  .pr-linha-corpo { min-width: 760px; }
+  .pr-faixa { grid-template-columns: 96px minmax(0, 1fr); }
+  .pr-linha-cabecote-trilho { left: 102px; }
+  .pr-relogio-grande { font-size: 32px; }
+  .pr-roteiro { max-height: 220px; }
+}
