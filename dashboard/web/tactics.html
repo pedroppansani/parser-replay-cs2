@@ -22,6 +22,7 @@
 <div class="pr-cab">
   <h1><span class="pr-rot">Prancheta ·</span> <label class="sr" for="pr-mapa-sel">Mapa</label><select id="pr-mapa-sel"></select></h1>
   <p class="pr-aviso-mapa" id="pr-aviso-mapa" role="note" hidden></p>
+  <p class="pr-aviso-celular" id="pr-aviso-celular" role="note"></p>
 </div>
 <div class="grade">
   <div class="palco" id="pr-palco">
@@ -63,6 +64,9 @@
     sel.appendChild(og);
   });
   sel.addEventListener("change", function () { window.location.href = sel.value; });
+  // aviso do celular (§14): o que dá para fazer na tela pequena; o CSS só o mostra em <= 640 px
+  document.getElementById("pr-aviso-celular").textContent = "No celular: ver, tocar e mover jogadores, e granada pela " +
+    "aba Granadas. Desenho à mão e andares só no computador.";
   Prancheta.init(cfg);
 })();
 </script>

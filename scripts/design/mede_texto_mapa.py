@@ -97,6 +97,26 @@ def mede(pg, seletor: str, modo_inicial: str = "normal") -> list[tuple[float, fl
     return res
 
 
+def tatica_do_mapa(mapa: str) -> dict:
+    """O que muda no documento da prancheta: uma tática no tempo no centro do radar do mapa (duas peças com função, um
+    caminho e uma smoke). O resto do documento (mapa, calibração) é o que a própria página criou."""
+    radar = json.loads((RAIZ / "assets" / "radars" / f"{mapa}.json").read_text(encoding="utf-8"))
+    cx = radar["origin_x"] + radar["width"] / 2 / radar["scale_px_per_unit"]
+    cy = radar["origin_y"] - radar["height"] / 2 / radar["scale_px_per_unit"]
+
+    def op(seq, tipo, **d):
+        return {"id": f"m{seq:04d}", "seq": seq, "autor": "medicao", "em": "2026-10-09T00:00:00Z", "tipo": tipo, **d}
+    ops = [op(1, "renomeia", titulo="Medição"), op(2, "cria_passo", passo="p1", titulo="saída"),
+           op(3, "cria_peca", peca="a", lado="t", rotulo="1", passo="p1", x=cx - 300, y=cy + 100, yaw=0.0),
+           op(4, "cria_peca", peca="b", lado="ct", rotulo="1", passo="p1", x=cx + 250, y=cy - 150, yaw=180.0),
+           op(5, "cria_caminho", peca="a", pontos=[{"t": 5.0, "x": cx - 150, "y": cy + 20}, {"t": 12.0, "x": cx, "y": cy - 60}]),
+           op(6, "cria_granada", granada="s", arma="smoke", passo="p1", t=8.0, jogador="a",
+              origem=[cx - 200, cy + 60], destino=[cx + 100, cy - 100]),
+           op(7, "planta_bomba", t=30.0, x=cx + 50, y=cy - 200),
+           op(8, "define_funcao", peca="a", funcao="Entry fragger"), op(9, "define_funcao", peca="b", funcao="AWPer")]
+    return {"id": "medicao00001", "versao": 3, "contador": 9, "operacoes": ops}
+
+
 def partidas_por_mapa() -> dict[str, str]:
     """A primeira partida de cada mapa com partida no corpus, na ordem do manifesto."""
     man = json.loads((RAIZ / "data" / "manifest.json").read_text(encoding="utf-8"))["partidas"]
@@ -128,21 +148,24 @@ def main() -> int:
                 linhas.append((w, h, f"replay {mapa}", len(res), pior, sum(1 for r in res if r[0] < r[4]), min(r[2] for r in res)))
                 piores.append((pior[0], f"replay {mapa} {w}", pior[3]))
             pg.close()
-        # prancheta (design-E): a tática da fixture (tests/fixtures/tatica_v1.json, Mirage), no passo 2, como o
-        # compara_capturas -- com peças, nomes, funções e horários de caminho desenhados no mapa
-        pg = b.new_page(viewport={"width": w, "height": h}, device_scale_factor=1)
-        pg.goto(url_de("prancheta_de_mirage.html"))
-        pg.wait_for_function("() => Prancheta._interno.S.estado !== null")
-        fixture = (RAIZ / "tests" / "fixtures" / "tatica_v1.json").read_text(encoding="utf-8")
-        if pg.evaluate("(t) => Prancheta._interno.importaTexto(t)", fixture):
-            pg.locator('[data-passo="2"]').first.click(); pg.mouse.move(2, 2); pg.wait_for_timeout(400)
+        # prancheta, em CADA mapa (design-E2): uma tática sintética no centro do radar do mapa -- dois jogadores com
+        # nome e função, um caminho com horários e uma smoke --, que dá a mesma mistura de rótulos de uma tática real
+        for mapa in sorted(MAPAS):
+            pg = b.new_page(viewport={"width": w, "height": h}, device_scale_factor=1)
+            pg.goto(url_de(f"prancheta_de_{mapa}.html"))
+            pg.wait_for_function("() => Prancheta._interno.S.estado !== null")
+            doc = pg.evaluate("Prancheta._interno.S.doc")
+            doc.update(tatica_do_mapa(f"de_{mapa}"))
+            if not pg.evaluate("(t) => Prancheta._interno.importaTexto(t)", json.dumps(doc)):
+                print(f"a prancheta de {mapa} recusou a tática sintética"); pg.close(); continue
+            pg.wait_for_timeout(300); pg.mouse.move(2, 2)
             pg.locator("#pr-mapa").evaluate("e => e.scrollIntoView({block: 'start'})"); pg.wait_for_timeout(200)
             res = mede(pg, "#pr-mapa")
             if res:
                 pior = min(res)
-                linhas.append((w, h, "prancheta de_mirage", len(res), pior, sum(1 for r in res if r[0] < r[4]), min(r[2] for r in res)))
-                piores.append((pior[0], f"prancheta de_mirage {w}", pior[3]))
-        pg.close()
+                linhas.append((w, h, f"prancheta {mapa}", len(res), pior, sum(1 for r in res if r[0] < r[4]), min(r[2] for r in res)))
+                piores.append((pior[0], f"prancheta {mapa} {w}", pior[3]))
+            pg.close()
     b.close(); p.stop()
     for w, h, onde, n, pior, falhas, alt_min in linhas:
         print(f"{rodada:<7} {w}x{h} {onde:<22} rótulos {n:>3}  altura mín {alt_min:4.1f} px  "

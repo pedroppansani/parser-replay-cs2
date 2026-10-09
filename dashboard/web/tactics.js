@@ -78,6 +78,10 @@ var Prancheta = (function () {
   var RAIO_BORRACHA = 10;       // o mesmo da anotação
   var PASSO_MIN_CANETA = 1.5;   // o mesmo da anotação
   var ALFA_OUTRO_ANDAR = 0.35;  // elemento de outro andar: esmaecido, como no replay
+  // duração do efeito, para a faixa listrada da linha do tempo (§14: smoke 18 s, molotov 7 s; convenção do jogo)
+  var LARGURA_DO_CELULAR_PX = 640;   // fonte: entrega-sala-de-demo §14 ("Celular (≤ 640 px)")
+  var DURACAO_SMOKE_S = 18, DURACAO_MOLOTOV_S = 7;
+  var ALFA_FANTASMA = 0.9;      // o fantasma do round real é só o anel tracejado: precisa ler (entrega-sala-de-demo §14)
   var ALFA_RASTRO = 0.3;        // posição e direção do passo anterior
 
   // Giro pela roda do mouse: 15° por clique, 1° com Shift. Giros seguidos viram
@@ -1209,9 +1213,11 @@ var Prancheta = (function () {
     });
     Object.keys(f.pecas).forEach(function (id) {
       var q = f.pecas[id], c2 = jogoParaPixel(q.x, q.y);
-      ctx.globalAlpha = ALFA_RASTRO * alfaDoAndar(q.nivel);
-      MapCore.desenhaJogador(ctx, c2[0], c2[1], { cor: cssVar(q.lado === "ct" ? "--ct" : "--tr"), estado: "vivo", hp: 100,
-                                                  cego: false, nome: "", yaw: q.yaw, escala: ESCALA_PECA });
+      ctx.globalAlpha = ALFA_FANTASMA * alfaDoAndar(q.nivel);
+      // fantasma (§14): sem preenchimento, contorno tracejado na cor do lado, nome em itálico "--tinta-2" + "· real"
+      MapCore.desenhaJogador(ctx, c2[0], c2[1], { cor: cssVar(q.lado === "ct" ? "--ct" : "--tr"), estado: "fantasma", hp: 100,
+                                                  cego: false, nome: rotuloDaPeca(q) + " · real", yaw: q.yaw, escala: ESCALA_PECA,
+                                                  rotuloAcima: RAIO_PECA + 6 });
       n++;
     });
     ctx.restore();
@@ -1356,6 +1362,8 @@ var Prancheta = (function () {
     // a linha do tempo (8.5) divide a altura com o mapa: os dois cabem juntos
     var linha = $("pr-linha");
     if (linha && !linha.hidden) alto -= linha.offsetHeight;
+    // celular (<= 640 px, §14): o mapa ocupa a largura toda e a página rola até o painel e a linha do tempo
+    if (!emTelaCheia() && window.innerWidth <= LARGURA_DO_CELULAR_PX) alto = util;
     if (util <= 0 || alto <= 0) return;
     // a proporção é a do radar, nunca a do espaço disponível: nada de mapa esticado
     var cx = MapCore.caixaDoMapa(cfg.radar, util, Math.max(200, alto));
@@ -1726,6 +1734,7 @@ var Prancheta = (function () {
   /** Escolher um tipo de granada: com peça selecionada, a origem é ela. */
   function escolheArma(arma) {
     confirmaGiro();
+    abaDoPainel("granadas");     // escolher a granada (pelo atalho 1-4 também) mostra onde ela está
     S.arma = arma;
     if (S.acao && S.acao.tipo === "busca") { S.acao.arma = arma; if (S.busca) busca(S.busca.ponto); atualizaTudo(); return; }
     if (ROTULO_FERRAMENTA[S.ferramenta] || S.ferramenta === "borracha") S.ferramenta = "mover";
@@ -2888,17 +2897,53 @@ var Prancheta = (function () {
 
   /** O painel lateral, montado aqui (o HTML só tem a estrutura): Jogadores,
       Selecionado, Passos e Tática, mais a busca de arremessos reais. */
+  // Abas do painel da direita (entrega-sala-de-demo §14): Jogadores · Granadas · Tática. O painel fica no
+  // `aside`; em telas estreitas ele desce para baixo do mapa e as abas continuam as mesmas.
+  var ABAS_DO_PAINEL = [["jogadores", "Jogadores"], ["granadas", "Granadas"], ["tatica", "Tática"]];
+
+  /** Mostra uma aba do painel (e esconde as outras). Devolve false para um nome que não existe. */
+  function abaDoPainel(nome) {
+    if (!ABAS_DO_PAINEL.some(function (a) { return a[0] === nome; })) return false;
+    Array.prototype.forEach.call(document.querySelectorAll("#pr-abas [role=tab]"), function (b) {
+      var on = b.dataset.aba === nome;
+      b.setAttribute("aria-selected", String(on)); b.tabIndex = on ? 0 : -1;
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("aside [role=tabpanel]"), function (p) { p.hidden = p.dataset.aba !== nome; });
+    return true;
+  }
+
   function montaLateral() {
     var lado = limpa(document.querySelector("aside"));
+    var abas = el("div", { class: "pr-abas", id: "pr-abas", role: "tablist", "aria-label": "Painel da prancheta" });
+    ABAS_DO_PAINEL.forEach(function (a) {
+      var b = el("button", { type: "button", role: "tab", id: "pr-aba-" + a[0], "data-aba": a[0], "aria-controls": "pr-painel-" + a[0],
+        "aria-selected": "false", tabindex: "-1", texto: a[1], onclick: function () { abaDoPainel(a[0]); } });
+      b.addEventListener("keydown", function (e) {
+        var i = ABAS_DO_PAINEL.map(function (x) { return x[0]; }).indexOf(a[0]), n = ABAS_DO_PAINEL.length, j = null;
+        if (e.key === "ArrowRight") j = (i + 1) % n; else if (e.key === "ArrowLeft") j = (i - 1 + n) % n;
+        else if (e.key === "Home") j = 0; else if (e.key === "End") j = n - 1;
+        if (j === null) return;
+        e.preventDefault(); abaDoPainel(ABAS_DO_PAINEL[j][0]); $("pr-aba-" + ABAS_DO_PAINEL[j][0]).focus();
+      });
+      abas.appendChild(b);
+    });
+    lado.appendChild(abas);
+    var paineis = {};
+    ABAS_DO_PAINEL.forEach(function (a) {
+      paineis[a[0]] = el("div", { id: "pr-painel-" + a[0], role: "tabpanel", "aria-labelledby": "pr-aba-" + a[0], "data-aba": a[0], class: "pr-painel" });
+      lado.appendChild(paineis[a[0]]);
+    });
+    var alvo = paineis.jogadores;
     var caixa = function (titulo, filhos, id) {
       var s = el("section", { class: "caixa" }, [el("h2", { texto: titulo })].concat(filhos));
       if (id) s.id = id;
-      lado.appendChild(s);
+      alvo.appendChild(s);
       return s;
     };
     caixa("Jogadores", [el("div", { id: "pr-banco" }), el("div", { id: "pr-funcoes-banco", class: "pr-funcoes-banco" }),
       el("p", { class: "pr-dica", texto: "Clique numa ficha e depois no mapa, ou arraste." })]);
     caixa("Selecionado", [el("div", { id: "pr-selecao" })]);
+    alvo = paineis.granadas;
     var botoesDeGranada = el("div", { class: "pr-granadas-grandes", id: "pr-granadas" });
     ["smoke", "flash", "he", "molotov"].forEach(function (a) {
       var simbolo = el("canvas", { width: "56", height: "56", class: "pr-glifo", "aria-hidden": "true" });
@@ -2926,6 +2971,7 @@ var Prancheta = (function () {
         el("div", { class: "linha" }, [el("label", {}, [el("input", { type: "checkbox", id: "pr-so-parado" }),
           el("span", { texto: " só arremessos parados (o comando reproduz sozinho)" })])])]),
       el("div", { id: "pr-resultados" })]);
+    alvo = paineis.tatica;
     caixa("Passos", [
       el("div", { class: "linha", id: "pr-passos" }),
       // o cabeçote: o horário do round que o editor mostra e edita (formato 3)
@@ -2949,6 +2995,7 @@ var Prancheta = (function () {
         el("input", { type: "text", id: "pr-autor", placeholder: "seu nome" })]),
       el("p", { class: "pr-meta", id: "pr-origem", hidden: "" }),
       el("p", { id: "pr-aviso", hidden: "" })]);
+    abaDoPainel("jogadores");
   }
 
 
@@ -3107,8 +3154,12 @@ var Prancheta = (function () {
       regua.appendChild(el("span", { class: "pr-regua-marca" + (plant !== null && s >= plant ? " bomba" : ""),
         style: "left:" + pctDe(s, limite), texto: s % 15 === 0 ? relogioEm(s) : "" }));
     }
-    if (plant !== null) regua.appendChild(el("span", { class: "pr-regua-plant", style: "left:" + pctDe(plant, limite),
-      title: "Bomba plantada · " + relogioEm(plant) }));
+    if (plant !== null) {
+      // a zona da bomba sombreada em --tr-area, do plant até o fim (§14)
+      regua.insertBefore(el("span", { class: "pr-regua-zona", style: "left:" + pctDe(plant, limite) }), regua.firstChild);
+      regua.appendChild(el("span", { class: "pr-regua-plant", style: "left:" + pctDe(plant, limite),
+        title: "Bomba plantada · " + relogioEm(plant) }));
+    }
     // marcos
     var marcos = el("div", { class: "pr-faixa pr-faixa-marcos" }, [el("span", { class: "pr-faixa-nome", texto: "Passos" })]);
     var trilho = el("div", { class: "pr-trilho" });
@@ -3117,6 +3168,9 @@ var Prancheta = (function () {
         "data-marco": m.passo, style: "left:" + pctDe(m.t, limite), title: relogioEm(m.t) + (m.titulo ? " · " + m.titulo : ""),
         texto: String(k + 1) }));
     });
+    // marco nomeado (rótulo, não botão: pular para ele é pelo roteiro): losango + nome + horário, em cima do trilho
+    if (plant !== null) trilho.appendChild(el("span", { class: "pr-marco-nomeado", style: "left:" + pctDe(plant, limite) }, [
+      el("i", { class: "pr-losango", "aria-hidden": "true" }), el("span", { texto: "plant " + relogioEm(plant) })]));
     marcos.appendChild(trilho);
     faixas.appendChild(marcos);
     // uma faixa por jogador, na ordem do banco (lado, rótulo)
@@ -3132,9 +3186,17 @@ var Prancheta = (function () {
     var linhas = ids.map(function (pid) { return [pid, rotuloDaPeca(e3.pecas[pid]), e3.pecas[pid].lado]; });
     if (porJogador[""]) linhas.push(["", "Sem jogador", ""]);
     linhas.forEach(function (l) {
-      var pid = l[0], faixa = el("div", { class: "pr-faixa", "data-faixa": pid },
-        [el("span", { class: "pr-faixa-nome " + l[2], texto: l[1] })]);
+      var pid = l[0], funcao = pid && e3.pecas[pid].funcao ? e3.pecas[pid].funcao : "";
+      var faixa = el("div", { class: "pr-faixa pr-faixa-jogador", "data-faixa": pid },
+        [el("span", { class: "pr-faixa-nome " + l[2], title: l[1] + (funcao ? " · " + funcao : "") }, [
+          el("b", { texto: l[1] }), funcao ? el("small", { texto: funcao }) : null].filter(Boolean))]);
       var tr = el("div", { class: "pr-trilho" });
+      if (pid) {
+        // vida na cor do lado até a morte (✕); sem morte, até o fim
+        var morreu = e3.pecas[pid].pontos.filter(function (pt) { return pt.morte; })[0];
+        tr.appendChild(el("span", { class: "pr-vida " + l[2], style: "width:" + (morreu ? pctDe(morreu.t, limite) : "100%") }));
+        if (morreu) tr.appendChild(el("span", { class: "pr-morte", style: "left:" + pctDe(morreu.t, limite), "aria-hidden": "true", texto: "✕" }));
+      }
       if (pid) e3.pecas[pid].pontos.forEach(function (pt) {
         if (pt.fora) return;
         tr.appendChild(el("button", { class: "pr-marca " + l[2], "data-peca": pid, "data-ponto": pt.id,
@@ -3142,9 +3204,18 @@ var Prancheta = (function () {
       });
       (porJogador[pid] || []).forEach(function (gid) {
         var g = e3.granadas[gid];
-        tr.appendChild(el("button", { class: "pr-marca granada", "data-granada": gid, "data-arma": g.arma,
+        // duração listrada na cor da granada (smoke e molotov): do horário da soltura até o fim do efeito
+        var dur = g.arma === "smoke" ? DURACAO_SMOKE_S : g.arma === "molotov" ? DURACAO_MOLOTOV_S : 0;
+        if (dur) tr.appendChild(el("span", { class: "pr-duracao", style: "left:" + pctDe(g.t, limite) + ";width:" +
+          (Math.min(dur, Math.max(0, limite - g.t)) / limite * 100) + "%;--cor:" + MapCore.NADE_COLOR[g.arma] }));
+        var bg = el("button", { class: "pr-marca granada", "data-granada": gid, "data-arma": g.arma,
           style: "left:" + pctDe(g.t, limite) + ";--cor:" + MapCore.NADE_COLOR[g.arma],
-          title: NOME_ARMA[g.arma] + " · " + relogioEm(g.t), "aria-label": NOME_ARMA[g.arma] + " " + relogioEm(g.t) }));
+          title: NOME_ARMA[g.arma] + " · " + relogioEm(g.t), "aria-label": NOME_ARMA[g.arma] + " " + relogioEm(g.t) });
+        var cg = el("canvas", { width: "52", height: "52", class: "pr-marca-glifo", "aria-hidden": "true" });
+        var gx = cg.getContext && cg.getContext("2d");
+        if (gx) MapCore.nadeGlyph(gx, g.arma, 26, 26, 11, MapCore.NADE_COLOR[g.arma], 0);
+        bg.appendChild(cg);
+        tr.appendChild(bg);
       });
       faixa.appendChild(tr);
       faixas.appendChild(faixa);
@@ -3153,6 +3224,10 @@ var Prancheta = (function () {
     var cab = $("pr-linha-cabecote");
     cab.style.left = pctDe(t, limite);
     cab.setAttribute("data-relogio", relogioEm(t));
+    // slider (§14): valor em segundos desde o começo do round e o relógio como texto
+    cab.setAttribute("aria-valuemax", String(Math.round(limite * 100) / 100));
+    cab.setAttribute("aria-valuenow", String(Math.round(t * 100) / 100));
+    cab.setAttribute("aria-valuetext", relogioEm(t));
     atualizaRoteiro();
     // mudou a altura (apareceu, ganhou ou perdeu faixa): o mapa se ajusta
     if (caixa.offsetHeight !== antes) reprojeta();
@@ -3289,9 +3364,23 @@ var Prancheta = (function () {
         el("div", { class: "pr-faixa pr-faixa-regua" }, [el("span", { class: "pr-faixa-nome", texto: "Relógio" }),
           el("div", { class: "pr-trilho pr-regua", id: "pr-regua" })]),
         el("div", { id: "pr-faixas" }),
-        el("div", { class: "pr-linha-cabecote-trilho" }, [el("div", { id: "pr-linha-cabecote", class: "pr-linha-cabecote" })])]),
+        el("div", { class: "pr-linha-cabecote-trilho" }, [el("div", { id: "pr-linha-cabecote", class: "pr-linha-cabecote",
+          role: "slider", tabindex: "0", "aria-label": "Horário do round", "aria-valuemin": "0" }, [
+          el("span", { class: "pr-cabecote-alca", "aria-hidden": "true" })])])]),
       el("ol", { id: "pr-roteiro", class: "pr-roteiro", "aria-label": "Roteiro da tática" })]);
     linha.hidden = true;
+    // teclado no cabeçote: setas (1 s; com Shift, 5 s), Home e End
+    linha.querySelector("#pr-linha-cabecote").addEventListener("keydown", function (e) {
+      var t = tempoMostrado(), passo = e.shiftKey ? 5 : 1, novo = null;
+      if (t === null) return;
+      if (e.key === "ArrowRight" || e.key === "ArrowUp") novo = t + passo;
+      else if (e.key === "ArrowLeft" || e.key === "ArrowDown") novo = t - passo;
+      else if (e.key === "Home") novo = 0;
+      else if (e.key === "End") novo = limiteDoTempo();
+      if (novo === null) return;
+      e.preventDefault(); e.stopPropagation();
+      irPara(Math.max(0, Math.min(limiteDoTempo(), novo)));
+    });
     linha.addEventListener("pointerdown", function (e) {
       if (e.target.closest && e.target.closest(".pr-roteiro")) return;
       linhaPointerDown(e);
@@ -3331,7 +3420,8 @@ var Prancheta = (function () {
     // versão 3: no relógio do round, do começo; versões 1 e 2: passo a passo
     var relogio = tocaNoRelogio();
     S.reproducao = { t: 0, tocando: false, velocidade: 1, cena: null, ultimo: 0, modo: relogio ? "relogio" : "passos" };
-    $("pr-barra").hidden = true; $("pr-player").hidden = false;
+    // a barra de edição e o painel ficam à vista a 45% e inertes (§14); o controle é o do player ("Pausar e editar")
+    $("pr-barra").setAttribute("inert", ""); $("pr-player").hidden = false;
     if ($("pr-dica-estado")) $("pr-dica-estado").hidden = true;
     // durante a reprodução nada é editável
     document.querySelector("aside").setAttribute("inert", "");
@@ -3353,7 +3443,7 @@ var Prancheta = (function () {
     S.passo = r.cena.indice;
     if (r.modo === "relogio") S.t = Math.round(r.t * 100) / 100;
     S.reproducao = null;
-    $("pr-barra").hidden = false; $("pr-player").hidden = true;
+    $("pr-barra").removeAttribute("inert"); $("pr-player").hidden = true;
     S.ultimoBalao = null;
     if ($("pr-dica-estado")) $("pr-dica-estado").hidden = false;
     document.querySelector("aside").removeAttribute("inert");
@@ -3450,7 +3540,7 @@ var Prancheta = (function () {
     });
     player.appendChild(tempo);
     player.appendChild(el("span", { id: "pr-rotulo-passo", class: "pr-meta" }));
-    var editar = MapCore.botao("Editar", "Voltar ao editor no passo em que parou", editaAqui);
+    var editar = MapCore.botao("❚❚ Pausar e editar", "Pausar e voltar ao editor no passo em que parou", editaAqui);
     editar.id = "pr-editar";
     player.appendChild(editar);
     $("pr-palco").insertBefore(player, $("pr-tela"));
@@ -3844,7 +3934,7 @@ var Prancheta = (function () {
       taticaNoTempo: taticaNoTempo, quadroNoTempo: quadroNoTempo, posicaoNoTempo: posicaoNoTempo,
       problemasNoTempo: problemasNoTempo,
       vooEstimado: vooEstimado, velocidade: velocidade, M3: function () { return M3; },
-      defineTempo: defineTempo, douglasPeucker: douglasPeucker, noMarco: noMarco, emiteLote: emiteLote,
+      defineTempo: defineTempo, abaDoPainel: abaDoPainel, douglasPeucker: douglasPeucker, noMarco: noMarco, emiteLote: emiteLote,
       TOLERANCIA_DP_PX: TOLERANCIA_DP_PX, ligaCaminhoPorClique: ligaCaminhoPorClique,
       criaDoRound: criaDoRound, voltaAoReal: voltaAoReal, alternaFantasma: alternaFantasma, e3Real: e3Real,
       cortaReal: cortaReal, baseReal: baseReal,

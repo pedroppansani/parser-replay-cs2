@@ -26,7 +26,7 @@ def a10(pg) -> int:
     meio = relogio()
     ok = inicio == "1:55" and meio != inicio
     print(f"A10: clique na régua move o relógio: {inicio} -> {meio}  {'PASSA' if ok else 'FALHA'}"); falhas += not ok
-    pg.focus("#pr-cabecote"); pg.keyboard.press("Home"); pg.wait_for_timeout(200)
+    pg.focus("#pr-linha-cabecote"); pg.keyboard.press("Home"); pg.wait_for_timeout(200)
     ok = relogio() == "1:55"
     print(f"A10: Home volta a 1:55 ({relogio()})  {'PASSA' if ok else 'FALHA'}"); falhas += not ok
     # o relógio corre na reprodução "no relógio" (tática no tempo, modelo 3): a mesma tática dos testes

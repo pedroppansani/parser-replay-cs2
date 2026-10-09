@@ -60,6 +60,16 @@ body { margin: 0; background: var(--fundo); color: var(--tinta); font-family: va
 .palco.pr-pan #pr-mapa { cursor: grab !important; }
 
 aside { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+/* abas do painel da direita (§14): Jogadores · Granadas · Tática */
+.pr-abas { display: flex; border-bottom: 1px solid var(--borda); }
+.pr-abas [role="tab"] { flex: 1; min-height: var(--toque); padding: 0 10px; border: 0; background: none; cursor: pointer;
+  color: var(--tinta-2); font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-weight: 700; font-size: var(--t-sm);
+  letter-spacing: 0.08em; text-transform: uppercase; box-shadow: inset 0 -3px 0 transparent; }
+.pr-abas [role="tab"]:hover { color: var(--tinta); }
+.pr-abas [role="tab"][aria-selected="true"] { color: var(--tinta); box-shadow: inset 0 -3px 0 var(--tinta); }
+.pr-abas [role="tab"]:focus-visible { outline: 2px solid var(--foco); outline-offset: -2px; }
+.pr-painel { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
+.pr-painel[hidden] { display: none; }
 .caixa { background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--r-md); padding: 12px; }
 .caixa h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--apagado); margin: 0 0 8px; }
 .linha { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
@@ -152,10 +162,25 @@ h3 { margin: 0 0 4px; font-size: 15px; }
             padding: 8px 10px 10px; background: var(--tl-fundo); color: var(--tinta); border-top: 1px solid var(--linha);
             touch-action: none; user-select: none; }
 .pr-linha-corpo { position: relative; display: grid; gap: 3px; min-width: 0; }
-.pr-faixa { display: grid; grid-template-columns: 78px minmax(0, 1fr); align-items: center; gap: 6px; min-height: 18px; }
-.pr-faixa-nome { font-size: 11px; color: var(--tinta-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pr-faixa-nome.ct { color: var(--ct-texto); } .pr-faixa-nome.t { color: var(--tr-texto); }
+.pr-faixa { display: grid; grid-template-columns: 132px minmax(0, 1fr); align-items: center; gap: 6px; min-height: 18px; }
+.pr-faixa-nome { font-size: var(--t-xs); color: var(--tinta-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* faixa por jogador (§14): 44 px, nome e função fixos à esquerda, borda esquerda na cor do LADO */
+.pr-faixa-jogador { min-height: var(--toque); }
+.pr-faixa-jogador .pr-faixa-nome { display: grid; align-content: center; height: var(--toque); padding-left: 8px; border-left: 3px solid var(--borda); }
+.pr-faixa-jogador .pr-faixa-nome.ct { border-left-color: var(--ct); } .pr-faixa-jogador .pr-faixa-nome.t { border-left-color: var(--tr); }
+.pr-faixa-nome b { color: var(--tinta); font-weight: 600; font-size: var(--t-sm); overflow: hidden; text-overflow: ellipsis; }
+.pr-faixa-nome small { font-size: var(--t-xs); color: var(--tinta-2); overflow: hidden; text-overflow: ellipsis; }
+.pr-faixa-jogador .pr-trilho { height: var(--toque); }
 .pr-trilho { position: relative; height: 16px; background: var(--superficie); border-radius: var(--r-md); cursor: pointer; }
+.pr-vida { position: absolute; left: 0; top: calc(50% - 2px); height: 4px; border-radius: 2px; background: var(--apagado); pointer-events: none; }
+.pr-vida.ct { background: var(--ct); } .pr-vida.t { background: var(--tr); }
+.pr-morte { position: absolute; top: 50%; transform: translate(-50%, -50%); font-size: var(--t-xs); color: var(--tinta); pointer-events: none; }
+.pr-duracao { position: absolute; top: calc(50% + 8px); height: 5px; border-radius: 2px; pointer-events: none;
+  background: repeating-linear-gradient(135deg, var(--cor) 0 4px, transparent 4px 7px); opacity: 0.9; }
+.pr-regua-zona { position: absolute; top: 0; bottom: 0; right: 0; background: var(--tr-area); pointer-events: none; }
+.pr-marco-nomeado { position: absolute; top: 0; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 4px;
+  font-family: var(--f-num); font-size: var(--t-xs); color: var(--tr-texto); white-space: nowrap; pointer-events: none; }
+.pr-losango { display: inline-block; width: 8px; height: 8px; background: var(--tr); transform: rotate(45deg); }
 .pr-regua { background: transparent; height: 18px; }
 .pr-regua-marca { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--borda); padding-left: 3px;
                   font-family: var(--f-num); font-size: 10px; color: var(--tinta-2); white-space: nowrap; }
@@ -163,15 +188,23 @@ h3 { margin: 0 0 4px; font-size: 15px; }
 .pr-regua-plant { position: absolute; top: 0; bottom: 0; width: 3px; margin-left: -1px; background: var(--tr); }
 .pr-marca, .pr-marco { position: absolute; top: 50%; transform: translate(-50%, -50%); padding: 0; cursor: grab;
                        border: 2px solid var(--tl-fundo); }
-.pr-marca { width: 12px; height: 12px; border-radius: 50%; background: var(--tinta); }
-.pr-marca.ct { background: var(--ct); } .pr-marca.t { background: var(--tr); }
-.pr-marca.granada { border-radius: 2px; transform: translate(-50%, -50%) rotate(45deg); background: var(--cor, var(--tinta)); }
+/* ponto-chave: anel claro de 14 px (§14) com o miolo na cor do lado */
+.pr-marca { width: 14px; height: 14px; border-radius: 50%; background: var(--tinta); }
+.pr-marca.ct { background: var(--ct); border-color: var(--tinta); } .pr-marca.t { background: var(--tr); border-color: var(--tinta); }
+/* granada: o glifo na caixa escura de 26 px, no horário da soltura (§14) */
+.pr-marca.granada { width: 26px; height: 26px; border: 1px solid var(--borda); border-radius: var(--r-sm); background: var(--contorno); }
+.pr-marca-glifo { display: block; width: 24px; height: 24px; pointer-events: none; }
 .pr-marca.arrastando { outline: 2px solid var(--foco); cursor: grabbing; }
 .pr-marco { min-width: 18px; height: 16px; border-radius: 4px; font-size: 10px; line-height: 12px; color: var(--fundo);
             background: var(--tinta); cursor: pointer; }
 .pr-marco.ativo { background: var(--foco); }
-.pr-linha-cabecote-trilho { position: absolute; left: 84px; right: 0; top: 0; bottom: 0; pointer-events: none; }
-.pr-linha-cabecote { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--foco); }
+.pr-linha-cabecote-trilho { position: absolute; left: 138px; right: 0; top: 0; bottom: 0; pointer-events: none; }
+.pr-linha-cabecote { position: absolute; top: 0; bottom: 0; min-height: var(--toque); width: var(--toque); margin-left: calc(var(--toque) / -2); }
+.pr-linha-cabecote::after { content: ""; position: absolute; top: 0; bottom: 0; left: calc(50% - 1px); width: 2px; background: var(--foco); }
+/* cabeçote: linha de 2 px, triângulo no topo e área de arrasto de 44 px (só o topo recebe o ponteiro) */
+.pr-cabecote-alca { position: absolute; top: 0; left: 0; width: 44px; height: 20px; pointer-events: auto; cursor: ew-resize; }
+.pr-cabecote-alca::before { content: ""; position: absolute; left: 14px; top: 0; z-index: 1; border: 8px solid transparent; border-top-color: var(--foco); }
+.pr-linha-cabecote:focus-visible { outline: 2px solid var(--foco); outline-offset: 4px; }
 .pr-roteiro { margin: 0; padding: 0; list-style: none; max-height: 160px; overflow: auto; display: grid;
               gap: 2px; align-content: start; font-size: 12px; }
 .pr-evento { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; padding: 2px 4px; border-radius: 4px; }
@@ -201,4 +234,30 @@ h3 { margin: 0 0 4px; font-size: 15px; }
 .pr-barra .anot-b { font-size: var(--t-xs); }   /* texto mínimo de 12 px (§5) */
 /* o marcador de PASSO tem alvo de 44 px com o mesmo desenho pequeno (o fundo pinta só o conteúdo); passos ficam
    a pelo menos 1 s um do outro e não se sobrepõem como as marcas de ação */
-.pr-marco { min-width: var(--toque); height: var(--toque); padding: 14px 13px; line-height: 16px; border: 0; background-clip: content-box; }
+.pr-marco, .pr-marco.ativo { min-width: var(--toque); height: var(--toque); padding: 14px 13px; line-height: 16px; border: 0; background-clip: content-box !important; }
+
+/* reprodução (§14): a barra de edição e o painel ficam a 45% e inertes; só o player responde */
+#pr-barra[inert], aside[inert] { opacity: 0.45; }
+
+/* ---------- Celular (<= 640 px), desenhado e não abandonado (§14) ----------
+   Some o desenho à mão e a troca de andar; Reproduzir ocupa a largura toda no topo; o mapa em largura total; o painel em
+   abas vai para baixo do mapa; a linha do tempo rola na horizontal DENTRO da caixa (a página não rola). */
+.pr-aviso-celular { display: none; }
+@media (max-width: 640px) {
+  .pr-aviso-celular { display: block; margin: 8px 16px 0; padding: 8px 12px; border: 1px solid var(--borda); border-radius: var(--r-md);
+    background: var(--superficie); color: var(--tinta-2); font-size: var(--t-sm); }
+  .pr-aviso-celular::before { content: "i"; display: inline-grid; place-items: center; width: 1.3em; height: 1.3em; margin-right: 8px;
+    border-radius: 50%; border: 1.5px solid var(--tinta-2); color: var(--tinta); font-weight: 700; font-size: 0.85em; }
+  .pr-barra [data-ferramenta="caneta"], .pr-barra [data-ferramenta="seta"], .pr-barra [data-ferramenta="linha"],
+  .pr-barra [data-ferramenta="retangulo"], .pr-barra [data-ferramenta="elipse"], .pr-barra [data-ferramenta="texto"],
+  .pr-barra [data-ferramenta="borracha"], .pr-barra [data-andar], .pr-barra .anot-cor, #pr-andares, #pr-desenho, #pr-contexto-desenho { display: none !important; }
+  .pr-barra { display: flex; }
+  #pr-reproduzir, #pr-editar { order: -1; flex: 1 0 100%; }
+  .grade { padding: 8px; }
+  .pr-linha { grid-template-columns: minmax(0, 1fr); overflow-x: auto; }
+  .pr-linha-corpo { min-width: 760px; }
+  .pr-faixa { grid-template-columns: 96px minmax(0, 1fr); }
+  .pr-linha-cabecote-trilho { left: 102px; }
+  .pr-relogio-grande { font-size: 32px; }
+  .pr-roteiro { max-height: 220px; }
+}

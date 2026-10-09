@@ -836,6 +836,23 @@ window.MapCore = (function () {
       return;
     }
 
+    if (o.estado === "fantasma") {
+      // fantasma do round real (§4.1): sem preenchimento; halo claro e contorno escuro TAMBÉM tracejados, no mesmo
+      // passo (5/4), e o traço na cor do lado por cima -- o anel duplo vale com o disco vazado
+      var rf = 6 * e;
+      ctx.setLineDash([5, 4]);
+      ctx.lineWidth = 7 * e; ctx.strokeStyle = token("tinta");
+      ctx.beginPath(); ctx.arc(X, Y, rf, 0, Math.PI * 2); ctx.stroke();
+      ctx.lineWidth = 4.5 * e; ctx.strokeStyle = token("contorno");
+      ctx.beginPath(); ctx.arc(X, Y, rf, 0, Math.PI * 2); ctx.stroke();
+      ctx.lineWidth = 2.5 * e; ctx.strokeStyle = color;
+      ctx.beginPath(); ctx.arc(X, Y, rf, 0, Math.PI * 2); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+      if (o.nome && ROT.ativo) rotulo(o.nome, X, Y - (o.rotuloAcima != null ? o.rotuloAcima : NOME_ACIMA), { cor: token("tinta-2"), italico: true, prioridade: -1, dy: 2 });
+      return;
+    }
+
     if (o.estado === "outro_andar") {
       // anel vazado sobre o anel duplo inteiro; a seta ▲/▼ com o mesmo contorno escuro
       var rr = 5.5 * e;

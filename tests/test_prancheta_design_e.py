@@ -78,3 +78,105 @@ def test_mapa_e_linha_do_tempo_cabem_na_janela(contexto, pagina):
         assert r[0] >= 0 and r[2] <= r[3] + 1, r
     finally:
         pg.close()
+
+
+def test_o_painel_tem_tres_abas_com_teclado_e_so_uma_visivel(contexto, pagina):
+    """§14: Jogadores · Granadas · Tática, role=tablist, setas/Home/End, tabindex móvel."""
+    pg = abre(contexto, pagina)
+    try:
+        assert pg.eval_on_selector_all("#pr-abas [role=tab]", "ts => ts.map(t => t.textContent)") == ["Jogadores", "Granadas", "Tática"]
+        visiveis = lambda: pg.eval_on_selector_all("aside [role=tabpanel]", "ps => ps.filter(p => !p.hidden).map(p => p.dataset.aba)")  # noqa: E731
+        assert visiveis() == ["jogadores"]
+        assert pg.eval_on_selector_all("#pr-abas [role=tab]", "ts => ts.map(t => t.tabIndex)") == [0, -1, -1]
+        pg.focus("#pr-aba-jogadores")
+        pg.keyboard.press("ArrowRight")
+        assert visiveis() == ["granadas"] and pg.evaluate("document.activeElement.dataset.aba") == "granadas"
+        pg.keyboard.press("End")
+        assert visiveis() == ["tatica"]
+        pg.keyboard.press("ArrowRight")                                    # volta ao começo
+        assert visiveis() == ["jogadores"]
+        # escolher a granada (atalho 1) mostra a aba onde ela está
+        pg.keyboard.press("1")
+        assert visiveis() == ["granadas"]
+        # cada aba tem 44 px de alto
+        assert all(c["h"] >= 44 for c in pg.eval_on_selector_all("#pr-abas [role=tab]", "ts => ts.map(t => ({h: t.getBoundingClientRect().height}))"))
+    finally:
+        pg.close()
+
+
+def test_o_fantasma_do_round_real_e_so_o_anel_tracejado_com_nome_em_itálico(contexto, pagina):
+    """§14: sem preenchimento (o miolo é o radar), contorno tracejado na cor do lado, nome "· real" em itálico."""
+    pg = abre(contexto, pagina)
+    try:
+        r = pg.evaluate("""() => {
+            const c = document.createElement('canvas'); c.width = c.height = 80;
+            const g = c.getContext('2d');
+            g.fillStyle = '#336699'; g.fillRect(0, 0, 80, 80);                    // o "radar" por baixo
+            MapCore.desenhaJogador(g, 40, 40, {cor: '#e0a23a', estado: 'fantasma', hp: 100, nome: '', escala: 15 / 8.2});
+            const px = (x, y) => Array.from(g.getImageData(x, y, 1, 1).data.slice(0, 3));
+            // o miolo (centro) segue sendo o radar; ao redor há pixels do traço
+            let tracos = 0; for (let a = 0; a < 360; a += 10) { const p = px(Math.round(40 + 11 * Math.cos(a * Math.PI / 180)), Math.round(40 + 11 * Math.sin(a * Math.PI / 180)));
+              if (p[0] !== 0x33 || p[2] !== 0x99) tracos++; }
+            return {centro: px(40, 40), tracos}; }""")
+        assert r["centro"] == [0x33, 0x66, 0x99], r                    # sem preenchimento
+        assert r["tracos"] > 10, r                                      # e há traço em volta do raio
+    finally:
+        pg.close()
+
+
+def _com_tatica_no_tempo(pg):
+    from tests.test_prancheta_tempo_browser import _tatica_no_tempo
+    _tatica_no_tempo(pg)
+    pg.wait_for_timeout(200)
+
+
+def test_linha_do_tempo_faixa_de_44_zona_da_bomba_marco_nomeado_e_cabecote_slider(contexto, pagina):
+    pg = abre(contexto, pagina)
+    try:
+        _com_tatica_no_tempo(pg)
+        faixa = pg.locator(".pr-faixa-jogador").first
+        assert faixa.bounding_box()["height"] >= 44
+        assert pg.eval_on_selector(".pr-faixa-jogador .pr-faixa-nome", "e => getComputedStyle(e).borderLeftWidth") == "3px"
+        assert pg.locator(".pr-regua-zona").count() == 1                       # zona da bomba sombreada
+        assert "plant" in pg.inner_text(".pr-marco-nomeado")
+        assert pg.locator(".pr-vida").count() >= 1                              # barra de vida na cor do lado
+        g = pg.locator(".pr-marca.granada").first
+        assert g.bounding_box()["width"] >= 26 and g.locator("canvas").count() == 1
+        # o cabeçote é um slider com o relógio como texto e anda pelo teclado
+        cab = pg.locator("#pr-linha-cabecote")
+        assert cab.get_attribute("role") == "slider" and cab.get_attribute("aria-valuetext") == "1:55"
+        assert cab.bounding_box()["width"] >= 44
+        cab.focus()
+        pg.keyboard.press("ArrowRight")
+        assert cab.get_attribute("aria-valuetext") == "1:54"
+        pg.keyboard.press("Shift+ArrowRight")
+        assert cab.get_attribute("aria-valuetext") == "1:49"
+        pg.keyboard.press("Home")
+        assert cab.get_attribute("aria-valuetext") == "1:55"
+        pg.keyboard.press("End")
+        assert cab.get_attribute("aria-valuenow") == cab.get_attribute("aria-valuemax")
+    finally:
+        pg.close()
+
+
+def test_no_celular_some_o_desenho_reproduzir_ocupa_a_largura_e_nao_ha_rolagem_lateral(navegador, pagina):
+    ctx = navegador.new_context(viewport={"width": 375, "height": 667}, is_mobile=True)
+    pg = abre(ctx, pagina)
+    try:
+        assert pg.is_visible("#pr-aviso-celular") and "só no computador" in pg.inner_text("#pr-aviso-celular")
+        assert pg.locator('#pr-barra [data-ferramenta="caneta"]').is_hidden() and pg.locator("#pr-andares").count() in (0, 1)
+        if pg.locator("#pr-andares").count():
+            assert pg.locator("#pr-andares").is_hidden()
+        assert pg.is_visible("#pr-reproduzir") and pg.locator("#pr-reproduzir").bounding_box()["width"] >= 375 - 40
+        assert pg.evaluate("() => document.documentElement.scrollWidth") <= 375
+        # mapa em largura total (menos o respiro da página)
+        assert pg.locator("#pr-mapa").bounding_box()["width"] >= 375 - 40
+        # no computador o aviso não aparece
+    finally:
+        ctx.close()
+    ctx = navegador.new_context(viewport={"width": 1300, "height": 900})
+    pg = abre(ctx, pagina)
+    try:
+        assert not pg.is_visible("#pr-aviso-celular")
+    finally:
+        ctx.close()
