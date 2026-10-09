@@ -7,7 +7,7 @@ import pytest
 
 pytest.importorskip("playwright.sync_api")
 
-from tests.test_tactics_browser import (abre, arrasta_do_banco, contexto, interno, navegador, no_mapa,  # noqa: E402,F401
+from tests.test_tactics_browser import (aba_do_painel, abre, arrasta_do_banco, contexto, interno, navegador, no_mapa,  # noqa: E402,F401
                                         pagina)
 
 
@@ -186,6 +186,7 @@ def test_granada_real_no_horario_do_cabecote_poe_o_ponto_no_caminho_e_avisa_o_at
     # ele não chega lá em 10 s: o aviso diz quanto atrasa, e adiar move granada e ponto
     assert "s depois do arremesso" in pg.text_content("#pr-atraso")
     novo = interno(pg, "S.atraso.t")
+    aba_do_painel(pg, "jogadores")
     pg.click("#pr-adiar")
     g = [g for g in interno(pg, "S.e3.granadas").values() if g["arremesso"]][0]
     assert g["t"] == novo and g["jogador"] == pid

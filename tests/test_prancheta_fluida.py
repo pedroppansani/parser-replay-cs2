@@ -13,7 +13,7 @@ import pytest
 
 sync_api = pytest.importorskip("playwright.sync_api")
 
-from tests.test_tactics_browser import (  # noqa: E402,F401  (fixtures)
+from tests.test_tactics_browser import (clica, preenche, aba_do_painel,  # noqa: E402,F401  (fixtures)
     abre, arrasta_do_banco, caixa, contexto, interno, navegador, no_mapa, pagina,
 )
 
@@ -210,7 +210,7 @@ def test_a_dica_mostra_o_texto_do_estado_em_cada_estado_da_tabela(contexto, pagi
     pg.evaluate("() => Prancheta._interno.reprojeta()")
     pg.mouse.click(*no_mapa(pg, 0.6, 0.4)); confere("granada_selecionada")
     pg.click('#pr-barra [data-ferramenta="caneta"]'); confere("desenhando")
-    pg.click('aside [data-ferramenta="buscar"]'); confere("buscando")
+    clica(pg, 'aside [data-ferramenta="buscar"]'); confere("buscando")
     assert vistos == estados, estados - vistos
 
 
@@ -258,7 +258,8 @@ def test_cor_e_espessura_so_aparecem_com_ferramenta_de_desenho(contexto, pagina)
     pg.click("#pr-selecionar")
     assert not ctx.is_visible()
     assert not pg.locator("#pr-filtros-busca").is_visible()
-    pg.click('aside [data-ferramenta="buscar"]')
+    aba_do_painel(pg, "granadas")
+    clica(pg, 'aside [data-ferramenta="buscar"]')
     assert pg.locator("#pr-filtros-busca").is_visible()
 
 
@@ -272,12 +273,13 @@ def test_metrica_de_fluidez_o_roteiro_fica_mais_curto(contexto, pagina):
         n = 0
         for i, (fx, fy) in enumerate(pontos, start=1):
             arrasta_do_banco(pg, "ct", str(i), fx, fy); n += 1
-        pg.click('[data-arma="smoke"]'); n += 1
-        pg.click('aside [data-ferramenta="granada"]'); n += 1
+        aba_do_painel(pg, "granadas")
+        clica(pg, '[data-arma="smoke"]'); n += 1
+        clica(pg, 'aside [data-ferramenta="granada"]'); n += 1
         for (fx, fy), dest in ((pontos[0], (0.3, 0.6)), (pontos[1], (0.4, 0.6))):
             pg.mouse.click(*no_mapa(pg, fx, fy)); pg.mouse.click(*no_mapa(pg, *dest)); n += 2
-        pg.click("#pr-novo-passo"); n += 1
-        pg.click('aside [data-ferramenta="mover"]'); n += 1
+        clica(pg, "#pr-novo-passo"); n += 1
+        clica(pg, 'aside [data-ferramenta="mover"]'); n += 1
         for fx, fy in pontos[:2]:
             pg.mouse.move(*no_mapa(pg, fx, fy)); pg.mouse.down()
             pg.mouse.move(*no_mapa(pg, fx, fy + 0.15), steps=5); pg.mouse.up(); n += 1

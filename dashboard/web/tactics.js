@@ -1726,6 +1726,7 @@ var Prancheta = (function () {
   /** Escolher um tipo de granada: com peça selecionada, a origem é ela. */
   function escolheArma(arma) {
     confirmaGiro();
+    abaDoPainel("granadas");     // escolher a granada (pelo atalho 1-4 também) mostra onde ela está
     S.arma = arma;
     if (S.acao && S.acao.tipo === "busca") { S.acao.arma = arma; if (S.busca) busca(S.busca.ponto); atualizaTudo(); return; }
     if (ROTULO_FERRAMENTA[S.ferramenta] || S.ferramenta === "borracha") S.ferramenta = "mover";
@@ -2888,17 +2889,53 @@ var Prancheta = (function () {
 
   /** O painel lateral, montado aqui (o HTML só tem a estrutura): Jogadores,
       Selecionado, Passos e Tática, mais a busca de arremessos reais. */
+  // Abas do painel da direita (entrega-sala-de-demo §14): Jogadores · Granadas · Tática. O painel fica no
+  // `aside`; em telas estreitas ele desce para baixo do mapa e as abas continuam as mesmas.
+  var ABAS_DO_PAINEL = [["jogadores", "Jogadores"], ["granadas", "Granadas"], ["tatica", "Tática"]];
+
+  /** Mostra uma aba do painel (e esconde as outras). Devolve false para um nome que não existe. */
+  function abaDoPainel(nome) {
+    if (!ABAS_DO_PAINEL.some(function (a) { return a[0] === nome; })) return false;
+    Array.prototype.forEach.call(document.querySelectorAll("#pr-abas [role=tab]"), function (b) {
+      var on = b.dataset.aba === nome;
+      b.setAttribute("aria-selected", String(on)); b.tabIndex = on ? 0 : -1;
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("aside [role=tabpanel]"), function (p) { p.hidden = p.dataset.aba !== nome; });
+    return true;
+  }
+
   function montaLateral() {
     var lado = limpa(document.querySelector("aside"));
+    var abas = el("div", { class: "pr-abas", id: "pr-abas", role: "tablist", "aria-label": "Painel da prancheta" });
+    ABAS_DO_PAINEL.forEach(function (a) {
+      var b = el("button", { type: "button", role: "tab", id: "pr-aba-" + a[0], "data-aba": a[0], "aria-controls": "pr-painel-" + a[0],
+        "aria-selected": "false", tabindex: "-1", texto: a[1], onclick: function () { abaDoPainel(a[0]); } });
+      b.addEventListener("keydown", function (e) {
+        var i = ABAS_DO_PAINEL.map(function (x) { return x[0]; }).indexOf(a[0]), n = ABAS_DO_PAINEL.length, j = null;
+        if (e.key === "ArrowRight") j = (i + 1) % n; else if (e.key === "ArrowLeft") j = (i - 1 + n) % n;
+        else if (e.key === "Home") j = 0; else if (e.key === "End") j = n - 1;
+        if (j === null) return;
+        e.preventDefault(); abaDoPainel(ABAS_DO_PAINEL[j][0]); $("pr-aba-" + ABAS_DO_PAINEL[j][0]).focus();
+      });
+      abas.appendChild(b);
+    });
+    lado.appendChild(abas);
+    var paineis = {};
+    ABAS_DO_PAINEL.forEach(function (a) {
+      paineis[a[0]] = el("div", { id: "pr-painel-" + a[0], role: "tabpanel", "aria-labelledby": "pr-aba-" + a[0], "data-aba": a[0], class: "pr-painel" });
+      lado.appendChild(paineis[a[0]]);
+    });
+    var alvo = paineis.jogadores;
     var caixa = function (titulo, filhos, id) {
       var s = el("section", { class: "caixa" }, [el("h2", { texto: titulo })].concat(filhos));
       if (id) s.id = id;
-      lado.appendChild(s);
+      alvo.appendChild(s);
       return s;
     };
     caixa("Jogadores", [el("div", { id: "pr-banco" }), el("div", { id: "pr-funcoes-banco", class: "pr-funcoes-banco" }),
       el("p", { class: "pr-dica", texto: "Clique numa ficha e depois no mapa, ou arraste." })]);
     caixa("Selecionado", [el("div", { id: "pr-selecao" })]);
+    alvo = paineis.granadas;
     var botoesDeGranada = el("div", { class: "pr-granadas-grandes", id: "pr-granadas" });
     ["smoke", "flash", "he", "molotov"].forEach(function (a) {
       var simbolo = el("canvas", { width: "56", height: "56", class: "pr-glifo", "aria-hidden": "true" });
@@ -2926,6 +2963,7 @@ var Prancheta = (function () {
         el("div", { class: "linha" }, [el("label", {}, [el("input", { type: "checkbox", id: "pr-so-parado" }),
           el("span", { texto: " só arremessos parados (o comando reproduz sozinho)" })])])]),
       el("div", { id: "pr-resultados" })]);
+    alvo = paineis.tatica;
     caixa("Passos", [
       el("div", { class: "linha", id: "pr-passos" }),
       // o cabeçote: o horário do round que o editor mostra e edita (formato 3)
@@ -2949,6 +2987,7 @@ var Prancheta = (function () {
         el("input", { type: "text", id: "pr-autor", placeholder: "seu nome" })]),
       el("p", { class: "pr-meta", id: "pr-origem", hidden: "" }),
       el("p", { id: "pr-aviso", hidden: "" })]);
+    abaDoPainel("jogadores");
   }
 
 
@@ -3844,7 +3883,7 @@ var Prancheta = (function () {
       taticaNoTempo: taticaNoTempo, quadroNoTempo: quadroNoTempo, posicaoNoTempo: posicaoNoTempo,
       problemasNoTempo: problemasNoTempo,
       vooEstimado: vooEstimado, velocidade: velocidade, M3: function () { return M3; },
-      defineTempo: defineTempo, douglasPeucker: douglasPeucker, noMarco: noMarco, emiteLote: emiteLote,
+      defineTempo: defineTempo, abaDoPainel: abaDoPainel, douglasPeucker: douglasPeucker, noMarco: noMarco, emiteLote: emiteLote,
       TOLERANCIA_DP_PX: TOLERANCIA_DP_PX, ligaCaminhoPorClique: ligaCaminhoPorClique,
       criaDoRound: criaDoRound, voltaAoReal: voltaAoReal, alternaFantasma: alternaFantasma, e3Real: e3Real,
       cortaReal: cortaReal, baseReal: baseReal,

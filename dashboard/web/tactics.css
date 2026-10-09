@@ -60,6 +60,16 @@ body { margin: 0; background: var(--fundo); color: var(--tinta); font-family: va
 .palco.pr-pan #pr-mapa { cursor: grab !important; }
 
 aside { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+/* abas do painel da direita (§14): Jogadores · Granadas · Tática */
+.pr-abas { display: flex; border-bottom: 1px solid var(--borda); }
+.pr-abas [role="tab"] { flex: 1; min-height: var(--toque); padding: 0 10px; border: 0; background: none; cursor: pointer;
+  color: var(--tinta-2); font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-weight: 700; font-size: var(--t-sm);
+  letter-spacing: 0.08em; text-transform: uppercase; box-shadow: inset 0 -3px 0 transparent; }
+.pr-abas [role="tab"]:hover { color: var(--tinta); }
+.pr-abas [role="tab"][aria-selected="true"] { color: var(--tinta); box-shadow: inset 0 -3px 0 var(--tinta); }
+.pr-abas [role="tab"]:focus-visible { outline: 2px solid var(--foco); outline-offset: -2px; }
+.pr-painel { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
+.pr-painel[hidden] { display: none; }
 .caixa { background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--r-md); padding: 12px; }
 .caixa h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--apagado); margin: 0 0 8px; }
 .linha { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }

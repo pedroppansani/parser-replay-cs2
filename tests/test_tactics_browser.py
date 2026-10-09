@@ -60,6 +60,29 @@ def abre(ctx, pagina):
     return pg
 
 
+def aba_do_painel(pg, nome):
+    """design-E2: o painel da direita tem abas (Jogadores, Granadas, Tática); mostra a que tem o controle a usar."""
+    pg.evaluate("(n) => Prancheta._interno.abaDoPainel(n)", nome)
+
+
+def _mostra_o_painel_de(pg, seletor):
+    """Mostra a aba do painel da direita que contém `seletor` (e não faz nada se ele não estiver no painel)."""
+    pg.evaluate("""(s) => { const e = document.querySelector(s), p = e && e.closest('[role=tabpanel]');
+                           if (p) Prancheta._interno.abaDoPainel(p.dataset.aba); }""", seletor)
+
+
+def clica(pg, seletor, **kw):
+    """pg.click depois de mostrar a aba do painel onde o controle está (design-E2)."""
+    _mostra_o_painel_de(pg, seletor)
+    return pg.click(seletor, **kw)
+
+
+def preenche(pg, seletor, valor):
+    """pg.fill depois de mostrar a aba do painel onde o campo está (design-E2)."""
+    _mostra_o_painel_de(pg, seletor)
+    return pg.fill(seletor, valor)
+
+
 def interno(pg, expr):
     return pg.evaluate(f"() => {{ const I = Prancheta._interno, S = I.S; return {expr}; }}")
 
@@ -120,7 +143,8 @@ def test_mover_no_passo_2_nao_muda_o_passo_1(contexto, pagina):
     pg = abre(contexto, pagina)
     arrasta_do_banco(pg, "t", "3", 0.3, 0.3)
     p1 = interno(pg, "Object.values(S.estado.pecas)[0].posicoes")
-    pg.click("#pr-novo-passo")
+    aba_do_painel(pg, "tatica")
+    clica(pg, "#pr-novo-passo")
     assert interno(pg, "S.passo") == 1
     pg.mouse.move(*no_mapa(pg, 0.3, 0.3))
     pg.mouse.down()
@@ -138,7 +162,8 @@ def test_buscar_arremesso_real_poe_a_granada_com_o_comando(contexto, pagina):
     """A prioridade da prancheta: clicar onde a smoke deve cair e sair com um
     arremesso REAL do corpus, com o comando de console dele."""
     pg = abre(contexto, pagina)
-    pg.click('[data-arma="smoke"]')
+    aba_do_painel(pg, "granadas")
+    clica(pg, '[data-arma="smoke"]')
     pg.click('[data-ferramenta="buscar"]')
     pg.mouse.click(*no_mapa(pg, 0.48, 0.52))
     assert pg.locator(".pr-lista li").count() > 0
@@ -152,6 +177,7 @@ def test_buscar_arremesso_real_poe_a_granada_com_o_comando(contexto, pagina):
 
 def test_so_parados_filtra_a_busca(contexto, pagina):
     pg = abre(contexto, pagina)
+    aba_do_painel(pg, "granadas")
     pg.click('[data-ferramenta="buscar"]')
     pg.check("#pr-so-parado")
     pg.mouse.click(*no_mapa(pg, 0.48, 0.52))
@@ -163,12 +189,13 @@ def test_exportado_e_valido_no_python_e_da_o_mesmo_estado(contexto, pagina):
     """O JS e o Python aplicam o MESMO log e chegam ao mesmo estado."""
     pg = abre(contexto, pagina)
     arrasta_do_banco(pg, "ct", "2", 0.4, 0.6)
+    aba_do_painel(pg, "granadas")
     pg.click('[data-ferramenta="buscar"]')
     pg.mouse.click(*no_mapa(pg, 0.48, 0.52))
     pg.locator(".pr-lista li").first.click()
-    pg.click("#pr-novo-passo")
+    clica(pg, "#pr-novo-passo")
     with pg.expect_download() as dl:
-        pg.click("#pr-exporta")
+        clica(pg, "#pr-exporta")
     doc = json.loads(Path(dl.value.path()).read_text(encoding="utf-8"))
     estado_py = valida(doc)
     assert estado_py == interno(pg, "S.estado")
@@ -178,7 +205,8 @@ def test_exportado_e_valido_no_python_e_da_o_mesmo_estado(contexto, pagina):
 def test_recarregar_mantem_a_tatica(contexto, pagina):
     pg = abre(contexto, pagina)
     arrasta_do_banco(pg, "t", "5", 0.7, 0.7)
-    pg.fill("#pr-titulo", "Rush B")
+    aba_do_painel(pg, "tatica")
+    preenche(pg, "#pr-titulo", "Rush B")
     pg.press("#pr-titulo", "Enter")
     pg.locator("#pr-titulo").blur()
     interno(pg, "I.gravaAgora()")
@@ -355,7 +383,8 @@ def test_girar_pela_alca_ate_90_aponta_para_cima(contexto, pagina):
 
 def test_traco_fica_no_passo_dele(contexto, pagina):
     pg = abre(contexto, pagina)
-    pg.click("#pr-novo-passo")
+    aba_do_painel(pg, "tatica")
+    clica(pg, "#pr-novo-passo")
     pg.click('[data-passo="1"]')
     pg.click('#pr-barra [data-ferramenta="caneta"]')
     c = caixa(pg)
@@ -374,13 +403,14 @@ def test_traco_fica_no_passo_dele(contexto, pagina):
 
 def test_smoke_do_passo_1_aparece_no_passo_3_so_com_a_area(contexto, pagina):
     pg = abre(contexto, pagina)
-    pg.click("#pr-novo-passo"); pg.click("#pr-novo-passo")
+    aba_do_painel(pg, "tatica")
+    clica(pg, "#pr-novo-passo"); clica(pg, "#pr-novo-passo")
     pg.click('[data-passo="1"]')
-    pg.click('[data-arma="smoke"]'); pg.click('aside [data-ferramenta="granada"]')
+    clica(pg, '[data-arma="smoke"]'); clica(pg, 'aside [data-ferramenta="granada"]')
     pg.mouse.click(*no_mapa(pg, 0.4, 0.4)); pg.mouse.click(*no_mapa(pg, 0.55, 0.5))
     (g1,) = ultimo(pg, "granada")
     assert g1["linha"] and g1["area"]
-    pg.click('[data-passo="3"]')
+    clica(pg, '[data-passo="3"]')
     (g3,) = ultimo(pg, "granada")
     assert g3["id"] == g1["id"] and g3["area"] and not g3["linha"]
 
@@ -417,20 +447,21 @@ def test_desfazer_e_refazer_voltam_ao_estado_exato_em_cada_operacao(contexto, pa
         pg.mouse.move(*no_radar(pg, ax, ay)); pg.mouse.down()
         pg.mouse.move(*no_radar(pg, ax + 40, ay + 40), steps=5); pg.mouse.up()
     confere("gira_peca", gira)
-    confere("renomeia", lambda: (pg.fill("#pr-titulo", "Outro nome"), pg.press("#pr-titulo", "Tab")))
-    confere("cria_passo", lambda: pg.click("#pr-novo-passo"))
+    aba_do_painel(pg, "tatica")
+    confere("renomeia", lambda: (preenche(pg, "#pr-titulo", "Outro nome"), pg.press("#pr-titulo", "Tab")))
+    confere("cria_passo", lambda: clica(pg, "#pr-novo-passo"))
     pg.click('[data-passo="1"]')
-    confere("renomeia_passo", lambda: (pg.fill("#pr-passo-titulo", "abre"), pg.press("#pr-passo-titulo", "Tab")))
-    confere("define_duracao", lambda: (pg.fill("#pr-passo-duracao", "3.5"), pg.press("#pr-passo-duracao", "Tab")))
+    confere("renomeia_passo", lambda: (preenche(pg, "#pr-passo-titulo", "abre"), pg.press("#pr-passo-titulo", "Tab")))
+    confere("define_duracao", lambda: (preenche(pg, "#pr-passo-duracao", "3.5"), pg.press("#pr-passo-duracao", "Tab")))
 
     def granada():
-        pg.click('[data-arma="molotov"]'); pg.click('aside [data-ferramenta="granada"]')
+        clica(pg, '[data-arma="molotov"]'); clica(pg, 'aside [data-ferramenta="granada"]')
         pg.mouse.click(*no_mapa(pg, 0.3, 0.6)); pg.mouse.click(*no_mapa(pg, 0.35, 0.7))
-        pg.click('aside [data-ferramenta="mover"]')
+        clica(pg, 'aside [data-ferramenta="mover"]')
     confere("cria_granada", granada)
     gid = interno(pg, "Object.keys(S.estado.granadas)[0]")
     pg.mouse.click(*no_mapa(pg, 0.35, 0.7))             # seleciona a granada pelo destino
-    confere("define_vida", lambda: pg.check("#pr-vida-fim"))
+    confere("define_vida", lambda: (aba_do_painel(pg, "jogadores"), pg.check("#pr-vida-fim")))
 
     def move_granada():
         d = interno(pg, f"S.estado.granadas['{gid}'].destino")
@@ -449,24 +480,25 @@ def test_desfazer_e_refazer_voltam_ao_estado_exato_em_cada_operacao(contexto, pa
         pg.click('#pr-barra [data-ferramenta="borracha"]')
         pg.mouse.click(*no_mapa(pg, 0.25, 0.225))
     confere("remove_traco", borracha)
-    pg.click('aside [data-ferramenta="mover"]')
+    clica(pg, 'aside [data-ferramenta="mover"]')
     interno(pg, f"(S.sel = {{tipo: 'peca', id: '{pid}'}}, 0)")
-    pg.click('[data-passo="1"]'); interno(pg, f"(S.sel = {{tipo: 'peca', id: '{pid}'}}, 0)")
+    clica(pg, '[data-passo="1"]'); interno(pg, f"(S.sel = {{tipo: 'peca', id: '{pid}'}}, 0)")
     pg.evaluate("() => Prancheta._interno.reprojeta()")
     interno(pg, "(document.getElementById('pr-selecao'), 0)")
     pg.mouse.click(*no_mapa(pg, 0.55, 0.45))            # seleciona a peça pelo clique
-    confere("tira_peca", lambda: pg.click("#pr-tira-peca"))
+    confere("tira_peca", lambda: (aba_do_painel(pg, "jogadores"), pg.click("#pr-tira-peca")))
     pg.keyboard.press("Control+z")                       # a peça volta ao mapa neste passo
     pg.mouse.click(*no_mapa(pg, 0.55, 0.45))
-    confere("remove_peca (desfazer devolve com histórico)", lambda: pg.click("#pr-apaga-peca"))
+    confere("remove_peca (desfazer devolve com histórico)", lambda: (aba_do_painel(pg, "jogadores"), pg.click("#pr-apaga-peca")))
     pg.once("dialog", lambda d: d.accept())
-    confere("remove_passo", lambda: (pg.click('[data-passo="2"]'), pg.click("#pr-remove-passo")))
+    confere("remove_passo", lambda: (clica(pg, '[data-passo="2"]'), clica(pg, "#pr-remove-passo")))
 
 
 def test_tela_cheia_zoom_e_redimensionar_nao_mudam_coordenada_guardada(contexto, pagina):
     pg = abre(contexto, pagina)
     arrasta_do_banco(pg, "ct", "3", 0.45, 0.55)
-    pg.click('[data-arma="smoke"]'); pg.click('aside [data-ferramenta="granada"]')
+    aba_do_painel(pg, "granadas")
+    clica(pg, '[data-arma="smoke"]'); clica(pg, 'aside [data-ferramenta="granada"]')
     pg.mouse.click(*no_mapa(pg, 0.45, 0.55)); pg.mouse.click(*no_mapa(pg, 0.6, 0.4))
     antes = interno(pg, "S.doc.operacoes")
     pg.click("#pr-tela-cheia")
@@ -496,6 +528,7 @@ def test_nuke_peca_no_andar_de_baixo_fica_esmaecida_no_de_cima(contexto, tmp_pat
 
 def test_vertigo_abre_sem_busca_de_arremesso_e_diz_por_que(contexto, tmp_path_factory):
     pg = abre(contexto, pagina_do_mapa(tmp_path_factory, "de_vertigo"))
+    aba_do_painel(pg, "granadas")                      # design-E2: a busca mora na aba Granadas
     assert pg.locator('aside [data-ferramenta="buscar"]').is_disabled()
     motivo = pg.locator("#pr-sem-biblioteca")
     assert motivo.is_visible() and "não há partidas" in motivo.text_content()
@@ -678,7 +711,8 @@ def test_salvar_recarregar_abrir_pela_lista_e_reproduzir_da_o_mesmo(contexto, pa
     interno(pg, "I.gravaAgora()")
     pg.reload()
     pg.wait_for_function("() => Prancheta._interno.S.estado !== null")
-    pg.click("#pr-nova")                                            # outra tática aberta
+    aba_do_painel(pg, "tatica")
+    clica(pg, "#pr-nova")                                            # outra tática aberta
     pg.select_option("#pr-taticas", doc["id"])                      # abre pela lista
     assert interno(pg, "S.doc.id") == doc["id"]
     pg.click("#pr-reproduzir"); pg.click("#pr-toca")

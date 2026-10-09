@@ -78,3 +78,27 @@ def test_mapa_e_linha_do_tempo_cabem_na_janela(contexto, pagina):
         assert r[0] >= 0 and r[2] <= r[3] + 1, r
     finally:
         pg.close()
+
+
+def test_o_painel_tem_tres_abas_com_teclado_e_so_uma_visivel(contexto, pagina):
+    """§14: Jogadores · Granadas · Tática, role=tablist, setas/Home/End, tabindex móvel."""
+    pg = abre(contexto, pagina)
+    try:
+        assert pg.eval_on_selector_all("#pr-abas [role=tab]", "ts => ts.map(t => t.textContent)") == ["Jogadores", "Granadas", "Tática"]
+        visiveis = lambda: pg.eval_on_selector_all("aside [role=tabpanel]", "ps => ps.filter(p => !p.hidden).map(p => p.dataset.aba)")  # noqa: E731
+        assert visiveis() == ["jogadores"]
+        assert pg.eval_on_selector_all("#pr-abas [role=tab]", "ts => ts.map(t => t.tabIndex)") == [0, -1, -1]
+        pg.focus("#pr-aba-jogadores")
+        pg.keyboard.press("ArrowRight")
+        assert visiveis() == ["granadas"] and pg.evaluate("document.activeElement.dataset.aba") == "granadas"
+        pg.keyboard.press("End")
+        assert visiveis() == ["tatica"]
+        pg.keyboard.press("ArrowRight")                                    # volta ao começo
+        assert visiveis() == ["jogadores"]
+        # escolher a granada (atalho 1) mostra a aba onde ela está
+        pg.keyboard.press("1")
+        assert visiveis() == ["granadas"]
+        # cada aba tem 44 px de alto
+        assert all(c["h"] >= 44 for c in pg.eval_on_selector_all("#pr-abas [role=tab]", "ts => ts.map(t => ({h: t.getBoundingClientRect().height}))"))
+    finally:
+        pg.close()
