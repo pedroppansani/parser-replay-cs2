@@ -32,3 +32,18 @@ def fontes_html() -> str:
 def aplica(html: str) -> str:
     """Troca os dois marcadores pelos tokens e pelas fontes."""
     return html.replace(MARCADOR_TOKENS, tokens_css()).replace(MARCADOR_FONTES, fontes_html())
+
+
+def topo_do_site(atual: str, prancheta: str | None, repo: str) -> str:
+    """O topo do site (entrega-sala-de-demo §7): marca e quatro links -- Partidas, Jogadores, Prancheta, GitHub.
+    `atual` é "partidas", "jogadores" ou "prancheta" (recebe aria-current). O CSS fica em cada página."""
+    from html import escape as e
+    links = [("partidas", "index.html", "Partidas"), ("jogadores", "jogadores.html", "Jogadores")]
+    if prancheta:
+        links.append(("prancheta", prancheta, "Prancheta"))
+    nav = "".join(f'<a href="{e(h)}"{" aria-current=\"page\"" if k == atual else ""}>{t}</a>' for k, h, t in links)
+    return (f'<header class="site-topo">\n'
+            f'    <a class="marca" href="index.html" aria-label="Parser de Replay CS2, início">'
+            f'<span class="marca-longa">Parser de Replay</span><b>CS2</b></a>\n'
+            f'    <nav class="site-nav" aria-label="Principal">{nav}<a href="{e(repo)}">GitHub</a></nav>\n'
+            f'  </header>')

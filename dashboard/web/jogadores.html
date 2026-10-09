@@ -11,62 +11,114 @@
   /*__TOKENS__*/
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--fundo); color: var(--tinta); font-family: var(--f-texto); -webkit-font-smoothing: antialiased; }
-  .shell { max-width: 1180px; margin: 0 auto; padding: 0 20px 64px; }
-  header { padding: 28px 0 8px; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: baseline; }
-  header nav a { color: var(--tinta-2); text-decoration: none; margin-right: 12px; }
-  h1 { font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: clamp(28px, 4.5vw, 44px); margin: 6px 0 4px; letter-spacing: -0.02em; }
-  .aviso { background: var(--superficie); border: 1px solid var(--linha); border-left: 4px solid var(--decisivo); border-radius: var(--r-md); padding: 12px 16px; margin: 10px 0 18px; color: var(--tinta-2); }
-  .grade { display: grid; grid-template-columns: 300px 1fr; gap: 18px; align-items: start; }
-  @media (max-width: 860px) { .grade { grid-template-columns: 1fr; } }
-  .card { background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--r-md); padding: 14px 16px; }
-  .lista { max-height: 70vh; overflow: auto; padding: 6px; }
-  .lista label { display: flex; gap: 8px; align-items: baseline; padding: 6px 8px; border-radius: var(--r-md); cursor: pointer; }
-  .lista label:hover { background: var(--superficie-2); }
-  .lista small { color: var(--apagado); font-family: var(--f-texto); font-size: 10.5px; display: block; }
-  input[type=search], select { width: 100%; font: inherit; padding: 7px 9px; border: 1px solid var(--borda); border-radius: var(--r-sm); background: var(--fundo); color: var(--tinta); }
-  .filtros { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
-  .filtros label { font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: 11px; color: var(--apagado); display: grid; gap: 4px; min-width: 150px; font-weight: 600; }
-  .legenda { display: flex; flex-wrap: wrap; gap: 14px; margin: 6px 0 12px; font-size: 13px; }
-  .legenda i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
-  .grupo h3 { font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: 17px; margin: 18px 0 6px; }
-  .metrica { display: grid; grid-template-columns: 210px 1fr; gap: 12px; padding: 8px 0; border-top: 1px solid var(--linha); }
-  .metrica .nome { font-size: 13px; }
-  .metrica .nome small { display: block; color: var(--apagado); font-family: var(--f-texto); font-size: 10.5px; }
-  .barras { display: grid; gap: 5px; position: relative; }
-  .barra { position: relative; height: 18px; margin-right: 64px; }
-  .barra .faixa { position: absolute; top: 3px; height: 12px; border-radius: 3px; opacity: .85; }
-  .barra .ic { position: absolute; top: 8px; height: 2px; background: var(--tinta); }
-  .barra .bruto { position: absolute; top: 2px; width: 2px; height: 14px; background: var(--tinta); }
-  .barra .val { position: absolute; top: 1px; right: -62px; width: 56px; text-align: right; font-family: var(--f-num); font-size: 11px; color: var(--tinta); white-space: nowrap; }
-  .media { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--apagado); }
-  .nota { color: var(--apagado); font-size: 12.5px; margin-top: 8px; }
+  .shell { max-width: 1280px; margin: 0 auto; padding: 0 16px 64px; }
   :where(button, a[href], select, input, textarea, summary, [tabindex]):focus-visible { outline: 2px solid var(--foco); outline-offset: 2px; }
+
+  /* topo do site: marca e quatro links (entrega-sala-de-demo §7) */
+  .site-topo { display: flex; align-items: center; justify-content: space-between; gap: 4px 16px; flex-wrap: nowrap;
+    border-bottom: 1px solid var(--linha); margin: 0 -16px; padding: 0 16px; }
+  .marca { display: inline-flex; align-items: center; min-height: var(--toque); min-width: var(--toque); flex: none;
+    font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.04em; color: var(--tinta); text-decoration: none; }
+  .marca b { color: var(--tr-texto); margin-left: 0.3em; }
+  .site-nav { display: flex; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .site-nav::-webkit-scrollbar { display: none; }
+  .site-nav a { display: inline-flex; align-items: center; min-height: var(--toque); padding: 0 10px; flex: none;
+    color: var(--tinta-2); text-decoration: none; font-size: var(--t-sm); }
+  .site-nav a[aria-current] { color: var(--tinta); box-shadow: inset 0 -2px 0 var(--tinta); }
+  .site-nav a:hover { color: var(--tinta); }
+  @media (max-width: 640px) { .marca .marca-longa { display: none; } .marca b { margin-left: 0; } .site-nav a { padding: 0 7px; } }
+
+  h1 { font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: clamp(28px, 4.5vw, 44px); margin: 24px 0 8px; letter-spacing: -0.01em; }
+  /* aviso fixo (info): esta é a visão do corpus, não de uma partida (decisão 30) */
+  .aviso { display: flex; gap: 10px; align-items: baseline; background: var(--superficie); border: 1px solid var(--borda);
+    border-radius: var(--r-md); padding: 12px 16px; margin: 0 0 18px; color: var(--tinta-2); font-size: var(--t-sm); }
+  .aviso .i { flex: none; display: inline-grid; place-items: center; width: 1.3em; height: 1.3em; border-radius: 50%;
+    border: 1.5px solid var(--tinta-2); color: var(--tinta); font-weight: 700; font-size: 0.85em; }
+  .aviso b { color: var(--tinta); }
+
+  .rot { font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-weight: 700; font-size: var(--t-xs);
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--apagado); margin: 0 0 6px; }
+  .controles { display: grid; gap: 14px; margin-bottom: 18px; }
+  @media (min-width: 900px) { .controles { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+  .controle { min-width: 0; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chips.rola { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; padding-bottom: 2px; }
+  @media (min-width: 760px) { .chips.rola { flex-wrap: wrap; overflow: visible; } }
+  .chip { flex: none; min-height: var(--toque); padding: 0 14px; border-radius: var(--r-sm); cursor: pointer; font: inherit;
+    font-size: var(--t-sm); border: 1px solid var(--borda); background: var(--superficie); color: var(--tinta-2); }
+  .chip:hover { color: var(--tinta); border-color: var(--tinta-2); }
+  .chip[aria-pressed="true"] { background: var(--tinta); color: var(--fundo); border-color: var(--tinta); }
+  select { width: 100%; min-height: var(--toque); font: inherit; font-size: var(--t-sm); padding: 0 10px; border: 1px solid var(--borda);
+    border-radius: var(--r-sm); background: var(--fundo); color: var(--tinta); }
+  select:disabled { color: var(--apagado); cursor: not-allowed; }
+
+  /* jogadores escolhidos: pílulas com letra A, B, C em tons de cinza (a cor já tem dono: lado, decisivo) */
+  .pilulas { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+  .pilula { display: inline-flex; align-items: center; gap: 8px; padding-left: 4px; border: 1px solid var(--borda);
+    border-radius: var(--r-sm); background: var(--superficie); max-width: 100%; }
+  .pilula .nome { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+  .pilula small { display: block; font-weight: 400; color: var(--apagado); font-size: var(--t-xs); }
+  .pilula button { flex: none; width: var(--toque); height: var(--toque); border: 0; border-left: 1px solid var(--linha);
+    background: none; color: var(--tinta-2); cursor: pointer; font-size: 1rem; }
+  .pilula button:hover { color: var(--tinta); background: var(--superficie-2); }
+  .letra { flex: none; display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%;
+    font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-weight: 700; color: var(--fundo); }
+  .tom-0 { --tom: var(--tinta); } .tom-1 { --tom: var(--tinta-2); } .tom-2 { --tom: var(--apagado); }
+  .letra { background: var(--tom); }
+
+  /* cartões de métrica: barras com intervalo (a única tela com faixa desenhada: aqui o intervalo é de verdade) */
+  .cards { display: grid; gap: 12px; }
+  @media (min-width: 900px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .grupo-titulo { grid-column: 1 / -1; font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: 1.1rem;
+    text-transform: uppercase; letter-spacing: 0.04em; margin: 14px 0 0; }
+  .metrica { background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--r-md); padding: 12px 14px; min-width: 0; }
+  .metrica h3 { margin: 0; font-size: var(--t-sm); font-weight: 600; }
+  .metrica h3 small { display: block; font-weight: 400; color: var(--apagado); font-size: var(--t-xs); margin-top: 2px; }
+  .linha-jog { display: grid; grid-template-columns: 26px minmax(0, 1fr) 5.6em; gap: 10px; align-items: center; margin-top: 10px; }
+  .trilho { position: relative; height: 22px; }
+  .trilho .eixo { position: absolute; left: 0; right: 0; top: 10px; height: 2px; background: var(--linha); }
+  .trilho .faixa { position: absolute; top: 5px; height: 12px; border-radius: 3px; background: var(--tom); opacity: 0.35; }
+  .trilho .ponto { position: absolute; top: 4px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%;
+    background: var(--tom); border: 2px solid var(--fundo); }
+  .trilho .media { position: absolute; top: -2px; bottom: -2px; width: 0; border-left: 2px dashed var(--apagado); }
+  .valor { text-align: right; line-height: 1.2; }
+  .valor .num { font-family: var(--f-num); font-variant-numeric: tabular-nums; font-weight: 600; }
+  .valor small { display: block; font-size: var(--t-xs); color: var(--apagado); }
+  .valor small .num { font-weight: 400; }
+  .sem-barra { font-size: var(--t-sm); color: var(--tinta-2); }
+  .tag { display: inline-block; font-size: var(--t-xs); padding: 1px 6px; border: 1px dashed var(--borda); border-radius: var(--r-sm);
+    color: var(--tinta-2); margin-left: 6px; }
+  .legenda-media { display: flex; align-items: center; gap: 8px; font-size: var(--t-xs); color: var(--tinta-2); margin: 0 0 8px; }
+  .legenda-media i { display: inline-block; width: 0; height: 14px; border-left: 2px dashed var(--apagado); }
+  .nota { color: var(--tinta-2); font-size: var(--t-sm); margin-top: 12px; line-height: 1.55; }
+  .vazio { grid-column: 1 / -1; padding: 24px 16px; border: 1px dashed var(--borda); border-radius: var(--r-md); color: var(--tinta-2); }
 </style>
 </head>
 <body>
 <div class="shell">
-  <header>
-    <nav aria-label="Voltar ao site"><a href="index.html" id="volta-inicio"></a><a href="index.html#partidas" id="volta-partidas"></a></nav>
-  </header>
+  <!--__TOPO__-->
   <h1 id="titulo"></h1>
-  <p class="aviso" id="aviso"></p>
-  <div class="grade">
-    <aside class="card">
-      <input type="search" id="busca" aria-label="Buscar jogador">
-      <p class="nota" id="ajuda-selecao"></p>
-      <div class="lista" id="lista" role="group"></div>
-    </aside>
-    <main class="card">
-      <div class="filtros">
-        <label><span id="rot-mapa"></span><select id="mapa"></select></label>
-        <label><span id="rot-lado"></span><select id="lado"></select></label>
-        <label><span id="rot-media"></span><select id="media"></select></label>
-      </div>
-      <div class="legenda" id="legenda"></div>
-      <div id="graficos"></div>
-      <p class="nota" id="como-ler"></p>
-    </main>
-  </div>
+  <p class="aviso" role="note"><span class="i" aria-hidden="true">i</span><span id="aviso"></span></p>
+  <section class="controles" aria-label="Filtros e jogadores">
+    <div class="controle">
+      <p class="rot" id="rot-mapa"></p>
+      <div class="chips rola" id="chips-mapa" role="group"></div>
+      <p class="rot" id="rot-lado" style="margin-top:12px"></p>
+      <div class="chips" id="chips-lado" role="group"></div>
+      <p class="rot" style="margin-top:12px"><label for="media" id="rot-media"></label></p>
+      <select id="media"></select>
+    </div>
+    <div class="controle">
+      <p class="rot" id="rot-jogadores"></p>
+      <div class="pilulas" id="pilulas"></div>
+      <label class="rot" for="adiciona" id="rot-adiciona"></label>
+      <select id="adiciona"></select>
+    </div>
+  </section>
+  <p class="legenda-media"><i aria-hidden="true"></i><span id="legenda-media"></span></p>
+  <div class="cards" id="graficos" aria-live="polite"></div>
+  <p class="nota" id="como-ler"></p>
 </div>
 <script>
 /*__MAP_CORE__*/
@@ -77,52 +129,82 @@
   var T = /*__TEXTOS__*/null;
   var esc = MapCore.esc;
   if (!D || !T) return;
-  // as três cores da paleta validada (decisão 10); a média da função em cinza
-  var CORES = ["ct", "tr", "decisivo"].map(function (n) { return getComputedStyle(document.documentElement).getPropertyValue("--" + n).trim(); });
-  var MAX_SELECIONADOS = CORES.length;
+  // até três jogadores, com letra A, B, C em tons de cinza (a cor já tem dono)
+  var LETRAS = ["A", "B", "C"];
+  var MAX_SELECIONADOS = LETRAS.length;
+  // mínimos (entrega-sala-de-demo §7.3): taxa com menos de 10 tentativas não vira porcentagem nem barra;
+  // com menos de 3 partidas não há faixa (a reamostragem por partida não tem o que sortear)
+  var MIN_TENTATIVAS = 10, MIN_PARTIDAS = 3;
 
   function txt(id, s) { var e = document.getElementById(id); if (e) e.textContent = s; }
   document.title = T.titulo;
-  txt("titulo", T.titulo); txt("aviso", T.aviso); txt("volta-inicio", T.volta_inicio);
-  txt("volta-partidas", T.volta_partidas); txt("ajuda-selecao", T.ajuda_selecao);
+  txt("titulo", T.titulo); txt("aviso", T.aviso);
   txt("rot-mapa", T.rotulo_mapa); txt("rot-lado", T.rotulo_lado); txt("rot-media", T.rotulo_media);
-  txt("como-ler", T.como_ler);
-  document.getElementById("busca").placeholder = T.busca;
+  txt("rot-jogadores", T.rotulo_jogadores); txt("rot-adiciona", T.rotulo_adiciona);
+  txt("legenda-media", T.legenda_media); txt("como-ler", T.como_ler);
 
-  var selMapa = document.getElementById("mapa"), selLado = document.getElementById("lado"),
-      selMedia = document.getElementById("media");
-  selMapa.innerHTML = "<option value=''>" + esc(T.todos_os_mapas) + "</option>" +
-    D.mapas.map(function (m, i) { return "<option value='" + i + "'>" + esc(T.nomes_dos_mapas[m] || m) + "</option>"; }).join("");
-  selLado.innerHTML = T.lados.map(function (l) { return "<option value='" + esc(l[0]) + "'>" + esc(l[1]) + "</option>"; }).join("");
+  var estado = { mapa: "", lado: "" };
+  var selMedia = document.getElementById("media");
   selMedia.innerHTML = T.opcoes_media.map(function (l) { return "<option value='" + esc(l[0]) + "'>" + esc(l[1]) + "</option>"; }).join("");
 
-  // os dois (ou três) com mais partidas abrem selecionados
+  function chips(id, opcoes, chave) {
+    var host = document.getElementById(id);
+    host.setAttribute("aria-label", chave === "mapa" ? T.rotulo_mapa : T.rotulo_lado);
+    host.innerHTML = opcoes.map(function (o) {
+      return "<button type='button' class='chip' data-valor='" + esc(o[0]) + "' aria-pressed='" + (o[0] === estado[chave]) + "'>" +
+        esc(o[1]) + "</button>";
+    }).join("");
+    Array.prototype.forEach.call(host.querySelectorAll("button"), function (b) {
+      b.addEventListener("click", function () {
+        estado[chave] = b.dataset.valor;
+        Array.prototype.forEach.call(host.querySelectorAll("button"), function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+        desenha();
+      });
+    });
+  }
+  chips("chips-mapa", [["", T.todos_os_mapas]].concat(D.mapas.map(function (m, i) { return [String(i), T.nomes_dos_mapas[m] || m]; })), "mapa");
+  chips("chips-lado", T.lados, "lado");
+
+  // os dois com mais partidas abrem escolhidos
   var porPartidas = D.jogadores.map(function (j, i) { return i; })
     .sort(function (a, b) { return D.jogadores[b].partidas - D.jogadores[a].partidas || a - b; });
   var selecionados = porPartidas.slice(0, 2);
+  var ordemAlfabetica = D.jogadores.map(function (j, i) { return i; })
+    .sort(function (a, b) { return D.jogadores[a].nome.localeCompare(D.jogadores[b].nome) || a - b; });
 
-  function lista() {
-    var q = document.getElementById("busca").value.toLowerCase();
-    document.getElementById("lista").innerHTML = D.jogadores.map(function (j, i) {
-      if (q && j.nome.toLowerCase().indexOf(q) < 0) return "";
-      var marcado = selecionados.indexOf(i) >= 0;
-      return "<label><input type='checkbox' data-i='" + i + "'" + (marcado ? " checked" : "") + "><span>" +
-        esc(j.nome) + "<small>" + esc(j.funcao) + " · " + j.partidas + " " + esc(j.partidas === 1 ? T.partida : T.partidas) +
-        " · " + j.rounds + " rounds</small></span></label>";
-    }).join("");
+  function descricao(j) {
+    return j.funcao + " · " + j.partidas + " " + (j.partidas === 1 ? T.partida : T.partidas);
   }
-  document.getElementById("lista").addEventListener("change", function (e) {
-    var i = Number(e.target.dataset.i);
-    if (e.target.checked) {
-      if (selecionados.length >= MAX_SELECIONADOS) selecionados.shift();
-      selecionados.push(i);
-    } else {
-      selecionados = selecionados.filter(function (x) { return x !== i; });
-    }
-    lista(); desenha();
+  function jogadores() {
+    document.getElementById("pilulas").innerHTML = selecionados.map(function (i, c) {
+      var j = D.jogadores[i];
+      return "<span class='pilula tom-" + c + "' data-i='" + i + "'><b class='letra'>" + LETRAS[c] + "</b>" +
+        "<span class='nome'>" + esc(j.nome) + "<small>" + esc(descricao(j)) + "</small></span>" +
+        "<button type='button' data-tira='" + i + "' aria-label='" + esc(T.tirar.replace("{nome}", j.nome)) + "'>✕</button></span>";
+    }).join("");
+    var cheio = selecionados.length >= MAX_SELECIONADOS;
+    var sel = document.getElementById("adiciona");
+    sel.disabled = cheio;
+    sel.innerHTML = "<option value=''>" + esc(cheio ? T.maximo : T.escolher) + "</option>" +
+      (cheio ? "" : ordemAlfabetica.filter(function (i) { return selecionados.indexOf(i) < 0; }).map(function (i) {
+        var j = D.jogadores[i];
+        return "<option value='" + i + "'>" + esc(j.nome) + " (" + esc(descricao(j)) + ")</option>";
+      }).join(""));
+  }
+  document.getElementById("pilulas").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-tira]");
+    if (!b) return;
+    var i = Number(b.dataset.tira);
+    selecionados = selecionados.filter(function (x) { return x !== i; });
+    jogadores(); desenha();
+    document.getElementById("adiciona").focus();
   });
-  document.getElementById("busca").addEventListener("input", lista);
-  [selMapa, selLado, selMedia].forEach(function (s) { s.addEventListener("change", desenha); });
+  document.getElementById("adiciona").addEventListener("change", function (e) {
+    if (e.target.value === "" || selecionados.length >= MAX_SELECIONADOS) return;
+    selecionados.push(Number(e.target.value));
+    jogadores(); desenha();
+  });
+  selMedia.addEventListener("change", desenha);
 
   // gerador com semente (mulberry32): o mesmo recorte dá o mesmo intervalo
   function gerador(semente) {
@@ -134,18 +216,18 @@
     };
   }
   function chaveDoLado(m) {
-    var lado = selLado.value;
+    var lado = estado.lado;
     if (!lado) return m.chave;
     return m.lado ? m.chave + "_" + lado : null;
   }
   function linhasDe(i) {
-    var mapa = selMapa.value;
+    var mapa = estado.mapa;
     return D.linhas.filter(function (r) { return r[0] === i && (mapa === "" || r[1] === Number(mapa)); });
   }
   function soma(linhas, col) {
     var n = 0, d = 0, m = 0;
     linhas.forEach(function (r) { var nd = r[4 + col]; if (nd[1] > 0 && nd[0] != null) { n += nd[0]; d += nd[1]; m += 1; } });
-    return { v: d > 0 ? n / d : null, partidas: m };
+    return { v: d > 0 ? n / d : null, partidas: m, n: n, d: d };
   }
   function intervalo(linhas, col, semente) {
     var validas = linhas.filter(function (r) { return r[4 + col][1] > 0 && r[4 + col][0] != null; });
@@ -162,7 +244,7 @@
     return [vs[Math.floor(0.025 * vs.length)], vs[Math.ceil(0.975 * vs.length) - 1]];
   }
   function mediaDaFuncao(funcao, col) {
-    var mapa = selMapa.value, n = 0, d = 0;
+    var mapa = estado.mapa, n = 0, d = 0;
     D.linhas.forEach(function (r) {
       if (D.jogadores[r[0]].funcao !== funcao && funcao !== null) return;
       if (mapa !== "" && r[1] !== Number(mapa)) return;
@@ -175,17 +257,40 @@
     if (formato === "pct") return Math.round(v * 100) + "%";
     return v.toFixed(formato === "num2" ? 2 : 1).replace(".", ",");
   }
+  function inteiro(x) { return String(Math.round(x)); }
+  function bruto(x, formato) {
+    // taxa: "226/309" (sucessos sobre tentativas); número por round: "em 309 rounds"
+    return formato === "pct" ? "<span class='num'>" + inteiro(x.n) + "/" + inteiro(x.d) + "</span>"
+      : T.em_rounds.replace("{rounds}", "<span class='num'>" + inteiro(x.d) + "</span>");
+  }
 
-  function legenda() {
-    document.getElementById("legenda").innerHTML = selecionados.map(function (i, c) {
-      var j = D.jogadores[i];
-      return "<span><i style='background:" + CORES[c] + "'></i>" + esc(j.nome) + " <small>(" + esc(j.funcao) + ")</small></span>";
-    }).join("") + "<span><i style='background:var(--dim)'></i>" + esc(T.legenda_media) + "</span>";
+  function linhaDoJogador(x, m, teto) {
+    var pos = function (v) { return Math.max(0, Math.min(100, v / teto * 100)); };
+    var letra = "<b class='letra'>" + LETRAS[x.c] + "</b>";
+    var cab = "<div class='linha-jog tom-" + x.c + "' data-i='" + x.i + "'>" + letra;
+    if (x.bruto == null) return cab + "<span class='sem-barra'>—</span><span class='valor'>—</span></div>";
+    if (m.formato === "pct" && x.d < MIN_TENTATIVAS) {
+      // abaixo do mínimo de tentativas: só o bruto, sem porcentagem nem barra
+      return cab + "<span class='sem-barra' data-estado='amostra'>" +
+        T.de.replace("{n}", "<span class='num'>" + inteiro(x.n) + "</span>").replace("{d}", "<span class='num'>" + inteiro(x.d) + "</span>") +
+        "<span class='tag'>" + esc(T.amostra_pequena) + "</span></span><span class='valor'></span></div>";
+    }
+    var valor = "<span class='valor'><span class='num'>" + esc(fmt(x.enc, m.formato)) + "</span><small>" + bruto(x, m.formato) + "</small></span>";
+    if (x.partidas < MIN_PARTIDAS || !x.ic) {
+      // menos de 3 partidas: o número, sem faixa ("1 partida", "2 partidas")
+      return cab + "<span class='sem-barra' data-estado='poucas'>" + x.partidas + " " +
+        esc(x.partidas === 1 ? T.partida : T.partidas) + "</span>" + valor + "</div>";
+    }
+    // a faixa vai de `inferior` a `superior`, quaisquer que sejam (não supõe simetria em volta do ponto)
+    return cab + "<span class='trilho' title='" + esc(x.titulo) + "'><span class='eixo'></span>" +
+      "<span class='faixa' style='left:" + pos(x.ic[0]) + "%;width:" + Math.max(0.5, pos(x.ic[1]) - pos(x.ic[0])) + "%'></span>" +
+      (x.media != null ? "<span class='media' style='left:" + pos(x.media) + "%'></span>" : "") +
+      "<span class='ponto' style='left:" + pos(x.enc) + "%'></span></span>" + valor + "</div>";
   }
 
   function desenha() {
-    legenda();
-    var host = document.getElementById("graficos"), html = "", grupoAtual = null;
+    var host = document.getElementById("graficos"), html = "", grupoAtual = null, algumDado = false;
+    if (!selecionados.length) { host.innerHTML = "<p class='vazio'>" + esc(T.nada_selecionado) + "</p>"; return; }
     D.metricas.forEach(function (m, mi) {
       var chave = chaveDoLado(m);
       if (chave === null) return;                      // métrica sem recorte por lado
@@ -197,38 +302,31 @@
         var mediaF = mediaDaFuncao(selMedia.value === "funcao" ? D.jogadores[i].funcao : null, col);
         var enc = s.v == null || mediaF == null ? null
           : (k == null ? mediaF : (s.partidas / (s.partidas + k)) * s.v + (k / (s.partidas + k)) * mediaF);
-        return { c: c, bruto: s.v, enc: enc, ic: intervalo(ls, col, D.semente + 7919 * i + mi), media: mediaF,
-                 peso: k == null ? 0 : s.partidas / (s.partidas + k), partidas: s.partidas };
+        var peso = k == null ? 0 : s.partidas / (s.partidas + k);
+        var x = { c: c, i: i, bruto: s.v, enc: enc, n: s.n, d: s.d, ic: intervalo(ls, col, D.semente + 7919 * i + mi),
+                  media: mediaF, partidas: s.partidas };
+        x.titulo = T.titulo_barra.replace("{bruto}", fmt(s.v, m.formato)).replace("{encolhido}", fmt(enc, m.formato))
+          .replace("{partidas}", s.partidas).replace("{peso}", Math.round(peso * 100) + "%")
+          .replace("{media}", fmt(mediaF, m.formato))
+          .replace("{inferior}", x.ic ? fmt(x.ic[0], m.formato) : "—").replace("{superior}", x.ic ? fmt(x.ic[1], m.formato) : "—");
+        if (s.v != null) algumDado = true;
+        return x;
       });
       var teto = 0;
       dados.forEach(function (x) { [x.bruto, x.enc, x.media, x.ic ? x.ic[1] : null].forEach(function (v) { if (v != null && v > teto) teto = v; }); });
       teto = teto > 0 ? teto * 1.15 : 1;
-      if (m.grupo !== grupoAtual) { if (grupoAtual !== null) html += "</div>"; html += "<div class='grupo'><h3>" + esc(m.grupo) + "</h3>"; grupoAtual = m.grupo; }
+      if (m.grupo !== grupoAtual) { html += "<h2 class='grupo-titulo'>" + esc(m.grupo) + "</h2>"; grupoAtual = m.grupo; }
       var nota = k == null ? T.sem_separacao : T.peso_do_jogador;
-      html += "<div class='metrica' data-chave='" + esc(chave) + "'><div class='nome'>" + esc(m.rotulo) +
-        "<small>" + esc(nota) + "</small></div><div class='barras'>" +
-        dados.map(function (x) {
-          var pos = function (v) { return Math.max(0, Math.min(100, v / teto * 100)); };
-          if (x.enc == null) return "<div class='barra'><span class='val'>—</span></div>";
-          var titulo = T.titulo_barra.replace("{bruto}", fmt(x.bruto, m.formato)).replace("{encolhido}", fmt(x.enc, m.formato))
-            .replace("{partidas}", x.partidas).replace("{peso}", Math.round(x.peso * 100) + "%")
-            .replace("{media}", fmt(x.media, m.formato));
-          return "<div class='barra' title='" + esc(titulo) + "'>" +
-            "<span class='faixa' style='left:0;width:" + pos(x.enc) + "%;background:" + CORES[x.c] + "'></span>" +
-            (x.ic ? "<span class='ic' style='left:" + pos(x.ic[0]) + "%;width:" + Math.max(0.5, pos(x.ic[1]) - pos(x.ic[0])) + "%'></span>" : "") +
-            "<span class='bruto' style='left:" + pos(x.bruto) + "%'></span>" +
-            (x.media != null ? "<span class='media' style='left:" + pos(x.media) + "%'></span>" : "") +
-            "<span class='val'>" + esc(fmt(x.enc, m.formato)) + "</span>" +
-            "</div>";
-        }).join("") + "</div></div>";
+      html += "<section class='metrica' data-chave='" + esc(chave) + "'><h3>" + esc(m.rotulo) + "<small>" + esc(nota) + "</small></h3>" +
+        dados.map(function (x) { return x.enc == null && x.bruto != null ? "" : linhaDoJogador(x, m, teto); }).join("") + "</section>";
     });
-    if (grupoAtual !== null) html += "</div>";
-    host.innerHTML = selecionados.length ? html : "<p class='nota'>" + esc(T.nada_selecionado) + "</p>";
+    host.innerHTML = algumDado ? html : "<p class='vazio'>" + esc(T.vazio) + "</p>";
   }
 
-  window.Jogadores = { _interno: { D: D, soma: soma, intervalo: intervalo, mediaDaFuncao: mediaDaFuncao,
+  window.Jogadores = { _interno: { D: D, soma: soma, intervalo: intervalo, mediaDaFuncao: mediaDaFuncao, estado: estado,
+                                   MIN_TENTATIVAS: MIN_TENTATIVAS, MIN_PARTIDAS: MIN_PARTIDAS,
                                    selecionados: function () { return selecionados.slice(); } } };
-  lista(); desenha();
+  jogadores(); desenha();
 })();
 </script>
 </body>
