@@ -101,6 +101,41 @@ def _cabecalho_para_a_pagina(c: dict | None) -> dict | None:
             "venceu": c["venceu"], "decisor": c["decisor"]}
 
 
+def cabecalho_html(match_id: str, base: Path, site: dict | None) -> dict[str, str]:
+    """Migalhas, placar (h1) e linha do decisor em HTML pronto, para a página não mudar de altura depois
+    de carregar (CLS, A12). A mesma estrutura que o JS montava; nome de time e de jogador é escapado.
+    Os rótulos "venceu" e "começou CT/TR" são os mesmos do JS (COMECOU no template)."""
+    import html as _h
+    c = cabecalho_da_partida(match_id, base)
+    payload = _le_json(base / "web_payload.json")
+    m = payload.get("match") or {}
+    mapa = _nome_do_mapa(base, match_id)
+    origem = origem_da_partida(match_id)
+    partes = []
+    if site:                      # "Partidas" só no site; o arquivo solto não tem para onde voltar
+        partes.append('<a id="c-partidas" href="index.html">Partidas</a><em>/</em>')
+    partes.append(f'<span id="c-map">{_h.escape(mapa)}</span><em>/</em>')
+    if origem:
+        partes.append(f'<span id="c-origem">{_h.escape(origem)}</span><em>/</em>')
+    partes.append(f'<span id="c-rounds">{m.get("rounds", "")} rounds</span>')
+    migalhas = "".join(partes)
+    if not c:
+        return {"migalhas": migalhas, "placar": _h.escape(mapa), "decisor": ""}
+    comecou = {"ct": "começou CT", "tr": "começou TR"}
+
+    def lado(k: str, cls: str) -> str:
+        info, venceu = c["lados"][k], c["venceu"] == k
+        nome = f'<span class="nome" title="{_h.escape(info["nome"])}">{_h.escape(info["nome"])}</span>'
+        pts = f'<span class="pts">{info["pontos"]}</span>'
+        miolo = nome + pts if cls == "a" else pts + nome
+        tag_venceu = '<span class="tag-venceu">venceu</span>' if venceu else ""
+        tag = f'<span class="tag comecou {info["comecou"]}">{comecou[info["comecou"]]}</span>'
+        return f'<span class="lado {cls} {"venceu" if venceu else "perdeu"}">{miolo}{tag_venceu}{tag}</span>'
+
+    placar = lado("A", "a") + '<span class="x" aria-hidden="true">×</span>' + lado("B", "b")
+    return {"migalhas": migalhas, "placar": placar, "decisor": _h.escape(c["decisor"])}
+
+
 def titulo_da_pagina(match_id: str, base: Path | None = None) -> str:
     """O <title> por partida: "A 17 × 19 B · Dust II · Parser de Replay CS2"; sem placar, só o mapa."""
     base = base or PROJECT_ROOT / "data" / "processed" / match_id
@@ -287,6 +322,18 @@ def build_html(match_id: str, site: dict | None = None, base: Path | None = None
     html = html.replace("/*__PAGINA__*/null", js(dados_da_pagina(match_id, base, (site or {}).get("repo"))))
     titulo = titulo_da_pagina(match_id, base)
     html = html.replace("<!--__TITULO__-->", _html.escape(titulo))
+    cab = cabecalho_html(match_id, base, site)
+    html = (html.replace("<!--__MIGALHAS__-->", cab["migalhas"]).replace("<!--__PLACAR__-->", cab["placar"])
+            .replace("<!--__DECISOR__-->", cab["decisor"]))
+    if site:
+        # a barra de troca de partida já sai visível no site (o JS só enche o seletor): aparecer depois da
+        # carga empurrava o placar e as abas para baixo
+        html = html.replace('<div class="demobar" id="demobar" hidden>', '<div class="demobar" id="demobar">')
+        if site.get("jogadores"):
+            j = site["jogadores"]
+            html = html.replace('<a href="jogadores.html" id="link-jogadores" hidden></a>',
+                                f'<a href="jogadores.html" id="link-jogadores" title="{_html.escape(j["aviso"])}">'
+                                f'{_html.escape(j["texto"])}</a>')
     from scripts.meta_da_pagina import meta_tags, url_do_site
     html = html.replace("<!--__META__-->", meta_tags(
         titulo, descricao_da_pagina(match_id, base), url_do_site((site or {}).get("repo")), f"{match_id}.html"))

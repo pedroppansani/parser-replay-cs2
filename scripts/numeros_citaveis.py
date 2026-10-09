@@ -271,17 +271,17 @@ def tres_numeros(d: dict) -> list[dict]:
     e, r, a = d["escada"], d["rating"], d["arremessos"]
     return [
         {"valor": f"{_mil(e['kills_exatos'])} de {_mil(e['jogador_partidas'])}",
-         "rotulo": "placares idênticos aos da HLTV",
+         "rotulo": "placares iguais aos oficiais",
          "contexto": (f"Kills e mortes de {_mil(e['jogador_partidas'])} jogadores em {e['partidas']} mapas "
                       "profissionais batem com o placar oficial, um a um.")},
         {"valor": _br(r["fora_da_amostra"]["erro_medio"], 3),
-         "rotulo": "erro médio do rating contra o oficial",
+         "rotulo": "de erro médio no rating",
          "contexto": (f"Em {_mil(r['jogador_partidas'])} jogador-partidas (correlação "
                       f"{_br(r['fora_da_amostra']['correlacao'], 3)}), deixando uma partida fora a cada vez e "
                       "refazendo sem ela tudo o que o rating ajusta. "
                       "É uma implementação própria da metodologia publicada, não o número da HLTV.")},
         {"valor": _pct(a["fora_da_amostra"]["botao"]["pior_partida"]),
-         "rotulo": "botão do arremesso certo, fora da amostra",
+         "rotulo": "de acerto no botão do arremesso",
          "contexto": (f"A força de {_mil(a['arremessos'])} granadas inferida só da posição, conferida contra o "
                       f"que a demo grava em {a['partidas_do_gabarito']} partidas.")},
     ]

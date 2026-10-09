@@ -13,9 +13,9 @@ no código e conferida contra dado oficial.
 ## Três números
 
 <!-- numeros:inicio resumo -->
-- **410 de 410** placares idênticos aos da HLTV. Kills e mortes de 410 jogadores em 41 mapas profissionais batem com o placar oficial, um a um.
-- **0,079** erro médio do rating contra o oficial. Em 430 jogador-partidas (correlação 0,966), deixando uma partida fora a cada vez e refazendo sem ela tudo o que o rating ajusta. É uma implementação própria da metodologia publicada, não o número da HLTV.
-- **100%** botão do arremesso certo, fora da amostra. A força de 6.846 granadas inferida só da posição, conferida contra o que a demo grava em 13 partidas.
+- **410 de 410** placares iguais aos oficiais. Kills e mortes de 410 jogadores em 41 mapas profissionais batem com o placar oficial, um a um.
+- **0,079** de erro médio no rating. Em 430 jogador-partidas (correlação 0,966), deixando uma partida fora a cada vez e refazendo sem ela tudo o que o rating ajusta. É uma implementação própria da metodologia publicada, não o número da HLTV.
+- **100%** de acerto no botão do arremesso. A força de 6.846 granadas inferida só da posição, conferida contra o que a demo grava em 13 partidas.
 <!-- numeros:fim resumo -->
 
 ![Resumo da partida: round decisivo, MVP e o outro destaque](assets/readme/insights.png)

@@ -38,16 +38,17 @@ def test_os_tres_numeros_do_topo_vem_do_json(landing):
     _, numeros, html = landing
     bloco = html[html.index('id="tres-numeros"'):html.index('id="filtro"')]
     for n in tres_numeros(numeros):
-        assert f"<b>{n['valor']}</b>" in bloco, n["valor"]
+        # design-C: o valor ganhou a classe do número (mono só em número) e cada item é um par dt/dd
+        assert f'<b class="num">{n['valor']}</b>' in bloco, n["valor"]
         assert n["rotulo"] in bloco
-    assert bloco.count('class="num"') == 3
+    assert bloco.count('class="num-item"') == 3
     assert blocos_de_texto(numeros)["corpus"] in html
 
 
 def test_o_topo_nao_tem_numero_escrito_a_mao():
     """No código da landing, fora do que vem do JSON, não há número de corpus."""
     fonte = (RAIZ / "scripts" / "build_site.py").read_text(encoding="utf-8")
-    cabecalho = fonte[fonte.index('<header class="hero">'):fonte.index('<div class="grid" id="partidas">')]
+    cabecalho = fonte[fonte.index('<section class="heroi"'):fonte.index('<div class="grid" id="partidas">')]   # design-C: novo topo
     assert not re.search(r"\b\d+ (partidas|mapas|jogador|testes|times)\b", cabecalho)
     assert not re.search(r"\b\d+ de \d+\b|\b0,\d{2,3}\b", cabecalho)
 
@@ -60,7 +61,7 @@ def test_os_tres_botoes_existem_e_os_links_resolvem(landing):
     assert hrefs["btn-prancheta"] in {p["file"] for p in _pranchetas(partidas)}
     assert hrefs["btn-github"] == REPO
     # e todo card aponta para uma partida da lista
-    assert set(re.findall(r'class="mcard" data-mapa="[^"]*" href="([^"]*)"', html)) == {m["file"] for m in partidas}
+    assert set(re.findall(r'class="mcard cp" data-mapa="[^"]*" data-origem="[^"]*" href="([^"]*)"', html)) == {m["file"] for m in partidas}
 
 
 def test_a_partida_de_exemplo_segue_o_criterio_declarado():
@@ -89,11 +90,13 @@ def test_landing_no_celular_nao_rola_na_horizontal_e_o_filtro_funciona(navegador
     pg.on("pageerror", lambda e: erros.append(str(e)))
     pg.goto(arq.as_uri())
     assert pg.evaluate("() => document.documentElement.scrollWidth") <= 390
+    # design-C: a grade abre só com as profissionais; "Todas" mostra todas, e o filtro de mapa continua igual
+    pg.click('#filtro-origem button[data-valor=""]')
     mapa = partidas[0]["map"]
-    pg.click(f'#filtro button[data-filtro="{mapa}"]')
+    pg.click(f'#filtro button[data-valor="{mapa}"]')
     visiveis = pg.eval_on_selector_all("#partidas .mcard", "els => els.filter(e => !e.hidden).map(e => e.dataset.mapa)")
     assert visiveis and set(visiveis) == {mapa}
-    pg.click('#filtro button[data-filtro=""]')
+    pg.click('#filtro button[data-valor=""]')
     assert pg.locator("#partidas .mcard:not([hidden])").count() == len(partidas)
     assert erros == []
     ctx.close()

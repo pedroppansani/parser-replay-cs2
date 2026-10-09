@@ -58,9 +58,13 @@ def test_os_dois_builds_usam_a_mesma_injecao():
 
 def test_a_landing_escapa_os_nicks():
     from scripts.build_site import build_index
+    # design-C: o card mostra o nome de cada lado ("Time de <nick>" na FACEIT) e a linha do decisor com o
+    # MVP, no lugar da lista de nicks; o nome malicioso entra por esses campos
     m = {"file": "match_x.html", "map_label": "Mirage", "score_a": 13, "score_b": 9, "rounds": 22,
          "rosters": {"A": [MAU_SCRIPT, "ok"], "B": [MAU_NEGRITO]}, "mvp": MAU_NEGRITO, "extra": None,
-         "has_radar": True}
+         "has_radar": True, "origem": "faceit", "venceu": "A",
+         "lados": {"A": {"nome": "Time de " + MAU_SCRIPT, "comecou": "tr"}, "B": {"nome": "Time de " + MAU_NEGRITO, "comecou": "ct"}},
+         "decisor": "Decidida no round 7 · MVP " + MAU_NEGRITO}
     html = build_index([m], "https://example.invalid/repo")
     assert "<img src=x" not in html and MAU_NEGRITO not in html
     assert "&lt;b&gt;negrito&lt;/b&gt;" in html
