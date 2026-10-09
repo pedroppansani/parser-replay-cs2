@@ -53,6 +53,14 @@ def _js(valor) -> str:
     return js(valor)
 
 
+def _mapas_com_partidas() -> set[str]:
+    """Os mapas com partida no corpus (data/manifest.json): o resto vai para o grupo "Sem partidas no corpus"."""
+    manifesto = PROJECT_ROOT / "data" / "manifest.json"
+    if not manifesto.exists():
+        return set()
+    return {v.get("mapa") for v in json.loads(manifesto.read_text(encoding="utf-8")).get("partidas", {}).values()}
+
+
 def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | None = None) -> str:
     radar = json.loads((RADARS_DIR / f"{mapa}.json").read_text(encoding="utf-8"))
     from scripts.radar_ajuste import avisa
@@ -68,12 +76,17 @@ def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | Non
     if rotulos is None:
         from metrics.constantes import NOME_DO_MAPA
         rotulos = NOME_DO_MAPA
-    mapas = [{"mapa": m, "nome": rotulos.get(m, m), "arquivo": arquivo_da_pagina(m)} for m in mapas_disponiveis()]
+    corpus = _mapas_com_partidas()
+    mapas = [{"mapa": m, "nome": rotulos.get(m, m), "arquivo": arquivo_da_pagina(m), "corpus": m in corpus}
+             for m in mapas_disponiveis()]
+    from scripts.build_web_page import REPO
+    from scripts.design_head import topo_do_site
     from scripts.design_head import aplica  # tokens e fontes (decisão 44)
     return aplica(
         (WEB / "tactics.html").read_text(encoding="utf-8")
         .replace("/*__ANNOTATIONS_CSS__*/", (WEB / "annotations.css").read_text(encoding="utf-8"))
         .replace("/*__TACTICS_CSS__*/", (WEB / "tactics.css").read_text(encoding="utf-8"))
+        .replace("<!--__TOPO__-->", topo_do_site("prancheta", arquivo_da_pagina(mapa), REPO))
         .replace("/*__MAP_CORE__*/", (WEB / "map_core.js").read_text(encoding="utf-8"))
         .replace("/*__TACTICS_JS__*/", (WEB / "tactics.js").read_text(encoding="utf-8"))
         .replace("/*__MAPA__*/null", _js(mapa))

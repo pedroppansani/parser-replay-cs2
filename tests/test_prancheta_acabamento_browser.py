@@ -11,8 +11,9 @@ from tests.test_tactics_browser import abre, contexto, navegador, pagina  # noqa
 
 def test_cabecalho_volta_para_a_landing_e_para_as_partidas(contexto, pagina):
     pg = abre(contexto, pagina)
-    assert pg.get_attribute("#pr-volta-inicio", "href") == "index.html"
-    assert pg.get_attribute("#pr-volta-partidas", "href") == "index.html#partidas"
+    # design-E: a volta ao site é o topo do site (marca -> landing; "Partidas" -> a grade da landing)
+    assert pg.get_attribute(".site-topo .marca", "href") == "index.html"
+    assert pg.get_attribute('.site-nav a:has-text("Partidas")', "href") == "index.html#partidas"
 
 
 def test_o_contador_de_operacoes_sai_da_tela_e_fica_no_exportado(contexto, pagina):

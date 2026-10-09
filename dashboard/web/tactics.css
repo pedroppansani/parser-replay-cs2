@@ -7,15 +7,31 @@
 /* Os tokens (cores, fontes, espaços) vêm de dashboard/web/tokens.css, injetado antes deste CSS. */
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--fundo); color: var(--tinta); font-family: var(--f-texto); font-size: 14px; }
-header { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; padding: 12px 16px;
-         background: var(--superficie); border-bottom: 1px solid var(--linha); }
-header h1 { font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: 20px; margin: 0; }
-header nav { display: flex; flex-wrap: wrap; gap: 6px; }
-header nav a { color: var(--tinta-2); text-decoration: none; padding: 3px 8px; border-radius: var(--r-md); }
-header nav a[aria-current] { background: var(--tinta); color: var(--fundo); }
-header nav.pr-volta { padding-right: 10px; border-right: 1px solid var(--linha); }
-/* a seta vem de outra fonte e esticava a linha (o cabeçalho crescia 1 px e o mapa encolhia) */
-header nav.pr-volta a { height: 23px; box-sizing: border-box; line-height: 17px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+/* topo do site: marca e quatro links (entrega-sala-de-demo §7) */
+.site-topo { display: flex; align-items: center; justify-content: space-between; gap: 4px 16px; flex-wrap: nowrap;
+  border-bottom: 1px solid var(--linha); padding: 0 16px; }
+.marca { display: inline-flex; align-items: center; min-height: var(--toque); min-width: var(--toque); flex: none;
+  font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.04em; color: var(--tinta); text-decoration: none; }
+.marca b { color: var(--tr-texto); margin-left: 0.3em; }
+.site-nav { display: flex; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+.site-nav::-webkit-scrollbar { display: none; }
+.site-nav a { display: inline-flex; align-items: center; min-height: var(--toque); padding: 0 10px; flex: none;
+  color: var(--tinta-2); text-decoration: none; font-size: var(--t-sm); }
+.site-nav a[aria-current] { color: var(--tinta); box-shadow: inset 0 -2px 0 var(--tinta); }
+.site-nav a:hover { color: var(--tinta); }
+@media (max-width: 640px) { .marca .marca-longa { display: none; } .marca b { margin-left: 0; } .site-nav a { padding: 0 7px; } }
+/* "PRANCHETA ·" + o mapa num select com dois grupos (§14) */
+.pr-cab { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 10px 16px 0; }
+.pr-cab h1 { display: flex; align-items: center; gap: 8px; margin: 0; font-family: var(--f-cond); font-stretch: var(--larg-condensada);
+  font-size: 1.25rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.pr-cab select { min-height: var(--toque); font: inherit; font-size: 1rem; text-transform: none; letter-spacing: 0; padding: 0 10px;
+  border: 1px solid var(--borda); border-radius: var(--r-sm); background: var(--superficie); color: var(--tinta); }
+.pr-aviso-mapa { margin: 0; padding: 8px 12px; border: 1px solid var(--borda); border-radius: var(--r-md); background: var(--superficie);
+  color: var(--tinta-2); font-size: var(--t-sm); max-width: 72ch; }
+.pr-aviso-mapa::before { content: "i"; display: inline-grid; place-items: center; width: 1.3em; height: 1.3em; margin-right: 8px;
+  border-radius: 50%; border: 1.5px solid var(--tinta-2); color: var(--tinta); font-weight: 700; font-size: 0.85em; }
 /* Rótulo de lado no banco de peças (auditoria 5.3): a cor sozinha não diz qual é qual. */
 /* Texto na cor da tinta (o laranja do TR não passa 4,5:1 em letra pequena);
    a cor do lado vai na bolinha ao lado. */
@@ -173,3 +189,16 @@ h3 { margin: 0 0 4px; font-size: 15px; }
 .pr-real[hidden] { display: none; }
 .pr-real .pr-b { font-size: 12px; padding: 3px 8px; }
 .pr-real [aria-pressed="true"] { background: var(--tinta); color: var(--fundo); }
+
+/* ---------- Alvo de toque >= 44 px em todo controle (A5, design-E) ----------
+   Botões e campos crescem até 44 px. EXCEÇÃO registrada: as marcas de AÇÃO da linha do tempo (.pr-marca) ficam
+   pequenas -- com 44 px elas se sobrepõem quando duas ações estão a menos de ~2 s, e o clique cai na vizinha
+   (testes de comportamento da prancheta). Fica para a linha do tempo da §14 (faixas de 44 px por jogador). */
+.pr-barra button, .pr-barra .anot-b, aside button, aside select, aside input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.pr-b, .pr-passo, [data-andar], .pr-evento-hora, .pr-evento-nota { min-height: var(--toque); }
+.pr-barra .anot-b, .pr-passo, .pr-evento-hora { min-width: var(--toque); }
+#pr-cabecote, aside input[type="range"] { height: var(--toque); }
+.pr-barra .anot-b { font-size: var(--t-xs); }   /* texto mínimo de 12 px (§5) */
+/* o marcador de PASSO tem alvo de 44 px com o mesmo desenho pequeno (o fundo pinta só o conteúdo); passos ficam
+   a pelo menos 1 s um do outro e não se sobrepõem como as marcas de ação */
+.pr-marco { min-width: var(--toque); height: var(--toque); padding: 14px 13px; line-height: 16px; border: 0; background-clip: content-box; }

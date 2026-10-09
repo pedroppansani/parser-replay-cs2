@@ -17,15 +17,12 @@
 </style>
 </head>
 <body>
-<header>
-  <!-- volta para o site (auditoria 5.3): a landing e a lista de partidas dela -->
-  <nav class="pr-volta" aria-label="Voltar ao site">
-    <a href="index.html" id="pr-volta-inicio">← Início</a>
-    <a href="index.html#partidas" id="pr-volta-partidas">Partidas</a>
-  </nav>
-  <h1>Prancheta tática</h1>
-  <nav id="pr-mapas"></nav>
-</header>
+<!-- topo do site (marca e quatro links): volta para a landing e para a lista de partidas (auditoria 5.3) -->
+<!--__TOPO__-->
+<div class="pr-cab">
+  <h1><span class="pr-rot">Prancheta ·</span> <label class="sr" for="pr-mapa-sel">Mapa</label><select id="pr-mapa-sel"></select></h1>
+  <p class="pr-aviso-mapa" id="pr-aviso-mapa" role="note" hidden></p>
+</div>
 <div class="grade">
   <div class="palco" id="pr-palco">
     <div class="pr-barra" id="pr-barra"></div>
@@ -49,13 +46,23 @@
     modelo3: /*__MODELO3__*/null,
     lugares: /*__LUGARES__*/null
   };
-  var nav = document.getElementById("pr-mapas");
-  cfg.mapas.forEach(function (m) {
-    var a = document.createElement("a");
-    a.href = m.arquivo; a.textContent = m.nome;
-    if (m.mapa === cfg.mapa) a.setAttribute("aria-current", "page");
-    nav.appendChild(a);
+  // o mapa num select com dois grupos: com partidas no corpus e sem (§14); trocar abre a página do mapa
+  var sel = document.getElementById("pr-mapa-sel");
+  [[true, "Com partidas no corpus"], [false, "Sem partidas no corpus"]].forEach(function (g) {
+    var lista = cfg.mapas.filter(function (m) { return !!m.corpus === g[0]; });
+    if (!lista.length) return;
+    var og = document.createElement("optgroup");
+    og.label = g[1];
+    lista.forEach(function (m) {
+      var o = document.createElement("option");
+      o.value = m.arquivo;
+      o.textContent = m.nome + (m.corpus ? "" : " (sem partidas)");
+      if (m.mapa === cfg.mapa) o.selected = true;
+      og.appendChild(o);
+    });
+    sel.appendChild(og);
   });
+  sel.addEventListener("change", function () { window.location.href = sel.value; });
   Prancheta.init(cfg);
 })();
 </script>
