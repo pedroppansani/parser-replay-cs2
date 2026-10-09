@@ -104,8 +104,10 @@ def test_nome_com_codigo_entra_literal_na_pagina_do_corpus(navegador, tmp_path, 
     dados["jogadores"][0]["funcao"] = "<b>f</b>"
     pg, erros = _pagina_com(navegador, tmp_path, dados)
     assert erros == []
-    assert pg.evaluate("() => window.__x") is None and pg.locator("#lista img").count() == 0
-    assert mau in pg.inner_text("#lista")
+    # design-D: a lista de caixas virou o select "Adicionar jogador" e as pílulas dos escolhidos
+    assert pg.evaluate("() => window.__x") is None and pg.locator("img").count() == 0
+    opcoes = pg.eval_on_selector_all("#adiciona option", "os => os.map(o => o.textContent)")
+    assert any(mau in o for o in opcoes)                # o nome entra literal, como texto
     pg.close()
 
 
@@ -125,17 +127,21 @@ def test_a_soma_da_pagina_bate_com_a_do_python(navegador, tmp_path, pagina):
 def test_filtros_de_lado_e_mapa_e_ate_tres_jogadores(navegador, tmp_path, pagina):
     pg, erros = _pagina_com(navegador, tmp_path, pagina)
     todas = pg.locator(".metrica").count()
-    pg.select_option("#lado", "ct")
+    # design-D: lado e mapa viraram chips; até 3 jogadores pelo select "Adicionar jogador"
+    pg.click('#chips-lado button[data-valor="ct"]')
     so_ct = pg.locator(".metrica").count()
     com_lado = sum(1 for m in pagina["metricas"] if m["lado"])
     assert so_ct == com_lado < todas
     assert all(c.endswith("_ct") for c in pg.eval_on_selector_all(".metrica", "e => e.map(x => x.dataset.chave)"))
-    pg.select_option("#lado", "")
-    pg.select_option("#mapa", "0")
-    assert pg.locator(".metrica").count() == todas
-    for cb in pg.locator("#lista input[type=checkbox]").all()[:4]:
-        if not cb.is_checked():
-            cb.check()
+    pg.click('#chips-lado button[data-valor=""]')
+    pg.click('#chips-mapa button[data-valor="0"]')
+    assert pg.locator(".metrica").count() == todas or pg.locator(".vazio").count() == 1
+    pg.click('#chips-mapa button[data-valor=""]')
+    for _ in range(3):
+        valores = pg.eval_on_selector_all("#adiciona option", "os => os.map(o => o.value).filter(Boolean)")
+        if valores:
+            pg.select_option("#adiciona", valores[0])
     assert len(pg.evaluate("Jogadores._interno.selecionados()")) == 3
+    assert pg.is_disabled("#adiciona") and pg.inner_text("#adiciona option") == "Máximo de 3"
     assert erros == []
     pg.close()

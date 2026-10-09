@@ -239,9 +239,8 @@ def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | Non
       reproduz. {links}</p>
   </section>
 """ if links else "")
-    link_prancheta = (f'<a href="{e(prancheta_do_exemplo["file"])}">Prancheta</a>' if prancheta_do_exemplo else "")
 
-    from scripts.design_head import aplica  # tokens e fontes (decisão 44)
+    from scripts.design_head import aplica, topo_do_site  # tokens e fontes (decisão 44)
     return aplica(f"""<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -367,15 +366,7 @@ def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | Non
 </head>
 <body>
 <div class="shell">
-  <header class="site-topo">
-    <a class="marca" href="index.html" aria-label="Parser de Replay CS2, início"><span class="marca-longa">Parser de Replay</span><b>CS2</b></a>
-    <nav class="site-nav" aria-label="Principal">
-      <a href="index.html" aria-current="page">Partidas</a>
-      <a href="jogadores.html">Jogadores</a>
-      {link_prancheta}
-      <a href="{e(repo_url)}">GitHub</a>
-    </nav>
-  </header>
+  {topo_do_site("partidas", prancheta_do_exemplo["file"] if prancheta_do_exemplo else None, repo_url)}
 
   <main>
   <section class="heroi" aria-labelledby="h-heroi">
