@@ -50,6 +50,19 @@ def test_a_landing_so_conta_placar_e_rounds_do_card_e_ignora_a_frase():
     assert all("74" not in v for v in saida.values())
 
 
+def test_a_landing_da_design_c_da_os_mesmos_numeros_do_card():
+    html = ('<dl class="tres nums" id="tres-numeros"><div class="num-item"><dt><b class="num">0,079</b>de erro</dt></div></dl>'
+            '<a class="mcard cp" data-mapa="de_x" data-origem="faceit" href="match_01.html">'
+            '<span class="cp-topo"><span>Ancient</span><span><span class="num">22</span> rounds</span></span>'
+            '<span class="cp-linha"><span class="nome">Time de a <span class="tag-venceu">venceu</span></span><span class="num">13</span></span>'
+            '<span class="cp-linha perdeu"><span class="nome">Time de b9</span><span class="num">9</span></span>'
+            '<span class="cp-frase">Decidida no round 17 · MVP x</span></a>')
+    saida: dict[str, str] = {}
+    impressao_da_landing(html, saida)
+    assert saida["index.html::tres_numeros"] == "0,079"
+    assert saida["index.html::card[match_01.html]"] == "placar 13 9 | rounds 22"
+
+
 def test_o_arquivo_gravado_do_main_existe_e_nao_tem_linha_de_testes():
     from scripts.design.impressao_numeros import ANTES
     assert ANTES.exists()

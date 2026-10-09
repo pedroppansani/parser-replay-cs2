@@ -148,14 +148,21 @@ def impressao_da_landing(texto: str, saida: dict[str, str]) -> None:
     m = re.search(r'id="corpus"[^>]*>(.*?)</p>', texto, re.S)
     if m:
         saida["index.html::corpus"] = " ".join(_tokens(m.group(1)))
-    m = re.search(r'<section class="nums"[^>]*>(.*?)</section>', texto, re.S)
+    # os três números: <section class="nums"> (antes da design-C) ou <dl class="tres ..."> (design-C)
+    m = (re.search(r'<section class="nums"[^>]*>(.*?)</section>', texto, re.S)
+         or re.search(r'<dl class="tres[^"]*"[^>]*>(.*?)</dl>', texto, re.S))
     if m:
         saida["index.html::tres_numeros"] = " ".join(_tokens(m.group(1)))
     cards = []
-    for c in re.finditer(r'<a class="mcard"[^>]*href="([^"]+)"[^>]*>(.*?)</a>', texto, re.S):
+    for c in re.finditer(r'<a class="mcard[^"]*"[^>]*href="([^"]+)"[^>]*>(.*?)</a>', texto, re.S):
         href, corpo = c.group(1), c.group(2)
         placar = re.search(r'class="mscore">(.*?)</span>', corpo, re.S)
         rounds = re.search(r'class="mfoot"><span>(.*?)</span>', corpo, re.S)
+        if placar is None and "cp-linha" in corpo:
+            # card da design-C: os pontos de cada lado em .cp-linha .num, os rounds no topo do card
+            pontos = re.findall(r'class="cp-linha[^"]*">.*?<span class="num">([^<]*)</span>', corpo, re.S)
+            placar = re.match(r"(.*)", " ".join(pontos))
+            rounds = re.search(r'class="cp-topo">.*?<span class="num">([^<]*)</span> rounds', corpo, re.S)
         cards.append((href, " ".join(_tokens(placar.group(1))) if placar else "",
                       " ".join(_tokens(rounds.group(1))) if rounds else ""))
     for href, placar, rounds in sorted(cards):
