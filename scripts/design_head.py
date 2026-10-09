@@ -38,7 +38,9 @@ def topo_do_site(atual: str, prancheta: str | None, repo: str) -> str:
     """O topo do site (entrega-sala-de-demo §7): marca e quatro links -- Partidas, Jogadores, Prancheta, GitHub.
     `atual` é "partidas", "jogadores" ou "prancheta" (recebe aria-current). O CSS fica em cada página."""
     from html import escape as e
-    links = [("partidas", "index.html", "Partidas"), ("jogadores", "jogadores.html", "Jogadores")]
+    # fora da landing, "Partidas" desce direto para a grade (index.html#partidas)
+    links = [("partidas", "index.html" if atual == "partidas" else "index.html#partidas", "Partidas"),
+             ("jogadores", "jogadores.html", "Jogadores")]
     if prancheta:
         links.append(("prancheta", prancheta, "Prancheta"))
     nav = "".join(f'<a href="{e(h)}"{" aria-current=\"page\"" if k == atual else ""}>{t}</a>' for k, h, t in links)

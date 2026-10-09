@@ -70,6 +70,12 @@ def caixa(pg):
 
 def no_mapa(pg, fx, fy):
     c = caixa(pg)
+    alto = pg.viewport_size["height"]
+    if c["y"] < 0 or c["y"] + c["height"] * fy > alto:
+        # design-E: com os controles de 44 px o painel ficou mais alto, e clicar num botão dele (o Playwright rola até
+        # o botão) podia deixar o mapa fora da janela; o ponto pedido volta para a vista antes de ser calculado
+        pg.locator("#pr-mapa").evaluate("e => e.scrollIntoView({block: 'start'})")
+        c = caixa(pg)
     return c["x"] + c["width"] * fx, c["y"] + c["height"] * fy
 
 
@@ -337,8 +343,14 @@ def test_girar_pela_alca_ate_90_aponta_para_cima(contexto, pagina):
       const px = (yy) => Array.from(g.getImageData(Math.round(x), Math.round(yy), 1, 1).data.slice(0, 3));
       return [px(y - d), px(y + d)];
     }}""")
-    assert min(branco[0]) > 225, f"acima do centro devia ser a ponta branca: {branco[0]}"
-    assert min(branco[1]) < 225, f"abaixo do centro devia ser o mapa: {branco[1]}"
+    # design-E (§14 "cunha do olhar escura"): com o anel duplo a ponta é o contorno escuro (--contorno) com o
+    # halo claro (--tinta) por fora; o que se verifica continua sendo que a ponta está ACIMA e o mapa ABAIXO
+    from metrics.paleta import le_tokens
+    tk = le_tokens()
+    da_peca = [tuple(int(tk[n][i:i + 2], 16) for i in (1, 3, 5)) for n in ("contorno", "tinta")]
+    perto = lambda px: any(max(abs(px[i] - c[i]) for i in range(3)) <= 20 for c in da_peca)  # noqa: E731
+    assert perto(branco[0]), f"acima do centro devia ser a ponta da peça: {branco[0]}"
+    assert not perto(branco[1]), f"abaixo do centro devia ser o mapa: {branco[1]}"
 
 
 def test_traco_fica_no_passo_dele(contexto, pagina):
