@@ -78,6 +78,8 @@ var Prancheta = (function () {
   var RAIO_BORRACHA = 10;       // o mesmo da anotação
   var PASSO_MIN_CANETA = 1.5;   // o mesmo da anotação
   var ALFA_OUTRO_ANDAR = 0.35;  // elemento de outro andar: esmaecido, como no replay
+  // duração do efeito, para a faixa listrada da linha do tempo (§14: smoke 18 s, molotov 7 s; convenção do jogo)
+  var DURACAO_SMOKE_S = 18, DURACAO_MOLOTOV_S = 7;
   var ALFA_FANTASMA = 0.9;      // o fantasma do round real é só o anel tracejado: precisa ler (entrega-sala-de-demo §14)
   var ALFA_RASTRO = 0.3;        // posição e direção do passo anterior
 
@@ -3149,8 +3151,12 @@ var Prancheta = (function () {
       regua.appendChild(el("span", { class: "pr-regua-marca" + (plant !== null && s >= plant ? " bomba" : ""),
         style: "left:" + pctDe(s, limite), texto: s % 15 === 0 ? relogioEm(s) : "" }));
     }
-    if (plant !== null) regua.appendChild(el("span", { class: "pr-regua-plant", style: "left:" + pctDe(plant, limite),
-      title: "Bomba plantada · " + relogioEm(plant) }));
+    if (plant !== null) {
+      // a zona da bomba sombreada em --tr-area, do plant até o fim (§14)
+      regua.insertBefore(el("span", { class: "pr-regua-zona", style: "left:" + pctDe(plant, limite) }), regua.firstChild);
+      regua.appendChild(el("span", { class: "pr-regua-plant", style: "left:" + pctDe(plant, limite),
+        title: "Bomba plantada · " + relogioEm(plant) }));
+    }
     // marcos
     var marcos = el("div", { class: "pr-faixa pr-faixa-marcos" }, [el("span", { class: "pr-faixa-nome", texto: "Passos" })]);
     var trilho = el("div", { class: "pr-trilho" });
@@ -3159,6 +3165,9 @@ var Prancheta = (function () {
         "data-marco": m.passo, style: "left:" + pctDe(m.t, limite), title: relogioEm(m.t) + (m.titulo ? " · " + m.titulo : ""),
         texto: String(k + 1) }));
     });
+    // marco nomeado (rótulo, não botão: pular para ele é pelo roteiro): losango + nome + horário, em cima do trilho
+    if (plant !== null) trilho.appendChild(el("span", { class: "pr-marco-nomeado", style: "left:" + pctDe(plant, limite) }, [
+      el("i", { class: "pr-losango", "aria-hidden": "true" }), el("span", { texto: "plant " + relogioEm(plant) })]));
     marcos.appendChild(trilho);
     faixas.appendChild(marcos);
     // uma faixa por jogador, na ordem do banco (lado, rótulo)
@@ -3174,9 +3183,17 @@ var Prancheta = (function () {
     var linhas = ids.map(function (pid) { return [pid, rotuloDaPeca(e3.pecas[pid]), e3.pecas[pid].lado]; });
     if (porJogador[""]) linhas.push(["", "Sem jogador", ""]);
     linhas.forEach(function (l) {
-      var pid = l[0], faixa = el("div", { class: "pr-faixa", "data-faixa": pid },
-        [el("span", { class: "pr-faixa-nome " + l[2], texto: l[1] })]);
+      var pid = l[0], funcao = pid && e3.pecas[pid].funcao ? e3.pecas[pid].funcao : "";
+      var faixa = el("div", { class: "pr-faixa pr-faixa-jogador", "data-faixa": pid },
+        [el("span", { class: "pr-faixa-nome " + l[2], title: l[1] + (funcao ? " · " + funcao : "") }, [
+          el("b", { texto: l[1] }), funcao ? el("small", { texto: funcao }) : null].filter(Boolean))]);
       var tr = el("div", { class: "pr-trilho" });
+      if (pid) {
+        // vida na cor do lado até a morte (✕); sem morte, até o fim
+        var morreu = e3.pecas[pid].pontos.filter(function (pt) { return pt.morte; })[0];
+        tr.appendChild(el("span", { class: "pr-vida " + l[2], style: "width:" + (morreu ? pctDe(morreu.t, limite) : "100%") }));
+        if (morreu) tr.appendChild(el("span", { class: "pr-morte", style: "left:" + pctDe(morreu.t, limite), "aria-hidden": "true", texto: "✕" }));
+      }
       if (pid) e3.pecas[pid].pontos.forEach(function (pt) {
         if (pt.fora) return;
         tr.appendChild(el("button", { class: "pr-marca " + l[2], "data-peca": pid, "data-ponto": pt.id,
@@ -3184,9 +3201,18 @@ var Prancheta = (function () {
       });
       (porJogador[pid] || []).forEach(function (gid) {
         var g = e3.granadas[gid];
-        tr.appendChild(el("button", { class: "pr-marca granada", "data-granada": gid, "data-arma": g.arma,
+        // duração listrada na cor da granada (smoke e molotov): do horário da soltura até o fim do efeito
+        var dur = g.arma === "smoke" ? DURACAO_SMOKE_S : g.arma === "molotov" ? DURACAO_MOLOTOV_S : 0;
+        if (dur) tr.appendChild(el("span", { class: "pr-duracao", style: "left:" + pctDe(g.t, limite) + ";width:" +
+          (Math.min(dur, Math.max(0, limite - g.t)) / limite * 100) + "%;--cor:" + MapCore.NADE_COLOR[g.arma] }));
+        var bg = el("button", { class: "pr-marca granada", "data-granada": gid, "data-arma": g.arma,
           style: "left:" + pctDe(g.t, limite) + ";--cor:" + MapCore.NADE_COLOR[g.arma],
-          title: NOME_ARMA[g.arma] + " · " + relogioEm(g.t), "aria-label": NOME_ARMA[g.arma] + " " + relogioEm(g.t) }));
+          title: NOME_ARMA[g.arma] + " · " + relogioEm(g.t), "aria-label": NOME_ARMA[g.arma] + " " + relogioEm(g.t) });
+        var cg = el("canvas", { width: "52", height: "52", class: "pr-marca-glifo", "aria-hidden": "true" });
+        var gx = cg.getContext && cg.getContext("2d");
+        if (gx) MapCore.nadeGlyph(gx, g.arma, 26, 26, 11, MapCore.NADE_COLOR[g.arma], 0);
+        bg.appendChild(cg);
+        tr.appendChild(bg);
       });
       faixa.appendChild(tr);
       faixas.appendChild(faixa);
@@ -3195,6 +3221,10 @@ var Prancheta = (function () {
     var cab = $("pr-linha-cabecote");
     cab.style.left = pctDe(t, limite);
     cab.setAttribute("data-relogio", relogioEm(t));
+    // slider (§14): valor em segundos desde o começo do round e o relógio como texto
+    cab.setAttribute("aria-valuemax", String(Math.round(limite * 100) / 100));
+    cab.setAttribute("aria-valuenow", String(Math.round(t * 100) / 100));
+    cab.setAttribute("aria-valuetext", relogioEm(t));
     atualizaRoteiro();
     // mudou a altura (apareceu, ganhou ou perdeu faixa): o mapa se ajusta
     if (caixa.offsetHeight !== antes) reprojeta();
@@ -3331,9 +3361,23 @@ var Prancheta = (function () {
         el("div", { class: "pr-faixa pr-faixa-regua" }, [el("span", { class: "pr-faixa-nome", texto: "Relógio" }),
           el("div", { class: "pr-trilho pr-regua", id: "pr-regua" })]),
         el("div", { id: "pr-faixas" }),
-        el("div", { class: "pr-linha-cabecote-trilho" }, [el("div", { id: "pr-linha-cabecote", class: "pr-linha-cabecote" })])]),
+        el("div", { class: "pr-linha-cabecote-trilho" }, [el("div", { id: "pr-linha-cabecote", class: "pr-linha-cabecote",
+          role: "slider", tabindex: "0", "aria-label": "Horário do round", "aria-valuemin": "0" }, [
+          el("span", { class: "pr-cabecote-alca", "aria-hidden": "true" })])])]),
       el("ol", { id: "pr-roteiro", class: "pr-roteiro", "aria-label": "Roteiro da tática" })]);
     linha.hidden = true;
+    // teclado no cabeçote: setas (1 s; com Shift, 5 s), Home e End
+    linha.querySelector("#pr-linha-cabecote").addEventListener("keydown", function (e) {
+      var t = tempoMostrado(), passo = e.shiftKey ? 5 : 1, novo = null;
+      if (t === null) return;
+      if (e.key === "ArrowRight" || e.key === "ArrowUp") novo = t + passo;
+      else if (e.key === "ArrowLeft" || e.key === "ArrowDown") novo = t - passo;
+      else if (e.key === "Home") novo = 0;
+      else if (e.key === "End") novo = limiteDoTempo();
+      if (novo === null) return;
+      e.preventDefault(); e.stopPropagation();
+      irPara(Math.max(0, Math.min(limiteDoTempo(), novo)));
+    });
     linha.addEventListener("pointerdown", function (e) {
       if (e.target.closest && e.target.closest(".pr-roteiro")) return;
       linhaPointerDown(e);

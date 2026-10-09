@@ -122,3 +122,38 @@ def test_o_fantasma_do_round_real_e_so_o_anel_tracejado_com_nome_em_itálico(con
         assert r["tracos"] > 10, r                                      # e há traço em volta do raio
     finally:
         pg.close()
+
+
+def _com_tatica_no_tempo(pg):
+    from tests.test_prancheta_tempo_browser import _tatica_no_tempo
+    _tatica_no_tempo(pg)
+    pg.wait_for_timeout(200)
+
+
+def test_linha_do_tempo_faixa_de_44_zona_da_bomba_marco_nomeado_e_cabecote_slider(contexto, pagina):
+    pg = abre(contexto, pagina)
+    try:
+        _com_tatica_no_tempo(pg)
+        faixa = pg.locator(".pr-faixa-jogador").first
+        assert faixa.bounding_box()["height"] >= 44
+        assert pg.eval_on_selector(".pr-faixa-jogador .pr-faixa-nome", "e => getComputedStyle(e).borderLeftWidth") == "3px"
+        assert pg.locator(".pr-regua-zona").count() == 1                       # zona da bomba sombreada
+        assert "plant" in pg.inner_text(".pr-marco-nomeado")
+        assert pg.locator(".pr-vida").count() >= 1                              # barra de vida na cor do lado
+        g = pg.locator(".pr-marca.granada").first
+        assert g.bounding_box()["width"] >= 26 and g.locator("canvas").count() == 1
+        # o cabeçote é um slider com o relógio como texto e anda pelo teclado
+        cab = pg.locator("#pr-linha-cabecote")
+        assert cab.get_attribute("role") == "slider" and cab.get_attribute("aria-valuetext") == "1:55"
+        assert cab.bounding_box()["width"] >= 44
+        cab.focus()
+        pg.keyboard.press("ArrowRight")
+        assert cab.get_attribute("aria-valuetext") == "1:54"
+        pg.keyboard.press("Shift+ArrowRight")
+        assert cab.get_attribute("aria-valuetext") == "1:49"
+        pg.keyboard.press("Home")
+        assert cab.get_attribute("aria-valuetext") == "1:55"
+        pg.keyboard.press("End")
+        assert cab.get_attribute("aria-valuenow") == cab.get_attribute("aria-valuemax")
+    finally:
+        pg.close()
