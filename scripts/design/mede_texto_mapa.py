@@ -20,8 +20,8 @@ até 2 px do glifo, fora dele, lidos em B; mede-se o MAIS CLARO deles contra a c
 texto. Critério: 4,5:1 (3:1 se a letra tem >= 18,66 px de altura ou é negrito >= 14 px).
 Também imprime o pior caso sem contorno (informativo) e a altura mínima do rótulo.
 
-Hoje roda no replay de todos os mapas com partida no corpus; o trecho da prancheta (os 10
-mapas) entra na design-B2, junto com o gancho. Sem o gancho na página, avisa e devolve 2.
+Roda no replay de todos os mapas com partida no corpus e na prancheta da Mirage com a tática da
+fixture (a tática exportada é presa à calibração de um mapa; a fixture do projeto é da Mirage). Sem o gancho na página, avisa e devolve 2.
 """
 from __future__ import annotations
 
@@ -128,6 +128,21 @@ def main() -> int:
                 linhas.append((w, h, f"replay {mapa}", len(res), pior, sum(1 for r in res if r[0] < r[4]), min(r[2] for r in res)))
                 piores.append((pior[0], f"replay {mapa} {w}", pior[3]))
             pg.close()
+        # prancheta (design-E): a tática da fixture (tests/fixtures/tatica_v1.json, Mirage), no passo 2, como o
+        # compara_capturas -- com peças, nomes, funções e horários de caminho desenhados no mapa
+        pg = b.new_page(viewport={"width": w, "height": h}, device_scale_factor=1)
+        pg.goto(url_de("prancheta_de_mirage.html"))
+        pg.wait_for_function("() => Prancheta._interno.S.estado !== null")
+        fixture = (RAIZ / "tests" / "fixtures" / "tatica_v1.json").read_text(encoding="utf-8")
+        if pg.evaluate("(t) => Prancheta._interno.importaTexto(t)", fixture):
+            pg.locator('[data-passo="2"]').first.click(); pg.mouse.move(2, 2); pg.wait_for_timeout(400)
+            pg.locator("#pr-mapa").evaluate("e => e.scrollIntoView({block: 'start'})"); pg.wait_for_timeout(200)
+            res = mede(pg, "#pr-mapa")
+            if res:
+                pior = min(res)
+                linhas.append((w, h, "prancheta de_mirage", len(res), pior, sum(1 for r in res if r[0] < r[4]), min(r[2] for r in res)))
+                piores.append((pior[0], f"prancheta de_mirage {w}", pior[3]))
+        pg.close()
     b.close(); p.stop()
     for w, h, onde, n, pior, falhas, alt_min in linhas:
         print(f"{rodada:<7} {w}x{h} {onde:<22} rótulos {n:>3}  altura mín {alt_min:4.1f} px  "
