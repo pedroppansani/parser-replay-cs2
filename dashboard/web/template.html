@@ -969,10 +969,7 @@
 
   <header class="top">
     <div class="crumbs">
-      <a id="c-partidas" href="index.html" hidden></a><em id="c-partidas-sep" hidden>/</em>
-      <span id="c-map"></span><em>/</em>
-      <span id="c-origem"></span><em id="c-origem-sep">/</em>
-      <span id="c-rounds"></span>
+      <!--__MIGALHAS__-->
     </div>
 
     <div class="demobar" id="demobar" hidden>
@@ -986,8 +983,10 @@
     </div>
     <div class="howto" id="howto" hidden></div>
 
-    <h1 class="placar" id="titulo-partida"></h1>
-    <p class="decisor" id="decisor"></p>
+    <!-- placar, decisor e migalhas vêm prontos do build (scripts/build_web_page.cabecalho_html): montados pelo
+         JS depois da carga, empurravam a página inteira para baixo (CLS 0,75 na medição do A12) -->
+    <h1 class="placar" id="titulo-partida"><!--__PLACAR__--></h1>
+    <p class="decisor" id="decisor"><!--__DECISOR__--></p>
   </header>
 
   <div class="abas-moldura" id="abas-moldura">
@@ -1229,16 +1228,7 @@
     e.textContent = LADO[e.dataset.lado];
   });
   (function () {
-    var ROTULO = { partidas: "Partidas", rounds: " rounds", venceu: "venceu", comecou: COMECOU };
-    document.getElementById("c-map").textContent = PAGINA.mapa || M.map;
-    document.getElementById("c-rounds").textContent = M.rounds + ROTULO.rounds;
-    var o = document.getElementById("c-origem"), sep = document.getElementById("c-origem-sep");
-    if (PAGINA.origem) o.textContent = PAGINA.origem; else { o.hidden = true; sep.hidden = true; }
-    if (window.__SITE__) {            // "Partidas" só existe no site; o arquivo solto não tem para onde voltar
-      var a = document.getElementById("c-partidas");
-      a.textContent = ROTULO.partidas; a.hidden = false;
-      document.getElementById("c-partidas-sep").hidden = false;
-    }
+    var ROTULO = { venceu: "venceu", comecou: COMECOU };
     // h1: o placar no formato do HUD, montado com textContent (nome de time/jogador é dado, nunca HTML)
     var h1 = document.getElementById("titulo-partida");
     function el(tag, cls, txt) {
@@ -1260,7 +1250,9 @@
       s.appendChild(tag);
       return s;
     }
-    if (CAB) {
+    if (h1.children.length) {
+      // já veio pronto do build (o caso normal): nada a montar
+    } else if (CAB) {
       h1.appendChild(ladoDoPlacar("A", "a"));
       var x = el("span", "x", "×");
       x.setAttribute("aria-hidden", "true");
