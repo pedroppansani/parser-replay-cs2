@@ -78,6 +78,27 @@
     cursor: pointer; text-decoration: underline; text-underline-offset: 3px;
   }
   .demobar a:hover, .demobar button:hover { background: var(--superficie-2); }
+  /* alvo de toque >= 44 px em todo controle da página da partida (A5, design-B3) */
+  .demobar select, .demobar a, .demobar button { min-height: var(--toque); box-sizing: border-box; }
+  .demobar a, .demobar button { display: inline-flex; align-items: center; }
+  .crumbs a { display: inline-flex; align-items: center; min-height: var(--toque); min-width: var(--toque); color: var(--tinta-2); }
+  #scrub { height: var(--toque); margin: 0; }
+  .rt-erro a { display: inline-flex; align-items: center; justify-content: center; min-height: var(--toque); min-width: var(--toque); }
+  .pfbotoes button { min-height: var(--toque); }
+  .cmp-escolha select { min-height: var(--toque); }
+  .ev, .moment { min-height: var(--toque); align-items: center; }   /* eventos (linha do tempo e autópsia) são botões de 44 px (§7.2) */
+  [data-panel="perfil"] select { min-height: var(--toque); }
+  /* Celular: o cabeçalho não pode empurrar o mapa e o tocar para fora da tela (A1). A troca de partida fica
+     numa linha (seletor + jogadores do corpus); "adicionar demo" e "ver todas" saem -- "Partidas" está nas
+     migalhas, e adicionar demo é coisa de quem roda o projeto no computador. */
+  @media (max-width: 640px) {
+    .top { padding-block: 20px 4px; }
+    .demobar { padding: 4px 8px; gap: 4px 8px; flex-wrap: nowrap; }
+    .demobar label, .demobar .sep, .demobar #addbtn, .demobar a[href="index.html"] { display: none; }
+    .demobar select { flex: 1 1 auto; min-width: 0; }
+    .demobar #link-jogadores { flex: none; }
+    .roundstrip { margin-top: 10px; }
+  }
 
   .howto {
     margin-top: 10px; padding: 14px 16px; border-radius: var(--r-md);
@@ -363,21 +384,6 @@
   .maplegend span { display: inline-flex; align-items: center; gap: 6px; }
   .maplegend canvas { width: 18px; height: 18px; flex: none; margin: 0; background: none; border-radius: 0; }
 
-  /* ferramentas embaixo da legenda; "?" abre os atalhos num popover */
-  .atalhos-caixa { position: relative; }
-  #b-atalhos { position: absolute; right: 10px; bottom: 6px; min-width: var(--toque); min-height: var(--toque); }
-  .popover {
-    position: absolute; right: 10px; bottom: 56px; z-index: 8; width: min(360px, calc(100vw - 48px));
-    background: var(--superficie-2); border: 1px solid var(--borda); border-radius: var(--r-md);
-    padding: 10px 12px; box-shadow: var(--sombra-pop);
-    font-family: var(--f-texto); font-size: var(--t-sm); color: var(--tinta-2);
-  }
-  .popover p { margin: 0 0 6px; }
-  .popover p:last-child { margin-bottom: 0; }
-  .popover kbd {
-    font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: 12px; padding: 1px 5px; margin: 0 1px;
-    background: var(--superficie); border: 1px solid var(--borda); border-bottom-width: 2px;
-    border-radius: var(--r-sm); color: var(--tinta); font-weight: 600; }
   .sw { width: 9px; height: 9px; border-radius: 99px; display: inline-block; }
   .sw.ct { background: var(--ct); }
   .sw.t { background: var(--tr); }
@@ -708,13 +714,14 @@
   .tags { display: flex; gap: 6px; flex-wrap: wrap; }
   .tag {
     font-family: var(--f-cond); font-stretch: var(--larg-condensada);
-    font-size: 11px;
-    padding: 4px 9px;
+    font-size: var(--t-xs);
+    padding: 3px 8px;
     border-radius: var(--r-sm);
     border: 1px solid var(--linha);
     background: var(--superficie);
     color: var(--tinta-2); font-weight: 600; }
   .tag.decisivo { color: var(--decisivo); border-color: var(--decisivo); background: var(--decisivo-area); }
+  .tag.aviso { color: var(--aviso); border-color: var(--aviso); }
 
   .pair { margin-top: 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 14px; }
   .fig { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
@@ -726,6 +733,15 @@
   .fig .sub { font-family: var(--f-texto); font-size: 11px; color: var(--apagado); margin-top: 3px; }
   .fig p { margin: 0; font-size: 13.5px; color: var(--tinta-2); }
   .fig p b { color: var(--tinta); font-weight: 600; }
+  /* rating do MVP: número grande e, ao lado, o erro típico em texto -- nunca faixa desenhada (um ± desenhado
+     seria lido como intervalo de confiança do jogador; entrega-sala-de-demo §7.2) */
+  .rating-mvp { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; max-width: 15em; }
+  .rating-mvp .rt-num { font-family: var(--f-num); font-weight: 600; font-size: 34px; line-height: 1; color: var(--tinta);
+    font-variant-numeric: tabular-nums; }
+  .rating-mvp .rt-erro { font-family: var(--f-texto); font-size: var(--t-xs); color: var(--tinta-2); }
+  .rating-mvp .rt-erro a { color: var(--tinta); }
+  .fig .vice { font-size: var(--t-sm); color: var(--tinta-2); }
+  .fig .degradado { display: flex; gap: 8px; align-items: baseline; color: var(--tinta-2); font-size: var(--t-sm); }
 
   .rows { display: flex; flex-direction: column; gap: 8px; }
   .row { display: grid; grid-template-columns: 88px 1fr 48px; gap: 10px; align-items: center; }
@@ -742,32 +758,48 @@
   .legend span { display: inline-flex; align-items: center; gap: 6px; }
   .legend i { width: 9px; height: 9px; border-radius: 2px; }
 
-  .plist { margin-top: 16px; overflow: hidden; }
-  .prow {
-    display: grid;
-    grid-template-columns: minmax(0,1.4fr) 34px 34px 34px 70px 58px 58px minmax(0,2.2fr) 54px;
-    gap: 14px;
-    align-items: center;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--linha);
-  }
-  .prow:last-child { border-bottom: 0; }
-  .prow.hd { background: var(--superficie-2); font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--apagado); font-weight: 600; }
-  .prow .nk { font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-weight: 600; font-size: 16px; letter-spacing: -0.01em; }
-  .prow .nk small { display: block; font-family: var(--f-texto); font-size: 10px; font-weight: 400; color: var(--apagado); }
-  .prow .n { font-family: var(--f-num); font-size: 13.5px; font-variant-numeric: tabular-nums; }
-  .prow .n.q { color: var(--tinta-2); font-size: 12.5px; }
-  .prow .sp svg { display: block; width: 100%; height: 28px; }
-  /* Cabeçalho ordenável: clicar na coluna ordena por ela, do maior para o menor. */
-  .prow.hd button { all: unset; cursor: pointer; font: inherit; letter-spacing: inherit; color: inherit; }
-  .prow.hd button:hover { color: var(--tinta); }
-  .prow.hd button.on { color: var(--tinta); }
-  .prow.hd button.on::after { content: " ↓"; }
+  /* Tabela principal da aba Jogadores (design-B3): 1ª coluna fixa (nome, time por extenso e "começou"),
+     Rating, ADR, KAST, K, A, M; cabeçalhos ordenáveis com alvo de 44 px. Rola na horizontal dentro da caixa. */
+  .tabela-jog { margin-top: 16px; padding: 0; overflow-x: auto; }
+  .tabela-jog table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: var(--t-sm); }
+  .tabela-jog th, .tabela-jog td { padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--linha); white-space: nowrap; }
+  .tabela-jog tbody tr:last-child td { border-bottom: 0; }
+  .tabela-jog th { background: var(--superficie-2); font-family: var(--f-cond); font-stretch: var(--larg-condensada);
+    font-size: var(--t-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--tinta-2); font-weight: 600; padding: 0 6px; }
+  .tabela-jog .fixa { position: sticky; left: 0; z-index: 1; text-align: left; background: var(--superficie);
+    box-shadow: 1px 0 0 var(--linha); }
+  .tabela-jog thead th.fixa { background: var(--superficie-2); padding-left: 12px; }
+  /* a 1ª coluna do corpo é <th scope=row> (o nome nomeia a linha), mas sem o estilo de cabeçalho */
+  .tabela-jog tbody th { background: var(--superficie); text-transform: none; letter-spacing: 0; font-size: var(--t-sm);
+    font-family: var(--f-texto); font-weight: 400; color: var(--tinta); padding: 8px 10px 8px 12px; }
+  .tabela-jog td.fixa { padding-left: 12px; }
+  .tabela-jog .nk { display: block; font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-weight: 600;
+    font-size: 16px; letter-spacing: -0.01em; color: var(--tinta); }
+  .tabela-jog .time-do-jog { display: flex; align-items: center; gap: 6px; font-family: var(--f-texto); font-size: var(--t-xs);
+    color: var(--apagado); margin-top: 2px; }
+  .tabela-jog td.n { font-family: var(--f-num); font-variant-numeric: tabular-nums; }
+  .tabela-jog td.n.q { color: var(--tinta-2); }
+  .tabela-jog td.n.rt.fraca { color: var(--apagado); font-weight: 400; }
+  .tabela-jog td.sp { width: 220px; min-width: 140px; }
+  .tabela-jog td.sp svg { display: block; width: 100%; height: 28px; }
+  .tabela-jog thead button { all: unset; box-sizing: border-box; cursor: pointer; min-width: var(--toque); min-height: var(--toque);
+    display: inline-flex; align-items: center; justify-content: flex-end; padding: 0 4px; font: inherit; letter-spacing: inherit; color: inherit; }
+  .tabela-jog thead button:hover, .tabela-jog thead button.on { color: var(--tinta); }
+  .tabela-jog thead button.on::after { content: " ↓"; white-space: pre; }
+  .tabela-jog thead button:focus-visible { outline: 2px solid var(--foco); outline-offset: -2px; border-radius: 3px; }
+  .tabela-jog th[title] { cursor: help; }
+  .tag.comecou { font-family: var(--f-texto); }
+  .legenda-tabela { padding: 4px 12px 10px; }
   /* Impacto além do placar: um <details> por grupo (fase 7) */
   .impacto { margin-top: 22px; }
   .impacto > p { color: var(--tinta-2); max-width: 760px; }
   .imp-grupo { margin-top: 10px; padding: 0; overflow-x: auto; }
-  .imp-grupo > summary { cursor: pointer; padding: 12px 16px; font-weight: 600; }
+  /* fechado por padrão (design-B3): a linha do grupo diz o destaque, para fechado não ser escondido */
+  .imp-grupo > summary { cursor: pointer; padding: 10px 16px; min-height: var(--toque); box-sizing: border-box;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; }
+  .imp-grupo > summary .g-nome { font-weight: 600; color: var(--tinta); }
+  .imp-grupo > summary .g-resumo { font-size: var(--t-sm); color: var(--tinta-2); }
+  .imp-grupo[open] > summary .g-resumo { display: none; }
   .imp-grupo table { border-collapse: collapse; width: 100%; font-size: 13px; }
   .imp-grupo th, .imp-grupo td { padding: 7px 10px; text-align: right; border-top: 1px solid var(--linha); white-space: nowrap; }
   .imp-grupo th:first-child, .imp-grupo td:first-child { text-align: left; }
@@ -791,25 +823,7 @@
   .cmp-tabela td.fraco { color: var(--apagado); }
   .prow.hd button:focus-visible { outline: 2px solid var(--foco); outline-offset: 2px; border-radius: 3px; }
   .prow .n.rt { font-weight: 600; }
-  .prow .n.rt.fraca { color: var(--apagado); font-weight: 400; }
-  .rnota { font-family: var(--f-texto); font-size: 11px; color: var(--apagado); margin: 10px 2px 0; line-height: 1.5; }
-  @media (max-width: 700px) {
-    /* No celular as oito colunas não cabem lado a lado. K/A/M ficam na primeira
-       linha junto do nome, ADR e KAST na segunda, e o gráfico ocupa a terceira
-       inteira. Nenhum dos três é escondido: kills e mortes não são detalhe. */
-    .prow { grid-template-columns: 1fr 32px 32px 32px;
-            grid-template-areas: "nk k a m" "rt adr kast kast" "sp sp sp sp";
-            row-gap: 8px; column-gap: 8px; }
-    .prow > *:nth-child(1) { grid-area: nk; }
-    .prow > *:nth-child(2) { grid-area: k; }
-    .prow > *:nth-child(3) { grid-area: a; }
-    .prow > *:nth-child(4) { grid-area: m; }
-    .prow > *:nth-child(5) { grid-area: rt; }
-    .prow > *:nth-child(6) { grid-area: adr; }
-    .prow > *:nth-child(7) { grid-area: kast; }
-    .prow .sp { grid-area: sp; }
-    .prow .hide { display: none; }
-  }
+  .rnota { font-family: var(--f-texto); font-size: var(--t-xs); color: var(--apagado); margin: 10px 2px 0; line-height: 1.5; }
 
 
   /* ---- perfil do jogador ---- */
@@ -1020,11 +1034,7 @@
         <!-- legenda com os glifos REAIS do mapa: o JS desenha cada um com MapCore (mesma função do canvas) -->
         <div class="maplegend" id="maplegend" aria-label="Legenda"></div>
 
-        <!-- a barra de ferramentas (annotations.js) entra aqui, embaixo da legenda -->
-        <div class="atalhos-caixa" id="atalhos-caixa">
-          <button type="button" class="anot-b" id="b-atalhos" aria-expanded="false" aria-controls="atalhos" aria-label="Atalhos do teclado">?</button>
-          <div class="popover" id="atalhos" role="dialog" aria-label="Atalhos do teclado" hidden></div>
-        </div>
+        <!-- a barra de ferramentas (annotations.js), com o "?" dos atalhos, entra aqui, embaixo da legenda -->
       </div>
 
       <aside class="card squad" id="squad-t" aria-label="Terroristas"></aside>
@@ -1105,7 +1115,7 @@
       A faixa de cada jogador é o dano round a round; as barras cheias marcam os rounds em
       que ele entregou KAST.
     </p>
-    <div class="card plist" id="players"></div>
+    <div class="card tabela-jog" id="players"></div>
     <!-- Impacto além do placar (metrics/impacto.py): grupos recolhíveis; título,
          texto e rótulos vêm do Python (D.impacto) -->
     <div id="impacto" class="impacto"></div>
@@ -1207,13 +1217,19 @@
   var CAB = PAGINA.cabecalho || null;
   // Nome de cada lado: o do cabeçalho; sem ele (payload sem placar) cai no identificador interno.
   var LADO = { A: CAB ? CAB.lados.A.nome : "Lado A", B: CAB ? CAB.lados.B.nome : "Lado B" };
+  // "começou CT/TR" de cada lado: a etiqueta é o único uso da cor de lado na identidade do time
+  var COMECOU = { ct: "começou CT", tr: "começou TR" };
+  function etiquetaComecou(time) {
+    var l = CAB && CAB.lados[time];
+    return l ? "<span class='tag comecou " + l.comecou + "'>" + COMECOU[l.comecou] + "</span>" : "";
+  }
   // O nome do lado em qualquer texto montado aqui; id desconhecido (jogador sem time) vira "?".
   function nomeLado(t) { return LADO[t] || "?"; }
   Array.prototype.forEach.call(document.querySelectorAll("[data-lado]"), function (e) {
     e.textContent = LADO[e.dataset.lado];
   });
   (function () {
-    var ROTULO = { partidas: "Partidas", rounds: " rounds", venceu: "venceu", comecou: { ct: "começou CT", tr: "começou TR" } };
+    var ROTULO = { partidas: "Partidas", rounds: " rounds", venceu: "venceu", comecou: COMECOU };
     document.getElementById("c-map").textContent = PAGINA.mapa || M.map;
     document.getElementById("c-rounds").textContent = M.rounds + ROTULO.rounds;
     var o = document.getElementById("c-origem"), sep = document.getElementById("c-origem-sep");
@@ -1456,27 +1472,13 @@
     });
   })();
 
-  // "?" abre os atalhos do teclado (antes eram dois parágrafos fixos acima do mapa)
-  (function atalhos() {
-    var b = document.getElementById("b-atalhos"), pop = document.getElementById("atalhos");
-    pop.innerHTML =
-      "<p><kbd>espaço</kbd> toca e pausa · <kbd>←</kbd> <kbd>→</kbd> quadro a quadro (com <kbd>Shift</kbd>, de " +
-      "segundo em segundo) · <kbd>[</kbd> <kbd>]</kbd> mudam a velocidade, até 0,25×</p>" +
-      "<p>Clicar num evento da linha do tempo ou da autópsia começa 3 segundos antes dele.</p>" +
-      "<p>Posições reais a 4 quadros por segundo. O contorno do mapa não foi desenhado: é a soma das " +
-      "posições da partida inteira.</p>";
-    function abre(sim) { pop.hidden = !sim; b.setAttribute("aria-expanded", String(sim)); }
-    b.addEventListener("click", function (e) { e.stopPropagation(); abre(pop.hidden); });
-    document.addEventListener("click", function (e) { if (!pop.hidden && !pop.contains(e.target)) abre(false); });
-    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !pop.hidden) { abre(false); b.focus(); } });
-  })();
-
   var REASON = {
     t_killed: "todos os T eliminados",
     ct_killed: "todos os CT eliminados",
     bomb_defused: "bomba desarmada",
     bomb_exploded: "bomba explodiu",
-    target_bombed: "bomba explodiu"
+    target_bombed: "bomba explodiu",
+    time_ran_out: "tempo esgotado"
   };
 
   // Janelas de cegueira do round indexadas por jogador. O mapa precisa
@@ -2270,7 +2272,7 @@
     MapAnnotations.init({
       mapCanvas: cv,
       palco: document.getElementById("palco"),
-      antesDe: document.getElementById("atalhos-caixa"),
+      barraNoFim: true,
       radar: RAD,
       // Identidade da PARTIDA. Cair no nome do mapa faria duas partidas na
       // mesma Mirage dividirem a mesma chave de anotacao.
@@ -2449,13 +2451,31 @@
     }).join("") + "</div>";
   }
 
-  document.getElementById("fig-mvp").innerHTML = mvpc
-    ? "<div class='hd'><div><div class='role'>MVP da partida</div>" +
+  // Rating em modo degradado (economia estimada só nesta partida etc.): o card não mostra número nenhum, só o
+  // rótulo e o motivo, que vêm prontos do Python (D.rating_info.texto_degradado).
+  var mvpDegradado = ((D.rating_info || {}).modo_degradado || []).length > 0;
+  function ratingDoMvp(c) {
+    // o erro típico vem de numeros_citaveis.json pelo build (PAGINA.erro_rating); nunca escrito aqui
+    return "<div class='rating-mvp'><span class='rt-num'>" + esc(c.rating_texto) + "</span>" +
+      (PAGINA.erro_rating ? "<span class='rt-erro'>erro típico contra o rating oficial: <span class='num'>" +
+        esc(PAGINA.erro_rating) + "</span> · <a href='" + esc(PAGINA.metodo_rating || "#") + "'>método</a></span>" : "") +
+      "</div>";
+  }
+  function viceDoMvp(c) {
+    if (!c.vice_nome) return "";
+    var menor = PAGINA.vice_dentro_do_erro === true;     // decidido no build (scripts/build_web_page.py)
+    return "<p class='vice'>2º maior rating: <b>" + esc(c.vice_nome) + "</b>, <span class='num'>" + esc(c.vice_rating_texto) +
+      "</span>" + (menor ? " — a diferença é menor que o erro típico" : "") + "</p>";
+  }
+  var cabMvp = mvpc ? "<div><div class='role'>MVP da partida</div>" +
       "<div class='nm'>" + esc(mvpc.name) + "</div>" +
       "<div class='sub'>" + esc(nomeLado(mvpc.team)) +
-      (mvpc.funcao ? " · " + esc(mvpc.funcao) : "") + "</div></div>" +
-      // o anel cheio com o rating dentro: o número É o critério (não há escala 0-1)
-      ring(1, C.ct, mvpc.rating_texto) + "</div>" +
+      (mvpc.funcao ? " · " + esc(mvpc.funcao) : "") + "</div></div>" : "";
+  document.getElementById("fig-mvp").innerHTML = mvpc && mvpDegradado
+    ? "<div class='hd'>" + cabMvp + "</div>" +
+      "<p class='degradado'><span class='tag aviso'>▲ degradado</span><span>" + esc((D.rating_info || {}).texto_degradado || "") + "</span></p>"
+    : mvpc
+    ? "<div class='hd'>" + cabMvp + ratingDoMvp(mvpc) + "</div>" + viceDoMvp(mvpc) +
       "<p>" + esc(D.narrative.mvp_card) + "</p>" +
       componentes(mvpc.componentes)
     : "<div class='hd'><div><div class='role'>MVP da partida</div>" +
@@ -2804,67 +2824,74 @@
     var ordem = temRating ? "rating" : "adr";
 
     function rotulo(chave, texto, titulo) {
-      return "<div><button type='button' data-ordem='" + esc(chave) + "' title='" + esc(titulo) + "'" +
-        (ordem === chave ? " class='on'" : "") + ">" + texto + "</button></div>";
+      return "<th scope='col'><button type='button' data-ordem='" + esc(chave) + "' title='" + esc(titulo) + "'" +
+        (ordem === chave ? " class='on' aria-sort='descending'" : "") + ">" + texto + "</button></th>";
     }
 
     function desenha() {
       wrap.innerHTML = "";
-      var hd = document.createElement("div");
-      hd.className = "prow hd";
-      hd.innerHTML = "<div>Jogador</div>" + rotulo("k", "K", "Ordenar por kills") +
-        "<div>A</div><div>M</div>" +
-        (temRating ? rotulo("rating", "Rating*", (D.rating_info || {}).texto || "") : "<div></div>") +
+      var tab = document.createElement("table");
+      // Rating primeiro (cabe em 375), depois ADR, KAST, K, A, M; o dano round a round e a mira vêm no fim
+      var cab = "<thead><tr><th scope='col' class='fixa'>Jogador</th>" +
+        (temRating ? rotulo("rating", "Rating*", (D.rating_info || {}).texto || "") : "<th scope='col'></th>") +
         rotulo("adr", "ADR", "Ordenar por ADR") + rotulo("kast", "KAST", "Ordenar por KAST") +
-        "<div>Dano round a round</div><div class='hide' title='" + esc(D.dica_mira || "") + "'>Mira</div>";
-      wrap.appendChild(hd);
-      Array.prototype.forEach.call(hd.querySelectorAll("button"), function (b) {
-        b.addEventListener("click", function () { ordem = b.dataset.ordem; desenha(); });
-      });
-
+        rotulo("k", "K", "Ordenar por kills") + "<th scope='col'>A</th><th scope='col'>M</th>" +
+        "<th scope='col'>Dano round a round</th><th scope='col' title='" + esc(D.dica_mira || "") + "'>Mira</th></tr></thead>";
+      var corpo = "";
       D.players.slice().sort(function (a, b) { return ORDENS[ordem](b) - ORDENS[ordem](a); }).forEach(function (p) {
         var dmg = D.damage_by_player[p.name] || [], kast = D.kast_by_player[p.name] || [];
-        var w = 240, h = 28, bw = w / dmg.length, sp = "<svg viewBox='0 0 " + w + " " + h + "' preserveAspectRatio='none'>";
+        var w = 240, hh = 28, bw = w / dmg.length, sp = "<svg viewBox='0 0 " + w + " " + hh + "' preserveAspectRatio='none' aria-hidden='true'>";
         dmg.forEach(function (v, i) {
-          var bh = Math.max(1.5, (v / maxD) * (h - 4));
-          sp += "<rect x='" + (i * bw + 0.7) + "' y='" + (h - bh) + "' width='" + (bw - 1.4) +
+          var bh = Math.max(1.5, (v / maxD) * (hh - 4));
+          sp += "<rect x='" + (i * bw + 0.7) + "' y='" + (hh - bh) + "' width='" + (bw - 1.4) +
             "' height='" + bh + "' fill='" + (kast[i] === 1 ? C.ct : C.borda) + "' rx='1'></rect>";
         });
         sp += "</svg>";
-
-        var row = document.createElement("div");
-        row.className = "prow";
         var kd = kad[p.name] || {};
         // Amostra fraca (poucos rounds) aparece apagada e com o motivo no title:
         // o número existe, mas não sustenta comparação.
-        var rt = (p.rating == null || ratingDegradado) ? "<div class='n q'>—</div>" :
-          "<div class='n rt" + (p.rating_amostra_fraca ? " fraca" : "") + "'" +
+        var rt = (p.rating == null || ratingDegradado) ? "<td class='n q'>—</td>" :
+          "<td class='n rt" + (p.rating_amostra_fraca ? " fraca" : "") + "'" +
           (p.rating_amostra_fraca ? " title='amostra pequena: poucos rounds jogados'" : "") + ">" +
-          p.rating.toFixed(2).replace(".", ",") + "</div>";
-        row.innerHTML = "<div class='nk'>" + esc(p.name) + "<small>time " + esc(p.team) + "</small></div>" +
-          "<div class='n'>" + (kd.kills_totais != null ? kd.kills_totais : "—") + "</div>" +
-          "<div class='n q'>" + (kd.assistencias != null ? kd.assistencias : "—") + "</div>" +
-          "<div class='n q'>" + (kd.mortes != null ? kd.mortes : "—") + "</div>" + rt +
-          "<div class='n'>" + br(p.adr) + "</div><div class='n q'>" + fmt(p.kast_pct, 0) + "%</div>" +
-          "<div class='sp'>" + sp + "</div>" +
-          "<div class='n q hide'>" + fmt((ch[p.name] || {}).crosshair_score, 0) + "</div>";
-        wrap.appendChild(row);
+          p.rating.toFixed(2).replace(".", ",") + "</td>";
+        corpo += "<tr><th scope='row' class='fixa'><span class='nk'>" + esc(p.name) + "</span>" +
+          "<span class='time-do-jog'>" + esc(nomeLado(p.team)) + " " + etiquetaComecou(p.team) + "</span></th>" + rt +
+          "<td class='n'>" + br(p.adr) + "</td><td class='n q'>" + fmt(p.kast_pct, 0) + "%</td>" +
+          "<td class='n'>" + (kd.kills_totais != null ? kd.kills_totais : "—") + "</td>" +
+          "<td class='n q'>" + (kd.assistencias != null ? kd.assistencias : "—") + "</td>" +
+          "<td class='n q'>" + (kd.mortes != null ? kd.mortes : "—") + "</td>" +
+          "<td class='sp'>" + sp + "</td>" +
+          "<td class='n q'>" + fmt((ch[p.name] || {}).crosshair_score, 0) + "</td></tr>";
+      });
+      tab.innerHTML = cab + "<tbody>" + corpo + "</tbody>";
+      wrap.appendChild(tab);
+      Array.prototype.forEach.call(tab.querySelectorAll("thead button"), function (b) {
+        b.addEventListener("click", function () { ordem = b.dataset.ordem; desenha(); wrap.querySelector("[data-ordem='" + ordem + "']").focus(); });
       });
 
-      // O rótulo acompanha o número em todo lugar: é a implementação própria da
-      // metodologia, não o Rating 3.0 oficial. O texto vem pronto do Python.
+      // Legenda da tabela: o rating (rótulo do Python: implementação própria, não o oficial) e a mira
+      var leg = document.createElement("div");
+      leg.className = "legenda-tabela";
+      wrap.appendChild(leg);
       if (temRating && D.rating_info && D.rating_info.texto) {
         var nota = document.createElement("p");
         nota.className = "rnota";
         nota.textContent = "* " + D.rating_info.texto;
-        wrap.appendChild(nota);
+        leg.appendChild(nota);
+      }
+      if (D.dica_mira) {
+        var mira = document.createElement("p");
+        mira.className = "rnota";
+        mira.id = "legenda-mira";
+        mira.textContent = "Mira: " + D.dica_mira;
+        leg.appendChild(mira);
       }
       if (ratingDegradado) {
         var aviso = document.createElement("p");
         aviso.className = "rnota";
         aviso.id = "rating-degradado";
         aviso.textContent = ratingDegradado;
-        wrap.appendChild(aviso);
+        leg.appendChild(aviso);
       }
     }
     desenha();
@@ -2893,11 +2920,24 @@
     h.className = "sec"; h.textContent = cfg.titulo;
     var t = document.createElement("p"); t.textContent = cfg.texto;
     host.appendChild(h); host.appendChild(t);
+    // Aberto/fechado lembrado por quem vê (uma chave para a página toda); leitura e escrita dentro de try/catch:
+    // arquivo local, modo privado ou armazenamento bloqueado abrem tudo fechado e a página funciona igual.
+    var CHAVE_GRUPOS = "parser-cs2:grupos-jogadores";
+    var abertos = {};
+    try {
+      var lido = JSON.parse(window.localStorage.getItem(CHAVE_GRUPOS) || "{}");
+      if (lido && typeof lido === "object") abertos = lido;
+    } catch (e) { abertos = {}; }
+    function lembra() {
+      try { window.localStorage.setItem(CHAVE_GRUPOS, JSON.stringify(abertos)); } catch (e) { /* sem memória: segue */ }
+    }
+    var resumos = PAGINA.resumo_dos_grupos || {};
     cfg.grupos.forEach(function (g) {
       var det = document.createElement("details");
       det.className = "card imp-grupo";
       det.dataset.grupo = g.nome;
-      if (g.aberto) det.open = true;
+      if (abertos[g.nome] === true || (abertos[g.nome] === undefined && g.aberto)) det.open = true;
+      det.addEventListener("toggle", function () { abertos[g.nome] = det.open; lembra(); });
       var cab = "<tr><th></th>" + g.metricas.map(function (m) { return "<th>" + esc(m.rotulo) + "</th>"; }).join("") + "</tr>";
       var corpo = linhas.map(function (r) {
         return "<tr><td>" + esc(r.name) + " <small>" + esc(nomeLado(time[r.name])) + "</small></td>" +
@@ -2915,7 +2955,9 @@
               "<small>" + esc(bruto) + "</small></td>";
           }).join("") + "</tr>";
       }).join("");
-      det.innerHTML = "<summary>" + esc(g.nome) + "</summary><table>" + cab + corpo + "</table>";
+      det.innerHTML = "<summary><span class='g-nome'>" + esc(g.nome) + "</span>" +
+        (resumos[g.nome] ? "<span class='g-resumo'>· " + esc(resumos[g.nome]) + "</span>" : "") +
+        "</summary><table>" + cab + corpo + "</table>";
       host.appendChild(det);
     });
   })();
@@ -2984,6 +3026,15 @@
       var b = linhas.filter(function (r) { return r.name === sb.value; })[0];
       if (!a || !b) return;
       var html = "<table><tr><th></th><th>" + esc(a.name) + "</th><th>" + esc(b.name) + "</th></tr>";
+      // o rating lado a lado, com a frase do erro típico (sem faixa); escondido quando o rating é degradado
+      var ra = (D.players || []).filter(function (p) { return p.name === a.name; })[0] || {};
+      var rb = (D.players || []).filter(function (p) { return p.name === b.name; })[0] || {};
+      if (!mvpDegradado && (ra.rating != null || rb.rating != null)) {
+        var r2 = function (v) { return v == null ? "—" : v.toFixed(2).replace(".", ","); };
+        html += "<tr class='grupo'><td colspan='3'>Rating</td></tr><tr><td>Rating*" +
+          (PAGINA.erro_rating ? "<small>erro típico contra o rating oficial: " + esc(PAGINA.erro_rating) + "</small>" : "") +
+          "</td><td data-chave='rating'>" + r2(ra.rating) + "</td><td data-chave='rating'>" + r2(rb.rating) + "</td></tr>";
+      }
       grupos.forEach(function (g) {
         var ms = g.metricas.filter(function (m) { return a[m.chave + "_d"] !== undefined || b[m.chave + "_d"] !== undefined; });
         if (!ms.length) return;

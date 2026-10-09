@@ -838,7 +838,8 @@ window.MapAnnotations = (function () {
       // funciona igual no arquivo local e no site.
       if (opts.roundInteiro && window.CompressionStream) {
         var porSegundo = opts.amostrasPorSegundo || 4;
-        vista.appendChild(botao("Abrir round na prancheta",
+        // fica no grupo à vista com a barra recolhida, junto de Direção e Tela cheia (entrega-sala-de-demo §7.2)
+        ver.appendChild(botao("Abrir round na prancheta",
           "Abrir a prancheta com o round inteiro (caminhos reais, mortes, granadas e plant), parada neste " +
           "instante. O instante usado é a amostra gravada imediatamente anterior (" + porSegundo + " por segundo)",
           function () {
@@ -856,6 +857,8 @@ window.MapAnnotations = (function () {
     ver.appendChild(fs);
     barra.appendChild(vista);
 
+    barra.appendChild(montaAjuda());
+
     var status = document.createElement("span");
     status.className = "anot-status";
     status.id = "anot-status";
@@ -864,6 +867,38 @@ window.MapAnnotations = (function () {
     barra.appendChild(status);
 
     return barra;
+  }
+
+  // Atalhos do teclado do replay, no popover do "?" (os textos fixos saíram do template; decisão 23).
+  var TEXTO_DOS_ATALHOS =
+    "<p><kbd>espaço</kbd> toca e pausa · <kbd>←</kbd> <kbd>→</kbd> quadro a quadro (com <kbd>Shift</kbd>, de " +
+    "segundo em segundo) · <kbd>[</kbd> <kbd>]</kbd> mudam a velocidade, até 0,25× · <kbd>D</kbd> desenha · " +
+    "<kbd>F</kbd> tela cheia</p>" +
+    "<p>Clicar num evento da linha do tempo ou da autópsia começa 3 segundos antes dele.</p>" +
+    "<p>Posições reais a 4 quadros por segundo. O contorno do mapa não foi desenhado: é a soma das " +
+    "posições da partida inteira.</p>";
+
+  function montaAjuda() {
+    var g = grupo(null, true, true);
+    g.classList.add("anot-ajuda");
+    var b = botao("?", "Atalhos do teclado", function (e) { if (e) e.stopPropagation(); abre(pop.hidden); });
+    b.id = "b-atalhos";
+    b.setAttribute("aria-label", "Atalhos do teclado");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "atalhos");
+    var pop = document.createElement("div");
+    pop.className = "anot-pop";
+    pop.id = "atalhos";
+    pop.setAttribute("role", "dialog");
+    pop.setAttribute("aria-label", "Atalhos do teclado");
+    pop.hidden = true;
+    pop.innerHTML = TEXTO_DOS_ATALHOS;
+    function abre(sim) { pop.hidden = !sim; b.setAttribute("aria-expanded", String(sim)); }
+    document.addEventListener("click", function (e) { if (!pop.hidden && !pop.contains(e.target) && e.target !== b) abre(false); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !pop.hidden) { abre(false); b.focus(); } });
+    g.appendChild(b);
+    g.appendChild(pop);
+    return g;
   }
 
   function avisa(msg) {
@@ -949,8 +984,9 @@ window.MapAnnotations = (function () {
     if (S.recentes.length) S.cor = S.recentes[0];
     S.direcao = le("localStorage", CHAVE_DIRECAO) !== "0";
 
-    // a barra entra antes de `opts.antesDe` (o replay a põe embaixo da legenda); sem ele, no topo do palco
-    opts.palco.insertBefore(montaBarra(), opts.antesDe || opts.palco.firstChild);
+    // `barraNoFim`: o replay põe a barra no fim do quadro, embaixo da legenda (§7.2); sem ele, no topo do palco
+    if (opts.barraNoFim) opts.palco.appendChild(montaBarra());
+    else opts.palco.insertBefore(montaBarra(), opts.palco.firstChild);
 
     S.rounds = carregaDoNavegador();
     S.pronto = true;
