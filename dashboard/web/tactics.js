@@ -78,6 +78,7 @@ var Prancheta = (function () {
   var RAIO_BORRACHA = 10;       // o mesmo da anotação
   var PASSO_MIN_CANETA = 1.5;   // o mesmo da anotação
   var ALFA_OUTRO_ANDAR = 0.35;  // elemento de outro andar: esmaecido, como no replay
+  var ALFA_FANTASMA = 0.9;      // o fantasma do round real é só o anel tracejado: precisa ler (entrega-sala-de-demo §14)
   var ALFA_RASTRO = 0.3;        // posição e direção do passo anterior
 
   // Giro pela roda do mouse: 15° por clique, 1° com Shift. Giros seguidos viram
@@ -1209,9 +1210,11 @@ var Prancheta = (function () {
     });
     Object.keys(f.pecas).forEach(function (id) {
       var q = f.pecas[id], c2 = jogoParaPixel(q.x, q.y);
-      ctx.globalAlpha = ALFA_RASTRO * alfaDoAndar(q.nivel);
-      MapCore.desenhaJogador(ctx, c2[0], c2[1], { cor: cssVar(q.lado === "ct" ? "--ct" : "--tr"), estado: "vivo", hp: 100,
-                                                  cego: false, nome: "", yaw: q.yaw, escala: ESCALA_PECA });
+      ctx.globalAlpha = ALFA_FANTASMA * alfaDoAndar(q.nivel);
+      // fantasma (§14): sem preenchimento, contorno tracejado na cor do lado, nome em itálico "--tinta-2" + "· real"
+      MapCore.desenhaJogador(ctx, c2[0], c2[1], { cor: cssVar(q.lado === "ct" ? "--ct" : "--tr"), estado: "fantasma", hp: 100,
+                                                  cego: false, nome: rotuloDaPeca(q) + " · real", yaw: q.yaw, escala: ESCALA_PECA,
+                                                  rotuloAcima: RAIO_PECA + 6 });
       n++;
     });
     ctx.restore();

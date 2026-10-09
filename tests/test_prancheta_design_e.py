@@ -102,3 +102,23 @@ def test_o_painel_tem_tres_abas_com_teclado_e_so_uma_visivel(contexto, pagina):
         assert all(c["h"] >= 44 for c in pg.eval_on_selector_all("#pr-abas [role=tab]", "ts => ts.map(t => ({h: t.getBoundingClientRect().height}))"))
     finally:
         pg.close()
+
+
+def test_o_fantasma_do_round_real_e_so_o_anel_tracejado_com_nome_em_itálico(contexto, pagina):
+    """§14: sem preenchimento (o miolo é o radar), contorno tracejado na cor do lado, nome "· real" em itálico."""
+    pg = abre(contexto, pagina)
+    try:
+        r = pg.evaluate("""() => {
+            const c = document.createElement('canvas'); c.width = c.height = 80;
+            const g = c.getContext('2d');
+            g.fillStyle = '#336699'; g.fillRect(0, 0, 80, 80);                    // o "radar" por baixo
+            MapCore.desenhaJogador(g, 40, 40, {cor: '#e0a23a', estado: 'fantasma', hp: 100, nome: '', escala: 15 / 8.2});
+            const px = (x, y) => Array.from(g.getImageData(x, y, 1, 1).data.slice(0, 3));
+            // o miolo (centro) segue sendo o radar; ao redor há pixels do traço
+            let tracos = 0; for (let a = 0; a < 360; a += 10) { const p = px(Math.round(40 + 11 * Math.cos(a * Math.PI / 180)), Math.round(40 + 11 * Math.sin(a * Math.PI / 180)));
+              if (p[0] !== 0x33 || p[2] !== 0x99) tracos++; }
+            return {centro: px(40, 40), tracos}; }""")
+        assert r["centro"] == [0x33, 0x66, 0x99], r                    # sem preenchimento
+        assert r["tracos"] > 10, r                                      # e há traço em volta do raio
+    finally:
+        pg.close()
