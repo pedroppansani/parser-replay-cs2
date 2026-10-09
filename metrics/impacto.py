@@ -302,7 +302,9 @@ ROTULOS = {
 # partida (rounds vivo no plant, um duelo de abertura por round), e quase toda
 # célula sai marcada como amostra fraca -- abertas, dominariam a leitura com
 # números que não sustentam conclusão.
-ABERTOS_POR_PADRAO = {"Utilidade"}
+# design-B3 (entrega-sala-de-demo §7.2): todos FECHADOS por padrão; cada grupo fechado mostra o destaque na
+# própria linha (resumo_dos_grupos), e quem vê tem o aberto/fechado lembrado no navegador.
+ABERTOS_POR_PADRAO: set[str] = set()
 TEXTO_DO_BLOCO = ("O que a utilidade, as trocas, a economia e as situações de cada jogador produziram nesta partida. "
                   "Cada número vem com o bruto e com a régua anônima do corpus; amostra pequena aparece "
                   "esmaecida. A cegueira nos companheiros conta contra.")
@@ -341,3 +343,46 @@ def para_a_pagina() -> dict:
             for nome, chaves in CATEGORIAS_DE_IMPACTO.items()
         ],
     }
+
+
+# --- Resumo de cada grupo FECHADO (design-B3, entrega-sala-de-demo §7.2 e §10) ---------------------
+# Os grupos da aba Jogadores abrem fechados; para fechado não ser escondido, a linha do grupo diz o
+# destaque dele. A frase sai daqui pronta (decisão 18); o JS só imprime. Escolha do destaque, por
+# grupo: o maior BRUTO (não a taxa: um jogador com uma flash não "lidera" a cegueira), entre quem não
+# está marcado como amostra fraca quando a métrica é taxa.
+
+def _br(x: float, casas: int = 1) -> str:
+    return f"{x:.{casas}f}".replace(".", ",")
+
+
+def _maior(linhas: list[dict], chave: str, *, menor: bool = False, sem_fraco: bool = True) -> dict | None:
+    candidatos = [r for r in linhas if r.get(chave) is not None and not (sem_fraco and r.get(chave + "_fraco"))]
+    if not candidatos:
+        return None
+    # desempate pelo nome: a frase não pode mudar de uma execução para outra (decisão 28)
+    return sorted(candidatos, key=lambda r: ((r[chave] if menor else -r[chave]), r.get("name", "")))[0]
+
+
+def resumo_dos_grupos(linhas: list[dict], degradado: list[str] | None = None) -> dict[str, str]:
+    """{nome do grupo: frase da linha do grupo fechado}, a partir do perfil da partida (player_profile)."""
+    out: dict[str, str] = {}
+    r = _maior(linhas, "segundos_de_cegueira_por_flash_n", sem_fraco=False)
+    out["Utilidade"] = (f"mais cegueira imposta: {r['name']}, {round(r['segundos_de_cegueira_por_flash_n'])} s"
+                        if r and r["segundos_de_cegueira_por_flash_n"] > 0 else "nenhuma flash cegou adversário")
+    r = _maior(linhas, "tempo_mediano_da_troca_s", menor=True)
+    out["Trocas"] = (f"troca mais rápida (mediana): {r['name']}, {_br(r['tempo_mediano_da_troca_s'], 2)} s em "
+                     f"{round(r.get('tempo_mediano_da_troca_s_d') or 0)} trocas"
+                     if r else "nenhuma troca com amostra suficiente nesta partida")
+    if degradado:
+        out["Economia"] = "▲ degradado: " + "; ".join(degradado)
+    elif not any(r.get(c + "_d") for r in linhas for c in ("rating_eco", "rating_forca", "rating_cheia")):
+        out["Economia"] = "sem dado de equipamento nesta partida"
+    else:
+        r = _maior(linhas, "adr_eco")
+        out["Economia"] = (f"maior ADR com o time em eco: {r['name']}, {_br(r['adr_eco'])} em "
+                           f"{round(r.get('adr_eco_d') or 0)} rounds" if r else "nenhum jogador com amostra de eco suficiente")
+    r = _maior(linhas, "pct_pos_plant_vencidos_n", sem_fraco=False)
+    out["Situações"] = (f"mais pós-plants vencidos: {r['name']}, {round(r['pct_pos_plant_vencidos_n'])} de "
+                        f"{round(r.get('pct_pos_plant_vencidos_d') or 0)}"
+                        if r and r["pct_pos_plant_vencidos_n"] > 0 else "nenhum pós-plant vencido nesta partida")
+    return out
