@@ -162,8 +162,8 @@ def test_a_peca_do_replay_tem_o_anel_duplo(navegador, pagina_html):
                                                estado: 'vivo', hp: 100, nome: ''});
             const px = x => Array.from(g.getImageData(x, 30, 1, 1).data.slice(0, 3));
             return [px(30), px(30 + 7), px(30 + 9)]; }""")
-        assert tuple(r[0]) == hexa(tk["ct"])
-        assert tuple(r[1]) == hexa(tk["contorno"])
-        assert tuple(r[2]) == hexa(tk["tinta"])
+        # ±2 por canal: o Chromium do CI arredonda a borda suavizada um nível diferente do Chrome local
+        perto = lambda px, cor: max(abs(a - b) for a, b in zip(px, hexa(tk[cor]))) <= 2  # noqa: E731
+        assert perto(r[0], "ct") and perto(r[1], "contorno") and perto(r[2], "tinta"), r
     finally:
         ctx.close()

@@ -141,6 +141,8 @@ def test_grupos_abrem_fechados_com_o_destaque_na_linha_e_sao_lembrados(navegador
             linha = pg.locator(f"details.imp-grupo[data-grupo='{nome}'] > summary").inner_text()
             assert nome in linha and frase in linha, (nome, linha)
         pg.locator("details.imp-grupo[data-grupo='Trocas'] > summary").click()
+        # o evento toggle é assíncrono: espera a gravação antes de fechar a página
+        pg.wait_for_function("() => (localStorage.getItem('parser-cs2:grupos-jogadores') || '').includes('Trocas')")
         pg.close()
         # outra visita, mesmo navegador: o grupo aberto continua aberto
         _, pg = _abre(navegador, pagina_html, hash_="#jogadores", ctx=ctx)
