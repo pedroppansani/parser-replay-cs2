@@ -31,12 +31,13 @@ def _ocs(lado: str) -> list[dict]:
 def test_lurker_de_tr_e_comparado_com_lurkers_de_tr():
     m = PE._ponto_a_melhorar(E.NAO_TROCOU, _ocs("t"), 15, _ref(33), "lurker", False, "t")
     assert m["referencia"].startswith("referência: quem joga lurker no TR")
-    assert m["referencia"].endswith("a mediana é 1") and m["lado_rotulo"] == "no TR"
+    assert m["referencia"].endswith("a mediana é 1; o normal vai até 1") and m["lado_rotulo"] == "no TR"
 
 
 def test_celula_pequena_cai_no_tr_inteiro_e_nunca_no_ct():
     m = PE._ponto_a_melhorar(E.NAO_TROCOU, _ocs("t"), 15, _ref(19), "lurker", False, "t")
-    assert m["referencia"] == "referência: todos os jogadores de TR (poucos lurkers no corpus); a mediana é 4"
+    assert m["referencia"] == ("referência: todos os jogadores de TR (poucos lurkers no corpus); a mediana é 4; "
+                               "o normal vai até 4")
     assert "CT" not in m["referencia"] and "8" not in m["referencia"] and "9" not in m["referencia"]
 
 
@@ -52,7 +53,8 @@ def test_a_celula_do_outro_lado_nunca_serve():
 
 def test_sem_funcao_o_texto_diz_que_a_referencia_e_o_lado():
     m = PE._ponto_a_melhorar(E.NAO_TROCOU, _ocs("ct"), 15, _ref(33), None, False, "ct")
-    assert m["referencia"] == "referência: todos os jogadores de CT (sem função definida neste lado); a mediana é 8"
+    assert m["referencia"] == ("referência: todos os jogadores de CT (sem função definida neste lado); a mediana é 8; "
+                               "o normal vai até 8")
 
 
 def test_percentil_do_histograma():
@@ -133,6 +135,40 @@ def test_o_card_diz_o_lado_e_os_lados_nao_se_misturam():
             assert f["lado"] in ("ct", "t")
             assert ("TR" in f["referencia"]) == (f["lado"] == "t")
     assert achou_lado
+
+
+# --- Acima do normal (fase 12b, item 4) -----------------------------------------------------------------
+
+def test_so_vira_ponto_acima_do_percentil_75_e_com_duas_ocorrencias():
+    celula = {"n": 100, "hist": {"0": 25, "1": 25, "2": 25, "3": 15, "4": 10}}      # p75 = 2,25 (interpolado)
+    assert E.PERCENTIL_PONTO_A_MELHORAR == 75
+    assert E.percentil_do_histograma(celula["hist"], 75) == 2.25
+    assert not E.acima_do_normal(2, celula)          # igual ao percentil: dentro do normal
+    assert E.acima_do_normal(3, celula)
+    assert not E.acima_do_normal(1, {"n": 5, "hist": {"0": 5}})                # abaixo de 2, mesmo acima do p75 (0)
+    assert E.acima_do_normal(2, {"n": 5, "hist": {"0": 5}})
+    assert E.acima_do_normal(2, None) and not E.acima_do_normal(1, None)       # sem régua, só o mínimo
+    assert E.acima_do_normal(3, celula, percentil=90) is False                 # p90 = 3: sobe a barra
+    assert E.acima_do_normal(3, celula, percentil=50) is True
+
+
+def test_o_bloco_so_publica_acima_do_normal_e_o_resto_vai_para_detalhes():
+    b = _bloco_da_partida()
+    ref = _gravada()
+    for j in b["jogadores"]:
+        for m in j["melhorar"]:
+            assert len(m["chips"]) >= E.MIN_OCORRENCIAS_PARA_PONTO and len(m["chips"]) > m["limite"]
+        for u in j["uma_vez"]:
+            assert u["motivo"]
+    vazios = [j for j in b["jogadores"] if not j["melhorar"]]
+    assert vazios and all(j["melhorar_vazio"] == "Nada acima do normal para a função nesta partida" for j in vazios)
+
+
+def test_o_limite_do_card_e_o_p75_da_celula_escolhida():
+    m = PE._ponto_a_melhorar(E.NAO_TROCOU, _ocs("t") + _ocs("t"), 15, _ref(33), "lurker", False, "t")
+    assert m["limite"] == 1.0 and m["referencia"].endswith("o normal vai até 1")
+    m = PE._ponto_a_melhorar(E.NAO_TROCOU, _ocs("t") + _ocs("t"), 15, _ref(19), "lurker", False, "t")
+    assert m["limite"] == 4.0                                             # o TR inteiro, não o lurker nem o CT
 
 
 def _bloco_da_partida() -> dict:

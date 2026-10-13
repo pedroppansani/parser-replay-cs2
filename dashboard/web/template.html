@@ -3530,7 +3530,8 @@
       document.getElementById("pf-uma-vez").innerHTML = j.uma_vez.length
         ? "<p class='pfnota'>" + esc(T.detalhes_erros) + "</p>" + j.uma_vez.map(function (u) {
             return "<div class='pfitem'><div class='topo'><span class='titulo'>" + esc(u.titulo) + (u.lado_rotulo ? " " + esc(u.lado_rotulo) : "") + "</span><span class='cont'>" +
-              esc(u.contagem) + "</span></div>" + chipsDeRound(u.chips) + "</div>";
+              esc(u.contagem) + "</span>" + (u.motivo ? "<span class='cont'>" + esc(u.motivo) + "</span>" : "") +
+              "</div>" + chipsDeRound(u.chips) + "</div>";
           }).join("") : "";
     }
 

@@ -52,8 +52,17 @@
   no "fim do round"; aqui ela é a morte que mais custou). Flash no time não tem custo no modelo
   (a frase diz isso); o dano de utilidade só tem quando a granada matou o aliado. A tela escreve
   "custou cerca de N pontos de chance de vitória, pela estimativa do modelo".
-- **Ordem e mínimos.** Explícitos antes; dentro do nível, o maior custo. Menos de 2 ocorrências de
-  um tipo vai para Detalhes. Pontos fortes: das métricas que já existem no perfil em que mais é
+- **Ordem e mínimos.** Explícitos antes; dentro do nível, o maior custo. **Fase 12b:** um par (tipo,
+  lado) só vira ponto a melhorar se a contagem do jogador ficar ACIMA do percentil
+  `PERCENTIL_PONTO_A_MELHORAR` = 75 da referência (interpolação linear sobre o histograma da célula
+  escolhida) E tiver pelo menos `MIN_OCORRENCIAS_PARA_PONTO` = 2 ocorrências. Igual ou abaixo, ou
+  com menos de 2, o item vai para Detalhes ("dentro do normal para a função", ou "dentro do normal
+  para os jogadores de TR" quando a referência é o lado inteiro; "aconteceu uma vez" abaixo do
+  mínimo). O estado vazio é "Nada acima do normal para a função nesta partida". Motivo da mudança:
+  "não trocou o aliado" aparecia em quase todos (~3,5 por jogador-partida). `DIST_TROCA` NÃO mudou
+  (só depois da calibração do Pedro); a subseção "Quantos pontos a melhorar cada jogador teria" do
+  material de calibração (seção 7) mostra o efeito do percentil (50, 75, 90) e de três valores de
+  `DIST_TROCA`. O card traz `limite` (o percentil 75 usado) e a frase "o normal vai até N". Pontos fortes: das métricas que já existem no perfil em que mais é
   melhor (`METRICAS_DE_PONTO_FORTE`), as 2 mais acima da régua da função, só acima de 15% da régua
   (a mesma `MARGEM_DESTAQUE` da aba), sem amostra fraca, com o bruto ao lado.
 - **Régua anônima por (lado, função)** (fase 12b; `metrics/erros_reference.json`,

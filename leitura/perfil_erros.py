@@ -37,13 +37,16 @@ TEXTOS = {
     "ninguem": "— ninguém —",
     "detalhes": "Detalhes",
     "detalhes_resumo": "o perfil completo desta partida: taxas, função por round, jeito de jogar e quem joga em cada grupo",
-    "detalhes_erros": "Aconteceu uma vez (abaixo do mínimo de 2 para virar ponto a melhorar)",
+    "detalhes_erros": "Erros que não viraram ponto a melhorar",
+    "uma_vez": "aconteceu uma vez, abaixo do mínimo de 2 para virar ponto a melhorar",
+    "normal_funcao": "dentro do normal para a função",
+    "normal_lado": "dentro do normal para os jogadores de {lado}",
     "em_validacao": "Em validação: os tipos de erro aparecem depois de conferidos",
     "como_e_conferido": "como é conferido",
     "rotulo_em_validacao": "em validação",
     "aviso_preview": ("Pré-visualização: nenhum destes tipos de erro foi conferido ainda. Todos estão em validação e "
                       "esta página não é publicada."),
-    "nenhum_erro": "Nenhum erro se repetiu nesta partida",
+    "nenhum_erro": "Nada acima do normal para a função nesta partida",
     "fortes_vazio": "Nenhuma métrica ficou acima da referência da função nesta partida",
     "comparar_texto": ("Só jogadores desta partida, de qualquer time; ao lado de cada um, a contagem ou o valor dele "
                        "nesta partida. A referência é a mediana anônima do corpus."),
@@ -144,15 +147,18 @@ def _ponto_a_melhorar(tipo: str, ocs: list[dict], rounds: int, ref: dict | None,
     motivos = Counter(o["motivo"] for o in ocs if o["nivel"] == nivel)
     motivo = sorted(motivos.items(), key=lambda kv: (-kv[1], kv[0]))[0][0]
     pontos, custo = _custo([o["dwpa"] for o in ocs])
-    referencia = ""
+    referencia, limite = "", None
     if lado:
         celula, de_quem = _referencia(ref, "erros", tipo, lado, funcao)
         mediana = E.percentil_do_histograma(celula["hist"], 50) if celula else None
+        limite = E.percentil_do_histograma(celula["hist"], E.PERCENTIL_PONTO_A_MELHORAR) if celula else None
         if mediana is not None:
-            referencia = f"referência: {de_quem}; a mediana é {_br(mediana, 1).removesuffix(',0')}"
+            referencia = (f"referência: {de_quem}; a mediana é {_br(mediana, 1).removesuffix(',0')}; "
+                          f"o normal vai até {_br(limite, 1).removesuffix(',0')}")
     frase = (E.COMO_MELHORAR[tipo] if nivel == E.EXPLICITO
              else f"{motivo[0].upper()}{motivo[1:]}. {E.CONFERIR_COM_O_TIME}")
     return {"tipo": tipo, "titulo": E.TITULOS[tipo], "lado": lado or "", "lado_rotulo": _no_lado(lado),
+            "limite": limite if limite is not None else -1.0,
             "contagem": _contagem(len(ocs), rounds),
             "referencia": referencia, "nivel": nivel, "nivel_rotulo": E.ROTULO_DO_NIVEL[nivel],
             "motivo": motivo, "frase": frase, "custo": custo, "_pontos": pontos,
@@ -267,13 +273,18 @@ def bloco(payload: dict, ocorrencias: pl.DataFrame | None, *, cabecalho: dict | 
                 dele = [o for o in por_tipo[t] if o["side"] == lado_]
                 if not dele:
                     continue
-                if len(dele) >= E.MIN_OCORRENCIAS_PARA_PONTO:
+                celula, escopo = E.escolhe_celula(referencia, "erros", t, lado_, funcao_do_lado.get(lado_))
+                if E.acima_do_normal(len(dele), celula):
                     melhorar.append(_ponto_a_melhorar(t, dele, rounds_do_lado.get(lado_, rounds), referencia,
                                                       funcao_do_lado.get(lado_), preview, lado_))
                 else:
+                    # Detalhes: abaixo do mínimo de ocorrências, ou dentro do normal para a referência
+                    motivo = (TEXTOS["uma_vez"] if len(dele) < E.MIN_OCORRENCIAS_PARA_PONTO
+                              else TEXTOS["normal_funcao"] if escopo != "lado"
+                              else TEXTOS["normal_lado"].format(lado=E.ROTULO_DO_LADO[lado_]))
                     uma_vez.append({"titulo": E.TITULOS[t], "lado_rotulo": _no_lado(lado_),
                                     "contagem": _contagem(len(dele), rounds_do_lado.get(lado_, rounds)),
-                                    "chips": _chips(dele)})
+                                    "motivo": motivo, "chips": _chips(dele)})
         # explícitos antes; dentro do nível, o maior custo; empate pela ordem fixa dos tipos
         ordem = {t: i for i, t in enumerate(E.TIPOS)}
         melhorar.sort(key=lambda m: (m["nivel"] != E.EXPLICITO, -m["_pontos"], ordem[m["tipo"]]))

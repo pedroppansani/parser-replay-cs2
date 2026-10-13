@@ -794,6 +794,12 @@ METRICAS_DE_PONTO_FORTE = (
 # percentil de contagem não ser um jogador só. Com os 1.040 jogador-lados do corpus de 52 partidas,
 # só a célula Suporte do TR (17) cai no lado inteiro.
 MIN_REF_LADO_FUNCAO = 20
+# Percentil da referência acima do qual a contagem do jogador vira "ponto a melhorar" (pedido 12b: o
+# item só aparece quando o jogador erra MAIS do que 3 em cada 4 jogadores da mesma função e lado).
+# Origem: o quartil superior, a convenção para "acima do normal" numa distribuição; o material de
+# calibração (seção 7) mostra quantos pontos a melhorar cada valor (50, 75, 90) daria. Percentil por
+# interpolação linear, como numpy.percentile.
+PERCENTIL_PONTO_A_MELHORAR = 75
 TODAS = "__todas__"
 LADOS = ("ct", "t")
 ROTULO_DO_LADO = {"ct": "CT", "t": "TR"}
@@ -813,6 +819,18 @@ def percentil_do_histograma(hist: dict, q: float) -> float | None:
     j = min(i + 1, len(valores) - 1)
     return valores[i] + (valores[j] - valores[i]) * (pos - i)
 
+
+
+def acima_do_normal(contagem: int, celula: dict | None, percentil: float | None = None) -> bool:
+    """O par (tipo, lado) vira "ponto a melhorar" quando a contagem do jogador fica ACIMA do percentil da
+    referência (`PERCENTIL_PONTO_A_MELHORAR`) e tem pelo menos `MIN_OCORRENCIAS_PARA_PONTO` ocorrências. Igual ou
+    abaixo do percentil, é "dentro do normal". Sem referência, só vale o mínimo de ocorrências."""
+    if contagem < MIN_OCORRENCIAS_PARA_PONTO:
+        return False
+    if not celula:
+        return True
+    p = percentil_do_histograma(celula["hist"], PERCENTIL_PONTO_A_MELHORAR if percentil is None else percentil)
+    return p is None or contagem > p
 
 
 # Taxas por round (denominador = rounds do lado) usam o piso de rounds do perfil; as demais, o de eventos.
