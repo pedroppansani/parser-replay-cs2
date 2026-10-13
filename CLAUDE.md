@@ -19,20 +19,19 @@ quanto a corretude.
 - `py -3.12 -m pytest tests/` · `py -3.12 -m scripts.reprocessa` (corpus a partir
   do interim) · `py -3.12 -m scripts.build_site` · `py -3.12 -m scripts.escada_validacao`.
 - Parse: ~14 s por partida; itere com `--from-interim`.
-- Sem o interim a partida não é recalculável; apagar demo, interim ou backup
-  segue a regra 36.
+- Sem o interim a partida não é recalculável; apagar demo, interim ou backup: regra 36.
 
 ## Mapa do repositório
 
 ```
 parsing/      wrapper do awpy, versões, verdade do arremesso
-metrics/      as métricas (uma decisão de jogo por módulo) e as referências .json
+metrics/      métricas (uma decisão de jogo por módulo) e referências .json
 clustering/   estilo de jogo por (jogador, round): PCA + KMeans global
 leitura/      insights e frases da página
 scripts/      pipeline, build, manifesto; calibracao/ validações
 pesquisa/     exploratórios (teste não importa) · legado/ sem uso
 dashboard/web template da página, map_core.js, annotations, tactics (prancheta)
-tests/        testes (os de navegador usam Playwright)
+tests/        testes (navegador: Playwright)
 data/processed  métricas por partida (versionado) · data/lineups  arremessos reais
 data/interim    tabelas brutas (fora do git) · demos/  .dem (fora do git)
 data/reference  dados oficiais da HLTV · notas/  decisões e investigações
@@ -42,7 +41,7 @@ docs/           site gerado (fora do git; artefato do CI)
 ## Convenções de código
 
 - Comentários e docstrings em português.
-- Toda métrica devolve `(per_round, summary)`; não troque o per_round pelo agregado.
+- Toda métrica devolve `(per_round, summary)`; o per_round não vira agregado.
 - Limiar é constante nomeada no topo do módulo, com a origem ao lado.
 - Polars e Parquet. `group_by` e `unique` sempre com `maintain_order=True`.
 - Nada de texto fixo no `template.html` além da estrutura.
@@ -145,12 +144,13 @@ texto completo está na nota do link (`notas/decisoes/`).
 - [43](notas/decisoes/43-round-real-na-prancheta.md) Round real é base travada; editar em t troca o real dali.
 - [44](notas/decisoes/44-direcao-visual-sala-de-demo.md) Direção visual "Sala de demo": forma do design, lógica do main.
 - [45](notas/decisoes/45-granada-desenhada.md) Granada desenhada é desenho: tracejada e sem horário.
+- [46](notas/decisoes/46-erros-no-perfil.md) Erro no Perfil: função pura, explícito ou tática; só tipo validado.
 
 ## Números citáveis
 
-Não cite número de cabeça. Os números do projeto (corpus, rating, escada,
-arremessos, testes) estão em `data/processed/numeros_citaveis.json`,
-gerado por `py -3.12 -m scripts.numeros_citaveis`. README e landing leem dali.
+Não cite número de cabeça: os do projeto (corpus, rating, escada, arremessos,
+testes) estão em `data/processed/numeros_citaveis.json`, gerado por
+`py -3.12 -m scripts.numeros_citaveis`. README e landing leem dali.
 
 ## Pontos de calibração que pertencem ao Pedro
 
@@ -161,9 +161,9 @@ Não resolva sozinho; pergunte. Detalhe e histórico em
 - Partição A/Mid/B dos mapas (`MANUAL_PLACE_AREAS`); a Nuke é a mais frágil.
 - Ângulos de entrada manuais (`MANUAL_ENTRY_ANGLES`).
 - Janela de trade (5,0 s) e limiares de peek/hold, contato, pré-fire e rotação.
-- Pesos da divisão de crédito do Round Swing e todos os pesos de `round_spectacle.py`.
+- Pesos do crédito do Round Swing e de `round_spectacle.py`.
 - Altura dos olhos e diferença em pé/agachado medidas (regra 21c).
-- Limiares do card de destaque, do round decisivo, da autópsia e dos papéis.
+- Limiares do destaque, round decisivo, autópsia, papéis e erros do Perfil (46).
 - Pisos de função (regra 31) e do eixo carrega piano/baiter; repick com mais de uma saída.
 - Paleta dos gráficos (regra 10).
 - Rota B: força intermediária (0,6141 afirma "médio"), agachamento parcial neutro,
@@ -174,17 +174,17 @@ Não resolva sozinho; pergunte. Detalhe e histórico em
 - Decisões abertas: [cartões](notas/PENDENCIAS_PARA_O_PEDRO.md).
 - No jogo: [`PENDENCIAS_NO_JOGO.md`](PENDENCIAS_NO_JOGO.md).
 - Demos a baixar: [`RECUPERACAO_DEMOS.md`](RECUPERACAO_DEMOS.md).
-- Limitações conhecidas: [`notas/limitacoes.md`](notas/limitacoes.md).
+- Limitações: [`notas/limitacoes.md`](notas/limitacoes.md).
 
 ## Glossário
 
-- **Gabarito:** arremessos de partidas com `.dem`, com o que a demo grava (força,
-  velocidade, postura, chão), em `tests/fixtures/gabarito_arremessos_*`.
-- **Rota A:** inferir botão, "no ar" e postura só com posição, pela rotina do jogo medida no gabarito.
+- **Gabarito:** arremessos com `.dem` e o que a demo grava (força, velocidade,
+  postura, chão), em `tests/fixtures/gabarito_arremessos_*`.
+- **Rota A:** botão, "no ar" e postura inferidos da posição, pela rotina medida no gabarito.
 - **Rota B:** ler esses valores da demo (parser 2) e declarar a fonte de cada campo.
-- **Neutro:** arremesso ou rótulo sem afirmação, com o motivo; nunca um palpite.
-- **Catraca:** teste que grava o melhor valor medido e falha se piorar.
-- **Fora da amostra:** avaliado em dado que não entrou no ajuste.
+- **Neutro:** arremesso ou rótulo sem afirmação (nunca palpite), com o motivo.
+- **Catraca:** teste que grava o melhor valor e falha se piorar.
+- **Fora da amostra:** dado que não entrou no ajuste.
 - **Regra 36:** preservação de dados (demo, interim e backup).
 - Notas antigas: "item 7" = investigação da força do arremesso; "etapa N" = etapa
   da prancheta; "Fase X" = fase de trabalho anterior.
