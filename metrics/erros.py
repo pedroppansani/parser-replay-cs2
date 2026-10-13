@@ -917,6 +917,26 @@ def _n_d_do_impacto(g: pl.DataFrame, n_col: str, d_col: str) -> tuple[float, flo
     raise KeyError((n_col, d_col))
 
 
+# "Pontos fortes" por (lado, função) só na prévia. No site publicado, os pontos fortes e o resumo do jogador
+# continuam como na fase 12 (referência por função principal, `erros_reference_fase12.json`), para a aba
+# Perfil publicada não mudar enquanto os erros não são validados. SÓ VIRA True depois que o Pedro aprovar.
+FORTES_POR_LADO_PUBLICADOS = False
+REFERENCIA_FASE12_FILE = Path(__file__).resolve().parent / "erros_reference_fase12.json"
+
+
+def funcao_principal(linhas: list[dict]) -> str | None:
+    """(fase 12, só o cálculo publicado dos pontos fortes) A função do lado com mais rounds na função
+    dominante; sem função, None."""
+    com = [r for r in linhas if r.get("funcao")]
+    if not com:
+        return None
+    return sorted(com, key=lambda r: (-int(r.get("rounds_na_funcao") or 0), r.get("side") or ""))[0]["funcao"]
+
+
+def carrega_referencia_fase12() -> dict | None:
+    return carrega_referencia(REFERENCIA_FASE12_FILE)
+
+
 def carrega_referencia(caminho: Path = REFERENCIA_FILE) -> dict | None:
     import json
     if not caminho.exists():
