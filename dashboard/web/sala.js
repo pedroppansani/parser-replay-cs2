@@ -206,7 +206,9 @@ var Sala = (function () {
   }
 
   /** opcoes: {atrasoMs (resposta e entrega), embaralhaMs (atraso extra aleatório
-      por entrega: muda a ordem de chegada), semente, agora (relógio em ms)} */
+      por entrega: muda a ordem de chegada), semente, agora (relógio em ms),
+      compartilhado (chave do localStorage: o estado do servidor passa a viver ali, e duas páginas do mesmo
+      navegador falam com o MESMO servidor falso -- é como os testes do link entre mapas funcionam sem rede)} */
   function ServidorFalso(opcoes) {
     opcoes = opcoes || {};
     var rnd = aleatorio(opcoes.semente || 1);
@@ -214,6 +216,27 @@ var Sala = (function () {
     var salas = {}, membros = {}, ops = [], expulsos = {}, tentativas = {}, criadas = {}, enviadasPor = {};
     var conexoes = [];     // {uid, sala, o (ouvintes), caida}
     var proximoId = 1, pedidos = [];
+    var chaveCompartilhada = opcoes.compartilhado || null;
+    function guardado(acao, valor) {
+      try {
+        if (acao === "le") return window.localStorage.getItem(chaveCompartilhada);
+        window.localStorage.setItem(chaveCompartilhada, valor);
+      } catch (e) { /* sem armazenamento: cada página fica com o servidor só dela */ }
+      return null;
+    }
+    function carrega() {
+      var t = guardado("le");
+      if (!t) return;
+      var d = JSON.parse(t);
+      salas = d.salas; membros = d.membros; expulsos = d.expulsos; tentativas = d.tentativas;
+      criadas = d.criadas; enviadasPor = d.enviadasPor; proximoId = d.proximoId;
+      ops.length = 0;
+      d.ops.forEach(function (l) { ops.push(l); });
+    }
+    function salva() {
+      guardado("grava", JSON.stringify({ salas: salas, membros: membros, expulsos: expulsos, tentativas: tentativas,
+        criadas: criadas, enviadasPor: enviadasPor, proximoId: proximoId, ops: ops }));
+    }
     var srv = {
       atrasoMs: opcoes.atrasoMs || 0,
       embaralhaMs: opcoes.embaralhaMs || 0,
@@ -254,7 +277,12 @@ var Sala = (function () {
 
     srv.chama = function (uid, nome, a) {
       pedidos.push(nome);
-      return depois(function () { return srv[nome + "_"](uid, a); });
+      return depois(function () {
+        if (chaveCompartilhada) carrega();
+        var r = srv[nome + "_"](uid, a);
+        if (chaveCompartilhada) salva();
+        return r;
+      });
     };
     srv.criar_ = function (uid, d) {
       var h = (criadas[uid] || []).filter(function (t) { return t > agora() - 3600 * 1000; });
@@ -424,7 +452,14 @@ var Sala = (function () {
       tipo: "falsa",
       prepara: function () {
         servidor.pedidos.push("prepara");
-        if (!eu) eu = "anon-" + Math.random().toString(16).slice(2, 10);
+        if (!eu && opcoes.compartilhado) {
+          // o login anônimo que a página seguinte reaproveita (como o persistSession do supabase-js)
+          try { eu = window.localStorage.getItem(opcoes.compartilhado + ":uid"); } catch (e) { eu = null; }
+        }
+        if (!eu) {
+          eu = "anon-" + Math.random().toString(16).slice(2, 10);
+          if (opcoes.compartilhado) { try { window.localStorage.setItem(opcoes.compartilhado + ":uid", eu); } catch (e) { /* sem armazenamento */ } }
+        }
         return Promise.resolve(eu);
       },
       uid: function () { return eu; },

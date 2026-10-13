@@ -46,6 +46,9 @@ var Grupo = (function () {
   var SO_NO_SITE = "Grupos funcionam no site publicado.";
   var O_QUE_GUARDA = "O servidor guarda só o nick que você escolher, quem está em cada grupo e as alterações da " +
     "tática. O login é anônimo: sem e-mail, sem senha. Grupo parado há 30 dias é apagado.";
+  var MAPA_DE_OUTRA_PAGINA = "A tática desse grupo é de outro mapa e a página dele não abriu.";
+  var LEVANDO = "Esse grupo é de outro mapa: indo para a página dele…";
+  var MAPA_VALIDO = /^de_[a-z0-9_]{1,30}$/;   // o check de salas.mapa (supabase/migrations)
   var NO_GRUPO = "Num grupo, a tática é a do grupo. Saia do grupo para trocar de tática.";
 
   var cfg = null, sala = null, P = null;
@@ -98,7 +101,7 @@ var Grupo = (function () {
   function criaSala() {
     if (sala) return sala;
     if (cfg.modo === "falsa") {
-      sala = Sala.SalaFalsa(window.__servidorFalso, { uid: (cfg.falsa || {}).uid });
+      sala = Sala.SalaFalsa(window.__servidorFalso, { uid: (cfg.falsa || {}).uid, compartilhado: (cfg.falsa || {}).compartilhado });
     } else {
       sala = Sala.SalaSupabase({ url: cfg.url, chave: cfg.chave, biblioteca: cfg.biblioteca });
     }
@@ -110,9 +113,15 @@ var Grupo = (function () {
   function soNoSite() { return cfg.modo === "supabase" && location.protocol === "file:" && !cfg.arquivoLocal; }
 
   function aoIniciar() {
-    var m = /^#sala=([A-Za-z0-9]{1,16})$/.exec(location.hash);
-    if (m) { G.form.codigo = m[1].toUpperCase(); Prancheta._interno.abaDoPainel("grupo"); }
+    // #sala=CODIGO (o link) ou #sala=CODIGO&nick=NICK (o que a página de outro mapa manda ao redirecionar)
+    var m = /^#sala=([A-Za-z0-9]{1,16})(?:&nick=([^&]*))?$/.exec(location.hash);
+    var nickDoRedirecionamento = "";
+    if (m) {
+      G.form.codigo = m[1].toUpperCase(); Prancheta._interno.abaDoPainel("grupo");
+      try { nickDoRedirecionamento = m[2] ? decodeURIComponent(m[2]) : ""; } catch (e) { nickDoRedirecionamento = ""; }
+    }
     try { G.form.nick = localStorage.getItem("prancheta:grupo-nick") || ""; } catch (e) { G.form.nick = ""; }
+    if (nickDoRedirecionamento) { G.form.nick = nickDoRedirecionamento; G.redirecionado = true; }
     if (!G.form.nick) G.form.nick = (Prancheta._interno.armazem().autor() || "").trim().slice(0, 24);
     var painel = $("pr-painel-grupo");
     painel.addEventListener("click", aoClicar);
@@ -129,6 +138,9 @@ var Grupo = (function () {
       if (e.target.id === "gr-codigo") { e.preventDefault(); entrar(); }
     });
     renderiza();
+    // veio de outra página de mapa com o nick: continua a entrada de onde ela parou (o servidor aceita
+    // quem já é membro sem recontar nick nem limite). Sem o nick no link, só o clique em "Entrar" pede algo.
+    if (nickDoRedirecionamento) entrar();
   }
 
   /* ----------------------------------------------------------------------
@@ -200,8 +212,18 @@ var Grupo = (function () {
     }).then(function (e) {
       if (!e || !e.ok) throw { motivo: e && e.motivo };
       info = e;
+      // o código é de um grupo de OUTRO mapa: a tática dele não abre nesta página
+      if (info.mapa !== P.documento().mapa) {
+        var destino = destinoDoMapa(info.mapa, codigo, nick);
+        if (G.redirecionado || !destino) throw { texto: MAPA_DE_OUTRA_PAGINA };    // nunca em laço
+        guardaNick(nick);
+        G.status = LEVANDO; renderiza();
+        navegaPara(destino);
+        return null;
+      }
       return s.operacoes();
     }).then(function (linhas) {
+      if (!linhas) return null;
       var doc = Object.assign({}, info.cabecalho, { operacoes: [], contador: 0 });
       linhas.forEach(function (l) { doc.operacoes.push(l.op); doc.contador = Math.max(doc.contador, l.op.seq || 0); });
       var erro = P.usaDocumento(doc);
@@ -212,6 +234,20 @@ var Grupo = (function () {
       return conecta();
     }).catch(function (x) { falhaAoEntrar(x); });
   }
+
+  /** A URL da prancheta do mapa do grupo, na mesma pasta, com o código e o nick; "" se o mapa não é válido
+      (o mapa vem do servidor e entra num endereço: só o formato de salas.mapa passa). */
+  function destinoDoMapa(mapa, codigo, nick) {
+    var atual = P.documento().mapa;
+    if (!MAPA_VALIDO.test(String(mapa)) || !atual) return "";
+    var caminho = location.pathname.split("/").pop();
+    if (caminho.indexOf(atual) < 0) return "";
+    var novo = caminho.replace(atual, mapa);
+    var base = location.href.split("#")[0].split("?")[0];
+    base = base.slice(0, base.lastIndexOf("/") + 1);
+    return base + novo + location.search + "#sala=" + codigo + "&nick=" + encodeURIComponent(nick);
+  }
+  function navegaPara(url) { window.location.assign(url); }
 
   function entra(info, nick, docId) {
     G.fase = "dentro"; G.nick = nick; G.codigo = info.codigo; G.salaId = info.sala_id; G.docId = docId;
