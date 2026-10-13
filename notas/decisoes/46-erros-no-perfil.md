@@ -78,7 +78,11 @@
   nome nem steamid; decisão 30); (f) vale também para "Pontos fortes", cujas métricas são
   recalculadas só com os rounds de cada lado (`metrics.erros.metricas_por_lado`, mesmos
   numeradores e denominadores do resumo da partida; a soma dos dois lados reproduz o perfil). Pós-plant
-  e retake já são de um lado só (TR e CT) pela definição. Nenhum parquet por partida mudou:
+  e retake já são de um lado só (TR e CT) pela definição. **Só na prévia:** `FORTES_POR_LADO_PUBLICADOS`
+  = False (só vira True quando o Pedro aprovar). No site publicado, os pontos fortes, o resumo do
+  jogador e os textos continuam exatamente como na fase 12 (`erros_reference_fase12.json`, cálculo por
+  função principal), para a aba Perfil publicada não mudar enquanto os erros não são validados;
+  conferido contra o main em match_01, 02 e 47 (PAGINA.perfil idêntica). Nenhum parquet por partida mudou:
   `VERSAO_DAS_METRICAS` não sobe (a régua e a página são lidas, não gravadas por partida).
 - **Publicação.** `TIPOS_DE_ERRO_VALIDADOS` começa vazia: a seção "Pontos a melhorar" diz "Em
   validação: os tipos de erro aparecem depois de conferidos" com o link "como é conferido" (seção 7
