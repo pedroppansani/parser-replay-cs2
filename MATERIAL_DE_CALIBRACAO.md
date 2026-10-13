@@ -779,3 +779,330 @@ Até você revisar: nada entra em `MANUAL_ENTRY_ANGLES`, e o ângulo visto em me
 | 38 | BombsiteA | CT | -135° | esquerda-baixo | 6 | 32 | — | ____ |
 
 **Sua resposta:** para cada linha, *confirma*, *descarta* (não é ângulo de verdade) ou *corrige* o yaw.
+
+## 7. Erros na aba Perfil
+
+Gerado por `py -3.12 -m scripts.calibracao.erros_do_jogador` (fase 12, decisão 46). Os tipos de erro de `metrics/erros.py` sobre as 52 partidas do corpus. Nenhum tipo aparece no site até você confirmar os exemplos: `TIPOS_DE_ERRO_VALIDADOS` começa vazia. Para ver a aba com todos os tipos marcados "em validação": `py -3.12 -m scripts.build_site --mostrar-erros-nao-validados` (gera em `preview/`, fora do git e nunca publicado).
+
+### 7.0 Ocorrências por tipo no corpus
+
+| tipo | antes dos filtros | depois dos filtros | explícito | depende da tática | saiu pelos filtros (motivo: n) |
+|---|---|---|---|---|---|
+| Não trocou o aliado | 3413 | 1841 | 1841 | 0 | round de economia do time: 845; em duelo próprio: 309; cego no momento: 208; time guardando arma (pós-plant perdido): 188; sem arma de fogo: 19; depois do fim do round: 3 |
+| Possível bait | 1365 | 848 | 848 | 0 | round de economia do time: 279; em duelo próprio: 105; cego no momento: 70; time guardando arma (pós-plant perdido): 48; sem arma de fogo: 13; depois do fim do round: 2 |
+| Perdeu a troca | 1282 | 812 | 812 | 0 | round de economia do time: 370; time guardando arma (pós-plant perdido): 99; depois do fim do round: 1 |
+| Morreu isolado | 3593 | 2066 | 0 | 2066 | round de economia do time: 627; time guardando arma (pós-plant perdido): 499; sem aliado vivo (1 contra N): 385; depois do fim do round: 16 |
+| Primeira morte sem troca | 859 | 691 | 0 | 691 | round de economia do time: 164; time guardando arma (pós-plant perdido): 4 |
+| Flash no time | 3091 | 880 | 880 | 0 | abaixo do limiar da partida: 1934; round de economia do time: 207; time guardando arma (pós-plant perdido): 54; depois do fim do round: 16 |
+| Dano de utilidade no time | 195 | 32 | 32 | 0 | abaixo do limiar da partida: 153; round de economia do time: 7; depois do fim do round: 3 |
+| Utilidade no bolso | não criado | — | — | — | o inventário na hora da morte não existe no dado (decisão 46) |
+
+Ordem dos níveis (a primeira regra que se aplica decide): 1) round de eco ou pistola do time, ou time guardando arma (evento depois do plant num round que o time perdeu): fora; 2) morreu isolado sendo lurker: depende; 3) primeira morte sem troca sendo entry: depende; 4) morreu isolado ou primeira morte do AWPer no duelo de abertura: depende; 5) função só tendência: o motivo diz que a função não é firme; 6) não trocou, possível bait, perdeu a troca, flash no time e dano de utilidade no time: explícito; 7) o resto: depende. Por isso "morreu isolado" e "primeira morte sem troca" saem sempre como "depende da tática" (só o motivo muda).
+
+### 7.1 As constantes novas
+
+Valor proposto, origem, histograma no corpus e quantas ocorrências (depois dos filtros) cada tipo teria no valor mais baixo e no mais alto da faixa. As outras constantes ficam no valor proposto em cada varredura.
+
+#### `DIST_TROCA` = 600 unidades
+
+Origem: o raio de apoio do projeto (RAIO_COMPANHEIRO = 600 do perfil e das funções: "o alcance em que uma troca ainda acontece"). O histograma é a distância de cada aliado vivo a quem morreu, na hora da morte, no mesmo andar.
+
+Mediana 976,2, p75 1605,7, p90 2296,5, p95 2697,5.
+
+```
+        0-100        446 #######
+      100-200       1050 #################
+      200-300       1028 #################
+      300-400       1051 #################
+      400-500        996 ################
+      500-600        977 ################
+      600-700        950 ################   <- proposto
+      700-800        969 ################
+      800-1000      1784 ##############################
+     1000-1200      1566 ##########################
+     1200-1500      2081 ##################################
+     1500-2000      2415 ########################################
+     2000-3000      2231 #####################################
+  >= 3000            496 ########
+  (18040 valores, em unidades)
+```
+
+| tipo | DIST_TROCA = 400 | proposto (600) | DIST_TROCA = 800 |
+|---|---|---|---|
+| Não trocou o aliado | 1099 | 1841 | 2668 |
+| Possível bait | 434 | 848 | 1392 |
+| Perdeu a troca | 812 | 812 | 812 |
+| Morreu isolado | 2627 | 2066 | 1568 |
+| Primeira morte sem troca | 691 | 691 | 691 |
+| Flash no time | 880 | 880 | 880 |
+| Dano de utilidade no time | 32 | 32 | 32 |
+
+#### `S_DUELO` = 2 s
+
+Origem: tempo de um duelo de rifle (reação de ~0,25 s mais 0,3 a 1 s para matar), com folga. O histograma é, para cada aliado a até DIST_TROCA de quem morreu, o tempo desde o último dano que ele deu ou levou de um inimigo antes da morte.
+
+Mediana 4,8, p75 19,8, p90 46,7, p95 63,2.
+
+```
+        0-0.5        477 #######################
+      0.5-1          204 ##########
+        1-1.5        134 ######
+      1.5-2          134 ######
+        2-2.5        123 ######   <- proposto
+      2.5-3          105 #####
+        3-4          170 ########
+        4-5          114 #####
+        5-7          205 ##########
+        7-10         185 #########
+       10-15         180 #########
+  >= 15              834 ########################################
+  (2865 valores, em s)
+```
+
+| tipo | S_DUELO = 1 | proposto (2) | S_DUELO = 4 |
+|---|---|---|---|
+| Não trocou o aliado | 1927 | 1841 | 1685 |
+| Possível bait | 881 | 848 | 795 |
+| Perdeu a troca | 812 | 812 | 812 |
+| Morreu isolado | 2066 | 2066 | 2066 |
+| Primeira morte sem troca | 691 | 691 | 691 |
+| Flash no time | 880 | 880 | 880 |
+| Dano de utilidade no time | 32 | 32 | 32 |
+
+#### `SEG_CEGUEIRA_ALIADO` = 27 s
+
+Origem: o percentil 90 da soma de cegueira imposta ao próprio time por jogador-partida no corpus (fora eco e pós-plant perdido).
+
+Mediana 8,7, p75 16,9, p90 27,1, p95 35,2.
+
+```
+        0-0.01        31 #####################
+     0.01-2           51 ###################################
+        2-4           53 ####################################
+        4-6           56 ######################################
+        6-8           54 #####################################
+        8-10          45 ###############################
+       10-12          34 #######################
+       12-15          44 ##############################
+       15-20          55 #####################################
+       20-30          59 ########################################   <- proposto
+  >= 30               38 ##########################
+  (520 valores, em s)
+```
+
+| tipo | SEG_CEGUEIRA_ALIADO = 5 | proposto (27) | SEG_CEGUEIRA_ALIADO = 20 |
+|---|---|---|---|
+| Não trocou o aliado | 1841 | 1841 | 1841 |
+| Possível bait | 848 | 848 | 848 |
+| Perdeu a troca | 812 | 812 | 812 |
+| Morreu isolado | 2066 | 2066 | 2066 |
+| Primeira morte sem troca | 691 | 691 | 691 |
+| Flash no time | 2534 | 880 | 1257 |
+| Dano de utilidade no time | 32 | 32 | 32 |
+
+#### `SEG_CEGUEIRA_ALIADO_UMA` = 4,8 s
+
+Origem: o percentil 90 da cegueira nos aliados por flash no corpus (uma flash cheia cega de 2 a 5 s; perto do topo é a flash que estourou na cara do aliado). O histograma é a cegueira nos aliados por flash.
+
+Mediana 1,6, p75 3,2, p90 4,8, p95 5,8.
+
+```
+        0-0.5        313 ##################
+      0.5-1          709 ########################################
+        1-1.5        310 #################
+      1.5-2          337 ###################
+        2-2.5        174 ##########
+      2.5-3          175 ##########
+        3-3.5        177 ##########
+      3.5-4          128 #######
+        4-5          246 ##############   <- proposto
+  >= 5               245 ##############
+  (2814 valores, em s)
+```
+
+| tipo | SEG_CEGUEIRA_ALIADO_UMA = 2 | proposto (4,8) | SEG_CEGUEIRA_ALIADO_UMA = 4 |
+|---|---|---|---|
+| Não trocou o aliado | 1841 | 1841 | 1841 |
+| Possível bait | 848 | 848 | 848 |
+| Perdeu a troca | 812 | 812 | 812 |
+| Morreu isolado | 2066 | 2066 | 2066 |
+| Primeira morte sem troca | 691 | 691 | 691 |
+| Flash no time | 1465 | 880 | 1026 |
+| Dano de utilidade no time | 32 | 32 | 32 |
+
+#### `DANO_UTILIDADE_ALIADO` = 20 de dano
+
+Origem: o percentil 95 do dano de HE e molotov no próprio time por jogador-partida no corpus (fora eco e pós-plant perdido).
+
+Mediana 0,0, p75 1,0, p90 10,0, p95 19,0.
+
+```
+        0-0.01       388 ########################################
+     0.01-10          75 ########
+       10-25          43 ####   <- proposto
+       25-40          10 #
+       40-50           3 
+       50-60           1 
+       60-80           0 
+       80-100          0 
+      100-150          0 
+  >= 150               0 
+  (520 valores, em de dano)
+```
+
+| tipo | DANO_UTILIDADE_ALIADO = 25 | proposto (20) | DANO_UTILIDADE_ALIADO = 100 |
+|---|---|---|---|
+| Não trocou o aliado | 1841 | 1841 | 1841 |
+| Possível bait | 848 | 848 | 848 |
+| Perdeu a troca | 812 | 812 | 812 |
+| Morreu isolado | 2066 | 2066 | 2066 |
+| Primeira morte sem troca | 691 | 691 | 691 |
+| Flash no time | 880 | 880 | 880 |
+| Dano de utilidade no time | 18 | 32 | 0 |
+
+#### `MIN_GRANADAS_NO_BOLSO`: não criada
+
+O tipo "Utilidade no bolso" exige o inventário na hora da morte. O parser lê o inventário só no fim do freeze time (`PROPS_DA_COMPRA` em `parsing/parser.py`, a tabela `compra`); na hora da morte não há o que ler. Pela regra do pedido, o tipo não foi criado e nada foi estimado (decisão 46).
+
+### 7.2 Dez exemplos por tipo
+
+Sorteados com semente fixa (20261013), no máximo 2 por partida, só entre as ocorrências que passaram nos filtros. O relógio é o tempo decorrido desde o fim do freeze time. O link abre o replay naquele round, 3 s antes do instante (gere o site com `py -3.12 -m scripts.build_site`). Distâncias em unidades do jogo, no mesmo andar; "—" quando não se aplica ou estão em andares diferentes. ΔWPA em pontos de chance de vitória da partida, pela estimativa do modelo (negativo = o time perdeu chance).
+
+**Regra de publicação:** o tipo só aparece no site com pelo menos 8 dos 10 confirmados: "sim" quando o nível é explícito, ou "depende da tática" quando o nível é depende.
+
+#### Não trocou o aliado
+
+Frase de como melhorar: "Jogue a uma distância de troca do parceiro e mirando o mesmo ponto que ele. Se ele cair, o matador está exposto por alguns segundos: é a sua janela."
+
+**A frase serve?** sim / reescrever: ____
+
+| # | partida | round | relógio | jogador | aliado | matador | dist. ao aliado | dist. jogador–matador | dist. aliado–matador | situação | valor | ΔWPA | nível | motivo | replay | É erro mesmo? | A frase serve? |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | match_22 | 18 | 1:12 | Jimpphat | XANTARES | makazze | 155 | 738 | 636 | 3 contra 5 | — | -0,0 | explícito | o aliado morreu perto dele e o matador saiu vivo da janela de troca | [abrir](docs/match_22.html#replay?round=18&t=72.47) | sim / não / depende da tática | sim / reescrever |
+| 2 | match_25 | 11 | 1:25 | iM | w0nderful | donk | 56 | 928 | 969 | 3 contra 3 | — | -1,0 | explícito | o aliado morreu perto dele e o matador saiu vivo da janela de troca | [abrir](docs/match_25.html#replay?round=11&t=85.06) | sim / não / depende da tática | sim / reescrever |
+| 3 | match_33 | 9 | 0:41 | xertioN | Brollan | mezii | 203 | 859 | 663 | 5 contra 5 | — | -1,7 | explícito | o aliado morreu perto dele e o matador saiu vivo da janela de troca | [abrir](docs/match_33.html#replay?round=9&t=41.19) | sim / não / depende da tática | sim / reescrever |
+| 4 | match_38 | 17 | 1:34 | zont1x | donk | jL | 362 | 1382 | 1035 | 3 contra 3 | — | -6,1 | explícito | o aliado morreu perto dele e o matador saiu vivo da janela de troca | [abrir](docs/match_38.html#replay?round=17&t=93.89) | sim / não / depende da tática | sim / reescrever |
+| 5 | match_40 | 20 | 0:39 | magixx | donk | w0nderful | 338 | 148 | 228 | 5 contra 5 | — | -3,7 | explícito | o aliado morreu perto dele e o matador saiu vivo da janela de troca | [abrir](docs/match_40.html#replay?round=20&t=39.41) | sim / não / depende da tática | sim / reescrever |
+| 6 | match_40 | 23 | 1:12 | magixx | donk | Aleksib | 249 | 663 | 417 | 4 contra 5 | — | -3,0 | explícito | o aliado morreu perto dele e o matador saiu vivo da janela de troca | [abrir](docs/match_40.html#replay?round=23&t=71.75) | sim / não / depende da tática | sim / reescrever |
+| 7 | match_41 | 15 | 0:42 | kyousuke | NiKo | Brollan | 185 | 789 | 904 | 5 contra 4 | — | -4,3 | explícito | o aliado morreu perto dele e o matador saiu vivo da janela de troca | [abrir](docs/match_41.html#replay?round=15&t=42.03) | sim / não / depende da tática | sim / reescrever |
+| 8 | match_45 | 12 | 1:26 | FalleN | yuurih | mezii | 244 | 60 | 188 | 4 contra 5 | — | -0,1 | explícito | o aliado morreu perto dele e o matador saiu vivo da janela de troca | [abrir](docs/match_45.html#replay?round=12&t=85.92) | sim / não / depende da tática | sim / reescrever |
+| 9 | match_49 | 9 | 0:40 | Spinx | Jimpphat | TeSeS | 306 | 1263 | 1025 | 3 contra 4 | — | -1,1 | explícito | o aliado morreu perto dele e o matador saiu vivo da janela de troca | [abrir](docs/match_49.html#replay?round=9&t=39.86) | sim / não / depende da tática | sim / reescrever |
+| 10 | match_50 | 16 | 1:34 | kyousuke | kyxsan | Spinx | 179 | 783 | 870 | 4 contra 5 | — | -0,8 | explícito | o aliado morreu perto dele e o matador saiu vivo da janela de troca | [abrir](docs/match_50.html#replay?round=16&t=94.25) | sim / não / depende da tática | sim / reescrever |
+
+#### Possível bait
+
+Frase de como melhorar: "Se você é o segundo a entrar, entre logo atrás e ao lado, não atrás de parede. Combinem antes quem entra e quem troca."
+
+**A frase serve?** sim / reescrever: ____
+
+| # | partida | round | relógio | jogador | aliado | matador | dist. ao aliado | dist. jogador–matador | dist. aliado–matador | situação | valor | ΔWPA | nível | motivo | replay | É erro mesmo? | A frase serve? |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | match_03 | 20 | 0:37 | PAiN-M- | Unihi | lilpeepfan- | 4 | 318 | 318 | 5 contra 5 | — | -0,7 | explícito | estava atrás do aliado, não atirou no matador e sobreviveu à janela de troca; o dado mostra posição e tempo, não intenção | [abrir](docs/match_03.html#replay?round=20&t=36.61) | sim / não / depende da tática | sim / reescrever |
+| 2 | match_08 | 20 | 0:26 | donk666 | certa1n | gwizdakk | 300 | 1122 | 1082 | 3 contra 5 | — | -0,7 | explícito | estava atrás do aliado, não atirou no matador e sobreviveu à janela de troca; o dado mostra posição e tempo, não intenção | [abrir](docs/match_08.html#replay?round=20&t=26.48) | sim / não / depende da tática | sim / reescrever |
+| 3 | match_17 | 11 | 0:44 | YEKINDAR | molodoy | Aleksib | 543 | 1585 | 1044 | 4 contra 3 | — | -1,4 | explícito | estava atrás do aliado, não atirou no matador e sobreviveu à janela de troca; o dado mostra posição e tempo, não intenção | [abrir](docs/match_17.html#replay?round=11&t=44.3) | sim / não / depende da tática | sim / reescrever |
+| 4 | match_19 | 5 | 1:18 | molodoy | FalleN | kyousuke | 63 | 872 | 853 | 3 contra 5 | — | -0,5 | explícito | estava atrás do aliado, não atirou no matador e sobreviveu à janela de troca; o dado mostra posição e tempo, não intenção | [abrir](docs/match_19.html#replay?round=5&t=77.67) | sim / não / depende da tática | sim / reescrever |
+| 5 | match_29 | 8 | 0:37 | yuurih | YEKINDAR | NiKo | 455 | 834 | 757 | 3 contra 4 | — | -0,6 | explícito | estava atrás do aliado, não atirou no matador e sobreviveu à janela de troca; o dado mostra posição e tempo, não intenção | [abrir](docs/match_29.html#replay?round=8&t=37.28) | sim / não / depende da tática | sim / reescrever |
+| 6 | match_37 | 17 | 0:59 | Aleksib | b1t | donk | 322 | 1546 | 1273 | 4 contra 1 | — | -0,1 | explícito | estava atrás do aliado, não atirou no matador e sobreviveu à janela de troca; o dado mostra posição e tempo, não intenção | [abrir](docs/match_37.html#replay?round=17&t=58.91) | sim / não / depende da tática | sim / reescrever |
+| 7 | match_38 | 14 | 0:49 | magixx | SH1R0 | Aleksib | 535 | 1079 | 732 | 3 contra 3 | — | -7,1 | explícito | estava atrás do aliado, não atirou no matador e sobreviveu à janela de troca; o dado mostra posição e tempo, não intenção | [abrir](docs/match_38.html#replay?round=14&t=49.39) | sim / não / depende da tática | sim / reescrever |
+| 8 | match_45 | 6 | 0:19 | flameZ | mezii | yuurih | 457 | 602 | 145 | 5 contra 5 | — | -2,1 | explícito | estava atrás do aliado, não atirou no matador e sobreviveu à janela de troca; o dado mostra posição e tempo, não intenção | [abrir](docs/match_45.html#replay?round=6&t=18.83) | sim / não / depende da tática | sim / reescrever |
+| 9 | match_48 | 9 | 1:09 | ZywOo | apEX | torzsi | 272 | 1189 | 1005 | 5 contra 5 | — | -2,8 | explícito | estava atrás do aliado, não atirou no matador e sobreviveu à janela de troca; o dado mostra posição e tempo, não intenção | [abrir](docs/match_48.html#replay?round=9&t=68.53) | sim / não / depende da tática | sim / reescrever |
+| 10 | match_51 | 14 | 1:05 | Spinx | Brollan | TeSeS | 177 | 1076 | 938 | 5 contra 5 | — | -1,8 | explícito | estava atrás do aliado, não atirou no matador e sobreviveu à janela de troca; o dado mostra posição e tempo, não intenção | [abrir](docs/match_51.html#replay?round=14&t=65.06) | sim / não / depende da tática | sim / reescrever |
+
+#### Perdeu a troca
+
+Frase de como melhorar: "Na troca, não pique o mesmo ângulo que acabou de matar o aliado. Mude o ângulo ou jogue uma flash no matador antes."
+
+**A frase serve?** sim / reescrever: ____
+
+| # | partida | round | relógio | jogador | aliado | matador | dist. ao aliado | dist. jogador–matador | dist. aliado–matador | situação | valor | ΔWPA | nível | motivo | replay | É erro mesmo? | A frase serve? |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | match_01 | 3 | 0:16 | 9amaterasu9 | s-chilla | donk666 | 66 | 767 | 785 | 4 contra 3 | — | -3,7 | explícito | foi para a troca e morreu sem matar quem matou o aliado | [abrir](docs/match_01.html#replay?round=3&t=15.61) | sim / não / depende da tática | sim / reescrever |
+| 2 | match_08 | 11 | 0:52 | KENNY-_ | -EsD | donk666 | 562 | 598 | 946 | 2 contra 3 | — | -1,5 | explícito | foi para a troca e morreu sem matar quem matou o aliado | [abrir](docs/match_08.html#replay?round=11&t=52.36) | sim / não / depende da tática | sim / reescrever |
+| 3 | match_12 | 3 | 1:32 | apEX | ropz | FalleN | 620 | 884 | 272 | 2 contra 4 | — | -0,7 | explícito | foi para a troca e morreu sem matar quem matou o aliado | [abrir](docs/match_12.html#replay?round=3&t=91.56) | sim / não / depende da tática | sim / reescrever |
+| 4 | match_21 | 5 | 0:35 | b1t | iM | Jimpphat | — | — | 622 | 2 contra 3 | — | -2,1 | explícito | foi para a troca e morreu sem matar quem matou o aliado | [abrir](docs/match_21.html#replay?round=5&t=35.36) | sim / não / depende da tática | sim / reescrever |
+| 5 | match_28 | 18 | 0:53 | sh1ro | zont1x | flameZ | 588 | 411 | 185 | 1 contra 4 | — | -0,5 | explícito | foi para a troca e morreu sem matar quem matou o aliado | [abrir](docs/match_28.html#replay?round=18&t=53.39) | sim / não / depende da tática | sim / reescrever |
+| 6 | match_33 | 15 | 1:38 | Spinx | Jimpphat | ropz | 101 | 382 | 477 | 2 contra 1 | — | -4,7 | explícito | foi para a troca e morreu sem matar quem matou o aliado | [abrir](docs/match_33.html#replay?round=15&t=97.67) | sim / não / depende da tática | sim / reescrever |
+| 7 | match_42 | 23 | 0:57 | Spinx | torzsi | kyousuke | 683 | 385 | 1062 | 2 contra 2 | — | -8,5 | explícito | foi para a troca e morreu sem matar quem matou o aliado | [abrir](docs/match_42.html#replay?round=23&t=56.72) | sim / não / depende da tática | sim / reescrever |
+| 8 | match_46 | 23 | 1:15 | yuurih | molodoy | ZywOo | 602 | 798 | 239 | 2 contra 5 | — | -0,5 | explícito | foi para a troca e morreu sem matar quem matou o aliado | [abrir](docs/match_46.html#replay?round=23&t=75.11) | sim / não / depende da tática | sim / reescrever |
+| 9 | match_49 | 11 | 1:27 | NiKo | TeSeS | torzsi | 1350 | 873 | 1027 | 3 contra 2 | — | -1,6 | explícito | foi para a troca e morreu sem matar quem matou o aliado | [abrir](docs/match_49.html#replay?round=11&t=87.42) | sim / não / depende da tática | sim / reescrever |
+| 10 | match_50 | 11 | 1:39 | Brollan | Spinx | m0NESY | 1162 | 1170 | 578 | 4 contra 5 | — | -3,6 | explícito | foi para a troca e morreu sem matar quem matou o aliado | [abrir](docs/match_50.html#replay?round=11&t=98.98) | sim / não / depende da tática | sim / reescrever |
+
+#### Morreu isolado
+
+Frase de como melhorar: "Se não é o lurker, jogue perto de um aliado e avise a posição. Morrer sozinho dá vantagem numérica de graça."
+
+**A frase serve?** sim / reescrever: ____
+
+| # | partida | round | relógio | jogador | aliado | matador | dist. ao aliado | dist. jogador–matador | dist. aliado–matador | situação | valor | ΔWPA | nível | motivo | replay | É erro mesmo? | A frase serve? |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | match_06 | 5 | 0:26 | -_-siNNer | — | pradablade | 1660 | 128 | — | 4 contra 5 | — | -1,2 | depende da tática | o dado mostra posição e tempo, não o que o time pediu | [abrir](docs/match_06.html#replay?round=5&t=25.98) | sim / não / depende da tática | sim / reescrever |
+| 2 | match_06 | 18 | 0:39 | adamS | — | donk666 | 912 | 594 | — | 4 contra 1 | — | -0,0 | depende da tática | o dado mostra posição e tempo, não o que o time pediu | [abrir](docs/match_06.html#replay?round=18&t=38.81) | sim / não / depende da tática | sim / reescrever |
+| 3 | match_15 | 6 | 0:15 | FalleN | — | iM | 1412 | 1673 | — | 5 contra 5 | — | -2,7 | depende da tática | o dado mostra posição e tempo, não o que o time pediu | [abrir](docs/match_15.html#replay?round=6&t=15.02) | sim / não / depende da tática | sim / reescrever |
+| 4 | match_24 | 12 | 0:58 | jL | — | donk | 1056 | 626 | — | 5 contra 4 | — | -3,1 | depende da tática | o dado mostra posição e tempo, não o que o time pediu | [abrir](docs/match_24.html#replay?round=12&t=58.38) | sim / não / depende da tática | sim / reescrever |
+| 5 | match_30 | 19 | 0:27 | NiKo | — | YEKINDAR | 679 | 706 | — | 5 contra 5 | — | -1,8 | depende da tática | o dado mostra posição e tempo, não o que o time pediu | [abrir](docs/match_30.html#replay?round=19&t=27.06) | sim / não / depende da tática | sim / reescrever |
+| 6 | match_36 | 9 | 0:30 | donk | — | b1t | 1619 | 585 | — | 3 contra 3 | — | -1,8 | depende da tática | o dado mostra posição e tempo, não o que o time pediu | [abrir](docs/match_36.html#replay?round=9&t=29.58) | sim / não / depende da tática | sim / reescrever |
+| 7 | match_36 | 9 | 1:05 | b1t | — | chopper | 612 | 842 | — | 3 contra 1 | — | -0,1 | depende da tática | o dado mostra posição e tempo, não o que o time pediu | [abrir](docs/match_36.html#replay?round=9&t=64.61) | sim / não / depende da tática | sim / reescrever |
+| 8 | match_37 | 28 | 1:21 | iM | — | donk | 1638 | 667 | — | 3 contra 4 | — | -5,3 | depende da tática | o dado mostra posição e tempo, não o que o time pediu | [abrir](docs/match_37.html#replay?round=28&t=81.09) | sim / não / depende da tática | sim / reescrever |
+| 9 | match_49 | 8 | 1:37 | kyousuke | — | Spinx | 610 | 291 | — | 2 contra 2 | — | -3,3 | depende da tática | o dado mostra posição e tempo, não o que o time pediu | [abrir](docs/match_49.html#replay?round=8&t=97.17) | sim / não / depende da tática | sim / reescrever |
+| 10 | match_50 | 12 | 1:05 | Jimpphat | — | NiKo | 934 | 138 | — | 5 contra 5 | — | -4,9 | depende da tática | o dado mostra posição e tempo, não o que o time pediu | [abrir](docs/match_50.html#replay?round=12&t=65.12) | sim / não / depende da tática | sim / reescrever |
+
+#### Primeira morte sem troca
+
+Frase de como melhorar: "Sem ser o entry, evite o primeiro contato sozinho. Espere a informação ou alguém para trocar."
+
+**A frase serve?** sim / reescrever: ____
+
+| # | partida | round | relógio | jogador | aliado | matador | dist. ao aliado | dist. jogador–matador | dist. aliado–matador | situação | valor | ΔWPA | nível | motivo | replay | É erro mesmo? | A frase serve? |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | match_01 | 11 | 0:13 | s-chilla | — | donk666 | 1103 | 608 | — | 5 contra 5 | — | -4,7 | depende da tática | o dado mostra posição e tempo, não o que o time pediu | [abrir](docs/match_01.html#replay?round=11&t=12.77) | sim / não / depende da tática | sim / reescrever |
+| 2 | match_02 | 5 | 0:12 | bezimienny | — | OG_Pablo_ | 494 | 839 | — | 5 contra 5 | — | -3,1 | depende da tática | o dado mostra posição e tempo, não o que o time pediu | [abrir](docs/match_02.html#replay?round=5&t=12.12) | sim / não / depende da tática | sim / reescrever |
+| 3 | match_09 | 16 | 0:18 | newnickname7 | — | donk666 | 385 | 164 | — | 5 contra 5 | — | -1,6 | depende da tática | segurar sozinho um ângulo de abertura é o trabalho do AWPer | [abrir](docs/match_09.html#replay?round=16&t=18.31) | sim / não / depende da tática | sim / reescrever |
+| 4 | match_12 | 12 | 0:35 | flameZ | — | molodoy | 828 | 769 | — | 5 contra 5 | — | -3,5 | depende da tática | o dado mostra posição e tempo, não o que o time pediu | [abrir](docs/match_12.html#replay?round=12&t=34.86) | sim / não / depende da tática | sim / reescrever |
+| 5 | match_26 | 12 | 0:31 | donk | — | apEX | 546 | 502 | — | 5 contra 5 | — | -1,8 | depende da tática | o dado mostra posição e tempo, não o que o time pediu | [abrir](docs/match_26.html#replay?round=12&t=30.84) | sim / não / depende da tática | sim / reescrever |
+| 6 | match_32 | 26 | 0:56 | YEKINDAR | — | m0NESY | 129 | 1598 | — | 5 contra 5 | — | -7,1 | depende da tática | o dado mostra posição e tempo, não o que o time pediu | [abrir](docs/match_32.html#replay?round=26&t=55.52) | sim / não / depende da tática | sim / reescrever |
+| 7 | match_42 | 30 | 0:54 | kyousuke | — | torzsi | 188 | 1322 | — | 5 contra 5 | — | -11,5 | depende da tática | o dado mostra posição e tempo, não o que o time pediu | [abrir](docs/match_42.html#replay?round=30&t=53.97) | sim / não / depende da tática | sim / reescrever |
+| 8 | match_46 | 4 | 1:01 | ZywOo | — | yuurih | 215 | 1273 | — | 5 contra 5 | — | -3,3 | depende da tática | segurar sozinho um ângulo de abertura é o trabalho do AWPer | [abrir](docs/match_46.html#replay?round=4&t=60.92) | sim / não / depende da tática | sim / reescrever |
+| 9 | match_52 | 2 | 0:18 | controlez | — | ropz | 411 | 1299 | — | 5 contra 5 | — | -3,8 | depende da tática | o dado mostra posição e tempo, não o que o time pediu | [abrir](docs/match_52.html#replay?round=2&t=18.06) | sim / não / depende da tática | sim / reescrever |
+| 10 | match_53 | 15 | 0:12 | Mzinho | — | flameZ | 103 | 241 | — | 5 contra 5 | — | -1,0 | depende da tática | abrir o round é a função do entry; o que pesa é se o time trocou | [abrir](docs/match_53.html#replay?round=15&t=12.17) | sim / não / depende da tática | sim / reescrever |
+
+#### Flash no time
+
+Frase de como melhorar: "Avise antes de soltar e prefira a pop flash por cima do ângulo do aliado, não na frente dele."
+
+**A frase serve?** sim / reescrever: ____
+
+| # | partida | round | relógio | jogador | aliado | matador | dist. ao aliado | dist. jogador–matador | dist. aliado–matador | situação | valor | ΔWPA | nível | motivo | replay | É erro mesmo? | A frase serve? |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | match_05 | 16 | 1:01 | lilpeepfan- | dorfen | — | — | — | — | 3 contra 1 | 4,9 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_05.html#replay?round=16&t=60.81) | sim / não / depende da tática | sim / reescrever |
+| 2 | match_09 | 17 | 0:09 | Magnojezzz | zzeraj | — | — | — | — | 0 contra 0 | 6,1 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_09.html#replay?round=17&t=8.81) | sim / não / depende da tática | sim / reescrever |
+| 3 | match_31 | 3 | 0:13 | molodoy | YEKINDAR | — | — | — | — | 0 contra 0 | 2,0 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_31.html#replay?round=3&t=12.53) | sim / não / depende da tática | sim / reescrever |
+| 4 | match_31 | 14 | 1:10 | KSCERATO | FalleN | — | — | — | — | 4 contra 2 | 3,2 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_31.html#replay?round=14&t=69.72) | sim / não / depende da tática | sim / reescrever |
+| 5 | match_37 | 21 | 0:08 | chopper | magixx | — | — | — | — | 0 contra 0 | 6,2 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_37.html#replay?round=21&t=8.22) | sim / não / depende da tática | sim / reescrever |
+| 6 | match_38 | 19 | 0:08 | b1t | iM | — | — | — | — | 0 contra 0 | 3,8 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_38.html#replay?round=19&t=7.59) | sim / não / depende da tática | sim / reescrever |
+| 7 | match_42 | 2 | 1:06 | m0NESY | NiKo | — | — | — | — | 5 contra 4 | 3,2 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_42.html#replay?round=2&t=66.19) | sim / não / depende da tática | sim / reescrever |
+| 8 | match_42 | 36 | 0:10 | torzsi | Spinx | — | — | — | — | 0 contra 0 | 4,8 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_42.html#replay?round=36&t=9.91) | sim / não / depende da tática | sim / reescrever |
+| 9 | match_50 | 9 | 0:17 | NiKo | kyousuke | — | — | — | — | 0 contra 0 | 4,4 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_50.html#replay?round=9&t=17.34) | sim / não / depende da tática | sim / reescrever |
+| 10 | match_51 | 6 | 0:30 | kyxsan | NiKo | — | — | — | — | 0 contra 0 | 5,2 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_51.html#replay?round=6&t=29.53) | sim / não / depende da tática | sim / reescrever |
+
+#### Dano de utilidade no time
+
+Frase de como melhorar: "Confira onde o time está antes de soltar HE ou molotov num ponto de passagem."
+
+**A frase serve?** sim / reescrever: ____
+
+| # | partida | round | relógio | jogador | aliado | matador | dist. ao aliado | dist. jogador–matador | dist. aliado–matador | situação | valor | ΔWPA | nível | motivo | replay | É erro mesmo? | A frase serve? |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | match_04 | 17 | 0:19 | nedorufe | L1nkero | — | — | — | — | 5 contra 4 | 9,0 | — | explícito | a granada dele feriu o próprio time | [abrir](docs/match_04.html#replay?round=17&t=18.62) | sim / não / depende da tática | sim / reescrever |
+| 2 | match_20 | 18 | 0:20 | TeSeS | kyousuke | — | — | — | — | 4 contra 4 | 38,0 | — | explícito | a granada dele feriu o próprio time | [abrir](docs/match_20.html#replay?round=18&t=20.05) | sim / não / depende da tática | sim / reescrever |
+| 3 | match_20 | 25 | 0:10 | FalleN | YEKINDAR | — | — | — | — | 0 contra 0 | 26,0 | — | explícito | a granada dele feriu o próprio time | [abrir](docs/match_20.html#replay?round=25&t=10.33) | sim / não / depende da tática | sim / reescrever |
+| 4 | match_24 | 18 | 0:35 | chopper | zont1x | — | — | — | — | 0 contra 0 | 28,0 | — | explícito | a granada dele feriu o próprio time | [abrir](docs/match_24.html#replay?round=18&t=35.28) | sim / não / depende da tática | sim / reescrever |
+| 5 | match_33 | 10 | 1:36 | ZywOo | flameZ | — | — | — | — | 0 contra 0 | 22,0 | — | explícito | a granada dele feriu o próprio time | [abrir](docs/match_33.html#replay?round=10&t=95.59) | sim / não / depende da tática | sim / reescrever |
+| 6 | match_39 | 11 | 1:28 | chopper | donk | — | — | — | — | 4 contra 3 | 24,0 | — | explícito | a granada dele feriu o próprio time | [abrir](docs/match_39.html#replay?round=11&t=88.17) | sim / não / depende da tática | sim / reescrever |
+| 7 | match_39 | 18 | 0:10 | magixx | chopper | — | — | — | — | 0 contra 0 | 45,0 | — | explícito | a granada dele feriu o próprio time | [abrir](docs/match_39.html#replay?round=18&t=9.61) | sim / não / depende da tática | sim / reescrever |
+| 8 | match_40 | 27 | 1:14 | b1t | iM | — | — | — | — | 2 contra 2 | 17,0 | — | explícito | a granada dele feriu o próprio time | [abrir](docs/match_40.html#replay?round=27&t=73.64) | sim / não / depende da tática | sim / reescrever |
+| 9 | match_40 | 30 | 0:28 | b1t | w0nderful | — | — | — | — | 0 contra 0 | 7,0 | — | explícito | a granada dele feriu o próprio time | [abrir](docs/match_40.html#replay?round=30&t=28.34) | sim / não / depende da tática | sim / reescrever |
+| 10 | match_50 | 10 | 0:25 | Brollan | Spinx | — | — | — | — | 0 contra 0 | 27,0 | — | explícito | a granada dele feriu o próprio time | [abrir](docs/match_50.html#replay?round=10&t=25.45) | sim / não / depende da tática | sim / reescrever |
+
+### 7.3 Sua resposta
+
+Para cada tipo: quantos dos 10 exemplos você confirma, e se a frase de como melhorar serve. O tipo com 8 ou mais confirmados entra em `TIPOS_DE_ERRO_VALIDADOS` (`metrics/erros.py`) num item à parte; os reprovados ficam fora da tela, e eu trago uma proposta de ajuste com os números.
