@@ -145,7 +145,7 @@ texto completo está na nota do link (`notas/decisoes/`).
 - [44](notas/decisoes/44-direcao-visual-sala-de-demo.md) Direção visual "Sala de demo": forma do design, lógica do main.
 - [45](notas/decisoes/45-granada-desenhada.md) Granada desenhada (replay e prancheta) é desenho: anel tracejado e 85%, sem horário, fora da linha do tempo e do roteiro; só "Converter em granada com horário" a torna evento.
 - [46](notas/decisoes/46-erros-no-perfil.md) Erro no Perfil: cada tipo é função pura de `metrics/erros.py`, com nível escrito (explícito ou depende da tática) e custo em ΔWPA; a referência é do mesmo lado e função; nenhum tipo vai ao site sem o Pedro validá-lo (`TIPOS_DE_ERRO_VALIDADOS`).
-- [47](notas/decisoes/47-grupos-na-prancheta.md) Grupo (Supabase) só transporta o log, sem mudar operação; quem pode desenhar é o RLS; sem grupo nada vai à rede; `GRUPOS_ATIVOS` só vira True após a revisão do `seguranca` e o OK do Pedro; chave secreta nunca entra no repositório.
+- [47](notas/decisoes/47-grupos-na-prancheta.md) Grupo (Supabase) só transporta o log, sem mudar operação; quem pode desenhar é o RLS; sem grupo nada vai à rede; `GRUPOS_ATIVOS` só vira True após a revisão do `seguranca` e o OK do Pedro; chave secreta nunca no repositório.
 
 ## Números citáveis
 
