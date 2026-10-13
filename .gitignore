@@ -54,3 +54,9 @@ docs/
 
 # saída dos reprocessamentos (scripts/reprocessa.py)
 logs/
+
+# Grupos (fase 13): o .env tem a URL e a chave pública do Supabase (fora do git);
+# o node_modules do teste das políticas no PGlite também ficam fora.
+supabase/tests/node_modules/
+supabase/tests/package*.json
+supabase/.temp/
