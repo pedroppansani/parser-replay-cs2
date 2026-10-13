@@ -56,10 +56,21 @@
   um tipo vai para Detalhes. Pontos fortes: das métricas que já existem no perfil em que mais é
   melhor (`METRICAS_DE_PONTO_FORTE`), as 2 mais acima da régua da função, só acima de 15% da régua
   (a mesma `MARGEM_DESTAQUE` da aba), sem amostra fraca, com o bruto ao lado.
-- **Régua anônima por função** (`metrics/erros_reference.json`, `scripts/fit_erros_reference.py`):
-  medianas do corpus da contagem de cada tipo e do valor de cada métrica de ponto forte, por função
-  principal (a do lado com mais rounds na função dominante); função com menos de 20
-  jogador-partidas usa a do corpus inteiro, e a frase diz qual.
+- **Régua anônima por (lado, função)** (fase 12b; `metrics/erros_reference.json`,
+  `scripts/fit_erros_reference.py`). Substitui a régua "por função principal" da fase 12, que usava
+  a função do lado com mais rounds e o corpus inteiro como queda: isso misturava os lados (lurker
+  de TR contra âncoras de CT). Agora: (a) as ocorrências são separadas por lado e um ponto a
+  melhorar é um par (tipo, lado); o card diz "no TR"; (b) a referência é a distribuição do mesmo
+  tipo entre os jogador-lados do corpus (um jogador numa partida, num lado) com a mesma função no
+  mesmo lado; (c) célula com menos de `MIN_REF_LADO_FUNCAO` = 20 jogador-lados (a origem está ao
+  lado da constante) usa o lado inteiro, e a tela diz "referência: todos os jogadores de TR (poucos
+  lurkers no corpus)"; no corpus de 52 partidas só Suporte do TR (17) cai aí; (d) os lados nunca se
+  misturam, nem como queda; (e) a régua continua anônima (histograma das contagens e medianas, sem
+  nome nem steamid; decisão 30); (f) vale também para "Pontos fortes", cujas métricas são
+  recalculadas só com os rounds de cada lado (`metrics.erros.metricas_por_lado`, mesmos
+  numeradores e denominadores do resumo da partida; a soma dos dois lados reproduz o perfil). Pós-plant
+  e retake já são de um lado só (TR e CT) pela definição. Nenhum parquet por partida mudou:
+  `VERSAO_DAS_METRICAS` não sobe (a régua e a página são lidas, não gravadas por partida).
 - **Publicação.** `TIPOS_DE_ERRO_VALIDADOS` começa vazia: a seção "Pontos a melhorar" diz "Em
   validação: os tipos de erro aparecem depois de conferidos" com o link "como é conferido" (seção 7
   do material). Um tipo entra quando o Pedro confirma pelo menos 8 dos 10 exemplos. `py -3.12 -m

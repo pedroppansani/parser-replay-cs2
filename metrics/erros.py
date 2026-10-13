@@ -135,6 +135,7 @@ CONFERIR_COM_O_TIME = "Vale conferir com o time se era o plano."
 # Motivos (pedido 12.2, regras 2 a 7), na forma em que a tela escreve.
 MOTIVO_LURKER = "jogar longe do time é a função do lurker"
 MOTIVO_ENTRY = "abrir o round é a função do entry; o que pesa é se o time trocou"
+# "Ângulo de abertura" = a morte que abre o round (a primeira kill de inimigo do round; `_Indice.abertura`).
 MOTIVO_AWPER = "segurar sozinho um ângulo de abertura é o trabalho do AWPer"
 MOTIVO_TENDENCIA = "a função não é firme nesta partida"
 MOTIVO_GERAL = "o dado mostra posição e tempo, não o que o time pediu"
@@ -785,21 +786,117 @@ METRICAS_DE_PONTO_FORTE = (
     ("kills_contra_compra_cheia", "num2", "rounds contra compra cheia"),
 )
 
-# Régua por função: com menos jogador-partidas que isto na função, a régua é a do corpus inteiro.
-# Origem: o mesmo raciocínio do MIN_JOGADOR_PARTIDAS do perfil (50), em escala de função: 520
-# jogador-partidas divididas em ~8 funções dão ~60 por função; 20 é o mínimo para uma mediana de
-# contagem não ser um jogador só.
-MIN_JOGADOR_PARTIDAS_POR_FUNCAO = 20
+# Régua por (lado, função): a célula é o conjunto de jogador-lados do corpus com a mesma função no
+# mesmo lado (um jogador-lado = um jogador numa partida, num dos lados). Com menos jogador-lados que
+# isto, a referência passa a ser o lado inteiro (todas as funções daquele lado); os lados nunca se
+# misturam (pedido 12b). Origem: o piso de função da fase 12 (MIN_JOGADOR_PARTIDAS_POR_FUNCAO = 20),
+# que vinha do mesmo raciocínio do MIN_JOGADOR_PARTIDAS do perfil (50): 20 é o mínimo para um
+# percentil de contagem não ser um jogador só. Com os 1.040 jogador-lados do corpus de 52 partidas,
+# só a célula Suporte do TR (17) cai no lado inteiro.
+MIN_REF_LADO_FUNCAO = 20
 TODAS = "__todas__"
+LADOS = ("ct", "t")
+ROTULO_DO_LADO = {"ct": "CT", "t": "TR"}
 
 
-def funcao_principal(linhas: list[dict]) -> str | None:
-    """A função do jogador na partida para a régua: a do lado com mais rounds na função dominante (a mesma
-    escolha do card do MVP em leitura/insights, sem o empate: empate não tem função). Sem função, None."""
-    com = [r for r in linhas if r.get("funcao")]
-    if not com:
+def percentil_do_histograma(hist: dict, q: float) -> float | None:
+    """Percentil `q` (0 a 100, interpolação linear) de {contagem: quantos jogador-lados}. A régua guarda o
+    histograma das contagens (anônimo) e não só um percentil, para o material de calibração e a página
+    usarem qualquer percentil."""
+    valores: list[int] = []
+    for k in sorted(hist, key=lambda x: int(x)):
+        valores += [int(k)] * int(hist[k])
+    if not valores:
         return None
-    return sorted(com, key=lambda r: (-int(r.get("rounds_na_funcao") or 0), r.get("side") or ""))[0]["funcao"]
+    pos = (len(valores) - 1) * q / 100.0
+    i = int(math.floor(pos))
+    j = min(i + 1, len(valores) - 1)
+    return valores[i] + (valores[j] - valores[i]) * (pos - i)
+
+
+
+# Taxas por round (denominador = rounds do lado) usam o piso de rounds do perfil; as demais, o de eventos.
+METRICAS_POR_ROUND = ("pct_rounds_sobreviveu", "pct_rounds_trade_kill")
+
+
+def amostra_fraca(chave: str, denominador: float) -> bool:
+    """A mesma marca de amostra fraca do perfil (decisão 7a), aplicada ao denominador DO LADO."""
+    from metrics.player_profile import MIN_EVENTOS_PARA_TAXA, MIN_ROUNDS_PARA_TAXA
+    return denominador < (MIN_ROUNDS_PARA_TAXA if chave in METRICAS_POR_ROUND else MIN_EVENTOS_PARA_TAXA)
+
+
+def escolhe_celula(ref: dict | None, grupo: str, chave: str, lado: str, funcao: str | None) -> tuple:
+    """(entrada da régua, escopo): o escopo é "funcao" (a célula (lado, função) tem jogador-lados
+    suficientes), "lado" (poucos na célula: o lado inteiro) ou None (sem régua). Nunca olha o outro lado."""
+    tabela = (((ref or {}).get(grupo) or {}).get(chave) or {}).get(lado) or {}
+    minimo = int((ref or {}).get("min_ref_lado_funcao", MIN_REF_LADO_FUNCAO))
+    if funcao and funcao in tabela and int(tabela[funcao].get("n", 0)) >= minimo:
+        return tabela[funcao], "funcao"
+    if tabela.get(TODAS) is not None:
+        return tabela[TODAS], "lado"
+    return None, None
+
+
+def _soma(df: pl.DataFrame, col: str) -> float:
+    return float(df[col].cast(pl.Float64).fill_null(0).sum()) if col in df.columns and df.height else 0.0
+
+
+def metricas_por_lado(perfil_rounds: pl.DataFrame, impacto_rounds: pl.DataFrame) -> dict:
+    """{(steamid, lado): {chave: (valor, n, d)}} das métricas de ponto forte, recalculadas SÓ com os rounds
+    daquele lado (a referência é por lado e nunca mistura os dois). Mesmos numeradores e denominadores do
+    resumo da partida (`impacto.TAXAS_DE_IMPACTO` e `player_profile.TAXAS_POR_ROUND`), só filtrados por
+    lado; as de pós-plant e aberturas já são de um lado só (TR ou CT) pela definição. O valor é None sem
+    denominador, como no perfil."""
+    from metrics.impacto import TAXAS_DE_IMPACTO
+
+    out: dict = {}
+
+    def grava(sid, lado, chave, n, d):
+        out.setdefault((int(sid), lado), {})[chave] = (n / d if d > 0 else None, n, d)
+
+    for (sid, lado), g in perfil_rounds.group_by(["steamid", "side"], maintain_order=True):
+        grava(sid, lado, "pct_rounds_sobreviveu", _soma(g, "survived"), float(g.height))
+        grava(sid, lado, "pct_rounds_trade_kill", _soma(g, "fez_trade_kill"), float(g.height))
+        em = g.filter(pl.col("em_clutch"))
+        grava(sid, lado, "taxa_conversao_clutch", float(em.filter(pl.col("clutch_convertido")).height),
+              float(em.height))
+    chaves = {c for c, _, _ in METRICAS_DE_PONTO_FORTE}
+    for (sid, lado), g in impacto_rounds.group_by(["steamid", "side"], maintain_order=True):
+        for chave, n_col, d_col in TAXAS_DE_IMPACTO:
+            if chave not in chaves:
+                continue
+            if (chave.endswith("_tr") or "pos_plant" in chave) and lado != "t":
+                continue                                                  # situação de TR
+            if (chave.endswith("_ct") or "retake" in chave) and lado != "ct":
+                continue                                                  # situação de CT
+            grava(sid, lado, chave, *_n_d_do_impacto(g, n_col, d_col))
+    return out
+
+
+def _n_d_do_impacto(g: pl.DataFrame, n_col: str, d_col: str) -> tuple[float, float]:
+    """Numerador e denominador de uma taxa de impacto, a partir das colunas por round (o `impacto()` soma as
+    mesmas colunas por jogador; aqui por jogador e lado)."""
+    def ponderado(peso: str, col: str) -> float:
+        return float((g[peso] * g[col]).fill_null(0).sum())
+
+    if d_col in ("hes_jogadas", "molotovs_jogados", "flashes_jogadas"):         # utilidade: colunas diretas
+        return _soma(g, n_col), _soma(g, d_col)
+    if d_col.startswith("rounds_vivo_no_plant"):                                 # só os rounds vivo no plant
+        vivo = g.filter(pl.col("venceu").is_not_null())
+        coluna = {"pos_plant_vencidos": "venceu", "retakes_vencidos": "venceu",
+                  "kills_pos_plant_tr": "kills_depois_do_plant", "kills_pos_plant_ct": "kills_depois_do_plant",
+                  "pos_plant_sobreviveu": "sobreviveu", "retake_sobreviveu": "sobreviveu"}[n_col]
+        return _soma(vivo, coluna), float(vivo.height)
+    if d_col.startswith("duelos_de_abertura"):
+        duelos = g.filter(pl.col("venceu_abertura").is_not_null())
+        return _soma(duelos, "venceu_abertura"), float(duelos.height)
+    if n_col.startswith("dano_"):                                                # ADR com o time em cada compra
+        return ponderado(f"peso_{n_col[5:]}", "dano"), _soma(g, f"peso_{n_col[5:]}")
+    if n_col.startswith("kast_rounds_"):
+        return ponderado(f"peso_{n_col[12:]}", "kast"), _soma(g, f"peso_{n_col[12:]}")
+    if n_col == "kills_contra_cheia":
+        return ponderado("peso_contra_cheia", "kills"), _soma(g, "peso_contra_cheia")
+    raise KeyError((n_col, d_col))
 
 
 def carrega_referencia(caminho: Path = REFERENCIA_FILE) -> dict | None:
