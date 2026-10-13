@@ -218,14 +218,19 @@
 
   /* ---------- dica: o que o próximo clique faz ---------- */
   function dica() {
-    var d = $("pr-dica"), j = sel && porId(sel);
-    if (modo === "tocando") d.innerHTML = "<b>Reproduzindo.</b> Nada é editável agora. <kbd>Espaço</kbd> pausa.";
-    else if (pincel) d.innerHTML = "<b>" + pincel[0].toUpperCase() + pincel.slice(1) + ".</b> Arraste no mapa para desenhar. <kbd>Esc</kbd> volta a mover jogadores.";
+    var d = $("pr-dica"), j = sel && porId(sel), h;
+    if (modo === "tocando") h = "<b>Reproduzindo.</b> Nada é editável agora. <kbd>Espaço</kbd> pausa.";
+    else if (pincel) h = "<b>" + pincel[0].toUpperCase() + pincel.slice(1) + ".</b> Arraste no mapa para desenhar. <kbd>Esc</kbd> volta a mover jogadores.";
     else if (modo === "tracando" && j) {
       var c = chegadas(j), u = j.pts[j.pts.length - 1];
-      d.innerHTML = "<b>Traçando o caminho de " + j.nome + ".</b> Próximo clique: novo ponto (a hora de chegada aparece nele, a partir de " + relogio(c[c.length - 1] + (u.espera || 0)) + "). Botão direito: " + j.nome + " olha para o ponto. <kbd>Esc</kbd> termina.";
-    } else d.innerHTML = "<b>Clique</b> num jogador para traçar o caminho · <b>arraste</b> para mover · <b>botão direito</b> com um jogador selecionado: ele olha para o ponto.";
+      h = "<b>Traçando o caminho de " + j.nome + ".</b> Próximo clique: novo ponto (a hora de chegada aparece nele, a partir de " + relogio(c[c.length - 1] + (u.espera || 0)) + "). Botão direito: " + j.nome + " olha para o ponto. <kbd>Esc</kbd> termina.";
+    } else h = "<b>Clique</b> num jogador para traçar o caminho · <b>arraste</b> para mover · <b>botão direito</b> com um jogador selecionado: ele olha para o ponto.";
+    // o grupo (grupo.js) pode ocupar a linha: recusa, "só a líder desenha" ou a etiqueta temporária "nomad moveu ztrike"
+    var g = window.GrupoDemo && GrupoDemo.dica();
+    d.className = "pr-dica" + (g && g.classe ? " " + g.classe : "");
+    d.innerHTML = '<span class="dica-texto">' + (g && g.html ? g.html : h) + "</span>" + (g && g.etiqueta ? g.etiqueta : "");
   }
+  window.PranchetaDica = dica;
 
   /* ---------- interação no mapa ---------- */
   function ptSvg(ev) { var p = svg.createSVGPoint(); p.x = ev.clientX; p.y = ev.clientY; var q = p.matrixTransform(svg.getScreenCTM().inverse()); return [q.x, q.y]; }

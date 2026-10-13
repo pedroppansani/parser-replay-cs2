@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,400..700&family=JetBrains+Mono:wght@400;600&display=swap">
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="componentes.css">
 <style>
   /* ---------- Cabeçalho da partida (compacto: o replay precisa caber na dobra) ---------- */
   .cab { padding-top: 10px; }
@@ -262,6 +263,7 @@
           <span><svg class="glifo"><use href="#g-he"/></svg>HE</span>
           <span><svg class="glifo"><use href="#g-molotov"/></svg>Molotov</span>
           <span>✕ morto</span>
+          <span><svg class="glifo" viewBox="-10 -10 20 20" aria-hidden="true"><use href="#g-smoke" x="-8" y="-8" width="16" height="16"/><rect x="3.5" y="-9.5" width="5.5" height="5.5" fill="var(--tinta)" stroke="var(--contorno)" stroke-width="1"/></svg>Granada desenhada (carimbo)</span>
         </div>
         <div class="ferramentas" role="toolbar" aria-label="Ferramentas do mapa">
           <button class="btn-icone" type="button" aria-pressed="false" id="b-desenhar">Desenhar</button>
@@ -380,17 +382,8 @@
 
   <!-- ===================== PERFIL ===================== -->
   <section class="painel" id="p-perfil" role="tabpanel" aria-labelledby="t-perfil" tabindex="0" hidden>
-    <h2>Perfil do jogador</h2>
-    <p class="lead">Em que fração dos rounds dele cada comportamento aconteceu, com o bruto e a régua do corpus.</p>
-    <div class="bloco">
-      <h3>m0NESY <small>Falcons · 36 rounds</small></h3>
-      <ul class="metricas">
-        <li class="metrica"><span class="m-nome">Abriu o round</span><span class="m-valor">17%</span><span class="m-ref"><span class="num">6 de 36</span> · régua do corpus <span class="num">11%</span></span></li>
-        <li class="metrica"><span class="m-nome">Segurou ângulo</span><span class="m-valor">58%</span><span class="m-ref"><span class="num">21 de 36</span> · régua <span class="num">44%</span></span></li>
-        <li class="metrica neutro"><span class="m-nome">Lurk</span><span class="m-valor">—</span><span class="m-ref"><span class="tag neutro">neutro</span> 4 rounds sem AWP; mínimo 8</span></li>
-      </ul>
-    </div>
-    <p class="origem">estrutura atual mantida; só tokens, tipografia e estados (amostra pequena, neutro) mudam</p>
+    <div id="perfil-raiz"></div>
+    <p class="origem">aba Perfil: os componentes de §19 (perfil.js). O protótipo completo, com todos os estados, está em perfil.html</p>
   </section>
 
   <!-- ===================== ESTILOS ===================== -->
@@ -415,6 +408,8 @@
   </footer>
 </div>
 <script src="proto.js"></script>
+<script src="perfil.js"></script>
 <script src="partida.js"></script>
+<script>Perfil.monta(document.getElementById("perfil-raiz"), "publicado");</script>
 </body>
 </html>
