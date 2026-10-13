@@ -51,6 +51,12 @@ FORMATO = 1
 # é a mais usada para explicar jogada, e quem desenha espera acertar a ponta.
 FERRAMENTAS = ("caneta", "linha", "seta", "retangulo", "elipse", "texto")
 
+# Granada DESENHADA (fase 11): um carimbo de granada sem horário e sem física, só na camada de anotação do
+# replay. Na prancheta ela é uma operação própria do log (`desenha_granada`, metrics/tactics.py), não um
+# traço -- por isso fica fora de FERRAMENTAS, que é a lista que as duas pontas compartilham.
+FERRAMENTA_GRANADA = "granada"
+ARMAS_DESENHADAS = ("smoke", "flash", "he", "molotov")
+
 # Três espessuras. Mais que isso vira menu e ninguém usa.
 ESPESSURAS = (2, 4, 7)
 
@@ -155,16 +161,25 @@ def valida(doc: dict, radar: dict | None = None) -> list[str]:
     atual = impressao_da_calibracao(radar) if radar is not None else None
     for rn, tracos in (doc.get("rounds") or {}).items():
         for i, t in enumerate(tracos):
-            erros += problemas_do_traco(t, f"round {rn}, traço {i}", atual)
+            erros += problemas_do_traco(t, f"round {rn}, traço {i}", atual, aceita_granada=True)
     return erros
 
 
-def problemas_do_traco(t: dict, onde: str, calibracao_atual: str | None = None) -> list[str]:
+def problemas_do_traco(t: dict, onde: str, calibracao_atual: str | None = None,
+                       aceita_granada: bool = False) -> list[str]:
     """Problemas de UM traço. É a regra do traço em qualquer lugar do projeto: a
     prancheta (metrics/tactics.py) valida o desenho livre dela com esta mesma
-    função, para um traço válido aqui ser válido lá."""
+    função, para um traço válido aqui ser válido lá. `aceita_granada` libera o
+    carimbo de granada (só a anotação do replay; na prancheta ele é outra operação)."""
     erros = []
-    if t.get("ferramenta") not in FERRAMENTAS:
+    if t.get("ferramenta") == FERRAMENTA_GRANADA and aceita_granada:
+        if t.get("arma") not in ARMAS_DESENHADAS:
+            erros.append(f"{onde}: granada desenhada com tipo {t.get('arma')!r} fora de {list(ARMAS_DESENHADAS)}")
+        if "area" in t and not isinstance(t["area"], bool):
+            erros.append(f"{onde}: área da granada desenhada precisa ser verdadeiro ou falso")
+        if len(t.get("pontos") or []) != 1:
+            erros.append(f"{onde}: granada desenhada tem exatamente um ponto")
+    elif t.get("ferramenta") not in FERRAMENTAS:
         erros.append(f"{onde}: ferramenta '{t.get('ferramenta')}' desconhecida")
     if "cor" in t and not FORMATO_DA_COR.match(str(t["cor"])):
         erros.append(f"{onde}: cor {t['cor']!r} fora do formato #rrggbb")
