@@ -241,7 +241,8 @@ def _vice_dentro_do_erro(mvp: dict | None, citaveis: dict) -> bool:
     return (mvp["rating"] - mvp["vice_rating"]) < citaveis["rating"]["fora_da_amostra"]["erro_medio"]
 
 
-def dados_da_pagina(match_id: str, base: Path | None = None, repo: str | None = None) -> dict:
+def dados_da_pagina(match_id: str, base: Path | None = None, repo: str | None = None, preview: bool = False) -> dict:
+    from leitura import perfil_erros
     from metrics.impacto import resumo_dos_grupos
     from scripts.numeros_citaveis import carrega
     base = base or PROJECT_ROOT / "data" / "processed" / match_id
@@ -257,10 +258,15 @@ def dados_da_pagina(match_id: str, base: Path | None = None, repo: str | None = 
                                                    (payload.get("rating_info") or {}).get("modo_degradado")),
             "cabecalho": _cabecalho_para_a_pagina(cabecalho_da_partida(match_id, base)), "mapa": _nome_do_mapa(base, match_id),
             # "Abrir round na prancheta" (fase 9): a tolerância medida do caminho
-            "round_na_prancheta": {"tolerancia_u": TOLERANCIA_U}}
+            "round_na_prancheta": {"tolerancia_u": TOLERANCIA_U},
+            # aba Perfil (fase 12): pontos a melhorar, pontos fortes e comparação, com as frases prontas.
+            # Só os tipos de erro validados entram (metrics.erros.TIPOS_DE_ERRO_VALIDADOS); `preview` mostra
+            # todos, marcados "em validação", e só existe no build de preview/ (nunca publicado)
+            "perfil": perfil_erros.bloco_da_partida(base, payload, cabecalho_da_partida(match_id, base),
+                                                    preview=preview, repo=repo)}
 
 
-def build_html(match_id: str, site: dict | None = None, base: Path | None = None) -> str:
+def build_html(match_id: str, site: dict | None = None, base: Path | None = None, preview: bool = False) -> str:
     """Devolve o HTML final da partida, com os dados já embutidos.
 
     `site` é a lista de partidas do site multi-demo (ver scripts/build_site.py).
@@ -319,7 +325,7 @@ def build_html(match_id: str, site: dict | None = None, base: Path | None = None
     prancheta = arquivo_da_pagina(map_name) if map_name in mapas_disponiveis() else None
     html = html.replace("/*__PRANCHETA__*/null", js(prancheta))
     import html as _html
-    html = html.replace("/*__PAGINA__*/null", js(dados_da_pagina(match_id, base, (site or {}).get("repo"))))
+    html = html.replace("/*__PAGINA__*/null", js(dados_da_pagina(match_id, base, (site or {}).get("repo"), preview)))
     titulo = titulo_da_pagina(match_id, base)
     html = html.replace("<!--__TITULO__-->", _html.escape(titulo))
     cab = cabecalho_html(match_id, base, site)

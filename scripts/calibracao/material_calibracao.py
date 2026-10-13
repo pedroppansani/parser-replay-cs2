@@ -263,6 +263,9 @@ def main() -> None:
               "corpus no CLAUDE.md.", ""]
     partes += secao_pisos() + secao_grupos() + secao_forca() + secao_console() + secao_angulos_nuke()
     SAIDA.write_text("\n".join(partes), encoding="utf-8")
+    # seção 7 (erros da aba Perfil, fase 12): gerada pelo próprio script, acrescentada no fim
+    from scripts.calibracao import erros_do_jogador
+    erros_do_jogador.main([])
     print(f"Gravado em {SAIDA.relative_to(PROJECT_ROOT)} ({SAIDA.stat().st_size / 1024:.0f} KB)")
 
 

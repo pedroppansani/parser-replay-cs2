@@ -54,3 +54,7 @@ docs/
 
 # saída dos reprocessamentos (scripts/reprocessa.py)
 logs/
+
+# Pré-visualização da aba Perfil com os tipos de erro ainda não validados (fase 12,
+# build_site --mostrar-erros-nao-validados). Nunca publicada.
+preview/
