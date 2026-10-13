@@ -1063,6 +1063,64 @@ def resume_por_lado(por_round: pl.DataFrame, match_id: str = "",
     )
 
 
+def funcao_dominante_das_contagens(contagem: dict[str, int], eh_awper_do_time: bool) -> str | None:
+    """A regra de `resume_por_lado` sobre uma contagem {função: rounds}, em Python puro.
+
+    As funções a até MARGEM_EMPATE_FUNCAO_ROUNDS round da mais frequente empatam; no empate, o AWPer
+    vence só se for o AWPer do time (FUNCAO_QUE_VENCE_EMPATE); empate que sobra é "sem função
+    dominante" (None). Existe para a reamostragem da estabilidade (abaixo) aplicar a MESMA regra."""
+    contagem = {f: k for f, k in contagem.items() if f is not None and k > 0}
+    if not contagem:
+        return None
+    k1 = max(contagem.values())
+    empatadas = sorted(f for f, k in contagem.items() if k >= k1 - MARGEM_EMPATE_FUNCAO_ROUNDS)
+    if len(empatadas) >= 2:
+        if FUNCAO_QUE_VENCE_EMPATE in empatadas and eh_awper_do_time:
+            return FUNCAO_QUE_VENCE_EMPATE
+        return None
+    return empatadas[0]
+
+
+def estabilidade_da_funcao(por_round: pl.DataFrame, awpers_do_time: set | None = None,
+                           n: int | None = None, semente: int | None = None) -> pl.DataFrame:
+    """(steamid, side, funcao, estabilidade, tendencia): a marca de tendência da decisão 39 aplicada à
+    função dominante de cada lado.
+
+    O mesmo método dos rótulos do player_roles (decisão 39): reamostragem dos rounds DAQUELE LADO com
+    reposição, N_REAMOSTRAGENS sorteios com a semente fixa, e a fração dos sorteios em que a função
+    dominante (pela regra de `resume_por_lado`) continua a mesma. Abaixo de LIMIAR_DE_TENDENCIA, a
+    função é só tendência. Sem função dominante na partida, a linha sai com estabilidade nula.
+    Usada pela aba Perfil (metrics/erros.py, fase 12); não muda o resumo por lado gravado."""
+    from metrics.player_roles import LIMIAR_DE_TENDENCIA, N_REAMOSTRAGENS, SEMENTE_DA_REAMOSTRAGEM
+
+    n = N_REAMOSTRAGENS if n is None else n
+    rng = np.random.default_rng(SEMENTE_DA_REAMOSTRAGEM if semente is None else semente)
+    awpers = set(awpers_do_time or [])
+    linhas = []
+    ordenado = por_round.sort(["steamid", "side", "round_num"])
+    for (sid, lado), g in ordenado.group_by(["steamid", "side"], maintain_order=True):
+        funcoes = g["funcao"].to_list()
+        eh_awper = sid in awpers
+        contagem: dict = {}
+        for f in funcoes:
+            contagem[f] = contagem.get(f, 0) + 1
+        observada = funcao_dominante_das_contagens(contagem, eh_awper)
+        estab = None
+        if observada is not None and funcoes:
+            sorteio = rng.integers(0, len(funcoes), size=(n, len(funcoes)))
+            iguais = 0
+            for linha in sorteio:
+                c: dict = {}
+                for i in linha:
+                    c[funcoes[i]] = c.get(funcoes[i], 0) + 1
+                iguais += funcao_dominante_das_contagens(c, eh_awper) == observada
+            estab = iguais / n
+        linhas.append({"steamid": sid, "side": lado, "funcao": observada, "estabilidade": estab,
+                       "tendencia": bool(estab is not None and estab < LIMIAR_DE_TENDENCIA)})
+    return pl.DataFrame(linhas, schema={"steamid": por_round.schema["steamid"], "side": pl.String,
+                                        "funcao": pl.String, "estabilidade": pl.Float64, "tendencia": pl.Boolean})
+
+
 def texto_empate(linha: dict) -> str:
     """"sem função dominante: Entry fragger 8% (1 de 12) vs Lurker 8% (1 de 12)".
 

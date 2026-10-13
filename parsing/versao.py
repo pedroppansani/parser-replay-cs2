@@ -54,6 +54,8 @@ VERSAO_DO_PARSER = 2
 # Onde o complemento registra o que acrescentou a um interim existente.
 ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
 
+# 22 (2026-10-13) erros da aba Perfil (fase 12, metrics/erros.py): tabela nova
+#    erros_do_jogador.parquet por partida; nenhum número que já existia muda
 # 21 (2026-10-05) economia (7.2.3): rating, ADR e KAST pela compra do time (eco,
 #    força, compra cheia: agregação das classes da 8i) e kills contra compra cheia
 #    e em anti-eco; "comparar dois" na aba Jogadores; régua do perfil reajustada
@@ -110,7 +112,7 @@ ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
 #   (inclui a classe de economia do jogador no rating), unique com subset fica
 #   com a primeira linha. Antes, esses três casos dependiam da ordem de hash.
 # 1 (2026-09-20) primeira versão declarada, mesmo raciocínio acima.
-VERSAO_DAS_METRICAS = 21
+VERSAO_DAS_METRICAS = 22
 
 # Pastas cujo estado define o NÚMERO. `sujo` olha só estas: olhar o repositório
 # inteiro marcava todo reprocessamento como sujo, porque o próprio

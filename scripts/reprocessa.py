@@ -208,6 +208,9 @@ def _roda(match_id: str, etapa: str) -> tuple[str, str, float, str | None, float
                 build_insights.build(match_id)
                 build_breakdown.build(match_id)
                 export_replay.build(match_id)
+                # erros da aba Perfil (fase 12, metrics/erros.py)
+                from metrics import erros
+                erros.build(match_id)
             elif etapa == "payload":
                 from scripts import export_web_payload
 
