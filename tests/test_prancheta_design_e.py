@@ -180,3 +180,38 @@ def test_no_celular_some_o_desenho_reproduzir_ocupa_a_largura_e_nao_ha_rolagem_l
         assert not pg.is_visible("#pr-aviso-celular")
     finally:
         ctx.close()
+
+
+def test_leitor_de_tela_fichas_sao_botoes_com_estado_e_o_teclado_poe_a_peca(contexto, pagina):
+    """Acessibilidade (design-E3): ficha do banco é botão com nome e estado; Enter arma, Enter de novo põe no centro."""
+    pg = abre(contexto, pagina)
+    try:
+        ficha = pg.locator('.pr-ficha.ct[data-rotulo="2"]')
+        assert ficha.evaluate("e => e.tagName") == "BUTTON"
+        assert ficha.get_attribute("aria-label") == "CT 2: colocar no mapa" and ficha.get_attribute("aria-pressed") == "false"
+        assert ficha.bounding_box()["height"] >= 44
+        ficha.focus()
+        pg.keyboard.press("Enter")
+        assert ficha.get_attribute("aria-pressed") == "true"
+        pg.keyboard.press("Enter")
+        pecas = interno(pg, "Object.values(S.estado.pecas).map(p => p.lado + p.rotulo)")
+        assert pecas == ["ct2"]
+        assert ficha.get_attribute("aria-label") == "CT 2, no mapa: selecionar"
+    finally:
+        pg.close()
+
+
+def test_leitor_de_tela_o_mapa_tem_resumo_em_texto_e_o_passo_tem_nome(contexto, pagina):
+    pg = abre(contexto, pagina)
+    try:
+        assert pg.get_attribute("#pr-mapa", "aria-describedby") == "pr-mapa-resumo"
+        assert pg.inner_text("#pr-mapa-resumo").endswith("Nenhum jogador no mapa.")
+        _com_tatica_no_tempo(pg)
+        resumo = pg.inner_text("#pr-mapa-resumo")
+        assert resumo.startswith("Às 1:55: 1 jogador no mapa: TR 1") and " em " in resumo
+        assert pg.get_attribute(".pr-marco", "aria-label") == "Passo 1 · saída, 1:55"
+        # o resumo acompanha o cabeçote
+        pg.focus("#pr-linha-cabecote"); pg.keyboard.press("Shift+ArrowRight"); pg.keyboard.press("Shift+ArrowRight")
+        assert pg.inner_text("#pr-mapa-resumo").startswith("Às 1:45:")
+    finally:
+        pg.close()

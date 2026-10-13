@@ -84,15 +84,16 @@ input[type=number] { flex: 0 0 72px; }
 .ativo { background: var(--tinta) !important; color: var(--fundo) !important; border-color: var(--tinta) !important; }
 .pr-passo { min-width: 32px; font-weight: 600; }
 #pr-banco { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-.pr-ficha { height: 32px; border-radius: 50%; display: grid; place-items: center; color: var(--fundo);
-            font-weight: 600; cursor: grab; user-select: none; touch-action: none; aspect-ratio: 1; }
+.pr-ficha { height: var(--toque); border-radius: 50%; display: grid; place-items: center; color: var(--fundo);
+            font: inherit; font-weight: 600; cursor: grab; user-select: none; touch-action: none; aspect-ratio: 1;
+            border: 0; padding: 0; }
 .pr-ficha.ct { background: var(--ct); } .pr-ficha.t { background: var(--tr); }
 .pr-ficha.no-mapa { opacity: 0.45; }
 /* banco com os jogadores reais do round: pílula com o nome */
 #pr-banco.nomes { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); }
 .pr-ficha.nome { border-radius: 16px; aspect-ratio: auto; padding: 0 8px; font-size: 12px;
                  overflow: hidden; white-space: nowrap; text-overflow: ellipsis; display: block;
-                 line-height: 32px; text-align: center; }
+                 line-height: var(--toque); text-align: center; }
 .pr-ficha.arrastando { cursor: grabbing; outline: 2px solid var(--tinta); }
 .pr-dica, .pr-meta { color: var(--tinta-2); margin: 4px 0; }
 .pr-alerta { color: var(--aviso); margin: 6px 0; }
