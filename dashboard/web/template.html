@@ -883,6 +883,50 @@
   .pfbarra i { display:block; height:100%; background:var(--tinta-2); }
   .pfbarra i.destaque { background:var(--decisivo); }
 
+  /* ---- aba Perfil nova (fase 12): só tokens e componentes do §8 ---- */
+  .pf-aviso { color: var(--aviso); font-size: var(--t-sm); margin: 10px 0 0; }   /* dado degradado, com ▲ */
+  .pfcab { padding: 16px; margin-top: 14px; border-top: 2px solid var(--borda); }
+  .pfcab .nk { font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-weight: 700; font-size: 24px;
+    letter-spacing: -0.01em; color: var(--tinta); }
+  .pfcab .time-do-jog { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: var(--t-xs);
+    color: var(--apagado); margin-top: 4px; }
+  .pfcab .funcs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .pfcab p { margin: 10px 0 0; font-size: var(--t-sm); color: var(--tinta-2); line-height: 1.55; max-width: 76ch; }
+  .tag.neutro { color: var(--neutro); border: 1px dashed var(--neutro); background: var(--superficie); }
+  .pfsec { margin-top: 26px; }
+  .pfsec > h3 { font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: var(--t-lg); margin: 0 0 10px;
+    letter-spacing: -0.01em; }
+  .pfnota { font-size: var(--t-sm); color: var(--tinta-2); margin: 0 0 8px; max-width: 76ch; }
+  .pfnota a { color: var(--link); text-decoration: underline; }
+  .pfitem { padding: 14px 16px; border-top: 2px solid var(--borda); }
+  .pfitem + .pfitem { margin-top: 10px; }
+  .pfitem .topo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; }
+  .pfitem .titulo { font-weight: 700; font-size: var(--t-base); color: var(--tinta); }
+  .pfitem .cont { font-size: var(--t-sm); color: var(--tinta-2); }
+  .pfitem .ref, .pfitem .custo { font-size: var(--t-xs); color: var(--apagado); margin-top: 4px; }
+  .pfitem .motivo { font-size: var(--t-sm); color: var(--tinta-2); margin-top: 6px; }
+  .pfitem .frase { font-size: var(--t-sm); color: var(--tinta); margin: 8px 0 0; line-height: 1.5; }
+  .pfitem .valor { font-family: var(--f-num); font-weight: 600; color: var(--tinta); }
+  .pfitem .bruto { font-family: var(--f-texto); font-size: var(--t-xs); color: var(--apagado); }
+  /* chips de round: a faixa de rounds do replay (.rchip, 44 px) sem a barra do vencedor; em 375 rolam numa linha */
+  .pfchips { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: thin; padding: 2px 0 4px; margin-top: 10px; }
+  .pfchips .rchip::after { display: none; }
+  .pf-cmp { padding: 0; overflow-x: auto; margin-top: 8px; }
+  .pf-cmp table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  .pf-cmp th, .pf-cmp td { padding: 7px 10px; text-align: right; border-top: 1px solid var(--linha); }
+  .pf-cmp th:first-child, .pf-cmp td:first-child { text-align: left; }
+  .pf-cmp th { font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: 10.5px; color: var(--apagado); font-weight: 500; }
+  .pf-cmp td.n { font-family: var(--f-num); font-variant-numeric: tabular-nums; }
+  .pf-cmp td small { display: block; color: var(--apagado); font-family: var(--f-texto); font-size: 10.5px; }
+  .pf-cmp:empty { display: none; }
+  .pf-detalhes { margin-top: 26px; padding: 0; }
+  .pf-detalhes > summary { cursor: pointer; padding: 10px 16px; min-height: var(--toque); box-sizing: border-box;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; }
+  .pf-detalhes > summary .g-nome { font-weight: 600; color: var(--tinta); }
+  .pf-detalhes > summary .g-resumo { font-size: var(--t-sm); color: var(--tinta-2); }
+  .pf-detalhes[open] > summary .g-resumo { display: none; }
+  .pf-det-corpo { padding: 4px 16px 16px; }
+
   /* ---- quem joga em cada jeito de jogar (cards_de_estilo) ---- */
   .pfestilos { margin-top:28px; }
   .pfestilos > h3 { font-size:15px; margin:0 0 10px; letter-spacing:-.01em; }
@@ -1124,26 +1168,45 @@
 
   <!-- ESTILOS -->
   <section class="panel" data-panel="perfil" hidden>
-    <div class="eyebrow">Frequência, não média</div>
+    <!-- fase 12: onde cada um errou e como melhorar. Todo texto vem pronto do Python (PAGINA.perfil,
+         leitura/perfil_erros.py); a ordem é a do pedido: cabeçalho, pontos a melhorar, pontos fortes,
+         comparar, detalhes. Em 375 px tudo fica numa coluna, nesta ordem. -->
+    <div class="eyebrow" id="pf-eyebrow"></div>
     <h2 class="sec">Perfil do jogador</h2>
-    <p class="lead">
-      A aba Estilos agrupa <b>rounds</b>: as médias de um grupo descrevem o grupo, não uma pessoa —
-      os rounds de um mesmo jogador se espalham por todos eles. Aqui o mesmo dado é olhado pelo
-      outro lado: <b>em que fração dos rounds dele</b> cada comportamento aconteceu. Toda taxa vem
-      com o bruto ao lado e com a régua do corpus, porque 41% e 50% em
-      <span class="n-rounds"></span> rounds são, na prática, o mesmo número.
-    </p>
-
-    <div id="pf-botoes" class="pfbotoes"></div>
-    <div class="pfbar">
-      <label>Comparar com <select id="pf-b"></select></label>
-      <span id="pf-regua" class="pfregua"></span>
-    </div>
-    <div id="pf-leitura" class="pfleitura"></div>
-    <div id="pf-head" class="pfhead"></div>
-    <div id="pf-tabela"></div>
-    <div id="pf-estilos" class="pfestilos"></div>
-    <div class="callout" id="pf-nota"></div>
+    <div id="pf-botoes" class="pfbotoes" role="group"></div>
+    <p id="pf-aviso" class="pf-aviso" hidden></p>
+    <div id="pf-cab" class="pfcab card"></div>
+    <section class="pfsec" id="pf-melhorar"></section>
+    <section class="pfsec" id="pf-fortes"></section>
+    <section class="pfsec" id="pf-comparar">
+      <h3 id="pf-comparar-t"></h3>
+      <p class="pfnota" id="pf-comparar-texto"></p>
+      <div class="pfbar">
+        <label><span id="pf-b-rot"></span> <select id="pf-b"></select></label>
+        <span id="pf-regua" class="pfregua"></span>
+      </div>
+      <div id="pf-cmp" class="pf-cmp card"></div>
+    </section>
+    <!-- "Detalhes" (fechado por padrão): o que a aba mostrava antes da fase 12 (inventário 12.1, decisão 46) -->
+    <details class="pf-detalhes card" id="pf-detalhes">
+      <summary><span class="g-nome" id="pf-det-nome"></span><span class="g-resumo" id="pf-det-resumo"></span></summary>
+      <div class="pf-det-corpo">
+        <div id="pf-uma-vez"></div>
+        <div class="eyebrow">Frequência, não média</div>
+        <p class="lead">
+          A aba Estilos agrupa <b>rounds</b>: as médias de um grupo descrevem o grupo, não uma pessoa —
+          os rounds de um mesmo jogador se espalham por todos eles. Aqui o mesmo dado é olhado pelo
+          outro lado: <b>em que fração dos rounds dele</b> cada comportamento aconteceu. Toda taxa vem
+          com o bruto ao lado e com a régua do corpus, porque 41% e 50% em
+          <span class="n-rounds"></span> rounds são, na prática, o mesmo número.
+        </p>
+        <div id="pf-leitura" class="pfleitura"></div>
+        <div id="pf-head" class="pfhead"></div>
+        <div id="pf-tabela"></div>
+        <div id="pf-estilos" class="pfestilos"></div>
+        <div class="callout" id="pf-nota"></div>
+      </div>
+    </details>
   </section>
 
   <section class="panel" data-panel="estilos" hidden>
@@ -1513,6 +1576,30 @@
     document.getElementById("scrub").value = frame;
     draw();
     setPlaying(true);
+  }
+
+  // Abre o Replay num round e num tempo (segundos desde o fim do freeze): os chips da aba Perfil e o
+  // endereço `#replay?round=12&t=34.5` (fase 12). Começa PREROLL_SECONDS antes, como ao clicar num
+  // evento, e fica PARADO: quem abriu escolhe quando tocar. Sem `t`, o round abre no começo.
+  function abreNoReplay(roundNum, t, semHash) {
+    var alvo = null;
+    for (var j = 0; j < rounds.length; j++) if (rounds[j].round === roundNum) { alvo = rounds[j]; break; }
+    if (!alvo) return false;
+    selectTab("replay", semHash);
+    selectRound(alvo);
+    if (t !== null && t !== undefined && !isNaN(t)) {
+      var f = Math.min(cur.frames - 1, Math.max(0, (t - PREROLL_SECONDS) * R.sample_hz));
+      pos = f;
+      frame = Math.floor(f);
+      document.getElementById("scrub").value = frame;
+      draw();
+    }
+    if (!semHash) {
+      try {
+        history.replaceState(null, "", "#replay?round=" + roundNum + (t === null || t === undefined ? "" : "&t=" + t));
+      } catch (e) { /* arquivo local: sem hash */ }
+    }
+    return true;
   }
 
   // Segundos de cegueira restantes do jogador no quadro atual (0 = enxergando).
@@ -3167,6 +3254,8 @@
     })();
 
     var botoes = document.getElementById("pf-botoes");
+    // o bloco novo da fase 12 (leitura/perfil_erros.py); sem ele, a aba mostra só os Detalhes
+    var PF = PAGINA.perfil || null;
     var selB = document.getElementById("pf-b");
     var escolhido = null;
 
@@ -3209,18 +3298,23 @@
         b.addEventListener("click", function () {
           escolhido = b.getAttribute("data-nome");
           montaBotoes();
+          preencheSelects();
           desenha();
         });
       });
     }
 
+    // fase 12: o jogador aberto por padrão é o de maior rating (PF.padrao, decidido no build) e o
+    // "Comparar com" oferece só os OUTROS jogadores desta partida (decisão 30)
     function preencheSelects() {
       var nomes = nomesDaBase().sort();
+      if (escolhido === null && PF && nomes.indexOf(PF.padrao) >= 0) escolhido = PF.padrao;
       if (nomes.indexOf(escolhido) < 0) escolhido = nomes[0];
       var atual = selB.value;
-      selB.innerHTML = "<option value=''>— ninguém —</option>" +
-        nomes.map(function (n) { return "<option>" + esc(n) + "</option>"; }).join("");
-      if (nomes.indexOf(atual) >= 0) selB.value = atual;
+      var outros = nomes.filter(function (n) { return n !== escolhido; });
+      selB.innerHTML = "<option value=''>" + esc(PF ? PF.textos.ninguem : "—") + "</option>" +
+        outros.map(function (n) { return "<option>" + esc(n) + "</option>"; }).join("");
+      if (outros.indexOf(atual) >= 0) selB.value = atual;
     }
 
     function pct(v) { return v === null || v === undefined ? "—" : Math.round(v * 100) + "%"; }
@@ -3250,10 +3344,9 @@
         ? "sem grupo dominante"
         : (nomeDoGrupoPerfil(p.grupo_dominante) + " · " + p.grupo_dominante_n +
            " de " + p.grupo_dominante_d + " rounds");
-      var kad = (p.kills_totais || 0) + " / " + (p.assistencias || 0) + " / " + (p.mortes || 0);
+      // fase 12 (inventário 12.1): kills / assists / mortes saíram daqui; repetiam K, A e M da aba Jogadores
       return "<div><b>" + esc(p.name) + "</b><br>" + esc(p.rounds_jogados) + " rounds em " +
         partidas + (partidas > 1 ? " partidas" : " partida") + "</div>" +
-        "<div>kills / assists / mortes<br><b style='font-size:15px'>" + esc(kad) + "</b></div>" +
         "<div>função no round<br>" + funcaoPorLado(p.name) + "</div>" +
         "<div>jeito de jogar mais frequente<br><b style='font-size:13px'>" + esc(grupo) + "</b></div>";
     }
@@ -3350,7 +3443,114 @@
           ". É mediana e não média: dois rounds sem contato distorcem a média.</p>";
       }
       document.getElementById("pf-tabela").innerHTML = html;
+      desenhaNovo(a ? a.name : null, b ? b.name : null);
     }
+
+    /* ---- fase 12: cabeçalho, pontos a melhorar, pontos fortes e comparar (frases do Python) ---- */
+    function pfJogador(nome) {
+      if (!PF) return null;
+      for (var i = 0; i < PF.jogadores.length; i++) if (PF.jogadores[i].name === nome) return PF.jogadores[i];
+      return null;
+    }
+    function chipsDeRound(chips) {
+      if (!chips || !chips.length) return "";
+      return "<div class='pfchips'>" + chips.map(function (c) {
+        return "<button type='button' class='rchip pfchip' data-round='" + esc(c.round) + "' data-t='" +
+          esc(c.t === null ? "" : c.t) + "' title='" + esc(c.titulo) + "' aria-label='" + esc(c.titulo) + "'>" +
+          esc(c.rotulo) + "</button>";
+      }).join("") + "</div>";
+    }
+    function itemMelhorar(m) {
+      var tag = m.nivel === "explicito" ? "tag decisivo" : "tag neutro";
+      return "<article class='pfitem card' data-tipo='" + esc(m.tipo) + "'><div class='topo'>" +
+        "<span class='titulo'>" + esc(m.titulo) + "</span><span class='cont'>" + esc(m.contagem) + "</span>" +
+        "<span class='" + tag + "'>" + esc(m.nivel_rotulo) + "</span>" +
+        (m.em_validacao ? "<span class='tag neutro'>" + esc(PF.textos.rotulo_em_validacao) + "</span>" : "") +
+        "</div>" +
+        (m.referencia ? "<div class='ref'>" + esc(m.referencia) + "</div>" : "") +
+        (m.custo ? "<div class='custo'>" + esc(m.custo) + "</div>" : "") +
+        // no "depende da tática" a frase já é o motivo seguido de "vale conferir" (Python): não repete
+        (m.nivel === "explicito" ? "<div class='motivo'>" + esc(m.motivo) + "</div>" : "") +
+        "<p class='frase'>" + esc(m.frase) + "</p>" + chipsDeRound(m.chips) + "</article>";
+    }
+    function itemForte(f) {
+      return "<article class='pfitem card' data-chave='" + esc(f.chave) + "'><div class='topo'>" +
+        "<span class='titulo'>" + esc(f.rotulo) + "</span><span class='valor'>" + esc(f.valor) + "</span>" +
+        (f.bruto ? "<span class='bruto'>" + esc(f.bruto) + "</span>" : "") + "</div>" +
+        "<div class='ref'>" + esc(f.referencia) + "</div></article>";
+    }
+    function desenhaNovo(nomeA, nomeB) {
+      if (!PF) return;
+      var T = PF.textos, j = pfJogador(nomeA), k = nomeB ? pfJogador(nomeB) : null;
+      if (!j) return;
+      var cab = "<div class='nk'>" + esc(j.name) + "</div><div class='time-do-jog'>" + esc(j.time_nome) +
+        (j.comecou ? " <span class='tag comecou " + esc(j.comecou) + "'>" + esc(j.comecou_rotulo) + "</span>" : "") +
+        "</div><div class='funcs'>" + j.funcoes.map(function (f) {
+          return "<span class='tag" + (f.neutro ? " neutro" : " decisivo") + "'>" + esc(f.lado) + " · " + esc(f.texto) + "</span>";
+        }).join("") + "</div><p>" + esc(j.resumo) + "</p>";
+      document.getElementById("pf-cab").innerHTML = cab;
+
+      var mel = "<h3>" + esc(T.melhorar) + "</h3>";
+      if (PF.estado === "em_validacao") {
+        mel += "<p class='pfnota' id='pf-em-validacao'>" + esc(T.em_validacao) + " · <a href='" +
+          esc(PF.link_como_e_conferido) + "'>" + esc(T.como_e_conferido) + "</a></p>";
+      } else {
+        if (PF.estado === "preview") mel += "<p class='pfnota'>" + esc(T.aviso_preview) + "</p>";
+        mel += j.melhorar.length ? j.melhorar.map(itemMelhorar).join("")
+          : "<p class='pfnota'>" + esc(j.melhorar_vazio) + "</p>";
+      }
+      document.getElementById("pf-melhorar").innerHTML = mel;
+
+      document.getElementById("pf-fortes").innerHTML = "<h3>" + esc(T.fortes) + "</h3>" +
+        (j.fortes.length ? j.fortes.map(itemForte).join("") : "<p class='pfnota'>" + esc(T.fortes_vazio) + "</p>");
+
+      // comparar: os mesmos tipos de erro e os mesmos pontos fortes, lado a lado (sem faixa, sem radar)
+      var cmp = "";
+      if (k) {
+        var linhas = PF.tipos.map(function (t) {
+          return "<tr><td>" + esc(t.titulo) + "</td><td class='n'>" + esc(j.contagens[t.id]) + "</td><td class='n'>" +
+            esc(k.contagens[t.id]) + "</td></tr>";
+        });
+        var chaves = [];
+        j.fortes.concat(k.fortes).forEach(function (f) { if (chaves.indexOf(f.chave) < 0) chaves.push(f.chave); });
+        PF.metricas.forEach(function (m) {
+          if (chaves.indexOf(m.chave) < 0) return;
+          var va = j.valores[m.chave] || {}, vb = k.valores[m.chave] || {};
+          linhas.push("<tr><td>" + esc(m.rotulo) + "</td><td class='n'>" + esc(va.valor || "—") +
+            (va.bruto ? "<small>" + esc(va.bruto) + "</small>" : "") + "</td><td class='n'>" + esc(vb.valor || "—") +
+            (vb.bruto ? "<small>" + esc(vb.bruto) + "</small>" : "") + "</td></tr>");
+        });
+        if (linhas.length) {
+          cmp = "<table><thead><tr><th>" + esc(T.col_ponto) + "</th><th>" + esc(j.name) + "</th><th>" + esc(k.name) +
+            "</th></tr></thead><tbody>" + linhas.join("") + "</tbody></table>";
+        }
+      }
+      document.getElementById("pf-cmp").innerHTML = cmp;
+
+      document.getElementById("pf-uma-vez").innerHTML = j.uma_vez.length
+        ? "<p class='pfnota'>" + esc(T.detalhes_erros) + "</p>" + j.uma_vez.map(function (u) {
+            return "<div class='pfitem'><div class='topo'><span class='titulo'>" + esc(u.titulo) + "</span><span class='cont'>" +
+              esc(u.contagem) + "</span></div>" + chipsDeRound(u.chips) + "</div>";
+          }).join("") : "";
+    }
+
+    // textos fixos da aba nova (do Python) e os chips de round: abrem o Replay no round e no tempo
+    if (PF) {
+      document.getElementById("pf-eyebrow").textContent = PF.textos.eyebrow;
+      document.getElementById("pf-comparar-t").textContent = PF.textos.comparar;
+      document.getElementById("pf-comparar-texto").textContent = PF.textos.comparar_texto;
+      document.getElementById("pf-b-rot").textContent = PF.textos.comparar;
+      document.getElementById("pf-det-nome").textContent = PF.textos.detalhes;
+      document.getElementById("pf-det-resumo").textContent = PF.textos.detalhes_resumo;
+      var aviso = document.getElementById("pf-aviso");
+      if (PF.degradado) { aviso.textContent = PF.degradado; aviso.hidden = false; }
+    }
+    document.querySelector('[data-panel="perfil"]').addEventListener("click", function (e) {
+      var c = e.target.closest(".pfchip");
+      if (!c) return;
+      var t = c.getAttribute("data-t");
+      abreNoReplay(Number(c.getAttribute("data-round")), t === "" ? null : Number(t));
+    });
 
     document.getElementById("pf-nota").innerHTML =
       "<b>Como ler.</b> A porcentagem nunca aparece sozinha: ao lado dela está o bruto " +
@@ -3500,8 +3700,15 @@
   })();
 
   // Estado inicial: a aba do hash, ou o Resumo. Sem redesenhar nada (o replay desenha ao ser aberto).
-  var inicial = HASH_DA_ABA[(location.hash || "").replace("#", "")] || "insights";
+  // `#replay?round=12&t=34.5` abre o replay naquele round e tempo (fase 12); `#replay` sozinho, como antes.
+  var hashInicial = (location.hash || "").replace("#", "").split("?");
+  var inicial = HASH_DA_ABA[hashInicial[0]] || "insights";
   selectTab(inicial, true);
+  if (inicial === "replay" && hashInicial[1]) {
+    var q = {};
+    hashInicial[1].split("&").forEach(function (par) { var kv = par.split("="); q[kv[0]] = decodeURIComponent(kv[1] || ""); });
+    if (q.round) abreNoReplay(Number(q.round), q.t === undefined || q.t === "" ? null : Number(q.t), true);
+  }
 })();
 </script>
 </body>

@@ -56,6 +56,11 @@ TAMANHO_MINIMO = 120
 # biblioteca de arremessos repetida nas 10 pranchetas). Detalhe de uma diferença: `--fina`.
 LIMITE_DE_ITENS = 12
 
+# Blocos de dado NOVOS, que não existiam na impressão de antes: aparecer neles é dado novo, não
+# número antigo mudando, e a comparação os lista à parte sem falhar. Um número que já existia
+# continua tendo de ficar igual. Fase 12 (decisão 46): o bloco da aba Perfil nova.
+BLOCOS_NOVOS = ("::PAGINA.perfil",)
+
 _ATRIBUICAO = re.compile(r"([A-Za-z_$][\w$]*)\s*[:=]\s*(?=[\[{])")
 _SCRIPT_JSON = re.compile(r'<script[^>]*type="application/json"[^>]*id="([^"]+)"[^>]*>', re.I)
 _NUMERO_NO_TEXTO = re.compile(r"\d+(?:[.,]\d+)*")
@@ -200,10 +205,17 @@ def le(arq: Path) -> dict[str, str]:
     return out
 
 
+def eh_bloco_novo(caminho: str) -> bool:
+    return any(b in caminho for b in BLOCOS_NOVOS)
+
+
 def compara(antes: dict[str, str], depois: dict[str, str]) -> list[str]:
-    """As diferenças: 'mudou', 'sumiu' ou 'apareceu', um caminho por linha."""
+    """As diferenças: 'mudou', 'sumiu' ou 'apareceu', um caminho por linha. O que aparece num bloco
+    novo (BLOCOS_NOVOS) não é diferença: é contado à parte por `novos`."""
     dif = []
     for k in sorted(set(antes) | set(depois)):
+        if k not in antes and eh_bloco_novo(k):
+            continue
         if k not in depois:
             dif.append(f"sumiu     {k} = {antes[k]}")
         elif k not in antes:
@@ -250,6 +262,9 @@ def main(argv: list[str]) -> int:
         i = argv.index("--compara")
         base = Path(argv[i + 1]) if i + 1 < len(argv) and not argv[i + 1].startswith("--") else (FINA if "--fina" in argv else ANTES)
         dif = compara(le(base), imp)
+        novos = [k for k in imp if k not in le(base) and eh_bloco_novo(k)]
+        if novos:
+            print(f"{len(novos)} linha(s) de dado novo em {', '.join(BLOCOS_NOVOS)} (não contam como diferença)")
         print(f"{len(imp)} linhas contra {len(le(base))} em {base.name}: "
               f"{'nenhuma diferença numérica' if not dif else str(len(dif)) + ' diferença(s)'}")
         for d in dif[:200]:
