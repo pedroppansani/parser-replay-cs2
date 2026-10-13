@@ -1,12 +1,12 @@
 # Contexto do projeto para o Claude Code
 
-Lido no início de cada sessão. Traz só o que está em vigor; o porquê de cada
-regra, com o histórico, está em `notas/`.
+Lido no início de cada sessão: só o que está em vigor. O porquê de cada regra,
+com o histórico, está em `notas/`.
 
 ## O projeto
 
 Parser de replay (.dem) do CS2 que gera um site estático por partida (replay,
-leitura da partida, perfil, prancheta tática). O parsing é do `awpy`; **o
+leitura, perfil, prancheta tática). O parsing é do `awpy`; **o
 diferencial é o desenho das métricas**: cada uma carrega uma decisão de jogo
 explícita, e a validação final é o conhecimento de jogo do Pedro (Faceit 10,
 flex AWPer). Ao propor ou mudar métrica, a justificativa de JOGO pesa tanto
@@ -18,9 +18,9 @@ quanto a corretude.
 - O demo é 64 tick; nunca assuma (`metrics/timing.py` detecta).
 - `py -3.12 -m pytest tests/` · `py -3.12 -m scripts.reprocessa` (corpus a partir
   do interim) · `py -3.12 -m scripts.build_site` · `py -3.12 -m scripts.escada_validacao`.
-- Parse leva ~14 s por partida; itere com `--from-interim`.
-- Sem o interim a partida não pode ser recalculada; apagar demo, interim ou
-  backup segue a regra 36.
+- Parse: ~14 s por partida; itere com `--from-interim`.
+- Sem o interim a partida não é recalculável; apagar demo, interim ou backup
+  segue a regra 36.
 
 ## Mapa do repositório
 
@@ -52,7 +52,7 @@ docs/           site gerado (fora do git; artefato do CI)
 ## Regras vigentes
 
 Uma linha por decisão em vigor; o ID é o que o código cita ("decisão 21a"). O
-texto completo de cada uma está na nota do link (`notas/decisoes/`).
+texto completo está na nota do link (`notas/decisoes/`).
 
 - [1](notas/decisoes/1-peek-hold-liquido.md) Peek ou hold pelo deslocamento LÍQUIDO; jiggle (sair e voltar) é hold.
 - [2](notas/decisoes/2-peek-hold-posicao.md) Peek/hold usa a posição medida, não a flag `is_scoped`.
@@ -144,16 +144,17 @@ texto completo de cada uma está na nota do link (`notas/decisoes/`).
 - [42](notas/decisoes/42-prancheta-no-tempo.md) Tática com horário toca no relógio; lugar pelo `place` do corpus.
 - [43](notas/decisoes/43-round-real-na-prancheta.md) Round real é base travada; editar em t troca o real dali.
 - [44](notas/decisoes/44-direcao-visual-sala-de-demo.md) Direção visual "Sala de demo": forma do design, lógica do main.
+- [45](notas/decisoes/45-granada-desenhada.md) Granada desenhada é desenho: tracejada e sem horário.
 
 ## Números citáveis
 
-Não cite número de cabeça. Os números do projeto (corpus, rating contra a HLTV,
-escada, arremessos, testes) estão em `data/processed/numeros_citaveis.json`,
+Não cite número de cabeça. Os números do projeto (corpus, rating, escada,
+arremessos, testes) estão em `data/processed/numeros_citaveis.json`,
 gerado por `py -3.12 -m scripts.numeros_citaveis`. README e landing leem dali.
 
 ## Pontos de calibração que pertencem ao Pedro
 
-Não resolva nenhum destes sozinho; pergunte. Detalhe e histórico de cada um em
+Não resolva sozinho; pergunte. Detalhe e histórico em
 [`notas/calibracao.md`](notas/calibracao.md).
 
 - Nomes dos grupos de estilo (`clustering/cluster_names.json`); conferir a cada reajuste.
@@ -185,5 +186,5 @@ Não resolva nenhum destes sozinho; pergunte. Detalhe e histórico de cada um em
 - **Catraca:** teste que grava o melhor valor medido e falha se piorar.
 - **Fora da amostra:** avaliado em dado que não entrou no ajuste.
 - **Regra 36:** preservação de dados (demo, interim e backup).
-- Nas notas antigas, "item 7" é a investigação da força do arremesso, "etapa N"
-  são as etapas da prancheta e "Fase X" são fases de trabalho anteriores.
+- Notas antigas: "item 7" = investigação da força do arremesso; "etapa N" = etapa
+  da prancheta; "Fase X" = fase de trabalho anterior.

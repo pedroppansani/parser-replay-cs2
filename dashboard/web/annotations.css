@@ -49,6 +49,7 @@
 /* Recolhida (auditoria 5.1): sem o modo de desenho, só os grupos `.fixo`
    aparecem -- o "Desenhar", a direção e a tela cheia. O resto abre com ele. */
 .anot-barra:not(.ativo) .anot-grupo:not(.fixo) { display: none; }
+.anot-grupo[hidden] { display: none; }   /* fase 11: o grupo do carimbo e os de cor/espessura somem conforme o pincel */
 .anot-b {
   font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: 10.5px; letter-spacing: 0.04em;
   padding: 5px 9px; border-radius: var(--r-sm); border: 1px solid var(--borda);

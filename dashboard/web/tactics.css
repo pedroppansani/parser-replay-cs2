@@ -251,7 +251,7 @@ h3 { margin: 0 0 4px; font-size: 15px; }
     border-radius: 50%; border: 1.5px solid var(--tinta-2); color: var(--tinta); font-weight: 700; font-size: 0.85em; }
   .pr-barra [data-ferramenta="caneta"], .pr-barra [data-ferramenta="seta"], .pr-barra [data-ferramenta="linha"],
   .pr-barra [data-ferramenta="retangulo"], .pr-barra [data-ferramenta="elipse"], .pr-barra [data-ferramenta="texto"],
-  .pr-barra [data-ferramenta="borracha"], .pr-barra [data-andar], .pr-barra .anot-cor, #pr-andares, #pr-desenho, #pr-contexto-desenho { display: none !important; }
+  .pr-barra [data-ferramenta="borracha"], .pr-barra [data-ferramenta="granada_desenho"], .pr-barra [data-andar], .pr-barra .anot-cor, #pr-andares, #pr-desenho, #pr-contexto-desenho, #pr-contexto-granada { display: none !important; }
   .pr-barra { display: flex; }
   #pr-reproduzir, #pr-editar { order: -1; flex: 1 0 100%; }
   .grade { padding: 8px; }

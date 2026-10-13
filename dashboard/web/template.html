@@ -1447,7 +1447,8 @@
   (function legenda() {
     var caixa = document.getElementById("maplegend");
     var ITENS = [["peca", C.ct, "CT"], ["peca", C.tr, "TR"], ["smoke", null, "Smoke"], ["flash", null, "Flash"],
-                 ["he", null, "HE"], ["molotov", null, "Molotov"], ["morto", C.apagado, "morto"]];
+                 ["he", null, "HE"], ["molotov", null, "Molotov"], ["morto", C.apagado, "morto"],
+                 ["desenhada", null, "granada desenhada"]];
     var dpr = window.devicePixelRatio || 1;
     ITENS.forEach(function (it) {
       var s = document.createElement("span"), c = document.createElement("canvas");
@@ -1457,6 +1458,8 @@
       g.scale(dpr, dpr);
       if (it[0] === "peca") MapCore.desenhaJogador(g, 9, 9, { cor: it[1], estado: "vivo", hp: 100, nome: "" });
       else if (it[0] === "morto") MapCore.desenhaJogador(g, 9, 9, { cor: C.tinta2, estado: "morto", hp: 0, nome: "" });
+      // a granada desenhada (fase 11): o mesmo glifo, com o anel tracejado e o corpo a 85%
+      else if (it[0] === "desenhada") MapCore.nadeGlyph(g, "smoke", 9, 9, 4, MapCore.NADE_COLOR.smoke, -Math.PI / 2, true);
       else MapCore.nadeGlyph(g, it[0], 9, 9, 4, MapCore.NADE_COLOR[it[0]], -Math.PI / 2);
       s.appendChild(c);
       s.appendChild(document.createTextNode(it[2]));

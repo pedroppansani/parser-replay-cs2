@@ -84,7 +84,8 @@ def test_legenda_com_glifos_reais_e_ferramentas_embaixo_dela(navegador, pagina_h
     ctx, pg = _abre(navegador, pagina_html)
     try:
         itens = pg.eval_on_selector_all("#maplegend span", "els => els.map(e => [e.textContent, !!e.querySelector('canvas')])")
-        assert [t for t, _ in itens] == ["CT", "TR", "Smoke", "Flash", "HE", "Molotov", "morto"]
+        # fase 11: + "granada desenhada" (regra 2 do prompt da fase: item da legenda com o glifo tracejado)
+        assert [t for t, _ in itens] == ["CT", "TR", "Smoke", "Flash", "HE", "Molotov", "morto", "granada desenhada"]
         assert all(c for _, c in itens)
         # cada glifo foi de fato desenhado (canvas com pixel pintado)
         pintados = pg.eval_on_selector_all("#maplegend canvas", """els => els.map(c => {

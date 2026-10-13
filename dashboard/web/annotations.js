@@ -53,8 +53,15 @@ window.MapAnnotations = (function () {
     { id: "retangulo", rotulo: "Retângulo", tecla: "4" },
     { id: "elipse", rotulo: "Elipse", tecla: "5" },
     { id: "texto", rotulo: "Texto", tecla: "6" },
-    { id: "borracha", rotulo: "Borracha", tecla: "7" }
+    { id: "borracha", rotulo: "Borracha", tecla: "7" },
+    // fase 11: carimbo de granada (sem horário e sem física) para explicar a jogada por cima do mapa
+    { id: "granada", rotulo: "Granada", tecla: "8" }
   ];
+  // Os quatro tipos do carimbo; com o pincel Granada ligado, 1 a 4 escolhem o tipo
+  var ARMAS_DESENHADAS = MapCore.ARMAS_DESENHADAS;
+  var NOME_DA_ARMA = { smoke: "Smoke", flash: "Flash", he: "HE", molotov: "Molotov" };
+  // Passo do cursor de teclado, em px do radar (com Shift, 4x). (Convenção de interface.)
+  var PASSO_CURSOR_PX = 8;
 
   // Ligar o desenho tem que já desenhar, à mão livre. A reta é ferramenta
   // separada, escolhida de propósito.
@@ -114,6 +121,10 @@ window.MapAnnotations = (function () {
     espaco: false,          // barra de espaço segurada: o arrasto vira pan
     sobreMapa: false,       // ponteiro sobre o palco (só aí o espaço é nosso)
     direcao: true,          // desenhar a ponta da direção do olhar no replay
+    armaDesenho: "smoke",   // o tipo do carimbo de granada (fase 11)
+    selGranada: null,       // a granada desenhada selecionada (o próprio traço)
+    arrastoGranada: null,   // arrastando uma granada desenhada
+    cursor: null,           // cursor de teclado do carimbo, em px do radar
     visiveisAntes: -1,
     armazemOk: true,
     aviso: "",
@@ -191,6 +202,7 @@ window.MapAnnotations = (function () {
       derrubaria o redesenho de todos os outros. */
   function tracoValido(t) {
     if (!t || IDS_FERRAMENTA.indexOf(t.ferramenta) < 0) return false;
+    if (t.ferramenta === "granada" && ARMAS_DESENHADAS.indexOf(t.arma) < 0) return false;
     if (!Array.isArray(t.pontos) || !t.pontos.length) return false;
     return t.pontos.every(function (p) {
       return Array.isArray(p) && p.length === 2 && isFinite(p[0]) && isFinite(p[1]);
@@ -345,16 +357,78 @@ window.MapAnnotations = (function () {
     ctxC.setTransform(1, 0, 0, 1, 0, 0);
     ctxC.clearRect(0, 0, camada.width, camada.height);
     applyView(ctxC);
-    visiveis().forEach(function (t) { caminhoDoTraco(ctxC, t); });
+    // a granada desenhada em arrasto sai desta camada e vai para o rascunho (como o traço em andamento): mover o
+    // ponteiro repinta só o rascunho
+    var erguida = S.arrastoGranada ? S.arrastoGranada.traco : null;
+    visiveis().forEach(function (t) { if (t !== erguida) caminhoDoTraco(ctxC, t); });
+    // a granada desenhada selecionada: anel --foco em volta (arrastar move; Delete apaga)
+    if (S.selGranada && !erguida && tracosDoRound().indexOf(S.selGranada) >= 0) {
+      var c = jogoParaPixel(S.selGranada.pontos[0][0], S.selGranada.pontos[0][1]);
+      ctxC.save(); ctxC.strokeStyle = MapCore.token("foco"); ctxC.lineWidth = 2;
+      ctxC.beginPath(); ctxC.arc(c[0], c[1], MapCore.RAIO_GLIFO_DESENHADO * 2.4, 0, Math.PI * 2); ctxC.stroke(); ctxC.restore();
+    }
   }
 
   function repintaRascunho() {
     if (!S.pronto) return;
     ctxR.setTransform(1, 0, 0, 1, 0, 0);
     ctxR.clearRect(0, 0, rascunho.width, rascunho.height);
+    if (S.cursor && S.ligado && S.ferramenta === "granada") {
+      // cursor de teclado do carimbo: a granada que vai sair, mais uma cruz
+      applyView(ctxR);
+      var gc = pixelParaJogo(S.cursor[0], S.cursor[1]);
+      caminhoDoTraco(ctxR, { ferramenta: "granada", arma: S.armaDesenho, pontos: [gc], area: false });
+      ctxR.save(); ctxR.strokeStyle = MapCore.token("foco"); ctxR.lineWidth = 2;
+      ctxR.beginPath(); ctxR.moveTo(S.cursor[0] - 14, S.cursor[1]); ctxR.lineTo(S.cursor[0] + 14, S.cursor[1]);
+      ctxR.moveTo(S.cursor[0], S.cursor[1] - 14); ctxR.lineTo(S.cursor[0], S.cursor[1] + 14); ctxR.stroke(); ctxR.restore();
+    }
+    if (S.arrastoGranada) {
+      applyView(ctxR);
+      caminhoDoTraco(ctxR, S.arrastoGranada.traco);
+      return;
+    }
     if (!S.tracando) return;
     applyView(ctxR);
     caminhoDoTraco(ctxR, S.tracando);
+  }
+
+  /** A granada desenhada sob o ponto (coordenada de jogo), a de cima primeiro. */
+  function granadaSob(g) {
+    var alvo = jogoParaPixel(g[0], g[1]), lista = visiveis();
+    for (var i = lista.length - 1; i >= 0; i--) {
+      if (lista[i].ferramenta === "granada" && encosta(lista[i], alvo)) return lista[i];
+    }
+    return null;
+  }
+
+  /** Carimba uma granada desenhada no ponto (ou seleciona a que já está ali). */
+  function carimbaGranada(g) {
+    var ja = granadaSob(g);
+    if (ja) { S.selGranada = ja; repinta(); atualizaBotoes(); return ja; }
+    empilha({ ferramenta: "granada", arma: S.armaDesenho, area: false, pontos: [g],
+              cor: MapCore.NADE_COLOR[S.armaDesenho], espessura: ESPESSURAS[1], so_depois: S.soDepois, pos: S.pos });
+    var lista = tracosDoRound();
+    S.selGranada = lista[lista.length - 1];
+    repinta(); atualizaBotoes();
+    return S.selGranada;
+  }
+
+  function apagaGranadaSelecionada() {
+    var lista = tracosDoRound(), i = lista.indexOf(S.selGranada);
+    S.selGranada = null;
+    if (i < 0) { repinta(); atualizaBotoes(); return; }
+    var nova = lista.slice(); nova.splice(i, 1);
+    gravaTracos(nova); S.refazer = [];
+    repinta(); atualizaBotoes();
+  }
+
+  /** "Área": liga ou desliga o raio de efeito da granada desenhada selecionada (smoke e molotov). */
+  function alternaArea() {
+    var t = S.selGranada;
+    if (!t || (t.arma !== "smoke" && t.arma !== "molotov")) return;
+    t.area = !t.area;
+    gravaTracos(tracosDoRound().slice());
+    repinta(); atualizaBotoes();
   }
 
   /* ---------------------------------------------------------------------
@@ -369,6 +443,13 @@ window.MapAnnotations = (function () {
     if (opts.pause) opts.pause();
 
     var g = eventoParaJogo(e);
+
+    if (S.ferramenta === "granada") {
+      var ja = granadaSob(g);
+      if (ja) { S.selGranada = ja; S.arrastoGranada = { traco: ja }; repinta(); repintaRascunho(); atualizaBotoes(); return; }
+      carimbaGranada(g);
+      return;
+    }
 
     if (S.ferramenta === "borracha") { apaga(g); return; }
 
@@ -396,6 +477,12 @@ window.MapAnnotations = (function () {
   }
 
   function moveu(e) {
+    if (S.ligado && S.arrastoGranada) {
+      S.arrastoGranada.traco.pontos[0] = eventoParaJogo(e);
+      S.arrastoGranada.mexeu = true;
+      repintaRascunho();
+      return;
+    }
     if (!S.ligado || !S.tracando) return;
     var eventos = (S.tracando.ferramenta === "caneta" && e.getCoalescedEvents)
       ? e.getCoalescedEvents() : [e];
@@ -415,6 +502,14 @@ window.MapAnnotations = (function () {
   }
 
   function soltou() {
+    if (S.arrastoGranada) {
+      // arrastar move: grava a lista com a posição nova (a mesma persistência dos outros traços)
+      var mexeu = S.arrastoGranada.mexeu;
+      S.arrastoGranada = null;
+      if (mexeu) gravaTracos(tracosDoRound().slice());
+      repintaRascunho(); repinta();                  // a granada volta para a camada do desenho
+      return;
+    }
     if (!S.ligado || !S.tracando) return;
     var t = S.tracando;
     S.tracando = null;
@@ -727,6 +822,7 @@ window.MapAnnotations = (function () {
   }
 
   function escolheFerramenta(id) {
+    if (id !== "granada") { S.selGranada = null; S.cursor = null; }
     S.ferramenta = id;
     // lembrada na sessão: o modo reabre com a última ferramenta usada
     grava("sessionStorage", CHAVE_FERRAMENTA, id);
@@ -758,9 +854,25 @@ window.MapAnnotations = (function () {
     });
     barra.appendChild(ferr);
 
-    barra.appendChild(montaCor());
+    var granadas = grupo("anot-granadas");
+    ARMAS_DESENHADAS.forEach(function (a, i) {
+      var b = botao(NOME_DA_ARMA[a], NOME_DA_ARMA[a] + " desenhada (" + (i + 1) + ")", function () {
+        S.armaDesenho = a; atualizaBotoes(); repintaRascunho();
+      });
+      b.dataset.armaDesenho = a;
+      granadas.appendChild(b);
+    });
+    var area = botao("Área", "Ligar ou desligar a área da granada desenhada selecionada (smoke e molotov)", alternaArea);
+    area.id = "anot-area";
+    granadas.appendChild(area);
+    barra.appendChild(granadas);
+
+    var grupoCor = montaCor();
+    grupoCor.classList.add("anot-so-traco");
+    barra.appendChild(grupoCor);
 
     var esp = grupo("anot-espessuras");
+    esp.classList.add("anot-so-traco");
     ESPESSURAS.forEach(function (e, i) {
       var b = botao(ROTULOS_ESPESSURA[i], "Espessura " + ROTULOS_ESPESSURA[i],
         function () { S.espessura = e; atualizaBotoes(); });
@@ -874,6 +986,9 @@ window.MapAnnotations = (function () {
     "<p><kbd>espaço</kbd> toca e pausa · <kbd>←</kbd> <kbd>→</kbd> quadro a quadro (com <kbd>Shift</kbd>, de " +
     "segundo em segundo) · <kbd>[</kbd> <kbd>]</kbd> mudam a velocidade, até 0,25× · <kbd>D</kbd> desenha · " +
     "<kbd>F</kbd> tela cheia</p>" +
+    "<p>Desenhando: <kbd>1</kbd> a <kbd>7</kbd> escolhem o pincel e <kbd>8</kbd> é a granada desenhada. Com ela, " +
+    "<kbd>1</kbd> a <kbd>4</kbd> escolhem smoke, flash, HE ou molotov, as setas movem o cursor no mapa e " +
+    "<kbd>Enter</kbd> carimba; arrastar move e <kbd>Delete</kbd> apaga a selecionada.</p>" +
     "<p>Clicar num evento da linha do tempo ou da autópsia começa 3 segundos antes dele.</p>" +
     "<p>Posições reais a 4 quadros por segundo. O contorno do mapa não foi desenhado: é a soma das " +
     "posições da partida inteira.</p>";
@@ -925,6 +1040,26 @@ window.MapAnnotations = (function () {
     Array.prototype.forEach.call(document.querySelectorAll("[data-espessura]"), function (b) {
       b.classList.toggle("on", b.dataset.espessura === String(S.espessura));
     });
+    // carimbo de granada: o grupo só aparece com o pincel Granada; a "Área" só serve a uma smoke/molotov selecionada
+    var gGran = document.getElementById("anot-granadas");
+    if (gGran) gGran.hidden = !(S.ligado && S.ferramenta === "granada");
+    // a granada desenhada tem a cor do tipo e o tamanho do glifo: cor e espessura não se aplicam a ela
+    Array.prototype.forEach.call(document.querySelectorAll(".anot-so-traco"), function (g) {
+      g.hidden = S.ferramenta === "granada";
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-arma-desenho]"), function (b) {
+      var on = b.dataset.armaDesenho === S.armaDesenho;
+      b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on));
+    });
+    var bArea = document.getElementById("anot-area");
+    if (bArea) {
+      var podeArea = !!(S.selGranada && (S.selGranada.arma === "smoke" || S.selGranada.arma === "molotov"));
+      bArea.disabled = !podeArea;
+      bArea.title = podeArea ? "Ligar ou desligar a área da granada desenhada selecionada"
+                             : "Selecione uma smoke ou molotov desenhada para ligar a área";
+      bArea.classList.toggle("on", !!(podeArea && S.selGranada.area));
+      bArea.setAttribute("aria-pressed", String(!!(podeArea && S.selGranada.area)));
+    }
     atualizaCores();
 
     var sd = document.getElementById("anot-sodepois");
@@ -1035,6 +1170,28 @@ window.MapAnnotations = (function () {
     });
     window.addEventListener("blur", function () { if (S.espaco) modoPan(false); });
 
+    // Cursor de teclado do carimbo (fase 11): com o pincel Granada ligado, as setas movem um cursor no mapa e
+    // Enter carimba. Na FASE DE CAPTURA, para as setas não andarem o replay quadro a quadro ao mesmo tempo.
+    document.addEventListener("keydown", function (e) {
+      if (!(S.ligado && S.ferramenta === "granada")) return;
+      if (/^(INPUT|TEXTAREA|SELECT)$/.test((e.target || {}).tagName || "")) return;
+      var passo = PASSO_CURSOR_PX * (e.shiftKey ? 4 : 1), d = null;
+      if (e.key === "ArrowLeft") d = [-passo, 0]; else if (e.key === "ArrowRight") d = [passo, 0];
+      else if (e.key === "ArrowUp") d = [0, -passo]; else if (e.key === "ArrowDown") d = [0, passo];
+      if (!d && e.key !== "Enter") return;
+      e.preventDefault(); e.stopImmediatePropagation();
+      if (!S.cursor) S.cursor = [opts.radar.width / 2, opts.radar.height / 2];
+      if (d) {
+        S.cursor = [Math.max(0, Math.min(opts.radar.width, S.cursor[0] + d[0])),
+                    Math.max(0, Math.min(opts.radar.height, S.cursor[1] + d[1]))];
+        repintaRascunho();
+        avisa("Cursor do carimbo: Enter põe a " + NOME_DA_ARMA[S.armaDesenho] + " aqui.");
+        return;
+      }
+      if (opts.pause) opts.pause();
+      carimbaGranada(pixelParaJogo(S.cursor[0], S.cursor[1]));
+    }, true);
+
     document.addEventListener("keydown", function (e) {
       var editando = /^(INPUT|TEXTAREA|SELECT)$/.test((e.target || {}).tagName || "");
       if (e.key === "Escape") {
@@ -1060,6 +1217,12 @@ window.MapAnnotations = (function () {
       if (k === "f") { e.preventDefault(); alternaTelaCheia(); return; }
       if (k === "d") { e.preventDefault(); ligaDesenho(!S.ligado); return; }
       if (k === "0") { e.preventDefault(); reseta(); return; }
+      if (S.ligado && S.ferramenta === "granada" && /^[1-4]$/.test(e.key)) {
+        e.preventDefault(); S.armaDesenho = ARMAS_DESENHADAS[+e.key - 1]; atualizaBotoes(); repintaRascunho(); return;
+      }
+      if (S.ligado && S.selGranada && (k === "delete" || k === "backspace")) {
+        e.preventDefault(); apagaGranadaSelecionada(); return;
+      }
       FERRAMENTAS.forEach(function (f) {
         if (e.key === f.tecla) escolheFerramenta(f.id);
       });
