@@ -43,3 +43,13 @@
   pessoa com números de ordem repetidos (o par autor + lamport precisa ser único). A tela diz por quê.
 - **O link** é `prancheta_<mapa>.html#sala=CODIGO` (as páginas são uma por mapa; o pedido falava em
   `prancheta.html?mapa=…`).
+- **O convite vale para o mapa da sala** (fase 12b). A sala guarda o mapa (`salas.mapa`); quem não é membro
+  não lê `salas`, então a página descobre o mapa pela própria `entrar_na_sala`, que já devolvia `mapa`
+  (nenhuma migração mudou; o SQL de `notas/seguranca/grupos.md` segue igual ao das migrações). Se o
+  mapa da sala não é o da página (código colado em "Entrar num grupo", ou `#sala=` aberto na página de outro
+  mapa, seguido do clique em "Entrar"), a página guarda o nick e vai para `prancheta_<mapa>.html#sala=CODIGO&nick=NICK`;
+  lá a entrada recomeça sozinha (só nesse salto, com o nick no link) e é idempotente: quem já é membro volta
+  sem recontar nick nem o limite de 10. O nick sai da barra ao entrar. O mapa vindo do servidor só vira
+  endereço se casar com o check de `salas.mapa`; no destino, mapa ainda diferente mostra aviso (nunca em laço).
+  Abrir um link `#sala=` sem nick continua não fazendo pedido nenhum: só o clique entra. Para os testes, a
+  `SalaFalsa` pode compartilhar o servidor entre páginas do mesmo navegador (`falsa.compartilhado`, localStorage).
