@@ -592,7 +592,7 @@ var Grupo = (function () {
     var papel = ehLider ? "líder" : (G.todos || m.pode_desenhar ? "pode desenhar" : "só assiste");
     var h = '<li class="gr-membro" data-usuario="' + esc(m.usuario) + '">' +
       '<span class="gr-ficha" aria-hidden="true">' + esc(iniciais(m.nick)) + "</span>" +
-      '<span class="gr-nome"><b>' + esc(m.nick) + "</b>" + (souEu ? " (você)" : "") +
+      '<span class="gr-nome"><span class="gr-quem"><b>' + esc(m.nick) + "</b>" + (souEu ? " (você)" : "") + "</span>" +
       '<small><span class="gr-online' + (online ? " on" : "") + '" aria-hidden="true"></span>' + (online ? "online" : "offline") +
       " · " + esc(papel) + "</small></span>";
     if (comControles && !ehLider) {

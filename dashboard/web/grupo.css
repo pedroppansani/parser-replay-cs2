@@ -26,7 +26,8 @@
 .gr-ficha { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 600; font-size: var(--t-xs);
   background: var(--superficie-2); color: var(--tinta); border: 1.5px solid var(--borda); }
 .gr-nome { display: grid; min-width: 0; }
-.gr-nome b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.gr-quem { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gr-nome b { font-weight: 600; }
 .gr-nome small { color: var(--tinta-2); font-size: var(--t-xs); display: flex; align-items: center; gap: 4px; }
 .gr-online { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--apagado); display: inline-block; }
 .gr-online.on { background: var(--tinta); border-color: var(--tinta); }
