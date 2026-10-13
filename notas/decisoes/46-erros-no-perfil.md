@@ -30,7 +30,8 @@
   time, ou time guardando arma (evento depois do plant num round que o time perdeu; o "save
   declarado" não existe no dado), ou depois do fim do round: fica de fora; (2) morreu isolado sendo
   lurker, (3) primeira morte sendo entry, (4) morreu isolado ou primeira morte do AWPer no duelo de
-  abertura do round: depende da tática, com o motivo; (5) função só tendência: o motivo acrescenta
+  abertura do round (a morte que abre o round: a primeira kill de inimigo do round, a mesma abertura
+  de `impacto._aberturas_por_round`; confirmado na fase 12b): depende da tática, com o motivo; (5) função só tendência: o motivo acrescenta
   "a função não é firme nesta partida"; (6) não trocou, possível bait, perdeu a troca, flash no time
   e dano de utilidade no time: explícito; (7) o resto: depende da tática ("o dado mostra posição e
   tempo, não o que o time pediu"). Consequência: morreu isolado e primeira morte sem troca saem
