@@ -3463,7 +3463,7 @@
     function itemMelhorar(m) {
       var tag = m.nivel === "explicito" ? "tag decisivo" : "tag neutro";
       return "<article class='pfitem card' data-tipo='" + esc(m.tipo) + "'><div class='topo'>" +
-        "<span class='titulo'>" + esc(m.titulo) + "</span><span class='cont'>" + esc(m.contagem) + "</span>" +
+        "<span class='titulo'>" + esc(m.titulo) + (m.lado_rotulo ? " " + esc(m.lado_rotulo) : "") + "</span><span class='cont'>" + esc(m.contagem) + "</span>" +
         "<span class='" + tag + "'>" + esc(m.nivel_rotulo) + "</span>" +
         (m.em_validacao ? "<span class='tag neutro'>" + esc(PF.textos.rotulo_em_validacao) + "</span>" : "") +
         "</div>" +
@@ -3475,7 +3475,7 @@
     }
     function itemForte(f) {
       return "<article class='pfitem card' data-chave='" + esc(f.chave) + "'><div class='topo'>" +
-        "<span class='titulo'>" + esc(f.rotulo) + "</span><span class='valor'>" + esc(f.valor) + "</span>" +
+        "<span class='titulo'>" + esc(f.rotulo) + (f.lado_rotulo ? " " + esc(f.lado_rotulo) : "") + "</span><span class='valor'>" + esc(f.valor) + "</span>" +
         (f.bruto ? "<span class='bruto'>" + esc(f.bruto) + "</span>" : "") + "</div>" +
         "<div class='ref'>" + esc(f.referencia) + "</div></article>";
     }
@@ -3529,8 +3529,9 @@
 
       document.getElementById("pf-uma-vez").innerHTML = j.uma_vez.length
         ? "<p class='pfnota'>" + esc(T.detalhes_erros) + "</p>" + j.uma_vez.map(function (u) {
-            return "<div class='pfitem'><div class='topo'><span class='titulo'>" + esc(u.titulo) + "</span><span class='cont'>" +
-              esc(u.contagem) + "</span></div>" + chipsDeRound(u.chips) + "</div>";
+            return "<div class='pfitem'><div class='topo'><span class='titulo'>" + esc(u.titulo) + (u.lado_rotulo ? " " + esc(u.lado_rotulo) : "") + "</span><span class='cont'>" +
+              esc(u.contagem) + "</span>" + (u.motivo ? "<span class='cont'>" + esc(u.motivo) + "</span>" : "") +
+              "</div>" + chipsDeRound(u.chips) + "</div>";
           }).join("") : "";
     }
 

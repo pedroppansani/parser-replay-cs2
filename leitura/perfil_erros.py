@@ -37,13 +37,16 @@ TEXTOS = {
     "ninguem": "— ninguém —",
     "detalhes": "Detalhes",
     "detalhes_resumo": "o perfil completo desta partida: taxas, função por round, jeito de jogar e quem joga em cada grupo",
-    "detalhes_erros": "Aconteceu uma vez (abaixo do mínimo de 2 para virar ponto a melhorar)",
+    "detalhes_erros": "Erros que não viraram ponto a melhorar",
+    "uma_vez": "aconteceu uma vez, abaixo do mínimo de 2 para virar ponto a melhorar",
+    "normal_funcao": "dentro do normal para a função",
+    "normal_lado": "dentro do normal para os jogadores de {lado}",
     "em_validacao": "Em validação: os tipos de erro aparecem depois de conferidos",
     "como_e_conferido": "como é conferido",
     "rotulo_em_validacao": "em validação",
     "aviso_preview": ("Pré-visualização: nenhum destes tipos de erro foi conferido ainda. Todos estão em validação e "
                       "esta página não é publicada."),
-    "nenhum_erro": "Nenhum erro se repetiu nesta partida",
+    "nenhum_erro": "Nada acima do normal para a função nesta partida",
     "fortes_vazio": "Nenhuma métrica ficou acima da referência da função nesta partida",
     "comparar_texto": ("Só jogadores desta partida, de qualquer time; ao lado de cada um, a contagem ou o valor dele "
                        "nesta partida. A referência é a mediana anônima do corpus."),
@@ -51,6 +54,13 @@ TEXTOS = {
     "col_referencia": "referência",
     "rounds_do_chip": "rounds",
 }
+
+
+# Os textos da fase 12, como estavam: o site publicado (sem a prévia) com os erros em validação continua
+# a mandar exatamente estes (a aba Perfil publicada não muda; fase 12b).
+TEXTOS_FASE12 = {k: v for k, v in TEXTOS.items() if k not in ("uma_vez", "normal_funcao", "normal_lado")}
+TEXTOS_FASE12["detalhes_erros"] = "Aconteceu uma vez (abaixo do mínimo de 2 para virar ponto a melhorar)"
+TEXTOS_FASE12["nenhum_erro"] = "Nenhum erro se repetiu nesta partida"
 
 
 def _br(x: float, casas: int) -> str:
@@ -84,14 +94,29 @@ def _nome_da_funcao(f: str | None) -> str | None:
     return rot if rot == "AWPer" else rot.lower()     # AWPer é nome próprio da função
 
 
-def _referencia(ref: dict | None, grupo: str, chave: str, funcao: str | None) -> tuple[float | None, str | None]:
-    """(valor, de quem): a mediana da função; sem régua própria da função, a do corpus inteiro."""
-    tabela = ((ref or {}).get(grupo) or {}).get(chave) or {}
-    if funcao and tabela.get(funcao) is not None:
-        return tabela[funcao], f"de quem joga {_nome_da_funcao(funcao)}"
-    if tabela.get(E.TODAS) is not None:
-        return tabela[E.TODAS], "do corpus"
-    return None, None
+def _origem(escopo: str | None, lado: str, funcao: str | None) -> str:
+    """De quem é a referência (decisão 46, fase 12b): a célula (lado, função), ou, com poucos jogador-lados
+    nela, o lado inteiro. Nunca os dois lados juntos."""
+    rot = E.ROTULO_DO_LADO[lado]
+    nome = _nome_da_funcao(funcao)
+    if escopo == "funcao" and nome:
+        return f"quem joga {nome} no {rot}"
+    if nome:
+        plural = nome if nome.endswith("s") else f"{nome}s"
+        return f"todos os jogadores de {rot} (poucos {plural} no corpus)"
+    return f"todos os jogadores de {rot} (sem função definida neste lado)"
+
+
+def _referencia(ref: dict | None, grupo: str, chave: str, lado: str,
+                funcao: str | None) -> tuple[dict | None, str | None]:
+    """(entrada da régua, de quem): a da célula (lado, função), ou a do lado inteiro quando a célula é pequena."""
+    celula, escopo = E.escolhe_celula(ref, grupo, chave, lado, funcao)
+    return (celula, _origem(escopo, lado, funcao)) if celula is not None else (None, None)
+
+
+def _no_lado(lado: str | None) -> str:
+    """"no TR" / "no CT": o card diz o lado do erro."""
+    return f"no {E.ROTULO_DO_LADO[lado]}" if lado else ""
 
 
 def _contagem(n: int, rounds: int) -> str:
@@ -123,35 +148,49 @@ def _chips(ocs: list[dict]) -> list[dict]:
 
 
 def _ponto_a_melhorar(tipo: str, ocs: list[dict], rounds: int, ref: dict | None, funcao: str | None,
-                      em_validacao: bool) -> dict:
+                      em_validacao: bool, lado: str | None = None) -> dict:
     niveis = Counter(o["nivel"] for o in ocs)
     nivel = E.EXPLICITO if niveis.get(E.EXPLICITO, 0) >= niveis.get(E.DEPENDE, 0) else E.DEPENDE
     motivos = Counter(o["motivo"] for o in ocs if o["nivel"] == nivel)
     motivo = sorted(motivos.items(), key=lambda kv: (-kv[1], kv[0]))[0][0]
     pontos, custo = _custo([o["dwpa"] for o in ocs])
-    mediana, de_quem = _referencia(ref, "erros", tipo, funcao)
-    referencia = (f"a mediana {de_quem} é {_br(mediana, 1).removesuffix(',0')}" if mediana is not None else "")
+    referencia, limite = "", None
+    if lado:
+        celula, de_quem = _referencia(ref, "erros", tipo, lado, funcao)
+        mediana = E.percentil_do_histograma(celula["hist"], 50) if celula else None
+        limite = E.percentil_do_histograma(celula["hist"], E.PERCENTIL_PONTO_A_MELHORAR) if celula else None
+        if mediana is not None:
+            referencia = (f"referência: {de_quem}; a mediana é {_br(mediana, 1).removesuffix(',0')}; "
+                          f"o normal vai até {_br(limite, 1).removesuffix(',0')}")
     frase = (E.COMO_MELHORAR[tipo] if nivel == E.EXPLICITO
              else f"{motivo[0].upper()}{motivo[1:]}. {E.CONFERIR_COM_O_TIME}")
-    return {"tipo": tipo, "titulo": E.TITULOS[tipo], "contagem": _contagem(len(ocs), rounds),
+    return {"tipo": tipo, "titulo": E.TITULOS[tipo], "lado": lado or "", "lado_rotulo": _no_lado(lado),
+            "limite": limite if limite is not None else -1.0,
+            "contagem": _contagem(len(ocs), rounds),
             "referencia": referencia, "nivel": nivel, "nivel_rotulo": E.ROTULO_DO_NIVEL[nivel],
             "motivo": motivo, "frase": frase, "custo": custo, "_pontos": pontos,
             "em_validacao": em_validacao, "chips": _chips(ocs)}
 
 
-def _pontos_fortes(perfil: dict, ref: dict | None, funcao: str | None) -> tuple[list[dict], dict]:
-    """(até MAX_PONTOS_FORTES pontos fortes, {chave: valor e bruto formatados} de todas as métricas)."""
+def _pontos_fortes_fase12(perfil: dict, ref: dict | None, funcao: str | None) -> tuple[list[dict], dict]:
+    """O cálculo da fase 12, intacto: o valor da partida inteira contra a mediana da função principal (régua
+    `erros_reference_fase12.json`). É o que o site publicado usa enquanto `FORTES_POR_LADO_PUBLICADOS` for False."""
+    def referencia(chave: str) -> tuple[float | None, str | None]:
+        tabela = ((ref or {}).get("metricas") or {}).get(chave) or {}
+        if funcao and tabela.get(funcao) is not None:
+            return tabela[funcao], f"de quem joga {_nome_da_funcao(funcao)}"
+        if tabela.get(E.TODAS) is not None:
+            return tabela[E.TODAS], "do corpus"
+        return None, None
+
     candidatos, valores = [], {}
     for chave, formato, unidade in E.METRICAS_DE_PONTO_FORTE:
         v, n, d = perfil.get(chave), perfil.get(f"{chave}_n"), perfil.get(f"{chave}_d")
-        bruto = ""
-        if d:
-            bruto = (f"{round(n)} de {round(d)} {unidade}" if formato == "pct"
-                     else f"em {round(d)} {unidade}")
+        bruto = _bruto(n, d, formato, unidade)
         valores[chave] = {"valor": formata(v, formato), "bruto": bruto}
         if v is None or perfil.get(f"{chave}_fraco") or not d:
             continue
-        r, de_quem = _referencia(ref, "metricas", chave, funcao)
+        r, de_quem = referencia(chave)
         if r is None or r <= 0 or v < r * (1 + E.MARGEM_PONTO_FORTE):
             continue
         candidatos.append(((v - r) / r, chave, {
@@ -159,6 +198,41 @@ def _pontos_fortes(perfil: dict, ref: dict | None, funcao: str | None) -> tuple[
             "referencia": f"a mediana {de_quem} é {formata(r, formato)}"}))
     candidatos.sort(key=lambda c: (-c[0], c[1]))
     return [c[2] for c in candidatos[:E.MAX_PONTOS_FORTES]], valores
+
+
+def _bruto(n, d, formato: str, unidade: str) -> str:
+    if not d:
+        return ""
+    return f"{round(n)} de {round(d)} {unidade}" if formato == "pct" else f"em {round(d)} {unidade}"
+
+
+def _pontos_fortes(perfil: dict, por_lado: dict, funcoes: dict, ref: dict | None) -> tuple[list[dict], dict]:
+    """(até MAX_PONTOS_FORTES pontos fortes, {chave: valor e bruto formatados} de todas as métricas).
+
+    `valores` é o da partida inteira (a tabela de comparar); o ponto forte é por LADO: `por_lado` é
+    {lado: {chave: (valor, n, d)}} (metrics.erros.metricas_por_lado) e `funcoes` {lado: função}. A
+    referência é a da célula (lado, função), ou a do lado inteiro (decisão 46, fase 12b)."""
+    candidatos, valores = [], {}
+    for chave, formato, unidade in E.METRICAS_DE_PONTO_FORTE:
+        v, n, d = perfil.get(chave), perfil.get(f"{chave}_n"), perfil.get(f"{chave}_d")
+        valores[chave] = {"valor": formata(v, formato), "bruto": _bruto(n, d, formato, unidade)}
+    for lado in E.LADOS:
+        for chave, formato, unidade in E.METRICAS_DE_PONTO_FORTE:
+            v, n, d = (por_lado.get(lado) or {}).get(chave, (None, 0, 0))
+            if v is None or not d or E.amostra_fraca(chave, d):
+                continue
+            celula, de_quem = _referencia(ref, "metricas", chave, lado, funcoes.get(lado))
+            r = celula["mediana"] if celula else None
+            if r is None or r <= 0 or v < r * (1 + E.MARGEM_PONTO_FORTE):
+                continue
+            rotulo = _rotulo_da_metrica(chave)
+            candidatos.append(((v - r) / r, chave, lado, {
+                "chave": chave, "rotulo": rotulo, "lado": lado,
+                "lado_rotulo": "" if rotulo.endswith(("(TR)", "(CT)")) else _no_lado(lado),
+                "valor": formata(v, formato), "bruto": _bruto(n, d, formato, unidade),
+                "referencia": f"referência: {de_quem}; a mediana é {formata(r, formato)}"}))
+    candidatos.sort(key=lambda c: (-c[0], c[1], c[2]))
+    return [c[3] for c in candidatos[:E.MAX_PONTOS_FORTES]], valores
 
 
 def _funcoes_do_jogador(linhas: list[dict], tendencia: dict) -> list[dict]:
@@ -182,10 +256,12 @@ def _resumo(nome: str, rounds: int, fortes: list[dict], melhorar: list[dict]) ->
     partes = [f"{nome} jogou {rounds} rounds nesta partida"]
     if melhorar:
         m = melhorar[0]
-        partes.append(f"o que mais custou foi {m['titulo'].lower()} ({m['contagem'].split(' em ')[0]})")
+        partes.append(f"o que mais custou foi {m['titulo'].lower()} {m['lado_rotulo']} "
+                      f"({m['contagem'].split(' em ')[0]})".replace("  ", " "))
     if fortes:
         f = fortes[0]
-        partes.append(f"o ponto mais forte foi {f['rotulo'][0].lower()}{f['rotulo'][1:]} ({f['valor']}, "
+        partes.append(f"o ponto mais forte foi {f['rotulo'][0].lower()}{f['rotulo'][1:]}"
+                      f"{' ' + f['lado_rotulo'] if f.get('lado_rotulo') else ''} ({f['valor']}, "
                       f"{f['referencia']})")
     return "; ".join(partes) + "."
 
@@ -193,12 +269,17 @@ def _resumo(nome: str, rounds: int, fortes: list[dict], melhorar: list[dict]) ->
 def bloco(payload: dict, ocorrencias: pl.DataFrame | None, *, cabecalho: dict | None = None,
           tendencia: dict | None = None, referencia: dict | None = None,
           validados: frozenset[str] | set[str] | None = None, preview: bool = False,
-          repo: str | None = None) -> dict:
+          repo: str | None = None, metricas_lado: dict | None = None) -> dict:
     """O bloco `perfil` da página. `validados` (padrão: metrics.erros.TIPOS_DE_ERRO_VALIDADOS) diz que
-    tipos vão para a tela; `preview` mostra todos, marcados "em validação"."""
+    tipos vão para a tela; `preview` mostra todos, marcados "em validação". `metricas_lado` é
+    {steamid: {lado: {chave: (valor, n, d)}}}, as métricas de ponto forte só com os rounds de cada lado."""
     validados = E.TIPOS_DE_ERRO_VALIDADOS if validados is None else frozenset(validados)
     na_tela = [t for t in E.TIPOS if preview or t in validados]
     tendencia = tendencia or {}
+    # Pontos fortes por (lado, função) só na prévia (ou com FORTES_POR_LADO_PUBLICADOS ligada pelo Pedro);
+    # no publicado, tudo o que a aba já mostrava continua como na fase 12.
+    por_lado_na_tela = preview or E.FORTES_POR_LADO_PUBLICADOS
+    referencia_fase12 = E.carrega_referencia_fase12()
     perfis = {int(p["steamid"]): p for p in payload.get("player_profile") or []}
     players = {int(p["steamid"]): p for p in payload.get("players") or []}
     funcoes: dict[int, list[dict]] = {}
@@ -218,16 +299,31 @@ def bloco(payload: dict, ocorrencias: pl.DataFrame | None, *, cabecalho: dict | 
         p = perfis[sid]
         pl_ = players.get(sid) or {}
         rounds = int(p.get("rounds_jogados") or 0)
-        funcao = E.funcao_principal(funcoes.get(sid, []))
+        # por lado: a função (None se empatada ou ausente) e os rounds jogados naquele lado
+        funcao_do_lado, rounds_do_lado = {}, {}
+        for r in funcoes.get(sid, []):
+            rounds_do_lado[r["side"]] = int(r.get("rounds_no_lado") or 0)
+            funcao_do_lado[r["side"]] = None if r.get("texto_empate") else r.get("funcao")
         ocs = por_jogador.get(sid, [])
         por_tipo = {t: [o for o in ocs if o["tipo"] == t] for t in na_tela}
         melhorar, uma_vez = [], []
         for t in na_tela:
-            if len(por_tipo[t]) >= E.MIN_OCORRENCIAS_PARA_PONTO:
-                melhorar.append(_ponto_a_melhorar(t, por_tipo[t], rounds, referencia, funcao, preview))
-            elif por_tipo[t]:
-                uma_vez.append({"titulo": E.TITULOS[t], "contagem": _contagem(len(por_tipo[t]), rounds),
-                                "chips": _chips(por_tipo[t])})
+            for lado_ in E.LADOS:                       # um ponto a melhorar é um par (tipo, lado)
+                dele = [o for o in por_tipo[t] if o["side"] == lado_]
+                if not dele:
+                    continue
+                celula, escopo = E.escolhe_celula(referencia, "erros", t, lado_, funcao_do_lado.get(lado_))
+                if E.acima_do_normal(len(dele), celula):
+                    melhorar.append(_ponto_a_melhorar(t, dele, rounds_do_lado.get(lado_, rounds), referencia,
+                                                      funcao_do_lado.get(lado_), preview, lado_))
+                else:
+                    # Detalhes: abaixo do mínimo de ocorrências, ou dentro do normal para a referência
+                    motivo = (TEXTOS["uma_vez"] if len(dele) < E.MIN_OCORRENCIAS_PARA_PONTO
+                              else TEXTOS["normal_funcao"] if escopo != "lado"
+                              else TEXTOS["normal_lado"].format(lado=E.ROTULO_DO_LADO[lado_]))
+                    uma_vez.append({"titulo": E.TITULOS[t], "lado_rotulo": _no_lado(lado_),
+                                    "contagem": _contagem(len(dele), rounds_do_lado.get(lado_, rounds)),
+                                    "motivo": motivo, "chips": _chips(dele)})
         # explícitos antes; dentro do nível, o maior custo; empate pela ordem fixa dos tipos
         ordem = {t: i for i, t in enumerate(E.TIPOS)}
         melhorar.sort(key=lambda m: (m["nivel"] != E.EXPLICITO, -m["_pontos"], ordem[m["tipo"]]))
@@ -237,7 +333,10 @@ def bloco(payload: dict, ocorrencias: pl.DataFrame | None, *, cabecalho: dict | 
                 m["custo"] = ""
         for m in melhorar:
             m.pop("_pontos", None)
-        fortes, valores = _pontos_fortes(p, referencia, funcao)
+        if por_lado_na_tela:
+            fortes, valores = _pontos_fortes(p, (metricas_lado or {}).get(sid, {}), funcao_do_lado, referencia)
+        else:
+            fortes, valores = _pontos_fortes_fase12(p, referencia_fase12, E.funcao_principal(funcoes.get(sid, [])))
         time = pl_.get("team")
         lado = lados.get(time) or {}
         jogadores.append({
@@ -260,7 +359,7 @@ def bloco(payload: dict, ocorrencias: pl.DataFrame | None, *, cabecalho: dict | 
             -((players.get(int(p["steamid"])) or {}).get("rating") or 0.0), p["name"].lower()))[0]["name"]
     estado = "preview" if preview else ("normal" if na_tela else "em_validacao")
     return {
-        "textos": TEXTOS,
+        "textos": TEXTOS_FASE12 if estado == "em_validacao" and not por_lado_na_tela else TEXTOS,
         "estado": estado,
         "link_como_e_conferido": f"{(repo or REPO).rstrip('/')}/blob/main/{COMO_E_CONFERIDO}",
         "degradado": ("▲ " + "; ".join(degradado)) if degradado else "",
@@ -289,5 +388,12 @@ def bloco_da_partida(base: Path, payload: dict, cabecalho: dict | None, *, previ
     """O bloco a partir da pasta processada da partida (o que o build chama)."""
     caminho = base / E.ARQUIVO
     oc = pl.read_parquet(caminho) if caminho.exists() else None
+    metricas: dict = {}
+    if (base / "player_profile_rounds.parquet").exists() and (base / "impacto_per_round.parquet").exists():
+        por_lado = E.metricas_por_lado(pl.read_parquet(base / "player_profile_rounds.parquet"),
+                                       pl.read_parquet(base / "impacto_per_round.parquet"))
+        for (sid, lado), valores in por_lado.items():
+            metricas.setdefault(sid, {})[lado] = valores
     return bloco(payload, oc, cabecalho=cabecalho, tendencia=tendencia_da_partida(base),
-                 referencia=E.carrega_referencia(), validados=validados, preview=preview, repo=repo)
+                 referencia=E.carrega_referencia(), validados=validados, preview=preview, repo=repo,
+                 metricas_lado=metricas)
