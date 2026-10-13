@@ -1,7 +1,7 @@
 # Contexto do projeto para o Claude Code
 
-Lido no início de cada sessão: só o que está em vigor. O porquê de cada regra,
-com o histórico, está em `notas/`.
+Lido no início de cada sessão: só o que está em vigor; o porquê e o histórico
+de cada regra estão em `notas/`.
 
 ## O projeto
 
@@ -9,17 +9,17 @@ Parser de replay (.dem) do CS2 que gera um site estático por partida (replay,
 leitura, perfil, prancheta tática). O parsing é do `awpy`; **o
 diferencial é o desenho das métricas**: cada uma carrega uma decisão de jogo
 explícita, e a validação final é o conhecimento de jogo do Pedro (Faceit 10,
-flex AWPer). Ao propor ou mudar métrica, a justificativa de JOGO pesa tanto
-quanto a corretude.
+flex AWPer). Ao mudar métrica, a justificativa de JOGO pesa tanto quanto a
+corretude.
 
 ## Ambiente e como rodar
 
-- Python 3.11 a 3.13 (`py -3.12` no Windows); o awpy 2.0.2 não suporta 3.14.
+- Python 3.11 a 3.13 (`py -3.12` no Windows); awpy 2.0.2 não roda no 3.14.
 - O demo é 64 tick; nunca assuma (`metrics/timing.py` detecta).
 - `py -3.12 -m pytest tests/` · `py -3.12 -m scripts.reprocessa` (corpus a partir
   do interim) · `py -3.12 -m scripts.build_site` · `py -3.12 -m scripts.escada_validacao`.
-- Parse: ~14 s por partida; itere com `--from-interim`.
-- Sem o interim a partida não é recalculável; apagar demo, interim ou backup: regra 36.
+- Parse: ~14 s/partida; itere com `--from-interim`.
+- Sem o interim a partida não é recalculável; apagar dado segue a regra 36.
 
 ## Mapa do repositório
 
@@ -145,22 +145,22 @@ texto completo está na nota do link (`notas/decisoes/`).
 - [44](notas/decisoes/44-direcao-visual-sala-de-demo.md) Direção visual "Sala de demo": forma do design, lógica do main.
 - [45](notas/decisoes/45-granada-desenhada.md) Granada desenhada é desenho: tracejada e sem horário.
 - [46](notas/decisoes/46-erros-no-perfil.md) Erro no Perfil: função pura, explícito ou tática; só tipo validado.
+- [47](notas/decisoes/47-grupos-na-prancheta.md) Grupo só transporta o log; quem desenha, o RLS decide.
 
 ## Números citáveis
 
-Não cite número de cabeça: os do projeto (corpus, rating, escada, arremessos,
-testes) estão em `data/processed/numeros_citaveis.json`, gerado por
-`py -3.12 -m scripts.numeros_citaveis`. README e landing leem dali.
+Não cite número de cabeça: os do projeto estão em `data/processed/numeros_citaveis.json`
+(`py -3.12 -m scripts.numeros_citaveis`); README e landing leem dali.
 
 ## Pontos de calibração que pertencem ao Pedro
 
-Não resolva sozinho; pergunte. Detalhe e histórico em
+Não resolva sozinho; pergunte. Detalhes em
 [`notas/calibracao.md`](notas/calibracao.md).
 
 - Nomes dos grupos de estilo (`clustering/cluster_names.json`); conferir a cada reajuste.
 - Partição A/Mid/B dos mapas (`MANUAL_PLACE_AREAS`); a Nuke é a mais frágil.
 - Ângulos de entrada manuais (`MANUAL_ENTRY_ANGLES`).
-- Janela de trade (5,0 s) e limiares de peek/hold, contato, pré-fire e rotação.
+- Janela de trade (5,0 s); limiares de peek/hold, contato, pré-fire e rotação.
 - Pesos do crédito do Round Swing e de `round_spectacle.py`.
 - Altura dos olhos e diferença em pé/agachado medidas (regra 21c).
 - Limiares do destaque, round decisivo, autópsia, papéis e erros do Perfil (46).

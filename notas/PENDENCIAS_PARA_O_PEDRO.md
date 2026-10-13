@@ -203,3 +203,63 @@ entram aqui quando uma decisão depende delas.
 - **Custo de deixar como está:** cada mudança de tela continua acontecendo dentro de arquivos de
   milhares de linhas, com conflitos entre fases.
 - **Fora do computador:** nada.
+
+## 10. Grupos na prancheta: os passos no Supabase (fase 13)
+
+- **Origem:** fase 13, item 13.5; decisão 47; revisão de segurança em
+  [`seguranca/grupos.md`](seguranca/grupos.md).
+- **Pergunta:** nenhuma. Falta só a sua parte: criar o projeto. Eu não crio conta, não faço login e não
+  peço senha. As migrações, o cliente, os testes com a sala falsa, a aba e a documentação já estão no
+  repositório. O botão segue desligado (`GRUPOS_ATIVOS = False` em `scripts/grupos_config.py`) até o
+  veredito LIBERADO do `seguranca` e a sua confirmação.
+- **Os passos:**
+  1. Crie a conta em supabase.com, no plano gratuito (Free).
+  2. Crie um projeto (New project) na região **South America (São Paulo)**, `sa-east-1`. A senha do
+     banco fica só com você: ela não vem para o repositório nem para mim.
+  3. Ligue o login anônimo: Authentication → Sign In / Providers (endereço `/auth/providers` do
+     projeto) → **Allow anonymous sign-ins**.
+  4. Desligue os canais públicos do Realtime: tela **Realtime Settings** → **Allow public access**
+     desligado. Assim só entra no canal da sala quem o RLS deixa.
+  5. Em **Settings → API Keys** (ou no botão **Connect**), copie a URL do projeto e a chave
+     **publishable** (`sb_publishable_…`; a antiga se chama anon) para um arquivo `.env` na raiz do
+     repositório, com duas linhas: `SUPABASE_URL=https://<projeto>.supabase.co` e
+     `SUPABASE_ANON_KEY=sb_publishable_…`. O `.env` está no `.gitignore`. A chave **secreta**
+     (`sb_secret_…`) não é usada em lugar nenhum: não copie.
+  6. Instale a Supabase CLI no Windows (PowerShell):
+     `scoop bucket add supabase https://github.com/supabase/scoop-bucket.git` e depois
+     `scoop install supabase` (ou use `npx supabase`, que pede Node 20 ou mais novo).
+  7. Rode `supabase login` você mesmo. Ele abre o navegador para você autorizar.
+  8. Me avise. Eu rodo, na raiz do repositório, `supabase link` (escolho o projeto na lista que a CLI
+     mostra) e `supabase db push` (aplica as cinco migrações de `supabase/migrations/`). Se a CLI pedir
+     a senha do banco, eu paro e quem digita é você. Depois rodo a
+     parte B dos testes (`py -3.12 -m pytest tests/test_grupos_integracao.py`) e trago o resultado.
+  9. No GitHub: Settings → Secrets and variables → Actions → aba **Variables** → **New repository
+     variable**, duas vezes: `SUPABASE_URL` e `SUPABASE_ANON_KEY`, com os valores do `.env`. São
+     variáveis, não segredos: são públicas por desenho.
+  10. Leve [`seguranca/grupos.md`](seguranca/grupos.md) ao agente `seguranca`. Com o LIBERADO dele e
+      a sua confirmação aqui, eu mudo `GRUPOS_ATIVOS` para `True`.
+- **O que o plano gratuito limita** (conferido na documentação do Supabase em 2026-10-13):
+  - [Preços](https://supabase.com/pricing): 500 MB de banco, 50.000 usuários ativos por mês, 200
+    conexões simultâneas no Realtime, 2 milhões de mensagens do Realtime por mês, 5 GB de saída,
+    1 GB de arquivos e no máximo 2 projetos ativos.
+  - [Limites do Realtime](https://supabase.com/docs/guides/realtime/limits): 200 conexões
+    simultâneas, 100 mensagens por segundo, 100 entradas em canal por segundo, 100 canais por conexão,
+    20 mensagens de presença por segundo e Broadcast de até 256 KB.
+  - [Login anônimo](https://supabase.com/docs/guides/auth/auth-anonymous): 30 logins anônimos por
+    hora por IP (ajustável no painel). A documentação recomenda CAPTCHA ou Turnstile contra abuso; não
+    está ligado (fica como ponto para o `seguranca`).
+  - Na prática: um grupo tem no máximo 10 pessoas, e cada pessoa ocupa 1 conexão. Cada alteração vira
+    1 mensagem para cada pessoa da sala. Com 10 pessoas no teto do servidor (20 alterações por
+    segundo), seriam 200 mensagens por segundo, acima das 100 do plano. O uso real (arrastar uma peça,
+    traçar um caminho) fica muito abaixo disso.
+- **Projeto parado por inatividade**
+  ([Project Pausing](https://supabase.com/docs/guides/platform/free-project-pausing)): o plano gratuito
+  pausa o projeto com pouca atividade em 7 dias, com um e-mail de aviso mais ou menos uma semana antes.
+  Dá para retomar em até 1 ano no painel (organização → projeto → **Resume project**), com os dados. A
+  documentação não diz o que a API responde com o projeto pausado. **Na tela:** qualquer falha ao
+  criar, entrar ou enviar mostra "✕ Erro: Grupo indisponível agora. A tática continua salva neste
+  navegador.", e a prancheta continua funcionando sozinha (há teste com o servidor fora do ar).
+- **Limpeza:** salas paradas há 30 dias saem por uma tarefa diária do pg_cron (migração 5). Se o
+  `supabase db push` falhar só nessa migração, as outras quatro bastam: rode
+  `select grupos.limpa_salas_antigas();` no SQL Editor de vez em quando.
+- **Custo de deixar como está:** nenhum. Sem os passos, o site continua sem o botão de grupo.

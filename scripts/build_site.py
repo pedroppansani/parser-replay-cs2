@@ -508,11 +508,25 @@ def build(repo_url: str, preview: bool = False) -> Path:
 
     # prancheta tática: uma página por mapa com radar e biblioteca de arremessos
     pranchetas = []
+    # grupos (fase 13): o supabase-js fixado é conferido pelo sha256 em todo build, e só vai para docs/ (ao lado
+    # das páginas, carregado ao abrir um grupo) quando o grupo está ligado e configurado (scripts/grupos_config.py)
+    from scripts.grupos_config import ARQUIVO_SUPABASE_JS, confere_biblioteca
+    from scripts.grupos_config import configuracao as config_do_grupo
+    biblioteca = confere_biblioteca()
+    com_grupo = False
     for mapa in mapas_disponiveis():
-        html = build_prancheta(mapa, MAP_LABEL, site=url_do_site(repo_url))
+        grupo = config_do_grupo(url_do_site(repo_url), arquivo_da_pagina(mapa))
+        com_grupo = com_grupo or grupo is not None
+        html = build_prancheta(mapa, MAP_LABEL, site=url_do_site(repo_url), grupo=grupo)
         (saida / arquivo_da_pagina(mapa)).write_text(html, encoding="utf-8")
         pranchetas.append({"mapa": mapa, "file": arquivo_da_pagina(mapa), "label": MAP_LABEL.get(mapa, mapa)})
         print(f"  {arquivo_da_pagina(mapa)}  ({len(html) / 1024:.0f} KB)  prancheta")
+
+    if com_grupo:
+        (saida / "vendor").mkdir(exist_ok=True)
+        shutil.copyfile(biblioteca, saida / "vendor" / ARQUIVO_SUPABASE_JS)
+        confere_biblioteca(saida / "vendor" / ARQUIVO_SUPABASE_JS)
+        print(f"  vendor/{ARQUIVO_SUPABASE_JS}  (grupos ligados; sha256 conferido)")
 
     # visão agregada por jogador no corpus (fase 7): página separada da partida
     from scripts.build_jogadores import ARQUIVO as ARQUIVO_JOGADORES, build_html as build_jogadores

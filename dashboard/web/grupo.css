@@ -1,0 +1,45 @@
+/* =========================================================================
+   Aba "Grupo" da prancheta (fase 13, item 13.3). Só entra na página quando o
+   build tem grupo. Tokens e componentes de entrega-sala-de-demo (§3, §8, §14):
+   caixa, botão de 44 px, chave = botão com aria-pressed (ligado: fundo --tinta,
+   texto --fundo). NENHUMA cor nova: a ficha do membro é neutra (o grupo não tem
+   lado), online/offline vão escritos; --erro só no erro do sistema (✕ Erro:).
+   ========================================================================= */
+.gr-caixa { display: grid; gap: 10px; }
+.gr-caixa h2 { margin: 0; }
+.gr-texto { margin: 0; color: var(--tinta); }
+.gr-caixa label { color: var(--tinta-2); font-size: var(--t-sm); min-width: 64px; }
+.gr-caixa .linha + .linha { margin-top: 0; }
+.gr-principal { background: var(--tinta) !important; color: var(--fundo) !important; border-color: var(--tinta) !important;
+  font-weight: 600; flex: 1; }
+.gr-chave[aria-pressed="true"] { background: var(--tinta); color: var(--fundo); border-color: var(--tinta); }
+.gr-chave[aria-pressed="true"]::before { content: "✓ "; }
+.gr-guarda { font-size: var(--t-sm); }
+.gr-codigo-linha { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.gr-rotulo { color: var(--apagado); font-size: var(--t-xs); text-transform: uppercase; letter-spacing: .06em; }
+.gr-codigo { font-family: var(--f-num); font-size: var(--t-lg); font-weight: 600; letter-spacing: .12em; color: var(--tinta); flex: 1; }
+.gr-permissao { margin: 0; font-weight: 600; }
+.gr-sub { margin: 4px 0 0; font-size: var(--t-xs); color: var(--apagado); text-transform: uppercase; letter-spacing: .06em; }
+.gr-membros { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.gr-membro { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 4px 8px; align-items: center;
+  padding: 6px 0; border-bottom: 1px solid var(--linha); }
+.gr-ficha { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 600; font-size: var(--t-xs);
+  background: var(--superficie-2); color: var(--tinta); border: 1.5px solid var(--borda); }
+.gr-nome { display: grid; min-width: 0; }
+.gr-quem { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gr-nome b { font-weight: 600; }
+.gr-nome small { color: var(--tinta-2); font-size: var(--t-xs); display: flex; align-items: center; gap: 4px; }
+.gr-online { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--apagado); display: inline-block; }
+.gr-online.on { background: var(--tinta); border-color: var(--tinta); }
+.gr-controles { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
+.gr-controles .pr-b { flex: 1; }
+.gr-confirma { display: grid; gap: 8px; padding: 10px; background: var(--superficie-2); border-radius: var(--r-md); }
+.gr-status { margin: 0; color: var(--tinta-2); font-size: var(--t-sm); min-height: 1.2em; }
+.gr-status:empty { display: none; }
+.gr-erro { margin: 0; color: var(--erro); font-size: var(--t-sm); font-weight: 600; }
+.gr-caixa a { color: var(--tinta); text-decoration: underline; overflow-wrap: anywhere; }
+/* celular: a mesma aba, numa coluna */
+@media (max-width: 640px) {
+  .gr-caixa .linha { flex-direction: column; align-items: stretch; }
+  .gr-caixa .linha > * { width: 100%; }
+}
