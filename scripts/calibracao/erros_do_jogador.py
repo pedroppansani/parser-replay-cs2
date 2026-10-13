@@ -203,6 +203,117 @@ def secao_constantes(cache: dict) -> list[str]:
     return out
 
 
+# --- 7.1b Quantos pontos a melhorar cada jogador teria (fase 12b) ------------------------------------------
+
+PERCENTIS_COMPARADOS = (50, E.PERCENTIL_PONTO_A_MELHORAR, 90)
+DIST_TROCA_COMPARADAS = (400.0, E.DIST_TROCA, 800.0)             # um menor, o atual e um maior
+ROTULO_LADO = E.ROTULO_DO_LADO
+
+
+def _linhas_de_contagem(oc: pl.DataFrame) -> list[dict]:
+    """Um registro por (partida, jogador, lado) do corpus: função do lado e contagem de cada tipo (só o que
+    passou nos filtros). Mesmo formato que o ajuste da régua (scripts/fit_erros_reference)."""
+    conta: dict = {}
+    for m, sid, lado, tipo, n in (oc.filter(pl.col("filtro").is_null())
+                                  .group_by(["match_id", "steamid", "side", "tipo"], maintain_order=True)
+                                  .len().iter_rows()):
+        conta[(m, int(sid), lado, tipo)] = n
+    linhas = []
+    for m in partidas():
+        resumo = pl.read_parquet(PROCESSED / m / "structural_roles_summary.parquet")
+        for r in resumo.sort(["steamid", "side"]).iter_rows(named=True):
+            sid, lado = int(r["steamid"]), r["side"]
+            linhas.append({"partida": m, "steamid": sid, "lado": lado, "funcao": r["funcao"], "valores": {},
+                           "contagens": {t: conta.get((m, sid, lado, t), 0) for t in E.TIPOS}})
+    return linhas
+
+
+def _pontos_por_jogador(linhas: list[dict], ref: dict, q: float) -> tuple[dict, dict]:
+    """({(partida, jogador): quantos pontos a melhorar}, {tipo: quantos pares (tipo, lado)}), com a regra da
+    página: acima do percentil `q` da célula (ou do lado, se a célula é pequena) e pelo menos 2 ocorrências."""
+    por_jogador: dict = {}
+    por_tipo = {t: 0 for t in E.TIPOS}
+    for x in linhas:
+        por_jogador.setdefault((x["partida"], x["steamid"]), 0)
+        for t in E.TIPOS:
+            celula, _ = E.escolhe_celula(ref, "erros", t, x["lado"], x["funcao"])
+            if E.acima_do_normal(x["contagens"][t], celula, percentil=q):
+                por_jogador[(x["partida"], x["steamid"])] += 1
+                por_tipo[t] += 1
+    return por_jogador, por_tipo
+
+
+def _resumo_de_pontos(por_jogador: dict) -> tuple[int, int, float, list[int]]:
+    """(jogador-partidas, com pelo menos 1, média por jogador-partida, quantos com 0, 1, 2, 3 ou mais)."""
+    n = len(por_jogador)
+    vs = list(por_jogador.values())
+    faixas = [sum(v == k for v in vs) for k in (0, 1, 2)] + [sum(v >= 3 for v in vs)]
+    return n, sum(v >= 1 for v in vs), (sum(vs) / n if n else 0.0), faixas
+
+
+def secao_quantos_pontos(oc: pl.DataFrame, cache: dict | None) -> list[str]:
+    from scripts.fit_erros_reference import ajusta
+
+    linhas = _linhas_de_contagem(oc)
+    ref = ajusta(linhas)
+    out = ["### 7.1b Quantos pontos a melhorar cada jogador teria", "",
+           "Uma ocorrência só vira \"ponto a melhorar\" quando a contagem do jogador num lado fica ACIMA do "
+           f"percentil {E.PERCENTIL_PONTO_A_MELHORAR} da referência (os jogador-lados do corpus com a mesma função "
+           f"no mesmo lado; com menos de {E.MIN_REF_LADO_FUNCAO} deles, todos os jogador-lados daquele lado) e tem pelo "
+           f"menos {E.MIN_OCORRENCIAS_PARA_PONTO} ocorrências. Um jogador-lado é um jogador numa partida, num dos "
+           f"lados ({len(linhas)} no corpus). A tela mostra no máximo {E.MAX_PONTOS_A_MELHORAR} por jogador; as "
+           "contagens abaixo são as brutas, sem esse corte.", "",
+           "#### Distribuição da contagem por jogador-lado, por tipo e lado", "",
+           "| tipo | lado | jogador-lados | média | mediana | p75 | p90 | máximo | com 0 |", "|---|---|---|---|---|---|---|---|---|"]
+    for t in E.TIPOS:
+        for lado in E.LADOS:
+            v = sorted(x["contagens"][t] for x in linhas if x["lado"] == lado)
+            out.append(f"| {E.TITULOS[t]} | {ROTULO_LADO[lado]} | {len(v)} | {_fmt(sum(v) / len(v), 2)} | "
+                       f"{_fmt(_percentil(v, 0.5), 1)} | {_fmt(_percentil(v, 0.75), 1)} | {_fmt(_percentil(v, 0.9), 1)} | "
+                       f"{max(v)} | {_fmt(100 * sum(1 for a in v if a == 0) / len(v), 0)}% |")
+    out += ["", "#### Pontos a melhorar por jogador-partida, por percentil", "",
+            "| percentil | jogador-partidas | com pelo menos 1 | % | média | com 0 | com 1 | com 2 | com 3 ou mais |",
+            "|---|---|---|---|---|---|---|---|---|"]
+    por_tipo_de = {}
+    for q in PERCENTIS_COMPARADOS:
+        pj, por_tipo_de[q] = _pontos_por_jogador(linhas, ref, q)
+        n, com, media, f = _resumo_de_pontos(pj)
+        marca = " (proposto)" if q == E.PERCENTIL_PONTO_A_MELHORAR else ""
+        out.append(f"| {q}{marca} | {n} | {com} | {_fmt(100 * com / n, 0)}% | {_fmt(media, 2)} | {f[0]} | {f[1]} | "
+                   f"{f[2]} | {f[3]} |")
+    out += ["", "Pares (tipo, lado) que viram ponto a melhorar, por tipo:", "",
+            "| tipo | " + " | ".join(f"p{q}" for q in PERCENTIS_COMPARADOS) + " |",
+            "|---|" + "---|" * len(PERCENTIS_COMPARADOS)]
+    for t in E.TIPOS:
+        out.append(f"| {E.TITULOS[t]} | " + " | ".join(str(por_tipo_de[q][t]) for q in PERCENTIS_COMPARADOS) + " |")
+    out.append("")
+    if cache:
+        out += ["#### O efeito de `DIST_TROCA` em \"não trocou\" e \"possível bait\"", "",
+                "Cada linha recalcula as ocorrências do corpus com outro `DIST_TROCA` (o atual está marcado) e "
+                f"refaz a referência com elas. Ponto a melhorar com o percentil {E.PERCENTIL_PONTO_A_MELHORAR}. "
+                "O valor da constante NÃO muda agora: depende da sua calibração.", "",
+                "| `DIST_TROCA` | tipo | ocorrências no corpus | média por jogador-lado | jogador-partidas com pelo "
+                "menos 1 ponto a melhorar | % |", "|---|---|---|---|---|---|"]
+        for d in DIST_TROCA_COMPARADAS:
+            oc_d = pl.concat([E.ocorrencias(p, dist_troca=d) for p in cache.values()], how="vertical")
+            lin = _linhas_de_contagem(oc_d)
+            ref_d = ajusta(lin)
+            marca = " (atual)" if d == E.DIST_TROCA else ""
+            for t in (E.NAO_TROCOU, E.POSSIVEL_BAIT):
+                total = sum(x["contagens"][t] for x in lin)
+                pj = {}
+                for x in lin:
+                    pj.setdefault((x["partida"], x["steamid"]), 0)
+                    celula, _ = E.escolhe_celula(ref_d, "erros", t, x["lado"], x["funcao"])
+                    if E.acima_do_normal(x["contagens"][t], celula):
+                        pj[(x["partida"], x["steamid"])] += 1
+                com = sum(v >= 1 for v in pj.values())
+                out.append(f"| {_g(d)}{marca} | {E.TITULOS[t]} | {total} | {_fmt(total / len(lin), 2)} | {com} | "
+                           f"{_fmt(100 * com / len(pj), 0)}% |")
+        out.append("")
+    return out
+
+
 def _g(x: float) -> str:
     """Número curto com vírgula decimal (4,8; 600)."""
     return format(x, "g").replace(".", ",")
@@ -299,6 +410,7 @@ def secao(oc: pl.DataFrame, cache: dict | None) -> list[str]:
             "\"depende da tática\" (só o motivo muda).", ""]
     if cache:
         out += secao_constantes(cache)
+    out += secao_quantos_pontos(oc, cache)
     out += secao_exemplos(oc)
     out += ["### 7.3 Sua resposta", "",
             "Para cada tipo: quantos dos 10 exemplos você confirma, e se a frase de como melhorar serve. O tipo com 8 "

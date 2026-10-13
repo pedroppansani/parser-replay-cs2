@@ -132,3 +132,28 @@ def test_ligada_a_funcao_de_um_round_em_onze_deixa_de_ser_dominante(monkeypatch)
     assert sr.texto_empate(r) == "sem função dominante: AWPer em 1 de 11 rounds, o que não se destaca do acaso"
     r = sr.resume_por_lado(_por_round_sintetico({"entry": 8}, n=12)).row(0, named=True)
     assert r["funcao"] == "entry" and r["abaixo_do_acaso"] is False and sr.texto_empate(r) == ""
+
+
+def test_funcao_estrutural_instavel_sai_com_tendencia():
+    """Decisão 39 na função estrutural (fase 12b): a mesma reamostragem e o mesmo limiar 0,70 dos rótulos.
+    Rounds repartidos entre duas funções (9 a 6) dão estabilidade 0,61 < 0,70: "(tendência)"."""
+    from leitura import perfil_erros as PE
+
+    def rounds(sid: int, funcoes: list[str]) -> list[dict]:
+        return [{"steamid": sid, "side": "t", "round_num": i + 1, "funcao": f} for i, f in enumerate(funcoes)]
+
+    estavel = rounds(1, ["lurker"] * 14 + ["trader"] * 2)
+    instavel = rounds(2, ["lurker"] * 9 + ["trader"] * 6)
+    r = sr.estabilidade_da_funcao(pl.DataFrame(estavel + instavel)).sort("steamid")
+    por_jogador = {int(x["steamid"]): x for x in r.iter_rows(named=True)}
+    assert por_jogador[1]["funcao"] == "lurker" and not por_jogador[1]["tendencia"]
+    assert por_jogador[2]["funcao"] == "lurker" and por_jogador[2]["tendencia"]
+    assert por_jogador[2]["estabilidade"] < pr.LIMIAR_DE_TENDENCIA <= por_jogador[1]["estabilidade"]
+    # a página escreve a marca
+    tendencia = {(int(x["steamid"]), x["side"]): bool(x["tendencia"]) for x in r.iter_rows(named=True)}
+
+    def linhas(sid: int) -> list[dict]:
+        return [{"steamid": sid, "side": "t", "funcao": "lurker"}]
+
+    assert PE._funcoes_do_jogador(linhas(2), tendencia)[0]["texto"] == "Lurker (tendência)"
+    assert PE._funcoes_do_jogador(linhas(1), tendencia)[0]["texto"] == "Lurker"

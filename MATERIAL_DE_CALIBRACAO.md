@@ -964,6 +964,62 @@ Mediana 0,0, p75 1,0, p90 10,0, p95 19,0.
 
 O tipo "Utilidade no bolso" exige o inventário na hora da morte. O parser lê o inventário só no fim do freeze time (`PROPS_DA_COMPRA` em `parsing/parser.py`, a tabela `compra`); na hora da morte não há o que ler. Pela regra do pedido, o tipo não foi criado e nada foi estimado (decisão 46).
 
+### 7.1b Quantos pontos a melhorar cada jogador teria
+
+Uma ocorrência só vira "ponto a melhorar" quando a contagem do jogador num lado fica ACIMA do percentil 75 da referência (os jogador-lados do corpus com a mesma função no mesmo lado; com menos de 20 deles, todos os jogador-lados daquele lado) e tem pelo menos 2 ocorrências. Um jogador-lado é um jogador numa partida, num dos lados (1040 no corpus). A tela mostra no máximo 3 por jogador; as contagens abaixo são as brutas, sem esse corte.
+
+#### Distribuição da contagem por jogador-lado, por tipo e lado
+
+| tipo | lado | jogador-lados | média | mediana | p75 | p90 | máximo | com 0 |
+|---|---|---|---|---|---|---|---|---|
+| Não trocou o aliado | CT | 520 | 0,93 | 1,0 | 2,0 | 2,0 | 7 | 43% |
+| Não trocou o aliado | TR | 520 | 2,61 | 2,0 | 4,0 | 5,0 | 15 | 15% |
+| Possível bait | CT | 520 | 0,44 | 0,0 | 1,0 | 1,0 | 4 | 65% |
+| Possível bait | TR | 520 | 1,19 | 1,0 | 2,0 | 3,0 | 7 | 38% |
+| Perdeu a troca | CT | 520 | 0,51 | 0,0 | 1,0 | 2,0 | 4 | 64% |
+| Perdeu a troca | TR | 520 | 1,06 | 1,0 | 2,0 | 3,0 | 6 | 40% |
+| Morreu isolado | CT | 520 | 2,35 | 2,0 | 3,0 | 4,0 | 7 | 11% |
+| Morreu isolado | TR | 520 | 1,63 | 1,0 | 2,0 | 3,0 | 6 | 21% |
+| Primeira morte sem troca | CT | 520 | 0,54 | 0,0 | 1,0 | 2,0 | 4 | 59% |
+| Primeira morte sem troca | TR | 520 | 0,78 | 1,0 | 1,0 | 2,0 | 6 | 50% |
+| Flash no time | CT | 520 | 0,62 | 0,0 | 0,0 | 1,0 | 15 | 82% |
+| Flash no time | TR | 520 | 1,07 | 0,0 | 1,0 | 3,0 | 21 | 73% |
+| Dano de utilidade no time | CT | 520 | 0,03 | 0,0 | 0,0 | 0,0 | 2 | 97% |
+| Dano de utilidade no time | TR | 520 | 0,03 | 0,0 | 0,0 | 0,0 | 2 | 98% |
+
+#### Pontos a melhorar por jogador-partida, por percentil
+
+| percentil | jogador-partidas | com pelo menos 1 | % | média | com 0 | com 1 | com 2 | com 3 ou mais |
+|---|---|---|---|---|---|---|---|---|
+| 50 | 520 | 481 | 92% | 2,88 | 39 | 95 | 109 | 277 |
+| 75 (proposto) | 520 | 402 | 77% | 1,67 | 118 | 150 | 121 | 131 |
+| 90 | 520 | 244 | 47% | 0,75 | 276 | 148 | 61 | 35 |
+
+Pares (tipo, lado) que viram ponto a melhorar, por tipo:
+
+| tipo | p50 | p75 | p90 |
+|---|---|---|---|
+| Não trocou o aliado | 349 | 153 | 76 |
+| Possível bait | 194 | 110 | 43 |
+| Perdeu a troca | 210 | 120 | 62 |
+| Morreu isolado | 465 | 229 | 76 |
+| Primeira morte sem troca | 157 | 139 | 52 |
+| Flash no time | 116 | 111 | 77 |
+| Dano de utilidade no time | 6 | 6 | 6 |
+
+#### O efeito de `DIST_TROCA` em "não trocou" e "possível bait"
+
+Cada linha recalcula as ocorrências do corpus com outro `DIST_TROCA` (o atual está marcado) e refaz a referência com elas. Ponto a melhorar com o percentil 75. O valor da constante NÃO muda agora: depende da sua calibração.
+
+| `DIST_TROCA` | tipo | ocorrências no corpus | média por jogador-lado | jogador-partidas com pelo menos 1 ponto a melhorar | % |
+|---|---|---|---|---|---|
+| 400 | Não trocou o aliado | 1099 | 1,06 | 141 | 27% |
+| 400 | Possível bait | 434 | 0,42 | 79 | 15% |
+| 600 (atual) | Não trocou o aliado | 1841 | 1,77 | 143 | 28% |
+| 600 (atual) | Possível bait | 848 | 0,82 | 106 | 20% |
+| 800 | Não trocou o aliado | 2668 | 2,57 | 165 | 32% |
+| 800 | Possível bait | 1392 | 1,34 | 122 | 23% |
+
 ### 7.2 Dez exemplos por tipo
 
 Sorteados com semente fixa (20261013), no máximo 2 por partida, só entre as ocorrências que passaram nos filtros. O relógio é o tempo decorrido desde o fim do freeze time. O link abre o replay naquele round, 3 s antes do instante (gere o site com `py -3.12 -m scripts.build_site`). Distâncias em unidades do jogo, no mesmo andar; "—" quando não se aplica ou estão em andares diferentes. ΔWPA em pontos de chance de vitória da partida, pela estimativa do modelo (negativo = o time perdeu chance).

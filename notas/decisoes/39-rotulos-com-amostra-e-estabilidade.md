@@ -42,3 +42,10 @@ cauda da binomial contra a divisão uniforme entre as funções do lado (4 no CT
 alfa 0,05. Ligada (`EXIGE_FUNCAO_ACIMA_DO_ACASO`), tira a função de 324 dos 730 jogador-lados e
 quase apaga o TR (251 → 48), além de 82 dos 166 AWPers (`pesquisa/funcao_acima_do_acaso.py`).
 Isso muda o caráter da leitura; ligar é decisão do Pedro. Hoje a chance é só gravada.
+
+**A marca cobre também a função estrutural** (fase 12b, 2026-10-13). A aba Perfil escreve "Função
+(tendência)" para a função dominante de cada lado, pelo mesmo método e com o mesmo limiar 0,70:
+`structural_roles.estabilidade_da_funcao` reamostra os rounds daquele lado (500 sorteios, semente
+fixa) e aplica a regra de `resume_por_lado`. O resumo por lado gravado não muda. Teste:
+`test_funcao_estrutural_instavel_sai_com_tendencia` (9 rounds de uma função e 6 de outra: 0,61, sai
+"(tendência)"; 14 e 2: estável).

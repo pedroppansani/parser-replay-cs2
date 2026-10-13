@@ -64,7 +64,11 @@ def test_a_previa_mostra_todos_os_tipos_em_validacao_e_no_maximo_tres():
                 assert m["frase"].endswith(E.CONFERIR_COM_O_TIME)
             assert m["custo"] == "" or "pela estimativa do modelo" in m["custo"] or m["custo"].startswith("sem custo")
         for u in j["uma_vez"]:
-            assert u["contagem"].startswith("1 vez")
+            # Detalhes agora tem dois motivos (fase 12b): uma vez só, ou dentro do normal da referência
+            if u["contagem"].startswith("1 vez"):
+                assert u["motivo"] == PE.TEXTOS["uma_vez"]
+            else:
+                assert u["motivo"].startswith("dentro do normal para")
 
 
 def test_o_jogador_aberto_por_padrao_e_o_de_maior_rating():
