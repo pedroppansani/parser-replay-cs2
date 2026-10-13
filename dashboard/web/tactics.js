@@ -36,6 +36,12 @@ var Prancheta = (function () {
   var DURACAO_PADRAO_S = 2.0;
   var VIDA_PADRAO_GRANADA = { smoke: null, molotov: 1, flash: 1, he: 1, decoy: 1 };
   var VIDA_PADRAO_TRACO = 1;
+  // Espessura guardada na granada desenhada: não muda o desenho (o glifo tem tamanho próprio); serve à borracha,
+  // que soma a espessura ao raio de acerto. O mesmo valor em metrics/tactics.py. (Convenção.)
+  var ESPESSURA_DA_GRANADA_DESENHADA = 4;
+  // Passo do cursor de teclado do carimbo, em px do radar (com Shift, 4x). (Convenção de interface.)
+  var PASSO_CURSOR_PX = 8;
+  var ARMAS_DESENHADAS = ["smoke", "flash", "he", "molotov"];
   var CASAS_DIRECAO_PADRAO = 1;
   var DESFAZER = ["anula", "reativa"];
   var OPERACOES = {
@@ -51,10 +57,14 @@ var Prancheta = (function () {
     // formato 3: o tempo do round é o eixo
     cria_caminho: ["peca", "pontos"], move_ponto: ["peca", "ponto", "t", "x", "y"],
     remove_ponto: ["peca", "ponto"], define_funcao: ["peca", "funcao"],
-    planta_bomba: ["t", "x", "y"], nota_de_evento: ["alvo", "texto"]
+    planta_bomba: ["t", "x", "y"], nota_de_evento: ["alvo", "texto"],
+    // fase 11: granada DESENHADA (sem horário e sem física). Fica na camada de desenho, junto dos traços (vida por
+    // passo, borracha, "Apagar desenho"), mas é operação própria: não é a granada com horário (cria_granada) e não
+    // aparece na linha do tempo nem no roteiro
+    desenha_granada: ["traco", "passo", "arma", "x", "y"], define_area_desenho: ["traco", "area"]
   };
   var OPERACOES_DO_FORMATO_3 = ["cria_caminho", "move_ponto", "remove_ponto", "define_funcao", "planta_bomba",
-                                "nota_de_evento"];
+                                "nota_de_evento", "desenha_granada", "define_area_desenho"];
 
   // Desenho livre: o formato e as regras do traço são os de
   // metrics/annotations.py (há teste conferindo estas duas listas contra ele).
@@ -62,7 +72,7 @@ var Prancheta = (function () {
   var ESPESSURAS = [2, 4, 7];
   var ROTULOS_ESPESSURA = ["fina", "média", "grossa"];
   var ROTULO_FERRAMENTA = { caneta: "Caneta", seta: "Seta", linha: "Linha", retangulo: "Retângulo",
-                            elipse: "Elipse", texto: "Texto", borracha: "Borracha" };
+                            elipse: "Elipse", texto: "Texto", granada_desenho: "Granada (desenho)", borracha: "Borracha" };
   var COR_PADRAO = "#eb6834";
   var MAX_RECENTES = 6;
   var CHAVE_RECENTES = "anot:cores-recentes";   // as mesmas recentes da anotação
@@ -218,6 +228,21 @@ var Prancheta = (function () {
               criada_em_ordem: ordemDe(op)
             };
           }
+          break;
+        case "desenha_granada":
+          if (!estado.tracos[op.traco] && passos[op.passo]) {
+            estado.tracos[op.traco] = {
+              passo: op.passo, ferramenta: "granada", cor: null, espessura: ESPESSURA_DA_GRANADA_DESENHADA,
+              pontos: [[+op.x, +op.y]], texto: null,
+              nivel: tem(op, "nivel") ? +op.nivel : 0,
+              dura_passos: tem(op, "dura_passos") ? op.dura_passos : VIDA_PADRAO_TRACO,
+              criada_em_ordem: ordemDe(op),
+              arma: op.arma, area: tem(op, "area") ? !!op.area : false
+            };
+          }
+          break;
+        case "define_area_desenho":
+          if (estado.tracos[op.traco] && estado.tracos[op.traco].ferramenta === "granada") estado.tracos[op.traco].area = !!op.area;
           break;
         case "remove_traco": delete estado.tracos[op.traco]; break;
         case "define_vida":
@@ -691,6 +716,12 @@ var Prancheta = (function () {
           if (op.arremesso) erros.push(onde + ": origem desconhecida não combina com arremesso real");
         }
       }
+      if (op.tipo === "desenha_granada") {
+        if (ARMAS_DESENHADAS.indexOf(op.arma) < 0) erros.push(onde + ": tipo de granada desenhada desconhecido: " + op.arma);
+        if (!ehNumero(op.x) || !ehNumero(op.y)) erros.push(onde + ": x e y precisam ser números");
+        if (tem(op, "area") && typeof op.area !== "boolean") erros.push(onde + ": área precisa ser verdadeiro ou falso");
+      }
+      if (op.tipo === "define_area_desenho" && typeof op.area !== "boolean") erros.push(onde + ": área precisa ser verdadeiro ou falso");
       if (op.tipo === "cria_traco") {
         if (FERRAMENTAS_TRACO.indexOf(op.ferramenta) < 0) erros.push(onde + ": ferramenta desconhecida");
         if (!/^#[0-9a-f]{6}$/.test(String(op.cor))) erros.push(onde + ": cor fora do formato #rrggbb");
@@ -889,6 +920,9 @@ var Prancheta = (function () {
     arrasto: null, tracando: null,
     origemPendente: null,                   // (legado) sem uso desde a máquina de estados
     acao: null,                             // ação pendente: colocar peça, granada, busca
+    armaDesenho: "smoke",                   // o tipo do carimbo do pincel "Granada (desenho)" (fase 11)
+    ultimaPeca: null,                       // o último jogador selecionado: arremessador da conversão
+    cursorDesenho: null,                    // cursor de teclado do carimbo, em px do radar
     toque: null,                            // apertou no mapa: vira clique ou arrasto ao soltar
     sugestao: null,                         // granada recém-criada à mão com sugestões abertas
     editor: null, ajuda: false, sobrePeca: false,
@@ -1423,6 +1457,14 @@ var Prancheta = (function () {
     desenhaChegada();
     desenhaMortos(cena.mortos);
     Object.keys(cena.pecas).forEach(function (id) { desenhaPeca(id, cena.pecas[id], ant && ant.pecas[id], editando); });
+    if (editando && S.ferramenta === "granada_desenho" && S.cursorDesenho) {
+      // cursor de teclado do carimbo: a granada que vai sair, mais uma cruz
+      MapCore.desenhaGranadaDesenhada(ctx, S.armaDesenho, S.cursorDesenho[0], S.cursorDesenho[1], cfg.radar, false);
+      ctx.save(); ctx.strokeStyle = MapCore.token("foco"); ctx.lineWidth = 2; ctx.beginPath();
+      ctx.moveTo(S.cursorDesenho[0] - 16, S.cursorDesenho[1]); ctx.lineTo(S.cursorDesenho[0] + 16, S.cursorDesenho[1]);
+      ctx.moveTo(S.cursorDesenho[0], S.cursorDesenho[1] - 16); ctx.lineTo(S.cursorDesenho[0], S.cursorDesenho[1] + 16);
+      ctx.stroke(); ctx.restore();
+    }
     MapCore.rotulosDesenha();
     resumeOMapa(cena);
     desenhaBalao();
@@ -1683,8 +1725,12 @@ var Prancheta = (function () {
       clique: "no vazio: muda onde ela cai (move_granada)",
       dica: function (c) { return c.arma + " selecionada · clique para mudar onde cai" + (c.real ? " (desfaz o arremesso real)" : ""); } },
     desenhando: { entra: "uma ferramenta de desenho",
-      clique: "arrastar desenha; a borracha apaga o traço sob o clique",
-      dica: function (c) { return c.ferramenta + " · arraste para desenhar · V volta a selecionar"; } },
+      clique: "arrastar desenha; a borracha apaga o traço sob o clique; a granada desenhada carimba no clique",
+      dica: function (c) {
+        if (c.granadaDesenho) return "Granada (desenho) · clique carimba a " + c.granadaDesenho + " · 1 a 4 trocam o tipo · " +
+          "setas e Enter pelo teclado · V volta a selecionar";
+        return c.ferramenta + " · arraste para desenhar · V volta a selecionar";
+      } },
     buscando: { entra: "“Buscar arremesso” no painel",
       clique: "lista os arremessos reais que caem perto do ponto",
       dica: function (c) { return "Buscar " + c.arma + " · clique onde ela deve cair"; } }
@@ -1715,7 +1761,8 @@ var Prancheta = (function () {
       arma: NOME_ARMA[a.arma || (g && g.arma) || S.arma],
       origem: origem,
       real: !!(g && g.arremesso),
-      ferramenta: ROTULO_FERRAMENTA[S.ferramenta] || (S.ferramenta === "borracha" ? "Borracha" : "")
+      ferramenta: ROTULO_FERRAMENTA[S.ferramenta] || (S.ferramenta === "borracha" ? "Borracha" : ""),
+      granadaDesenho: S.ferramenta === "granada_desenho" ? NOME_ARMA[S.armaDesenho] : null
     };
   }
 
@@ -2115,10 +2162,10 @@ var Prancheta = (function () {
   /* --- atalhos: UM mapa, sem tecla repetida (há teste) ----------------------------- */
   var ATALHOS = [
     { tecla: "v", rotulo: "V", acao: "Selecionar", fn: function () { escolheFerramenta("mover"); } },
-    { tecla: "1", rotulo: "1", acao: "Smoke", fn: function () { escolheArma("smoke"); } },
-    { tecla: "2", rotulo: "2", acao: "Flash", fn: function () { escolheArma("flash"); } },
-    { tecla: "3", rotulo: "3", acao: "HE", fn: function () { escolheArma("he"); } },
-    { tecla: "4", rotulo: "4", acao: "Molotov", fn: function () { escolheArma("molotov"); } },
+    { tecla: "1", rotulo: "1", acao: "Smoke", fn: function () { armaOuDesenho("smoke"); } },
+    { tecla: "2", rotulo: "2", acao: "Flash", fn: function () { armaOuDesenho("flash"); } },
+    { tecla: "3", rotulo: "3", acao: "HE", fn: function () { armaOuDesenho("he"); } },
+    { tecla: "4", rotulo: "4", acao: "Molotov", fn: function () { armaOuDesenho("molotov"); } },
     { tecla: "c", rotulo: "C", acao: "Caneta", fn: function () { escolheFerramenta("caneta"); } },
     { tecla: "a", rotulo: "A", acao: "Seta", fn: function () { escolheFerramenta("seta"); } },
     { tecla: "l", rotulo: "L", acao: "Linha", fn: function () { escolheFerramenta("linha"); } },
@@ -2138,7 +2185,11 @@ var Prancheta = (function () {
     { tecla: "?", rotulo: "?", acao: "Ajuda: esta lista", fn: function () { alternaAjuda(); } },
     { tecla: "ctrl+z", rotulo: "Ctrl+Z", acao: "Desfazer", fn: function () { desfaz(); } },
     { tecla: "ctrl+y", rotulo: "Ctrl+Y", acao: "Refazer (também Ctrl+Shift+Z)", fn: function () { refaz(); } },
-    { tecla: "espaço", rotulo: "Espaço + arrastar", acao: "Mover o mapa (com zoom)", fn: null }
+    { tecla: "espaço", rotulo: "Espaço + arrastar", acao: "Mover o mapa (com zoom)", fn: null },
+    // fase 11 -- no fim da tabela: os botões de giro acima pegam o rótulo por posição (ATALHOS[10] e [11])
+    { tecla: "1-4 no pincel", rotulo: "1 a 4", acao: "Com o pincel Granada (desenho): escolhem o tipo da granada desenhada", fn: null },
+    { tecla: "g", rotulo: "G", acao: "Granada (desenho)", fn: function () { escolheFerramenta("granada_desenho"); } },
+    { tecla: "setas no pincel", rotulo: "Setas + Enter", acao: "Com o pincel Granada (desenho): movem o cursor no mapa e carimbam", fn: null }
   ];
   var ATALHO_DE = {};
   ATALHOS.forEach(function (a) { ATALHO_DE[a.acao] = a.rotulo; });
@@ -2218,6 +2269,7 @@ var Prancheta = (function () {
   /* --- desenho livre --------------------------------------------------------- */
   function comecaTraco(e, px, g) {
     cv.setPointerCapture(e.pointerId);
+    if (S.ferramenta === "granada_desenho") { carimbaGranada(px, g); return; }
     if (S.ferramenta === "borracha") { apagaTraco(px); return; }
     if (S.ferramenta === "texto") { abreEditorTexto(g); return; }
     S.tracando = { ferramenta: S.ferramenta, pontos: S.ferramenta === "caneta" ? [g] : [g, g],
@@ -2243,6 +2295,56 @@ var Prancheta = (function () {
     var op = emite("cria_traco", { traco: novoId(), passo: passoAtual(), ferramenta: t.ferramenta,
                                    cor: t.cor, espessura: t.espessura, pontos: t.pontos, nivel: S.andar });
     S.sel = { tipo: "traco", id: op.traco }; atualizaTudo();
+  }
+
+  /** A granada desenhada sob o ponto (px do radar), a de cima primeiro, ou null. */
+  function granadaDesenhadaSob(px) {
+    var q = quadro();
+    var alvos = ordemDeCriacao(S.estado).filter(function (x) {
+      return x.tipo === "traco" && q.tracos[x.id] && q.tracos[x.id].ferramenta === "granada" &&
+             q.tracos[x.id].nivel === S.andar && MapCore.tracoEncosta(q.tracos[x.id], px, cfg.radar, RAIO_BORRACHA);
+    });
+    return alvos.length ? alvos[alvos.length - 1].id : null;
+  }
+
+  /** O pincel "Granada (desenho)": carimba a granada no ponto, ou seleciona a desenhada que já está ali. */
+  function carimbaGranada(px, g) {
+    var ja = granadaDesenhadaSob(px);
+    if (ja) { S.sel = { tipo: "traco", id: ja }; atualizaTudo(); return; }
+    var op = emite("desenha_granada", { traco: novoId(), passo: passoAtual(), arma: S.armaDesenho,
+                                        x: g[0], y: g[1], nivel: S.andar });
+    S.sel = { tipo: "traco", id: op.traco };
+    atualizaTudo();
+  }
+
+  /** "Converter em granada com horário": a granada desenhada vira a granada de verdade da tática -- sai do
+      último jogador selecionado, no horário do cabeçote, e cai no ponto do desenho. UMA ação no desfazer. */
+  function converteDesenho(tid) {
+    var t = S.estado.tracos[tid], pid = S.ultimaPeca;
+    var p = pid && S.e3 ? quadroNoTempo(S.e3, S.t, CENTRO).pecas[pid] : null;
+    if (!t || !p) return;
+    var ids = emiteLote([
+      ["cria_granada", { granada: novoId(), arma: t.arma, passo: passoAtual(), nivel: p.nivel || 0,
+                         origem: [p.x, p.y], destino: t.pontos[0].slice(), arremesso: null, t: S.t, jogador: pid }],
+      ["remove_traco", { traco: tid }]]);
+    var criada = S.doc.operacoes.filter(function (o) { return o.id === ids[0]; })[0];
+    S.sel = criada ? { tipo: "granada", id: criada.granada } : null;
+    atualizaTudo();
+  }
+
+  /** Liga ou desliga a área da granada desenhada (smoke e molotov). */
+  function alternaAreaDesenho(tid) {
+    var t = S.estado.tracos[tid];
+    if (!t || (t.arma !== "smoke" && t.arma !== "molotov")) return;
+    emite("define_area_desenho", { traco: tid, area: !t.area });
+    atualizaTudo();
+  }
+
+  /** 1 a 4: com o pincel "Granada (desenho)" ligado, escolhem o tipo do carimbo; fora dele, armam a granada com
+      horário, como sempre. */
+  function armaOuDesenho(arma) {
+    if (S.ferramenta === "granada_desenho") { S.armaDesenho = arma; atualizaTudo(); return; }
+    escolheArma(arma);
   }
 
   function apagaTraco(px) {
@@ -2500,9 +2602,15 @@ var Prancheta = (function () {
   /** Controles de contexto: só aparecem quando servem. Cor e espessura com uma
       ferramenta de desenho; raio e "só parados" com as sugestões (ou a busca). */
   function atualizaContexto() {
-    var desenho = !!(ROTULO_FERRAMENTA[S.ferramenta]) && S.ferramenta !== "borracha";
+    var desenho = !!(ROTULO_FERRAMENTA[S.ferramenta]) && S.ferramenta !== "borracha" && S.ferramenta !== "granada_desenho";
     var ctxDesenho = $("pr-contexto-desenho");
     if (ctxDesenho) ctxDesenho.hidden = !desenho;
+    var ctxGranada = $("pr-contexto-granada");
+    if (ctxGranada) ctxGranada.hidden = S.ferramenta !== "granada_desenho";
+    Array.prototype.forEach.call(document.querySelectorAll("[data-arma-desenho]"), function (b) {
+      var on = b.getAttribute("data-arma-desenho") === S.armaDesenho;
+      b.classList.toggle("ativo", on); b.setAttribute("aria-pressed", String(on));
+    });
     var comBusca = !!(S.busca || (S.acao && S.acao.tipo === "busca"));
     var filtros = $("pr-filtros-busca");
     if (filtros) filtros.hidden = !comBusca;
@@ -2568,6 +2676,8 @@ var Prancheta = (function () {
   }
 
   function atualizaPainel() {
+    // o último jogador selecionado é o arremessador de "Converter em granada com horário"
+    if (S.sel && S.sel.tipo === "peca") S.ultimaPeca = S.sel.id;
     var box = limpa($("pr-selecao"));
     if (!S.sel) {
       box.appendChild(el("p", { class: "pr-dica", texto: "Nada selecionado. Clique num jogador no mapa ou no banco; com ele selecionado, 1 a 4 joga uma granada a partir dele." }));
@@ -2602,6 +2712,26 @@ var Prancheta = (function () {
     }
     if (S.sel.tipo === "traco") {
       var t = S.estado.tracos[S.sel.id];
+      if (t.ferramenta === "granada") {
+        var tid = S.sel.id;
+        box.appendChild(el("h3", { texto: NOME_ARMA[t.arma] + " desenhada · passo " + (indiceDoPasso(t.passo) + 1) }));
+        box.appendChild(el("p", { class: "pr-meta", texto: "Desenho, sem horário: não entra na linha do tempo nem no roteiro." }));
+        if (t.arma === "smoke" || t.arma === "molotov") {
+          box.appendChild(el("button", { class: "pr-b", id: "pr-area-desenho", "aria-pressed": String(!!t.area),
+            texto: t.area ? "Esconder a área" : "Mostrar a área", onclick: function () { alternaAreaDesenho(tid); } }));
+        }
+        if (M3) {
+          var pe = S.ultimaPeca && S.e3 ? quadroNoTempo(S.e3, S.t, CENTRO).pecas[S.ultimaPeca] : null;
+          var conv = el("button", { class: "pr-b", id: "pr-converte-desenho", texto: "Converter em granada com horário",
+            onclick: function () { converteDesenho(tid); } });
+          if (pe) conv.title = "Sai de " + nomePeca(S.ultimaPeca) + " às " + relogioEm(S.t) + " e cai neste ponto";
+          else { conv.disabled = true; conv.title = "Selecione antes o jogador que joga a granada (ele precisa estar no mapa no horário do cabeçote)"; }
+          box.appendChild(conv);
+        }
+        box.appendChild(controleDeVida(tid, t.dura_passos));
+        box.appendChild(el("button", { class: "pr-b", texto: "Apagar desenho", onclick: removeSelecionado }));
+        return;
+      }
       box.appendChild(el("h3", { texto: ROTULO_FERRAMENTA[t.ferramenta] + " · passo " + (indiceDoPasso(t.passo) + 1) }));
       box.appendChild(controleDeVida(S.sel.id, t.dura_passos));
       box.appendChild(el("button", { class: "pr-b", texto: "Apagar desenho", onclick: removeSelecionado }));
@@ -2853,7 +2983,8 @@ var Prancheta = (function () {
       ficam num grupo de CONTEXTO que só aparece com uma ferramenta de desenho.
       Todo botão mostra o atalho na dica. */
   var ATALHO_DA_ARMA = { smoke: "Smoke", flash: "Flash", he: "HE", molotov: "Molotov" };
-  var DICA_DA_FERRAMENTA = { caneta: "Caneta", seta: "Seta", linha: "Linha", texto: "Texto", borracha: "Borracha" };
+  var DICA_DA_FERRAMENTA = { caneta: "Caneta", seta: "Seta", linha: "Linha", texto: "Texto", borracha: "Borracha",
+                            granada_desenho: "Granada (desenho)" };
 
   function montaBarra() {
     var barra = limpa($("pr-barra"));
@@ -2890,6 +3021,14 @@ var Prancheta = (function () {
     });
     contexto.hidden = true;
     barra.appendChild(contexto);
+    var contextoGranada = el("div", { class: "anot-grupo sempre", id: "pr-contexto-granada" });
+    ARMAS_DESENHADAS.forEach(function (a, i) {
+      contextoGranada.appendChild(el("button", { "data-arma-desenho": a, class: "pr-b", texto: NOME_ARMA[a],
+        title: NOME_ARMA[a] + " desenhada (" + (i + 1) + ")", "aria-pressed": "false",
+        onclick: function () { S.armaDesenho = a; atualizaTudo(); } }));
+    });
+    contextoGranada.hidden = true;
+    barra.appendChild(contextoGranada);
 
     barra.appendChild(el("span", { class: "pr-separador", "aria-hidden": "true" }));
 
@@ -3894,6 +4033,21 @@ var Prancheta = (function () {
         return;
       }
       if (/^(INPUT|TEXTAREA|SELECT)$/.test((e.target || {}).tagName || "") || (e.target || {}).isContentEditable) return;
+      if (S.ferramenta === "granada_desenho" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        var passoC = PASSO_CURSOR_PX * (e.shiftKey ? 4 : 1), dC = null;
+        if (e.key === "ArrowLeft") dC = [-passoC, 0]; else if (e.key === "ArrowRight") dC = [passoC, 0];
+        else if (e.key === "ArrowUp") dC = [0, -passoC]; else if (e.key === "ArrowDown") dC = [0, passoC];
+        if (dC || e.key === "Enter") {
+          e.preventDefault();
+          if (!S.cursorDesenho) S.cursorDesenho = [cfg.radar.width / 2, cfg.radar.height / 2];
+          if (dC) {
+            S.cursorDesenho = [Math.max(0, Math.min(cfg.radar.width, S.cursorDesenho[0] + dC[0])),
+                               Math.max(0, Math.min(cfg.radar.height, S.cursorDesenho[1] + dC[1]))];
+            desenha();
+          } else carimbaGranada(S.cursorDesenho, pixelParaJogo(S.cursorDesenho[0], S.cursorDesenho[1]));
+          return;
+        }
+      }
       if (S.caminho && !S.acao) {
         if (e.key === "Enter") { e.preventDefault(); concluiCaminho(); return; }
         if (e.key === "Backspace") {

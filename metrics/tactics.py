@@ -125,10 +125,17 @@ OPERACOES = {
     "define_funcao": ("peca", "funcao"),
     "planta_bomba": ("t", "x", "y"),
     "nota_de_evento": ("alvo", "texto"),
+    # fase 11: granada DESENHADA (sem horário e sem física) -- espelho de tactics.js
+    "desenha_granada": ("traco", "passo", "arma", "x", "y"),
+    "define_area_desenho": ("traco", "area"),
 }
 # Operações que só existem a partir do formato 3.
 OPERACOES_DO_FORMATO_3 = ("cria_caminho", "move_ponto", "remove_ponto", "define_funcao", "planta_bomba",
-                          "nota_de_evento")
+                          "nota_de_evento", "desenha_granada", "define_area_desenho")
+# A granada desenhada (fase 11): os tipos do carimbo e a espessura guardada (só serve à borracha), a mesma de
+# tactics.js. (Convenção.)
+ARMAS_DESENHADAS = ("smoke", "flash", "he", "molotov")
+ESPESSURA_DA_GRANADA_DESENHADA = 4
 # Campos OPCIONAIS do formato 2 (ausente = padrão). Só documentação e conferência.
 OPCIONAIS = {
     "cria_peca": ("nivel", "yaw"),
@@ -142,6 +149,7 @@ OPCIONAIS = {
     "planta_bomba": ("nivel",),
     "move_granada": ("nivel",),
     "cria_traco": ("nivel", "dura_passos", "texto"),
+    "desenha_granada": ("nivel", "dura_passos", "area"),
 }
 DESFAZER = ("anula", "reativa")
 
@@ -298,6 +306,21 @@ def aplica(operacoes: list[dict]) -> dict:
                     "dura_passos": op["dura_passos"] if "dura_passos" in op else VIDA_PADRAO_TRACO,
                     "criada_em_ordem": _ordem(op),
                 }
+        elif t == "desenha_granada":
+            if op["traco"] not in estado["tracos"] and op["passo"] in passos:
+                estado["tracos"][op["traco"]] = {
+                    "passo": op["passo"], "ferramenta": "granada", "cor": None,
+                    "espessura": ESPESSURA_DA_GRANADA_DESENHADA,
+                    "pontos": [[float(op["x"]), float(op["y"])]], "texto": None,
+                    "nivel": int(op.get("nivel", 0)),
+                    "dura_passos": op["dura_passos"] if "dura_passos" in op else VIDA_PADRAO_TRACO,
+                    "criada_em_ordem": _ordem(op),
+                    "arma": op["arma"], "area": bool(op.get("area", False)),
+                }
+        elif t == "define_area_desenho":
+            tr = estado["tracos"].get(op["traco"])
+            if tr is not None and tr["ferramenta"] == "granada":
+                tr["area"] = bool(op["area"])
         elif t == "remove_traco":
             estado["tracos"].pop(op["traco"], None)
         elif t == "define_vida":
@@ -972,6 +995,15 @@ def _problemas_da_operacao(op: dict, onde: str, andares: int, por_id: dict) -> l
         erros.append(f"{onde}: duração {op['segundos']!r} s não é positiva")
     if t == "cria_granada":
         erros += _problemas_da_granada(op, onde)
+    if t == "desenha_granada":
+        if op["arma"] not in ARMAS_DESENHADAS:
+            erros.append(f"{onde}: tipo de granada desenhada desconhecido: {op['arma']}")
+        if not (_eh_numero(op["x"]) and _eh_numero(op["y"])):
+            erros.append(f"{onde}: x e y precisam ser números")
+        if "area" in op and not isinstance(op["area"], bool):
+            erros.append(f"{onde}: área precisa ser verdadeiro ou falso")
+    if t == "define_area_desenho" and not isinstance(op["area"], bool):
+        erros.append(f"{onde}: área precisa ser verdadeiro ou falso")
     if t == "cria_traco":
         erros += problemas_do_traco(op, onde)
         if op["espessura"] not in ESPESSURAS:
