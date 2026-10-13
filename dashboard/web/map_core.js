@@ -286,6 +286,7 @@ window.MapCore = (function () {
      --------------------------------------------------------------------- */
   function caminhoDoTraco(ctx, t, radar) {
     var p = t.pontos.map(function (g) { return jogoParaPixel(radar, g[0], g[1]); });
+    if (t.ferramenta === "granada") { desenhaGranadaDesenhada(ctx, t.arma, p[0][0], p[0][1], radar, t.area); return; }
     ctx.lineWidth = t.espessura;
     ctx.strokeStyle = t.cor;
     ctx.fillStyle = t.cor;
@@ -337,7 +338,7 @@ window.MapCore = (function () {
       menos de 8 pixels do radar um do outro, nos dois eixos. A caneta sempre
       vale (um clique dela é um ponto, e ponto também é anotação). */
   function tracoCurtoDemais(t, radar) {
-    if (t.ferramenta === "caneta" || t.ferramenta === "texto") return false;
+    if (t.ferramenta === "caneta" || t.ferramenta === "texto" || t.ferramenta === "granada") return false;
     var a = jogoParaPixel(radar, t.pontos[0][0], t.pontos[0][1]);
     var b = jogoParaPixel(radar, t.pontos[t.pontos.length - 1][0], t.pontos[t.pontos.length - 1][1]);
     return Math.abs(a[0] - b[0]) < 8 && Math.abs(a[1] - b[1]) < 8;
@@ -395,10 +396,12 @@ window.MapCore = (function () {
   // HE é o fragmento, molotov é a gota que espalha fogo.
   // `ang` gira o símbolo na direção do voo. Só é usado nos que têm frente
   // (molotov e HE); estrela e nuvem não têm, e girá-las só criaria tremor.
-  function nadeGlyph(ctx, kind, x, y, r, col, ang) {
+  function nadeGlyph(ctx, kind, x, y, r, col, ang, desenhada) {
     ctx.save();
     ctx.translate(x, y);
-    if (ESTILO.anelDuplo) anelDoGlifo(ctx, kind, r, ang);
+    // granada DESENHADA (fase 11): o anel duplo tracejado e o corpo a 85% -- não se confunde com a que aconteceu
+    if (ESTILO.anelDuplo || desenhada) anelDoGlifo(ctx, kind, r, ang, !!desenhada);
+    if (desenhada) ctx.globalAlpha *= ALFA_GRANADA_DESENHADA;
 
     // Contorno escuro por baixo do claro: o radar tem áreas claras E escuras, e
     // um traço branco sozinho sumia sobre o concreto claro da Mirage.
@@ -531,6 +534,38 @@ window.MapCore = (function () {
 
   function defineAnelDuplo(ligado) { ESTILO.anelDuplo = !!ligado; }
 
+  /* ---------------------------------------------------------------------
+     Granada DESENHADA (fase 11): carimbo sem horário e sem física, no "Desenhar" do replay e nos pincéis da
+     prancheta. Mesmo glifo da granada real (nadeGlyph), mas com o anel duplo tracejado e o corpo a 85%; a área
+     (smoke e molotov) é opcional e também tracejada.
+     --------------------------------------------------------------------- */
+  // Raio do glifo desenhado, em px do radar: um pouco maior que o da granada real no replay (5 a 5,5) para dar
+  // para pegar e arrastar com o mouse. (Convenção visual.)
+  var RAIO_GLIFO_DESENHADO = 7;
+  var ALFA_GRANADA_DESENHADA = 0.85;          // fonte: pedido da fase 11, regra 2
+  var TRACEJADO_DO_DESENHO = [5, 4];          // o mesmo passo do fantasma (entrega-sala-de-demo §4.1)
+  var ARMAS_DESENHADAS = ["smoke", "flash", "he", "molotov"];
+
+  /** Área desenhada (só o contorno, tracejado): halo claro, contorno escuro e o traço na cor da granada. */
+  function areaDesenhada(ctx, arma, X, Y, r) {
+    ctx.save();
+    ctx.setLineDash(TRACEJADO_DO_DESENHO);
+    [[5, token("tinta")], [3, token("contorno")], [1.5, NADE_COLOR[arma]]].forEach(function (c) {
+      ctx.lineWidth = c[0]; ctx.strokeStyle = c[1];
+      ctx.beginPath(); ctx.arc(X, Y, r, 0, Math.PI * 2); ctx.stroke();
+    });
+    ctx.restore();
+  }
+
+  /** A granada desenhada no ponto (X, Y) em px do radar; `area` liga o raio de efeito (smoke e molotov). */
+  function desenhaGranadaDesenhada(ctx, arma, X, Y, radar, area) {
+    if (area && (arma === "smoke" || arma === "molotov")) {
+      var u = arma === "smoke" ? RAIO_SMOKE_UNIDADES : RAIO_MOLOTOV_UNIDADES;
+      areaDesenhada(ctx, arma, X, Y, u * radar.scale_px_per_unit);
+    }
+    nadeGlyph(ctx, arma, X, Y, RAIO_GLIFO_DESENHADO, NADE_COLOR[arma], -Math.PI / 2, true);
+  }
+
   /** O mesmo caminho do glifo, só o contorno: halo claro (mais largo) e contorno escuro por cima. */
   function caminhoDoGlifo(ctx, kind, r, ang) {
     ctx.beginPath();
@@ -563,9 +598,12 @@ window.MapCore = (function () {
     }
   }
 
-  function anelDoGlifo(ctx, kind, r, ang) {
+  function anelDoGlifo(ctx, kind, r, ang, tracejado) {
     ctx.save();
     ctx.lineJoin = "round";
+    // tracejado: halo claro E contorno escuro no MESMO passo, como o fantasma (§4.1) -- onde há traço há os dois
+    // anéis, e o anel duplo continua valendo (um dos dois passa de 3:1 em qualquer pixel do radar)
+    if (tracejado) ctx.setLineDash(TRACEJADO_DO_DESENHO);
     caminhoDoGlifo(ctx, kind, r, ang);
     ctx.lineWidth = 2 * (ANEL_CONTORNO + ANEL_HALO) + (kind === "he" ? 2 : 0);
     ctx.strokeStyle = token("tinta");
@@ -1426,6 +1464,9 @@ window.MapCore = (function () {
     interpolaAngulo: interpolaAngulo,
     desenhaJogador: desenhaJogador,
     defineAnelDuplo: defineAnelDuplo,
+    desenhaGranadaDesenhada: desenhaGranadaDesenhada,
+    RAIO_GLIFO_DESENHADO: RAIO_GLIFO_DESENHADO,
+    ARMAS_DESENHADAS: ARMAS_DESENHADAS,
     RADAR_AJUSTE: RADAR_AJUSTE,
     RADAR_AJUSTE_PADRAO: RADAR_AJUSTE_PADRAO,
     ajusteDoRadar: ajusteDoRadar,
