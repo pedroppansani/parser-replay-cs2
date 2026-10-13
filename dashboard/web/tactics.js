@@ -944,8 +944,26 @@ var Prancheta = (function () {
   };
   var cv = null, ctx = null, imgs = [], timerGravar = null, cores = null;
 
-  function autor() { return (Armazem.autor() || "").trim() || "anônimo"; }
+  function autor() {
+    var doGrupo = ganchos.autor && ganchos.autor();   // num grupo, o autor é o nick da sala (grupo.js)
+    return doGrupo || (Armazem.autor() || "").trim() || "anônimo";
+  }
   function $(id) { return document.getElementById(id); }
+
+  /* ---------------------------------------------------------------------
+     Ganchos do GRUPO (fase 13; dashboard/web/grupo.js, só no build com grupo).
+     Sem grupo nenhum é preenchido e a prancheta é a de sempre. O grupo só
+     TRANSPORTA operações: nenhuma muda de significado (decisão 47).
+       autor()         o nick da sala, para as operações emitidas no grupo
+       aoEmitir(op)    cada operação local, logo depois de entrar no log
+       aoMudarTempo()  o cabeçote ou o play mudou por ação da pessoa
+       aoAtualizar()   fim de cada atualizaTudo (o grupo liga/desliga controles)
+       aoIniciar()     fim do init (o grupo monta a aba dele)
+       dica()          texto que vale no lugar da linha de dica, ou ""
+       abas            abas extras do painel, como em ABAS_DO_PAINEL
+     --------------------------------------------------------------------- */
+  var ganchos = {};
+  function avisaTempo() { if (ganchos.aoMudarTempo) ganchos.aoMudarTempo(); }
 
   /** Toda mudança passa por aqui: uma operação nova no log. `desfazivel` põe o
       id na pilha de desfazer desta sessão (e limpa o refazer: ramo novo). */
@@ -961,6 +979,7 @@ var Prancheta = (function () {
     }
     reaplica();
     agendaGravacao();
+    if (ganchos.aoEmitir) ganchos.aoEmitir(op);
     return op;
   }
 
@@ -1098,6 +1117,7 @@ var Prancheta = (function () {
     S.passo = marcoQueContem(S.t);
     if (S.caminho && !S.caminho.pontos.length) iniciaCaminho(S.caminho.peca);
     atualizaTudo();
+    avisaTempo();
   }
 
   /** Grava a posição da peça NO HORÁRIO DO CABEÇOTE: no marco, o move_peca de
@@ -1767,6 +1787,8 @@ var Prancheta = (function () {
   }
 
   function dicaAtual() {
+    var doGrupo = ganchos.dica && ganchos.dica();   // "nomad moveu ztrike", a recusa do servidor (grupo.js)
+    if (doGrupo) return doGrupo;
     if (S.chegada && !S.reproducao) return textoDaChegada();
     return ESTADOS[estadoDaInteracao()].dica(contextoDaDica());
   }
@@ -2531,6 +2553,7 @@ var Prancheta = (function () {
     atualizaBiblioteca(); atualizaPassos(); atualizaPainel(); atualizaBusca(); atualizaFerramentas();
     atualizaBanco(); atualizaBarra(); atualizaAviso(); atualizaContexto(); atualizaDica(); desenha();
     atualizaRelogioGrande(); atualizaLinhaDoTempo();
+    if (ganchos.aoAtualizar) ganchos.aoAtualizar();
   }
 
   function atualizaAviso() { $("pr-aviso").textContent = S.aviso; $("pr-aviso").hidden = !S.aviso; }
@@ -3089,6 +3112,10 @@ var Prancheta = (function () {
   }
 
   function montaLateral() {
+    // abas de fora (a aba Grupo, quando o build tem grupo): entram depois das três de sempre
+    (ganchos.abas || []).forEach(function (a) {
+      if (!ABAS_DO_PAINEL.some(function (x) { return x[0] === a[0]; })) ABAS_DO_PAINEL.push(a);
+    });
     var lado = limpa(document.querySelector("aside"));
     var abas = el("div", { class: "pr-abas", id: "pr-abas", role: "tablist", "aria-label": "Painel da prancheta" });
     ABAS_DO_PAINEL.forEach(function (a) {
@@ -3625,6 +3652,7 @@ var Prancheta = (function () {
     if ($("pr-dica-estado")) $("pr-dica-estado").hidden = false;
     document.querySelector("aside").removeAttribute("inert");
     atualizaTudo();
+    avisaTempo();
   }
 
   function toca(sim) {
@@ -3636,6 +3664,7 @@ var Prancheta = (function () {
     cancelAnimationFrame(quadroPedido);
     if (sim) quadroPedido = requestAnimationFrame(avanca);
     atualizaPlayer();
+    avisaTempo();
   }
 
   function avanca(agoraMs) {
@@ -3660,6 +3689,7 @@ var Prancheta = (function () {
       var vai = delta > 0 ? hs.filter(function (h) { return h > r.t + EPS_T; })[0]
                           : hs.filter(function (h) { return h < r.t - EPS_T; }).pop();
       reproduzAte(vai === undefined ? (delta > 0 ? r.cena.total : primeiroEvento()) : vai);
+      avisaTempo();
       return;
     }
     var lt = linhaDoTempo(S.estado), EPS = 1e-9;
@@ -3668,6 +3698,7 @@ var Prancheta = (function () {
     if (delta > 0) alvo = fins.filter(function (f) { return f > r.t + EPS; })[0];
     else alvo = fins.filter(function (f) { return f < r.t - EPS; }).pop();
     reproduzAte(alvo === undefined ? (delta > 0 ? lt.total : 0) : alvo);
+    avisaTempo();
   }
 
   function mudaVelocidade(dir) {
@@ -3676,6 +3707,7 @@ var Prancheta = (function () {
     var i = v.indexOf(r.velocidade);
     r.velocidade = dir === 0 ? v[(i + 1) % v.length] : v[Math.max(0, Math.min(v.length - 1, i + dir))];
     atualizaPlayer();
+    avisaTempo();
   }
 
   function atualizaPlayer() {
@@ -3714,6 +3746,7 @@ var Prancheta = (function () {
       var t = +this.value / 1000;
       toca(false);
       reproduzAte(t);
+      avisaTempo();
     });
     player.appendChild(tempo);
     player.appendChild(el("span", { id: "pr-rotulo-passo", class: "pr-meta" }));
@@ -4115,10 +4148,98 @@ var Prancheta = (function () {
       else { novaTatica(); S.aviso = "O instante do replay não pôde ser lido."; atualizaAviso(); }
     } else if (nova || !(aberta && abre(aberta))) novaTatica();
     reprojeta();
+    if (ganchos.aoIniciar) ganchos.aoIniciar();
   }
+
+  /* ---------------------------------------------------------------------
+     O que o grupo (grupo.js) usa da prancheta. Nenhuma destas funções cria
+     operação: recebe as de fora, tira as que o servidor recusou e lê/segue o
+     cabeçote.
+     --------------------------------------------------------------------- */
+  /** Operações que chegaram da sala entram no log SEM reemitir e sem ir para o
+      desfazer de ninguém; a repetida (mesmo id) não entra duas vezes. O contador
+      sobe como no relógio de Lamport (o mesmo da mescla). */
+  function recebeDeFora(ops) {
+    var ja = {};
+    S.doc.operacoes.forEach(function (o) { ja[o.id] = true; });
+    var novas = (ops || []).filter(function (o) {
+      if (!o || typeof o.id !== "string" || ja[o.id]) return false;
+      ja[o.id] = true;
+      return true;
+    });
+    if (!novas.length) return 0;
+    novas.forEach(function (o) {
+      S.doc.operacoes.push(copia(o));
+      if (ehInteiro(o.seq)) S.doc.contador = Math.max(S.doc.contador, o.seq);
+    });
+    reaplica();
+    agendaGravacao();
+    return novas.length;
+  }
+  /** Operações LOCAIS que o servidor recusou: nunca chegaram ao log da sala, então
+      saem do log daqui (e do desfazer e do refazer) -- é a ação desfeita. */
+  function retiraRecusadas(ids) {
+    var fora = {};
+    (ids || []).forEach(function (id) { fora[id] = true; });
+    var antes = S.doc.operacoes.length;
+    S.doc.operacoes = S.doc.operacoes.filter(function (o) { return !fora[o.id]; });
+    function limpaPilha(p) {
+      return p.map(function (item) { return [].concat(item).filter(function (id) { return !fora[id]; }); })
+        .filter(function (item) { return item.length; })
+        .map(function (item) { return item.length === 1 ? item[0] : item; });
+    }
+    S.pilhaDesfazer = limpaPilha(S.pilhaDesfazer);
+    S.pilhaRefazer = limpaPilha(S.pilhaRefazer);
+    if (S.doc.operacoes.length === antes) return 0;
+    S.chegada = null;
+    reaplica();
+    agendaGravacao();
+    return antes - S.doc.operacoes.length;
+  }
+  /** Abre o documento da sala (cabeçalho + operações) no lugar da tática aberta.
+      Devolve o motivo da recusa (mapa, calibração, arquivo inválido) ou "". */
+  function usaDocumento(doc) {
+    var erro = motivoDaRecusa(doc);
+    if (erro) return erro;
+    confirmaGiro();
+    S.doc = migra(copia(doc));
+    S.passo = 0; S.sel = null; S.busca = null; S.caminho = null; S.acao = null; S.chegada = null;
+    S.pilhaDesfazer = []; S.pilhaRefazer = [];
+    bancoDe = null;
+    Armazem.aberta(cfg.mapa, S.doc.id);
+    reaplica();
+    gravaAgora();
+    return "";
+  }
+  /** O cabeçote de agora: no editor, o horário; na reprodução, o horário, o play e a velocidade. */
+  function cabecote() {
+    var r = S.reproducao;
+    return r ? { modo: "reproducao", t: r.t, tocando: !!r.tocando, velocidade: r.velocidade } : { modo: "editor", t: S.t };
+  }
+  /** Leva o cabeçote (e o play) ao estado de outra pessoa -- "Seguir a líder". */
+  function segueCabecote(c) {
+    if (!c || !ehNumero(c.t) || !S.estado) return;
+    if (c.modo === "reproducao") {
+      if (!S.reproducao) comecaReproducao();
+      if (MapCore.VELOCIDADES.indexOf(c.velocidade) >= 0) S.reproducao.velocidade = c.velocidade;
+      reproduzAte(c.t);
+      toca(!!c.tocando);
+    } else {
+      if (S.reproducao) editaAqui();
+      defineTempo(c.t);
+    }
+  }
+  function limpaHistorico() { S.pilhaDesfazer = []; S.pilhaRefazer = []; atualizaBarra(); }
 
   return {
     init: init,
+    ganchos: ganchos,
+    grupo: {
+      recebe: recebeDeFora, retira: retiraRecusadas, usaDocumento: usaDocumento, cabecote: cabecote,
+      segueCabecote: segueCabecote, limpaHistorico: limpaHistorico, atualizaDica: atualizaDica,
+      documento: function () { return S.doc; }, estado: function () { return S.estado; },
+      emReproducao: function () { return !!S.reproducao; }, aplica: aplica, chaveDeOrdem: chaveDeOrdem
+    },
     _interno: {
       S: S, aplica: aplica, mescla: mescla, posicaoNoPasso: posicaoNoPasso, migra: migra,
       quadroDoPasso: quadroDoPasso, ordemDeCriacao: ordemDeCriacao, anuladas: anuladas,

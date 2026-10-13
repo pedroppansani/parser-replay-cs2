@@ -61,7 +61,22 @@ def _mapas_com_partidas() -> set[str]:
     return {v.get("mapa") for v in json.loads(manifesto.read_text(encoding="utf-8")).get("partidas", {}).values()}
 
 
-def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | None = None) -> str:
+def bloco_do_grupo(grupo: dict | None) -> str:
+    """Os scripts do grupo (fase 13): sala.js, grupo.js, o CSS da aba e a configuração. Sem grupo, nada --
+    a página fica byte a byte a de antes (há teste). O supabase-js NÃO entra aqui: a sala o carrega por
+    script dinâmico só quando a pessoa cria ou entra num grupo."""
+    if not grupo:
+        return ""
+    return ("<style>\n" + (WEB / "grupo.css").read_text(encoding="utf-8") + "</style>\n"
+            + "<script>\n" + (WEB / "sala.js").read_text(encoding="utf-8") + "</script>\n"
+            + "<script>\n" + (WEB / "grupo.js").read_text(encoding="utf-8") + "</script>\n"
+            + "<script>Grupo.prepara(" + _js(grupo) + ");</script>\n")
+
+
+def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | None = None,
+               grupo: dict | None = None) -> str:
+    """`grupo`: a configuração da aba Grupo (fase 13), ou None para a prancheta sem grupo. Os testes passam
+    {"modo": "falsa", ...} (a SalaFalsa em memória)."""
     radar = json.loads((RADARS_DIR / f"{mapa}.json").read_text(encoding="utf-8"))
     from scripts.radar_ajuste import avisa
     avisa(mapa)   # mapa sem par em RADAR_AJUSTE (§4.1): a página usa o padrão, o build avisa
@@ -95,6 +110,7 @@ def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | Non
         .replace("/*__MAPAS__*/[]", _js(mapas))
         .replace("/*__MODELO3__*/null", _js(modelo3_para_a_pagina()))
         .replace("/*__LUGARES__*/null", _js(lugares))
+        .replace("<!--__GRUPO__-->", bloco_do_grupo(grupo))
         .replace("<!--__META__-->", meta_tags(
             f"Prancheta tática · {rotulos.get(mapa, mapa)}",
             f"Monte uma tática na {rotulos.get(mapa, mapa)}: jogadores, granadas reais do corpus e passos.",

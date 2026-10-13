@@ -19,8 +19,7 @@ quanto a corretude.
 - `py -3.12 -m pytest tests/` · `py -3.12 -m scripts.reprocessa` (corpus a partir
   do interim) · `py -3.12 -m scripts.build_site` · `py -3.12 -m scripts.escada_validacao`.
 - Parse: ~14 s por partida; itere com `--from-interim`.
-- Sem o interim a partida não é recalculável; apagar demo, interim ou backup
-  segue a regra 36.
+- Sem o interim a partida não é recalculável; apagar dado segue a regra 36.
 
 ## Mapa do repositório
 
@@ -145,16 +144,16 @@ texto completo está na nota do link (`notas/decisoes/`).
 - [43](notas/decisoes/43-round-real-na-prancheta.md) Round real é base travada; editar em t troca o real dali.
 - [44](notas/decisoes/44-direcao-visual-sala-de-demo.md) Direção visual "Sala de demo": forma do design, lógica do main.
 - [45](notas/decisoes/45-granada-desenhada.md) Granada desenhada é desenho: tracejada e sem horário.
+- [47](notas/decisoes/47-grupos-na-prancheta.md) Grupo só transporta o log; quem desenha, o RLS decide.
 
 ## Números citáveis
 
-Não cite número de cabeça. Os números do projeto (corpus, rating, escada,
-arremessos, testes) estão em `data/processed/numeros_citaveis.json`,
-gerado por `py -3.12 -m scripts.numeros_citaveis`. README e landing leem dali.
+Não cite número de cabeça: os do projeto estão em `data/processed/numeros_citaveis.json`
+(`py -3.12 -m scripts.numeros_citaveis`); README e landing leem dali.
 
 ## Pontos de calibração que pertencem ao Pedro
 
-Não resolva sozinho; pergunte. Detalhe e histórico em
+Não resolva sozinho; pergunte. Detalhes em
 [`notas/calibracao.md`](notas/calibracao.md).
 
 - Nomes dos grupos de estilo (`clustering/cluster_names.json`); conferir a cada reajuste.
@@ -178,8 +177,8 @@ Não resolva sozinho; pergunte. Detalhe e histórico em
 
 ## Glossário
 
-- **Gabarito:** arremessos de partidas com `.dem`, com o que a demo grava (força,
-  velocidade, postura, chão), em `tests/fixtures/gabarito_arremessos_*`.
+- **Gabarito:** arremessos com `.dem` e o que a demo grava (força, velocidade,
+  postura, chão), em `tests/fixtures/gabarito_arremessos_*`.
 - **Rota A:** inferir botão, "no ar" e postura só com posição, pela rotina do jogo medida no gabarito.
 - **Rota B:** ler esses valores da demo (parser 2) e declarar a fonte de cada campo.
 - **Neutro:** arremesso ou rótulo sem afirmação, com o motivo; nunca um palpite.
