@@ -51,3 +51,32 @@ build) e os scripts de medição em `scripts/design/`.
   compara a impressão das páginas e do `numeros_citaveis.json` com `notas/design/impressao_antes.txt`
   (a do main antes do design). A contagem de testes fica fora da impressão: cresce a cada teste novo.
 - Push só no fim (depois da design-E), para o site no ar não ficar no meio do caminho.
+
+**Como ficou na implementação** (design-0 a design-E3, 2026-10-08 a 2026-10-12). Onde a forma do documento
+não coube no comportamento do main, valeu o comportamento, e fica registrado aqui para a próxima sessão não
+"corrigir" de volta:
+
+- **"Time de <nick>"** usa o nick que aparece NA PARTIDA (o roster do payload), não o canônico da regra 25:
+  em 16 jogador-partidas da FACEIT os dois diferem (donk666 / donk). Regra: o primeiro em ordem alfabética
+  (`casefold`, depois a ordem do código), `metrics.times.nome_do_lado_faceit`.
+- **`<title>` único:** quando duas partidas teriam o mesmo título (mesmos lados, placar e mapa em eventos
+  diferentes), o evento entra para desempatar (`scripts/build_web_page._evento_se_o_titulo_repete`).
+- **Cabeçalho da partida vem pronto do build** (placar, decisor, migalhas), e não do JS: montado depois da
+  carga, empurrava a página (CLS 0,756; agora 0,062). Por isso "venceu" e "começou CT/TR" saem do Python.
+- **Página da partida sem o topo do site:** em 375×667 ele tiraria o controle de tocar da tela (A1). A barra
+  de troca de partida ficou (há teste de comportamento); no celular ela ocupa uma linha só.
+- **Coluna "Mira":** a frase do documento ("erro mediano… em graus") não descreve a métrica, que é um
+  índice de 0 a 100; vale o texto do Python (`D.dica_mira`).
+- **jogadores.html:** a forma é a do §7.3, o método é o da fase 7 (intervalo de 95% por reamostragem das
+  partidas, ponto encolhido). Mínimos: taxa com menos de 10 tentativas só como bruto; menos de 3 partidas
+  sem faixa, em toda métrica (não só no rating). Reconciliar com os 90% do documento é decisão pendente.
+- **Prancheta:** o roteiro fica AO LADO da linha do tempo (fase 8), não embaixo. As marcas de ação da linha
+  do tempo ficam menores que 44 px (com 44 px elas se sobrepõem e o clique cai na vizinha). "Detalhes
+  técnicos" com a contagem de operações não entrou: a auditoria 5.3 tirou o contador da tela (há teste).
+  O ponto-chave atrasado em `--aviso` não entrou: a página só guarda o atraso de UMA granada por vez.
+- **Acessibilidade da prancheta:** fichas do banco são botões (Enter arma; Enter de novo põe a peça no
+  centro do mapa), os marcadores de passo têm nome e o canvas tem um resumo em texto
+  (`#pr-mapa-resumo`, quem está onde e as granadas). Não houve teste com um leitor de tela de verdade.
+- **Medições:** A11 (texto no mapa) no replay dos 8 mapas com partida e na prancheta dos 10 mapas (tática
+  sintética no centro de cada radar); A12 da landing e da partida; A10 no `scripts/design/interacao.py`.
+  As referências de captura de cada fase estão em `notas/design/referencias/<fase>/`.

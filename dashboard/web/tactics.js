@@ -1424,7 +1424,29 @@ var Prancheta = (function () {
     desenhaMortos(cena.mortos);
     Object.keys(cena.pecas).forEach(function (id) { desenhaPeca(id, cena.pecas[id], ant && ant.pecas[id], editando); });
     MapCore.rotulosDesenha();
+    resumeOMapa(cena);
     desenhaBalao();
+  }
+
+  /** O que o canvas mostra, em texto, para o leitor de tela (o canvas é uma imagem): quem está no mapa, onde, e as
+      granadas. Só reescreve quando muda, para não refazer a árvore de acessibilidade a cada quadro da reprodução. */
+  function resumeOMapa(cena) {
+    var alvo = $("pr-mapa-resumo");
+    if (!alvo) return;
+    var t = tempoMostrado();
+    var pecas = Object.keys(cena.pecas).map(function (id) {
+      var p = cena.pecas[id], lugar = lugarDe(p.x, p.y, p.nivel || 0);
+      return rotuloDaPeca(p) + (p.funcao ? " (" + p.funcao + ")" : "") + (lugar ? " em " + lugar : "");
+    }).sort();
+    var granadas = Object.keys(cena.granadas || {}).map(function (id) {
+      var g = cena.granadas[id], d = g.destino || [], lugar = d.length ? lugarDe(d[0], d[1], g.nivel || 0) : null;
+      return (NOME_ARMA[g.arma] || g.arma) + (lugar ? " em " + lugar : "");
+    }).sort();
+    var texto = (t !== null ? "Às " + relogioEm(t) + ": " : "") +
+      (pecas.length ? pecas.length + (pecas.length === 1 ? " jogador no mapa: " : " jogadores no mapa: ") + pecas.join("; ") + "."
+                    : "Nenhum jogador no mapa.") +
+      (granadas.length ? " Granadas: " + granadas.join("; ") + "." : "");
+    if (alvo.textContent !== texto) alvo.textContent = texto;
   }
 
   /** O passo aberto no editor, no mesmo formato da cena da reprodução: a
@@ -2506,8 +2528,13 @@ var Prancheta = (function () {
       f.classList.toggle("no-mapa", noMapa);
       f.title = noMapa ? "No mapa neste passo: clique para selecionar, ou arraste para mover"
                        : "Clique e depois clique no mapa para colocar, ou arraste para o mapa";
-      f.classList.toggle("armada", !!(S.acao && S.acao.tipo === "colocar" && S.acao.lado === f.getAttribute("data-lado") &&
-                                      S.acao.rotulo === f.getAttribute("data-rotulo")));
+      var armada = !!(S.acao && S.acao.tipo === "colocar" && S.acao.lado === f.getAttribute("data-lado") &&
+                      S.acao.rotulo === f.getAttribute("data-rotulo"));
+      f.classList.toggle("armada", armada);
+      f.setAttribute("aria-pressed", String(armada));
+      var nomeDaFicha = (f.getAttribute("data-lado") === "ct" ? "CT " : "TR ") + f.getAttribute("data-rotulo");
+      f.setAttribute("aria-label", nomeDaFicha + (noMapa ? ", no mapa: selecionar"
+        : armada ? ", pronta: clique no mapa, ou Enter de novo para pôr no centro" : ": colocar no mapa"));
     });
   }
 
@@ -2788,8 +2815,18 @@ var Prancheta = (function () {
         : [1, 2, 3, 4, 5].slice(0, PECAS_POR_LADO).map(String);
       rotulos.forEach(function (rotulo) {
         (function (rotulo) {
-          var b = el("div", { class: "pr-ficha " + lado + (elenco ? " nome" : ""), "data-lado": lado,
-                              "data-rotulo": rotulo, title: "Arraste para o mapa", texto: rotulo });
+          // botão (e não div): o leitor de tela anuncia e o teclado alcança. Enter/Espaço = o clique; com a ficha
+          // já armada, Enter de novo põe a peça no centro do mapa (o teclado não tem como apontar um lugar no canvas)
+          var b = el("button", { type: "button", class: "pr-ficha " + lado + (elenco ? " nome" : ""), "data-lado": lado,
+                                 "data-rotulo": rotulo, title: "Arraste para o mapa", texto: rotulo, "aria-pressed": "false" });
+          b.addEventListener("keydown", function (e) {
+            if (e.key !== "Enter" && e.key !== " ") return;
+            e.preventDefault();
+            if (!S.doc || S.reproducao) return;
+            var armada = S.acao && S.acao.tipo === "colocar" && S.acao.lado === lado && S.acao.rotulo === rotulo;
+            if (armada) { S.acao = null; colocaPeca(lado, rotulo, centroDoRadar(cfg.radar)); }
+            else cliqueNaFicha(lado, rotulo);
+          });
           var inicio = null;
           b.addEventListener("pointerdown", function (e) {
             e.preventDefault();
@@ -3166,6 +3203,7 @@ var Prancheta = (function () {
     e3.marcos.forEach(function (m, k) {
       trilho.appendChild(el("button", { class: "pr-marco" + (k === S.passo && !S.reproducao ? " ativo" : ""),
         "data-marco": m.passo, style: "left:" + pctDe(m.t, limite), title: relogioEm(m.t) + (m.titulo ? " · " + m.titulo : ""),
+        "aria-label": "Passo " + (k + 1) + (m.titulo ? " · " + m.titulo : "") + ", " + relogioEm(m.t),
         texto: String(k + 1) }));
     });
     // marco nomeado (rótulo, não botão: pular para ele é pelo roteiro): losango + nome + horário, em cima do trilho

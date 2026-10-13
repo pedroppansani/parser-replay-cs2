@@ -79,15 +79,17 @@ campo diz de onde veio. A comparação entre os dois roda como teste permanente.
 
 ## A prancheta tática
 
-Uma página por mapa para montar jogadas: peças, passos, granadas e desenho livre,
-com reprodução animada.
+Uma página por mapa para montar jogadas no relógio do round: peças, caminho com
+horário de chegada, granadas e desenho livre, com uma linha do tempo por jogador e
+reprodução animada.
 
 - **Arremessos reais.** Clique onde a granada deve cair e a prancheta lista os
   arremessos do corpus que caem ali, com posição, ângulo, botão, postura e o
   comando de console (`setpos` e `setang`) que leva até lá.
-- **Tática deste instante.** No replay de qualquer partida, um botão abre a
-  prancheta com os jogadores vivos daquele quadro, na posição e na direção em
-  que estavam, e as granadas ativas ligadas ao arremesso que as gerou.
+- **Abrir round na prancheta.** No replay de qualquer partida, um botão abre a
+  prancheta com o round inteiro (caminhos reais, mortes, granadas e plant),
+  parada no instante em que você estava; o round real fica como fantasma para
+  comparar com a versão editada.
 - **Pronta para mais de uma pessoa.** A tática é um log de operações: duas cópias
   editadas em separado se juntam sem conflito, e desfazer nunca apaga histórico.
 
