@@ -570,6 +570,83 @@ def _tempos(tick: int, inicio: int | None, t_plant: int | None, tickrate: int) -
     return max(0.0, decorrido), max(0.0, da_bomba)
 
 
+def _delta_da_kill(modelo: "ModeloDeRound", antes: dict, vivos: dict, beneficiado: str, adversario: str,
+                   dif_equip: float, bomba: bool, eh_ct: bool, tempos: tuple[float, float]) -> float:
+    """Variação da chance de vencer o ROUND que uma kill causa, do ponto de vista do time beneficiado.
+
+    Antes e depois no MESMO instante (o tick da kill): o que o evento muda são os vivos; o tempo que
+    passa entre dois eventos não é de ninguém. Uma conta só, usada pelo Round Swing (`swing_por_evento`)
+    e pelo custo dos erros da aba Perfil (`variacao_por_kill`, metrics/erros.py)."""
+    p_antes = modelo.prob(np.array([_estado_completo(
+        antes[beneficiado], antes[adversario], dif_equip, bomba, eh_ct, *tempos)]))[0]
+    p_depois = modelo.prob(np.array([_estado_completo(
+        vivos[beneficiado], vivos[adversario], dif_equip, bomba, eh_ct, *tempos)]))[0]
+    return float(p_depois - p_antes)
+
+
+def _equip_por_round(grupos: pl.DataFrame, team_of: dict[int, str]) -> dict:
+    """{(round, time): (equipamento do time, lado)}: a entrada de equipamento do modelo de round."""
+    equip_por_round = (
+        grupos.with_columns(
+            pl.col("steamid").map_elements(lambda s: team_of.get(s), return_dtype=pl.String).alias("time")
+        )
+        .drop_nulls("time")
+        .group_by(["round_num", "time"], maintain_order=True)
+        .agg(pl.col("equip").sum().alias("equip_time"), pl.col("side").mode().sort().first())
+    )
+    return {
+        (int(r["round_num"]), r["time"]): (float(r["equip_time"]), r["side"])
+        for r in equip_por_round.iter_rows(named=True)
+    }
+
+
+def variacao_por_kill(
+    kills: pl.DataFrame, rounds: pl.DataFrame, grupos: pl.DataFrame, modelo: "ModeloDeRound",
+    team_of: dict[int, str], tickrate: int,
+) -> list[dict]:
+    """A variação da chance de vencer o round de cada kill, com o mesmo modelo e o mesmo estado do
+    Round Swing. O recorte é o do Swing (kill da cauda depois do fim do round e a morte pela bomba não
+    movem nada), com UMA diferença: a kill no próprio tick do fim do round entra. O Swing a deixa de
+    fora porque reparte o salto final entre os vivos ("fim do round"); aqui a pergunta é quanto aquela
+    morte custou ao time, e a que fecha o round é a que mais custa.
+
+    Uma linha por kill considerada: round, tick, vítima, time da vítima, vivos de cada time ANTES da
+    kill e `delta_vitima` = a variação do ponto de vista do time da VÍTIMA (negativa: a queda)."""
+    equip = _equip_por_round(grupos, team_of)
+    plant = {int(r["round_num"]): r["bomb_plant"]
+             for r in rounds.select(["round_num", "bomb_plant"]).iter_rows(named=True)}
+    inicio = _inicio_dos_rounds(rounds)
+    fim_do_round = dict(rounds.select(pl.col("round_num").cast(pl.Int64), "end").iter_rows())
+    linhas: list[dict] = []
+    for rn_t, rk in kills.sort("tick").group_by("round_num", maintain_order=True):
+        rn = int(rn_t[0]) if isinstance(rn_t, tuple) else int(rn_t)
+        vivos = {"A": 5, "B": 5}
+        t_plant = plant.get(rn)
+        fim = fim_do_round.get(rn)
+        for k in rk.to_dicts():
+            if not ((fim is None or k["tick"] <= fim) and k.get("weapon") != "planted_c4"):
+                continue
+            time_vitima = team_of.get(k["victim_steamid"])
+            time_matador = team_of.get(k["attacker_steamid"])
+            if time_vitima is None:
+                continue
+            outro = "B" if time_vitima == "A" else "A"
+            bomba = t_plant is not None and k["tick"] >= int(t_plant)
+            antes = dict(vivos)
+            vivos[time_vitima] -= 1
+            beneficiado = time_matador if time_matador and time_matador != time_vitima else outro
+            adversario = "B" if beneficiado == "A" else "A"
+            eq_meu, lado = _equip_do_time(equip, rn, beneficiado)
+            eq_dele, _ = _equip_do_time(equip, rn, adversario)
+            delta = _delta_da_kill(modelo, antes, vivos, beneficiado, adversario, eq_meu - eq_dele, bomba,
+                                   lado == "ct", _tempos(k["tick"], inicio.get(rn), t_plant, tickrate))
+            linhas.append({"round_num": rn, "tick": int(k["tick"]), "victim_steamid": k["victim_steamid"],
+                           "time_vitima": time_vitima, "vivos_antes": antes,
+                           # o beneficiado é sempre o outro time: a vítima perde o que ele ganhou
+                           "delta_vitima": -delta})
+    return linhas
+
+
 def swing_por_evento(
     kills: pl.DataFrame, damages: pl.DataFrame, blinds: pl.DataFrame | None,
     rounds: pl.DataFrame, grupos: pl.DataFrame, modelo: ModeloDeRound,
@@ -592,18 +669,7 @@ def swing_por_evento(
     proprio matador, quando a kill dele troca a morte recente de um companheiro.
     E recalibravel (`CREDITO_TRADE`).
     """
-    equip_por_round = (
-        grupos.with_columns(
-            pl.col("steamid").map_elements(lambda s: team_of.get(s), return_dtype=pl.String).alias("time")
-        )
-        .drop_nulls("time")
-        .group_by(["round_num", "time"], maintain_order=True)
-        .agg(pl.col("equip").sum().alias("equip_time"), pl.col("side").mode().sort().first())
-    )
-    equip = {
-        (int(r["round_num"]), r["time"]): (float(r["equip_time"]), r["side"])
-        for r in equip_por_round.iter_rows(named=True)
-    }
+    equip = _equip_por_round(grupos, team_of)
     plant = {
         int(r["round_num"]): r["bomb_plant"]
         for r in rounds.select(["round_num", "bomb_plant"]).iter_rows(named=True)
@@ -650,14 +716,8 @@ def swing_por_evento(
             eq_meu, lado = _equip_do_time(equip, rn, beneficiado)
             eq_dele, _ = _equip_do_time(equip, rn, adversario)
 
-            # antes e depois no MESMO instante (o tick da kill): o que o evento
-            # muda são os vivos; o tempo que passa entre dois eventos não é de ninguém
-            tempos = _tempos(k["tick"], inicio.get(rn), t_plant, tickrate)
-            p_antes = modelo.prob(np.array([_estado_completo(
-                antes[beneficiado], antes[adversario], eq_meu - eq_dele, bomba, lado == "ct", *tempos)]))[0]
-            p_depois = modelo.prob(np.array([_estado_completo(
-                vivos[beneficiado], vivos[adversario], eq_meu - eq_dele, bomba, lado == "ct", *tempos)]))[0]
-            delta = float(p_depois - p_antes)
+            delta = _delta_da_kill(modelo, antes, vivos, beneficiado, adversario, eq_meu - eq_dele, bomba,
+                                   lado == "ct", _tempos(k["tick"], inicio.get(rn), t_plant, tickrate))
 
             # --- a vitima paga a conta inteira -----------------------------
             linhas.append({"round_num": rn, "steamid": k["victim_steamid"],

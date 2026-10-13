@@ -183,6 +183,9 @@ def build_chain(match_id: str) -> None:
     build_insights.build(match_id)
     build_breakdown.build(match_id)
     export_replay.build(match_id)
+    # erros da aba Perfil (fase 12): lê o processado das métricas e o interim
+    from metrics import erros
+    erros.build(match_id)
     export_web_payload.build(match_id)
 
 

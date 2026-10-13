@@ -32,6 +32,9 @@ from scripts.meta_da_pagina import meta_tags, url_do_site
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
 DOCS_DIR = PROJECT_ROOT / "docs"
+# Pré-visualização da aba Perfil com TODOS os tipos de erro marcados "em validação" (fase 12, 12.4):
+# vai para preview/, que está no .gitignore e nunca é publicada (o Pages publica só docs/).
+PREVIEW_DIR = PROJECT_ROOT / "preview"
 
 # Link para a página jogadores.html, na landing e no cabeçalho das partidas, com
 # o aviso de que ela é a visão do corpus e não de uma partida (decisão 30).
@@ -471,7 +474,9 @@ python -m scripts.build_site
 """)
 
 
-def build(repo_url: str) -> Path:
+def build(repo_url: str, preview: bool = False) -> Path:
+    """Gera o site em docs/; com `preview`, em preview/, com os tipos de erro não validados à mostra."""
+    saida = PREVIEW_DIR if preview else DOCS_DIR
     if not PROCESSED_DIR.exists():
         raise SystemExit("Nenhuma partida processada. Rode scripts/process_all_demos.py primeiro.")
 
@@ -488,8 +493,8 @@ def build(repo_url: str) -> Path:
     if not matches:
         raise SystemExit("Nenhuma partida com a cadeia completa. Rode scripts/process_all_demos.py.")
 
-    DOCS_DIR.mkdir(parents=True, exist_ok=True)
-    for old in DOCS_DIR.glob("*.html"):
+    saida.mkdir(parents=True, exist_ok=True)
+    for old in saida.glob("*.html"):
         old.unlink()
 
     # o seletor precisa da lista inteira em toda página, e de saber onde está
@@ -497,8 +502,8 @@ def build(repo_url: str) -> Path:
 
     for m in matches:
         site = {"matches": nav, "current": m["id"], "repo": repo_url, "jogadores": LINK_JOGADORES}
-        html = build_html(m["id"], site=site)
-        (DOCS_DIR / m["file"]).write_text(html, encoding="utf-8")
+        html = build_html(m["id"], site=site, preview=preview)
+        (saida / m["file"]).write_text(html, encoding="utf-8")
         print(f"  {m['file']}  ({len(html) / 1024:.0f} KB)  {m['map_label']} {m['score_a']}-{m['score_b']}")
 
     # prancheta tática: uma página por mapa com radar e biblioteca de arremessos
@@ -513,20 +518,20 @@ def build(repo_url: str) -> Path:
         grupo = config_do_grupo(url_do_site(repo_url), arquivo_da_pagina(mapa))
         com_grupo = com_grupo or grupo is not None
         html = build_prancheta(mapa, MAP_LABEL, site=url_do_site(repo_url), grupo=grupo)
-        (DOCS_DIR / arquivo_da_pagina(mapa)).write_text(html, encoding="utf-8")
+        (saida / arquivo_da_pagina(mapa)).write_text(html, encoding="utf-8")
         pranchetas.append({"mapa": mapa, "file": arquivo_da_pagina(mapa), "label": MAP_LABEL.get(mapa, mapa)})
         print(f"  {arquivo_da_pagina(mapa)}  ({len(html) / 1024:.0f} KB)  prancheta")
 
     if com_grupo:
-        (DOCS_DIR / "vendor").mkdir(exist_ok=True)
-        shutil.copyfile(biblioteca, DOCS_DIR / "vendor" / ARQUIVO_SUPABASE_JS)
-        confere_biblioteca(DOCS_DIR / "vendor" / ARQUIVO_SUPABASE_JS)
+        (saida / "vendor").mkdir(exist_ok=True)
+        shutil.copyfile(biblioteca, saida / "vendor" / ARQUIVO_SUPABASE_JS)
+        confere_biblioteca(saida / "vendor" / ARQUIVO_SUPABASE_JS)
         print(f"  vendor/{ARQUIVO_SUPABASE_JS}  (grupos ligados; sha256 conferido)")
 
     # visão agregada por jogador no corpus (fase 7): página separada da partida
     from scripts.build_jogadores import ARQUIVO as ARQUIVO_JOGADORES, build_html as build_jogadores
     pagina_jogadores = build_jogadores(url_do_site(repo_url))
-    (DOCS_DIR / ARQUIVO_JOGADORES).write_text(pagina_jogadores, encoding="utf-8")
+    (saida / ARQUIVO_JOGADORES).write_text(pagina_jogadores, encoding="utf-8")
     print(f"  {ARQUIVO_JOGADORES}  ({len(pagina_jogadores) / 1024:.0f} KB)  jogadores no corpus")
 
     # os números do topo vêm de numeros_citaveis.json; a imagem do replay é a
@@ -537,23 +542,23 @@ def build(repo_url: str) -> Path:
     if captura.exists():
         # a PNG continua sendo a og:image; na página vai uma WebP com largura e altura declaradas (não empurra
         # o layout, CLS) e carregada sem pressa (lazy): o que conta nos primeiros segundos são os números
-        shutil.copyfile(captura, DOCS_DIR / "replay.png")
+        shutil.copyfile(captura, saida / "replay.png")
         from PIL import Image
         with Image.open(captura) as im:
-            im.convert("RGB").save(DOCS_DIR / "replay.webp", "WEBP", quality=82, method=6)
+            im.convert("RGB").save(saida / "replay.webp", "WEBP", quality=82, method=6)
             tamanho = im.size
         imagem = "replay.webp"
         legenda = legenda_da_captura(matches)
-    (DOCS_DIR / "index.html").write_text(
+    (saida / "index.html").write_text(
         build_index(matches, repo_url, pranchetas, numeros=numeros_citaveis(), imagem=imagem,
                     imagem_tamanho=tamanho, legenda=legenda), encoding="utf-8")
 
     # o GitHub Pages passa o conteúdo pelo Jekyll por padrão, que ignora arquivos
     # e pastas começando com underscore; .nojekyll desliga isso
-    (DOCS_DIR / ".nojekyll").write_text("", encoding="utf-8")
+    (saida / ".nojekyll").write_text("", encoding="utf-8")
 
-    print(f"\nSite em {DOCS_DIR} · {len(matches)} partida(s) · abra docs/index.html")
-    return DOCS_DIR
+    print(f"\nSite em {saida} · {len(matches)} partida(s) · abra {saida.name}/index.html")
+    return saida
 
 
 def main() -> None:
@@ -563,8 +568,12 @@ def main() -> None:
         default="https://github.com/pedroppansani/parser-replay-cs2",
         help="URL do repositório, usada nas instruções da página",
     )
+    parser.add_argument(
+        "--mostrar-erros-nao-validados", action="store_true",
+        help="gera em preview/ (fora do git, nunca publicado) a aba Perfil com todos os tipos de erro em validação",
+    )
     args = parser.parse_args()
-    build(args.repo)
+    build(args.repo, preview=args.mostrar_erros_nao_validados)
 
 
 if __name__ == "__main__":

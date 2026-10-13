@@ -60,3 +60,7 @@ logs/
 supabase/tests/node_modules/
 supabase/tests/package*.json
 supabase/.temp/
+
+# Pré-visualização da aba Perfil com os tipos de erro ainda não validados (fase 12,
+# build_site --mostrar-erros-nao-validados). Nunca publicada.
+preview/
