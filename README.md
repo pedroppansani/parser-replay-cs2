@@ -148,6 +148,10 @@ A licença cobre só o código. Não cobre o que é de terceiros:
 - **Demos** (`.dem`) são gravações de partidas de terceiros e não são
   distribuídas neste repositório; o que está versionado é o resultado do
   processamento.
+- **supabase-js 2.117.2** em `dashboard/web/vendor/` (cliente do Supabase usado
+  pelos grupos da prancheta) é da Supabase, sob a licença MIT
+  (`dashboard/web/vendor/supabase-js-LICENSE.txt`). O arquivo é o do pacote no
+  npm, sem alteração, conferido pelo sha256 gravado ao lado.
 
 ## Notas técnicas
 

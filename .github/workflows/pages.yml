@@ -54,7 +54,13 @@ jobs:
           cache: pip
       - name: Dependências (versões fixadas)
         run: pip install -r requirements.txt
+      # Grupos na prancheta (fase 13): a URL do projeto e a chave PÚBLICA do Supabase vêm das variáveis do
+      # repositório (Settings > Secrets and variables > Actions > Variables). São públicas por desenho (o RLS
+      # protege), mas ficam fora do código. Sem elas, ou com GRUPOS_ATIVOS = False, o botão não aparece.
       - name: Gera o site a partir de data/processed/
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
         run: python -m scripts.build_site
       - uses: actions/upload-pages-artifact@v3
         with:
