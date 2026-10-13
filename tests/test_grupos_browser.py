@@ -221,6 +221,24 @@ def test_sem_permissao_a_alteracao_e_recusada_desfeita_e_a_dica_diz_o_motivo(con
     assert not pg._erros
 
 
+def test_granada_desenhada_tambem_e_desenhar(contexto, pagina_grupo):
+    """A granada desenhada da fase 11 (desenha_granada) é alteração da tática: sem permissão, o pincel fica
+    desligado e a operação, se sair, é recusada pelo servidor e tirada do log."""
+    pg, _ = membro_na_sala(contexto, pagina_grupo)
+    pincel = pg.locator('#pr-barra [data-ferramenta="granada_desenho"]')
+    assert pincel.is_disabled() and pincel.get_attribute("title") == "A líder não liberou desenho para você."
+    pg.evaluate("""() => { const c = Prancheta._interno.centro();
+        Prancheta._interno.emiteLote([['desenha_granada', { traco: 'gd1', passo: window.__passo, arma: 'smoke', x: c[0], y: c[1] }]]); }""")
+    pg.wait_for_function("() => document.getElementById('pr-dica-estado').textContent === 'A líder não liberou desenho para você.'")
+    assert not [o for o in interno(pg, "S.doc.operacoes") if o["tipo"] == "desenha_granada"]
+    pg.evaluate("async () => window.__lider.s.permite('u-tela', true)")
+    pg.wait_for_function("() => !document.querySelector('#pr-barra [data-ferramenta=\"granada_desenho\"]').disabled")
+    pg.evaluate("""() => { const c = Prancheta._interno.centro();
+        Prancheta._interno.emiteLote([['desenha_granada', { traco: 'gd2', passo: window.__passo, arma: 'flash', x: c[0], y: c[1] }]]); }""")
+    pg.wait_for_function("() => Object.values(window.__lider.ops).some((o) => o.tipo === 'desenha_granada')")
+    assert not pg._erros
+
+
 def test_todos_podem_desenhar_libera_todos_e_expulsar_tira_o_acesso_na_hora(contexto, pagina_grupo):
     pg, codigo = membro_na_sala(contexto, pagina_grupo)
     # um terceiro, sem tela
