@@ -93,6 +93,37 @@ def test_ponto_depende_da_tatica_usa_o_motivo_como_frase():
     assert [c["round"] for c in m["chips"]] == [3, 7] and m["chips"][0]["t"] == 12.0
 
 
+def test_todo_chip_da_pagina_tem_lado_e_relogio_e_leva_ao_round_e_ao_momento():
+    # fase 15: todo erro é de um lado só e o chip diz o round e o relógio ("R12 · 1:14")
+    bloco = _bloco(preview=True)
+    n = 0
+    for j in bloco["jogadores"]:
+        for m in j["melhorar"]:
+            chips = list(m["chips"])
+            assert all(c["lado"] == m["lado"] for c in chips)          # o chip é do lado do card
+            for c in chips:
+                n += 1
+                assert c["lado"] in ("ct", "t") and c["lado_rotulo"] in ("no CT", "no TR")
+                assert c["relogio"] and c["texto"] == f"R{c['round']} · {c['relogio']}"
+                assert c["t"] is not None
+                assert c["titulo"].startswith(f"Round {c['round']}, {c['relogio']}: abre o Replay")
+        for u in j["uma_vez"]:
+            for c in u["chips"]:
+                n += 1
+                assert c["lado"] in ("ct", "t") and c["relogio"]
+    assert n > 0
+
+
+def test_o_relogio_do_chip_e_o_do_replay():
+    # 12,0 s depois do freeze, sem plant: 1:55 - 12 s = 1:43
+    oc = [{"nivel": E.DEPENDE, "motivo": E.MOTIVO_LURKER, "dwpa": None, "round_num": 3, "tick": 30, "segundos": 12.0,
+           "side": "t", "relogio": "1:43"}]
+    c = PE._chips(oc)[0]
+    assert (c["rotulo"], c["texto"], c["lado"]) == ("R3", "R3 · 1:43", "t")
+    sem = [{**oc[0], "relogio": None}]
+    assert PE._chips(sem)[0]["relogio"] == "1:43"
+
+
 # --- Publicação no site ------------------------------------------------------------------------------
 
 def test_com_a_lista_vazia_nenhum_tipo_aparece_na_pagina_e_com_um_so_ele(monkeypatch):
