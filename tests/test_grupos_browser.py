@@ -374,8 +374,9 @@ def test_a_lider_cria_pela_aba_e_controla_o_grupo(contexto, pagina_grupo):
     pg.wait_for_function("() => Grupo._interno.G().fase === 'dentro'")
     codigo = pg.inner_text("#gr-codigo-sala")
     assert len(codigo) == 8 and all(c in "ABCDEFGHJKMNPQRSTUVWXYZ23456789" for c in codigo)
-    # o estado inicial subiu: as operações que já existiam
-    pg.wait_for_function("() => window.__servidorFalso.ops.length === Prancheta.grupo.documento().operacoes.length")
+    # o estado inicial subiu: as operações que já existiam (fase 16b: numa linha só, em cria_sala, não em lotes)
+    pg.wait_for_function("""() => { const G = Grupo._interno.G(), srv = window.__servidorFalso;
+        return srv.inicialDe(G.salaId).length === Prancheta.grupo.documento().operacoes.length && srv.ops.length === 0; }""")
     pg.click('[data-acao="copiar"]')
     assert f"#sala={codigo}" in pg.inner_text("#gr-status")
     # alguém entra e aparece na lista; a líder libera e tira o desenho dele

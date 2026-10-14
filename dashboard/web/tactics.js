@@ -4252,6 +4252,7 @@ var Prancheta = (function () {
       recebe: recebeDeFora, retira: retiraRecusadas, usaDocumento: usaDocumento, cabecote: cabecote,
       segueCabecote: segueCabecote, limpaHistorico: limpaHistorico, atualizaDica: atualizaDica,
       documento: function () { return S.doc; }, estado: function () { return S.estado; },
+      tipos: function () { return Object.keys(OPERACOES); },   // a lista de tipos de operação (a do servidor é conferida contra ela)
       emReproducao: function () { return !!S.reproducao; }, aplica: aplica, chaveDeOrdem: chaveDeOrdem
     },
     _interno: {

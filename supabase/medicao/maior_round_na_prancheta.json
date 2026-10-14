@@ -1,0 +1,23 @@
+{
+ "rounds": 1152,
+ "maior_em_operacoes": {
+  "nome": "match_31 round 31",
+  "ops": 68,
+  "bytes": 84348,
+  "maiorOp": 5002,
+  "acima8kb": 0,
+  "compacto": 74070,
+  "mapa": "de_train"
+ },
+ "maior_em_bytes": {
+  "nome": "match_24 round 11",
+  "ops": 62,
+  "bytes": 88835,
+  "maiorOp": 7194,
+  "acima8kb": 0,
+  "compacto": 77306,
+  "mapa": "de_dust2"
+ },
+ "rounds_com_operacao_acima_de_8kb": 3,
+ "quadro": 40
+}

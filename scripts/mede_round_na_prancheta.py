@@ -112,9 +112,15 @@ def mede(quadro: int = QUADRO_PADRAO, grava_maior: Path | None = None, processos
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--quadro", type=int, default=QUADRO_PADRAO)
-    ap.add_argument("--grava-maior", type=Path, default=None)
+    ap.add_argument("--grava-maior", type=Path, default=None, help="escreve o documento do maior round (JSON)")
+    ap.add_argument("--grava-medicao", type=Path, default=None,
+                    help="escreve o resumo da medição (origem dos tetos; tests/test_grupos_migracoes.py confere)")
     a = ap.parse_args(argv)
     r = mede(a.quadro, a.grava_maior)
+    if a.grava_medicao:
+        resumo = {k: r[k] for k in ("rounds", "maior_em_operacoes", "maior_em_bytes", "rounds_com_operacao_acima_de_8kb")}
+        resumo["quadro"] = a.quadro
+        a.grava_medicao.write_text(json.dumps(resumo, ensure_ascii=False, indent=1) + chr(10), encoding="utf-8")
     print(f"rounds medidos: {r['rounds']}; com operação acima de 8 KB: {r['rounds_com_operacao_acima_de_8kb']}")
     for rotulo in ("maior_em_operacoes", "maior_em_bytes"):
         m = r[rotulo]
