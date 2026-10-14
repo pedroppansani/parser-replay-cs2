@@ -83,14 +83,22 @@ def test_painel_da_lider(navegador, pagina_grupo):
 
 
 def test_no_celular_a_aba_fica_numa_coluna_sem_rolar_de_lado(navegador, pagina_grupo):
-    ctx, pg, _ = _membro(navegador, pagina_grupo, 375, 812)
+    # vista da líder: tem as linhas de botões (.gr-linha), que quebram linha em vez de estourar o painel
+    ctx, pg = _lider_com_ana(navegador, pagina_grupo, 375, 812)
     try:
         r = pg.evaluate("""() => { const p = document.getElementById('pr-painel-grupo').getBoundingClientRect();
-            const linhas = [...document.querySelectorAll('#pr-painel-grupo .linha')].map((l) =>
-                [...l.children].map((c) => c.getBoundingClientRect()).filter((b) => b.width));
-            return { largura: p.width, rolagem: document.documentElement.scrollWidth - innerWidth,
-                     umaPorLinha: linhas.every((bs) => bs.every((b, i) => i === 0 || b.top >= bs[i - 1].bottom - 1)) }; }""")
-        assert r["rolagem"] <= 0 and r["umaPorLinha"], r
+            const filhos = [...document.querySelectorAll('#pr-painel-grupo .gr-linha > *')].map((c) => c.getBoundingClientRect()).filter((b) => b.width);
+            return { n: filhos.length, rolagem: document.documentElement.scrollWidth - innerWidth,
+                     dentro: filhos.every((b) => b.left >= p.left - 1 && b.right <= p.right + 1) }; }""")
+        assert r["n"] > 0, r                                   # o conjunto não está vazio
+        assert r["rolagem"] <= 0 and r["dentro"], r
+        assert pg.evaluate(PEQUENOS_NO_PAINEL) == []
+    finally:
+        ctx.close()
+    # vista do membro: a mesma coluna, sem rolar de lado
+    ctx, pg, _ = _membro(navegador, pagina_grupo, 375, 812)
+    try:
+        assert pg.evaluate("() => document.documentElement.scrollWidth - innerWidth") <= 0
         assert pg.evaluate(PEQUENOS_NO_PAINEL) == []
     finally:
         ctx.close()
