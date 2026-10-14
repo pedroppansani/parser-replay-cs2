@@ -44,8 +44,15 @@ var Grupo = (function () {
   };
   var INDISPONIVEL = "Grupo indisponível agora. A tática continua salva neste navegador.";
   var SO_NO_SITE = "Grupos funcionam no site publicado.";
-  var O_QUE_GUARDA = "O servidor guarda só o nick que você escolher, quem está em cada grupo e as alterações da " +
-    "tática. O login é anônimo: sem e-mail, sem senha. Grupo parado há 30 dias é apagado.";
+  // B-3 (revisão de segurança): o que sobe ao servidor, dito por inteiro. O mesmo texto está na seção 2 de
+  // notas/seguranca/grupos.md (teste compara). Contato por issue do GitHub: o site não tem e-mail nenhum.
+  var CONTATO_DO_AVISO = "peça no GitHub";
+  var LINK_DO_CONTATO = "https://github.com/pedroppansani/parser-replay-cs2/issues/new";
+  var O_QUE_GUARDA = "O servidor guarda o nick, quem está em cada grupo e a tática inteira, incluindo os nomes de autor " +
+    "que ela já tem. O login anônimo do Supabase também registra IP e navegador. Grupo parado há 30 dias é apagado. " +
+    "Para apagar antes, " + CONTATO_DO_AVISO + ".";
+  var DESCARTADA = "Uma alteração recebida estava malformada e foi ignorada.";
+  var NOME_PADRAO_DO_AUTOR = "anônimo";   // o autor de quem não preencheu o campo (tactics.js): não é um nome
   var MAPA_DE_OUTRA_PAGINA = "A tática desse grupo é de outro mapa e a página dele não abriu.";
   var LEVANDO = "Esse grupo é de outro mapa: indo para a página dele…";
   var MAPA_VALIDO = /^de_[a-z0-9_]{1,30}$/;   // o check de salas.mapa (supabase/migrations)
@@ -100,7 +107,8 @@ var Grupo = (function () {
     g.autor = function () { return G.fase === "dentro" ? G.nick : ""; };
     g.aoEmitir = aoEmitir;
     g.aoMudarTempo = aoMudarTempo;
-    g.aoAtualizar = aplicaPermissao;
+    g.aoAtualizar = aoAtualizar;
+    g.aoDescartar = aoDescartar;
     g.dica = dicaDoGrupo;
     g.aoIniciar = aoIniciar;
     // o servidor em memória dos testes existe desde já (não é rede: os testes conferem que fica sem pedido)
@@ -174,6 +182,29 @@ var Grupo = (function () {
     return c;
   }
 
+  /** Os nomes de autor que a tática atual já tem (criada_por e o autor de cada operação) e que sobem ao servidor
+      ao criar o grupo. Não regrava nada: só mostra (regrava-los mudaria operação, decisão 47). */
+  function nomesDeAutor() {
+    var doc = P && P.documento();
+    if (!doc) return [];
+    var vistos = {}, lista = [];
+    [doc.criada_por].concat((doc.operacoes || []).map(function (o) { return o && o.autor; })).forEach(function (n) {
+      if (typeof n !== "string" || !n || n === NOME_PADRAO_DO_AUTOR || Object.prototype.hasOwnProperty.call(vistos, n)) return;
+      vistos[n] = true; lista.push(n);
+    });
+    return lista;
+  }
+  function aoAtualizar() {
+    aplicaPermissao();
+    // a aba "Grupo" fora do grupo mostra os nomes de autor da tática de agora: se mudaram, redesenha
+    if (G.fase !== "dentro" && $("pr-painel-grupo") && G.nomesMostrados !== nomesDeAutor().join("\u0001")) renderiza();
+  }
+  /** Chegou operação que a validação descartou (tactics.js): a dica avisa uma vez por lote. */
+  function aoDescartar() {
+    G.recusa = { texto: DESCARTADA, desfeita: false, ate: Date.now() + DURACAO_DA_RECUSA_MS };
+    expiraDaDica('recusa', DURACAO_DA_RECUSA_MS);
+  }
+
   /** O que impede uma tática de virar grupo, ou "". */
   function impedimento(doc) {
     var grande = doc.operacoes.filter(function (o) { return Sala.tamanhoNoServidor(o) > Sala.MAX_BYTES_DA_OPERACAO; });
@@ -244,7 +275,10 @@ var Grupo = (function () {
     }).then(function (linhas) {
       if (!linhas) return null;
       var doc = Object.assign({}, info.cabecalho, { operacoes: [], contador: 0 });
-      linhas.forEach(function (l) { doc.operacoes.push(l.op); doc.contador = Math.max(doc.contador, l.op.seq || 0); });
+      linhas.forEach(function (l) {
+        doc.operacoes.push(l.op);
+        if (l.op && typeof l.op.seq === "number" && isFinite(l.op.seq)) doc.contador = Math.max(doc.contador, l.op.seq);
+      });
       var erro = P.usaDocumento(doc);
       if (erro) { s.sai(); throw { texto: "A tática do grupo não abre aqui: " + erro + "." }; }
       guardaNick(nick);
@@ -371,9 +405,12 @@ var Grupo = (function () {
     // o horário do servidor em ms (o Supabase manda texto ISO; a sala falsa, número)
     var em = typeof l.criada_em === "number" ? l.criada_em : Date.parse(l.criada_em);
     var u = G.ultimo;
-    if (!u) G.ultimo = { lamport: l.lamport, criada_em: em };
+    // o Lamport de uma operação que a validação recusa não move o ponto da reconexão (um número gigante
+    // faria a busca seguinte pular as operações boas)
+    var lamport = P.operacaoValida(l.op) ? l.lamport : 0;
+    if (!u) G.ultimo = { lamport: lamport, criada_em: em };
     else {
-      if (l.lamport > u.lamport) u.lamport = l.lamport;
+      if (lamport > u.lamport) u.lamport = lamport;
       if (em > u.criada_em) u.criada_em = em;
     }
   }
@@ -388,7 +425,7 @@ var Grupo = (function () {
 
   function aplicaChegadas() {
     var lote = G.chegando; G.chegando = [];
-    var deFora = lote.filter(function (l) { return l.autor !== G.uid; });
+    var deFora = lote.filter(function (l) { return l.autor !== G.uid && P.operacaoValida(l.op); });
     var estadoAntes = P.estado();
     P.recebe(lote.map(function (l) { return l.op; }));
     if (deFora.length) etiqueta(deFora[deFora.length - 1].op, estadoAntes);
@@ -748,6 +785,21 @@ var Grupo = (function () {
     }
   }
 
+  /** B-3: o aviso de privacidade antes de criar ou entrar. `comNomes`: ao criar, lista os nomes de autor da tática
+      que vão para o servidor (o campo "autor" da prancheta). Tudo passa por esc(); o contato é um link para abrir uma
+      issue no GitHub (o site não tem e-mail). */
+  function avisoDePrivacidade(comNomes) {
+    var i = O_QUE_GUARDA.lastIndexOf(CONTATO_DO_AVISO);
+    var texto = esc(O_QUE_GUARDA.slice(0, i)) + '<a href="' + esc(LINK_DO_CONTATO) + '" target="_blank" rel="noopener noreferrer">' +
+      esc(CONTATO_DO_AVISO) + "</a>" + esc(O_QUE_GUARDA.slice(i + CONTATO_DO_AVISO.length));
+    var nomes = comNomes ? nomesDeAutor() : [];
+    G.nomesMostrados = comNomes ? nomes.join("\u0001") : G.nomesMostrados;
+    var autores = nomes.length
+      ? '<p class="gr-autores" id="gr-autores">Esta tática tem estes nomes de autor, que vão para o servidor: ' + esc(nomes.join(", ")) + ".</p>"
+      : "";
+    return '<div class="gr-aviso info gr-guarda"><span class="ico" aria-hidden="true">i</span><div><p id="gr-guarda-texto">' + texto + "</p>" + autores + "</div></div>";
+  }
+
   function renderiza() {
     var painel = $("pr-painel-grupo");
     if (!painel) return;
@@ -769,7 +821,8 @@ var Grupo = (function () {
         campoComErro("gr-nick", "Seu nick", G.form.nick, ' maxlength="24" autocomplete="nickname"', "nick") +
         '<button type="button" class="pr-b gr-principal gr-largo" id="gr-entrar-convite" data-acao="entrar-convite"' + (ocupadoC ? " disabled" : "") + ">" +
         esc(textoDoConvite()) + "</button>" +
-        '<button type="button" class="pr-b gr-largo gr-outro" data-acao="convite-outro"' + (ocupadoC ? " disabled" : "") + ">Criar grupo ou usar outro código</button></div>";
+        '<button type="button" class="pr-b gr-largo gr-outro" data-acao="convite-outro"' + (ocupadoC ? " disabled" : "") + ">Criar grupo ou usar outro código</button></div>" +
+        avisoDePrivacidade(false);
     } else if (G.fase !== "dentro") {
       G.convite = null;
       var ocupado = G.fase === "entrando";
@@ -780,7 +833,7 @@ var Grupo = (function () {
         '<div class="gr-ou" aria-hidden="true">ou</div>' +
         campoComErro("gr-codigo", "Código do grupo", G.form.codigo, ' maxlength="8" autocomplete="off" spellcheck="false"', "codigo", "codigo") +
         '<button type="button" class="pr-b gr-largo" data-acao="entrar"' + (ocupado ? " disabled" : "") + ">Entrar num grupo</button>" +
-        '<div class="gr-aviso info gr-guarda"><span class="ico" aria-hidden="true">i</span><p>' + esc(O_QUE_GUARDA) + "</p></div>";
+        avisoDePrivacidade(true);
     } else {
       h += '<div class="gr-codigo-linha"><span class="gr-rotulo">Código</span> <span class="gr-codigo" id="gr-codigo-sala">' + esc(G.codigo) + "</span>" +
         (G.papel === "lider" ? '<button type="button" class="pr-b" data-acao="copiar">Copiar link</button>' : "") + "</div>";
@@ -834,7 +887,7 @@ var Grupo = (function () {
       criar: criar, entrar: entrar, sair: sair, renderiza: renderiza, sincroniza: sincroniza,
       impedimento: impedimento, linkDaSala: linkDaSala,
       DURACAO_DA_ETIQUETA_MS: DURACAO_DA_ETIQUETA_MS, RECUSA: RECUSA, INDISPONIVEL: INDISPONIVEL, SO_NO_SITE: SO_NO_SITE,
-      O_QUE_GUARDA: O_QUE_GUARDA
+      O_QUE_GUARDA: O_QUE_GUARDA, DESCARTADA: DESCARTADA, LINK_DO_CONTATO: LINK_DO_CONTATO, nomesDeAutor: nomesDeAutor
     }
   };
 })();

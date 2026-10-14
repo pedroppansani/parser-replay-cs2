@@ -30,8 +30,15 @@ Arquivos: `supabase/migrations/` (cinco migrações), `dashboard/web/sala.js` (c
 | Expulsos (sala, uuid) | `grupos.expulsos` | ninguém pela API | com a sala |
 | Presença (quem está online) e o cabeçote da líder | Realtime (Presence e Broadcast) | membros conectados ao canal | não fica guardado |
 
-A tela diz, perto do botão: "O servidor guarda só o nick que você escolher, quem está em cada grupo e as
-alterações da tática. O login é anônimo: sem e-mail, sem senha. Grupo parado há 30 dias é apagado."
+A tela diz, perto do botão (B-3 da revisão de segurança, fase 16b): "O servidor guarda o nick, quem está em
+cada grupo e a tática inteira, incluindo os nomes de autor que ela já tem. O login anônimo do Supabase também
+registra IP e navegador. Grupo parado há 30 dias é apagado. Para apagar antes, peça no GitHub." ("peça no
+GitHub" é um link para abrir uma issue no repositório `pedroppansani/parser-replay-cs2`: o site não tem e-mail
+nenhum.) Antes de **criar** o grupo, se a tática já tem nomes no campo "autor" (o `criada_por` do cabeçalho e o
+`autor` de cada operação, fora o padrão "anônimo"), a aba também diz quais são: "Esta tática tem estes nomes de
+autor, que vão para o servidor: X, Y." As operações **não** são regravadas com o nick do grupo: isso mudaria
+operação, contra a decisão 47. O texto está em `Grupo._interno.O_QUE_GUARDA` (`dashboard/web/grupo.js`) e
+`tests/test_grupos_validacao.py` compara os dois.
 
 ## 3. O que a chave pública permite e o que não permite
 

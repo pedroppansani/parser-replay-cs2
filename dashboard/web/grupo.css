@@ -32,6 +32,9 @@
 .gr-aviso { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; background: var(--superficie-2); border: 1px solid var(--borda);
   border-radius: var(--r-md); color: var(--tinta-2); font-size: var(--t-sm); }
 .gr-aviso p { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.gr-aviso > div { min-width: 0; }
+.gr-aviso .gr-autores { margin-top: 6px; }
+.gr-aviso a { color: inherit; text-decoration: underline; }
 .gr-aviso .ico { flex: none; display: inline-grid; place-items: center; width: 1.3em; height: 1.3em; border-radius: 50%; border: 1.5px solid var(--tinta-2);
   color: var(--tinta); font-weight: 700; font-size: 0.85em; }
 .gr-aviso.erro { border-color: var(--erro); color: var(--tinta); }
