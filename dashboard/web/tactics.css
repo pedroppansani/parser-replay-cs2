@@ -247,6 +247,15 @@ h3 { margin: 0 0 4px; font-size: 15px; }
 @media (max-width: 640px) {
   .pr-aviso-celular { display: block; margin: 8px 16px 0; padding: 8px 12px; border: 1px solid var(--borda); border-radius: var(--r-md);
     background: var(--superficie); color: var(--tinta-2); font-size: var(--t-sm); }
+  /* o texto vem do JS depois do primeiro desenho: enquanto vazio, reserva a altura que ele terá em 375 px
+     (3 linhas), para a grade não descer 65 px quando ele entrar (CLS da prancheta, §19.8) */
+  .pr-aviso-celular:empty { min-height: 65.5px; }
+  /* e a linha própria desde o início: com o seletor de mapa ainda vazio (estreito) ele cabia ao lado do título e descia
+     quando o JS preenchia as opções */
+  .pr-aviso-celular { flex: 1 1 100%; }
+  /* a barra de ferramentas e a linha de dica são montadas pelo JS: antes disso, reserva os 200 px que elas ocupam em 375 px
+     (Reproduzir de largura cheia, o resto em uma ou duas linhas, e a dica), para o mapa não descer */
+  #pr-barra:empty { min-height: 200px; }
   .pr-aviso-celular::before { content: "i"; display: inline-grid; place-items: center; width: 1.3em; height: 1.3em; margin-right: 8px;
     border-radius: 50%; border: 1.5px solid var(--tinta-2); color: var(--tinta); font-weight: 700; font-size: 0.85em; }
   .pr-barra [data-ferramenta="caneta"], .pr-barra [data-ferramenta="seta"], .pr-barra [data-ferramenta="linha"],
