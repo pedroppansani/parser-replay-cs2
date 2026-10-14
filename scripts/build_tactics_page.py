@@ -42,6 +42,7 @@ def mapas_disponiveis() -> list[str]:
                   if not p.stem.endswith(SUFIXOS_NAO_COMPETITIVOS))
 
 
+from scripts.csp import hosts_do_projeto  # noqa: E402
 from scripts.meta_da_pagina import meta_tags  # noqa: E402
 from metrics.tactics import modelo3_para_a_pagina  # noqa: E402
 
@@ -114,7 +115,9 @@ def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | Non
         .replace("<!--__META__-->", meta_tags(
             f"Prancheta tática · {rotulos.get(mapa, mapa)}",
             f"Monte uma tática na {rotulos.get(mapa, mapa)}: jogadores, granadas reais do corpus e passos.",
-            site, arquivo_da_pagina(mapa)))
+            site, arquivo_da_pagina(mapa),
+            # só a prancheta fala com o Supabase: o host do projeto entra no connect-src dela e de mais nenhuma página
+            hosts_de_conexao=hosts_do_projeto(grupo.get("url")) if grupo and grupo.get("modo") == "supabase" else None))
     )
 
 

@@ -368,7 +368,7 @@ def test_a_lider_cria_pela_aba_e_controla_o_grupo(contexto, pagina_grupo):
     pg = abre_grupo(contexto, pagina_grupo)
     pg.evaluate("() => Prancheta._interno.abaDoPainel('grupo')")
     assert Grupo_nada_pedido(pg)
-    assert "O servidor guarda só o nick" in pg.inner_text("#pr-painel-grupo")
+    assert "O servidor guarda o nick, quem está em cada grupo e a tática inteira" in pg.inner_text("#pr-painel-grupo")   # B-3: texto novo do aviso
     pg.fill("#gr-nick", "nomad")
     pg.click('[data-acao="criar"]')
     pg.wait_for_function("() => Grupo._interno.G().fase === 'dentro'")

@@ -79,3 +79,15 @@
   operação) e o cliente confere a sessão guardada e refaz o login sozinho (L-5).
 - **A tática que não vira grupo** deixa de ser a de "números de ordem repetidos" só no banco (o estado inicial não tem o
   índice único por autor e Lamport); o cliente continua recusando por cautela (`impedimento`), sem mudar.
+
+## Fase 16b (cliente): revisão de segurança dos grupos
+
+- **Uma validação de operação só.** `problemaDaOperacao` (JS) e `problemas_da_operacao` (Python) conferem formato e
+  tipo de cada campo de toda operação que entra de fora: arquivo importado, tática guardada no navegador, documento
+  da sala e operação ao vivo. A inválida é descartada com a dica "Uma alteração recebida estava malformada e foi
+  ignorada." (uma por lote) e nunca vai ao log; nenhuma operação muda de significado, e o que o app emite continua
+  passando. Se uma operação válida ainda derruba o `reaplica`, o lote é desfeito. A tática salva que a validação
+  recusa abre como tática nova e o documento vai para a chave `...:recusada` do `localStorage`.
+- **Aviso de privacidade completo** (contato por issue do GitHub; nomes de autor listados antes de criar o grupo, sem
+  regravar operação) e **CSP por meta** em todas as páginas, com o host do Supabase só no `connect-src` da prancheta.
+  Detalhes e testes em `notas/seguranca/grupos.md`, seção 9.

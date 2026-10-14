@@ -31,8 +31,15 @@ Arquivos: `supabase/migrations/` (sete migrações: 1 a 5 da fase 13; 6 e 7 da f
 | Expulsos (sala, uuid) | `grupos.expulsos` | ninguém pela API | com a sala |
 | Presença (quem está online) e o cabeçote da líder | Realtime (Presence e Broadcast) | membros conectados ao canal | não fica guardado |
 
-A tela diz, perto do botão: "O servidor guarda só o nick que você escolher, quem está em cada grupo e as
-alterações da tática. O login é anônimo: sem e-mail, sem senha. Grupo parado há 30 dias é apagado."
+A tela diz, perto do botão (B-3 da revisão de segurança, fase 16b): "O servidor guarda o nick, quem está em
+cada grupo e a tática inteira, incluindo os nomes de autor que ela já tem. O login anônimo do Supabase também
+registra IP e navegador. Grupo parado há 30 dias é apagado. Para apagar antes, peça no GitHub." ("peça no
+GitHub" é um link para abrir uma issue no repositório `pedroppansani/parser-replay-cs2`: o site não tem e-mail
+nenhum.) Antes de **criar** o grupo, se a tática já tem nomes no campo "autor" (o `criada_por` do cabeçalho e o
+`autor` de cada operação, fora o padrão "anônimo"), a aba também diz quais são: "Esta tática tem estes nomes de
+autor, que vão para o servidor: X, Y." As operações **não** são regravadas com o nick do grupo: isso mudaria
+operação, contra a decisão 47. O texto está em `Grupo._interno.O_QUE_GUARDA` (`dashboard/web/grupo.js`) e
+`tests/test_grupos_validacao.py` compara os dois.
 
 ## 3. O que a chave pública permite e o que não permite
 
@@ -758,6 +765,8 @@ configuração; roda depois do cartão 10).
   **Operação nova da prancheta exige migração nova** que troque essa função; sem ela o servidor recusa a
   operação (`operacao_invalida`). O servidor continua sem interpretar a tática: só confere a forma mínima
   (id, tipo da lista, autor, `em` em texto, `seq`).
+  O CLIENTE confere, além disso, toda operação que recebe (seção 9): uma operação desconhecida ou
+  malformada é descartada com aviso, nunca aplicada.
 - **Expulsão e Realtime:** o Realtime guarda a autorização do canal até o JWT expirar ou ser renovado
   (documentação "Realtime Authorization"). As operações (Postgres Changes) param na hora, porque o RLS é
   conferido a cada mensagem; a presença e o cabeçote da líder podem continuar chegando ao expulso até o
@@ -810,3 +819,32 @@ contra o projeto real, escrita e ainda não rodada). `GRUPOS_ATIVOS` continua `F
 Medições: `supabase/medicao/maior_round_na_prancheta.json` (1.152 rounds; maior: 68 operações, 88.835 bytes) e
 `supabase/medicao/criacao_do_grupo.json` (criar o grupo do maior round, antes e depois). A parte B ampliada (B12 a B19, B20)
 está em `tests/test_grupos_integracao.py`; B16 depende de B-1 (cliente, outra fase).
+
+## 9. Fase 16b: o que mudou no cliente (B-1, B-3, L-6 da revisão de segurança)
+
+- **B-1, validar toda operação.** `problemaDaOperacao` (`dashboard/web/tactics.js`) e a espelhada
+  `metrics.tactics.problemas_da_operacao` são a ÚNICA validação de operação: formato e TIPO de cada campo
+  (identificador, texto, número, lugar do mapa, arremesso), `seq` inteiro de 1 a 999.999.999.999.999 (o teto do
+  servidor) e nomes reservados do objeto (`__proto__`, `constructor`...) recusados como chave. O arquivo
+  importado (`problemas`), a tática guardada no navegador (`abre`), o documento da sala (`usaDocumento`) e cada
+  operação ao vivo (`recebeDeFora`, que o `sincroniza` também usa) passam por ela; `problemas` só soma o que
+  depende do log inteiro (id repetido, alvo do desfazer, contador). Operação recebida e recusada nem entra no
+  log; se uma que passou na validação ainda fizer o `reaplica` lançar, o lote é desfeito e reaplicado uma por
+  uma. A dica diz "Uma alteração recebida estava malformada e foi ignorada." uma vez por lote, e o console
+  registra só a contagem (nunca tipo, autor ou campo). O Lamport de uma operação recusada não move o ponto da
+  reconexão. A tática já salva que a validação recusa abre como tática nova e o documento vai inteiro para a
+  chave `prancheta:tatica:<id>:recusada` do `localStorage`. **O que não é recusado:** um `passo` que ainda não
+  existe no log (a operação é estruturalmente válida; o `aplica` a ignora, e o passo pode chegar depois). Testes:
+  `tests/test_tactics.py` (Python), `tests/test_tactics_browser.py::test_espelho_da_validacao_de_operacao_com_as_malformadas`
+  (JS e Python decidem igual) e `tests/test_grupos_validacao.py` (SalaFalsa, `ServidorFalso.injeta`).
+- **B-3, aviso de privacidade.** O texto da seção 2, com o contato por issue do GitHub e a lista dos nomes de
+  autor antes de criar o grupo. Nenhuma operação é regravada.
+- **L-6, CSP e entrega.** Toda página do site tem `<meta http-equiv="Content-Security-Policy">` (`scripts/csp.py`,
+  via `meta_tags`): `default-src 'self'`, scripts e estilos inline, `style-src` com `fonts.googleapis.com`,
+  `font-src fonts.gstatic.com`, `img-src 'self' data:`, `object-src 'none'`, `base-uri 'none'`. O
+  `connect-src` é `'self'` em todas as páginas; só a **prancheta com a configuração do grupo** soma o host do
+  projeto (`https://<proj>.supabase.co` e `wss://`), e o build para se a URL não for desse formato. Aberta como
+  arquivo local (`file://`) a CSP funciona sem violação (`tests/test_csp.py`). As Actions do CI estão fixadas por
+  SHA (com a versão em comentário), `.env.*` está no `.gitignore` e `.github/dependabot.yml` cobre Actions e pip.
+  Ligar o secret scanning é nas configurações do repositório (com o Pedro). Aceitos sem mudança: L-4, L-7, L-10, L-11.
+

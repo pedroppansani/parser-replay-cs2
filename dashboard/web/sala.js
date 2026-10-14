@@ -500,6 +500,17 @@ var Sala = (function () {
       enviadasPor[uid] = feitas;
       return { ok: true };
     };
+    /** SÓ PARA TESTES (B-1 da revisão de segurança): o que um atacante faz pela API direta. Insere a linha SEM
+        passar pela forma mínima de envia_ (o servidor real só confere id, tipo, autor e seq) e entrega como o
+        Postgres Changes entrega. */
+    srv.injeta = function (sala, uid, op) {
+      var l = { id: proximoId++, sala_id: sala, autor: uid, lamport: op && op.seq, op: JSON.parse(JSON.stringify(op)), criada_em: agora() };
+      ops.push(l);
+      conexoes.forEach(function (c) {
+        if (c.sala === sala) entrega(c, function () { if (ehMembro(sala, c.uid)) c.o.aoReceber(JSON.parse(JSON.stringify(l))); });
+      });
+      return l;
+    };
     srv.sala_ = function (uid, a) {
       var x = salas[a.sala];
       if (!x || !(ehMembro(x.id, uid) || x.lider === uid)) return null;

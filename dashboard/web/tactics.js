@@ -662,6 +662,172 @@ var Prancheta = (function () {
   function ehInteiro(v) { return typeof v === "number" && isFinite(v) && Math.floor(v) === v; }
   function ehNumero(v) { return typeof v === "number" && isFinite(v); }
 
+  /* ---------------------------------------------------------------------
+     UMA validação de operação (B-1 da revisão de segurança dos grupos). Toda
+     operação que entra de fora -- arquivo importado, tática guardada no
+     navegador, documento e operações ao vivo do grupo -- passa por
+     `problemaDaOperacao`, a espelhada de metrics.tactics.problemas_da_operacao
+     (há teste de espelho com a lista de operações malformadas). `problemas`
+     só soma o que depende do log inteiro (id repetido, alvo do desfazer).
+     --------------------------------------------------------------------- */
+  var SEQ_MAXIMO = 999999999999999;            // 15 dígitos: o mesmo teto do servidor do grupo
+  var ID_DA_OPERACAO = /^[0-9A-Za-z_-]{1,64}$/;   // o formato que o servidor exige em op.id
+  var TAMANHO_MAXIMO_DA_CHAVE = 128;
+  // nomes que um objeto já tem: nunca são chave de peça, passo, traço... (estado.pecas[chave])
+  var NOMES_RESERVADOS = ["__proto__", "constructor", "prototype", "hasOwnProperty", "isPrototypeOf",
+                          "propertyIsEnumerable", "toLocaleString", "toString", "valueOf",
+                          "__defineGetter__", "__defineSetter__", "__lookupGetter__", "__lookupSetter__"];
+  var CAMPOS_COMUNS = ["id", "seq", "autor", "em", "tipo"];
+  var CAMPOS_CHAVE = ["passo", "peca", "granada", "traco", "ponto", "alvo"];
+  var CAMPOS_TEXTO = ["titulo", "rotulo"];
+
+  function ehObjeto(v) { return v !== null && typeof v === "object" && !Array.isArray(v); }
+  function tamanhoDoTexto(s) { return Array.from(s).length; }   // pontos de código, como o len do Python
+  function seqValido(v) { return ehInteiro(v) && v >= 1 && v <= SEQ_MAXIMO; }
+  function ehChave(v) {
+    return typeof v === "string" && tamanhoDoTexto(v) >= 1 && tamanhoDoTexto(v) <= TAMANHO_MAXIMO_DA_CHAVE &&
+      NOMES_RESERVADOS.indexOf(v) < 0;
+  }
+  /** Lista de 2 a 3 números finitos (um lugar do mapa). */
+  function ehLugar(v) { return Array.isArray(v) && v.length >= 2 && v.length <= 3 && v.every(ehNumero); }
+
+  /** O TIPO de cada campo (o que aplica e a tela supõem). */
+  function problemasDeTipo(op, onde) {
+    var erros = [], t = op.tipo;
+    OPERACOES[t].forEach(function (c) {
+      if (CAMPOS_CHAVE.indexOf(c) >= 0 && !ehChave(op[c])) erros.push(onde + ": '" + c + "' não é um identificador");
+      else if (CAMPOS_TEXTO.indexOf(c) >= 0 && typeof op[c] !== "string") erros.push(onde + ": '" + c + "' não é texto");
+    });
+    if (t === "cria_peca" || t === "move_peca") {   // nos outros tipos, problemasDosCampos já diz "x e y precisam ser números"
+      ["x", "y"].forEach(function (c) { if (!ehNumero(op[c])) erros.push(onde + ": '" + c + "' não é número"); });
+    }
+    if (t === "nota_de_evento" && typeof op.texto !== "string") erros.push(onde + ": 'texto' não é texto");
+    if (t === "define_funcao" && op.funcao !== null && typeof op.funcao !== "string") erros.push(onde + ": 'funcao' não é texto nem null");
+    if (t === "cria_granada" || t === "move_granada") {
+      ["origem", "destino"].forEach(function (c) {
+        if (!ehLugar(op[c])) erros.push(onde + ": '" + c + "' não é um lugar (2 ou 3 números)");
+      });
+    }
+    if (t === "cria_granada") {
+      if (op.jogador !== undefined && op.jogador !== null && !ehChave(op.jogador)) erros.push(onde + ": 'jogador' não é um identificador");
+      var arr = op.arremesso;
+      if (arr !== undefined && arr !== null) {
+        if (!ehObjeto(arr)) erros.push(onde + ": arremesso não é um objeto");
+        else {
+          // só o TIPO do que existe; a falta de campo é de "arremesso real sem ..."
+          if (["id", "comando"].some(function (c) { return tem(arr, c) && typeof arr[c] !== "string"; })) erros.push(onde + ": arremesso com id ou comando que não é texto");
+          if (["origem", "destino"].some(function (c) { return tem(arr, c) && !ehLugar(arr[c]); })) erros.push(onde + ": arremesso com origem ou destino que não é lugar");
+          if (["pitch", "yaw"].some(function (c) { return tem(arr, c) && !ehNumero(arr[c]); })) erros.push(onde + ": arremesso com pitch ou yaw que não é número");
+          if (arr.fontes !== undefined && arr.fontes !== null && !ehObjeto(arr.fontes)) erros.push(onde + ": fontes do arremesso não é um objeto");
+        }
+      }
+    }
+    if (t === "cria_traco") {
+      if (op.texto !== undefined && op.texto !== null && typeof op.texto !== "string") erros.push(onde + ": 'texto' não é texto");
+      if (typeof op.cor !== "string") erros.push(onde + ": cor não é texto");
+      if (!Array.isArray(op.pontos)) erros.push(onde + ": 'pontos' não é uma lista");
+      else if (!op.pontos.every(ehLugar)) erros.push(onde + ": ponto do traço malformado");
+    }
+    if (t === "move_ponto" && op.yaw !== undefined && op.yaw !== null && !ehNumero(op.yaw)) erros.push(onde + ": 'yaw' não é número");
+    if (t === "cria_caminho" && Array.isArray(op.pontos)) {
+      var ruim = op.pontos.some(function (pt) {
+        return ehObjeto(pt) && ((pt.yaw !== undefined && pt.yaw !== null && !ehNumero(pt.yaw)) ||
+          (pt.nivel !== undefined && pt.nivel !== null && !(ehInteiro(pt.nivel) && pt.nivel >= 0)));
+      });
+      if (ruim) erros.push(onde + ": yaw ou nível do ponto do caminho inválido");
+    }
+    return erros;
+  }
+
+  /** Regras de VALOR de uma operação cujos campos já estão presentes e com o tipo certo. */
+  function problemasDosCampos(op, onde, andares) {
+    var erros = [];
+    if (op.tipo === "cria_peca" && LADOS.indexOf(op.lado) < 0) erros.push(onde + ": lado desconhecido: " + op.lado);
+    if ((op.tipo === "cria_peca" || op.tipo === "gira_peca") && op.yaw !== undefined && op.yaw !== null &&
+        !(ehNumero(op.yaw) && op.yaw >= 0 && op.yaw < 360)) erros.push(onde + ": yaw fora de [0, 360)");
+    if (tem(op, "nivel")) {
+      if (!ehInteiro(op.nivel) || op.nivel < 0) erros.push(onde + ": nivel não é um andar");
+      else if (op.nivel >= andares) erros.push(onde + ": nivel " + op.nivel + " num mapa de " + andares + " andar(es)");
+    }
+    if (tem(op, "dura_passos") && op.dura_passos !== null && !(ehInteiro(op.dura_passos) && op.dura_passos >= 1)) {
+      erros.push(onde + ": dura_passos não é inteiro >= 1 nem null");
+    }
+    if (op.tipo === "define_duracao" && !(ehNumero(op.segundos) && op.segundos > 0)) erros.push(onde + ": duração não é positiva");
+    if (op.tipo === "cria_granada" && ARMAS.indexOf(op.arma) < 0) erros.push(onde + ": granada desconhecida: " + op.arma);
+    if (op.tipo === "cria_granada" && tem(op, "t") && !ehNumero(op.t)) erros.push(onde + ": horário da granada não é número");
+    if (op.tipo === "cria_granada" && ["voo_s", "efeito_s"].some(function (k) { return tem(op, k) && !(ehNumero(op[k]) && op[k] >= 0); })) {
+      erros.push(onde + ": voo e efeito da granada precisam ser números >= 0");
+    }
+    if (op.tipo === "cria_granada" && tem(op, "origem_desconhecida")) {
+      if (typeof op.origem_desconhecida !== "boolean") erros.push(onde + ": origem_desconhecida não é verdadeiro/falso");
+      else if (op.origem_desconhecida) {
+        if (op.origem[0] !== op.destino[0] || op.origem[1] !== op.destino[1]) erros.push(onde + ": origem desconhecida exige origem igual ao destino");
+        if (op.arremesso) erros.push(onde + ": origem desconhecida não combina com arremesso real");
+      }
+    }
+    if (op.tipo === "cria_granada" && op.arremesso) {
+      ["id", "comando", "origem", "destino", "pitch", "yaw"].forEach(function (c) {
+        if (!tem(op.arremesso, c)) erros.push(onde + ": arremesso real sem '" + c + "'");
+      });
+    }
+    if (op.tipo === "desenha_granada") {
+      if (ARMAS_DESENHADAS.indexOf(op.arma) < 0) erros.push(onde + ": tipo de granada desenhada desconhecido: " + op.arma);
+      if (!ehNumero(op.x) || !ehNumero(op.y)) erros.push(onde + ": x e y precisam ser números");
+      if (tem(op, "area") && typeof op.area !== "boolean") erros.push(onde + ": área precisa ser verdadeiro ou falso");
+    }
+    if (op.tipo === "define_area_desenho" && typeof op.area !== "boolean") erros.push(onde + ": área precisa ser verdadeiro ou falso");
+    if (op.tipo === "cria_traco") {
+      if (FERRAMENTAS_TRACO.indexOf(op.ferramenta) < 0) erros.push(onde + ": ferramenta desconhecida");
+      if (!/^#[0-9a-f]{6}$/.test(String(op.cor))) erros.push(onde + ": cor fora do formato #rrggbb");
+      if (ESPESSURAS.indexOf(op.espessura) < 0) erros.push(onde + ": espessura fora de " + ESPESSURAS.join("/"));
+      if (!op.pontos.length) erros.push(onde + ": sem pontos");
+    }
+    if (op.tipo === "cria_caminho") {
+      // espelho de metrics/tactics.problemas (pontos do caminho)
+      if (!Array.isArray(op.pontos) || !op.pontos.length) erros.push(onde + ": caminho sem pontos");
+      else {
+        var ruim = op.pontos.filter(function (pt) { return !pt || !ehNumero(pt.t) || !ehNumero(pt.x) || !ehNumero(pt.y); });
+        if (ruim.length) erros.push(onde + ": ponto do caminho sem t, x ou y numéricos");
+        op.pontos.forEach(function (pt) {
+          if (!pt) return;
+          if (M3 && pt.modo !== undefined && pt.modo !== null && M3.MODOS_DE_ANDAR.indexOf(pt.modo) < 0) erros.push(onde + ": modo fora da lista");
+          if ((tem(pt, "fora") && typeof pt.fora !== "boolean") || (tem(pt, "morte") && typeof pt.morte !== "boolean")) {
+            erros.push(onde + ": fora e morte do ponto precisam ser verdadeiro ou falso");
+          }
+          if (pt.morte && !pt.fora) erros.push(onde + ": ponto de morte sem sair do mapa (fora)");
+        });
+      }
+    }
+    if (["move_ponto", "planta_bomba"].indexOf(op.tipo) >= 0 && !(ehNumero(op.t) && ehNumero(op.x) && ehNumero(op.y))) {
+      erros.push(onde + ": t, x e y precisam ser números");
+    }
+    return erros;
+  }
+
+  /** Problemas de UMA operação ("" de problemas = está boa); nunca lança. `n` é a posição no arquivo (opcional). */
+  function problemaDaOperacao(op, andares, versao, n) {
+    var base = n === undefined || n === null ? "operação" : "operação " + n;
+    if (!ehObjeto(op)) return [base + " não é um objeto"];
+    if (CAMPOS_COMUNS.some(function (c) { return !tem(op, c); })) return [base + " incompleta"];
+    var erros = [];
+    if (typeof op.id !== "string" || !ID_DA_OPERACAO.test(op.id) || NOMES_RESERVADOS.indexOf(op.id) >= 0) erros.push(base + ": id fora do formato");
+    if (typeof op.autor !== "string" || tamanhoDoTexto(op.autor) < 1 || tamanhoDoTexto(op.autor) > 64) erros.push(base + ": autor fora do formato");
+    if (typeof op.em !== "string") erros.push(base + ": 'em' não é texto");
+    if (!seqValido(op.seq)) erros.push(base + ": número de ordem inválido");
+    if (typeof op.tipo !== "string") return erros.concat([base + ": tipo fora do formato"]);
+    if (!tem(OPERACOES, op.tipo)) return erros.concat(["operação desconhecida: " + op.tipo]);
+    var onde = base + " (" + op.tipo + ")";
+    var sem = OPERACOES[op.tipo].filter(function (c) { return !tem(op, c); });
+    sem.forEach(function (c) { erros.push("'" + op.tipo + "' sem '" + c + "'"); });
+    if (OPERACOES_DO_FORMATO_3.indexOf(op.tipo) >= 0 && (versao || FORMATO) < 3) {
+      erros.push(onde + ": operação do formato 3 num arquivo do formato " + versao);
+    }
+    if (sem.length) return erros;
+    var deTipo = problemasDeTipo(op, onde);
+    if (deTipo.length) return erros.concat(deTipo);
+    return erros.concat(problemasDosCampos(op, onde, andares));
+  }
+
   /** Os problemas do arquivo, todos de uma vez -- as mesmas regras de
       metrics.tactics.problemas, para a importação recusar o que o Python
       recusaria. */
@@ -677,75 +843,20 @@ var Prancheta = (function () {
     if (doc.origem !== undefined && doc.origem !== null) erros = erros.concat(problemasDaOrigem(doc.origem));
     if (!Array.isArray(doc.operacoes)) return erros;
     var porId = {}, vistos = {}, maior = 0;
-    doc.operacoes.forEach(function (op) { if (op && op.id) porId[op.id] = op; });
+    doc.operacoes.forEach(function (op) { if (ehObjeto(op) && typeof op.id === "string") porId[op.id] = op; });
     doc.operacoes.forEach(function (op, n) {
-      var onde = "operação " + n + " (" + (op && op.tipo) + ")";
-      if (!op || !op.id || !op.tipo || !op.autor || !tem(op, "seq") || !tem(op, "em")) {
-        erros.push("operação " + n + " incompleta"); return;
+      var deOp = problemaDaOperacao(op, andares, doc.versao, n);
+      erros = erros.concat(deOp);
+      if (!ehObjeto(op) || CAMPOS_COMUNS.some(function (c) { return !tem(op, c); })) return;
+      var onde = "operação " + n + " (" + op.tipo + ")";
+      // o que só se vê com o log inteiro: id repetido, maior número de ordem e a operação de desfazer
+      if (typeof op.id === "string") {
+        if (tem(vistos, op.id)) erros.push("operação repetida: " + op.id);
+        vistos[op.id] = true;
       }
-      if (!OPERACOES[op.tipo]) { erros.push("operação desconhecida: " + op.tipo); return; }
-      var sem = OPERACOES[op.tipo].filter(function (c) { return !tem(op, c); });
-      sem.forEach(function (c) { erros.push("'" + op.tipo + "' sem '" + c + "'"); });
-      if (OPERACOES_DO_FORMATO_3.indexOf(op.tipo) >= 0 && (doc.versao || FORMATO) < 3) {
-        erros.push(onde + ": operação do formato 3 num arquivo do formato " + doc.versao);
-      }
-      if (vistos[op.id]) erros.push("operação repetida: " + op.id);
-      vistos[op.id] = true;
-      if (!ehInteiro(op.seq) || op.seq < 1) erros.push(onde + ": número de ordem inválido");
-      else maior = Math.max(maior, op.seq);
-      if (sem.length) return;
-      if (op.tipo === "cria_peca" && LADOS.indexOf(op.lado) < 0) erros.push(onde + ": lado desconhecido: " + op.lado);
-      if ((op.tipo === "cria_peca" || op.tipo === "gira_peca") && op.yaw !== undefined && op.yaw !== null &&
-          !(ehNumero(op.yaw) && op.yaw >= 0 && op.yaw < 360)) erros.push(onde + ": yaw fora de [0, 360)");
-      if (tem(op, "nivel")) {
-        if (!ehInteiro(op.nivel) || op.nivel < 0) erros.push(onde + ": nivel não é um andar");
-        else if (op.nivel >= andares) erros.push(onde + ": nivel " + op.nivel + " num mapa de " + andares + " andar(es)");
-      }
-      if (tem(op, "dura_passos") && op.dura_passos !== null && !(ehInteiro(op.dura_passos) && op.dura_passos >= 1)) {
-        erros.push(onde + ": dura_passos não é inteiro >= 1 nem null");
-      }
-      if (op.tipo === "define_duracao" && !(ehNumero(op.segundos) && op.segundos > 0)) erros.push(onde + ": duração não é positiva");
-      if (op.tipo === "cria_granada" && ARMAS.indexOf(op.arma) < 0) erros.push(onde + ": granada desconhecida: " + op.arma);
-      if (op.tipo === "cria_granada" && ["voo_s", "efeito_s"].some(function (k) { return tem(op, k) && !(ehNumero(op[k]) && op[k] >= 0); })) {
-        erros.push(onde + ": voo e efeito da granada precisam ser números >= 0");
-      }
-      if (op.tipo === "cria_granada" && tem(op, "origem_desconhecida")) {
-        if (typeof op.origem_desconhecida !== "boolean") erros.push(onde + ": origem_desconhecida não é verdadeiro/falso");
-        else if (op.origem_desconhecida) {
-          if (op.origem[0] !== op.destino[0] || op.origem[1] !== op.destino[1]) erros.push(onde + ": origem desconhecida exige origem igual ao destino");
-          if (op.arremesso) erros.push(onde + ": origem desconhecida não combina com arremesso real");
-        }
-      }
-      if (op.tipo === "desenha_granada") {
-        if (ARMAS_DESENHADAS.indexOf(op.arma) < 0) erros.push(onde + ": tipo de granada desenhada desconhecido: " + op.arma);
-        if (!ehNumero(op.x) || !ehNumero(op.y)) erros.push(onde + ": x e y precisam ser números");
-        if (tem(op, "area") && typeof op.area !== "boolean") erros.push(onde + ": área precisa ser verdadeiro ou falso");
-      }
-      if (op.tipo === "define_area_desenho" && typeof op.area !== "boolean") erros.push(onde + ": área precisa ser verdadeiro ou falso");
-      if (op.tipo === "cria_traco") {
-        if (FERRAMENTAS_TRACO.indexOf(op.ferramenta) < 0) erros.push(onde + ": ferramenta desconhecida");
-        if (!/^#[0-9a-f]{6}$/.test(String(op.cor))) erros.push(onde + ": cor fora do formato #rrggbb");
-        if (ESPESSURAS.indexOf(op.espessura) < 0) erros.push(onde + ": espessura fora de " + ESPESSURAS.join("/"));
-        if (!Array.isArray(op.pontos) || !op.pontos.length) erros.push(onde + ": sem pontos");
-      }
-      if (op.tipo === "cria_caminho") {
-        // espelho de metrics/tactics.problemas (pontos do caminho)
-        if (!Array.isArray(op.pontos) || !op.pontos.length) erros.push(onde + ": caminho sem pontos");
-        else {
-          var ruim = op.pontos.filter(function (pt) { return !pt || !ehNumero(pt.t) || !ehNumero(pt.x) || !ehNumero(pt.y); });
-          if (ruim.length) erros.push(onde + ": ponto do caminho sem t, x ou y numéricos");
-          op.pontos.forEach(function (pt) {
-            if (!pt) return;
-            if (M3 && pt.modo !== undefined && pt.modo !== null && M3.MODOS_DE_ANDAR.indexOf(pt.modo) < 0) erros.push(onde + ": modo fora da lista");
-            if ((tem(pt, "fora") && typeof pt.fora !== "boolean") || (tem(pt, "morte") && typeof pt.morte !== "boolean")) {
-              erros.push(onde + ": fora e morte do ponto precisam ser verdadeiro ou falso");
-            }
-            if (pt.morte && !pt.fora) erros.push(onde + ": ponto de morte sem sair do mapa (fora)");
-          });
-        }
-      }
-      if (DESFAZER.indexOf(op.tipo) >= 0) {
-        var alvo = porId[op.alvo];
+      if (seqValido(op.seq)) maior = Math.max(maior, op.seq);
+      if (DESFAZER.indexOf(op.tipo) >= 0 && typeof op.alvo === "string" && !deOp.length) {
+        var alvo = tem(porId, op.alvo) ? porId[op.alvo] : null;
         if (!alvo) erros.push(onde + ": mira operação que não está no log");
         else if (DESFAZER.indexOf(alvo.tipo) >= 0) erros.push(onde + ": mira outra " + alvo.tipo);
         else if (alvo.autor !== op.autor) erros.push(onde + ": cada um só desfaz o que é seu");
@@ -888,6 +999,14 @@ var Prancheta = (function () {
         var ind = indice(); delete ind[id];
         return escreve("indice", ind);
       },
+      // a tática guardada que a validação recusou (B-1): vai para uma chave à parte, para não se perder em silêncio
+      recusa: function (id, doc) {
+        if (!escreve("tatica:" + id + ":recusada", doc)) return false;
+        A.remove("localStorage", prefixo + "tatica:" + id);
+        var ind = indice(); delete ind[id];
+        escreve("indice", ind);
+        return true;
+      },
       autor: function (novo) {
         if (novo !== undefined) escreve("autor", novo);
         return le("autor");
@@ -959,6 +1078,7 @@ var Prancheta = (function () {
        aoMudarTempo()  o cabeçote ou o play mudou por ação da pessoa
        aoAtualizar()   fim de cada atualizaTudo (o grupo liga/desliga controles)
        aoIniciar()     fim do init (o grupo monta a aba dele)
+       aoDescartar(n)  n operações recebidas foram descartadas pela validação (B-1)
        dica()          texto que vale no lugar da linha de dica, ou ""
        abas            abas extras do painel, como em ABAS_DO_PAINEL
      --------------------------------------------------------------------- */
@@ -1058,15 +1178,33 @@ var Prancheta = (function () {
     gravaAgora();
   }
 
+  var AVISO_DA_RECUSADA = "A tática que estava guardada neste navegador tinha um formato inválido e não foi aberta: " +
+    "uma cópia ficou guardada à parte e esta é uma tática nova.";
+
+  /** Abre a tática guardada. Nunca lança e nunca trava o init: documento que a validação recusa (ou que faz o
+      reaplica lançar) vai para a chave `...:recusada` do armazém, a tela volta ao que estava e devolve false. */
   function abre(id) {
     var doc = Armazem.carrega(id);
     if (!doc || VERSOES_ACEITAS.indexOf(doc.versao) < 0) return false;
-    S.doc = migra(doc);
-    S.passo = 0; S.sel = null; S.busca = null;
-    S.pilhaDesfazer = []; S.pilhaRefazer = [];
-    Armazem.aberta(cfg.mapa, S.doc.id);
-    reaplica();
-    return true;
+    var antes = { doc: S.doc, passo: S.passo, sel: S.sel, busca: S.busca, desfazer: S.pilhaDesfazer, refazer: S.pilhaRefazer };
+    var boa = false;
+    try {
+      if (!problemas(doc, ANDARES.length).length) {
+        S.doc = migra(doc);
+        S.passo = 0; S.sel = null; S.busca = null;
+        S.pilhaDesfazer = []; S.pilhaRefazer = [];
+        reaplica();
+        boa = true;
+      }
+    } catch (e) { boa = false; }
+    if (boa) { Armazem.aberta(cfg.mapa, S.doc.id); return true; }
+    S.doc = antes.doc; S.passo = antes.passo; S.sel = antes.sel; S.busca = antes.busca;
+    S.pilhaDesfazer = antes.desfazer; S.pilhaRefazer = antes.refazer;
+    if (S.doc) { try { reaplica(); } catch (e) { /* a tela já estava assim */ } }
+    if (Armazem.recusa) Armazem.recusa(id, doc);
+    console.warn("[prancheta] tática guardada recusada pela validação e movida para a chave :recusada");
+    S.aviso = AVISO_DA_RECUSADA;
+    return false;
   }
 
   function passoAtual() { return S.estado.passos[S.passo].passo; }
@@ -4174,21 +4312,44 @@ var Prancheta = (function () {
       desfazer de ninguém; a repetida (mesmo id) não entra duas vezes. O contador
       sobe como no relógio de Lamport (o mesmo da mescla). */
   function recebeDeFora(ops) {
-    var ja = {};
+    var ja = Object.create(null), descartadas = 0;
     S.doc.operacoes.forEach(function (o) { ja[o.id] = true; });
     var novas = (ops || []).filter(function (o) {
-      if (!o || typeof o.id !== "string" || ja[o.id]) return false;
+      // a MESMA validação de operação do arquivo e da tática guardada (B-1); a inválida nem entra no log
+      if (problemaDaOperacao(o, ANDARES.length, FORMATO).length) { descartadas++; return false; }
+      if (ja[o.id]) return false;
       ja[o.id] = true;
       return true;
     });
-    if (!novas.length) return 0;
-    novas.forEach(function (o) {
-      S.doc.operacoes.push(copia(o));
-      if (ehInteiro(o.seq)) S.doc.contador = Math.max(S.doc.contador, o.seq);
-    });
-    reaplica();
-    agendaGravacao();
-    return novas.length;
+    var entraram = 0;
+    if (novas.length) {
+      var tamanho = S.doc.operacoes.length, contador = S.doc.contador;
+      novas.forEach(function (o) {
+        S.doc.operacoes.push(copia(o));
+        S.doc.contador = Math.max(S.doc.contador, o.seq);
+      });
+      try { reaplica(); entraram = novas.length; } catch (e) {
+        // alguma do lote derruba a prancheta: desfaz o lote inteiro e tenta uma por uma, ficando só com as que passam
+        S.doc.operacoes.length = tamanho; S.doc.contador = contador;
+        novas.forEach(function (o) {
+          var t = S.doc.operacoes.length, c = S.doc.contador;
+          S.doc.operacoes.push(copia(o));
+          S.doc.contador = Math.max(S.doc.contador, o.seq);
+          try { reaplica(); entraram++; } catch (e2) {
+            S.doc.operacoes.length = t; S.doc.contador = c;
+            descartadas++;
+          }
+        });
+        try { reaplica(); } catch (e3) { /* o estado de antes não lança */ }
+      }
+      if (entraram) agendaGravacao();
+    }
+    if (descartadas) {
+      // só a contagem: nada da operação (nem tipo, nem autor, nem campo) vai para o console
+      console.warn("[prancheta] " + descartadas + " alteração(ões) recebida(s) descartada(s) por formato inválido");
+      if (ganchos.aoDescartar) ganchos.aoDescartar(descartadas);
+    }
+    return entraram;
   }
   /** Operações LOCAIS que o servidor recusou: nunca chegaram ao log da sala, então
       saem do log daqui (e do desfazer e do refazer) -- é a ação desfeita. */
@@ -4216,12 +4377,17 @@ var Prancheta = (function () {
     var erro = motivoDaRecusa(doc);
     if (erro) return erro;
     confirmaGiro();
+    var anterior = S.doc, passoAntes = S.passo;
     S.doc = migra(copia(doc));
     S.passo = 0; S.sel = null; S.busca = null; S.caminho = null; S.acao = null; S.chegada = null;
     S.pilhaDesfazer = []; S.pilhaRefazer = [];
     bancoDe = null;
+    try { reaplica(); } catch (e) {
+      S.doc = anterior; S.passo = passoAntes; bancoDe = null;
+      try { reaplica(); } catch (e2) { /* a tela já estava assim */ }
+      return "o formato de uma operação não pôde ser lido";
+    }
     Armazem.aberta(cfg.mapa, S.doc.id);
-    reaplica();
     gravaAgora();
     return "";
   }
@@ -4249,7 +4415,8 @@ var Prancheta = (function () {
     init: init,
     ganchos: ganchos,
     grupo: {
-      recebe: recebeDeFora, retira: retiraRecusadas, usaDocumento: usaDocumento, cabecote: cabecote,
+      recebe: recebeDeFora, retira: retiraRecusadas,
+      operacaoValida: function (op) { return !problemaDaOperacao(op, ANDARES.length, FORMATO).length; }, usaDocumento: usaDocumento, cabecote: cabecote,
       segueCabecote: segueCabecote, limpaHistorico: limpaHistorico, atualizaDica: atualizaDica,
       nomeDoMapa: function () {
         var m = (cfg.mapas || []).filter(function (x) { return x.mapa === cfg.mapa; })[0];
@@ -4273,7 +4440,7 @@ var Prancheta = (function () {
       adiaArremesso: adiaArremesso, lugarDe: lugarDe, eventosDe: eventosDe, eventoEm: eventoEm,
       fimDaTatica: fimDaTatica, cenaNoRelogio: cenaNoRelogio, tocaNoRelogio: tocaNoRelogio, relogioEm: relogioEm, mudaHorarioDaGranada: mudaHorarioDaGranada, reproduzAte: function (t) { reproduzAte(t); },
       comecaReproducao: comecaReproducao, editaAqui: editaAqui, toca: function (s) { toca(s); },
-      problemas: problemas, problemasDaOrigem: problemasDaOrigem, textoDaOrigem: textoDaOrigem,
+      problemas: problemas, problemaDaOperacao: problemaDaOperacao, problemasDaOrigem: problemasDaOrigem, textoDaOrigem: textoDaOrigem,
       centro: function () { return CENTRO; },
       jogoParaPixel: jogoParaPixel, pixelParaJogo: pixelParaJogo,
       importaTexto: importaTexto, gravaAgora: gravaAgora, busca: busca, usaArremesso: usaArremesso,

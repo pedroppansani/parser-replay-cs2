@@ -11,6 +11,8 @@ from __future__ import annotations
 import html
 from urllib.parse import quote
 
+from scripts.csp import meta_csp
+
 # Duas bolinhas, CT e TR, no fundo do tema (entrega-sala-de-demo §10): as cores são os tokens
 # --fundo, --ct e --tr de dashboard/web/tokens.css (o favicon é um SVG embutido e não lê CSS).
 _FAVICON_SVG = (
@@ -32,10 +34,14 @@ def url_do_site(repo_url: str | None) -> str | None:
     return f"https://{partes[3].lower()}.github.io/{partes[4]}/"
 
 
-def meta_tags(titulo: str, descricao: str, site: str | None = None, pagina: str = "") -> str:
-    """As linhas do <head>: favicon, descrição e Open Graph (com imagem só no site)."""
+def meta_tags(titulo: str, descricao: str, site: str | None = None, pagina: str = "",
+              hosts_de_conexao: list[str] | None = None) -> str:
+    """As linhas do <head>: a CSP (primeiro: só vale para o que vem depois dela), favicon, descrição e Open Graph
+    (com imagem só no site). `hosts_de_conexao`: origens extras do `connect-src`, só da prancheta com grupo
+    (scripts/csp.py)."""
     e = lambda s: html.escape(s, quote=True)  # noqa: E731
     linhas = [
+        meta_csp(hosts_de_conexao),
         f'<link rel="icon" href="{e(FAVICON)}">',
         f'<meta name="description" content="{e(descricao)}">',
         '<meta property="og:type" content="website">',
