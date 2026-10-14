@@ -1,181 +1,145 @@
 # Contexto do projeto para o Claude Code
 
-Lido no início de cada sessão. Só o que está em vigor; o porquê e o histórico
-de cada regra estão em `notas/`.
+Lido em toda sessão: só o que está em vigor (o porquê e o histórico ficam em `notas/`). Os
+`CLAUDE.md` das pastas complementam este e não o substituem (índice no fim).
 
-## O projeto
+## O que é
 
-Parser de replay (.dem) do CS2 que gera um site estático por partida (replay,
-leitura da partida, perfil, prancheta tática). O parsing é do `awpy`; **o
-diferencial é o desenho das métricas**: cada uma carrega uma decisão de jogo
-explícita, e a validação final é o conhecimento de jogo do Pedro (Faceit 10,
-flex AWPer). Ao propor ou mudar métrica, a justificativa de JOGO pesa tanto
-quanto a corretude.
+Parser de replay (.dem) do CS2 que gera um site estático por partida (replay, leitura da partida,
+perfil, prancheta tática). O parsing é do `awpy`; **o diferencial é o desenho das métricas**: cada
+uma carrega uma decisão de jogo explícita, e a validação final é o conhecimento de jogo do Pedro
+(Faceit 10, flex AWPer). Ao propor ou mudar métrica, a justificativa de JOGO pesa tanto quanto a
+corretude.
 
-## Ambiente e como rodar
+## Como rodar e testar
 
 - Python 3.11 a 3.13 (`py -3.12` no Windows); o awpy 2.0.2 não suporta 3.14.
-- O demo é 64 tick; nunca assuma (`metrics/timing.py` detecta).
-- `py -3.12 -m pytest tests/` · `py -3.12 -m scripts.reprocessa` (corpus a partir
-  do interim) · `py -3.12 -m scripts.build_site` · `py -3.12 -m scripts.escada_validacao`.
+- `py -3.12 -m pytest tests/` · `py -3.12 -m scripts.reprocessa` (corpus a partir do interim) ·
+  `py -3.12 -m scripts.build_site` · `py -3.12 -m scripts.escada_validacao`.
 - Parse: ~14 s/partida; itere com `--from-interim`.
-- Sem o interim a partida não é recalculável; apagar demo, interim ou backup: regra 36.
 
-## Mapa do repositório
+## Regras duras
 
-```
-parsing/      wrapper do awpy, versões, verdade do arremesso
-metrics/      as métricas (uma decisão de jogo por módulo) e as referências .json
-clustering/   estilo de jogo por (jogador, round): PCA + KMeans global
-leitura/      insights e frases da página
-scripts/      pipeline, build, manifesto; calibracao/ validações
-pesquisa/     exploratórios (teste não importa) · legado/ sem uso
-dashboard/web template da página, map_core.js, annotations, tactics (prancheta)
-tests/        testes (os de navegador usam Playwright)
-data/processed  métricas por partida (versionado) · data/lineups  arremessos reais
-data/interim    tabelas brutas (fora do git) · demos/  .dem (fora do git)
-data/reference  dados oficiais da HLTV · notas/  decisões e investigações
-docs/           site gerado (fora do git; artefato do CI)
-```
+Uma regra por linha; o número entre parênteses é a nota em `notas/decisoes/`.
 
-## Convenções de código
+### Dados e reprodutibilidade
 
-- Comentários e docstrings em português.
-- Toda métrica devolve `(per_round, summary)`; não troque o per_round pelo agregado.
-- Limiar é constante nomeada no topo do módulo, com a origem ao lado.
-- Polars e Parquet. `group_by` e `unique` sempre com `maintain_order=True`.
-- Nada de texto fixo no `template.html` além da estrutura.
-- Um commit por passo, com a suíte passando. Meça antes e depois. Teste existente
-  não muda sem o Pedro aprovar.
+- Nenhum `.dem`, nada de `data/interim/` e nenhum backup é apagado sem o Pedro confirmar uma LISTA
+  EXPLÍCITA dos arquivos, com o tamanho de cada um e a prova de outra cópia conferida por sha256
+  arquivo a arquivo (nunca por nome, caminho, tamanho ou "o git tem"); vale para
+  `clean_match.py --confirmar`, `rm -rf` e qualquer limpeza de disco (36)
+- Sem o interim a partida não é recalculável, e a maioria não tem mais o `.dem`: subir
+  `VERSAO_DO_PARSER` se decide ANTES de subir (27)
+- O demo é 64 tick; nunca assuma (`metrics/timing.py` detecta).
+- Processamento determinístico: qualquer diferença entre execuções é bug, inclusive ordem de linha
+  e último bit de float. `group_by`/`unique` com `maintain_order=True`; `unique` com subset usa
+  `keep="first"`; `mode().sort().first()`; empate no corte (`.head(n)`) entra inteiro. Correção
+  explícita no código, sem remendo global na biblioteca; paralelo só aceito por identidade (28)
+- Todo ponto de entrada do interim (`load_interim`, o parse do zero, script que lê o parquet
+  direto) aplica `parsing.kills_do_round_jogado`, `parsing.eventos_do_round_jogado` e
+  `parsing.parser.dano_real_no_mesmo_tick`; script novo lê por `load_interim` (8b, 8j, 15b)
+- Cada partida grava a versão do parser (a do INTERIM, não a do código), a das métricas e o commit
+  (`sujo` se havia mudança não commitada). Sobe a versão quem muda NÚMERO, com linha de histórico
+  no módulo; partida sem versão é "desconhecida", não velha (27)
+- `scripts/reprocessa` não reajusta referência global por padrão (reajustar é decisão) e nunca
+  refaz os pesos do rating (28)
+- `docs/` (site gerado) não vai para o repositório; o Pages é artefato do CI. Depois de mexer
+  nisso: clonar do zero, rodar a suíte (teste que depende de `data/interim/` é PULADO, nunca
+  quebra) e gerar o site só com o versionado (24)
 
-## Regras vigentes
+### Números, nomes e honestidade
 
-Uma linha por decisão em vigor; o ID é o que o código cita ("decisão 21a"). O
-texto completo está na nota do link (`notas/decisoes/`).
+- Não cite número de cabeça: os do projeto (corpus, rating, escada, arremessos, testes) vêm de
+  `data/processed/numeros_citaveis.json` (`py -3.12 -m scripts.numeros_citaveis`); README, landing
+  e páginas leem dali; número de corpus nunca é escrito no template (37)
+- Todo número com bruto e referência; amostra pequena e neutro com tratamento próprio; intervalo
+  como intervalo; nada de gráfico de radar (44)
+- O rating é implementação própria da metodologia do Rating 3.0, nunca apresentado como "o da
+  HLTV" na interface, no código ou no README; o rótulo vem do resumo do módulo (22)
+- Catraca do rating (`tests/test_catraca_do_rating.py`): o patamar é o melhor valor medido e só
+  melhora; regravá-lo exige o OK do Pedro, em commit próprio com os dois números (22a)
+- Escada de validação: contagem exata antes de olhar o rating; print oficial casado com a partida
+  pelo RATING, nunca pelo K-D (22g)
+- Comando de console (`setpos`/`setang`) só é exato depois de o Pedro conferir no jogo; até lá
+  (`COMANDO_CONFERIDO_NO_JOGO` falso) toda ficha avisa (21b, 32)
+- Identidade é o steamid: `metrics/identidade.py` é o único lugar que resolve nome, e todo
+  relatório entre partidas passa por ele; as réguas do corpus já agregam por (partida, steamid):
+  não as "conserte" (25)
+- Agregado por time usa `metrics/times.nome_canonico` (`data/reference/times_conhecidos.json`);
+  nome fora da tabela é o próprio canônico, nada é adivinhado, e nenhum módulo normaliza nome de
+  time por conta própria (38)
+- IGL nunca é atribuído automaticamente: vem de `roles_manual.json`, preenchido à mão; o código
+  nunca escreve nele e `pesquisa/igl_candidatos.py` só imprime (7g)
+- Dinheiro só por `metrics.formatting.format_money` (`3.750$`), nunca f-string com `$` (8e)
+- Pitch positivo olha para BAIXO (9)
+- Regra de jogo usada por vários módulos é definida uma vez e importada: janela de trade e troca
+  de lado em `metrics/constantes.py`, contato em `metrics/contato.primeiro_contato`, "é o AWPer do
+  time" em `metrics/player_roles.awpers_do_time`, clutch em `metrics/clutch` (40, 22j)
+- MR12 ou MR15 sai da troca de lado na demo, nunca se assume; se o detectado discorda de
+  `HALFTIME_ROUND`, o `build_insights` AVISA em vez de seguir em silêncio (19c)
 
-- [1](notas/decisoes/1-peek-hold-liquido.md) Peek ou hold pelo deslocamento LÍQUIDO; jiggle (sair e voltar) é hold.
-- [2](notas/decisoes/2-peek-hold-posicao.md) Peek/hold usa a posição medida, não a flag `is_scoped`.
-- [3](notas/decisoes/3-awp-no-trade.md) Tiro de AWP que erra sem custar a vida é `no_trade`, fora da conversão.
-- [4](notas/decisoes/4-crosshair-contato.md) Crosshair cobrado só nas amostras antes do contato real (1 s).
-- [5](notas/decisoes/5-angulos-por-moda.md) Pré-fire: moda circular dos dados; nunca bins fixos.
-- [6](notas/decisoes/6-desvio-de-setup.md) Desvio de setup: contra o padrão do próprio time, não um setup certo.
-- [7](notas/decisoes/7-cluster-por-round.md) Clustering é por (jogador, round), não por jogador.
-- [7a](notas/decisoes/7a-perfil-por-jogador.md) Perfil é a leitura; taxa com bruto, referência e amostra fraca.
-- [7b](notas/decisoes/7b-features-comportamento.md) Clustering só com comportamento; resultado fica fora.
-- [7c](notas/decisoes/7c-longe-do-time.md) "Longe do time": piso absoluto e nenhum companheiro no raio de apoio.
-- [7d](notas/decisoes/7d-duas-camadas.md) Função estrutural (trabalho) e traço comportamental (como) não se misturam.
-- [7e](notas/decisoes/7e-funcoes-de-ct.md) Âncora, rotativo e coringa: dispersão do início × distância ao contato.
-- [7f](notas/decisoes/7f-posicao-de-setup.md) Posição inicial: a de setup (10 s após o freeze), não do freeze.
-- [7g](notas/decisoes/7g-igl-manual.md) IGL nunca é atribuído automaticamente; vem de `roles_manual.json`.
-- [7h](notas/decisoes/7h-trader.md) Trader é o segundo homem do entry; proximidade sozinha fica abaixo do piso.
-- [8](notas/decisoes/8-kmeans-nao-nomeia.md) O KMeans não nomeia grupos; o nome é do Pedro (`cluster_names.json`).
-- [8a](notas/decisoes/8a-tempo-desde-o-freeze.md) O tempo do timeline conta do fim do freeze; negativo é erro.
-- [8b](notas/decisoes/8b-mortes-do-freeze.md) Freeze e intervalo: mortes e eventos não são de round nenhum.
-- [8c](notas/decisoes/8c-sem-atacante.md) Sem atacante, o texto não nomeia ninguém; abertura é o 1º duelo ganho.
-- [8d](notas/decisoes/8d-navegacao-por-tick.md) O replay navega por tick; fora da janela exportada, não navega.
-- [8e](notas/decisoes/8e-dinheiro.md) Dinheiro só por `format_money` (`3.750$`).
-- [8f](notas/decisoes/8f-round-de-faca.md) Round de faca sai no parse e os rounds são renumerados.
-- [8g](notas/decisoes/8g-kast-morte-vingada.md) O T do KAST é de quem teve a morte vingada (janela de 5 s).
-- [8h](notas/decisoes/8h-cegueira-reconstruida.md) Cegueira reconstruída de `flash_duration` sem `player_blind`.
-- [8i](notas/decisoes/8i-economia-do-corpus.md) Economia do rating estimada no corpus, por arma mais cara e colete.
-- [8j](notas/decisoes/8j-dano-no-mesmo-tick.md) `dmg_health_real` recalculado: acertos no tick não passam da vida.
-- [9](notas/decisoes/9-convencao-de-angulos.md) Pitch positivo olha para baixo; o teste usa a invertida.
-- [10](notas/decisoes/10-paleta.md) Paleta validada (daltonismo, contraste); cor só com `metrics.paleta`.
-- [11](notas/decisoes/11-kmeans-global.md) KMeans ajustado uma vez no corpus (`global_model.json`), não por partida.
-- [12](notas/decisoes/12-ancora-e-lurk-por-area.md) Âncora e lurk por área (A/Mid/B), não por distância.
-- [13](notas/decisoes/13-entry-e-acao.md) Entry é quem dá o primeiro contato do time, não quem chega cedo.
-- [14](notas/decisoes/14-spawn-fora-da-particao.md) Spawn não é área de jogo; passagem rápida não é rotação.
-- [15](notas/decisoes/15-carrega-piano.md) Carrega piano é produto de esforço por benefício, em três formas.
-- [15a](notas/decisoes/15a-eixo-piano-baiter.md) Carrega piano e baiter: pontas de um eixo; rótulo só além de ±0,5.
-- [15b](notas/decisoes/15b-repick-por-briga.md) Repick classifica cada briga; a junção inclui o tick da briga.
-- [15c](notas/decisoes/15c-traco-dentro-da-funcao.md) Traço comportamental comparado dentro da função estrutural.
-- [15d](notas/decisoes/15d-repick.md) Repick é jiggle mais evento no ângulo; o desfecho é campo à parte.
-- [15e](notas/decisoes/15e-eixo-por-populacao.md) Cada braço do eixo piano/baiter contra a população da função.
-- [15f](notas/decisoes/15f-funcao-do-round-no-pipeline.md) Pipeline passa a função do round aos papéis de comportamento.
-- [16](notas/decisoes/16-escala-dos-papeis.md) A escala dos papéis é do corpus (`archetype_reference.json`).
-- [17](notas/decisoes/17-empate-no-contato.md) Empate no primeiro contato não é abertura de ninguém.
-- [18](notas/decisoes/18-frases-em-python.md) Frases dos cards saem do Python; papel sem sustentação: vazio.
-- [19](notas/decisoes/19-round-decisivo.md) Round decisivo: maior variação da chance de vitória (modelo neutro).
-- [19a](notas/decisoes/19a-decisivo-e-impressionante.md) Decisivo e impressionante: dois cards; pesos expostos.
-- [19b](notas/decisoes/19b-sem-round-decisivo.md) Sem decisivo é resultado; piso 1,5× o round mais barato.
-- [19c](notas/decisoes/19c-formato-pela-troca-de-lado.md) MR12 ou MR15 sai da troca de lado na demo.
-- [19d](notas/decisoes/19d-economia-e-leitura.md) Economia é leitura ao lado do round decisivo, nunca peso.
-- [19e](notas/decisoes/19e-prorrogacao.md) A prorrogação é modelada: o alvo sobe 4 a cada uma, até 5.
-- [20](notas/decisoes/20-tres-blocos.md) A aba de leitura tem três blocos fixos; o MVP é o maior rating.
-- [20a](notas/decisoes/20a-destaque-negativo.md) Destaque negativo só com número e referência.
-- [20b](notas/decisoes/20b-bottom-frag.md) Bottom frag exige distância destacada (MAD); mochila exige vitória.
-- [20c](notas/decisoes/20c-comparabilidade.md) Pontuação de função: "acima do normal"; concentração ponderada.
-- [20d](notas/decisoes/20d-empate-do-destaque.md) No empate do topo vence o destaque negativo.
-- [21a](notas/decisoes/21a-arremesso.md) Botão, "no ar" e postura: da demo com `.dem`; inferidos sem ela.
-- [21b](notas/decisoes/21b-console-no-jogo.md) Comando de console só é exato depois de conferido no jogo.
-- [21c](notas/decisoes/21c-tick-oficial.md) Com `grenade_thrown`, o tick é a soltura; postura pela altura de saída.
-- [22](notas/decisoes/22-rating-proprio.md) Rating: implementação própria do método do 3.0; nunca "o da HLTV".
-- [22a](notas/decisoes/22a-swing-parametrico.md) O Round Swing usa regressão logística, não contagem por estado.
-- [22b](notas/decisoes/22b-swing-por-desvio.md) O Round Swing é centrado em 1,00 e escalado pelo desvio.
-- [22c](notas/decisoes/22c-faceit-nao-calibra.md) Partidas de FACEIT não servem para calibrar contra a HLTV.
-- [22e](notas/decisoes/22e-rating-na-aba.md) O rating vai na aba Jogadores, com o modelo de round global.
-- [22f](notas/decisoes/22f-swing-soma-zero.md) O Swing soma zero por evento e inclui o fim do round.
-- [22g](notas/decisoes/22g-escada.md) Escada de validação: contagem exata antes de olhar o rating.
-- [22h](notas/decisoes/22h-swing-oficial-soma-zero.md) Swing oficial soma zero; exceção: morte sem matador inimigo.
-- [22i](notas/decisoes/22i-media-ou-desvio.md) Dividir pela média ou padronizar: mesmo rating com pesos ajustados.
-- [22j](notas/decisoes/22j-detailed-stats.md) Degrau 4: aberturas, multi-kills e HS exatos; clutch 1vX, X ≥ 1.
-- [22k](notas/decisoes/22k-swing-sem-corte.md) Swing é variação de probabilidade pura; soma zero é integridade.
-- [22l](notas/decisoes/22l-detalhes-do-rating.md) Escala alinhada, cálculo por lado, kill assistida e morte trocada.
-- [23](notas/decisoes/23-anotacao.md) Anotação em coordenada de jogo; um ponto de redimensionar; sem texto fixo.
-- [24](notas/decisoes/24-saida-fora-do-git.md) `docs/` fica fora do repositório; o Pages é artefato do CI.
-- [25](notas/decisoes/25-identidade-steamid.md) Identidade é o steamid; o nome é rótulo (`metrics/identidade.py`).
-- [26](notas/decisoes/26-invariantes.md) Dez invariantes sobre o corpus inteiro (`test_invariantes_corpus.py`).
-- [27](notas/decisoes/27-versoes.md) Cada partida grava versão do parser, das métricas e o commit.
-- [28](notas/decisoes/28-determinismo.md) Processamento determinístico: `group_by`/`unique` com ordem declarada.
-- [29](notas/decisoes/29-lurker.md) Lurker: sem os rounds de AWP, relativo à função, mínimo de 8 rounds.
-- [30](notas/decisoes/30-tres-niveis.md) Página da partida: números só dela; régua anônima; sem seletor.
-- [31](notas/decisoes/31-pisos-de-funcao.md) Registro dos pisos de função e de onde veio cada um.
-- [32](notas/decisoes/32-prancheta.md) Tática é log de operações; desfazer é `anula`/`reativa`; estados.
-- [33](notas/decisoes/33-map-core.md) Um núcleo só para o mapa (`map_core.js`), aceito por pixel idêntico.
-- [34](notas/decisoes/34-direcao-do-olhar.md) θ = −yaw; ângulo interpola linear pelo caminho curto.
-- [35](notas/decisoes/35-reproducao-pura.md) Reprodução da prancheta: função pura do tempo.
-- [36](notas/decisoes/36-preservacao-de-dados.md) Nenhum `.dem`, interim ou backup sai sem lista e cópia por sha256.
-- [37](notas/decisoes/37-pagina-e-dado.md) Número de corpus em `numeros_citaveis.json`; dado por `esc()`; CI testa.
-- [38](notas/decisoes/38-times-canonicos.md) Agregado por time usa o nome canônico (`metrics/times.py`).
-- [39](notas/decisoes/39-rotulos-com-amostra-e-estabilidade.md) Rótulo: amostra mínima; estabilidade < 0,70: "tendência".
-- [40](notas/decisoes/40-uma-regra-um-lugar.md) Trade, troca de lado, contato e AWPer do time: uma definição.
-- [41](notas/decisoes/41-impacto-e-jogadores.md) Impacto no perfil; entre partidas só em `jogadores.html`.
-- [42](notas/decisoes/42-prancheta-no-tempo.md) Tática com horário toca no relógio; lugar pelo `place` do corpus.
-- [43](notas/decisoes/43-round-real-na-prancheta.md) Round real é base travada; editar em t troca o real dali.
-- [44](notas/decisoes/44-direcao-visual-sala-de-demo.md) Direção visual "Sala de demo": forma do design, lógica do main.
-- [45](notas/decisoes/45-granada-desenhada.md) Granada desenhada é desenho: anel tracejado de tela e carimbo, corpo a 100%, sem horário, fora da linha do tempo e do roteiro; só "Converter em granada com horário" a torna evento.
-- [46](notas/decisoes/46-erros-no-perfil.md) Erro no Perfil: cada tipo é função pura de `metrics/erros.py`, com nível escrito (explícito ou depende da tática) e custo em ΔWPA; referência do mesmo lado e função; nenhum tipo vai ao site sem o Pedro validá-lo (`TIPOS_DE_ERRO_VALIDADOS`).
-- [47](notas/decisoes/47-grupos-na-prancheta.md) Grupo (Supabase) só transporta o log, sem mudar operação; quem pode desenhar é o RLS; sem grupo nada vai à rede; `GRUPOS_ATIVOS` só vira True após a revisão do `seguranca` e o OK do Pedro; chave secreta nunca no repositório.
+### O que a página afirma
 
-## Números citáveis
+- Frases dos cards saem do Python, prontas para o template; campo que não existe some da frase;
+  papel sem sustentação devolve string vazia, não frase com zeros (18)
+- Página da partida: números do jogador SÓ da partida aberta (proibido puxar o histórico dele);
+  régua anônima do corpus (`metrics/perfil_reference.json`, sem nome nem steamid); sem seletor de
+  base; partida única compara com os outros jogadores dela e AVISA (30)
+- Entre partidas, só em `jogadores.html` (por steamid, encolhimento declarado); na partida, o
+  "Comparar dois" é entre jogadores DAQUELA partida e a seleção é estado da tela (41)
+- Sem atacante, o texto nunca usa o nome de alguém: diz o que aconteceu ("morreu para a bomba"),
+  sem fallback que nomeie a vítima como matador; fogo amigo é "morto pelo companheiro X";
+  abertura é o primeiro duelo ganho contra o adversário (8c)
+- Aba de leitura com três blocos fixos (decisivo em cima, MVP e outro destaque embaixo). MVP =
+  maior rating; a menos do erro do rating fora da amostra é empate, e a frase declara; sem rating,
+  sem MVP; componentes no card como evidência, sem peso (20)
+- Destaque negativo só com número E referência, senão o candidato é descartado e a vez passa;
+  distingue-se por rótulo e hierarquia, nunca por vermelho de alarme (20a)
+- Decisivo e impressionante são dois cards, nunca somados; os pesos do impressionante ficam
+  expostos no card, componente por componente (19a)
+- Partida sem round decisivo é resultado: frase própria, não card vazio (19b)
+- Economia é leitura ao lado do round decisivo, nunca peso; o card mostra o equipamento médio e diz
+  quando quem perdeu tinha equipamento igual ou superior (19d)
+- Rating da partida com o modelo de round GLOBAL (`ModeloDeRound.da_referencia`), nunca treinado
+  só na partida (22e)
+- Erro no Perfil: nenhum tipo vai ao site antes de o Pedro confirmar 8 de 10 exemplos
+  (`TIPOS_DE_ERRO_VALIDADOS`); sem tipo validado, nenhum dado de erro entra em `docs/`;
+  `--mostrar-erros-nao-validados` gera só em `preview/`; `FORTES_POR_LADO_PUBLICADOS` só vira True
+  com o OK do Pedro (46)
+- Chave secreta do Supabase nunca no repositório; `GRUPOS_ATIVOS` só vira True depois da revisão de
+  `notas/seguranca/grupos.md` e do OK do Pedro (47)
 
-Não cite número de cabeça: os do projeto (corpus, rating, escada, arremessos,
-testes) estão em `data/processed/numeros_citaveis.json`
-(`py -3.12 -m scripts.numeros_citaveis`); README e landing leem dali.
+## Fluxo de trabalho
 
-## Pontos de calibração que pertencem ao Pedro
+- Comentários e docstrings em português. Limiar é constante nomeada no topo do módulo, com a
+  origem ao lado.
+- Polars e Parquet. Toda métrica devolve `(per_round, summary)`; não troque o per_round pelo
+  agregado.
+- Uma branch por fase; um commit por passo, com a suíte passando; meça antes e depois. Merge só
+  com a suíte inteira e o CI verdes; depois, push e relatório com o hash do merge.
+- Teste existente não muda sem o Pedro aprovar.
+- Ponto de calibração é do Pedro: não resolva nenhum sozinho, pergunte. Cada `CLAUDE.md` de pasta
+  lista os seus; o histórico está em `notas/calibracao.md`.
+- Decisão nova vira nota `notas/decisoes/<ID>-<nome>.md` (ID, Status `vigente`, `revogada` ou
+  `substituída por N`, Data, Resumo) e uma linha num `CLAUDE.md`; o código a cita por ID
+  ("decisão 21a"), e toda citação precisa de nota.
+- Métrica nova que depende de outra tabela do processado: confira que o pipeline
+  (`leitura/insights.py`) a recebe, senão a referência e a página ficam em escalas diferentes (15f)
+- O documento de design dá a FORMA; onde ele pedir mudar um comportamento que o main já tem, vale o
+  do main e o conflito vai para o relatório; mudança de forma deixa zero diferença numérica
+  (`scripts/design/impressao_numeros.py`) (44)
 
-Não resolva nenhum sozinho; pergunte. Detalhes em [`notas/calibracao.md`](notas/calibracao.md).
+## Índice
 
-- Nomes dos grupos de estilo (`clustering/cluster_names.json`); conferir a cada reajuste.
-- Partição A/Mid/B dos mapas (`MANUAL_PLACE_AREAS`); a Nuke é a mais frágil.
-- Ângulos de entrada manuais (`MANUAL_ENTRY_ANGLES`).
-- Janela de trade (5,0 s) e limiares de peek/hold, contato, pré-fire e rotação.
-- Pesos do crédito do Round Swing e todos os de `round_spectacle.py`.
-- Altura dos olhos e diferença em pé/agachado medidas (regra 21c).
-- Limiares do destaque, do round decisivo, da autópsia, dos papéis e dos erros do Perfil (46).
-- Pisos de função (regra 31) e do eixo carrega piano/baiter; repick com mais de uma saída.
-- Paleta dos gráficos (regra 10).
-- Rota B: força intermediária (0,6141 afirma "médio"), agachamento parcial neutro,
-  custo da tabela `movimento`. FACEIT: ligar `TICK_PELO_PROJETIL_SEM_EVENTO`.
-
-## Pendências
-
-- Decisões abertas: [cartões](notas/PENDENCIAS_PARA_O_PEDRO.md).
-- No jogo: [`PENDENCIAS_NO_JOGO.md`](PENDENCIAS_NO_JOGO.md).
-- Demos a baixar: [`RECUPERACAO_DEMOS.md`](RECUPERACAO_DEMOS.md).
-- Limitações: [`notas/limitacoes.md`](notas/limitacoes.md).
-
-## Glossário
-
-Gabarito, Rota A/B, neutro, catraca, regra 36 e siglas das notas: [`notas/glossario.md`](notas/glossario.md).
+- `metrics/CLAUDE.md`: definição das métricas, papéis, rating, economia e arremesso.
+- `parsing/CLAUDE.md`: o que o parse corta ou corrige (freeze, faca, dano, cegueira, rota B).
+- `clustering/CLAUDE.md`: agrupamento de estilo (KMeans global, features, nomes).
+- `scripts/CLAUDE.md`: referências do corpus, calibração do rating, biblioteca, lugares e build.
+- `dashboard/web/CLAUDE.md`: template, mapa, cores, replay, anotação, prancheta e grupos.
+- `tests/CLAUDE.md`: invariantes, controles e testes que pulam sem dado ou navegador.
+- `notas/decisoes/README.md`: índice das decisões. `notas/glossario.md`: termos.
+  `notas/design/entrega-sala-de-demo.md`: design (§12 é regra dura).
+- Pendências: `notas/PENDENCIAS_PARA_O_PEDRO.md`, `PENDENCIAS_NO_JOGO.md`, `RECUPERACAO_DEMOS.md`,
+  `notas/limitacoes.md`.
+- `pesquisa/`: exploratórios (teste não importa) · `legado/`: sem uso · `data/processed/`
+  versionado · `data/interim/`, `demos/` e `docs/` fora do git.
