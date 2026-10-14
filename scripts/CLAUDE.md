@@ -39,3 +39,4 @@ Complementa o `CLAUDE.md` da raiz e não o substitui. Uma regra por linha; (N) =
 - supabase-js entra em versão exata, com o sha256 conferido pelo build, e só é carregado ao criar ou
   entrar num grupo; sem `GRUPOS_ATIVOS`, URL e chave pública, a página é byte a byte a do build sem
   grupo (47)
+- Toda página sai com a meta CSP de `scripts/csp.py` (via `meta_tags`); o host do Supabase só no `connect-src` da prancheta com grupo (47)

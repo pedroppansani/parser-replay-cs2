@@ -397,7 +397,8 @@ configuração; roda depois do cartão 10).
   mesmo `op.autor`). Isso não dá poder novo: quem pode desenhar já pode apagar qualquer peça. A tela
   usa sempre o próprio nick, e os nicks são únicos na sala (sem diferença de caixa).
 - **O tipo da operação** é conferido só na forma (`^[a-z0-9_]{1,32}$`), não numa lista fechada: o
-  servidor não interpreta a tática, e uma operação desconhecida é ignorada pela prancheta. Uma lista
+  servidor não interpreta a tática. O CLIENTE, sim, confere toda operação que recebe (item 8): uma operação
+  desconhecida ou malformada é descartada com aviso, nunca aplicada. Uma lista
   fechada obrigaria uma migração a cada operação nova (a fase 11 criou duas).
 - **Expulsão e Realtime:** o Realtime guarda a autorização do canal até o JWT expirar ou ser renovado
   (documentação "Realtime Authorization"). As operações (Postgres Changes) param na hora, porque o RLS é
@@ -420,3 +421,32 @@ configuração; roda depois do cartão 10).
 limpeza; 5 códigos errados em 10 minutos travam a entrada; 5 salas por hora por pessoa; código de 8
 caracteres de 31. O mesmo número está no banco, no cliente (`sala.js`) e aqui (teste
 `tests/test_grupos_migracoes.py::test_limites_iguais_no_banco_no_cliente_e_no_documento`).
+
+## 8. Fase 16b: o que mudou no cliente (B-1, B-3, L-6 da revisão de segurança)
+
+- **B-1, validar toda operação.** `problemaDaOperacao` (`dashboard/web/tactics.js`) e a espelhada
+  `metrics.tactics.problemas_da_operacao` são a ÚNICA validação de operação: formato e TIPO de cada campo
+  (identificador, texto, número, lugar do mapa, arremesso), `seq` inteiro de 1 a 999.999.999.999.999 (o teto do
+  servidor) e nomes reservados do objeto (`__proto__`, `constructor`...) recusados como chave. O arquivo
+  importado (`problemas`), a tática guardada no navegador (`abre`), o documento da sala (`usaDocumento`) e cada
+  operação ao vivo (`recebeDeFora`, que o `sincroniza` também usa) passam por ela; `problemas` só soma o que
+  depende do log inteiro (id repetido, alvo do desfazer, contador). Operação recebida e recusada nem entra no
+  log; se uma que passou na validação ainda fizer o `reaplica` lançar, o lote é desfeito e reaplicado uma por
+  uma. A dica diz "Uma alteração recebida estava malformada e foi ignorada." uma vez por lote, e o console
+  registra só a contagem (nunca tipo, autor ou campo). O Lamport de uma operação recusada não move o ponto da
+  reconexão. A tática já salva que a validação recusa abre como tática nova e o documento vai inteiro para a
+  chave `prancheta:tatica:<id>:recusada` do `localStorage`. **O que não é recusado:** um `passo` que ainda não
+  existe no log (a operação é estruturalmente válida; o `aplica` a ignora, e o passo pode chegar depois). Testes:
+  `tests/test_tactics.py` (Python), `tests/test_tactics_browser.py::test_espelho_da_validacao_de_operacao_com_as_malformadas`
+  (JS e Python decidem igual) e `tests/test_grupos_validacao.py` (SalaFalsa, `ServidorFalso.injeta`).
+- **B-3, aviso de privacidade.** O texto da seção 2, com o contato por issue do GitHub e a lista dos nomes de
+  autor antes de criar o grupo. Nenhuma operação é regravada.
+- **L-6, CSP e entrega.** Toda página do site tem `<meta http-equiv="Content-Security-Policy">` (`scripts/csp.py`,
+  via `meta_tags`): `default-src 'self'`, scripts e estilos inline, `style-src` com `fonts.googleapis.com`,
+  `font-src fonts.gstatic.com`, `img-src 'self' data:`, `object-src 'none'`, `base-uri 'none'`. O
+  `connect-src` é `'self'` em todas as páginas; só a **prancheta com a configuração do grupo** soma o host do
+  projeto (`https://<proj>.supabase.co` e `wss://`), e o build para se a URL não for desse formato. Aberta como
+  arquivo local (`file://`) a CSP funciona sem violação (`tests/test_csp.py`). As Actions do CI estão fixadas por
+  SHA (com a versão em comentário), `.env.*` está no `.gitignore` e `.github/dependabot.yml` cobre Actions e pip.
+  Ligar o secret scanning é nas configurações do repositório (com o Pedro). Aceitos sem mudança: L-4, L-7, L-10, L-11.
+
