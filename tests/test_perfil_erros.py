@@ -93,6 +93,37 @@ def test_ponto_depende_da_tatica_usa_o_motivo_como_frase():
     assert [c["round"] for c in m["chips"]] == [3, 7] and m["chips"][0]["t"] == 12.0
 
 
+def test_todo_chip_da_pagina_tem_lado_e_relogio_e_leva_ao_round_e_ao_momento():
+    # fase 15: todo erro é de um lado só e o chip diz o round e o relógio ("R12 · 1:14")
+    bloco = _bloco(preview=True)
+    n = 0
+    for j in bloco["jogadores"]:
+        for m in j["melhorar"]:
+            chips = list(m["chips"])
+            assert all(c["lado"] == m["lado"] for c in chips)          # o chip é do lado do card
+            for c in chips:
+                n += 1
+                assert c["lado"] in ("ct", "t") and c["lado_rotulo"] in ("no CT", "no TR")
+                assert c["relogio"] and c["texto"] == f"R{c['round']} · {c['relogio']}"
+                assert c["t"] is not None
+                assert c["titulo"].startswith(f"Round {c['round']}, {c['relogio']}: abre o Replay")
+        for u in j["uma_vez"]:
+            for c in u["chips"]:
+                n += 1
+                assert c["lado"] in ("ct", "t") and c["relogio"]
+    assert n > 0
+
+
+def test_o_relogio_do_chip_e_o_do_replay():
+    # 12,0 s depois do freeze, sem plant: 1:55 - 12 s = 1:43
+    oc = [{"nivel": E.DEPENDE, "motivo": E.MOTIVO_LURKER, "dwpa": None, "round_num": 3, "tick": 30, "segundos": 12.0,
+           "side": "t", "relogio": "1:43"}]
+    c = PE._chips(oc)[0]
+    assert (c["rotulo"], c["texto"], c["lado"]) == ("R3", "R3 · 1:43", "t")
+    sem = [{**oc[0], "relogio": None}]
+    assert PE._chips(sem)[0]["relogio"] == "1:43"
+
+
 # --- Publicação no site ------------------------------------------------------------------------------
 
 def test_com_a_lista_vazia_nenhum_tipo_aparece_na_pagina_e_com_um_so_ele(monkeypatch):
@@ -199,7 +230,7 @@ def test_sem_tipo_validado_a_secao_diz_em_validacao_e_detalhes_fecha(navegador, 
     try:
         assert "Em validação: os tipos de erro aparecem depois de conferidos" in pg.inner_text("#pf-melhorar")
         assert pg.locator("#pf-em-validacao a").get_attribute("href").endswith("#7-erros-na-aba-perfil")
-        assert pg.locator("#pf-melhorar .pfitem").count() == 0
+        assert pg.locator("#pf-melhorar .ponto").count() == 0
         assert not pg.eval_on_selector("#pf-detalhes", "d => d.open")
         # a explicação nunca usa as cores de erro e de aviso para o jogador
         cores = pg.eval_on_selector_all("#pf-melhorar *, #pf-fortes *, #pf-cab *",
@@ -210,5 +241,67 @@ def test_sem_tipo_validado_a_secao_diz_em_validacao_e_detalhes_fecha(navegador, 
         assert "rgb(255, 107, 107)" not in cores and "rgb(255, 234, 61)" not in cores
         assert pg.evaluate("() => document.documentElement.scrollWidth") <= 375       # uma coluna, sem rolar
         assert pg._erros == []
+    finally:
+        ctx.close()
+
+
+# --- Fase 15 (§19): a forma dos cards, dos chips e do bloco Detalhes ---------------------------------------
+
+def _com_dois_niveis(pg):
+    """Abre um jogador da prévia que tenha ponto explícito e ponto depende da tática."""
+    for nome in pg.eval_on_selector_all("#pf-botoes button", "bs => bs.map(b => b.dataset.nome)"):
+        pg.locator("#pf-botoes button", has_text=nome).first.click()
+        if pg.locator(".ponto.explicito").count() and pg.locator(".ponto.depende:not(.compacto)").count():
+            return nome
+    pytest.skip("nenhum jogador com os dois níveis na partida")
+
+
+def test_explicito_nao_e_verde_e_vem_antes_do_depende(navegador, previa):
+    ctx, pg = _abre(navegador, previa)
+    try:
+        _com_dois_niveis(pg)
+        assert pg.locator(".ponto.melhorar .tag.decisivo").count() == 0       # decisão 46 (fase 15): o verde não marca erro
+        niveis = pg.eval_on_selector_all(".ponto.melhorar", "ps => ps.map(p => p.classList.contains('explicito'))")
+        assert niveis == sorted(niveis, reverse=True)                          # explícitos primeiro
+        assert pg.locator(".ponto.explicito .tag.explicito").count() == pg.locator(".ponto.explicito").count()
+        # nenhuma cor de sistema no card de erro (--erro, --aviso)
+        cores = pg.evaluate("""() => { const v = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+            return [v('--erro'), v('--aviso')]; }""")
+        usadas = pg.evaluate("""() => [...document.querySelectorAll('.ponto.melhorar, .ponto.melhorar *')].flatMap(e => {
+            const c = getComputedStyle(e); return [c.color, c.borderTopColor, c.borderLeftColor, c.backgroundColor]; })""")
+        def rgb(h): return "rgb(%d, %d, %d)" % (int(h[1:3], 16), int(h[3:5], 16), int(h[5:7], 16))
+        assert not any(rgb(c) in usadas for c in cores)
+    finally:
+        ctx.close()
+
+
+def test_chip_mostra_round_e_relogio_e_marca_visitado(navegador, previa):
+    ctx, pg = _abre(navegador, previa, largura=375)
+    try:
+        _com_dois_niveis(pg)
+        chip = pg.locator("#pf-melhorar .pfchip").first
+        n, h = chip.locator(".n").inner_text(), chip.locator(".h").inner_text()
+        assert n.startswith("R") and ":" in h
+        assert f"{n[1:]}, {h}" in chip.get_attribute("aria-label")
+        box = chip.bounding_box()
+        assert box["height"] >= 44 and box["width"] >= 44
+        assert chip.get_attribute("data-visitado") is None
+        chip.click()
+        pg.click('[data-tab="perfil"]')
+        assert pg.locator("#pf-melhorar .pfchip").first.get_attribute("data-visitado") is not None
+        assert "(já aberto)" in pg.locator("#pf-melhorar .pfchip").first.get_attribute("aria-label")
+    finally:
+        ctx.close()
+
+
+def test_detalhes_fecha_por_padrao_lembra_e_nao_estoura_375(navegador, previa):
+    ctx, pg = _abre(navegador, previa, largura=375)
+    try:
+        assert pg.evaluate("() => document.getElementById('pf-detalhes').open") is False
+        assert pg.locator("#pf-detalhes .g-resumo").is_visible()
+        pg.locator("#pf-detalhes > summary").click()
+        assert not pg.locator("#pf-detalhes .g-resumo").is_visible()           # a linha de resumo some ao abrir
+        assert pg.evaluate("() => document.documentElement.scrollWidth") <= 375
+        assert pg.evaluate("() => localStorage.getItem('parser-cs2:perfil-detalhes')") == "1"
     finally:
         ctx.close()

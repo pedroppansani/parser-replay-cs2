@@ -35,9 +35,22 @@
   "a função não é firme nesta partida"; (6) não trocou, possível bait, perdeu a troca, flash no time
   e dano de utilidade no time: explícito; (7) o resto: depende da tática ("o dado mostra posição e
   tempo, não o que o time pediu"). Consequência: morreu isolado e primeira morte sem troca saem
-  sempre como "depende da tática". "Explícito" usa o rótulo afirmado (`.tag.decisivo`); "depende
+  sempre como "depende da tática". "Explícito" usava o rótulo afirmado (`.tag.decisivo`, verde); **muda na fase 15** (ver abaixo); "depende
   da tática", o neutro tracejado (`.tag.neutro`). `--erro` e `--aviso` nunca marcam erro de
   jogador; o ▲ de `--aviso` só aparece para dado degradado.
+- **Fase 15 (2026-10-14): forma do card, lado e horário.** (a) "Explícito" deixa de usar `.tag.decisivo`: um
+  erro em verde se lê como "bom", e o verde volta a significar só "afirmado e bom" (barra do ponto forte,
+  função afirmada). O explícito passa a ser forma e peso, sem cor nova: barra esquerda cheia de 4 px em
+  `--tinta`, etiqueta invertida (`.tag.explicito`, texto `--fundo` sobre `--tinta`), título em 700 com o número
+  de ordem; o "depende da tática" é a versão tracejada do mesmo desenho (barra e etiqueta tracejadas). A ordem
+  continua explícitos antes e, dentro do nível, o maior custo. `--erro` e `--aviso` seguem proibidos em erro de
+  jogador. (b) Todo erro é de um lado só e nenhum tipo soma os dois: cada ocorrência leva o lado e o relógio do
+  round (coluna `relogio` de `erros_do_jogador.parquet`, o mesmo de `metrics.tactics.relogio`, que o Replay
+  mostra); o card diz "no TR" e o chip "R12 · 1:14". "Flash no time" e "dano de utilidade no time" eram somas
+  da partida e passam a somar e a aplicar o mesmo limiar POR LADO (ocorrências que seguem na tela no corpus:
+  flash 880 antes, 530 depois; dano de utilidade 32 antes, 28 depois; avisado na seção 7 do material de
+  calibração). `VERSAO_DAS_METRICAS` 23; só `erros_do_jogador.parquet` e a régua `erros_reference.json` mudam.
+
 - **Tendência da função** (decisão 39 aplicada à função estrutural):
   `structural_roles.estabilidade_da_funcao` reamostra os rounds de cada lado (500 sorteios, a
   semente e o limiar 0,70 do `player_roles`) e aplica a mesma regra de `resume_por_lado`; sem

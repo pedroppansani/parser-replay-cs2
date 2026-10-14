@@ -48,6 +48,7 @@ from metrics.basic_metrics import _pares_de_trade
 from metrics.constantes import JANELA_DE_TRADE_S
 from metrics.grenades import EFFECTIVE_BLIND_SECONDS, FIRE_WEAPONS, HE_WEAPONS
 from metrics.rating import ARMA_PARA_GRUPO
+from metrics.tactics import relogio as relogio_do_jogo
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
@@ -187,6 +188,7 @@ class Partida:
     variacao: dict = field(default_factory=dict)  # (round, tick, vítima) -> {"delta", "vivos_antes"}
     alavanca: dict = field(default_factory=dict)  # (round, time) -> WP(vence) - WP(perde)
     rounds_jogados: dict = field(default_factory=dict)   # steamid -> rounds jogados
+    lados: dict = field(default_factory=dict)     # (round, steamid) -> "ct"/"t", de todos os ticks (completa quem não aparece nas kills)
     degradado: list = field(default_factory=list)
 
 
@@ -324,7 +326,20 @@ class _Indice:
                 return k["victim_side"]
             if k["attacker_steamid"] is not None and int(k["attacker_steamid"]) == int(sid):
                 return k["attacker_side"]
-        return None
+        # round sem kill (ou sem o jogador nelas): o lado vem da tabela de ticks inteira (fase 15: todo erro tem lado)
+        return self.p.lados.get((int(rn), int(sid)))
+
+    def relogio(self, rn: int, t: int) -> str | None:
+        """O relógio do jogo no tick t ("1:14": desce de 1:55 e, depois do plant, os 40 s da bomba): o mesmo
+        que o replay mostra no instante do chip (`metrics.tactics.relogio`, espelho de `MapCore.relogio`)."""
+        r = self.rounds.get(rn) or {}
+        fe = r.get("freeze_end")
+        if fe is None:
+            return None
+
+        def seg(tick):
+            return None if tick is None else (int(tick) - int(fe)) / self.p.tickrate
+        return relogio_do_jogo(seg(t), seg(r.get("bomb_plant")), seg(r.get("end")))
 
     def vivos_dos_times(self, rn: int, sid: int, t: int) -> tuple[int, int]:
         """(vivos do time de sid, vivos do adversário) no instante t, antes do evento desse tick."""
@@ -349,7 +364,7 @@ def _base(ix: _Indice, tipo: str, rn: int, t: int, sid: int) -> dict:
     nome = ix.p.nomes.get(int(sid), str(sid))
     meus, deles = ix.vivos_dos_times(rn, sid, t)
     return {"tipo": tipo, "match_id": ix.p.match_id, "round_num": rn, "tick": int(t), "segundos": ix.segundos(rn, t),
-            "steamid": int(sid), "name": nome, "side": ix.lado(rn, sid), "aliado_steamid": None, "aliado": None,
+            "relogio": ix.relogio(rn, t), "steamid": int(sid), "name": nome, "side": ix.lado(rn, sid), "aliado_steamid": None, "aliado": None,
             "matador_steamid": None, "matador": None, "dist_aliado": None, "dist_matador_jogador": None,
             "dist_matador_aliado": None, "vivos_time": meus, "vivos_adversario": deles, "dwpa": None,
             "valor": None, "filtro": None}
@@ -540,14 +555,16 @@ def flash_no_time(p: Partida, seg_aliado: float = SEG_CEGUEIRA_ALIADO, seg_uma: 
 
 
 def _aplica_limiar(out: list[dict], limiar_partida: float, limiar_um: float | None) -> None:
-    """Soma por jogador nas ocorrências que passaram nos filtros; abaixo do limiar da partida, só o evento
-    acima do limiar de um evento (se houver) continua."""
+    """Soma por (jogador, LADO) nas ocorrências que passaram nos filtros; abaixo do limiar, só o evento
+    acima do limiar de um evento (se houver) continua. Fase 15 (decisão 46): todo erro é de um lado só,
+    então a soma e o limiar valem para cada lado (antes a soma era da partida, juntando CT e TR)."""
     soma: dict = {}
     for oc in out:
         if oc["filtro"] is None:
-            soma[oc["steamid"]] = soma.get(oc["steamid"], 0.0) + oc["valor"]
+            chave = (oc["steamid"], oc["side"])
+            soma[chave] = soma.get(chave, 0.0) + oc["valor"]
     for oc in out:
-        if oc["filtro"] is not None or soma.get(oc["steamid"], 0.0) > limiar_partida:
+        if oc["filtro"] is not None or soma.get((oc["steamid"], oc["side"]), 0.0) > limiar_partida:
             continue
         if limiar_um is not None and oc["valor"] > limiar_um:
             continue
@@ -646,6 +663,7 @@ def ocorrencias(p: Partida, **constantes) -> pl.DataFrame:
 
 ESQUEMA = {
     "tipo": pl.String, "match_id": pl.String, "round_num": pl.Int64, "tick": pl.Int64, "segundos": pl.Float64,
+    "relogio": pl.String,
     "steamid": pl.UInt64, "name": pl.String, "side": pl.String, "aliado_steamid": pl.UInt64, "aliado": pl.String,
     "matador_steamid": pl.UInt64, "matador": pl.String, "dist_aliado": pl.Float64,
     "dist_matador_jogador": pl.Float64, "dist_matador_aliado": pl.Float64, "vivos_time": pl.Int64,
@@ -697,6 +715,8 @@ def carrega_partida(match_id: str, processed_root: Path | None = None, interim_r
                                                                            keep="first").iter_rows()}
     kills, damages = tabelas["kills"], tabelas["damages"]
     instantes = kills.select("round_num", "tick").unique(maintain_order=True)
+    lados = {(int(r), int(s)): lado for r, s, lado in ticks.select("round_num", "steamid", "side")
+             .unique(maintain_order=True).iter_rows() if lado is not None}
     posicoes = (ticks.select("round_num", "tick", "steamid", "side", "X", "Y", "Z", "is_alive")
                 .join(instantes, on=["round_num", "tick"], how="inner"))
     # um tick antes de cada kill também: a situação numérica é contada antes do evento
@@ -756,7 +776,7 @@ def carrega_partida(match_id: str, processed_root: Path | None = None, interim_r
         primeira_arma=_primeira_arma(ticks, rounds), team_of={int(k): v for k, v in team_of.items()}, nomes=nomes,
         corte_de_andar=floor_split_z(meta.get("map_name") or ""), rounds_de_economia=eco, funcoes=funcoes,
         awpers={int(s) for s in awpers}, variacao=variacao, alavanca=alavanca, rounds_jogados=rounds_jogados,
-        degradado=degradado)
+        lados=lados, degradado=degradado)
 
 
 ARQUIVO = "erros_do_jogador.parquet"

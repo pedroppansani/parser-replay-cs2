@@ -793,9 +793,11 @@ Gerado por `py -3.12 -m scripts.calibracao.erros_do_jogador` (fase 12, decisão 
 | Perdeu a troca | 1282 | 812 | 812 | 0 | round de economia do time: 370; time guardando arma (pós-plant perdido): 99; depois do fim do round: 1 |
 | Morreu isolado | 3593 | 2066 | 0 | 2066 | round de economia do time: 627; time guardando arma (pós-plant perdido): 499; sem aliado vivo (1 contra N): 385; depois do fim do round: 16 |
 | Primeira morte sem troca | 859 | 691 | 0 | 691 | round de economia do time: 164; time guardando arma (pós-plant perdido): 4 |
-| Flash no time | 3091 | 880 | 880 | 0 | abaixo do limiar da partida: 1934; round de economia do time: 207; time guardando arma (pós-plant perdido): 54; depois do fim do round: 16 |
-| Dano de utilidade no time | 195 | 32 | 32 | 0 | abaixo do limiar da partida: 153; round de economia do time: 7; depois do fim do round: 3 |
+| Flash no time | 3091 | 530 | 530 | 0 | abaixo do limiar da partida: 2284; round de economia do time: 207; time guardando arma (pós-plant perdido): 54; depois do fim do round: 16 |
+| Dano de utilidade no time | 195 | 28 | 28 | 0 | abaixo do limiar da partida: 157; round de economia do time: 7; depois do fim do round: 3 |
 | Utilidade no bolso | não criado | — | — | — | o inventário na hora da morte não existe no dado (decisão 46) |
+
+**Mudança da fase 15 (decisão 46).** "Flash no time" e "dano de utilidade no time" eram somas da partida (CT e TR juntos); passam a ser POR LADO, com o mesmo limiar (`SEG_CEGUEIRA_ALIADO` 27 s e `DANO_UTILIDADE_ALIADO` 20) aplicado a cada lado. Ocorrências que seguem na tela (depois dos filtros), no corpus de 52 jogos: flash no time 880 antes, 530 depois; dano de utilidade no time 32 antes, 28 depois (o total detectado não muda: 3091 e 195). Os 10 exemplos sorteados abaixo NÃO foram refeitos.
 
 Ordem dos níveis (a primeira regra que se aplica decide): 1) round de eco ou pistola do time, ou time guardando arma (evento depois do plant num round que o time perdeu): fora; 2) morreu isolado sendo lurker: depende; 3) primeira morte sem troca sendo entry: depende; 4) morreu isolado ou primeira morte do AWPer no duelo de abertura: depende; 5) função só tendência: o motivo diz que a função não é firme; 6) não trocou, possível bait, perdeu a troca, flash no time e dano de utilidade no time: explícito; 7) o resto: depende. Por isso "morreu isolado" e "primeira morte sem troca" saem sempre como "depende da tática" (só o motivo muda).
 
