@@ -7,6 +7,10 @@
    (display=swap) o texto não muda de número de linhas, e o CLS da landing não sobe.
    Razão medida no Chrome: Archivo 400 / Arial 400 = 0,973; Archivo 700 a 75% / Arial 700 = 0,774. */
 @font-face { font-family: "Archivo Fallback"; src: local("Arial"), local("Helvetica"), local("Liberation Sans"); size-adjust: 97.3%; }
+/* mono: Consolas (Windows) tem avanço de 0,55 em; JetBrains Mono, 0,60 em -> 109%. Menlo e SF Mono (macOS) já são ~0,60 em.
+   Os apelidos "... Fallback" são fontes do sistema (sem download): não contam como família carregada (A6). §19.8 */
+@font-face { font-family: "JetBrains Mono Fallback"; src: local("Consolas"); size-adjust: 109%; }
+@font-face { font-family: "JetBrains Mono Fallback 2"; src: local("Menlo"), local("SF Mono"), local("Courier New"), local("Liberation Mono"); size-adjust: 100%; }
 @font-face { font-family: "Archivo Cond Fallback"; src: local("Arial Bold"), local("Arial"), local("Helvetica"), local("Liberation Sans"); size-adjust: 77.4%; }
 
 /* =========================================================================
@@ -72,7 +76,7 @@
   /* ---- Tipografia: 2 famílias ---- */
   --f-texto: "Archivo", "Archivo Fallback", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-cond: "Archivo", "Archivo Cond Fallback", "Archivo Fallback", sans-serif;  /* onde a Archivo usa largura 75% */
-  --f-num: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --f-num: "JetBrains Mono", "JetBrains Mono Fallback", "JetBrains Mono Fallback 2", ui-monospace, monospace;
   /* Acréscimo do projeto (decisão 44): bloco de código e comando usam a mono do SISTEMA; a JetBrains Mono
      fica só para número (A6). Não é uma terceira família carregada. */
   --f-codigo: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
