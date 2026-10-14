@@ -1515,14 +1515,17 @@
     var dpr = window.devicePixelRatio || 1;
     ITENS.forEach(function (it) {
       var s = document.createElement("span"), c = document.createElement("canvas");
-      c.width = c.height = Math.round(18 * dpr);
+      // a granada desenhada leva o carimbo no canto superior direito: o canvas dela é maior (28 x 22 px de tela)
+      var larg = it[0] === "desenhada" ? 28 : 18, alt = it[0] === "desenhada" ? 22 : 18;
+      c.width = Math.round(larg * dpr); c.height = Math.round(alt * dpr);
+      c.style.width = larg + "px"; c.style.height = alt + "px";
       c.setAttribute("aria-hidden", "true");
       var g = c.getContext("2d");
       g.scale(dpr, dpr);
       if (it[0] === "peca") MapCore.desenhaJogador(g, 9, 9, { cor: it[1], estado: "vivo", hp: 100, nome: "" });
       else if (it[0] === "morto") MapCore.desenhaJogador(g, 9, 9, { cor: C.tinta2, estado: "morto", hp: 0, nome: "" });
-      // a granada desenhada (fase 11): o mesmo glifo, com o anel tracejado e o corpo a 85%
-      else if (it[0] === "desenhada") MapCore.nadeGlyph(g, "smoke", 9, 9, 4, MapCore.NADE_COLOR.smoke, -Math.PI / 2, true);
+      // a granada desenhada (fase 11, V3 da fase 15): o mesmo glifo, com o anel tracejado, o corpo a 100% e o carimbo
+      else if (it[0] === "desenhada") MapCore.nadeGlyph(g, "smoke", 9, 13, 4, MapCore.NADE_COLOR.smoke, -Math.PI / 2, true);
       else MapCore.nadeGlyph(g, it[0], 9, 9, 4, MapCore.NADE_COLOR[it[0]], -Math.PI / 2);
       s.appendChild(c);
       s.appendChild(document.createTextNode(it[2]));
