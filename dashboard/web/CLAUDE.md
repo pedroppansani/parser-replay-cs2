@@ -53,6 +53,8 @@ valem lá também.
   linha do tempo e do roteiro; só "Converter em granada com horário" a torna evento (45)
 - Grupo só transporta o log, sem mudar operação; quem pode desenhar é o servidor (RLS): na recusa a
   operação sai do log local, sem `anula`; sem grupo nada vai à rede (47)
+- Operação nova da prancheta exige migração nova (`grupos.tipos_de_operacao()`, conferida contra `OPERACOES` do JS e do
+  Python); o log do grupo é o estado inicial, numa linha, seguido das operações; os tetos de uso são do servidor (47)
 
 ## Calibração do Pedro (não resolva sozinho)
 

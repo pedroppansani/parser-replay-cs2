@@ -785,3 +785,28 @@ minuto e 3.000 operações por hora por autor**; **200 salas ativas** no servido
 dos 500 MB do plano grátis); **30 chamadas por minuto** de `entrar_na_sala` por conta; salto de Lamport de no
 máximo **1.000** acima do maior da sala. O mesmo número está no banco, no cliente (`sala.js`) e aqui (teste
 `tests/test_grupos_migracoes.py::test_limites_iguais_no_banco_no_cliente_e_no_documento`).
+
+## 8. Revisão de 2026-10-13 (BLOQUEADO): o que a fase 16b fez no servidor
+
+Relatório: `Base-Seguranca/projetos/parser-cs2-grupos.md` (fora do repositório). A tabela final de achados é da sessão
+principal; aqui está o que esta fase fez e o teste que cobre cada item (P = PGlite, A = navegador e SalaFalsa, B = parte B
+contra o projeto real, escrita e ainda não rodada). `GRUPOS_ATIVOS` continua `False`.
+
+| Item | O que foi feito | Testes |
+|---|---|---|
+| B-2 (1) total por sala | `salas.total_ops` e `total_bytes`, mantidos no gatilho da operação; recusa `sala_no_limite` acima de 5.000 operações ou 2 MB (estado inicial incluído) | P "a sala aceita exatamente 5.000 operações", "a 5.001ª...", "cria_sala aceita exatamente 2 MB", "2 MB mais 1 byte", "uma operação a mais, mesmo pequena, passa de 2 MB"; A `test_teto_da_sala_diz_a_frase_e_desfaz_a_alteracao`; B15 |
+| B-2 (2) segundo teto por autor | 300 operações por minuto e 3.000 por hora (`autor_no_limite`), além dos 20 por segundo | P "o autor chega a 300...", "a 301ª...", "a 3.001ª...", "passada a hora..."; A `test_teto_por_autor_diz_a_frase_e_desfaz_a_alteracao`; B15 |
+| B-2 (3) teto global | `antes_de_criar_sala` recusa a sala 201 ativa (`servidor_cheio`, com trava consultiva) | P "a sala 201 ativa é recusada", "o insert direto de sala também para no teto global", "uma sala parada há mais de 30 dias deixa de contar"; A `test_teto_global_de_salas_diz_a_frase_e_nao_cria_o_grupo`; B15 (opt-in `GRUPOS_B15_GLOBAL=1`) |
+| B-2 (4) `entrar_na_sala` | não grava mais o acerto; 30 chamadas por minuto por conta em `grupos.chamadas` (uma linha por conta) | P "chamadas certas de entrar_na_sala não gravam em tentativas", "a 31ª volta muitas_chamadas", "o contador é uma linha por conta"; A `test_teto_de_chamadas_de_entrar_diz_a_frase`; B15 |
+| B-2 (5) painel | **fica para o cartão do Pedro** (reduzir o limite de logins anônimos por hora e IP se permitir, alerta de uso) | (cartão) |
+| B-2, estado inicial | `cria_sala(mapa, nick, estado_inicial)`: o estado inicial numa linha só | P "cria_sala ..." (14 casos); A `test_criar_sobe_o_estado_inicial_numa_linha_so_e_quem_entra_recebe_o_mesmo_log`, `test_alteracao_feita_enquanto_o_grupo_e_criado_nao_se_perde`, `test_criar_grupo_do_maior_round_real_leva_ate_10_segundos_em_fast_4g`; B20 |
+| L-1 | `pg_advisory_xact_lock` por conta no começo de `entrar_na_sala` | P "L-1: 30 chamadas com código errado..." (sequenciais no PGlite); B18 (o paralelo de verdade) |
+| L-2 | salto de Lamport de no máximo 1.000 acima do maior da sala (o estado inicial conta) | P "L-2: ..." (5 casos); A `test_l2_salto_de_lamport_acima_de_1000_e_recusado` |
+| L-3 | `em` obrigatório em texto, `tipo` numa lista fechada (`grupos.tipos_de_operacao()`) conferida contra `tactics.js` e `metrics/tactics.py`; operação nova exige migração nova | P "L-3: ..." (6 casos); `test_a_lista_de_tipos_do_servidor_e_a_do_javascript_e_a_do_python`; A `test_l3_...` |
+| L-5 | a limpeza diária apaga anônimos órfãos com mais de 2 dias (sem sala, grupo nem operação: apagar quem escreveu apagaria, em cascata, a operação de uma sala viva); o cliente confere a sessão guardada (`getUser`) e refaz o login anônimo | P "L-5: ..." (6 casos); A `test_l5_com_a_sessao_apagada_no_servidor_o_proximo_entrar_refaz_o_login_sozinho`, `test_l5_supabase_js_confere_a_sessao_guardada_e_refaz_o_login`; B17 |
+| L-8, L-9 | **ficam para o cartão do Pedro e a parte B** (B19: cadastro por e-mail recusado; B17: `cron.job` e a função) | B19, B17 |
+| L-4, L-7, L-10, L-11 | aceitos, sem mudança | |
+
+Medições: `supabase/medicao/maior_round_na_prancheta.json` (1.152 rounds; maior: 68 operações, 88.835 bytes) e
+`supabase/medicao/criacao_do_grupo.json` (criar o grupo do maior round, antes e depois). A parte B ampliada (B12 a B19, B20)
+está em `tests/test_grupos_integracao.py`; B16 depende de B-1 (cliente, outra fase).
