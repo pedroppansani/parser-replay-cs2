@@ -4,4 +4,4 @@ polars==1.44.2
 numpy==2.4.4
 scikit-learn==1.8.0
 # radares (scripts/prepare_radar.py) e o recorte do mapa
-pillow==12.2.0
+pillow==12.3.0
