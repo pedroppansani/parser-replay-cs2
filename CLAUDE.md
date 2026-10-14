@@ -104,8 +104,8 @@ Uma regra por linha; o número entre parênteses é a nota em `notas/decisoes/`.
   só na partida (22e)
 - Erro no Perfil: nenhum tipo vai ao site antes de o Pedro confirmar 8 de 10 exemplos
   (`TIPOS_DE_ERRO_VALIDADOS`); sem tipo validado, nenhum dado de erro entra em `docs/`;
-  `--mostrar-erros-nao-validados` gera só em `preview/`; `FORTES_POR_LADO_PUBLICADOS` só vira True
-  com o OK do Pedro (46)
+  `--mostrar-erros-nao-validados` gera só em `preview/`; os pontos fortes são por lado também no
+  publicado (`FORTES_POR_LADO_PUBLICADOS` = True, OK do Pedro) (46)
 - Chave secreta do Supabase nunca no repositório; `GRUPOS_ATIVOS` só vira True depois da revisão de
   `notas/seguranca/grupos.md` e do OK do Pedro (47)
 

@@ -73,13 +73,6 @@ MARGEM_DESTAQUE = 0.15
 SEGUNDOS_ANTES_DO_REPLAY = 3        # o Replay abre 3 s antes do instante (decisão 46, "Replay com tempo")
 
 
-# Os textos da fase 12, como estavam: o site publicado (sem a prévia) com os erros em validação continua
-# a mandar exatamente estes (a aba Perfil publicada não muda; fase 12b).
-TEXTOS_FASE12 = {k: v for k, v in TEXTOS.items() if k not in ("uma_vez", "normal_funcao", "normal_lado")}
-TEXTOS_FASE12["detalhes_erros"] = "Aconteceu uma vez (abaixo do mínimo de 2 para virar ponto a melhorar)"
-TEXTOS_FASE12["nenhum_erro"] = "Nenhum erro se repetiu nesta partida"
-
-
 def _br(x: float, casas: int) -> str:
     return f"{x:.{casas}f}".replace(".", ",")
 
@@ -196,34 +189,6 @@ def _ponto_a_melhorar(tipo: str, ocs: list[dict], rounds: int, ref: dict | None,
             "em_validacao": em_validacao, "chips": _chips(ocs, lado)}
 
 
-def _pontos_fortes_fase12(perfil: dict, ref: dict | None, funcao: str | None) -> tuple[list[dict], dict]:
-    """O cálculo da fase 12, intacto: o valor da partida inteira contra a mediana da função principal (régua
-    `erros_reference_fase12.json`). É o que o site publicado usa enquanto `FORTES_POR_LADO_PUBLICADOS` for False."""
-    def referencia(chave: str) -> tuple[float | None, str | None]:
-        tabela = ((ref or {}).get("metricas") or {}).get(chave) or {}
-        if funcao and tabela.get(funcao) is not None:
-            return tabela[funcao], f"de quem joga {_nome_da_funcao(funcao)}"
-        if tabela.get(E.TODAS) is not None:
-            return tabela[E.TODAS], "do corpus"
-        return None, None
-
-    candidatos, valores = [], {}
-    for chave, formato, unidade in E.METRICAS_DE_PONTO_FORTE:
-        v, n, d = perfil.get(chave), perfil.get(f"{chave}_n"), perfil.get(f"{chave}_d")
-        bruto = _bruto(n, d, formato, unidade)
-        valores[chave] = {"valor": formata(v, formato), "bruto": bruto}
-        if v is None or perfil.get(f"{chave}_fraco") or not d:
-            continue
-        r, de_quem = referencia(chave)
-        if r is None or r <= 0 or v < r * (1 + E.MARGEM_PONTO_FORTE):
-            continue
-        candidatos.append(((v - r) / r, chave, {
-            "chave": chave, "rotulo": _rotulo_da_metrica(chave), "valor": formata(v, formato), "bruto": bruto,
-            "referencia": f"a mediana {de_quem} é {formata(r, formato)}"}))
-    candidatos.sort(key=lambda c: (-c[0], c[1]))
-    return [c[2] for c in candidatos[:E.MAX_PONTOS_FORTES]], valores
-
-
 def dentro_do_normal(perfil: dict, chave: str) -> bool:
     """A taxa está dentro da faixa da régua do corpus: tem denominador, amostra suficiente, régua e fica a
     menos de `MARGEM_DESTAQUE` da mediana (a conta do `celula` do template, que passa a vir do Python)."""
@@ -307,10 +272,6 @@ def bloco(payload: dict, ocorrencias: pl.DataFrame | None, *, cabecalho: dict | 
     validados = E.TIPOS_DE_ERRO_VALIDADOS if validados is None else frozenset(validados)
     na_tela = [t for t in E.TIPOS if preview or t in validados]
     tendencia = tendencia or {}
-    # Pontos fortes por (lado, função) só na prévia (ou com FORTES_POR_LADO_PUBLICADOS ligada pelo Pedro);
-    # no publicado, tudo o que a aba já mostrava continua como na fase 12.
-    por_lado_na_tela = preview or E.FORTES_POR_LADO_PUBLICADOS
-    referencia_fase12 = E.carrega_referencia_fase12()
     perfis = {int(p["steamid"]): p for p in payload.get("player_profile") or []}
     players = {int(p["steamid"]): p for p in payload.get("players") or []}
     funcoes: dict[int, list[dict]] = {}
@@ -364,10 +325,8 @@ def bloco(payload: dict, ocorrencias: pl.DataFrame | None, *, cabecalho: dict | 
                 m["custo"] = ""
         for m in melhorar:
             m.pop("_pontos", None)
-        if por_lado_na_tela:
-            fortes, valores = _pontos_fortes(p, (metricas_lado or {}).get(sid, {}), funcao_do_lado, referencia)
-        else:
-            fortes, valores = _pontos_fortes_fase12(p, referencia_fase12, E.funcao_principal(funcoes.get(sid, [])))
+        # pontos fortes por (lado, função), na prévia e no publicado (decisão 46, FORTES_POR_LADO_PUBLICADOS)
+        fortes, valores = _pontos_fortes(p, (metricas_lado or {}).get(sid, {}), funcao_do_lado, referencia)
         time = pl_.get("team")
         lado = lados.get(time) or {}
         jogadores.append({
@@ -391,7 +350,7 @@ def bloco(payload: dict, ocorrencias: pl.DataFrame | None, *, cabecalho: dict | 
             -((players.get(int(p["steamid"])) or {}).get("rating") or 0.0), p["name"].lower()))[0]["name"]
     estado = "preview" if preview else ("normal" if na_tela else "em_validacao")
     return {
-        "textos": TEXTOS_FASE12 if estado == "em_validacao" and not por_lado_na_tela else TEXTOS,
+        "textos": TEXTOS,
         "estado": estado,
         "link_como_e_conferido": f"{(repo or REPO).rstrip('/')}/blob/main/{COMO_E_CONFERIDO}",
         "degradado": ("▲ " + "; ".join(degradado)) if degradado else "",

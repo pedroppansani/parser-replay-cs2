@@ -67,7 +67,7 @@
   "custou cerca de N pontos de chance de vitória, pela estimativa do modelo".
 - **Ordem e mínimos.** Explícitos antes; dentro do nível, o maior custo. **Fase 12b:** um par (tipo,
   lado) só vira ponto a melhorar se a contagem do jogador ficar ACIMA do percentil
-  `PERCENTIL_PONTO_A_MELHORAR` = 75 da referência (interpolação linear sobre o histograma da célula
+  `PERCENTIL_PONTO_A_MELHORAR` = 90 da referência (75 na fase 12b; 90 desde a fase 16a, ver abaixo) (interpolação linear sobre o histograma da célula
   escolhida) E tiver pelo menos `MIN_OCORRENCIAS_PARA_PONTO` = 2 ocorrências. Igual ou abaixo, ou
   com menos de 2, o item vai para Detalhes ("dentro do normal para a função", ou "dentro do normal
   para os jogadores de TR" quando a referência é o lado inteiro; "aconteceu uma vez" abaixo do
@@ -75,9 +75,24 @@
   "não trocou o aliado" aparecia em quase todos (~3,5 por jogador-partida). `DIST_TROCA` NÃO mudou
   (só depois da calibração do Pedro); a subseção "Quantos pontos a melhorar cada jogador teria" do
   material de calibração (seção 7) mostra o efeito do percentil (50, 75, 90) e de três valores de
-  `DIST_TROCA`. O card traz `limite` (o percentil 75 usado) e a frase "o normal vai até N". Pontos fortes: das métricas que já existem no perfil em que mais é
+  `DIST_TROCA`. O card traz `limite` (o percentil usado) e a frase "o normal vai até N". Pontos fortes: das métricas que já existem no perfil em que mais é
   melhor (`METRICAS_DE_PONTO_FORTE`), as 2 mais acima da régua da função, só acima de 15% da régua
   (a mesma `MARGEM_DESTAQUE` da aba), sem amostra fraca, com o bruto ao lado.
+- **Percentil 90 (fase 16a, decisão do Pedro).** Com 7 tipos em 2 lados são 14 células por jogador; no
+  p75 cada célula tem 25% de chance de passar só por acaso, e isso deu 77% dos jogadores com algum
+  ponto a melhorar; no p90 ficam 47%. Tabela regerada do código (`py -3.12 -m scripts.calibracao.erros_do_jogador`,
+  seção 7.1b do material de calibração; 520 jogador-partidas, a contagem bruta, sem o corte de 3 da tela):
+
+  | percentil | com pelo menos 1 ponto | % | média por jogador-partida |
+  |---|---|---|---|
+  | 50 | 481 | 92% | 2,78 |
+  | 75 | 401 | 77% | 1,58 |
+  | 90 (em uso) | 244 | 47% | 0,71 |
+
+  (Os números citados no pedido, 402 e 1,67 no p75 e 2,88 no p50, vinham de uma geração do material
+  anterior à fase 15, que ainda somava a flash e o dano de utilidade no time dos dois lados; com os dois
+  por lado a tabela é a de cima. As porcentagens 77% e 47% não mudam.) O limiar de ocorrências
+  (`MIN_OCORRENCIAS_PARA_PONTO` = 2) e `DIST_TROCA` não mudaram.
 - **Régua anônima por (lado, função)** (fase 12b; `metrics/erros_reference.json`,
   `scripts/fit_erros_reference.py`). Substitui a régua "por função principal" da fase 12, que usava
   a função do lado com mais rounds e o corpus inteiro como queda: isso misturava os lados (lurker
@@ -91,11 +106,14 @@
   nome nem steamid; decisão 30); (f) vale também para "Pontos fortes", cujas métricas são
   recalculadas só com os rounds de cada lado (`metrics.erros.metricas_por_lado`, mesmos
   numeradores e denominadores do resumo da partida; a soma dos dois lados reproduz o perfil). Pós-plant
-  e retake já são de um lado só (TR e CT) pela definição. **Só na prévia:** `FORTES_POR_LADO_PUBLICADOS`
-  = False (só vira True quando o Pedro aprovar). No site publicado, os pontos fortes, o resumo do
-  jogador e os textos continuam exatamente como na fase 12 (`erros_reference_fase12.json`, cálculo por
-  função principal), para a aba Perfil publicada não mudar enquanto os erros não são validados;
-  conferido contra o main em match_01, 02 e 47 (PAGINA.perfil idêntica). Nenhum parquet por partida mudou:
+  e retake já são de um lado só (TR e CT) pela definição. **Publicado (fase 16a):** `FORTES_POR_LADO_PUBLICADOS` = True por decisão do Pedro. Os
+  pontos fortes e o resumo do jogador seguem a mesma regra dos pontos a melhorar, por lado, com a
+  referência do mesmo lado e função, também no site publicado: os cards ganham `lado` e a frase
+  "referência: ...; a mediana é N". Isso muda a aba Perfil publicada (esperado e autorizado; nos 52
+  jogadores-partida mudam só `fortes`, `resumo` e `textos`; valores, melhorar e detalhes ficam
+  idênticos). O cálculo antigo da fase 12 (`_pontos_fortes_fase12`, `TEXTOS_FASE12`,
+  `erros_reference_fase12.json`) foi removido. Antes (fases 12b a 15) o publicado mantinha a fase 12;
+  conferido contra o main em match_01, 02 e 47. Nenhum parquet por partida mudou:
   `VERSAO_DAS_METRICAS` não sobe (a régua e a página são lidas, não gravadas por partida).
 - **Publicação.** `TIPOS_DE_ERRO_VALIDADOS` começa vazia: a seção "Pontos a melhorar" diz "Em
   validação: os tipos de erro aparecem depois de conferidos" com o link "como é conferido" (seção 7

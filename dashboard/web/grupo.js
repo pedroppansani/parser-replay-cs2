@@ -84,6 +84,7 @@ var Grupo = (function () {
       status: "", erro: "", info: "", erroCampo: null,   // erroCampo: {campo: "nick" | "codigo", texto}
       confirmando: null, alvoTransferencia: "", expulsando: null,
       form: { nick: "", codigo: "" },
+      convite: null,             // o código do link #sala= com nick salvo: a aba mostra um botão só (§19.6)
       anuncio: { ultimo: 0, timer: null, intervalo: null }
     };
   }
@@ -136,11 +137,14 @@ var Grupo = (function () {
     }
     try { G.form.nick = localStorage.getItem("prancheta:grupo-nick") || ""; } catch (e) { G.form.nick = ""; }
     if (nickDoRedirecionamento) { G.form.nick = nickDoRedirecionamento; G.redirecionado = true; }
+    // link #sala= com nick salvo: um botão só, "Entrar no grupo da Mirage como nomad". Abrir o link não entra
+    // sozinho nem faz pedido nenhum: só o clique (decisão 47). O nick do armazém (autor) não conta como salvo.
+    if (m && !nickDoRedirecionamento && /^[A-Z0-9]{8}$/.test(G.form.codigo) && nickValido(G.form.nick)) G.convite = G.form.codigo;
     if (!G.form.nick) G.form.nick = (Prancheta._interno.armazem().autor() || "").trim().slice(0, 24);
     var painel = $("pr-painel-grupo");
     painel.addEventListener("click", aoClicar);
     painel.addEventListener("input", function (e) {
-      if (e.target.id === "gr-nick") G.form.nick = e.target.value;
+      if (e.target.id === "gr-nick") { G.form.nick = e.target.value; atualizaBotaoDoConvite(); }
       if (e.target.id === "gr-codigo") G.form.codigo = e.target.value;
       if (e.target.id === "gr-transferir-para") G.alvoTransferencia = e.target.value;
     });
@@ -289,7 +293,7 @@ var Grupo = (function () {
   }
 
   function falhaAoEntrar(x) {
-    G.fase = "fora";
+    G.fase = "fora"; G.convite = null;      // a recusa aparece no formulário de sempre, com o campo do código
     G.status = ""; G.erro = ""; G.erroCampo = null;
     if (x && x.motivo && ENTRADA[x.motivo]) {
       // nick recusado: erro no campo do nick; código recusado: no campo do código (§19.6); o resto, na linha de status
@@ -640,6 +644,8 @@ var Grupo = (function () {
     G.status = ""; G.erroCampo = null; G.info = "";
     if (acao === "criar") criar();
     else if (acao === "entrar") entrar();
+    else if (acao === "entrar-convite") { G.form.codigo = G.convite || G.form.codigo; entrar(); }
+    else if (acao === "convite-outro") { G.convite = null; renderiza(); }
     else if (acao === "copiar") copiaLink();
     else if (acao === "todos") sala.todosPodem(!G.todos).then(resultadoDaAcao);
     else if (acao === "permite") {
@@ -687,6 +693,17 @@ var Grupo = (function () {
       '<input type="text" id="' + id + '"' + (classeDoInput ? ' class="' + classeDoInput + '"' : "") + extraInput + ' value="' + esc(valor) + '"' +
       (erro ? ' aria-invalid="true" aria-describedby="gr-e-' + campo + '"' : "") + ">" +
       (erro ? '<span class="erro-campo" id="gr-e-' + campo + '" role="alert">✕ Erro: ' + esc(erro) + "</span>" : "") + "</label>";
+  }
+
+  /** O rótulo do botão do convite: o mapa da página (o do link) e o nick que está no campo. */
+  function textoDoConvite() {
+    var nick = (G.form.nick || "").trim();
+    return "Entrar no grupo da " + P.nomeDoMapa() + (nick ? " como " + nick : "");
+  }
+  /** Digitar no campo do nick muda o botão sem redesenhar a aba (o foco fica no campo). */
+  function atualizaBotaoDoConvite() {
+    var b = $("gr-entrar-convite");
+    if (b) b.textContent = textoDoConvite();
   }
 
   /** Bloco de aviso: "info" (nada deu errado) ou "erro" (falha de sistema: --erro, ✕ e a palavra "Erro:"). */
@@ -756,7 +773,17 @@ var Grupo = (function () {
       // grupo indisponível: o formulário some (criar ou entrar falharia); a prancheta segue sozinha
       h += aviso("erro", G.erro, "gr-erro") + '<button type="button" class="pr-b gr-largo" data-acao="de-novo">Tentar de novo</button>' +
         '<p class="gr-texto gr-apagado">' + esc(SEM_O_GRUPO) + "</p>";
+    } else if (G.fase !== "dentro" && G.convite && !(G.erroCampo && G.erroCampo.campo === "codigo")) {
+      // §19.6 "Convite": o link trouxe o código e o nick está salvo; o campo do nick fica editável ao lado do botão
+      var ocupadoC = G.fase === "entrando";
+      if (G.info) h += aviso("info", G.info, "gr-info");
+      h += '<div class="gr-convite">' +
+        campoComErro("gr-nick", "Seu nick", G.form.nick, ' maxlength="24" autocomplete="nickname"', "nick") +
+        '<button type="button" class="pr-b gr-principal gr-largo" id="gr-entrar-convite" data-acao="entrar-convite"' + (ocupadoC ? " disabled" : "") + ">" +
+        esc(textoDoConvite()) + "</button>" +
+        '<button type="button" class="pr-b gr-largo gr-outro" data-acao="convite-outro"' + (ocupadoC ? " disabled" : "") + ">Criar grupo ou usar outro código</button></div>";
     } else if (G.fase !== "dentro") {
+      G.convite = null;
       var ocupado = G.fase === "entrando";
       if (G.info) h += aviso("info", G.info, "gr-info");
       h += '<p class="gr-texto">Desenhe a tática junto, ao vivo: crie um grupo e mande o link, ou entre com o código.</p>' +

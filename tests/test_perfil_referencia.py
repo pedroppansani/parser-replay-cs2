@@ -139,16 +139,18 @@ def test_o_card_diz_o_lado_e_os_lados_nao_se_misturam():
 
 # --- Acima do normal (fase 12b, item 4) -----------------------------------------------------------------
 
-def test_so_vira_ponto_acima_do_percentil_75_e_com_duas_ocorrencias():
-    celula = {"n": 100, "hist": {"0": 25, "1": 25, "2": 25, "3": 15, "4": 10}}      # p75 = 2,25 (interpolado)
-    assert E.PERCENTIL_PONTO_A_MELHORAR == 75
+def test_so_vira_ponto_acima_do_percentil_90_e_com_duas_ocorrencias():
+    celula = {"n": 100, "hist": {"0": 25, "1": 25, "2": 25, "3": 15, "4": 10}}      # p75 = 2,25; p90 = 3,1 (interpolado)
+    assert E.PERCENTIL_PONTO_A_MELHORAR == 90
     assert E.percentil_do_histograma(celula["hist"], 75) == 2.25
-    assert not E.acima_do_normal(2, celula)          # igual ao percentil: dentro do normal
-    assert E.acima_do_normal(3, celula)
+    assert E.percentil_do_histograma(celula["hist"], 90) == pytest.approx(3.1)
+    assert not E.acima_do_normal(3, celula)          # abaixo do percentil 90: dentro do normal
+    assert E.acima_do_normal(4, celula)
+    assert not E.acima_do_normal(2, celula, percentil=75) and E.acima_do_normal(3, celula, percentil=75)
     assert not E.acima_do_normal(1, {"n": 5, "hist": {"0": 5}})                # abaixo de 2, mesmo acima do p75 (0)
     assert E.acima_do_normal(2, {"n": 5, "hist": {"0": 5}})
     assert E.acima_do_normal(2, None) and not E.acima_do_normal(1, None)       # sem régua, só o mínimo
-    assert E.acima_do_normal(3, celula, percentil=90) is False                 # p90 = 3: sobe a barra
+    assert E.acima_do_normal(3, celula, percentil=90) is False                 # p90 = 3,1
     assert E.acima_do_normal(3, celula, percentil=50) is True
 
 
@@ -164,18 +166,19 @@ def test_o_bloco_so_publica_acima_do_normal_e_o_resto_vai_para_detalhes():
     assert vazios and all(j["melhorar_vazio"] == "Nada acima do normal para a função nesta partida" for j in vazios)
 
 
-def test_o_limite_do_card_e_o_p75_da_celula_escolhida():
+def test_o_limite_do_card_e_o_p90_da_celula_escolhida():
     m = PE._ponto_a_melhorar(E.NAO_TROCOU, _ocs("t") + _ocs("t"), 15, _ref(33), "lurker", False, "t")
     assert m["limite"] == 1.0 and m["referencia"].endswith("o normal vai até 1")
     m = PE._ponto_a_melhorar(E.NAO_TROCOU, _ocs("t") + _ocs("t"), 15, _ref(19), "lurker", False, "t")
     assert m["limite"] == 4.0                                             # o TR inteiro, não o lurker nem o CT
 
 
-def test_o_publicado_nao_usa_os_fortes_por_lado():
-    """Com os erros em validação, a aba Perfil publicada não muda (condição de merge): pontos fortes, resumo e
-    textos saem do cálculo da fase 12; o por (lado, função) só existe na prévia."""
+def test_o_publicado_usa_os_fortes_por_lado():
+    """Fase 16a: com `FORTES_POR_LADO_PUBLICADOS` ligada, a aba Perfil publicada (erros em validação) tem os
+    pontos fortes e o resumo calculados por (lado, função), com `lado` nos cards e os textos novos; o cálculo
+    é o mesmo da prévia (a fonte é `_pontos_fortes`)."""
     from scripts.build_web_page import cabecalho_da_partida
-    assert E.FORTES_POR_LADO_PUBLICADOS is False
+    assert E.FORTES_POR_LADO_PUBLICADOS is True
     base = RAIZ / "data" / "processed" / "match_47"
     if not (base / E.ARQUIVO).exists() or not (base / "web_payload.json").exists():
         pytest.skip("sem as ocorrências gravadas da partida")
@@ -183,19 +186,23 @@ def test_o_publicado_nao_usa_os_fortes_por_lado():
     cab = cabecalho_da_partida("match_47", base)
     pub = PE.bloco_da_partida(base, payload, cab)
     previa = PE.bloco_da_partida(base, payload, cab, preview=True)
-    assert pub["estado"] == "em_validacao" and pub["textos"] == PE.TEXTOS_FASE12
-    assert pub["textos"]["nenhum_erro"] == "Nenhum erro se repetiu nesta partida"
-    ref12 = E.carrega_referencia_fase12()
+    assert pub["estado"] == "em_validacao" and pub["textos"] == PE.TEXTOS
+    assert pub["textos"]["nenhum_erro"] == "Nada acima do normal para a função nesta partida"
+    ref = E.carrega_referencia()
     perfis = {int(p["steamid"]): p for p in payload["player_profile"]}
+    por_lado = E.metricas_por_lado(pl.read_parquet(base / "player_profile_rounds.parquet"),
+                                   pl.read_parquet(base / "impacto_per_round.parquet"))
     for j in pub["jogadores"]:
-        assert all("lado" not in f and f["referencia"].startswith("a mediana ") for f in j["fortes"])
         assert j["melhorar"] == [] and j["uma_vez"] == []
+        assert all(f["lado"] in ("ct", "t") and f["referencia"].startswith("referência: ") for f in j["fortes"])
     for j in pub["jogadores"]:
         sid = next(s for s, p in perfis.items() if p["name"] == j["name"])
-        esperado, _ = PE._pontos_fortes_fase12(
-            perfis[sid], ref12, E.funcao_principal([r for r in payload["structural_roles"] if int(r["steamid"]) == sid]))
+        funcao_do_lado = {r["side"]: (None if r.get("texto_empate") else r.get("funcao"))
+                          for r in payload["structural_roles"] if int(r["steamid"]) == sid}
+        esperado, _ = PE._pontos_fortes(perfis[sid], {lado: v for (s, lado), v in por_lado.items() if s == sid},
+                                        funcao_do_lado, ref)
         assert j["fortes"] == esperado
-    assert all("lado" in f for j in previa["jogadores"] for f in j["fortes"])
+    assert [j["fortes"] for j in pub["jogadores"]] == [j["fortes"] for j in previa["jogadores"]]
     assert previa["textos"] == PE.TEXTOS
 
 

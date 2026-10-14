@@ -172,9 +172,19 @@ def _abre(navegador, html: Path, hash_: str = "#perfil", largura: int = 1300):
     return ctx, pg
 
 
+def _com_chip(pg):
+    """Abre um jogador da prévia que tenha chip (com o p90, o jogador aberto por padrão pode não ter ponto)."""
+    for nome in pg.eval_on_selector_all("#pf-botoes button", "bs => bs.map(b => b.dataset.nome)"):
+        pg.locator("#pf-botoes button", has_text=nome).first.click()
+        if pg.locator("#pf-melhorar .pfchip").count():
+            return nome
+    pytest.skip("nenhum jogador com chip na partida")
+
+
 def test_os_chips_abrem_o_replay_no_round_e_no_tempo(navegador, previa):
     ctx, pg = _abre(navegador, previa)
     try:
+        _com_chip(pg)
         chip = pg.locator("#pf-melhorar .pfchip").first
         rnd, t = int(chip.get_attribute("data-round")), float(chip.get_attribute("data-t"))
         chip.click()

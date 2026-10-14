@@ -814,12 +814,11 @@ METRICAS_DE_PONTO_FORTE = (
 # percentil de contagem não ser um jogador só. Com os 1.040 jogador-lados do corpus de 52 partidas,
 # só a célula Suporte do TR (17) cai no lado inteiro.
 MIN_REF_LADO_FUNCAO = 20
-# Percentil da referência acima do qual a contagem do jogador vira "ponto a melhorar" (pedido 12b: o
-# item só aparece quando o jogador erra MAIS do que 3 em cada 4 jogadores da mesma função e lado).
-# Origem: o quartil superior, a convenção para "acima do normal" numa distribuição; o material de
-# calibração (seção 7) mostra quantos pontos a melhorar cada valor (50, 75, 90) daria. Percentil por
-# interpolação linear, como numpy.percentile.
-PERCENTIL_PONTO_A_MELHORAR = 75
+# Percentil da referência acima do qual a contagem do jogador vira "ponto a melhorar". Fase 16a: 90 (decisão
+# do Pedro; era 75 na 12b). Origem: com 7 tipos em 2 lados são 14 células por jogador, e no p75 cada uma tem 25%
+# de chance de passar só por acaso (77% dos jogadores com algum ponto); no p90 são 47%. O material de calibração
+# (seção 7.1b) mostra o efeito de 50, 75 e 90. Percentil por interpolação linear, como numpy.percentile.
+PERCENTIL_PONTO_A_MELHORAR = 90
 TODAS = "__todas__"
 LADOS = ("ct", "t")
 ROTULO_DO_LADO = {"ct": "CT", "t": "TR"}
@@ -937,24 +936,9 @@ def _n_d_do_impacto(g: pl.DataFrame, n_col: str, d_col: str) -> tuple[float, flo
     raise KeyError((n_col, d_col))
 
 
-# "Pontos fortes" por (lado, função) só na prévia. No site publicado, os pontos fortes e o resumo do jogador
-# continuam como na fase 12 (referência por função principal, `erros_reference_fase12.json`), para a aba
-# Perfil publicada não mudar enquanto os erros não são validados. SÓ VIRA True depois que o Pedro aprovar.
-FORTES_POR_LADO_PUBLICADOS = False
-REFERENCIA_FASE12_FILE = Path(__file__).resolve().parent / "erros_reference_fase12.json"
-
-
-def funcao_principal(linhas: list[dict]) -> str | None:
-    """(fase 12, só o cálculo publicado dos pontos fortes) A função do lado com mais rounds na função
-    dominante; sem função, None."""
-    com = [r for r in linhas if r.get("funcao")]
-    if not com:
-        return None
-    return sorted(com, key=lambda r: (-int(r.get("rounds_na_funcao") or 0), r.get("side") or ""))[0]["funcao"]
-
-
-def carrega_referencia_fase12() -> dict | None:
-    return carrega_referencia(REFERENCIA_FASE12_FILE)
+# Pontos fortes por (lado, função), a mesma regra dos pontos a melhorar, também no site publicado (decisão 46;
+# o Pedro aprovou na fase 16a). O cálculo antigo da fase 12 (por função principal) foi removido.
+FORTES_POR_LADO_PUBLICADOS = True
 
 
 def carrega_referencia(caminho: Path = REFERENCIA_FILE) -> dict | None:
