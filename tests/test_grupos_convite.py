@@ -124,10 +124,14 @@ def test_outro_codigo_volta_ao_formulario(contexto, pagina):
     assert nada_pedido(pg)
 
 
-def test_o_botao_cabe_em_375(contexto, pagina):
-    codigo = sala_da_lider(contexto, pagina)
-    pg = abre(contexto, pagina, f"#sala={codigo}", nick_salvo="spinx_com_nick_longo_ok")
-    pg.set_viewport_size({"width": 375, "height": 800})
-    pg.wait_for_selector("#gr-entrar-convite")
-    assert pg.evaluate("() => document.documentElement.scrollWidth") <= 375
-    assert pg.locator("#gr-entrar-convite").bounding_box()["height"] >= 44
+def test_o_botao_cabe_em_375(navegador, pagina):
+    ctx = navegador.new_context(viewport={"width": 375, "height": 800})          # 375 desde a abertura da página
+    try:
+        codigo = sala_da_lider(ctx, pagina)
+        pg = abre(ctx, pagina, f"#sala={codigo}", nick_salvo="spinx_com_nick_longo_ok")
+        pg.wait_for_selector("#gr-entrar-convite")
+        assert pg.evaluate("() => document.documentElement.scrollWidth") <= 375
+        assert pg.locator("#gr-entrar-convite").bounding_box()["height"] >= 44
+        assert pg.inner_text("#gr-entrar-convite") == "Entrar no grupo da Mirage como spinx_com_nick_longo_ok"
+    finally:
+        ctx.close()
