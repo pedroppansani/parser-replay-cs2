@@ -143,8 +143,8 @@ texto completo está na nota do link (`notas/decisoes/`).
 - [42](notas/decisoes/42-prancheta-no-tempo.md) Tática com horário toca no relógio; lugar pelo `place` do corpus.
 - [43](notas/decisoes/43-round-real-na-prancheta.md) Round real é base travada; editar em t troca o real dali.
 - [44](notas/decisoes/44-direcao-visual-sala-de-demo.md) Direção visual "Sala de demo": forma do design, lógica do main.
-- [45](notas/decisoes/45-granada-desenhada.md) Granada desenhada (replay e prancheta) é desenho: anel tracejado e 85%, sem horário, fora da linha do tempo e do roteiro; só "Converter em granada com horário" a torna evento.
-- [46](notas/decisoes/46-erros-no-perfil.md) Erro no Perfil: cada tipo é função pura de `metrics/erros.py`, com nível escrito (explícito ou depende da tática) e custo em ΔWPA; a referência é do mesmo lado e função; nenhum tipo vai ao site sem o Pedro validá-lo (`TIPOS_DE_ERRO_VALIDADOS`).
+- [45](notas/decisoes/45-granada-desenhada.md) Granada desenhada é desenho: anel tracejado de tela e carimbo, corpo a 100%, sem horário, fora da linha do tempo e do roteiro; só "Converter em granada com horário" a torna evento.
+- [46](notas/decisoes/46-erros-no-perfil.md) Erro no Perfil: cada tipo é função pura de `metrics/erros.py`, com nível escrito (explícito ou depende da tática) e custo em ΔWPA; referência do mesmo lado e função; nenhum tipo vai ao site sem o Pedro validá-lo (`TIPOS_DE_ERRO_VALIDADOS`).
 - [47](notas/decisoes/47-grupos-na-prancheta.md) Grupo (Supabase) só transporta o log, sem mudar operação; quem pode desenhar é o RLS; sem grupo nada vai à rede; `GRUPOS_ATIVOS` só vira True após a revisão do `seguranca` e o OK do Pedro; chave secreta nunca no repositório.
 
 ## Números citáveis
