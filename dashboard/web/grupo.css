@@ -90,7 +90,7 @@
 .aba-contador { display: inline-grid; place-items: center; min-width: 20px; height: 20px; margin-left: 6px; padding: 0 5px; border-radius: 99px;
   background: var(--tinta); color: var(--fundo); font-family: var(--f-num); font-size: var(--t-xs); font-weight: 700; letter-spacing: 0; vertical-align: 1px; }
 /* quatro abas no painel: cabem em 375 px sem rolar */
-.pr-abas.quatro [role="tab"] { padding: 0 8px; letter-spacing: 0.04em; }
+.pr-abas.quatro [role="tab"] { padding: 0 8px; letter-spacing: 0.04em; white-space: nowrap; }
 
 /* linha de dica com o grupo (§19.6): o texto e, à direita, a etiqueta temporária de quem mexeu */
 .pr-dica-estado.com-grupo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 14px; line-height: 1.45; }
