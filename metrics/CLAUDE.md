@@ -108,7 +108,7 @@ estão em `dashboard/web/CLAUDE.md` e valem aqui.
   não existe nem se estima) (46)
 - Todo erro é de um lado só e nenhum tipo soma os dois; a régua é anônima por (lado, função), e
   os lados nunca se misturam, nem como queda (46)
-- Ponto a melhorar só acima do percentil 75 da régua e com pelo menos 2 ocorrências; custo é
+- Ponto a melhorar só acima do percentil 90 da régua e com pelo menos 2 ocorrências; custo é
   ΔWPA "pela estimativa do modelo"; `DIST_TROCA` só muda depois da calibração do Pedro (46)
 
 ## Calibração do Pedro (não resolva sozinho)

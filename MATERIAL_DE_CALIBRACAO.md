@@ -968,7 +968,7 @@ O tipo "Utilidade no bolso" exige o inventário na hora da morte. O parser lê o
 
 ### 7.1b Quantos pontos a melhorar cada jogador teria
 
-Uma ocorrência só vira "ponto a melhorar" quando a contagem do jogador num lado fica ACIMA do percentil 75 da referência (os jogador-lados do corpus com a mesma função no mesmo lado; com menos de 20 deles, todos os jogador-lados daquele lado) e tem pelo menos 2 ocorrências. Um jogador-lado é um jogador numa partida, num dos lados (1040 no corpus). A tela mostra no máximo 3 por jogador; as contagens abaixo são as brutas, sem esse corte.
+Uma ocorrência só vira "ponto a melhorar" quando a contagem do jogador num lado fica ACIMA do percentil 90 da referência (os jogador-lados do corpus com a mesma função no mesmo lado; com menos de 20 deles, todos os jogador-lados daquele lado) e tem pelo menos 2 ocorrências. Um jogador-lado é um jogador numa partida, num dos lados (1040 no corpus). A tela mostra no máximo 3 por jogador; as contagens abaixo são as brutas, sem esse corte.
 
 #### Distribuição da contagem por jogador-lado, por tipo e lado
 
@@ -984,18 +984,18 @@ Uma ocorrência só vira "ponto a melhorar" quando a contagem do jogador num lad
 | Morreu isolado | TR | 520 | 1,63 | 1,0 | 2,0 | 3,0 | 6 | 21% |
 | Primeira morte sem troca | CT | 520 | 0,54 | 0,0 | 1,0 | 2,0 | 4 | 59% |
 | Primeira morte sem troca | TR | 520 | 0,78 | 1,0 | 1,0 | 2,0 | 6 | 50% |
-| Flash no time | CT | 520 | 0,62 | 0,0 | 0,0 | 1,0 | 15 | 82% |
-| Flash no time | TR | 520 | 1,07 | 0,0 | 1,0 | 3,0 | 21 | 73% |
-| Dano de utilidade no time | CT | 520 | 0,03 | 0,0 | 0,0 | 0,0 | 2 | 97% |
-| Dano de utilidade no time | TR | 520 | 0,03 | 0,0 | 0,0 | 0,0 | 2 | 98% |
+| Flash no time | CT | 520 | 0,30 | 0,0 | 0,0 | 1,0 | 15 | 86% |
+| Flash no time | TR | 520 | 0,72 | 0,0 | 0,0 | 1,0 | 21 | 76% |
+| Dano de utilidade no time | CT | 520 | 0,03 | 0,0 | 0,0 | 0,0 | 2 | 98% |
+| Dano de utilidade no time | TR | 520 | 0,02 | 0,0 | 0,0 | 0,0 | 2 | 98% |
 
 #### Pontos a melhorar por jogador-partida, por percentil
 
 | percentil | jogador-partidas | com pelo menos 1 | % | média | com 0 | com 1 | com 2 | com 3 ou mais |
 |---|---|---|---|---|---|---|---|---|
-| 50 | 520 | 481 | 92% | 2,88 | 39 | 95 | 109 | 277 |
-| 75 (proposto) | 520 | 402 | 77% | 1,67 | 118 | 150 | 121 | 131 |
-| 90 | 520 | 244 | 47% | 0,75 | 276 | 148 | 61 | 35 |
+| 50 | 520 | 481 | 92% | 2,78 | 39 | 97 | 118 | 266 |
+| 75 | 520 | 401 | 77% | 1,58 | 119 | 166 | 117 | 118 |
+| 90 (em uso) | 520 | 244 | 47% | 0,71 | 276 | 161 | 54 | 29 |
 
 Pares (tipo, lado) que viram ponto a melhorar, por tipo:
 
@@ -1006,21 +1006,21 @@ Pares (tipo, lado) que viram ponto a melhorar, por tipo:
 | Perdeu a troca | 210 | 120 | 62 |
 | Morreu isolado | 465 | 229 | 76 |
 | Primeira morte sem troca | 157 | 139 | 52 |
-| Flash no time | 116 | 111 | 77 |
+| Flash no time | 65 | 65 | 53 |
 | Dano de utilidade no time | 6 | 6 | 6 |
 
 #### O efeito de `DIST_TROCA` em "não trocou" e "possível bait"
 
-Cada linha recalcula as ocorrências do corpus com outro `DIST_TROCA` (o atual está marcado) e refaz a referência com elas. Ponto a melhorar com o percentil 75. O valor da constante NÃO muda agora: depende da sua calibração.
+Cada linha recalcula as ocorrências do corpus com outro `DIST_TROCA` (o atual está marcado) e refaz a referência com elas. Ponto a melhorar com o percentil 90. O valor da constante NÃO muda agora: depende da sua calibração.
 
 | `DIST_TROCA` | tipo | ocorrências no corpus | média por jogador-lado | jogador-partidas com pelo menos 1 ponto a melhorar | % |
 |---|---|---|---|---|---|
-| 400 | Não trocou o aliado | 1099 | 1,06 | 141 | 27% |
-| 400 | Possível bait | 434 | 0,42 | 79 | 15% |
-| 600 (atual) | Não trocou o aliado | 1841 | 1,77 | 143 | 28% |
-| 600 (atual) | Possível bait | 848 | 0,82 | 106 | 20% |
-| 800 | Não trocou o aliado | 2668 | 2,57 | 165 | 32% |
-| 800 | Possível bait | 1392 | 1,34 | 122 | 23% |
+| 400 | Não trocou o aliado | 1099 | 1,06 | 58 | 11% |
+| 400 | Possível bait | 434 | 0,42 | 27 | 5% |
+| 600 (atual) | Não trocou o aliado | 1841 | 1,77 | 72 | 14% |
+| 600 (atual) | Possível bait | 848 | 0,82 | 43 | 8% |
+| 800 | Não trocou o aliado | 2668 | 2,57 | 71 | 14% |
+| 800 | Possível bait | 1392 | 1,34 | 57 | 11% |
 
 ### 7.2 Dez exemplos por tipo
 

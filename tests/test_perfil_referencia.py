@@ -139,16 +139,18 @@ def test_o_card_diz_o_lado_e_os_lados_nao_se_misturam():
 
 # --- Acima do normal (fase 12b, item 4) -----------------------------------------------------------------
 
-def test_so_vira_ponto_acima_do_percentil_75_e_com_duas_ocorrencias():
-    celula = {"n": 100, "hist": {"0": 25, "1": 25, "2": 25, "3": 15, "4": 10}}      # p75 = 2,25 (interpolado)
-    assert E.PERCENTIL_PONTO_A_MELHORAR == 75
+def test_so_vira_ponto_acima_do_percentil_90_e_com_duas_ocorrencias():
+    celula = {"n": 100, "hist": {"0": 25, "1": 25, "2": 25, "3": 15, "4": 10}}      # p75 = 2,25; p90 = 3,1 (interpolado)
+    assert E.PERCENTIL_PONTO_A_MELHORAR == 90
     assert E.percentil_do_histograma(celula["hist"], 75) == 2.25
-    assert not E.acima_do_normal(2, celula)          # igual ao percentil: dentro do normal
-    assert E.acima_do_normal(3, celula)
+    assert E.percentil_do_histograma(celula["hist"], 90) == pytest.approx(3.1)
+    assert not E.acima_do_normal(3, celula)          # abaixo do percentil 90: dentro do normal
+    assert E.acima_do_normal(4, celula)
+    assert not E.acima_do_normal(2, celula, percentil=75) and E.acima_do_normal(3, celula, percentil=75)
     assert not E.acima_do_normal(1, {"n": 5, "hist": {"0": 5}})                # abaixo de 2, mesmo acima do p75 (0)
     assert E.acima_do_normal(2, {"n": 5, "hist": {"0": 5}})
     assert E.acima_do_normal(2, None) and not E.acima_do_normal(1, None)       # sem régua, só o mínimo
-    assert E.acima_do_normal(3, celula, percentil=90) is False                 # p90 = 3: sobe a barra
+    assert E.acima_do_normal(3, celula, percentil=90) is False                 # p90 = 3,1
     assert E.acima_do_normal(3, celula, percentil=50) is True
 
 
@@ -164,7 +166,7 @@ def test_o_bloco_so_publica_acima_do_normal_e_o_resto_vai_para_detalhes():
     assert vazios and all(j["melhorar_vazio"] == "Nada acima do normal para a função nesta partida" for j in vazios)
 
 
-def test_o_limite_do_card_e_o_p75_da_celula_escolhida():
+def test_o_limite_do_card_e_o_p90_da_celula_escolhida():
     m = PE._ponto_a_melhorar(E.NAO_TROCOU, _ocs("t") + _ocs("t"), 15, _ref(33), "lurker", False, "t")
     assert m["limite"] == 1.0 and m["referencia"].endswith("o normal vai até 1")
     m = PE._ponto_a_melhorar(E.NAO_TROCOU, _ocs("t") + _ocs("t"), 15, _ref(19), "lurker", False, "t")

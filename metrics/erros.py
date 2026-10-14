@@ -814,12 +814,11 @@ METRICAS_DE_PONTO_FORTE = (
 # percentil de contagem não ser um jogador só. Com os 1.040 jogador-lados do corpus de 52 partidas,
 # só a célula Suporte do TR (17) cai no lado inteiro.
 MIN_REF_LADO_FUNCAO = 20
-# Percentil da referência acima do qual a contagem do jogador vira "ponto a melhorar" (pedido 12b: o
-# item só aparece quando o jogador erra MAIS do que 3 em cada 4 jogadores da mesma função e lado).
-# Origem: o quartil superior, a convenção para "acima do normal" numa distribuição; o material de
-# calibração (seção 7) mostra quantos pontos a melhorar cada valor (50, 75, 90) daria. Percentil por
-# interpolação linear, como numpy.percentile.
-PERCENTIL_PONTO_A_MELHORAR = 75
+# Percentil da referência acima do qual a contagem do jogador vira "ponto a melhorar". Fase 16a: 90 (decisão
+# do Pedro; era 75 na 12b). Origem: com 7 tipos em 2 lados são 14 células por jogador, e no p75 cada uma tem 25%
+# de chance de passar só por acaso (77% dos jogadores com algum ponto); no p90 são 47%. O material de calibração
+# (seção 7.1b) mostra o efeito de 50, 75 e 90. Percentil por interpolação linear, como numpy.percentile.
+PERCENTIL_PONTO_A_MELHORAR = 90
 TODAS = "__todas__"
 LADOS = ("ct", "t")
 ROTULO_DO_LADO = {"ct": "CT", "t": "TR"}
