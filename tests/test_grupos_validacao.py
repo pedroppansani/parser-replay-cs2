@@ -239,8 +239,9 @@ def test_antes_de_criar_o_grupo_a_tela_lista_os_nomes_de_autor_e_nao_regrava_nad
     pg.fill("#gr-nick", "maria")
     pg.click('[data-acao="criar"]')
     pg.wait_for_function("() => Grupo._interno.G().fase === 'dentro'")
-    pg.wait_for_function("() => window.__servidorFalso.ops.length >= 4")
-    no_servidor = pg.evaluate("() => window.__servidorFalso.ops.map((l) => l.op)")
+    # fase 16b (servidor): o estado inicial vai numa linha só (cria_sala), não mais como linhas de `operacoes`
+    pg.wait_for_function("() => window.__servidorFalso.inicialDe(Grupo._interno.G().salaId).length >= 4")
+    no_servidor = pg.evaluate("() => window.__servidorFalso.inicialDe(Grupo._interno.G().salaId)")
     local = json.loads(antes)
     assert [o for o in no_servidor if o["id"] in {x["id"] for x in local}] == local
     assert pg.evaluate("() => Prancheta._interno.S.doc.operacoes.map((o) => o.autor)").count("João Souza") == 1
