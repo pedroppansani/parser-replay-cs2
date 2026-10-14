@@ -20,9 +20,10 @@ from scripts.design._comum import DOCS, chrome
 
 PASTA = os.environ.get("MEDE_PASTA") or str(DOCS)   # MEDE_PASTA=preview mede a prévia
 PORTA = 8765
-PAGINAS = ["index.html", "match_02.html", "match_02.html#perfil"]
+PAGINAS = ["index.html", "match_02.html", "match_02.html#perfil", "prancheta_de_mirage.html"]
 # (LCP em s, CLS); a aba Perfil (fase 15, §19.8) só tem critério de CLS
-LIMITES = {"index.html": (2.5, 0.1), "match_02.html": (None, 0.1), "match_02.html#perfil": (None, 0.1)}
+LIMITES = {"index.html": (2.5, 0.1), "match_02.html": (None, 0.1), "match_02.html#perfil": (None, 0.1),
+           "prancheta_de_mirage.html": (None, 0.05)}
 REDE = {"offline": False, "latency": 165, "downloadThroughput": 9_000_000 / 8, "uploadThroughput": 1_500_000 / 8}
 JS_OBS = """
 window.__lcp = 0; window.__lcpEl = ""; window.__cls = 0;
