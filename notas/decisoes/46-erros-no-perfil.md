@@ -91,11 +91,14 @@
   nome nem steamid; decisão 30); (f) vale também para "Pontos fortes", cujas métricas são
   recalculadas só com os rounds de cada lado (`metrics.erros.metricas_por_lado`, mesmos
   numeradores e denominadores do resumo da partida; a soma dos dois lados reproduz o perfil). Pós-plant
-  e retake já são de um lado só (TR e CT) pela definição. **Só na prévia:** `FORTES_POR_LADO_PUBLICADOS`
-  = False (só vira True quando o Pedro aprovar). No site publicado, os pontos fortes, o resumo do
-  jogador e os textos continuam exatamente como na fase 12 (`erros_reference_fase12.json`, cálculo por
-  função principal), para a aba Perfil publicada não mudar enquanto os erros não são validados;
-  conferido contra o main em match_01, 02 e 47 (PAGINA.perfil idêntica). Nenhum parquet por partida mudou:
+  e retake já são de um lado só (TR e CT) pela definição. **Publicado (fase 16a):** `FORTES_POR_LADO_PUBLICADOS` = True por decisão do Pedro. Os
+  pontos fortes e o resumo do jogador seguem a mesma regra dos pontos a melhorar, por lado, com a
+  referência do mesmo lado e função, também no site publicado: os cards ganham `lado` e a frase
+  "referência: ...; a mediana é N". Isso muda a aba Perfil publicada (esperado e autorizado; nos 52
+  jogadores-partida mudam só `fortes`, `resumo` e `textos`; valores, melhorar e detalhes ficam
+  idênticos). O cálculo antigo da fase 12 (`_pontos_fortes_fase12`, `TEXTOS_FASE12`,
+  `erros_reference_fase12.json`) foi removido. Antes (fases 12b a 15) o publicado mantinha a fase 12;
+  conferido contra o main em match_01, 02 e 47. Nenhum parquet por partida mudou:
   `VERSAO_DAS_METRICAS` não sobe (a régua e a página são lidas, não gravadas por partida).
 - **Publicação.** `TIPOS_DE_ERRO_VALIDADOS` começa vazia: a seção "Pontos a melhorar" diz "Em
   validação: os tipos de erro aparecem depois de conferidos" com o link "como é conferido" (seção 7

@@ -171,11 +171,12 @@ def test_o_limite_do_card_e_o_p75_da_celula_escolhida():
     assert m["limite"] == 4.0                                             # o TR inteiro, não o lurker nem o CT
 
 
-def test_o_publicado_nao_usa_os_fortes_por_lado():
-    """Com os erros em validação, a aba Perfil publicada não muda (condição de merge): pontos fortes, resumo e
-    textos saem do cálculo da fase 12; o por (lado, função) só existe na prévia."""
+def test_o_publicado_usa_os_fortes_por_lado():
+    """Fase 16a: com `FORTES_POR_LADO_PUBLICADOS` ligada, a aba Perfil publicada (erros em validação) tem os
+    pontos fortes e o resumo calculados por (lado, função), com `lado` nos cards e os textos novos; o cálculo
+    é o mesmo da prévia (a fonte é `_pontos_fortes`)."""
     from scripts.build_web_page import cabecalho_da_partida
-    assert E.FORTES_POR_LADO_PUBLICADOS is False
+    assert E.FORTES_POR_LADO_PUBLICADOS is True
     base = RAIZ / "data" / "processed" / "match_47"
     if not (base / E.ARQUIVO).exists() or not (base / "web_payload.json").exists():
         pytest.skip("sem as ocorrências gravadas da partida")
@@ -183,19 +184,23 @@ def test_o_publicado_nao_usa_os_fortes_por_lado():
     cab = cabecalho_da_partida("match_47", base)
     pub = PE.bloco_da_partida(base, payload, cab)
     previa = PE.bloco_da_partida(base, payload, cab, preview=True)
-    assert pub["estado"] == "em_validacao" and pub["textos"] == PE.TEXTOS_FASE12
-    assert pub["textos"]["nenhum_erro"] == "Nenhum erro se repetiu nesta partida"
-    ref12 = E.carrega_referencia_fase12()
+    assert pub["estado"] == "em_validacao" and pub["textos"] == PE.TEXTOS
+    assert pub["textos"]["nenhum_erro"] == "Nada acima do normal para a função nesta partida"
+    ref = E.carrega_referencia()
     perfis = {int(p["steamid"]): p for p in payload["player_profile"]}
+    por_lado = E.metricas_por_lado(pl.read_parquet(base / "player_profile_rounds.parquet"),
+                                   pl.read_parquet(base / "impacto_per_round.parquet"))
     for j in pub["jogadores"]:
-        assert all("lado" not in f and f["referencia"].startswith("a mediana ") for f in j["fortes"])
         assert j["melhorar"] == [] and j["uma_vez"] == []
+        assert all(f["lado"] in ("ct", "t") and f["referencia"].startswith("referência: ") for f in j["fortes"])
     for j in pub["jogadores"]:
         sid = next(s for s, p in perfis.items() if p["name"] == j["name"])
-        esperado, _ = PE._pontos_fortes_fase12(
-            perfis[sid], ref12, E.funcao_principal([r for r in payload["structural_roles"] if int(r["steamid"]) == sid]))
+        funcao_do_lado = {r["side"]: (None if r.get("texto_empate") else r.get("funcao"))
+                          for r in payload["structural_roles"] if int(r["steamid"]) == sid}
+        esperado, _ = PE._pontos_fortes(perfis[sid], {lado: v for (s, lado), v in por_lado.items() if s == sid},
+                                        funcao_do_lado, ref)
         assert j["fortes"] == esperado
-    assert all("lado" in f for j in previa["jogadores"] for f in j["fortes"])
+    assert [j["fortes"] for j in pub["jogadores"]] == [j["fortes"] for j in previa["jogadores"]]
     assert previa["textos"] == PE.TEXTOS
 
 
