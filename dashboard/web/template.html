@@ -827,7 +827,8 @@
 
 
   /* ---- perfil do jogador ---- */
-  .pfbotoes { display:flex; flex-wrap:wrap; gap:8px; margin:20px 0 4px; }
+  .pfbotoes { display:flex; flex-wrap:nowrap; overflow-x:auto; scrollbar-width:thin; gap:8px; margin:20px 0 4px; padding-bottom:6px; }
+  .pfbotoes > * { flex:none; }
   .pfbotoes .timelab { font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size:10px; letter-spacing:.07em;
                        text-transform:uppercase; color:var(--apagado); align-self:center;
                        margin-right:2px; font-weight: 600; }
@@ -892,25 +893,89 @@
     color: var(--apagado); margin-top: 4px; }
   .pfcab .funcs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
   .pfcab p { margin: 10px 0 0; font-size: var(--t-sm); color: var(--tinta-2); line-height: 1.55; max-width: 76ch; }
-  .tag.neutro { color: var(--neutro); border: 1px dashed var(--neutro); background: var(--superficie); }
+  /* §19.5: a borda diz se a página afirma (tracejada = não afirma; cheia = afirma "dentro do normal"); o marcador
+     desenhado em CSS diz o tipo da reserva. Nenhuma cor nova: tudo em tokens existentes. */
+  .tag.neutro { display: inline-flex; align-items: center; gap: 5px; color: var(--tinta-2); border: 1px dashed var(--apagado);
+    background: transparent; }
+  .tag.neutro.tendencia::before { content: ""; width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid currentColor;
+    background: linear-gradient(90deg, currentColor 50%, transparent 50%); flex: none; }
+  .tag.neutro.validacao { font-style: italic; }
+  .tag.neutro.validacao::before { content: ""; width: 8px; height: 8px; border-radius: 50%; border: 1.5px dotted currentColor; flex: none; }
+  .tag.neutro.normal { border: 1px solid var(--borda); background: var(--superficie-2); }
+  .tag.neutro.normal::before { content: ""; width: 8px; height: 5px; border-top: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor; flex: none; }
+  /* "explícito" deixa de ser verde (decisão 46, fase 15): erro em verde lê-se como "bom"; o verde só diz "afirmado e bom" */
+  .tag.explicito { background: var(--tinta); color: var(--fundo); border: 1px solid var(--tinta); letter-spacing: 0.06em;
+    text-transform: uppercase; }
+  .rot { font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-weight: var(--peso-forte); font-size: var(--t-xs);
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--apagado); margin: 0; }
+  .aviso-bloco { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; align-items: start; padding: 10px 12px;
+    border-radius: var(--r-sm); background: var(--superficie-2); color: var(--tinta); border-left: 3px solid var(--aviso);
+    font-size: var(--t-sm); }
+  .aviso-bloco .ico { color: var(--aviso); font-weight: 700; }
+  .aviso-bloco.neutro { border-left: 3px dashed var(--borda); }
+  .aviso-bloco.neutro .ico { color: var(--neutro); }
+  .aviso-bloco p { margin: 0; }
   .pfsec { margin-top: 26px; }
   .pfsec > h3 { font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: var(--t-lg); margin: 0 0 10px;
     letter-spacing: -0.01em; }
   .pfnota { font-size: var(--t-sm); color: var(--tinta-2); margin: 0 0 8px; max-width: 76ch; }
   .pfnota a { color: var(--link); text-decoration: underline; }
-  .pfitem { padding: 14px 16px; border-top: 2px solid var(--borda); }
-  .pfitem + .pfitem { margin-top: 10px; }
-  .pfitem .topo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; }
-  .pfitem .titulo { font-weight: 700; font-size: var(--t-base); color: var(--tinta); }
-  .pfitem .cont { font-size: var(--t-sm); color: var(--tinta-2); }
-  .pfitem .ref, .pfitem .custo { font-size: var(--t-xs); color: var(--apagado); margin-top: 4px; }
-  .pfitem .motivo { font-size: var(--t-sm); color: var(--tinta-2); margin-top: 6px; }
-  .pfitem .frase { font-size: var(--t-sm); color: var(--tinta); margin: 8px 0 0; line-height: 1.5; }
-  .pfitem .valor { font-family: var(--f-num); font-weight: 600; color: var(--tinta); }
-  .pfitem .bruto { font-family: var(--f-texto); font-size: var(--t-xs); color: var(--apagado); }
-  /* chips de round: a faixa de rounds do replay (.rchip, 44 px) sem a barra do vencedor; em 375 rolam numa linha */
-  .pfchips { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: thin; padding: 2px 0 4px; margin-top: 10px; }
-  .pfchips .rchip::after { display: none; }
+  /* §19.1/19.2: .ponto.melhorar (explícito: barra cheia 4 px --tinta; depende: tracejada) e .ponto.forte (barra --decisivo) */
+  .pflista { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+  .ponto { position: relative; display: grid; grid-template-columns: 2ch minmax(0, 1fr); column-gap: 14px; padding: 14px 16px 14px 20px;
+    background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--r-md); }
+  .ponto::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--barra, var(--borda));
+    border-radius: var(--r-md) 0 0 var(--r-md); }
+  .ponto.explicito { --barra: var(--tinta); }
+  .ponto.depende::before { background: repeating-linear-gradient(180deg, var(--apagado) 0 6px, transparent 6px 10px); }
+  .ponto.forte { --barra: var(--decisivo); grid-template-columns: minmax(0, 1fr); }
+  .ponto .ordem { grid-row: 1 / span 8; grid-column: 1; font-family: var(--f-num); font-weight: 600; font-size: var(--t-xl); line-height: 1;
+    color: var(--apagado); padding-top: 1px; }
+  .ponto.explicito .ordem { color: var(--tinta); }
+  .ponto > :not(.ordem) { grid-column: 2; min-width: 0; }
+  .ponto.forte > * { grid-column: 1; }
+  .ponto .topo { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+  .ponto .titulo { font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-weight: 700; font-size: var(--t-lg); line-height: 1.15;
+    color: var(--tinta); }
+  .ponto.depende .titulo { font-weight: 600; color: var(--tinta-2); }
+  .ponto .sub { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: var(--t-sm); color: var(--tinta-2); margin-top: 4px; }
+  .ponto .ref { font-size: var(--t-sm); color: var(--apagado); margin-top: 6px; }
+  .ponto .custo { font-size: var(--t-sm); color: var(--tinta-2); margin-top: 2px; }
+  .ponto .motivo { font-size: var(--t-sm); color: var(--tinta-2); margin-top: 8px; }
+  .ponto .como { margin-top: 10px; }
+  .ponto .como .rot { display: block; margin-bottom: 2px; }
+  .ponto .como p { margin: 0; font-size: var(--t-base); color: var(--tinta); line-height: 1.45; }
+  .ponto .rounds .rot { display: block; margin-top: 10px; }
+  .ponto .valor { font-family: var(--f-num); font-weight: 600; font-size: var(--t-xl); color: var(--tinta); line-height: 1; }
+  .ponto .bruto { font-size: var(--t-sm); color: var(--apagado); }
+  .ponto.compacto { padding-block: 10px; grid-template-columns: minmax(0, 1fr); }
+  .ponto.compacto > :not(.ordem) { grid-column: 1; }
+  .ponto.compacto .titulo { font-size: var(--t-base); }
+  .ponto.compacto + .ponto.compacto { margin-top: 8px; }
+  .ponto.esqueleto::before { background: var(--superficie-2); }
+  .esqueleto { background: linear-gradient(90deg, var(--superficie-2) 0 40%, var(--linha) 50%, var(--superficie-2) 60% 100%);
+    background-size: 300% 100%; animation: brilho 1.4s linear infinite; border-radius: var(--r-sm); min-height: 14px; }
+  @keyframes brilho { to { background-position: -150% 0; } }
+  /* §19.3 chips de round: round e relógio, 44 x 44; hover sem deslocamento (a faixa rola e recortaria); foco com folga;
+     visitado = fundo + quadrado cheio (forma, não só cor); a faixa rola numa linha, com sombra na borda enquanto sobra chip */
+  .pfchips { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: thin; padding: 4px 4px 6px; margin: 6px -4px 0;
+    scroll-snap-type: x proximity; }
+  .pfchips.rola { -webkit-mask-image: linear-gradient(90deg, black calc(100% - 32px), transparent);
+    mask-image: linear-gradient(90deg, black calc(100% - 32px), transparent); }
+  .pfchips.rola.fim { -webkit-mask-image: none; mask-image: none; }
+  .pfchip { appearance: none; cursor: pointer; flex: none; scroll-snap-align: start; position: relative; min-width: var(--toque);
+    height: var(--toque); padding: 0 8px; display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2px; line-height: 1; border: 1px solid var(--borda); border-radius: var(--r-sm); background: var(--superficie);
+    color: var(--tinta-2); font-family: var(--f-num); font-variant-numeric: tabular-nums;
+    transition: background var(--dur), border-color var(--dur), color var(--dur); }
+  .pfchip .n { font-size: var(--t-sm); font-weight: 600; }
+  .pfchip .h { font-size: var(--t-xs); color: var(--apagado); }
+  .pfchip:hover { background: var(--superficie-2); border-color: var(--tinta-2); color: var(--tinta); }
+  .pfchip:hover .h { color: var(--tinta-2); }
+  .pfchip:focus-visible { outline: 2px solid var(--foco); outline-offset: 2px; }
+  .pfchip[data-visitado] { background: var(--superficie-2); }
+  .pfchip[data-visitado]::before { content: ""; position: absolute; top: 4px; left: 4px; width: 6px; height: 6px; background: var(--tinta-2); }
   .pf-cmp { padding: 0; overflow-x: auto; margin-top: 8px; }
   .pf-cmp table { border-collapse: collapse; width: 100%; font-size: 13px; }
   .pf-cmp th, .pf-cmp td { padding: 7px 10px; text-align: right; border-top: 1px solid var(--linha); }
@@ -919,13 +984,21 @@
   .pf-cmp td.n { font-family: var(--f-num); font-variant-numeric: tabular-nums; }
   .pf-cmp td small { display: block; color: var(--apagado); font-family: var(--f-texto); font-size: 10.5px; }
   .pf-cmp:empty { display: none; }
-  .pf-detalhes { margin-top: 26px; padding: 0; }
-  .pf-detalhes > summary { cursor: pointer; padding: 10px 16px; min-height: var(--toque); box-sizing: border-box;
+  /* §19.4: bloco recolhível, fechado por padrão; a linha de resumo descreve o conteúdo e some quando abre */
+  .pf-detalhes { margin-top: 28px; padding: 0; }
+  .pf-detalhes > summary { cursor: pointer; list-style: none; min-height: var(--toque); box-sizing: border-box; padding: 0 14px;
     display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; }
-  .pf-detalhes > summary .g-nome { font-weight: 600; color: var(--tinta); }
-  .pf-detalhes > summary .g-resumo { font-size: var(--t-sm); color: var(--tinta-2); }
+  .pf-detalhes > summary::-webkit-details-marker { display: none; }
+  .pf-detalhes > summary::before { content: "▸"; color: var(--tinta-2); transition: transform var(--dur); }
+  .pf-detalhes[open] > summary::before { transform: rotate(90deg); }
+  .pf-detalhes > summary .g-nome { font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; font-size: var(--t-sm); color: var(--tinta); }
+  .pf-detalhes > summary .g-resumo { margin-left: auto; font-size: var(--t-sm); color: var(--tinta-2); text-align: right; }
   .pf-detalhes[open] > summary .g-resumo { display: none; }
-  .pf-det-corpo { padding: 4px 16px 16px; }
+  /* uma coluna minmax(0,1fr): sem isso a tabela larga estoura os 375 px e a página ganha rolagem horizontal */
+  .pf-det-corpo { padding: 4px 14px 16px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .pf-det-corpo > * { min-width: 0; }
+  #pf-tabela { overflow-x: auto; }
 
   /* ---- quem joga em cada jeito de jogar (cards_de_estilo) ---- */
   .pfestilos { margin-top:28px; }
@@ -1515,14 +1588,17 @@
     var dpr = window.devicePixelRatio || 1;
     ITENS.forEach(function (it) {
       var s = document.createElement("span"), c = document.createElement("canvas");
-      c.width = c.height = Math.round(18 * dpr);
+      // a granada desenhada leva o carimbo no canto superior direito: o canvas dela é maior (28 x 22 px de tela)
+      var larg = it[0] === "desenhada" ? 28 : 18, alt = it[0] === "desenhada" ? 22 : 18;
+      c.width = Math.round(larg * dpr); c.height = Math.round(alt * dpr);
+      c.style.width = larg + "px"; c.style.height = alt + "px";
       c.setAttribute("aria-hidden", "true");
       var g = c.getContext("2d");
       g.scale(dpr, dpr);
       if (it[0] === "peca") MapCore.desenhaJogador(g, 9, 9, { cor: it[1], estado: "vivo", hp: 100, nome: "" });
       else if (it[0] === "morto") MapCore.desenhaJogador(g, 9, 9, { cor: C.tinta2, estado: "morto", hp: 0, nome: "" });
-      // a granada desenhada (fase 11): o mesmo glifo, com o anel tracejado e o corpo a 85%
-      else if (it[0] === "desenhada") MapCore.nadeGlyph(g, "smoke", 9, 9, 4, MapCore.NADE_COLOR.smoke, -Math.PI / 2, true);
+      // a granada desenhada (fase 11, V3 da fase 15): o mesmo glifo, com o anel tracejado, o corpo a 100% e o carimbo
+      else if (it[0] === "desenhada") MapCore.nadeGlyph(g, "smoke", 9, 13, 4, MapCore.NADE_COLOR.smoke, -Math.PI / 2, true);
       else MapCore.nadeGlyph(g, it[0], 9, 9, 4, MapCore.NADE_COLOR[it[0]], -Math.PI / 2);
       s.appendChild(c);
       s.appendChild(document.createTextNode(it[2]));
@@ -3319,6 +3395,15 @@
 
     function pct(v) { return v === null || v === undefined ? "—" : Math.round(v * 100) + "%"; }
 
+    // "dentro do normal para a função": o booleano vem do Python (leitura/perfil_erros.dentro_do_normal)
+    function dentroDoNormal(nome, chave) {
+      if (!PF) return false;
+      for (var i = 0; i < PF.jogadores.length; i++) {
+        if (PF.jogadores[i].name === nome) return !!(PF.jogadores[i].dentro_do_normal || {})[chave];
+      }
+      return false;
+    }
+
     function celula(p, chave) {
       var v = p[chave], n = p[chave + "_n"], d = p[chave + "_d"], ref = p[chave + "_ref"];
       if (d === null || d === undefined || d === 0) {
@@ -3334,6 +3419,7 @@
         "<b>" + pct(v) + "</b>" +
         "<span class='bruto'>" + n + " de " + d + "</span>" +
         (fraco ? "<span class='fraco'>amostra fraca</span>" : "") +
+        (dentroDoNormal(p.name, chave) ? " <span class='tag neutro normal'>" + esc(PF.textos.rotulo_dentro_do_normal) + "</span>" : "") +
         "</td>";
     }
 
@@ -3452,32 +3538,70 @@
       for (var i = 0; i < PF.jogadores.length; i++) if (PF.jogadores[i].name === nome) return PF.jogadores[i];
       return null;
     }
+    // §19.3: chips que levam ao Replay no round e no instante. "Visitado" vem do sessionStorage (try/catch: sem
+    // armazenamento o chip só não fica marcado).
+    var CHAVE_VISITADOS = "parser-cs2:chips-visitados";
+    function lerVisitados() {
+      try { return JSON.parse(sessionStorage.getItem(CHAVE_VISITADOS) || "{}") || {}; } catch (e) { return {}; }
+    }
+    function gravaVisitado(chave) {
+      var v = lerVisitados();
+      v[chave] = true;
+      try { sessionStorage.setItem(CHAVE_VISITADOS, JSON.stringify(v)); } catch (e) { /* sem armazenamento */ }
+    }
     function chipsDeRound(chips) {
       if (!chips || !chips.length) return "";
-      return "<div class='pfchips'>" + chips.map(function (c) {
-        return "<button type='button' class='rchip pfchip' data-round='" + esc(c.round) + "' data-t='" +
-          esc(c.t === null ? "" : c.t) + "' title='" + esc(c.titulo) + "' aria-label='" + esc(c.titulo) + "'>" +
-          esc(c.rotulo) + "</button>";
+      var T = PF.textos, vis = lerVisitados();
+      return "<div class='pfchips' role='group' aria-label='" + esc(T.rot_rounds) + "'>" + chips.map(function (c) {
+        var jaAberto = !!vis[c.round + "@" + (c.t === null ? "" : c.t)];
+        var titulo = c.titulo + (jaAberto ? " (" + T.ja_aberto + ")" : "");
+        return "<button type='button' class='pfchip' data-round='" + esc(c.round) + "' data-t='" +
+          esc(c.t === null ? "" : c.t) + "'" + (jaAberto ? " data-visitado" : "") + " title='" + esc(titulo) +
+          "' aria-label='" + esc(titulo) + "'><span class='n'>" + esc(c.rotulo) + "</span>" +
+          (c.relogio ? "<span class='h'>" + esc(c.relogio) + "</span>" : "") + "</button>";
       }).join("") + "</div>";
     }
-    function itemMelhorar(m) {
-      var tag = m.nivel === "explicito" ? "tag decisivo" : "tag neutro";
-      return "<article class='pfitem card' data-tipo='" + esc(m.tipo) + "'><div class='topo'>" +
-        "<span class='titulo'>" + esc(m.titulo) + (m.lado_rotulo ? " " + esc(m.lado_rotulo) : "") + "</span><span class='cont'>" + esc(m.contagem) + "</span>" +
-        "<span class='" + tag + "'>" + esc(m.nivel_rotulo) + "</span>" +
-        (m.em_validacao ? "<span class='tag neutro'>" + esc(PF.textos.rotulo_em_validacao) + "</span>" : "") +
-        "</div>" +
+    // a faixa rola numa linha; enquanto sobra chip fora da tela, sombra na borda direita (.rola); no fim, .fim
+    function ligaRolagemDosChips(raiz) {
+      Array.prototype.forEach.call(raiz.querySelectorAll(".pfchips"), function (c) {
+        function atualiza() {
+          var rola = c.scrollWidth > c.clientWidth + 2;
+          c.classList.toggle("rola", rola);
+          c.classList.toggle("fim", rola && c.scrollLeft + c.clientWidth >= c.scrollWidth - 2);
+        }
+        c.addEventListener("scroll", atualiza, { passive: true });
+        window.addEventListener("resize", atualiza);
+        atualiza();
+      });
+    }
+    function etiquetaDeLado(lado, rotulo) {
+      return rotulo ? "<span class='tag " + (lado === "t" ? "tr" : "ct") + "'>" + esc(rotulo) + "</span>" : "";
+    }
+    // §19.1: explícito = barra cheia + etiqueta invertida + título em 700; depende da tática = a versão tracejada
+    function itemMelhorar(m, i) {
+      var T = PF.textos, explicito = m.nivel === "explicito";
+      return "<li class='ponto melhorar " + (explicito ? "explicito" : "depende") + "' data-tipo='" + esc(m.tipo) + "'>" +
+        "<span class='ordem' aria-hidden='true'>" + (i + 1) + "</span><div class='topo'>" +
+        "<span class='titulo'>" + esc(m.titulo) + "</span>" +
+        (explicito ? "<span class='tag explicito'>" + esc(m.nivel_rotulo) + "</span>"
+                   : "<span class='tag neutro'>" + esc(m.nivel_rotulo) + "</span>") +
+        (m.em_validacao ? "<span class='tag neutro validacao'>" + esc(T.rotulo_em_validacao) + "</span>" : "") +
+        "</div><div class='sub'>" + etiquetaDeLado(m.lado, m.lado_rotulo) + "<span>" + esc(m.contagem) + "</span></div>" +
         (m.referencia ? "<div class='ref'>" + esc(m.referencia) + "</div>" : "") +
         (m.custo ? "<div class='custo'>" + esc(m.custo) + "</div>" : "") +
         // no "depende da tática" a frase já é o motivo seguido de "vale conferir" (Python): não repete
-        (m.nivel === "explicito" ? "<div class='motivo'>" + esc(m.motivo) + "</div>" : "") +
-        "<p class='frase'>" + esc(m.frase) + "</p>" + chipsDeRound(m.chips) + "</article>";
+        (explicito ? "<div class='motivo'>" + esc(m.motivo) + "</div>" : "") +
+        "<div class='como'><span class='rot'>" + esc(explicito ? T.rot_como_melhorar : T.rot_conferir) + "</span><p>" +
+        esc(m.frase) + "</p></div>" +
+        (m.chips && m.chips.length ? "<div class='rounds'><span class='rot'>" + esc(T.rot_rounds) + "</span>" +
+          chipsDeRound(m.chips) + "</div>" : "") + "</li>";
     }
+    // §19.2: barra --decisivo ("afirmado e bom"), sem número de ordem; valor, bruto e referência juntos
     function itemForte(f) {
-      return "<article class='pfitem card' data-chave='" + esc(f.chave) + "'><div class='topo'>" +
-        "<span class='titulo'>" + esc(f.rotulo) + (f.lado_rotulo ? " " + esc(f.lado_rotulo) : "") + "</span><span class='valor'>" + esc(f.valor) + "</span>" +
-        (f.bruto ? "<span class='bruto'>" + esc(f.bruto) + "</span>" : "") + "</div>" +
-        "<div class='ref'>" + esc(f.referencia) + "</div></article>";
+      return "<li class='ponto forte' data-chave='" + esc(f.chave) + "'><div class='topo'>" +
+        "<span class='titulo'>" + esc(f.rotulo) + (f.lado_rotulo ? " " + esc(f.lado_rotulo) : "") + "</span><span class='valor'>" +
+        esc(f.valor) + "</span>" + (f.bruto ? "<span class='bruto'>" + esc(f.bruto) + "</span>" : "") + "</div>" +
+        "<div class='ref'>" + esc(f.referencia) + "</div></li>";
     }
     function desenhaNovo(nomeA, nomeB) {
       if (!PF) return;
@@ -3486,23 +3610,26 @@
       var cab = "<div class='nk'>" + esc(j.name) + "</div><div class='time-do-jog'>" + esc(j.time_nome) +
         (j.comecou ? " <span class='tag comecou " + esc(j.comecou) + "'>" + esc(j.comecou_rotulo) + "</span>" : "") +
         "</div><div class='funcs'>" + j.funcoes.map(function (f) {
-          return "<span class='tag" + (f.neutro ? " neutro" : " decisivo") + "'>" + esc(f.lado) + " · " + esc(f.texto) + "</span>";
+          return "<span class='tag" + (f.neutro ? " neutro" + (f.tendencia ? " tendencia" : "") : " decisivo") + "'>" +
+            esc(f.lado) + " · " + esc(f.texto) + "</span>";
         }).join("") + "</div><p>" + esc(j.resumo) + "</p>";
       document.getElementById("pf-cab").innerHTML = cab;
 
       var mel = "<h3>" + esc(T.melhorar) + "</h3>";
       if (PF.estado === "em_validacao") {
-        mel += "<p class='pfnota' id='pf-em-validacao'>" + esc(T.em_validacao) + " · <a href='" +
-          esc(PF.link_como_e_conferido) + "'>" + esc(T.como_e_conferido) + "</a></p>";
+        mel += "<div class='aviso-bloco neutro' id='pf-em-validacao' role='note'><span class='ico' aria-hidden='true'>–</span><p>" +
+          "<span class='tag neutro validacao'>" + esc(T.rotulo_em_validacao) + "</span> " + esc(T.em_validacao) +
+          " · <a href='" + esc(PF.link_como_e_conferido) + "'>" + esc(T.como_e_conferido) + "</a></p></div>";
       } else {
         if (PF.estado === "preview") mel += "<p class='pfnota'>" + esc(T.aviso_preview) + "</p>";
-        mel += j.melhorar.length ? j.melhorar.map(itemMelhorar).join("")
+        mel += j.melhorar.length ? "<ol class='pflista'>" + j.melhorar.map(itemMelhorar).join("") + "</ol>"
           : "<p class='pfnota'>" + esc(j.melhorar_vazio) + "</p>";
       }
       document.getElementById("pf-melhorar").innerHTML = mel;
 
       document.getElementById("pf-fortes").innerHTML = "<h3>" + esc(T.fortes) + "</h3>" +
-        (j.fortes.length ? j.fortes.map(itemForte).join("") : "<p class='pfnota'>" + esc(T.fortes_vazio) + "</p>");
+        (j.fortes.length ? "<ul class='pflista'>" + j.fortes.map(itemForte).join("") + "</ul>"
+          : "<p class='pfnota'>" + esc(T.fortes_vazio) + "</p>");
 
       // comparar: os mesmos tipos de erro e os mesmos pontos fortes, lado a lado (sem faixa, sem radar)
       var cmp = "";
@@ -3529,10 +3656,11 @@
 
       document.getElementById("pf-uma-vez").innerHTML = j.uma_vez.length
         ? "<p class='pfnota'>" + esc(T.detalhes_erros) + "</p>" + j.uma_vez.map(function (u) {
-            return "<div class='pfitem'><div class='topo'><span class='titulo'>" + esc(u.titulo) + (u.lado_rotulo ? " " + esc(u.lado_rotulo) : "") + "</span><span class='cont'>" +
-              esc(u.contagem) + "</span>" + (u.motivo ? "<span class='cont'>" + esc(u.motivo) + "</span>" : "") +
-              "</div>" + chipsDeRound(u.chips) + "</div>";
+            return "<div class='ponto compacto depende'><div class='topo'><span class='titulo'>" + esc(u.titulo) + "</span>" +
+              "<span class='sub'>" + etiquetaDeLado(u.chips[0] && u.chips[0].lado, u.lado_rotulo) + "<span>" + esc(u.contagem) +
+              "</span>" + (u.motivo ? "<span>" + esc(u.motivo) + "</span>" : "") + "</span></div>" + chipsDeRound(u.chips) + "</div>";
           }).join("") : "";
+      ligaRolagemDosChips(document.querySelector('[data-panel="perfil"]'));
     }
 
     // textos fixos da aba nova (do Python) e os chips de round: abrem o Replay no round e no tempo
@@ -3543,6 +3671,12 @@
       document.getElementById("pf-b-rot").textContent = PF.textos.comparar;
       document.getElementById("pf-det-nome").textContent = PF.textos.detalhes;
       document.getElementById("pf-det-resumo").textContent = PF.textos.detalhes_resumo;
+      // §19.4: fechado por padrão; aberto/fechado em localStorage ("1"/"0"), em try/catch (sem armazenamento: fechado)
+      var detalhes = document.getElementById("pf-detalhes"), CHAVE_DETALHES = "parser-cs2:perfil-detalhes";
+      try { if (localStorage.getItem(CHAVE_DETALHES) === "1") detalhes.open = true; } catch (e) { /* fechado */ }
+      detalhes.addEventListener("toggle", function () {
+        try { localStorage.setItem(CHAVE_DETALHES, detalhes.open ? "1" : "0"); } catch (e) { /* abre fechado, funciona igual */ }
+      });
       var aviso = document.getElementById("pf-aviso");
       if (PF.degradado) { aviso.textContent = PF.degradado; aviso.hidden = false; }
     }
@@ -3550,6 +3684,14 @@
       var c = e.target.closest(".pfchip");
       if (!c) return;
       var t = c.getAttribute("data-t");
+      gravaVisitado(c.getAttribute("data-round") + "@" + t);
+      c.setAttribute("data-visitado", "");
+      var tit = c.getAttribute("title");
+      if (tit.indexOf(" (" + PF.textos.ja_aberto + ")") < 0) {
+        tit += " (" + PF.textos.ja_aberto + ")";
+        c.setAttribute("title", tit);
+        c.setAttribute("aria-label", tit);
+      }
       abreNoReplay(Number(c.getAttribute("data-round")), t === "" ? null : Number(t));
     });
 
@@ -3654,6 +3796,8 @@
   // Nomeada (e não só um listener) porque o gráfico de vantagem também troca de
   // aba: clicar num round leva pro replay daquele round.
   function selectTab(name, semHash) {
+    var jaEstava = document.querySelector(".tabs [role=tab][aria-selected=true]");
+    jaEstava = jaEstava && jaEstava.dataset.tab === name;
     Array.prototype.forEach.call(tabs, function (o) {
       o.setAttribute("aria-selected", String(o.dataset.tab === name));
       // tabindex itinerante: Tab entra na aba ativa, as setas andam entre elas
@@ -3662,7 +3806,7 @@
     Array.prototype.forEach.call(document.querySelectorAll("[data-panel]"), function (p) {
       p.hidden = p.dataset.panel !== name;
     });
-    if (!semHash) {
+    if (!semHash && !jaEstava) {   // §19.3: só quando a aba muda de fato; `#replay?round=&t=` não é apagado
       try { history.replaceState(null, "", "#" + ABA_NO_HASH[name]); } catch (e) { /* arquivo local: sem hash */ }
     }
     if (name === "replay") draw();

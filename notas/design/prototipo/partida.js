@@ -88,6 +88,17 @@
     });
   }
 
+  /* ---- Perfil -> Replay: "#replay?round=14&t=84.5" abre o round, 3 s antes do instante, parado ---- */
+  (function abreNoReplay() {
+    var m = /^#replay\?round=(\d+)&t=([\d.]+)/.exec(location.hash || "");
+    if (!m || !trilho) return;
+    var rd = +m[1], t = Math.max(0, +m[2] - 3);
+    [].forEach.call(document.querySelectorAll("#rodadas .rd"), function (b) { b.setAttribute("aria-pressed", +b.textContent === rd ? "true" : "false"); });
+    var alvo = document.querySelector("#rodadas .rd[aria-pressed='true']"); if (alvo) alvo.scrollIntoView({ inline: "center", block: "nearest" });
+    var cab = document.querySelector(".quadro-cab h3"); if (cab) cab.textContent = "Round " + rd;
+    trilho.value = Math.min(1000, Math.round(t / DUR * 1000)); atualiza();
+  })();
+
   /* ---- Placar: diferença de rounds (linha neutra; bolinha com a cor do lado vencedor; decisivo = losango) ---- */
   var g = document.getElementById("graf-placar");
   if (g) {

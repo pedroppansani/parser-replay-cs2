@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="base.css">
 <link rel="stylesheet" href="prancheta.css">
+<link rel="stylesheet" href="componentes.css">
 </head>
 <body>
 <div class="pagina pr">
@@ -85,7 +86,9 @@
           <button role="tab" data-aba="pj" aria-controls="pp-jog" id="pt-jog">Jogadores</button>
           <button role="tab" data-aba="pg" aria-controls="pp-gra" id="pt-gra">Granadas</button>
           <button role="tab" data-aba="pt" aria-controls="pp-tat" id="pt-tat">Tática</button>
+          <button role="tab" data-aba="grupo" aria-controls="pp-grp" id="pt-grp">Grupo<span class="aba-contador" id="aba-contador" hidden></span></button>
         </div>
+        <button class="abas-mais" type="button" aria-label="Mostrar mais abas" tabindex="-1">›</button>
       </div>
       <section id="pp-jog" role="tabpanel" aria-labelledby="pt-jog" class="pr-sec">
         <h2 class="rot">Jogadores <span class="apagado">do round real</span></h2>
@@ -114,7 +117,17 @@
         <p class="pr-nota">Salva neste navegador. Exportar gera um arquivo .json que outra pessoa pode importar e mesclar.</p>
         <details class="pr-tecnico"><summary>Detalhes técnicos</summary><p class="num">14 operações · formato 2</p></details>
       </section>
+      <section id="pp-grp" role="tabpanel" aria-labelledby="pt-grp" class="pr-sec" hidden>
+        <div id="pr-painel-grupo"></div>
+      </section>
     </aside>
+  </div>
+
+  <div class="demo-estado" id="demo-grupo-caixa">
+    <label for="demo-grupo"><b>Protótipo:</b> estado da aba Grupo</label>
+    <select id="demo-grupo"></select>
+    <button class="btn" type="button" id="demo-etiqueta">Simular "nomad moveu ztrike"</button>
+    <button class="btn" type="button" id="demo-recusa">Simular recusa do servidor</button>
   </div>
 
   <!-- Linha do tempo -->
@@ -138,5 +151,6 @@
 </div>
 <script src="proto.js"></script>
 <script src="prancheta.js"></script>
+<script src="grupo.js"></script>
 </body>
 </html>

@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="base.css">
 <link rel="stylesheet" href="prancheta.css">
+<link rel="stylesheet" href="componentes.css">
 <style>
   h1 { font-stretch: var(--larg-condensada); text-transform: uppercase; margin: 20px 0 4px; }
   h2 { font-stretch: 85%; font-size: var(--t-lg); margin: 32px 0 10px; padding-top: 12px; border-top: 1px solid var(--linha); }
@@ -159,7 +160,137 @@
     <div class="amostra-c"><p class="rot">Vazio</p><div class="vazio"><strong>Nenhuma partida com esse filtro.</strong>Mostrar todos os mapas</div></div>
     <div class="amostra-c"><p class="rot">Erro</p><div class="aviso-bloco erro"><span class="ico">✕</span><p><b>Erro:</b> os dados desta partida não abriram. Recarregue a página; se continuar, <a href="#">abra uma issue</a>.</p></div></div>
   </div>
+
+  <!-- ===================== §19 · componentes depois do fechamento (2026-10-13) ===================== -->
+  <h1 id="s19" style="margin-top:48px">§19 · Componentes depois do fechamento</h1>
+  <p class="secundario">Aba Perfil e aba Grupo. Nenhuma cor nova. Páginas completas: <a href="perfil.html">perfil.html</a> (todos os estados da aba) e <a href="prancheta.html?grupo=lider">prancheta.html</a> (aba Grupo).</p>
+
+  <h2>19.1 Card "ponto a melhorar"</h2>
+  <div class="amostras">
+    <div class="amostra-c"><p class="rot">Explícito</p><ol class="pflista" style="padding:0">
+      <li class="ponto melhorar explicito"><span class="ordem" aria-hidden="true">1</span>
+        <div class="topo"><span class="titulo">Não trocou o aliado</span><span class="tag explicito">explícito</span></div>
+        <div class="sub"><span class="tag tr">no TR</span><span>4 vezes em 12 rounds</span></div>
+        <div class="ref">a mediana de quem joga AWPer no TR é 2</div>
+        <div class="custo">custou cerca de 7 pontos de chance de vitória, pela estimativa do modelo</div>
+        <div class="motivo">o aliado morreu perto dele e o matador saiu vivo da janela de troca</div>
+        <div class="como"><span class="rot">Como melhorar</span><p>Jogue a uma distância de troca do parceiro e mirando o mesmo ponto que ele.</p></div>
+        <div class="rounds"><span class="rot">Rounds (abrem o Replay)</span><div class="pfchips"><button class="pfchip"><span class="n">5</span><span class="h">1:14</span></button><button class="pfchip"><span class="n">8</span><span class="h">0:49</span></button><button class="pfchip"><span class="n">10</span><span class="h">1:32</span></button></div></div></li></ol></div>
+    <div class="amostra-c"><p class="rot">Depende da tática</p><ol class="pflista" style="padding:0">
+      <li class="ponto melhorar depende"><span class="ordem" aria-hidden="true">3</span>
+        <div class="topo"><span class="titulo">Morreu isolado</span><span class="tag neutro">depende da tática</span></div>
+        <div class="sub"><span class="tag tr">no TR</span><span>4 vezes em 12 rounds</span></div>
+        <div class="ref">a mediana de quem joga AWPer no TR é 3</div>
+        <div class="custo">custou cerca de 8 pontos de chance de vitória, pela estimativa do modelo</div>
+        <div class="como"><span class="rot">Antes de mudar algo</span><p>O dado mostra posição e tempo, não o que o time pediu. Vale conferir com o time se era o plano.</p></div>
+        <div class="rounds"><span class="rot">Rounds (abrem o Replay)</span><div class="pfchips"><button class="pfchip"><span class="n">2</span><span class="h">1:22</span></button><button class="pfchip"><span class="n">6</span><span class="h">1:07</span></button><button class="pfchip"><span class="n">9</span><span class="h">0:54</span></button></div></div></li></ol></div>
+    <div class="amostra-c"><p class="rot">Pré-visualização ("em validação")</p><ol class="pflista" style="padding:0">
+      <li class="ponto melhorar explicito"><span class="ordem" aria-hidden="true">2</span>
+        <div class="topo"><span class="titulo">Possível bait</span><span class="tag explicito">explícito</span><span class="tag neutro validacao">em validação</span></div>
+        <div class="sub"><span class="tag ct">no CT</span><span>3 vezes em 12 rounds</span></div>
+        <div class="ref">a mediana de quem joga AWPer no CT é 1</div>
+        <div class="como"><span class="rot">Como melhorar</span><p>Se você é o segundo a entrar, entre logo atrás e ao lado.</p></div></li></ol></div>
+    <div class="amostra-c"><p class="rot">Carregando</p><ol class="pflista" style="padding:0"><li class="ponto esqueleto" aria-hidden="true"><span class="ordem"></span><div class="esqueleto" style="height:20px;width:55%"></div><div class="esqueleto" style="height:14px;width:35%;margin-top:8px"></div><div class="esqueleto" style="height:44px;width:60%;margin-top:12px"></div></li></ol></div>
+    <div class="amostra-c"><p class="rot">Sem ponto (dado suficiente, nada a apontar)</p><p class="pfnota">Nenhum ponto a melhorar com dado suficiente nesta partida.</p><p class="rot" style="margin-top:12px">Dado degradado</p><div class="aviso-bloco"><span class="ico" aria-hidden="true">▲</span><p><b>Dado degradado.</b> Os custos e os pontos fortes ficam escondidos até o rebuild.</p></div></div>
+    <div class="amostra-c"><p class="rot">Compacto (dentro de "Detalhes": uma ocorrência só)</p><div class="ponto compacto depende" style="grid-template-columns:minmax(0,1fr)"><div class="topo"><span class="titulo">Perdeu a troca</span><span class="sub">1 vez</span></div><div class="pfchips"><button class="pfchip"><span class="n">17</span><span class="h">1:11</span></button></div></div></div>
+  </div>
+  <p class="bruto">Ordem: explícitos antes; dentro do nível, o maior custo; o número à esquerda é a posição (1, 2, 3). Estrutura que carrega o destaque do erro explícito, sem cor: barra cheia de 4 px, etiqueta invertida (texto escuro sobre fundo claro), título em peso 700 e número em --tinta. "Depende da tática": barra tracejada, etiqueta tracejada, título em 600 e --tinta-2.</p>
+
+  <h2>19.2 Card "ponto forte"</h2>
+  <div class="amostras">
+    <div class="amostra-c"><p class="rot">Com taxa e bruto</p><ul class="pflista" style="padding:0"><li class="ponto forte"><div class="topo"><span class="titulo">Troca a morte do companheiro</span><span class="valor">30%</span><span class="bruto">6 de 20 rounds</span></div><div class="ref">a mediana de quem joga AWPer é 14%</div></li></ul></div>
+    <div class="amostra-c"><p class="rot">Com valor por round</p><ul class="pflista" style="padding:0"><li class="ponto forte"><div class="topo"><span class="titulo">Kills por round contra compra cheia</span><span class="valor">1,14</span><span class="bruto">em 10 rounds contra compra cheia</span></div><div class="ref">a mediana de quem joga AWPer é 0,74</div></li></ul></div>
+    <div class="amostra-c"><p class="rot">Vazio</p><p class="pfnota">Nenhum ponto forte acima da régua com dado suficiente nesta partida.</p></div>
+  </div>
+
+  <h2>19.3 Chips de round</h2>
+  <div class="amostras">
+    <div class="amostra-c"><p class="rot">Normal · hover · foco · visitado</p><div class="chips" style="gap:8px">
+      <button class="pfchip"><span class="n">7</span><span class="h">1:12</span></button>
+      <button class="pfchip simula-hover"><span class="n">14</span><span class="h">0:49</span></button>
+      <button class="pfchip simula-foco"><span class="n">16</span><span class="h">1:32</span></button>
+      <button class="pfchip" data-visitado><span class="n">20</span><span class="h">0:57</span></button></div>
+      <p class="bruto">Visitado: quadrado cheio de 6 px no canto e fundo --superficie-2; o nome acessível termina com "(já aberto)". Lembrado em sessionStorage, em try/catch.</p></div>
+    <div class="amostra-c" style="max-width:343px"><p class="rot">Rolando numa linha (375 px): sombra no fim</p><div class="pfchips rola" id="demo-chips-rola">
+      <button class="pfchip"><span class="n">2</span><span class="h">1:22</span></button><button class="pfchip"><span class="n">5</span><span class="h">1:14</span></button><button class="pfchip"><span class="n">6</span><span class="h">1:07</span></button><button class="pfchip" data-visitado><span class="n">8</span><span class="h">0:49</span></button><button class="pfchip"><span class="n">9</span><span class="h">0:54</span></button><button class="pfchip"><span class="n">10</span><span class="h">1:32</span></button><button class="pfchip"><span class="n">11</span><span class="h">1:28</span></button><button class="pfchip"><span class="n">12</span><span class="h">0:57</span></button><button class="pfchip"><span class="n">15</span><span class="h">1:03</span></button><button class="pfchip"><span class="n">19</span><span class="h">1:17</span></button></div></div>
+  </div>
+
+  <h2>19.4 Bloco "Detalhes"</h2>
+  <div class="amostras">
+    <div class="amostra-c"><p class="rot">Fechado (padrão): a linha diz o que há dentro</p>
+      <details class="grupo pf-detalhes" style="margin-top:0"><summary><span class="g-nome">Detalhes</span><span class="g-resumo">o perfil completo desta partida: taxas, função por round, jeito de jogar e quem joga em cada grupo</span></summary><div class="pf-det-corpo"><p class="pfnota">Taxas, função por round e estilos.</p></div></details></div>
+    <div class="amostra-c"><p class="rot">Aberto (o resumo some; lembrado em localStorage)</p>
+      <details class="grupo pf-detalhes" open style="margin-top:0"><summary><span class="g-nome">Detalhes</span><span class="g-resumo">o perfil completo desta partida</span></summary><div class="pf-det-corpo"><p class="pfnota">Taxas, função por round e estilos.</p></div></details></div>
+  </div>
+
+  <h2>19.5 Etiqueta <code>.tag.neutro</code> e variantes</h2>
+  <div class="amostras">
+    <div class="amostra-c"><p class="rot">As quatro, mais as vizinhas</p><div class="chips" style="gap:8px"><span class="tag neutro">depende da tática</span><span class="tag neutro tendencia">tendência</span><span class="tag neutro validacao">em validação</span><span class="tag neutro normal">dentro do normal para a função</span><span class="tag amostra">amostra pequena</span><span class="tag decisivo">AWPer</span></div></div>
+    <div class="amostra-c"><p class="rot">A mesma linha em escala de cinza (nada depende de cor)</p><div class="chips" style="gap:8px;filter:grayscale(1)"><span class="tag neutro">depende da tática</span><span class="tag neutro tendencia">tendência</span><span class="tag neutro validacao">em validação</span><span class="tag neutro normal">dentro do normal para a função</span><span class="tag explicito">explícito</span><span class="tag decisivo">AWPer</span></div></div>
+    <div class="amostra-c"><p class="rot">Gramática</p><p class="bruto" style="margin:0">Borda tracejada: a página não afirma. Borda cheia fina com "=": afirma que está dentro do normal. Meio disco: afirmação pela metade (tendência). Círculo pontilhado e itálico: ainda não conferido. Marcadores desenhados em CSS.</p></div>
+  </div>
+
+  <h2>19.6 Aba Grupo da prancheta</h2>
+  <p class="secundario">Os estados vivem em <a href="prancheta.html">prancheta.html</a> (seletor "Protótipo" abaixo do mapa, ou <code>?grupo=&lt;estado&gt;</code>):
+    <a href="prancheta.html?grupo=sem-grupo">sem grupo</a> ·
+    <a href="prancheta.html?grupo=codigo-invalido">código inválido</a> ·
+    <a href="prancheta.html?grupo=nick-em-uso">nick em uso</a> ·
+    <a href="prancheta.html?grupo=entrando">entrando</a> ·
+    <a href="prancheta.html?grupo=removido">você foi removido</a> ·
+    <a href="prancheta.html?grupo=indisponivel">indisponível</a> ·
+    <a href="prancheta.html?grupo=lider">líder</a> ·
+    <a href="prancheta.html?grupo=lider-transferir">líder: transferir</a> ·
+    <a href="prancheta.html?grupo=lider-encerrar">líder: encerrar</a> ·
+    <a href="prancheta.html?grupo=lider-sozinha">líder sozinha</a> ·
+    <a href="prancheta.html?grupo=membro-permissao">membro com permissão</a> ·
+    <a href="prancheta.html?grupo=membro-sem-permissao">membro sem permissão</a> ·
+    <a href="prancheta.html?grupo=membro-sem-permissao-solto">fora da líder</a> ·
+    <a href="prancheta.html?grupo=encerrada-lider">encerrada (líder)</a> ·
+    <a href="prancheta.html?grupo=encerrada-membro">encerrada (membro)</a></p>
+  <div class="amostras">
+    <div class="amostra-c"><p class="rot">Chave (interruptor): desligada, ligada, desativada</p><div style="display:grid;gap:8px">
+      <button class="chave" role="switch" aria-checked="false"><span>Todos podem desenhar</span><span class="estado">Desligado</span><span class="pino" aria-hidden="true"></span></button>
+      <button class="chave" role="switch" aria-checked="true"><span>Seguir a líder</span><span class="estado">Ligado</span><span class="pino" aria-hidden="true"></span></button>
+      <button class="chave" role="switch" aria-checked="false" disabled title="O grupo foi encerrado: a tática ficou só para leitura."><span>Todos podem desenhar</span><span class="estado">Desligado</span><span class="pino" aria-hidden="true"></span></button></div></div>
+    <div class="amostra-c"><p class="rot">Linha de dica: etiqueta temporária (3 s)</p><p class="pr-dica" style="border:1px solid var(--linha)"><span class="dica-texto"><b>Você acompanha a tática:</b> só a líder desenha agora.</span><span class="dica-etiqueta"><span class="gr-ficha" aria-hidden="true">NO</span>nomad moveu ztrike</span></p></div>
+    <div class="amostra-c"><p class="rot">Linha de dica: recusa que não desfaz nada (6 s)</p><p class="pr-dica recusa" style="border:1px solid var(--linha)"><span class="dica-texto"><b>A líder não liberou desenho para você.</b></span></p><p class="rot" style="margin-top:12px">Recusa que desfez a alteração (6 s)</p><p class="pr-dica recusa-desfeita" style="border:1px solid var(--linha)"><span class="dica-texto"><b>Alteração grande demais para o grupo (mais de 8 KB): ela foi desfeita.</b></span></p></div>
+    <div class="amostra-c"><p class="rot">Presença: online (cheio) e offline (vazio)</p><ul class="gr-membros"><li class="gr-membro"><span class="gr-ficha" aria-hidden="true">SP</span><span class="gr-nome"><span class="gr-quem"><b>spinx</b></span><small><span class="gr-online on"></span>online · pode desenhar</small></span></li><li class="gr-membro offline"><span class="gr-ficha" aria-hidden="true">KY</span><span class="gr-nome"><span class="gr-quem"><b>kyxsan</b></span><small><span class="gr-online"></span>offline · só assiste</small></span></li></ul></div>
+    <div class="amostra-c"><p class="rot">Contador na aba (quando há grupo)</p><div class="abas-moldura"><div class="abas" role="tablist" aria-label="Painel (exemplo)"><button role="tab" aria-selected="false" tabindex="-1">Jogadores</button><button role="tab" aria-selected="true">Grupo<span class="aba-contador" aria-label="3 online">3</span></button></div></div></div>
+  </div>
+
+  <h2 id="granada">19.7 Granada real × granada desenhada (fase 11)</h2>
+  <p class="secundario">Réplica do <code>nadeGlyph</code> do map_core.js sobre o radar (Dust II, par 0,90/1,00), nas escalas em que o radar de 1024 px aparece: 0,508 (1440 px) e 0,321 (375 px). Cada célula é o tamanho real; a linha de baixo é a mesma imagem ampliada 3×. Veredito e números: §19.7 do documento e <code>validacao/saida-granada-2026-10-13.txt</code>.</p>
+  <div id="granada-grade" class="amostras" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))"></div>
 </div>
 <script src="proto.js"></script>
+<script src="granada.js"></script>
+<script>
+(function () {
+  var VARS = [["real", "real (acontece no jogo)"], ["atual", "desenhada, como hoje"], ["v1", "V1: tracejado em px de tela"], ["v2", "V2: V1 + corpo oco"], ["v3", "V3: V1 + carimbo (recomendada)"]];
+  var KINDS = ["smoke", "flash", "he", "molotov"], ESC = [[0.508, "1440 px"], [0.321, "375 px"]];
+  var grade = document.getElementById("granada-grade");
+  Granada.carrega("img/radar-dust2.webp").then(function (img) {
+    var dpr = Math.max(1, Math.round(window.devicePixelRatio || 1));
+    ESC.forEach(function (e) {
+      var caixa = document.createElement("div"); caixa.className = "amostra-c"; caixa.style.gridColumn = "1 / -1";
+      var h = '<p class="rot">Escala ' + e[0] + " (" + e[1] + ")</p><div class=\"tabela-rolagem\"><table class=\"dados\" style=\"min-width:0\"><thead><tr><th>variante</th>" + KINDS.map(function (k) { return "<th>" + k + "</th>"; }).join("") + "</tr></thead><tbody>";
+      VARS.forEach(function (v) { h += "<tr><td>" + v[1] + "</td>" + KINDS.map(function (k) { return '<td data-v="' + v[0] + '" data-k="' + k + '" data-e="' + e[0] + '"></td>'; }).join("") + "</tr>"; });
+      caixa.innerHTML = h + "</tbody></table></div>"; grade.appendChild(caixa);
+    });
+    [].forEach.call(grade.querySelectorAll("td[data-v]"), function (td) {
+      var k = +td.dataset.e, W = 44, c = Granada.cenario(img, 520, 330, k, dpr, W);
+      Granada.desenha(c.ctx, td.dataset.k, td.dataset.v, 0, 0, k);
+      c.canvas.style.width = W + "px"; c.canvas.style.height = W + "px"; c.canvas.style.display = "block"; c.canvas.setAttribute("role", "img");
+      c.canvas.setAttribute("aria-label", td.dataset.k + ", " + td.dataset.v);
+      var ampl = document.createElement("canvas"); ampl.width = c.canvas.width; ampl.height = c.canvas.height;
+      ampl.getContext("2d").drawImage(c.canvas, 0, 0); ampl.style.cssText = "width:" + (W * 3) + "px;height:" + (W * 3) + "px;image-rendering:pixelated;display:block;margin-top:6px";
+      ampl.setAttribute("aria-hidden", "true");
+      td.appendChild(c.canvas); td.appendChild(ampl);
+    });
+  });
+  var rola = document.getElementById("demo-chips-rola");
+  if (rola) rola.addEventListener("scroll", function () { rola.classList.toggle("fim", rola.scrollLeft + rola.clientWidth >= rola.scrollWidth - 2); }, { passive: true });
+})();
+</script>
 </body>
 </html>

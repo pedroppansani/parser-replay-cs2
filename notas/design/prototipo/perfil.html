@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Perfil de m0NESY · Falcons 17 × 19 MOUZ · Parser de Replay CS2</title>
+<meta name="description" content="Onde cada jogador custou rounds nesta partida, o que fez bem e como se compara com outro jogador.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%230b0f14'/%3E%3Ccircle cx='11' cy='16' r='6' fill='%234a90e8'/%3E%3Ccircle cx='21' cy='16' r='6' fill='%23e0a23a'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,400..700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="componentes.css">
+<style>
+  /* ---------- Cabeçalho da partida (compacto: o replay precisa caber na dobra) ---------- */
+  .cab { padding-top: 10px; }
+  .migalhas { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: var(--t-sm); color: var(--tinta-2); margin: 0 0 6px; line-height: var(--toque); }
+  .migalhas a { display: inline-block; }
+  .migalhas .sep { color: var(--apagado); margin: 0 6px; }
+  .decisor { margin: 8px 0 0; color: var(--tinta-2); font-size: var(--t-sm); }
+  .decisor b { color: var(--tinta); font-weight: 600; }
+  .decisor .dec { color: var(--decisivo); }
+  .comecou { display: flex; justify-content: space-between; font-size: var(--t-xs); color: var(--apagado); margin-top: 4px; }
+  .comecou .ct { color: var(--ct-texto); } .comecou .tr { color: var(--tr-texto); }
+
+  .painel { padding-top: 16px; }
+  .painel > h2 { margin: 0 0 4px; font-stretch: 85%; font-size: var(--t-xl); }
+  .painel > .lead { margin: 0 0 16px; color: var(--tinta-2); max-width: 70ch; font-size: var(--t-sm); }
+
+  /* ---------- Resumo ---------- */
+  .resumo { display: grid; gap: 12px; }
+  @media (min-width: 900px) { .resumo { grid-template-columns: 1fr 1fr; } .resumo .largo { grid-column: 1 / -1; } }
+  .dec-grade { display: grid; gap: 4px 20px; }
+  @media (min-width: 700px) { .dec-grade { grid-template-columns: auto minmax(0, 1fr); } }
+  .num-round { font-family: var(--f-num); font-weight: 600; font-size: 3.5rem; line-height: 1; color: var(--decisivo); margin: 0; }
+  .num-round small { display: block; font-family: var(--f-texto); font-size: var(--t-xs); color: var(--tinta-2); font-weight: 400; margin-top: 6px; }
+  .frase { font-size: 1.0625rem; margin: 0 0 8px; max-width: 64ch; }
+  .bruto { font-size: var(--t-sm); color: var(--tinta-2); margin: 0; }
+  .bruto + .bruto { margin-top: 4px; }
+  .componentes { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 6px; }
+  .componentes li { display: grid; grid-template-columns: 3.2em 1fr; gap: 10px; font-size: var(--t-sm); }
+  .componentes .num { color: var(--tinta-2); text-align: right; }
+  .seguir { margin-top: 4px; }
+
+  /* ---------- Replay ---------- */
+  .rodadas { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: thin; padding: 2px 0 6px; }
+  .rd {
+    flex: none; position: relative; width: var(--toque); min-height: var(--toque); border-radius: var(--r-sm);
+    border: 1px solid var(--linha); background: var(--superficie); color: var(--tinta-2); font-family: var(--f-num); font-size: var(--t-sm);
+  }
+  .rd::after { content: ""; position: absolute; left: 7px; right: 7px; bottom: 5px; height: 3px; border-radius: 2px; background: var(--vence, var(--borda)); }
+  .rd.ct { --vence: var(--ct); } .rd.tr { --vence: var(--tr); }
+  .rd[aria-pressed="true"] { border-color: var(--tinta); color: var(--tinta); box-shadow: inset 0 0 0 1px var(--tinta); }
+  .rd.dec::before { content: ""; position: absolute; top: 3px; right: 3px; width: 7px; height: 7px; background: var(--decisivo); transform: rotate(45deg); }
+  .meio-tempo { flex: none; width: 1px; background: var(--borda); margin: 6px 4px; }
+
+  .palco { display: grid; gap: 12px; margin-top: 4px; }
+  @media (min-width: 1024px) { .palco { grid-template-columns: 200px minmax(0, 1fr) 200px; align-items: start; } }
+  .quadro { position: relative; background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--r-md); padding: 8px; min-width: 0; }
+  .quadro-cab { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 12px; padding: 2px 4px 8px; }
+  .quadro-cab h3 { margin: 0; font-size: var(--t-base); font-stretch: 85%; }
+  .quadro-cab p { margin: 0; font-size: var(--t-sm); color: var(--tinta-2); }
+  .ferramentas { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; padding: 8px 0 0; border-top: 1px solid var(--linha); margin-top: 8px; }
+  .ferramentas .sep { flex: 1; }
+  .ferr-desenho { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px; margin-top: 8px; border: 1px solid var(--borda); border-radius: var(--r-sm); background: var(--superficie-2); }
+
+  /* o mapa nunca é maior que a tela menos o que vem antes e o controle de tocar (critério: tocar visível sem rolar) */
+  .mapa-caixa { position: relative; margin: 0 auto; width: min(100%, var(--mapa-max, 640px), calc(100svh - var(--reserva-replay, 340px))); aspect-ratio: 1; background: var(--radar); border-radius: var(--r-sm); overflow: hidden; }
+  @media (min-width: 1024px) { .mapa-caixa { --reserva-replay: 500px; } }
+  .mapa-caixa svg { width: 100%; height: 100%; }
+
+  /* o controle de tocar gruda no pé da tela enquanto o mapa está à vista: visível sem rolar em qualquer altura */
+  .transporte { position: sticky; bottom: 0; z-index: 6; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 8px; padding: 8px 4px; margin: 0 -8px; background: var(--superficie); border-top: 1px solid var(--linha); }
+  .tocar { width: var(--toque); height: var(--toque); border-radius: 50%; border: 0; background: var(--tinta); color: var(--fundo); font-size: 1rem; display: grid; place-items: center; }
+  .tocar:hover { background: #fff; }
+  .trilho-rep { position: relative; height: var(--toque); display: flex; align-items: center; }
+  .trilho-rep input { width: 100%; margin: 0; accent-color: var(--tinta); height: var(--toque); background: transparent; }
+  .marcas { position: absolute; left: 8px; right: 8px; top: 4px; height: 10px; pointer-events: none; }
+  .marcas i { position: absolute; top: 0; width: 2px; height: 10px; background: var(--tinta-2); }
+  .marcas i.k-ct { background: var(--ct); } .marcas i.k-tr { background: var(--tr); } .marcas i.bomba { width: 6px; height: 6px; top: 2px; transform: rotate(45deg); background: var(--tr); }
+  .relogio { font-family: var(--f-num); font-weight: 600; font-size: 1.1rem; min-width: 3.6em; text-align: right; }
+  .relogio small { display: block; font-family: var(--f-texto); font-size: var(--t-xs); color: var(--apagado); font-weight: 400; }
+  .vel { min-width: var(--toque); min-height: var(--toque); border: 1px solid var(--borda); border-radius: var(--r-sm); background: none; font-family: var(--f-num); font-size: var(--t-sm); }
+  .legenda { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: var(--t-xs); color: var(--tinta-2); padding: 8px 4px 2px; }
+  .legenda span { display: inline-flex; align-items: center; gap: 6px; }
+  .legenda .bola { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid #05080b; }
+  .legenda .glifo { width: 16px; height: 16px; }
+
+  .times { display: grid; gap: 12px; }
+  @media (min-width: 640px) and (max-width: 1023px) { .times { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1024px) { .times { display: contents; } .times .esq { grid-column: 1; grid-row: 1; } .times .dir { grid-column: 3; grid-row: 1; } .palco .quadro { grid-column: 2; grid-row: 1; } }
+  .time { background: var(--superficie); border: 1px solid var(--linha); border-top: 3px solid var(--lado); border-radius: var(--r-md); padding: 10px; }
+  .time.ct { --lado: var(--ct); --lado-t: var(--ct-texto); } .time.tr { --lado: var(--tr); --lado-t: var(--tr-texto); }
+  .time h3 { margin: 0 0 6px; display: flex; justify-content: space-between; font-size: var(--t-sm); }
+  .time h3 .rot { color: var(--lado-t); }
+  .jog { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 8px; padding: 6px 4px; font-size: var(--t-sm); }
+  .jog + .jog { border-top: 1px solid var(--linha); }
+  .jog .n { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .jog .hp { font-family: var(--f-num); color: var(--tinta-2); }
+  .jog .barra { grid-column: 1 / -1; height: 4px; background: var(--superficie-2); border-radius: 2px; overflow: hidden; }
+  .jog .barra i { display: block; height: 100%; background: var(--lado); }
+  .jog .arma { grid-column: 1 / -1; color: var(--apagado); font-size: var(--t-xs); }
+  .jog.morto { color: var(--apagado); } .jog.morto .n { text-decoration: line-through; font-weight: 400; }
+
+  .eventos { margin-top: 12px; background: var(--tl-fundo); border: 1px solid var(--linha); border-radius: var(--r-md); }
+  .eventos h3 { margin: 0; padding: 10px 12px; border-bottom: 1px solid var(--linha); }
+  .eventos ol { list-style: none; margin: 0; padding: 4px 0; display: grid; }
+  @media (min-width: 900px) { .eventos ol { grid-template-columns: 1fr 1fr; } }
+  .ev { display: grid; grid-template-columns: 3.4em auto minmax(0, 1fr); align-items: center; gap: 8px; min-height: var(--toque); padding: 0 12px; font-size: var(--t-sm); background: none; border: 0; text-align: left; width: 100%; color: var(--tinta); }
+  .ev:hover { background: var(--superficie-2); }
+  .ev .num { color: var(--tinta-2); }
+  .ev.futuro { color: var(--tinta-2); }   /* evento ainda não aconteceu: tinta-2 (8,95:1), nunca opacidade 0,38 */
+  .ev .ct { color: var(--ct-texto); } .ev .tr { color: var(--tr-texto); }
+  .ev-ico { width: 18px; height: 18px; display: grid; place-items: center; }
+
+  /* ---------- Jogadores ---------- */
+  .comparar { display: grid; gap: 12px; margin-top: 16px; }
+  .comparar-escolha { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .comparar-escolha select { min-height: var(--toque); padding: 0 10px; border: 1px solid var(--borda); border-radius: var(--r-sm); background: var(--superficie); color: var(--tinta); }
+  .grupos { margin-top: 16px; }
+
+  /* ---------- Placar ---------- */
+  .rating-linha { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin: 0 0 4px; }
+  .rating-valor { font-size: 2rem; font-weight: 600; }
+  .rating-rot { color: var(--tinta-2); font-size: var(--t-sm); }
+  .rating-erro { color: var(--apagado); font-size: var(--t-sm); }
+  .time-cel { display: block; color: var(--tinta-2); font-size: var(--t-xs); margin-top: 2px; }
+  .placar .comecou { font-size: var(--t-xs); margin-left: 4px; }
+  details.grupo > summary .resumo-grupo { margin-left: auto; font-stretch: var(--larg-normal); letter-spacing: 0; text-transform: none; font-weight: 400; color: var(--tinta-2); text-align: right; }
+  .cmp { display: grid; grid-template-columns: minmax(6em, auto) 1fr 1fr; gap: 0 12px; font-size: var(--t-sm); }
+  .cmp > * { padding: 8px 0; border-top: 1px solid var(--linha); }
+  .cmp .cab { color: var(--apagado); border-top: 0; }
+  .grafico { background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--r-md); padding: 12px; }
+  .grafico svg text { font: 12px var(--f-num); fill: var(--tinta-2); }
+</style>
+</head>
+<body>
+<div class="pagina">
+  <header class="site-topo">
+    <a class="marca" href="index.html" aria-label="Parser de Replay CS2, início"><span class="marca-longa">Parser de Replay</span><b>CS2</b></a>
+    <nav class="site-nav" aria-label="Principal">
+      <a href="index.html" aria-current="page">Partidas</a>
+      <a href="jogadores.html">Jogadores</a>
+      <a href="prancheta.html">Prancheta</a>
+      <a href="https://github.com/pedroppansani/parser-replay-cs2">GitHub</a>
+    </nav>
+  </header>
+
+  <header class="cab">
+    <p class="migalhas"><a href="index.html">Partidas</a><span class="sep" aria-hidden="true">/</span>Dust II<span class="sep" aria-hidden="true">/</span>IEM Kraków 2026<span class="sep" aria-hidden="true">/</span><span><span class="num">36</span> rounds, com prorrogação</span></p>
+    <h1 class="placar">
+      <span class="lado a perdeu"><span class="nome" title="Falcons">Falcons</span><span class="pts">17</span><span class="tag tr comecou">começou TR</span></span>
+      <span class="x" aria-hidden="true">×</span>
+      <span class="lado b venceu"><span class="pts">19</span><span class="nome" title="MOUZ">MOUZ</span><span class="tag-venceu">venceu</span><span class="tag ct comecou">começou CT</span></span>
+    </h1>
+    <p class="decisor">Decidida no <b class="dec">round 24</b> · MVP <b>m0NESY</b></p>
+    <p class="origem">placar e nomes: insights.json (nome canônico, decisão 38); "venceu", "começou CT/TR": rótulos do JS; a etiqueta "começou" é o ÚNICO uso da cor de lado na identidade do time; linha do decisor: Python (decisão 18)</p>
+
+    <div class="abas-moldura">
+      <div class="abas" role="tablist" aria-label="Seções da partida">
+        <button role="tab" id="t-resumo" data-aba="resumo" aria-controls="p-resumo">Resumo</button>
+        <button role="tab" id="t-replay" data-aba="replay" aria-controls="p-replay">Replay</button>
+        <button role="tab" id="t-jogadores" data-aba="jogadores" aria-controls="p-jogadores">Jogadores</button>
+        <button role="tab" id="t-placar" data-aba="placar" aria-controls="p-placar">Placar</button>
+        <button role="tab" id="t-perfil" data-aba="perfil" aria-controls="p-perfil">Perfil</button>
+        <button role="tab" id="t-estilos" data-aba="estilos" aria-controls="p-estilos">Estilos</button>
+      </div>
+      <button class="abas-mais" type="button" aria-label="Mostrar mais abas" tabindex="-1">›</button>
+    </div>
+  </header>
+
+  <section class="painel" id="p-perfil" role="tabpanel" aria-labelledby="t-perfil" tabindex="0">
+    <div id="perfil-raiz"></div>
+    <div class="demo-estado">
+      <label for="demo-estado"><b>Protótipo:</b> estado da aba</label>
+      <select id="demo-estado">
+        <option value="publicado">publicado (tipos já conferidos)</option>
+        <option value="preview">pré-visualização (todos "em validação")</option>
+        <option value="em-validacao">em validação (só a nota, sem cards)</option>
+        <option value="vazio">jogador sem pontos</option>
+        <option value="degradado">dado degradado</option>
+        <option value="carregando">carregando</option>
+        <option value="erro">erro de carga</option>
+      </select>
+      <button class="btn" type="button" id="demo-limpa">Limpar chips visitados</button>
+    </div>
+    <p class="origem">texto: cabeçalho, frases, nomes dos tipos, referência, custo, "como melhorar" e os rótulos da aba saem de leitura/perfil_erros.py (decisão 18, PAGINA.perfil); o template só monta o HTML e gera os chips; o "começou CT/TR" e o lado do ponto vêm do JS.</p>
+  </section>
+
+  <footer class="rodape">
+    <p><b>Limites.</b> <span class="num">52</span> partidas (<span class="num">43</span> profissionais e <span class="num">9</span> da FACEIT). O custo de cada erro é uma estimativa do modelo de chance de vitória, não uma medida.</p>
+  </footer>
+</div>
+<script>if (!location.hash) { try { history.replaceState(null, "", "#perfil"); } catch (e) {} }</script>
+<script src="proto.js"></script>
+<script>
+  /* nesta página as outras abas levam à página da partida */
+  [].forEach.call(document.querySelectorAll('[role="tab"]'), function (b) {
+    b.addEventListener("click", function () { if (b.dataset.aba !== "perfil") location.href = "partida.html#" + b.dataset.aba; });
+  });
+</script>
+<script src="perfil.js"></script>
+<script>
+  var raiz = document.getElementById("perfil-raiz"), sel = document.getElementById("demo-estado");
+  var q = new URLSearchParams(location.search).get("estado"); if (q) sel.value = q;
+  function desenha() { Perfil.monta(raiz, sel.value, (raiz.__perfil || {}).jogador); }
+  sel.addEventListener("change", desenha);
+  document.getElementById("demo-limpa").addEventListener("click", function () { try { sessionStorage.removeItem("parser-cs2:chips-visitados"); } catch (e) {} desenha(); });
+  Perfil.monta(raiz, sel.value);
+</script>
+</body>
+</html>

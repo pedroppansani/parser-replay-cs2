@@ -18,10 +18,12 @@ from playwright.sync_api import sync_playwright
 
 from scripts.design._comum import DOCS, chrome
 
-PASTA = str(DOCS)
+PASTA = os.environ.get("MEDE_PASTA") or str(DOCS)   # MEDE_PASTA=preview mede a prévia
 PORTA = 8765
-PAGINAS = ["index.html", "match_02.html"]
-LIMITES = {"index.html": (2.5, 0.1), "match_02.html": (None, 0.1)}   # (LCP em s, CLS)
+PAGINAS = ["index.html", "match_02.html", "match_02.html#perfil", "prancheta_de_mirage.html"]
+# (LCP em s, CLS); a aba Perfil (fase 15, §19.8) só tem critério de CLS
+LIMITES = {"index.html": (2.5, 0.1), "match_02.html": (None, 0.1), "match_02.html#perfil": (None, 0.1),
+           "prancheta_de_mirage.html": (None, 0.05)}
 REDE = {"offline": False, "latency": 165, "downloadThroughput": 9_000_000 / 8, "uploadThroughput": 1_500_000 / 8}
 JS_OBS = """
 window.__lcp = 0; window.__lcpEl = ""; window.__cls = 0;
@@ -31,7 +33,7 @@ new PerformanceObserver(l => { for (const e of l.getEntries()) if (!e.hadRecentI
   .observe({type: "layout-shift", buffered: true});
 """
 
-def main() -> int:
+def main(paginas: list[str] | None = None) -> int:
     srv = subprocess.Popen([sys.executable, "-B", "-m", "http.server", str(PORTA), "--bind", "127.0.0.1"], cwd=PASTA,
                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     time.sleep(1.5)
@@ -39,7 +41,7 @@ def main() -> int:
     try:
         p = sync_playwright().start(); b = chrome(p)
         print("375x667 · Fast 4G (9/1,5 Mbit/s, 165 ms) · CPU 4x · 5 medidas por página, cache limpo\n")
-        for pag in PAGINAS:
+        for pag in (paginas or PAGINAS):
             lcps, clss, els = [], [], []
             for _ in range(5):
                 ctx = b.new_context(viewport={"width": 375, "height": 667}, device_scale_factor=2)
@@ -65,4 +67,4 @@ def main() -> int:
     return 1 if falhou else 0
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(main(sys.argv[1:] or None))

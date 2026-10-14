@@ -23,6 +23,7 @@ from metrics import erros as E
 from metrics.impacto import ROTULOS as ROTULOS_DE_IMPACTO
 from metrics.player_profile import ROTULOS_DAS_TAXAS
 from metrics.structural_roles import FUNCOES
+from metrics.tactics import relogio as relogio_do_jogo
 
 # O endereço de "como é conferido": a seção 7 do material de calibração, no repositório.
 REPO = "https://github.com/pedroppansani/parser-replay-cs2"
@@ -53,7 +54,23 @@ TEXTOS = {
     "col_ponto": "Ponto",
     "col_referencia": "referência",
     "rounds_do_chip": "rounds",
+    # fase 15 (§19.9): rótulos dos cards novos; nenhum texto fixo no template (decisão 18)
+    "rot_como_melhorar": "Como melhorar",
+    "rot_conferir": "Antes de mudar algo",
+    "rot_rounds": "Rounds (abrem o Replay)",
+    "ja_aberto": "já aberto",
+    "nivel_explicito": "explícito",
+    "nivel_depende": "depende da tática",
+    "rotulo_dentro_do_normal": "dentro do normal para a função",
+    "sem_taxas": "Sem taxas com amostra suficiente nesta partida.",
+    "escondido_degradado": "Escondido: dado degradado.",
 }
+
+# A taxa só é destacada, e só é "dentro do normal", pela diferença absoluta para a mediana da régua do corpus
+# (pontos de taxa). É o MARGEM_DESTAQUE do template da aba, lido aqui para a etiqueta sair do Python.
+MARGEM_DESTAQUE = 0.15
+# Quando o dado não traz o plant do round, o relógio do chip é o do round (1:55 descendo).
+SEGUNDOS_ANTES_DO_REPLAY = 3        # o Replay abre 3 s antes do instante (decisão 46, "Replay com tempo")
 
 
 # Os textos da fase 12, como estavam: o site publicado (sem a prévia) com os erros em validação continua
@@ -136,14 +153,21 @@ def _custo(dwpas: list[float | None]) -> tuple[float, str]:
     return pontos, f"custou cerca de {n} {'ponto' if n == 1 else 'pontos'} de chance de vitória, pela estimativa do modelo"
 
 
-def _chips(ocs: list[dict]) -> list[dict]:
-    """Um chip por ocorrência: abre o Replay naquele round e naquele tempo (round e segundos desde o freeze)."""
+def _chips(ocs: list[dict], lado: str | None = None) -> list[dict]:
+    """Um chip por ocorrência: abre o Replay naquele round e naquele tempo (round e segundos desde o freeze).
+    Todo erro é de um lado só (fase 15): o chip leva o lado e o relógio do round ("R12 · 1:14"), o mesmo
+    que o Replay mostra no instante."""
     out = []
     for o in sorted(ocs, key=lambda x: (x["round_num"], x["tick"])):
         t = o["segundos"]
-        out.append({"round": int(o["round_num"]), "t": None if t is None else float(t),
-                    "rotulo": str(int(o["round_num"])),
-                    "titulo": f"Abrir o replay no round {int(o['round_num'])}, {relogio(t)} depois do fim do freeze"})
+        rn = int(o["round_num"])
+        lado_o = o.get("side") or lado or ""
+        hora = o.get("relogio") or (relogio_do_jogo(t) if t is not None else "")
+        texto = f"R{rn} · {hora}" if hora else f"R{rn}"
+        out.append({"round": rn, "t": None if t is None else float(t),
+                    "lado": lado_o, "lado_rotulo": _no_lado(lado_o), "relogio": hora,
+                    "rotulo": f"R{rn}", "texto": texto,
+                    "titulo": f"Round {rn}{', ' + hora if hora else ''}: abre o Replay {SEGUNDOS_ANTES_DO_REPLAY} s antes do instante"})
     return out
 
 
@@ -169,7 +193,7 @@ def _ponto_a_melhorar(tipo: str, ocs: list[dict], rounds: int, ref: dict | None,
             "contagem": _contagem(len(ocs), rounds),
             "referencia": referencia, "nivel": nivel, "nivel_rotulo": E.ROTULO_DO_NIVEL[nivel],
             "motivo": motivo, "frase": frase, "custo": custo, "_pontos": pontos,
-            "em_validacao": em_validacao, "chips": _chips(ocs)}
+            "em_validacao": em_validacao, "chips": _chips(ocs, lado)}
 
 
 def _pontos_fortes_fase12(perfil: dict, ref: dict | None, funcao: str | None) -> tuple[list[dict], dict]:
@@ -198,6 +222,13 @@ def _pontos_fortes_fase12(perfil: dict, ref: dict | None, funcao: str | None) ->
             "referencia": f"a mediana {de_quem} é {formata(r, formato)}"}))
     candidatos.sort(key=lambda c: (-c[0], c[1]))
     return [c[2] for c in candidatos[:E.MAX_PONTOS_FORTES]], valores
+
+
+def dentro_do_normal(perfil: dict, chave: str) -> bool:
+    """A taxa está dentro da faixa da régua do corpus: tem denominador, amostra suficiente, régua e fica a
+    menos de `MARGEM_DESTAQUE` da mediana (a conta do `celula` do template, que passa a vir do Python)."""
+    v, ref = perfil.get(chave), perfil.get(f"{chave}_ref")
+    return bool(perfil.get(f"{chave}_d")) and not perfil.get(f"{chave}_fraco") and v is not None         and ref is not None and abs(v - ref) < MARGEM_DESTAQUE
 
 
 def _bruto(n, d, formato: str, unidade: str) -> str:
@@ -323,7 +354,7 @@ def bloco(payload: dict, ocorrencias: pl.DataFrame | None, *, cabecalho: dict | 
                               else TEXTOS["normal_lado"].format(lado=E.ROTULO_DO_LADO[lado_]))
                     uma_vez.append({"titulo": E.TITULOS[t], "lado_rotulo": _no_lado(lado_),
                                     "contagem": _contagem(len(dele), rounds_do_lado.get(lado_, rounds)),
-                                    "motivo": motivo, "chips": _chips(dele)})
+                                    "motivo": motivo, "chips": _chips(dele, lado_)})
         # explícitos antes; dentro do nível, o maior custo; empate pela ordem fixa dos tipos
         ordem = {t: i for i, t in enumerate(E.TIPOS)}
         melhorar.sort(key=lambda m: (m["nivel"] != E.EXPLICITO, -m["_pontos"], ordem[m["tipo"]]))
@@ -348,6 +379,7 @@ def bloco(payload: dict, ocorrencias: pl.DataFrame | None, *, cabecalho: dict | 
             "melhorar": melhorar,
             "melhorar_vazio": TEXTOS["nenhum_erro"] if na_tela and not melhorar else "",
             "uma_vez": uma_vez,
+            "dentro_do_normal": {c: dentro_do_normal(p, c) for c in ROTULOS_DAS_TAXAS},
             "fortes": fortes,
             "contagens": {t: len(por_tipo[t]) for t in na_tela},
             "valores": valores,

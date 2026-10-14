@@ -666,3 +666,250 @@ O que depende do projeto e não do design. Nada disto é feito pelo `design`.
 | **Rodapé "Limites"** ("43 profissionais e 9 da FACEIT", do JSON) | `scripts/build_web_page.py`, fase B1 | o texto e o teste (§10) |
 | Destaque de cada grupo recolhido (linha de resumo) | Python, fase B3 | o formato das quatro linhas (§10) |
 | Agregado do corpus por jogador (steamid) | sessão do projeto, antes da fase D | a página e os estados (§7.3) |
+
+---
+
+<!-- §19 copiada em 2026-10-13 de C:/Users/User/Desktop/TimeIA/Iriun/Sites/Base-Design/projetos/parser-cs2.md (linhas 664 a 894); sha256 do parser-cs2.md lido: 16fc453cbb35bacf37458bee8c76e7aa5063097327e8548f42cdeb8c6004120e -->
+
+> **Origem da cópia:** `C:/Users/User/Desktop/TimeIA/Iriun/Sites/Base-Design/projetos/parser-cs2.md`, lido em 2026-10-13, sha256 `16fc453cbb35bacf37458bee8c76e7aa5063097327e8548f42cdeb8c6004120e`. Protótipo em `notas/design/prototipo/`.
+
+## 19. Componentes depois do fechamento (2026-10)
+
+> **O que é.** Depois do fechamento de 2026-10-04 o projeto ganhou componentes que não têm modelo no §8: a aba **Perfil** (cards de erro e de ponto forte, chips de round, bloco Detalhes, etiquetas neutras), a aba **Grupo** da prancheta e a **granada desenhada** (fase 11). A sessão do projeto implementou cada um com o que havia de mais próximo (fases 11, 12 e 13); este capítulo dá a forma própria de cada um, escrito para a sessão do projeto implementar sem perguntar.
+>
+> **Insumos lidos em 2026-10-13** (só leitura): o código atual do projeto (`dashboard/web/template.html`, `grupo.js`, `grupo.css`, `map_core.js`, `tactics.js`; a decisão 46), a cópia deste documento em `notas/design/entrega-sala-de-demo.md` (sem linhas novas depois de 2026-10-04 além do cabeçalho de cópia de 2026-10-08) e as capturas de `Claude outputs/capturas-fase-12/` (Perfil, 375 e 1440) e `capturas-fase-13/` (aba Grupo). A pasta `capturas-componentes-novos/`, citada no pedido, **não existia**; as das fases 12 e 13 a substituíram.
+>
+> **Protótipo:** `prototipo/perfil.html` (a aba Perfil inteira, com seletor de estado), `prototipo/prancheta.html?grupo=<estado>` (aba Grupo, 15 estados, com seletor e botões que simulam a etiqueta e a recusa) e `prototipo/estados.html#s19` (o catálogo: todos os estados lado a lado, mais a comparação das granadas). Medições: `validacao/aceite.py`, `interacao_19.py`, `mede_granada.py`, `contraste_19.py`, `mede_lcp_cls.py`.
+>
+> **Resumo das decisões**
+> 1. **Nenhuma cor nova.** O destaque do erro explícito vem de forma e peso (barra cheia, etiqueta invertida, número em `--tinta`), não de `--erro` nem de `--aviso`; o `--decisivo` volta a ser só "o que foi afirmado e é bom" (o "explícito" sai do verde).
+> 2. `.tag.neutro` ganha **uma gramática de forma**: borda tracejada = a página não afirma; borda cheia = afirma que está normal; um marcador desenhado em CSS para "tendência", "em validação" e "dentro do normal".
+> 3. Aba Grupo: chave de verdade (`role="switch"`, com o estado escrito), confirmações dentro do painel, ferramentas desativadas com o **motivo escrito na linha de dica** (o `title` sozinho não existe no toque), e a etiqueta "nomad moveu ztrike" num espaço próprio da linha de dica.
+> 4. **Granada desenhada: o desenho de hoje não separa da real em 375 px** (ΔE 1,0 a 2,0, abaixo do limiar de percepção; o corpo a 85% separa ΔE 0,2 a 0,6, nada). Proposta: o **carimbo** (quadrado de 4 px de tela no canto), que leva a separação a ΔE 4,8 a 5,4 mesmo no celular (§19.7).
+
+### 19.0 Tokens e papéis (sem cor nova)
+
+Nenhum token novo de cor. Saída do validador do §9 sobre `prototipo/tokens.css`, rodada em 2026-10-13 (`validacao/saida-paleta-v2-2026-10-13.txt`): **RESULTADO: PASSA**, idêntica à de §9.2. Os pares novos (todos tokens existentes) estão medidos em `validacao/saida-contraste-19-2026-10-13.txt`; **o pior é 3,80:1** (`--borda` sobre `--superficie`, marca, limiar 3:1; 3,42:1 sobre `--superficie-2`) e **o pior texto é 6,00:1** (`--apagado` sobre `--superficie`).
+
+Papéis (acréscimos ao §4; cada cor continua com um papel só):
+
+| Token | Papel já existente | Acréscimo de §19 | Por que não confunde |
+|---|---|---|---|
+| `--tinta` | texto, vitória, link, foco | etiqueta "explícito" (fundo `--tinta`, texto `--fundo`); barra cheia do ponto a melhorar explícito; etiqueta "nomad moveu ztrike"; contador na aba Grupo | todas dizem "atenção aqui" por **peso e inversão**, sempre com a palavra escrita |
+| `--decisivo` | round decisivo, rótulo afirmado | barra do **ponto forte**; função afirmada ("TR · AWPer") | deixa de marcar o erro explícito (decisão 46 usava `.tag.decisivo` para "explícito": **muda**) |
+| `--apagado` | rótulo, neutro | barra tracejada do "depende da tática"; borda e marcadores de `.tag.neutro` | o tracejado é a gramática do "não afirma" (§19.5) |
+| `--aviso` | atraso, dado degradado | **alteração desfeita pelo servidor** na linha de dica (▲ + frase) | é um aviso de algo a refazer |
+| `--erro` | erro de carga e de arquivo | **erro de campo** no formulário do grupo (✕ "Erro:") e "grupo indisponível" | falha de entrada ou de rede |
+| `--ct-texto`, `--tr-texto` | lado, só em contexto de round | "no TR" / "no CT" no card de erro (o erro aconteceu naquele lado, em rounds): cor de lado **por round**, como o §4 manda | a identidade do jogador continua com "começou CT/TR" |
+
+Ajuste de fonte (CLS, §19.8): `--f-num` ganha dois fallbacks medidos; o resto de §5 não muda.
+
+### 19.1 Card "ponto a melhorar" (aba Perfil)
+
+**Estrutura da aba** (nesta ordem, 375 e 1440 px; uma coluna, largura máxima 76 ch no texto): cabeçalho do jogador (`.pfcab`) → **Pontos a melhorar** → **Pontos fortes** → **Comparar com** → **Detalhes** (fechado). O seletor de jogador fica no topo, uma linha só que rola (rótulo do time + botões de 44 px).
+
+**Anatomia** (`<ol class="pflista"><li class="ponto melhorar explicito|depende">`), de cima para baixo:
+
+| Linha | Conteúdo | Tipografia | Cor |
+|---|---|---|---|
+| ordem (coluna da esquerda) | 1, 2, 3 | mono 600, 25 px | `--tinta` (explícito) · `--apagado` (depende) |
+| `.topo` | título do tipo + etiqueta de nível + (preview) etiqueta "em validação" | título Archivo 75% 700, 20 px (explícito) · 600 `--tinta-2` (depende) | `--tinta` · `--tinta-2` |
+| `.sub` | lado ("no TR") + contagem com o total ("4 vezes em 12 rounds") | 14 px | etiqueta de lado (`.tag.tr` / `.tag.ct`) + `--tinta-2` |
+| `.ref` | referência anônima do corpus ("a mediana de quem joga AWPer no TR é 2") | 14 px | `--apagado` |
+| `.custo` | "custou cerca de 7 pontos de chance de vitória, pela estimativa do modelo" | 14 px | `--tinta-2` |
+| `.motivo` | só no explícito: o que aconteceu | 14 px | `--tinta-2` |
+| `.como` | rótulo `.rot` ("Como melhorar" no explícito; "Antes de mudar algo" no depende) + a frase | frase 16 px, linha 1,45 | `--tinta` |
+| `.rounds` | rótulo `.rot` + chips de round (§19.3) | — | — |
+
+**O destaque do erro explícito é estrutura, peso e forma** (restrição forte do pedido): (1) barra esquerda **cheia** de 4 px em `--tinta` (15,14:1 contra a superfície); (2) etiqueta **invertida** `.tag.explicito` (texto `--fundo` sobre `--tinta`, caixa alta, 16,32:1); (3) título em peso 700 e número de ordem em `--tinta`; (4) a **ordem**: explícitos antes, e dentro do nível o maior custo. O "depende da tática" é o oposto, na mesma família: barra **tracejada** (6 px cheios, 4 px vazios, `--apagado`), etiqueta tracejada, título em 600 e `--tinta-2`. Em escala de cinza os dois continuam distintos (`estados.html`, linha cinza do 19.5).
+
+**Por que não cor nova e não `--erro`/`--aviso`:** `--erro` é falha de sistema e `--aviso` é "algo a refazer"; um erro de jogo não é nenhuma das duas, e pintar o nome de um jogador real de vermelho ou amarelo seria um julgamento. O verde (`--decisivo`) também sai: "explícito" em verde lia como "bom". Resultado: o card diz *quão firme é a afirmação* (cheio × tracejado), não *quão ruim é o erro*; o custo está escrito, em pontos.
+
+**Estados:**
+
+| Estado | O que aparece |
+|---|---|
+| Explícito | como acima |
+| Depende da tática | barra e etiqueta tracejadas; sem `.motivo` (a frase já é o motivo, vinda do Python, seguida de "vale conferir"); rótulo "Antes de mudar algo" |
+| Pré-visualização ("em validação") | os cards normais + `.tag.neutro.validacao` ao lado do nível + a nota "Pré-visualização: …" acima da lista |
+| Em validação (página publicada, nenhum tipo conferido) | **nenhum card**: uma nota `.aviso-bloco.neutro` com a etiqueta "em validação", a frase "Em validação: os tipos de erro aparecem depois de conferidos" e o link "como é conferido" |
+| Sem ponto | `.pfnota`: "Nenhum ponto a melhorar com dado suficiente nesta partida." |
+| Função só tendência | o `.motivo` ganha "a função não é firme nesta partida" (Python); nada muda na forma |
+| Amostra pequena | menos de 2 ocorrências **não** vira card: vai para Detalhes (decisão 46), em `.ponto.compacto` |
+| Dado degradado | `.aviso-bloco` com ▲ ("Dado degradado: …") acima da aba; a seção mostra "Escondido: dado degradado." e **nenhum custo** |
+| Carregando | 2 a 3 esqueletos `.ponto.esqueleto` (barra cinza, linhas de 20, 14, 14 e 44 px) |
+| Erro de carga | `.aviso-bloco.erro` com ✕ "Erro:" e a saída |
+
+**375 px:** a mesma coluna; `.topo` quebra linha (título, depois as etiquetas); os chips rolam numa linha; nenhum texto abaixo de 12 px.
+
+### 19.2 Card "ponto forte"
+
+Irmão do anterior, mais leve: `<li class="ponto forte">` com barra esquerda **cheia** de 4 px em `--decisivo` (6,34:1) e sem número de ordem. `.topo`: título (Archivo 75% 700, 20 px, `--tinta`) + **valor** (mono 600, 25 px, `--tinta`) + **bruto** (14 px, `--apagado`: "6 de 20 rounds"); `.ref` embaixo: "a mediana de quem joga AWPer é 14%". Valor, bruto e referência juntos, como a regra do projeto manda. Sem barra nem régua desenhada (não há intervalo; um ponto sozinho numa régua seria lido como medida de incerteza). Estados: normal, vazio ("Nenhum ponto forte acima da régua com dado suficiente nesta partida."), degradado (escondido), carregando (esqueleto). A cor verde diz "afirmado e bom"; o card nunca aparece sem o bruto.
+
+### 19.3 Chips de round (levam ao Replay naquele round e instante)
+
+`<button class="rchip pfchip" data-round data-t>` com duas linhas de texto: o **round** (mono 600, 14 px, `--tinta-2`) e o **horário do round** (mono, 12 px, `--apagado`: "1:14"; contagem do relógio, que desce de 1:55). Tamanho mínimo 44 × 44 px (largura cresce com o texto). O nome acessível é o `titulo` que o Python já manda ("Round 5, 1:14: abre o Replay 3 s antes") e, quando já aberto, termina com "(já aberto)".
+
+| Estado | Forma |
+|---|---|
+| Normal | borda `--borda` (3,80:1), fundo `--superficie`, número `--tinta-2` |
+| Hover | fundo `--superficie-2`, borda `--tinta-2`, número `--tinta`, horário `--tinta-2`; **sem deslocamento** (tirar o `translateY(-1px)` do `.rchip:hover` para estes chips: numa faixa com rolagem ele recorta) |
+| Foco | anel `--foco` de 2 px com 2 px de folga; a faixa tem 4 px de folga em volta para o anel não ser cortado |
+| Visitado | fundo `--superficie-2` **e** um quadrado cheio de 6 px `--tinta-2` no canto superior esquerdo (não depende de cor; é cinza sobre cinza e é uma forma) |
+| Sem horário | só o número (se o dado não trouxer `relogio`) |
+
+**Linha que rola (375 px e sempre que não couber):** `.pfchips` com `overflow-x: auto`, `scroll-snap-type: x proximity` e, enquanto há chip fora da tela, **sombra de 32 px na borda direita** (`mask-image`), que some quando a rolagem chega ao fim (classe `.rola` / `.fim`, ligadas por JS no `scroll` e no `resize`). Mesma ideia das abas com "›" (§7.2). **Visitado** vem de `sessionStorage['parser-cs2:chips-visitados']` (`{"round@t": true}`), lido e escrito em `try/catch`; sem armazenamento o chip só não fica marcado. Clique e Enter/Espaço levam a `#replay?round=R&t=T` (já existe) e **o Replay abre parado, 3 s antes do instante**; o hash não pode ser apagado pelo código das abas (`history.replaceState` só quando a aba muda de fato — corrigido no protótipo).
+
+### 19.4 Bloco "Detalhes" (recolhível, fechado por padrão)
+
+É um `details.grupo` do §8 (o mesmo dos grupos da aba Jogadores), com um nome e uma **linha de resumo descritiva**: `<details class="grupo pf-detalhes" id="pf-detalhes"><summary><span class="g-nome">Detalhes</span><span class="g-resumo">o perfil completo desta partida: taxas, função por round, jeito de jogar e quem joga em cada grupo</span></summary>…`. `summary` com 44 px de altura, `▸` que gira ao abrir, nome em caixa alta condensada 700; o resumo fica à direita em 14 px `--tinta-2` e **some quando aberto** (descreve o conteúdo, que então está à vista; diferente dos grupos da aba Jogadores, cujo resumo é um destaque de dado e fica). Estado aberto/fechado em `localStorage['parser-cs2:perfil-detalhes']` (`"1"`/`"0"`), em `try/catch`: sem armazenamento abre **fechado** e funciona igual (testado). Corpo: grade de uma coluna `minmax(0,1fr)` (sem isso a tabela de 420 px estoura os 375 px, defeito achado e corrigido no protótipo): tabela de taxas (bruto, régua, e `.tag.neutro.normal` "dentro do normal para a função" quando a taxa está na faixa da régua), os tipos de erro com uma só ocorrência em `.ponto.compacto.depende` com chips, a nota "Como ler", os cards de estilo. Estados: fechado com resumo, aberto, sem taxas ("Sem taxas com amostra suficiente nesta partida."), carregando (esqueleto), degradado.
+
+### 19.5 Etiqueta `.tag.neutro` e variantes
+
+Gramática: **a borda diz se a página afirma; o marcador diz de que tipo é a reserva.** Todas em `--tinta-2` sobre fundo transparente (8,57:1 na superfície; 7,70:1 na superfície 2); a borda e o marcador são marcas (`--apagado`, 6,00:1; `--borda` na cheia, 3,80:1). Marcadores **desenhados em CSS** (`::before`), porque nem toda fonte tem os glifos.
+
+| Etiqueta | Classe | Borda | Marcador | Texto | Onde |
+|---|---|---|---|---|---|
+| depende da tática | `.tag.neutro` | tracejada 1 px | nenhum | normal | nível do erro; função "sem função dominante"; métrica neutra |
+| tendência | `.tag.neutro.tendencia` | tracejada | meio disco (8 px) | normal | função só tendência ("CT · AWPer (tendência)"); rótulo com estabilidade < 0,70 |
+| em validação | `.tag.neutro.validacao` | tracejada | círculo pontilhado (8 px) | **itálico** | tipo de erro ainda não conferido (pré-visualização) |
+| dentro do normal para a função | `.tag.neutro.normal` | **cheia** 1 px `--borda`, fundo `--superficie-2` | sinal de igual (8 × 5 px) | normal | taxa na faixa da régua (Detalhes) |
+| explícito | `.tag.explicito` | cheia, fundo `--tinta` | nenhum | `--fundo`, caixa alta | nível do erro afirmado |
+| amostra pequena | `.tag.amostra` (existente) | tracejada `--borda` | nenhum | normal | continua; pode virar `.tag.neutro.amostra` sem marcador |
+
+Mapeamento no JS: o Python manda `nivel` (`explicito` | `depende`), `em_validacao` (booleano), `neutro` + `tendencia` (booleanos na função) e `dentro_do_normal`; o JS escolhe a classe. Toda etiqueta tem o texto escrito; em escala de cinza e para daltonismo nada se perde (`estados.html`, 19.5, segunda caixa).
+
+### 19.6 Aba Grupo do painel da prancheta (320 px; 375 px: embaixo do mapa)
+
+**Posição:** quarta aba do painel (Jogadores, Granadas, Tática, **Grupo**). Quando há grupo, a aba mostra um **contador** (`.aba-contador`: círculo `--tinta` com o número de membros online, "3"; `aria-label="3 online"`). Em 375 px as quatro abas cabem sem rolar: no painel, `padding: 0 8px; letter-spacing: .04em` (medido: soma 325 px em 325 disponíveis); abaixo de 375 px o "›" do §7.2 aparece.
+
+**Componentes**
+
+- **Campo** (`.gr-campo`): rótulo **acima** do campo, nunca ao lado (320 px); campo de 44 px; o do código usa mono em caixa alta com espaçamento (`letter-spacing: .14em`). Erro do campo: borda `--erro`, `aria-invalid="true"`, `aria-describedby` apontando para a mensagem "✕ Erro: …" em `--erro` 600.
+- **Chave** (`.chave`, `role="switch"`, `aria-checked`): linha de 44 px, **rótulo à esquerda, o estado escrito ("Ligado" / "Desligado") e o interruptor à direita**. Desligada: trilho `--superficie-2` com borda `--borda`, pino `--apagado` à esquerda. Ligada: trilho `--tinta`, pino `--fundo` à direita, borda `--tinta`. Desativada: 45% de opacidade, `cursor: not-allowed`, motivo no `title` **e** na linha de dica. O estado nunca depende só da cor (texto + posição do pino). `.chave.mini` é a versão de linha cheia usada por membro ("Pode desenhar").
+- **Linha de membro** (`.gr-membro`): ficha de 32 px (iniciais, **neutra**: o grupo não tem lado), nome (+ "(você)"), `online · pode desenhar` / `offline · só assiste` / `online · líder` com **ponto cheio = online, vazio = offline** (e a palavra). Na vista da líder, em cada membro: botão "Expulsar" (44 px) na linha do nome e a chave "Pode desenhar" na linha de baixo, em largura cheia (em 320 px os dois lado a lado não cabem). Membro offline: nome em `--tinta-2`.
+- **Confirmação dentro do painel** (`.gr-confirma`, `--superficie-2`): "Transferir a liderança para [select] [Transferir] [Cancelar]" e "Encerrar o grupo? A tática fica só para leitura para todos, e ninguém mais entra. [Encerrar de vez] [Cancelar]". Os botões que quebram linha (`white-space: normal`, 44 px mínimo) evitam o corte de "Transferir liderança" em 320 px.
+- **Linha de dica com o grupo** (abaixo).
+
+**Os estados** (o seletor do protótipo lista todos; `?grupo=<estado>`)
+
+| Estado | O painel mostra | Ferramentas | Linha de dica |
+|---|---|---|---|
+| **Sem grupo** | frase "Desenhe a tática junto, ao vivo: crie um grupo e mande o link, ou entre com o código." · campo "Seu nick" · **Criar grupo** (principal, largura cheia) · separador "ou" · campo "Código do grupo" · **Entrar num grupo** · bloco `info` fixo com a frase do que o servidor guarda ("O servidor guarda só o nick que você escolher, quem está em cada grupo e as alterações da tática. O login é anônimo: sem e-mail, sem senha. Grupo parado há 30 dias é apagado.") | todas ligadas | a de sempre |
+| Entrando | botões desativados; status "Entrando no grupo…" (`role="status"`) | ligadas | a de sempre |
+| Código inválido / nick em uso / outras recusas de entrada | erro **no campo** com ✕ "Erro:" (textos de `ENTRADA`) | ligadas | a de sempre |
+| **Você foi removido** | volta ao formulário, com `.aviso-bloco.info` no topo: "A líder tirou você deste grupo. A tática continua salva neste navegador." (**não é erro: sem `--erro`**) | ligadas | a de sempre |
+| **Grupo indisponível** | `.aviso-bloco.erro` (`role="alert"`) "✕ Erro: Grupo indisponível agora. A tática continua salva neste navegador." + botão **Tentar de novo** + "Enquanto isso, a prancheta funciona como sempre, sozinho." (o formulário some: criar ou entrar falharia) | ligadas | a de sempre |
+| **Líder** | CÓDIGO + código (mono 20 px) + **Copiar link** · chave "Todos podem desenhar" · "Membros (4 de 10)" · lista com Expulsar e "Pode desenhar" por pessoa · **Transferir liderança** e **Encerrar grupo** (lado a lado, quebram linha) · status ("Link copiado: …") | ligadas | a de sempre |
+| Líder: confirmando | o bloco de confirmação no lugar dos dois botões | ligadas | a de sempre |
+| Líder sozinha | "Transferir liderança" desativado com o motivo escrito ("Transferir fica desligado: ninguém mais no grupo.") | ligadas | a de sempre |
+| **Membro com permissão** | CÓDIGO (sem Copiar link) · "✎ Você pode desenhar" · chave "Seguir a líder" · lista só de leitura · **Sair do grupo** | ligadas | a de sempre |
+| **Membro sem permissão, seguindo** | "Só a líder desenha agora" · chave "Seguir a líder" **ligada** · lista · Sair | **desativadas** (pincéis, desfazer, banco, granadas, buscar), cada uma com `title` "A líder não liberou desenho para você."; **seguem ligados** Reproduzir, zoom, tela cheia e o cabeçote | "**Você acompanha a tática:** só a líder desenha agora. Você ainda pode mover o cabeçote e dar play." (fixa, `.bloqueado`) |
+| Membro sem permissão, fora da líder | a chave "Seguir a líder" desligada **e** o botão "Voltar para a líder" (largura cheia) | idem | idem |
+| **Sala encerrada (líder)** | aviso `info` "O grupo foi encerrado: a tática ficou só para leitura." · chave "Todos podem desenhar" e os controles dos membros **desativados** com o motivo · só "Sair do grupo" | desativadas | "**O grupo foi encerrado:** a tática ficou só para leitura." |
+| Sala encerrada (membro) | o mesmo aviso · "Só leitura" · Sair | desativadas | a mesma |
+
+**Linha de dica com grupo** (`#pr-dica-estado` no projeto; `<p class="pr-dica">` com dois espaços: `.dica-texto` e, à direita, o espaço da etiqueta):
+
+1. **Etiqueta temporária** "nomad moveu ztrike" (`.dica-etiqueta`): pílula `--tinta`/`--fundo` (16,32:1) com a **ficha de 26 px** do autor e a frase em 14 px 600; aparece com 120 ms de fade e sobe 3 px (`--dur`; 0 ms com `prefers-reduced-motion`), fica **3 s** (`DURACAO_DA_ETIQUETA_MS`) e some; uma nova mensagem **substitui e reinicia** o tempo (nada empilha). `role="status"`; **convive com qualquer texto da dica** — quem só assiste é quem mais a vê.
+2. **Recusa do servidor** (6 s, `DURACAO_DA_RECUSA_MS`) ocupa o texto da dica, em negrito: as que **não desfazem nada** (`permissao`, `encerrada`) têm borda esquerda tracejada `--apagado` ("A líder não liberou desenho para você."); as que **desfazem a alteração** (`ritmo`, `tamanho`, `invalida`, `duplicada`) levam **▲ em `--aviso`** + borda esquerda cheia `--aviso` ("Alteração grande demais para o grupo (mais de 8 KB): ela foi desfeita.").
+3. **Prioridade:** recusa > texto fixo do estado (`.bloqueado`) > texto normal da dica; a etiqueta é sempre somada.
+4. No celular a linha reserva `min-height: 6,8 rem` (4 linhas) para a etiqueta e as recusas não deslocarem o mapa (§19.8).
+
+### 19.7 Granada desenhada × granada real (fase 11)
+
+**Pergunta:** o anel duplo **tracejado** e o corpo a **85%** que o projeto usou separam bem a granada desenhada da real, ao lado dela no replay?
+
+**Medição** (`validacao/mede_granada.py`; réplica fiel do `nadeGlyph`/`anelDoGlifo` do `map_core.js` em `prototipo/granada.js`; 24 posições do radar de Dust II e de Mirage, semente 28; escalas 0,508 = 1440 px e 0,321 = 375 px do radar de 1024 px; densidade de pixel 1 e 2; ΔE CIELAB76 pixel a pixel na janela de 11 px de tela em volta do glifo; **média dos quatro tipos** de granada; limiares de engenharia: < 2,3 não separa, 2,3–5 separa só com atenção, ≥ 5 separa à primeira vista). Dois modos: **A, como no projeto** (a desenhada tem raio 7 e a real 5,5) e **B, mesmo tamanho** (isola tracejado, alfa e forma do tamanho).
+
+| Variante | A · 1440 (1×) | A · 1440 (2×) | A · 375 (1×) | A · 375 (2×) | B · 1440 (1×) | B · 375 (1×) |
+|---|---|---|---|---|---|---|
+| **Hoje** (tracejado em px do radar, alfa 85%, raio 7) | 6,6 | 9,3 | **2,0** | **3,1** | 2,8 | **1,0** |
+| Só o alfa 85% (sem tracejado) | 8,0 | 11,1 | 2,2 | 3,6 | **0,6** | **0,3** |
+| Só o tracejado (alfa 100%) | 6,8 | 9,5 | 2,1 | 3,2 | 2,5 | 0,9 |
+| V1: tracejado em px de **tela** (3,5 / 3) | 7,3 | 10,0 | 2,0 | 3,3 | 1,9 | 0,8 |
+| V2: V1 + corpo **oco** | 9,3 | 11,9 | 3,4 | 4,2 | 4,3 | 2,0 |
+| **V3: V1 + carimbo de 4 px** | **8,8** | **11,5** | **5,6** | **7,0** | **4,8** | **5,0** |
+| V3p: carimbo de 3 px | 8,0 | 10,9 | 4,2 | 5,6 | 4,0 | 3,1 |
+
+(Valores completos por tipo, por escala e por densidade: `validacao/saida-granada-2026-10-13.txt`.)
+
+**Veredito.** **Em 1440 px separa; em 375 px não.** O que separa em 1440 px é, sobretudo, o **raio** 7 contra 5,5 e o tracejado (B: ΔE 2,8, "só com atenção"). Em 375 px o corpo do glifo real tem 1,8 px de raio na tela (cerca de 3 px com o anel) e o passo do tracejado (5/4 px do radar) vira 1,6/1,3 px de tela: o tracejado se dissolve e a diferença cai para ΔE 1,0 a 3,1, **abaixo do que o olho separa** em tela de densidade 1 e no limite em densidade 2. **O corpo a 85% não separa em lugar nenhum** (ΔE 0,2 a 0,6 no modo B): ele não é a forma de diferença, só tira contraste do corpo. Como a granada desenhada é justamente o que *não aconteceu*, confundi-la com a real em 375 px é o erro que o design tem de evitar.
+
+**Proposta (V3): o carimbo.** Uma **forma** que sobrevive ao tamanho, não cor nem alfa:
+
+1. **Carimbo:** um **quadrado cheio de 4 px de tela** (`--tinta`, com 1 px de `--contorno` por fora, o mesmo anel duplo das marcas) no **canto superior direito** do glifo, a `1,7 × raio + 2 px de tela` do centro. Tamanho em **px de tela** (divide-se pela escala do contexto), nunca em px do radar. Nenhum glifo de granada é um quadrado cheio (o `decoy` é quadrado vazado e grande), então não se confunde com nenhum tipo.
+2. **Tracejado em px de tela:** passo 3,5 on / 3 off em px de tela (não 5/4 do radar). Vale também para a área tracejada de smoke e molotov.
+3. **Corpo a 100%** (o 85% não faz nada; volta o contraste do corpo). O raio 7 fica (dá pegada para arrastar).
+4. A **legenda** mostra "granada desenhada" com o carimbo; o `aria-label` do glifo diz "desenhada".
+5. Descartado: V2 (corpo oco) — em 375 px só chega a ΔE 2,0–3,4 e o corpo oco perde o contraste do preenchimento; V3p (3 px) — em 375 px 3,1 a 4,2, abaixo do alvo.
+
+**Critério de aceite A25** (depois da implementação, `mede_granada.py` com a função real): **média dos quatro tipos ≥ 4,5 e nenhum tipo abaixo de 3,5**, no modo "mesmo tamanho", nas quatro combinações de escala e densidade. V3 no protótipo: médias **4,8 / 5,4 / 5,0 / 5,1**, pior tipo 3,9 (flash em 1440 px, 1×). Hoje: médias 2,8 / 2,9 / 1,0 / 1,1: **reprova**.
+
+Limite honesto: a métrica é de pixel (ΔE76 médio), não um teste com pessoas; ela mede o que a tela mostra, não o quanto o olho vai notar numa partida em movimento. O carimbo foi escolhido por ser uma forma, que resiste a tamanho, daltonismo e compressão; se o Pedro achar o quadrado feio, a segunda opção é o corpo oco (V2) com um carimbo de 3 px (ver PERGUNTAS).
+
+### 19.8 CLS, fontes e espaço reservado
+
+- **Fallback da mono:** `--f-num` passa a `"JetBrains Mono", "JetBrains Mono Fallback", "JetBrains Mono Fallback 2", ui-monospace, monospace`, com `@font-face { font-family: "JetBrains Mono Fallback"; src: local("Consolas"); size-adjust: 109%; }` (Consolas, 0,55 em, contra 0,60 em da JetBrains) e `"JetBrains Mono Fallback 2"` com `local("Menlo"), local("SF Mono"), local("Courier New"), local("Liberation Mono")` a 100%. É o mesmo método dos fallbacks da Archivo (§3). Os apelidos `… Fallback` são fontes do sistema, sem download: **não contam** como família carregada no critério A6.
+- **Espaço reservado:** o que o JS monta **depois do primeiro desenho** reserva a altura antes. No protótipo: `#perfil-raiz:empty { min-height: 100svh }` e, em ≤ 640 px, `.pr-dica { min-height: 6,8 rem }`. Sem isso o CLS do Perfil foi **0,329** e o da prancheta **0,212** (a causa é o JS que monta o conteúdo depois do primeiro desenho; no caso da prancheta, o texto da linha de dica e a troca da fonte mono). No site real, que é um HTML só, o painel que o JS monta (Perfil, e o replay) precisa do mesmo tratamento: **um esqueleto de pelo menos uma altura de tela** até o JS rodar, para que nada visível fique abaixo dele.
+- **Medição** (Fast 4G, CPU 4×, 375 × 667, 5 rodadas, cache limpo; `validacao/mede_lcp_cls.py`, com os `<script src>` locais embutidos na resposta para imitar o HTML único): landing LCP **0,95 s**, CLS 0,003 · partida LCP **0,87 s**, CLS 0,003 · **Perfil LCP 0,70 s, CLS 0,003** · **prancheta (aba Grupo) LCP 0,82 s, CLS 0,080** (a margem de 0,02 até o limite de 0,1 é a troca de fonte do cabeçalho; em 1 de 3 rodadas de diagnóstico ela aparecia).
+
+### 19.9 Dados e textos (o que o Python entrega; o template só monta)
+
+| O quê | Onde | Regra |
+|---|---|---|
+| **Lado do ponto** (`lado`: `tr` / `ct` / `ambos`; `lado_rotulo`: "no TR" / "no CT" / "nos dois lados") e a **contagem por lado** ("4 vezes em 12 rounds" = rounds jogados nesse lado) | `leitura/perfil_erros.py` | contagem e total no mesmo lado; "nos dois lados" sem etiqueta de cor |
+| **Horário dos chips** (`chips[].relogio`: "1:14") | `leitura/perfil_erros.py` | o `relogio` do round (1:55 descendo), do mesmo `t` que já vai no chip |
+| Rótulos novos: `rot_como_melhorar` ("Como melhorar"), `rot_conferir` ("Antes de mudar algo"), `rot_rounds` ("Rounds (abrem o Replay)"), `ja_aberto` ("já aberto"), `nivel_explicito`, `nivel_depende`, `rotulo_dentro_do_normal` ("dentro do normal para a função") | `PAGINA.perfil.textos` (decisão 18) | nenhum texto fixo no template |
+| `dentro_do_normal` (booleano por taxa) | Python | taxa dentro da faixa da régua do corpus (`MARGEM_DESTAQUE`) |
+| Resumo de cada tipo de erro **com uma só ocorrência** em `uma_vez` | Python (já existe) | sem mudança |
+| Texto "Você acompanha a tática: só a líder desenha agora. …" e "Enquanto isso, a prancheta funciona como sempre, sozinho." | `grupo.js` (constantes junto de `RECUSA`) | novos; os demais textos do §19.6 já existem |
+
+### 19.10 O que muda em cada arquivo do projeto
+
+- **`dashboard/web/template.html` (CSS do Perfil):** `.pfitem` → `.ponto` (+ `.melhorar`, `.explicito`, `.depende`, `.forte`, `.compacto`, `.esqueleto`); `.tag.neutro` e variantes; `.tag.explicito`; `.pfchips` com `.rola/.fim` e `.pfchip` (visitado, hover sem deslocamento); `details.grupo.pf-detalhes` com `.g-resumo` que some aberto; `.pf-det-corpo { grid-template-columns: minmax(0,1fr) }`; `.pfsel` do seletor. `.tag.decisivo` deixa de marcar "explícito". O CSS completo está em `prototipo/componentes.css` (referência).
+- **`template.html` (JS):** `itemMelhorar` (estrutura nova, rótulos `.rot`, etiqueta de lado, chips com `.n` e `.h`), `itemForte`, `chipsDeRound` (relógio, "já aberto", `sessionStorage` em `try/catch`, ligar `.rola`/`.fim`), Detalhes (`localStorage`), esqueleto e estado de erro; ajustar `history.replaceState` das abas para **não apagar `?round=&t=`** no hash.
+- **`dashboard/web/grupo.js` e `grupo.css`:** chave `role="switch"` com o estado escrito; campos com rótulo acima e erro `aria-invalid`; linha de membro (Expulsar na linha do nome, chave abaixo); estado "removido" como `info`; "indisponível" com **Tentar de novo**; texto fixo "Você acompanha…" na dica; classes `recusa` e `recusa-desfeita`; etiqueta num espaço próprio; contador na aba; botões dos blocos de ação com quebra de linha e 44 px.
+- **`dashboard/web/tactics.js` / `tactics.css`:** `dica()` passa a aceitar `{html, classe, etiqueta}` do gancho do grupo; `.pr-dica` vira flex com `.dica-texto` e a etiqueta; `min-height` reservada em ≤ 640 px; no celular, as quatro abas do painel com `padding: 0 8px; letter-spacing: .04em`; desativar com motivo em `title` **e** na linha de dica.
+- **`dashboard/web/map_core.js`:** `desenhaGranadaDesenhada` e `nadeGlyph(…, desenhada)` — tracejado `[3,5/k, 3/k]`, `ALFA_GRANADA_DESENHADA = 1`, **carimbo** em px de tela (`desenhaCarimbo`); `areaDesenhada` com o mesmo passo; legenda com o carimbo. **Nenhum outro glifo muda.**
+- **`dashboard/web/tokens.css`:** `--f-num` com os fallbacks e os dois `@font-face` da §19.8 (ao lado dos da Archivo, que já estão lá).
+- **`leitura/perfil_erros.py`:** os campos da §19.9. **`scripts/build_web_page.py`:** nada além de passar os textos.
+- **Capturas de referência (`compara_capturas`):** a regeração das granadas desenhadas (fase 11) entra **num commit próprio** ("granada desenhada: carimbo em px de tela, alfa 1,0"), sem outra mudança visual, como no §4.1.
+
+### 19.11 Critérios de aceite
+
+Medidos no protótipo em 2026-10-13 (`validacao/saida-aceite-2026-10-13.txt`, 99 combinações: 33 páginas e estados, a saber as 10 de antes, `perfil.html` em 7 estados e `prancheta.html` em 16 estados do grupo, vezes 375 × 667, 375 × 812 e 1440 × 900). A sessão do projeto repete o roteiro contra `docs/` e `preview/`.
+
+| # | Critério | Medida | Protótipo |
+|---|---|---|---|
+| A16 | Todo texto novo ≥ 4,5:1 (A3) e marcas ≥ 3:1 (A4) | `aceite.py` (DOM) + `contraste_19.py` (34 pares) | **PASSA**; menor texto 5,39:1, menor marca 3,42:1 (borda do chip visitado sobre `--superficie-2`) |
+| A17 | Toque ≥ 44 × 44 (A5): chips, chaves, botões do grupo, `summary`, seletor, abas | `aceite.py` | **PASSA** nas 33 páginas e estados × 3 telas |
+| A18 | Nada só por cor: nível do erro, tipos de etiqueta, online/offline, chave, visitado, recusas | revisão + linha em escala de cinza do `estados.html` (19.5) | **PASSA**: cada um tem texto e forma |
+| A19 | 375 px sem rolagem horizontal da página (A2) | `scrollWidth ≤ 375` | **PASSA** (achou e corrigiu uma tabela de Detalhes que estourava) |
+| A20 | Erro de jogador não usa `--erro` nem `--aviso` | `interacao_19.py` (varre as cores dos elementos do card) | **PASSA** |
+| A21 | Detalhes e chips funcionam com `localStorage` e `sessionStorage` bloqueados | `interacao_19.py` (`defineProperty` que lança) | **PASSA** |
+| A22 | Chip abre o Replay no round e no instante (3 s antes, parado); visitado marca ao voltar | `interacao_19.py` | **PASSA** (teclado, Enter) |
+| A23 | Grupo: 15 estados; ferramentas desativadas com o motivo; "Reproduzir" e o cabeçote ligados; etiqueta some em 3 s e recusa em 6 s; confirmações; código inválido com `aria-invalid` | `interacao_19.py` | **PASSA**, sem erro de JS |
+| A24 | Só 2 famílias baixadas; mono só em número (o código do grupo é exceção, é um identificador) | `aceite.py` | **PASSA** |
+| A25 | Granada desenhada: média ≥ 4,5 e nenhum tipo < 3,5 (modo "mesmo tamanho", 4 combinações) | `mede_granada.py` | **V3 passa** (4,8 / 5,4 / 5,0 / 5,1; pior 3,9); a de hoje **reprova** (2,8 / 2,9 / 1,0 / 1,1) |
+| A26 | CLS ≤ 0,1 na aba Perfil e na prancheta (375 px, Fast 4G, CPU 4×) | `mede_lcp_cls.py` | Perfil 0,003 · prancheta 0,080 |
+
+**O que não deu para medir (honesto):** a leitura do texto por leitor de tela (só `role`, `aria-*` e foco, por teclado); a granada com a **função real** do `map_core.js` (o protótipo é réplica em canvas, não o código do projeto); uma previsão do LCP da partida real (os 2 a 4 MB de dados não existem no protótipo); a aba Grupo conectada a um servidor (os estados são simulados, com os textos do `grupo.js`); a captura de tela dos estados do Grupo no projeto.
+
+### 19.12 Ordem de implementação (fases pequenas)
+
+1. **G1 · Etiquetas e fontes.** `.tag.neutro` + variantes + `.tag.explicito`; fallbacks da mono em `--f-num`. *Teste:* A24 e o catálogo (19.5).
+2. **G2 · Perfil: cards e chips.** `.ponto` melhorar/forte, chips com relógio e "visitado", hash preservado, esqueleto. Dados novos do §19.9 (lado, relógio). *Teste:* A16, A17, A20, A22, A26.
+3. **G3 · Detalhes.** `details.grupo.pf-detalhes` com `localStorage`. *Teste:* A19, A21.
+4. **G4 · Grupo.** Chave, campos, membros, confirmações, estados "removido" e "indisponível", dica, etiqueta, contador, quatro abas em 375 px. *Teste:* A17, A23.
+5. **G5 · Granada desenhada.** Carimbo em px de tela, tracejado em px de tela, alfa 1,0, legenda; **commit próprio** das referências. *Teste:* A25.
+
+### 19.1 Decisões do Pedro sobre a §19
+
+Valem sobre a §19 onde as duas divergirem (prompt da fase 15, 2026-10-13).
+
+1. **Granada desenhada:** fica a variante V3 (quadrado cheio de 4 px no canto superior direito com o mesmo anel duplo; tracejado de 3,5/3 px de tela; legenda com o carimbo; corpo a 100%). O alfa de 85% da fase 11 sai. Aceite A25 (média de ΔE dos quatro tipos ≥ 4,5 e nenhum abaixo de 3,5) medido no canvas real, em todos os mapas com partidas, em 1440 e 375 px (1× e 2×); reprovou em algum mapa, para e traz a tabela. A13 e A14 refeitos para a granada nova.
+2. **Erro explícito:** barra esquerda cheia de 4 px em `--tinta`, etiqueta invertida, título em peso 700 com número de ordem; explícitos antes dos "depende da tática", maior custo primeiro; "depende da tática" é a versão tracejada. A decisão 46 muda: "explícito" deixa de usar `.tag.decisivo` (verde num erro lê-se como "bom").
+3. **Lado e horário:** todo erro é de um lado só; cada ocorrência manda o lado e o relógio do round ("R12 · 1:14"); "flash no time" e "dano de utilidade no time" passam a ser por lado; a seção 7 do material de calibração avisa a mudança com as contagens antes e depois.
+4. **Expulsar** pede confirmação em linha ("Expulsar nomad? Confirmar · Cancelar", foco em "Cancelar", Esc e clique fora cancelam), sem `confirm()` do navegador.
+5. **CLS da prancheta** (0,080): fallback de fonte com `size-adjust` medido para o cabeçalho; alvo < 0,05 em 375×667, Fast 4G, CPU 4×, mediana de 5; medir também o Perfil.

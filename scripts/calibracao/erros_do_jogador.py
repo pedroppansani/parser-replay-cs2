@@ -391,6 +391,14 @@ def secao_exemplos(oc: pl.DataFrame) -> list[str]:
     return out
 
 
+NOTA_FASE15 = (
+    '**Mudança da fase 15 (decisão 46).** "Flash no time" e "dano de utilidade no time" eram somas da partida (CT e TR juntos); passam a ser POR LADO, com '
+    'o mesmo limiar (`SEG_CEGUEIRA_ALIADO` 27 s e `DANO_UTILIDADE_ALIADO` 20) aplicado a cada lado. Ocorrências que seguem na tela (depois dos filtros), no'
+    ' corpus de 52 jogos: flash no time 880 antes, 530 depois; dano de utilidade no time 32 antes, 28 depois (o total detectado não muda: 3091 e 195). Os 1'
+    '0 exemplos sorteados abaixo NÃO foram refeitos.'
+    '')
+
+
 def secao(oc: pl.DataFrame, cache: dict | None) -> list[str]:
     n = len(partidas())
     out = [TITULO_DA_SECAO, "",
@@ -401,6 +409,7 @@ def secao(oc: pl.DataFrame, cache: dict | None) -> list[str]:
            "fora do git e nunca publicado).", "",
            "### 7.0 Ocorrências por tipo no corpus", ""]
     out += tabela_por_tipo(oc)
+    out += ["", NOTA_FASE15]
     out += ["", "Ordem dos níveis (a primeira regra que se aplica decide): 1) round de eco ou pistola do time, ou time "
             "guardando arma (evento depois do plant num round que o time perdeu): fora; 2) morreu isolado sendo "
             "lurker: depende; 3) primeira morte sem troca sendo entry: depende; 4) morreu isolado ou primeira morte do "

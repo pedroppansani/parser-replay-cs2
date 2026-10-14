@@ -78,7 +78,7 @@
       });
       if (foca) abas[i].focus();
       abas[i].scrollIntoView({ block: "nearest", inline: "nearest" });
-      try { history.replaceState(null, "", "#" + abas[i].dataset.aba); } catch (e) { /* arquivo local sem history */ }
+      try { if ((location.hash || "").slice(1).split("?")[0] !== abas[i].dataset.aba) history.replaceState(null, "", "#" + abas[i].dataset.aba); } catch (e) { /* arquivo local sem history */ }
       document.dispatchEvent(new CustomEvent("aba", { detail: abas[i].dataset.aba }));
       sobra();
     }
@@ -105,7 +105,7 @@
     window.addEventListener("resize", sobra);
     var mais = moldura && moldura.querySelector(".abas-mais");
     if (mais) mais.addEventListener("click", function () { lista.scrollBy({ left: lista.clientWidth * 0.7, behavior: "smooth" }); });
-    var inicial = 0, h = (location.hash || "").slice(1);
+    var inicial = 0, h = (location.hash || "").slice(1).split("?")[0];
     abas.forEach(function (t, i) { if (t.dataset.aba === h) inicial = i; });
     ativa(inicial, false);
     requestAnimationFrame(sobra);

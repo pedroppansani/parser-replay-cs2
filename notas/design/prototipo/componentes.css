@@ -1,0 +1,170 @@
+/* =========================================================================
+   §19 · Componentes depois do fechamento (2026-10-13)
+   Cards "ponto a melhorar" e "ponto forte", chips de round, bloco "Detalhes",
+   variantes de .tag.neutro, aba Grupo da prancheta e etiqueta na linha de dica.
+   NENHUMA cor nova: o destaque do erro explícito é peso, ordem e forma (barra
+   cheia, etiqueta invertida), nunca --erro nem --aviso. Depende de tokens.css e base.css.
+   ========================================================================= */
+
+/* ---- 19.5 .tag.neutro e variantes: a forma diz o que o texto diz ----
+   borda tracejada  = a página NÃO afirma (reserva de contexto ou de método)
+   borda cheia fina = afirma que está dentro do normal
+   marcador desenhado em CSS (não depende de glifo da fonte):
+     base          sem marcador                 "depende da tática"
+     .tendencia    meio disco                   "tendência" (afirmação pela metade)
+     .validacao    círculo pontilhado, itálico  "em validação" (ainda não conferido)
+     .normal       sinal de igual, borda cheia  "dentro do normal para a função"        */
+.tag.neutro { display: inline-flex; align-items: center; gap: 5px; border: 1px dashed var(--apagado); background: transparent; color: var(--tinta-2); }
+.tag.neutro.tendencia::before { content: ""; width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid currentColor;
+  background: linear-gradient(90deg, currentColor 50%, transparent 50%); flex: none; }
+.tag.neutro.validacao { font-style: italic; }
+.tag.neutro.validacao::before { content: ""; width: 8px; height: 8px; border-radius: 50%; border: 1.5px dotted currentColor; flex: none; }
+.tag.neutro.normal { border: 1px solid var(--borda); background: var(--superficie-2); }
+.tag.neutro.normal::before { content: ""; width: 8px; height: 5px; border-top: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; flex: none; }
+.tag.explicito { background: var(--tinta); color: var(--fundo); border: 1px solid var(--tinta); letter-spacing: 0.06em; text-transform: uppercase; }
+
+/* ---- 19.3 chips de round que abrem o Replay naquele round e instante ---- */
+.pfchips { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: thin; padding: 4px 4px 6px; margin: 6px -4px 0; scroll-snap-type: x proximity; }
+.pfchips.rola { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 32px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 32px), transparent); }
+.pfchips.rola.fim { -webkit-mask-image: none; mask-image: none; }
+.pfchip { flex: none; scroll-snap-align: start; position: relative; min-width: var(--toque); height: var(--toque); padding: 0 8px;
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; line-height: 1;
+  border: 1px solid var(--borda); border-radius: var(--r-sm); background: var(--superficie); color: var(--tinta-2);
+  font-family: var(--f-num); font-variant-numeric: tabular-nums; transition: background var(--dur), border-color var(--dur), color var(--dur); }
+.pfchip .n { font-size: var(--t-sm); font-weight: 600; }
+.pfchip .h { font-size: var(--t-xs); color: var(--apagado); }
+.pfchip:hover, .pfchip.simula-hover { background: var(--superficie-2); border-color: var(--tinta-2); color: var(--tinta); }
+.pfchip:hover .h, .pfchip.simula-hover .h { color: var(--tinta-2); }
+.pfchip:focus-visible, .pfchip.simula-foco { outline: 2px solid var(--foco); outline-offset: 2px; }
+.pfchip[data-visitado] { background: var(--superficie-2); }
+.pfchip[data-visitado]::before { content: ""; position: absolute; top: 4px; left: 4px; width: 6px; height: 6px; background: var(--tinta-2); }  /* quadrado cheio = "já aberto" */
+
+/* ---- 19.1 / 19.2 cards "ponto a melhorar" e "ponto forte" ---- */
+.pfsec { margin-top: 28px; }
+.pfsec > h3 { font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: var(--t-lg); margin: 0 0 10px; text-transform: uppercase; letter-spacing: 0.02em; }
+.pfnota { font-size: var(--t-sm); color: var(--tinta-2); margin: 0 0 10px; max-width: 76ch; }
+.pflista { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.ponto { position: relative; display: grid; grid-template-columns: 2ch minmax(0, 1fr); column-gap: 14px; padding: 14px 16px 14px 20px;
+  background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--r-md); }
+.ponto::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--barra, var(--borda)); border-radius: var(--r-md) 0 0 var(--r-md); }
+.ponto.explicito { --barra: var(--tinta); }
+.ponto.depende::before { background: repeating-linear-gradient(180deg, var(--apagado) 0 6px, transparent 6px 10px); }
+.ponto.forte { --barra: var(--decisivo); grid-template-columns: minmax(0, 1fr); }
+.ponto .ordem { grid-row: 1 / span 8; grid-column: 1; font-family: var(--f-num); font-weight: 600; font-size: var(--t-xl); line-height: 1; color: var(--apagado); padding-top: 1px; }
+.ponto.explicito .ordem { color: var(--tinta); }
+.ponto > :not(.ordem) { grid-column: 2; min-width: 0; }
+.ponto.forte > * { grid-column: 1; }
+.ponto .topo { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.ponto .titulo { font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-weight: 700; font-size: var(--t-lg); line-height: 1.15; color: var(--tinta); }
+.ponto.depende .titulo { font-weight: 600; color: var(--tinta-2); }
+.ponto .sub { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: var(--t-sm); color: var(--tinta-2); margin-top: 4px; }
+.ponto .ref { font-size: var(--t-sm); color: var(--apagado); margin-top: 6px; }
+.ponto .custo { font-size: var(--t-sm); color: var(--tinta-2); margin-top: 2px; }
+.ponto .motivo { font-size: var(--t-sm); color: var(--tinta-2); margin-top: 8px; }
+.ponto .como { margin-top: 10px; }
+.ponto .como .rot { display: block; margin-bottom: 2px; }
+.ponto .como p { margin: 0; font-size: var(--t-base); color: var(--tinta); line-height: 1.45; }
+.ponto .rounds .rot { display: block; margin-top: 10px; }
+.ponto .valor { font-family: var(--f-num); font-weight: 600; font-size: var(--t-xl); color: var(--tinta); line-height: 1; }
+.ponto .bruto { font-size: var(--t-sm); color: var(--apagado); }
+.ponto.compacto { padding-block: 10px; }
+.ponto.compacto .titulo { font-size: var(--t-base); }
+.ponto.esqueleto::before { background: var(--superficie-2); }
+
+/* ---- 19.4 bloco "Detalhes" (recolhível, fechado por padrão) ---- */
+details.grupo.pf-detalhes { margin-top: 28px; }
+details.grupo.pf-detalhes > summary .g-nome { font-weight: 700; }
+details.grupo.pf-detalhes > summary .g-resumo { margin-left: auto; font-stretch: var(--larg-normal); letter-spacing: 0; text-transform: none; font-weight: 400;
+  color: var(--tinta-2); font-size: var(--t-sm); text-align: right; font-family: var(--f-texto); }
+details.grupo.pf-detalhes[open] > summary .g-resumo { display: none; }
+.pf-det-corpo { padding: 4px 14px 16px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.pf-det-corpo > * { min-width: 0; }
+.pf-det-corpo h4 { margin: 0 0 6px; }
+
+/* ---- cabeçalho do Perfil e seletor de jogador ---- */
+.pfsel { display: flex; flex-wrap: nowrap; gap: 6px; overflow-x: auto; scrollbar-width: thin; padding: 2px 2px 6px; margin: 10px -2px 0; align-items: center; }
+.pfsel .time-rot { flex: none; padding: 0 4px 0 8px; }
+.pfsel .chip { flex: none; }
+.pfcab { padding: 16px; margin-top: 14px; background: var(--superficie); border: 1px solid var(--linha); border-top: 2px solid var(--borda); border-radius: var(--r-md); }
+.pfcab .nk { font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-weight: 700; font-size: var(--t-2xl); line-height: 1.1; }
+.pfcab .time-do-jog { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: var(--t-sm); color: var(--tinta-2); margin-top: 4px; }
+.pfcab .funcs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.pfcab p { margin: 10px 0 0; font-size: var(--t-sm); color: var(--tinta-2); line-height: 1.55; max-width: 76ch; }
+.pf-comparar { display: grid; gap: 8px; }
+.pf-comparar select { min-height: var(--toque); padding: 0 10px; border: 1px solid var(--borda); border-radius: var(--r-sm); background: var(--superficie); color: var(--tinta); max-width: 100%; }
+.demo-estado { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 10px 12px; margin: 14px 0 0; border: 1px dashed var(--borda); border-radius: var(--r-md); font-size: var(--t-sm); color: var(--tinta-2); }
+.demo-estado select { min-height: var(--toque); padding: 0 10px; border: 1px solid var(--borda); border-radius: var(--r-sm); background: var(--superficie); color: var(--tinta); max-width: 100%; }
+body.sem-notas .demo-estado { display: none; }
+
+/* ---- 19.6 aba Grupo da prancheta ---- */
+.gr-caixa { display: grid; gap: 12px; }
+.gr-caixa h2 { margin: 0; }
+.gr-texto { margin: 0; color: var(--tinta); font-size: var(--t-sm); }
+.gr-campo { display: grid; gap: 4px; font-size: var(--t-sm); color: var(--tinta-2); }
+.gr-campo input { min-height: var(--toque); padding: 0 10px; border: 1px solid var(--borda); border-radius: var(--r-sm); background: var(--fundo); color: var(--tinta); font: inherit; }
+.gr-campo input.codigo { font-family: var(--f-num); letter-spacing: 0.14em; text-transform: uppercase; }
+.gr-campo .erro-campo { color: var(--erro); font-weight: 600; font-size: var(--t-sm); }
+.gr-campo input[aria-invalid="true"] { border-color: var(--erro); }
+.gr-ou { display: flex; align-items: center; gap: 10px; color: var(--apagado); font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.1em; }
+.gr-ou::before, .gr-ou::after { content: ""; flex: 1; height: 1px; background: var(--linha); }
+.gr-codigo-linha { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
+.gr-codigo { font-family: var(--f-num); font-size: var(--t-lg); font-weight: 600; letter-spacing: 0.1em; flex: 1 1 auto; }
+.gr-sub { margin: 4px 0 0; }
+.gr-membros { list-style: none; margin: 0; padding: 0; display: grid; }
+.gr-membro { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--linha); }
+.gr-ficha { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: var(--t-xs); background: var(--superficie-2); color: var(--tinta); border: 1.5px solid var(--borda); }
+.gr-nome { display: grid; min-width: 0; }
+.gr-quem { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gr-nome small { color: var(--tinta-2); font-size: var(--t-xs); display: flex; align-items: center; gap: 6px; }
+.gr-online { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid var(--apagado); display: inline-block; flex: none; }
+.gr-online.on { background: var(--tinta); border-color: var(--tinta); }
+.gr-membro.offline .gr-quem { color: var(--tinta-2); }
+.gr-controles { display: contents; }
+.gr-controles .chave { grid-column: 1 / -1; grid-row: 2; }
+.gr-controles .btn { grid-column: 3; grid-row: 1; padding: 0 12px; }
+/* chave (interruptor): role=switch; o estado vai ESCRITO ("Ligado"/"Desligado") e na posição do botão */
+.chave { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: var(--toque); padding: 0 12px;
+  border: 1px solid var(--borda); border-radius: var(--r-sm); background: var(--superficie); color: var(--tinta); text-align: left; }
+.chave:hover { background: var(--superficie-2); border-color: var(--tinta-2); }
+.chave .estado { margin-left: auto; font-size: var(--t-xs); color: var(--tinta-2); text-transform: uppercase; letter-spacing: 0.08em; font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-weight: 700; }
+.chave .pino { flex: none; position: relative; width: 44px; height: 24px; border-radius: 99px; border: 1.5px solid var(--borda); background: var(--superficie-2); }
+.chave .pino::after { content: ""; position: absolute; top: 2.5px; left: 3px; width: 15px; height: 15px; border-radius: 50%; background: var(--apagado); transition: transform var(--dur); }
+.chave[aria-checked="true"] { border-color: var(--tinta); }
+.chave[aria-checked="true"] .pino { background: var(--tinta); border-color: var(--tinta); }
+.chave[aria-checked="true"] .pino::after { background: var(--fundo); transform: translateX(19px); }
+.chave[aria-checked="true"] .estado { color: var(--tinta); }
+.chave[disabled] { opacity: 0.45; cursor: not-allowed; }
+.chave.mini { width: auto; min-width: 0; }
+.gr-confirma { display: grid; gap: 8px; padding: 12px; background: var(--superficie-2); border: 1px solid var(--borda); border-radius: var(--r-md); }
+.gr-confirma select { min-height: var(--toque); padding: 0 10px; border: 1px solid var(--borda); border-radius: var(--r-sm); background: var(--superficie); color: var(--tinta); }
+.gr-linha { display: flex; flex-wrap: wrap; gap: 8px; }
+.gr-linha > .btn { flex: 1 1 8em; min-width: 0; white-space: normal; line-height: 1.2; padding: 6px 12px; text-align: center; }
+.gr-status { margin: 0; color: var(--tinta-2); font-size: var(--t-sm); min-height: 1.2em; }
+.gr-status:empty { display: none; }
+.gr-guarda { font-size: var(--t-sm); }
+.gr-permissao { margin: 0; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.aba-contador { display: inline-grid; place-items: center; min-width: 20px; height: 20px; margin-left: 6px; padding: 0 5px; border-radius: 99px; background: var(--tinta);
+  color: var(--fundo); font-family: var(--f-num); font-size: var(--t-xs); font-weight: 700; letter-spacing: 0; vertical-align: 1px; }
+.btn.perigo-confirma { background: var(--tinta); color: var(--fundo); border-color: var(--tinta); }
+
+/* ---- 19.6 linha de dica com o grupo: etiqueta temporária e recusa ---- */
+.pr-dica { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 14px; }
+.pr-dica .dica-texto { flex: 1 1 18em; min-width: 0; }
+.dica-etiqueta { display: inline-flex; align-items: center; gap: 8px; background: var(--tinta); color: var(--fundo); padding: 4px 12px 4px 4px; border-radius: 99px;
+  font-size: var(--t-sm); font-weight: 600; animation: etiqueta-entra var(--dur) ease-out; }
+.dica-etiqueta .gr-ficha { width: 26px; height: 26px; font-size: var(--t-xs); background: var(--fundo); color: var(--tinta); border-color: var(--fundo); }
+@keyframes etiqueta-entra { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+.pr-dica.recusa { border-left: 3px dashed var(--apagado); }
+.pr-dica.recusa-desfeita { border-left: 3px solid var(--aviso); }
+.pr-dica.recusa-desfeita .dica-texto::before { content: "▲ "; color: var(--aviso); font-weight: 700; }
+.pr-dica.bloqueado { border-left: 3px dashed var(--apagado); }
+.pr .so-leitura .pr-bloqueavel { opacity: 0.45; }
+
+/* ---- 375 px: as quatro abas do painel da prancheta (Jogadores, Granadas, Tática, Grupo) cabem sem rolar ---- */
+@media (max-width: 640px) {
+  .pr-painel-abas .abas [role="tab"] { padding: 0 8px; letter-spacing: 0.04em; }
+}
+
+/* ---- CLS (§19.8): o que o JS monta depois do primeiro desenho reserva o espaço antes ---- */
+#perfil-raiz:empty { min-height: 100svh; }               /* a aba é montada por JS: nada visível fica abaixo dela */
+@media (max-width: 640px) { .pr-dica { min-height: 6.8rem; } }   /* a linha de dica chega a 4 linhas em 375 px (texto + etiqueta) */

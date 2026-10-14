@@ -107,7 +107,7 @@ def test_codigo_errado_nao_redireciona_e_diz_a_mesma_coisa(contexto, paginas):
     pg = abre(contexto, paginas[INFERNO])
     url = pg.url
     entra_pela_aba(pg, "ABCDEFGH", "spinx")
-    pg.wait_for_function("() => document.getElementById('gr-status').textContent === 'Nenhum grupo com esse código.'")
+    pg.wait_for_function("() => (document.getElementById('gr-e-codigo') || {}).textContent === '✕ Erro: Nenhum grupo com esse código.'")
     assert pg.url == url and G(pg, "G.fase") == "fora"
 
 
@@ -120,5 +120,5 @@ def test_mapa_estranho_vindo_do_servidor_nao_vira_endereco(contexto, paginas):
         return r.codigo; }""")
     url = pg.url
     entra_pela_aba(pg, codigo, "spinx")
-    pg.wait_for_function("() => document.getElementById('gr-status').textContent.indexOf('outro mapa') >= 0")
+    pg.wait_for_function("() => ((document.getElementById('gr-e-codigo') || {}).textContent || '').indexOf('outro mapa') >= 0")
     assert pg.url == url and G(pg, "G.fase") == "fora"

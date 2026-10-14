@@ -14,7 +14,8 @@ import tempfile
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parents[2]
-DOCS = RAIZ / "docs"
+import os
+DOCS = Path(os.environ["MEDE_PASTA"]) if os.environ.get("MEDE_PASTA") else RAIZ / "docs"   # MEDE_PASTA=preview mede a prévia
 RADARES = RAIZ / "assets" / "radars"
 DESIGN = RAIZ / "notas" / "design"
 
