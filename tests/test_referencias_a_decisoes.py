@@ -1,7 +1,8 @@
 """As decisões vivem em `notas/decisoes/`; o código as cita por ID.
 
 Toda menção a "decisão N" num comentário tem de apontar para uma nota que
-existe, e o `CLAUDE.md` tem de continuar curto e com os links de pé.
+existe. O tamanho dos `CLAUDE.md` e a presença de cada decisão neles são
+vigiados por `tests/test_claude_md.py`.
 """
 from __future__ import annotations
 
@@ -15,7 +16,6 @@ RAIZ = Path(__file__).resolve().parent.parent
 NOTAS = RAIZ / "notas" / "decisoes"
 PASTAS = ("parsing", "metrics", "clustering", "scripts", "pesquisa", "tests", "dashboard")
 EXTENSOES = {".py", ".js", ".html", ".css"}
-LIMITE_DO_CLAUDE_MD = 15_000          # bytes, com fim de linha LF
 MENCAO = re.compile(r"decis(?:ão|ao|ões|oes)\s+(\d+[a-z]?)\b", re.I)
 
 
@@ -56,26 +56,6 @@ def test_cada_nota_tem_o_cabecalho_e_um_status_valido():
         assert status, f.name
         assert re.fullmatch(r"vigente|revogada|substituída por \d+[a-z]?", status.group(1).strip()), (f.name, status.group(1))
         assert "- **Data:**" in texto and "- **Resumo:**" in texto, f.name
-
-
-def test_o_claude_md_e_curto_e_os_links_resolvem():
-    texto = (RAIZ / "CLAUDE.md").read_text(encoding="utf-8").replace("\r\n", "\n")
-    assert len(texto.encode("utf-8")) <= LIMITE_DO_CLAUDE_MD
-    links = re.findall(r"\]\(([^)#]+)\)", texto)
-    assert len(links) > 80
-    for alvo in links:
-        if not alvo.startswith("http"):
-            assert (RAIZ / alvo).exists(), alvo
-
-
-def test_regra_vigente_aparece_no_claude_md_e_a_superada_nao():
-    texto = (RAIZ / "CLAUDE.md").read_text(encoding="utf-8")
-    regras = texto[texto.index("## Regras vigentes"):texto.index("## Números citáveis")]
-    for f in sorted(NOTAS.glob("*-*.md")):
-        ident = f.name.split("-")[0]
-        status = re.search(r"- \*\*Status:\*\* (.+)", f.read_text(encoding="utf-8")).group(1).strip()
-        citada = f"](notas/decisoes/{f.name})" in regras
-        assert citada == (status == "vigente"), (ident, status)
 
 
 def test_a_reestruturacao_nao_perdeu_nada():
