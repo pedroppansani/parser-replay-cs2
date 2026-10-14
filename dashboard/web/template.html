@@ -961,8 +961,8 @@
      visitado = fundo + quadrado cheio (forma, não só cor); a faixa rola numa linha, com sombra na borda enquanto sobra chip */
   .pfchips { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: thin; padding: 4px 4px 6px; margin: 6px -4px 0;
     scroll-snap-type: x proximity; }
-  .pfchips.rola { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 32px), transparent);
-    mask-image: linear-gradient(90deg, #000 calc(100% - 32px), transparent); }
+  .pfchips.rola { -webkit-mask-image: linear-gradient(90deg, black calc(100% - 32px), transparent);
+    mask-image: linear-gradient(90deg, black calc(100% - 32px), transparent); }
   .pfchips.rola.fim { -webkit-mask-image: none; mask-image: none; }
   .pfchip { appearance: none; cursor: pointer; flex: none; scroll-snap-align: start; position: relative; min-width: var(--toque);
     height: var(--toque); padding: 0 8px; display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
