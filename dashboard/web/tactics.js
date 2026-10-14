@@ -4256,6 +4256,7 @@ var Prancheta = (function () {
         return (m && m.nome) || cfg.mapa || "";
       },
       documento: function () { return S.doc; }, estado: function () { return S.estado; },
+      tipos: function () { return Object.keys(OPERACOES); },   // a lista de tipos de operação (a do servidor é conferida contra ela)
       emReproducao: function () { return !!S.reproducao; }, aplica: aplica, chaveDeOrdem: chaveDeOrdem
     },
     _interno: {

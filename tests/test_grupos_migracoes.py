@@ -25,14 +25,15 @@ def _sql() -> str:
 
 def test_migracoes_numeradas_em_ordem():
     nomes = sorted(p.name for p in MIGRACOES.glob("*.sql"))
-    assert len(nomes) == 5
+    assert len(nomes) == 7   # 1 a 5 da fase 13; 6 e 7 da fase 16b (tetos de uso, L-1, L-2, L-3, L-5)
     assert all(re.match(r"^\d{14}_grupos_[a-z_]+\.sql$", n) for n in nomes), nomes
 
 
 def test_rls_ligado_em_toda_tabela_criada():
     sql = _sql()
     tabelas = re.findall(r"create table (\w+\.\w+)", sql)
-    assert set(tabelas) == {"public.salas", "public.membros", "public.operacoes", "grupos.tentativas", "grupos.expulsos"}
+    assert set(tabelas) == {"public.salas", "public.membros", "public.operacoes", "grupos.tentativas", "grupos.expulsos",
+                       "grupos.chamadas"}
     for t in tabelas:
         assert re.search(rf"alter table {re.escape(t)}\s+enable row level security", sql), t
 
@@ -103,4 +104,92 @@ def test_politicas_rodam_num_postgres_de_verdade():
                            errors="replace", timeout=300)
     linhas = [l for l in saida.stdout.splitlines() if l.startswith(("ok", "FALHOU", "OK", "FALHA"))]
     assert "TUDO OK" in saida.stdout, "\n".join(linhas)
-    assert sum(l.startswith("ok") for l in linhas) >= 60
+    assert sum(l.startswith("ok") for l in linhas) >= 120
+
+
+# --- fase 16b: tetos de uso, tipos permitidos e o SQL novo no documento --------------------------------------------
+
+def _funcao(nome: str) -> str:
+    """O corpo da ÚLTIMA definição de uma função nas migrações (a 7 troca as da 3)."""
+    sql = _sql()
+    achados = [m.start() for m in re.finditer(rf"create or replace function {re.escape(nome)}\(", sql)]
+    assert achados, nome
+    i = achados[-1]
+    return sql[i:sql.index("$$;", sql.index("$$", i) + 2) + 3]
+
+
+def test_a_lista_de_tipos_do_servidor_e_a_do_javascript_e_a_do_python():
+    """L-3: a lista de tipos de operação do SQL, a de OPERACOES em tactics.js e a de metrics/tactics.py são a mesma.
+    Operação nova da prancheta exige migração nova que troque grupos.tipos_de_operacao()."""
+    from metrics.tactics import OPERACOES
+
+    corpo = _funcao("grupos.tipos_de_operacao")
+    no_sql = re.findall(r"'([a-z_]+)'", corpo[corpo.index("array["):corpo.index("]::text[]")])
+    js = (RAIZ / "dashboard" / "web" / "tactics.js").read_text(encoding="utf-8")
+    inicio = js.index("var OPERACOES = {")
+    bloco = js[inicio:js.index("};", inicio)]
+    bloco = " ".join(l for l in bloco.splitlines() if not l.strip().startswith("//"))
+    no_js = re.findall(r"(\w+):\s*\[", bloco)
+    assert len(no_sql) == len(set(no_sql)) == len(OPERACOES) == 26
+    assert set(no_sql) == set(no_js) == set(OPERACOES)
+
+
+def test_os_tetos_vem_da_medicao_do_maior_round_real():
+    """B-2: o teto por sala é o maior entre 5.000 operações / 2 MB e 4x o maior round real (scripts/mede_round_na_prancheta.py)."""
+    import json
+
+    medicao = json.loads((RAIZ / "supabase" / "medicao" / "maior_round_na_prancheta.json").read_text(encoding="utf-8"))
+    assert medicao["rounds"] >= 1000
+    ops = max(medicao["maior_em_operacoes"]["ops"], medicao["maior_em_bytes"]["ops"])
+    bytes_ = max(medicao["maior_em_operacoes"]["bytes"], medicao["maior_em_bytes"]["bytes"])
+    sql = _sql()
+    teto_ops = max(5000, 4 * ops)
+    teto_bytes = max(2 * 1024 * 1024, 4 * bytes_)
+    assert f"c_max_ops_por_sala constant int := {teto_ops}" in sql
+    assert f"c_max_bytes_por_sala constant bigint := {teto_bytes}" in sql
+
+
+def test_os_tetos_novos_tem_o_mesmo_numero_no_banco_no_cliente_e_no_documento():
+    sql = _sql()
+    sala_js = (RAIZ / "dashboard" / "web" / "sala.js").read_text(encoding="utf-8")
+    doc = (RAIZ / "notas" / "seguranca" / "grupos.md").read_text(encoding="utf-8")
+    pares = [("c_max_ops_por_minuto constant int := 300", "MAX_OPS_POR_MINUTO = 300"),
+             ("c_max_ops_por_hora constant int := 3000", "MAX_OPS_POR_HORA = 3000"),
+             ("c_max_salas_ativas constant int := 200", "MAX_SALAS_ATIVAS = 200"),
+             ("c_max_chamadas_por_minuto constant int := 30", "MAX_CHAMADAS_POR_MINUTO = 30"),
+             ("c_max_ops_por_sala constant int := 5000", "MAX_OPS_POR_SALA = 5000"),
+             ("c_max_bytes_por_sala constant bigint := 2097152", "MAX_BYTES_POR_SALA = 2097152"),
+             ("c_salto_de_lamport constant bigint := 1000", "SALTO_DE_LAMPORT = 1000")]
+    for no_sql, no_js in pares:
+        assert no_sql in sql, no_sql
+        assert no_js in sala_js, no_js
+    for frase in ("5.000 operações", "2 MB", "300 operações por minuto", "3.000 operações por hora", "200 salas",
+                  "30 chamadas por minuto", "1.000"):
+        assert frase in doc, frase
+
+
+def test_cada_teto_devolve_um_codigo_proprio():
+    sql = _sql()
+    for codigo in ("sala_no_limite", "autor_no_limite", "servidor_cheio", "muitas_chamadas", "muitas_tentativas"):
+        assert codigo in sql, codigo
+    assert len({"sala_no_limite", "autor_no_limite", "servidor_cheio", "muitas_chamadas"}) == 4
+
+
+def test_chamada_certa_nao_grava_tentativa_e_entrar_na_sala_trava_por_conta():
+    corpo = _funcao("public.entrar_na_sala")
+    assert "pg_advisory_xact_lock" in corpo and corpo.index("pg_advisory_xact_lock") < corpo.index("grupos.tentativas")
+    assert "values (v_uid, true)" not in corpo and "values (v_uid, false)" in corpo
+
+
+def test_a_limpeza_apaga_anonimos_orfaos_com_mais_de_2_dias():
+    corpo = _funcao("grupos.limpa_salas_antigas")
+    assert "delete from auth.users" in corpo and "u.is_anonymous" in corpo and "interval '2 days'" in corpo
+    for condicao in ("public.membros", "public.salas", "public.operacoes"):
+        assert condicao in corpo
+
+
+def test_o_documento_de_seguranca_traz_o_sql_novo_igual_ao_das_migracoes():
+    doc = (RAIZ / "notas" / "seguranca" / "grupos.md").read_text(encoding="utf-8")
+    for nome in ("grupos.tipos_de_operacao", "grupos.valida_operacao", "grupos.antes_de_criar_sala", "public.cria_sala",
+                 "public.entrar_na_sala", "grupos.antes_de_inserir_operacao", "grupos.limpa_salas_antigas"):
+        assert _funcao(nome) in doc, nome

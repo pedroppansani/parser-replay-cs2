@@ -29,7 +29,10 @@ var Grupo = (function () {
     ritmo: "Alterações rápidas demais: o servidor recusou (até 20 por segundo).",
     tamanho: "Alteração grande demais para o grupo (mais de 8 KB): ela foi desfeita.",
     invalida: "O servidor recusou a alteração (formato inválido).",
-    duplicada: "Outra aba sua alterou a tática ao mesmo tempo: a alteração foi desfeita."
+    duplicada: "Outra aba sua alterou a tática ao mesmo tempo: a alteração foi desfeita.",
+    // os tetos de uso (fase 16b, B-2): cada um com a sua frase
+    sala_no_limite: "Esta sala chegou ao limite de alterações",
+    autor_no_limite: "Você está alterando rápido demais; espere um pouco"
   };
   var ENTRADA = {
     nao_existe: "Nenhum grupo com esse código.",
@@ -40,7 +43,10 @@ var Grupo = (function () {
     nick_em_uso: "Já tem alguém com esse nick no grupo.",
     muitas_tentativas: "Muitos códigos errados seguidos: espere 10 minutos.",
     muitas_salas: "Você criou grupos demais na última hora.",
-    sem_login: "O login anônimo não funcionou."
+    sem_login: "O login anônimo não funcionou.",
+    servidor_cheio: "O servidor de grupos está cheio agora",
+    muitas_chamadas: "Muitas tentativas; espere um minuto",
+    sala_no_limite: RECUSA.sala_no_limite
   };
   var INDISPONIVEL = "Grupo indisponível agora. A tática continua salva neste navegador.";
   var SO_NO_SITE = "Grupos funcionam no site publicado.";
@@ -104,7 +110,7 @@ var Grupo = (function () {
     g.dica = dicaDoGrupo;
     g.aoIniciar = aoIniciar;
     // o servidor em memória dos testes existe desde já (não é rede: os testes conferem que fica sem pedido)
-    if (cfg.modo === "falsa") window.__servidorFalso = window.__servidorFalso || Sala.ServidorFalso(cfg.falsa || {});
+    if (cfg.modo === "falsa") window.__servidorFalso = window.__servidorFalso || Sala.ServidorFalso(Object.assign({ tipos: P.tipos() }, cfg.falsa || {}));
   }
 
   function criaSala() {
@@ -182,6 +188,10 @@ var Grupo = (function () {
         "em geral o caminho de um jogador com muitos pontos).";
     }
     if (Sala.tamanhoNoServidor(cabecalhoDe(doc)) > Sala.MAX_BYTES_DA_OPERACAO) return "O cabeçalho desta tática passa de 8 KB.";
+    var bytes = doc.operacoes.reduce(function (t, o) { return t + Sala.tamanhoNoServidor(o); }, 0);
+    if (doc.operacoes.length > Sala.MAX_OPS_POR_SALA || bytes > Sala.MAX_BYTES_POR_SALA) {
+      return "Esta tática passa do limite de um grupo (" + Sala.MAX_OPS_POR_SALA + " alterações ou 2 MB).";
+    }
     var vistos = {}, repetido = false;
     doc.operacoes.forEach(function (o) { if (vistos[o.seq]) repetido = true; vistos[o.seq] = true; });
     if (repetido) {
@@ -198,24 +208,23 @@ var Grupo = (function () {
     var imp = impedimento(doc);
     if (imp) { G.status = imp; renderiza(); return; }
     G.fase = "entrando"; G.status = "Criando o grupo…"; G.erro = ""; G.erroCampo = null; renderiza();
-    var s = criaSala(), feito = null;
+    var s = criaSala(), iniciais = null;
     s.prepara().then(function (uid) {
       G.uid = uid;
-      return s.criar({ mapa: doc.mapa, cabecalho: cabecalhoDe(doc) });
+      // o estado inicial (as operações que a tática já tem) sobe numa linha só, junto com a criação da sala (fase 16b)
+      iniciais = doc.operacoes.slice();
+      return s.criaComEstado({ mapa: doc.mapa, nick: nick, cabecalho: cabecalhoDe(doc), operacoes: iniciais });
     }).then(function (r) {
       if (!r || !r.ok) throw { motivo: r && r.motivo };
-      feito = r;
-      return s.entrar(r.codigo, nick);
-    }).then(function (e) {
-      if (!e || !e.ok) throw { motivo: e && e.motivo };
       guardaNick(nick);
-      entra(e, nick, doc.id);
-      // o estado inicial: as operações que já existem, em lotes que respeitam o ritmo
-      P.documento().operacoes.forEach(function (o) { G.fila.push(o); });
+      entra(r, nick, doc.id);
+      var subiram = {};
+      iniciais.forEach(function (o) { subiram[o.id] = true; G.recebidas[o.id] = true; });
+      // o que a pessoa fez enquanto o grupo era criado não estava no estado inicial: vai pela fila
+      P.documento().operacoes.forEach(function (o) { if (!subiram[o.id]) G.fila.push(o); });
       processaFila();
       return conecta();
     }).catch(function (x) { falhaAoEntrar(x); });
-    return feito;
   }
 
   function entrar() {
@@ -243,7 +252,9 @@ var Grupo = (function () {
       return s.operacoes();
     }).then(function (linhas) {
       if (!linhas) return null;
+      // o log da sala: o estado inicial (numa linha só) seguido das operações da tabela
       var doc = Object.assign({}, info.cabecalho, { operacoes: [], contador: 0 });
+      (info.operacoes_iniciais || []).forEach(function (o) { doc.operacoes.push(o); doc.contador = Math.max(doc.contador, o.seq || 0); G.recebidas[o.id] = true; });
       linhas.forEach(function (l) { doc.operacoes.push(l.op); doc.contador = Math.max(doc.contador, l.op.seq || 0); });
       var erro = P.usaDocumento(doc);
       if (erro) { s.sai(); throw { texto: "A tática do grupo não abre aqui: " + erro + "." }; }
@@ -287,7 +298,8 @@ var Grupo = (function () {
     if (x && x.motivo && ENTRADA[x.motivo]) {
       // nick recusado: erro no campo do nick; código recusado: no campo do código (§19.6); o resto, na linha de status
       if (x.motivo === "nick_invalido" || x.motivo === "nick_em_uso") G.erroCampo = { campo: "nick", texto: ENTRADA[x.motivo] };
-      else if (x.motivo === "muitas_salas" || x.motivo === "sem_login") G.status = ENTRADA[x.motivo];
+      else if (x.motivo === "muitas_salas" || x.motivo === "sem_login" || x.motivo === "servidor_cheio" ||
+               x.motivo === "muitas_chamadas" || x.motivo === "sala_no_limite") G.status = ENTRADA[x.motivo];
       else G.erroCampo = { campo: "codigo", texto: ENTRADA[x.motivo] };
     } else if (x && x.texto) G.erroCampo = { campo: "codigo", texto: x.texto };
     else G.erro = INDISPONIVEL;
