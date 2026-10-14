@@ -1786,9 +1786,11 @@ var Prancheta = (function () {
     };
   }
 
+  /** O que o grupo põe na linha de dica (grupo.js): {texto, html, classe, etiqueta} ou null. Sem grupo, nada. */
+  function dicaDoGrupo() { return ganchos.dica ? ganchos.dica() : null; }
   function dicaAtual() {
-    var doGrupo = ganchos.dica && ganchos.dica();   // "nomad moveu ztrike", a recusa do servidor (grupo.js)
-    if (doGrupo) return doGrupo;
+    var doGrupo = dicaDoGrupo();   // o texto fixo do estado ou a recusa do servidor (grupo.js)
+    if (doGrupo && doGrupo.texto) return doGrupo.texto;
     if (S.chegada && !S.reproducao) return textoDaChegada();
     return ESTADOS[estadoDaInteracao()].dica(contextoDaDica());
   }
@@ -1812,9 +1814,21 @@ var Prancheta = (function () {
     S.ultimaChegada = texto;
   }
 
+  /** Com grupo a linha de dica tem dois espaços (§19.6): o texto e, à direita, a etiqueta temporária de quem mexeu. */
+  function pintaDicaDoGrupo(d) {
+    var g = dicaDoGrupo() || {};
+    d.className = "pr-dica-estado com-grupo" + (g.classe ? " " + g.classe : "");
+    d.textContent = "";
+    var t = el("span", { class: "dica-texto" });
+    if (g.html) t.innerHTML = g.html; else t.textContent = dicaAtual();      // o html vem do grupo.js, com esc() em todo nome
+    d.appendChild(t);
+    if (g.etiqueta) { var e = el("span", { class: "dica-espaco" }); e.innerHTML = g.etiqueta; d.appendChild(e); }
+  }
+
   function atualizaDica() {
     var d = $("pr-dica-estado");
-    if (d) d.textContent = dicaAtual();
+    if (d && !ganchos.dica) d.textContent = dicaAtual();
+    else if (d) pintaDicaDoGrupo(d);
     if (!cv) return;
     var e = estadoDaInteracao();
     cv.style.cursor = (e === "colocando_peca" || e === "granada_origem" || e === "granada_destino" ||
@@ -3117,7 +3131,7 @@ var Prancheta = (function () {
       if (!ABAS_DO_PAINEL.some(function (x) { return x[0] === a[0]; })) ABAS_DO_PAINEL.push(a);
     });
     var lado = limpa(document.querySelector("aside"));
-    var abas = el("div", { class: "pr-abas", id: "pr-abas", role: "tablist", "aria-label": "Painel da prancheta" });
+    var abas = el("div", { class: "pr-abas" + (ABAS_DO_PAINEL.length > 3 ? " quatro" : ""), id: "pr-abas", role: "tablist", "aria-label": "Painel da prancheta" });
     ABAS_DO_PAINEL.forEach(function (a) {
       var b = el("button", { type: "button", role: "tab", id: "pr-aba-" + a[0], "data-aba": a[0], "aria-controls": "pr-painel-" + a[0],
         "aria-selected": "false", tabindex: "-1", texto: a[1], onclick: function () { abaDoPainel(a[0]); } });

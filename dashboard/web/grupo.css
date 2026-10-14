@@ -1,45 +1,107 @@
 /* =========================================================================
-   Aba "Grupo" da prancheta (fase 13, item 13.3). Só entra na página quando o
-   build tem grupo. Tokens e componentes de entrega-sala-de-demo (§3, §8, §14):
-   caixa, botão de 44 px, chave = botão com aria-pressed (ligado: fundo --tinta,
-   texto --fundo). NENHUMA cor nova: a ficha do membro é neutra (o grupo não tem
-   lado), online/offline vão escritos; --erro só no erro do sistema (✕ Erro:).
+   Aba "Grupo" da prancheta (fase 13, item 13.3; forma própria da §19.6, fase 15). Só entra na página quando o
+   build tem grupo. Tokens e componentes de entrega-sala-de-demo (§3, §8, §14, §19).
+   NENHUMA cor nova: a ficha do membro é neutra (o grupo não tem lado); online/offline vão escritos e com ponto
+   cheio/vazio; --erro só no erro de campo e de sistema (✕ Erro:); --aviso só na alteração desfeita pelo servidor.
    ========================================================================= */
-.gr-caixa { display: grid; gap: 10px; }
+.gr-caixa { display: grid; gap: 12px; }
 .gr-caixa h2 { margin: 0; }
-.gr-texto { margin: 0; color: var(--tinta); }
-.gr-caixa label { color: var(--tinta-2); font-size: var(--t-sm); min-width: 64px; }
-.gr-caixa .linha + .linha { margin-top: 0; }
-.gr-principal { background: var(--tinta) !important; color: var(--fundo) !important; border-color: var(--tinta) !important;
-  font-weight: 600; flex: 1; }
-.gr-chave[aria-pressed="true"] { background: var(--tinta); color: var(--fundo); border-color: var(--tinta); }
-.gr-chave[aria-pressed="true"]::before { content: "✓ "; }
+.gr-texto { margin: 0; color: var(--tinta); font-size: var(--t-sm); }
+.gr-apagado { color: var(--apagado); }
+.gr-largo { width: 100%; }
+.gr-principal { background: var(--tinta) !important; color: var(--fundo) !important; border-color: var(--tinta) !important; font-weight: 600; }
 .gr-guarda { font-size: var(--t-sm); }
-.gr-codigo-linha { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.gr-caixa a { color: var(--tinta); text-decoration: underline; overflow-wrap: anywhere; }
+
+/* campo: o rótulo fica ACIMA (320 px não comporta ao lado); o do código usa a mono, em caixa alta, com espaçamento */
+.gr-campo { display: grid; gap: 4px; font-size: var(--t-sm); color: var(--tinta-2); }
+.gr-campo input, .gr-confirma select { min-height: var(--toque); padding: 0 10px; border: 1px solid var(--borda); border-radius: var(--r-sm);
+  background: var(--fundo); color: var(--tinta); font: inherit; }
+.gr-confirma select { background: var(--superficie); }
+.gr-campo input.codigo { font-family: var(--f-num); letter-spacing: 0.14em; text-transform: uppercase; }
+.gr-campo input[aria-invalid="true"] { border-color: var(--erro); }
+.gr-campo .erro-campo { color: var(--erro); font-weight: 600; font-size: var(--t-sm); }
+.gr-ou { display: flex; align-items: center; gap: 10px; color: var(--apagado); font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.1em; }
+.gr-ou::before, .gr-ou::after { content: ""; flex: 1; height: 1px; background: var(--linha); }
+
+/* bloco de aviso: "info" (nada deu errado) e "erro" (falha de sistema) */
+.gr-aviso { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; background: var(--superficie-2); border: 1px solid var(--borda);
+  border-radius: var(--r-md); color: var(--tinta-2); font-size: var(--t-sm); }
+.gr-aviso p { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.gr-aviso .ico { flex: none; display: inline-grid; place-items: center; width: 1.3em; height: 1.3em; border-radius: 50%; border: 1.5px solid var(--tinta-2);
+  color: var(--tinta); font-weight: 700; font-size: 0.85em; }
+.gr-aviso.erro { border-color: var(--erro); color: var(--tinta); }
+.gr-aviso.erro b, .gr-aviso.erro span { color: var(--erro); }
+.gr-aviso.erro b { font-weight: 600; }
+
+.gr-codigo-linha { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
 .gr-rotulo { color: var(--apagado); font-size: var(--t-xs); text-transform: uppercase; letter-spacing: .06em; }
-.gr-codigo { font-family: var(--f-num); font-size: var(--t-lg); font-weight: 600; letter-spacing: .12em; color: var(--tinta); flex: 1; }
-.gr-permissao { margin: 0; font-weight: 600; }
+.gr-codigo { font-family: var(--f-num); font-size: var(--t-lg); font-weight: 600; letter-spacing: 0.1em; color: var(--tinta); flex: 1 1 auto; }
+.gr-permissao { margin: 0; font-weight: 600; display: flex; align-items: center; gap: 8px; }
 .gr-sub { margin: 4px 0 0; font-size: var(--t-xs); color: var(--apagado); text-transform: uppercase; letter-spacing: .06em; }
-.gr-membros { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-.gr-membro { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 4px 8px; align-items: center;
-  padding: 6px 0; border-bottom: 1px solid var(--linha); }
-.gr-ficha { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 600; font-size: var(--t-xs);
+
+/* chave (interruptor): role="switch"; o estado vai ESCRITO ("Ligado"/"Desligado") e na posição do pino, nunca só na cor */
+.chave { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: var(--toque); padding: 0 12px;
+  border: 1px solid var(--borda); border-radius: var(--r-sm); background: var(--superficie); color: var(--tinta); font: inherit; cursor: pointer; text-align: left; }
+.chave:hover { background: var(--superficie-2); border-color: var(--tinta-2); }
+.chave:focus-visible { outline: 2px solid var(--foco); outline-offset: 2px; }
+.chave .estado { margin-left: auto; font-size: var(--t-xs); color: var(--tinta-2); text-transform: uppercase; letter-spacing: 0.08em;
+  font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-weight: 700; }
+.chave .pino { flex: none; position: relative; width: 44px; height: 24px; border-radius: 99px; border: 1.5px solid var(--borda); background: var(--superficie-2); }
+.chave .pino::after { content: ""; position: absolute; top: 2.5px; left: 3px; width: 15px; height: 15px; border-radius: 50%; background: var(--apagado);
+  transition: transform var(--dur); }
+.chave[aria-checked="true"] { border-color: var(--tinta); }
+.chave[aria-checked="true"] .pino { background: var(--tinta); border-color: var(--tinta); }
+.chave[aria-checked="true"] .pino::after { background: var(--fundo); transform: translateX(19px); }
+.chave[aria-checked="true"] .estado { color: var(--tinta); }
+.chave[disabled] { opacity: 0.45; cursor: not-allowed; }
+.chave.mini { width: auto; }
+
+/* membros: ficha neutra de 32 px, nome, estado escrito; na vista da líder, Expulsar na linha do nome e a chave embaixo */
+.gr-membros { list-style: none; margin: 0; padding: 0; display: grid; }
+.gr-membro { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--linha); }
+.gr-ficha { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: var(--t-xs);
   background: var(--superficie-2); color: var(--tinta); border: 1.5px solid var(--borda); }
 .gr-nome { display: grid; min-width: 0; }
 .gr-quem { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .gr-nome b { font-weight: 600; }
-.gr-nome small { color: var(--tinta-2); font-size: var(--t-xs); display: flex; align-items: center; gap: 4px; }
-.gr-online { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--apagado); display: inline-block; }
+.gr-nome small { color: var(--tinta-2); font-size: var(--t-xs); display: flex; align-items: center; gap: 6px; }
+.gr-online { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid var(--apagado); display: inline-block; flex: none; }
 .gr-online.on { background: var(--tinta); border-color: var(--tinta); }
-.gr-controles { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
-.gr-controles .pr-b { flex: 1; }
-.gr-confirma { display: grid; gap: 8px; padding: 10px; background: var(--superficie-2); border-radius: var(--r-md); }
-.gr-status { margin: 0; color: var(--tinta-2); font-size: var(--t-sm); min-height: 1.2em; }
+.gr-membro.offline .gr-quem { color: var(--tinta-2); }
+.gr-controles { display: contents; }
+.gr-controles .chave { grid-column: 1 / -1; grid-row: 2; }
+.gr-controles > .pr-b { grid-column: 3; grid-row: 1; padding: 0 12px; }
+/* "Expulsar nomad? Confirmar · Cancelar", em linha no próprio item (decisão do Pedro sobre a §19) */
+.gr-confirma-expulsa { grid-column: 1 / -1; grid-row: 2; display: flex !important; flex-wrap: wrap; align-items: center; gap: 8px;
+  padding: 8px 10px; background: var(--superficie-2); border: 1px solid var(--borda); border-radius: var(--r-md); }
+.gr-confirma-expulsa .gr-pergunta { flex: 1 1 100%; overflow-wrap: anywhere; }
+.gr-confirma-expulsa > .pr-b { flex: 1 1 6em; grid-column: auto; grid-row: auto; }
+
+/* confirmações dentro do painel: os botões quebram linha (white-space normal, 44 px) para não cortar "Transferir liderança" em 320 px */
+.gr-confirma { display: grid; gap: 8px; padding: 12px; background: var(--superficie-2); border: 1px solid var(--borda); border-radius: var(--r-md); }
+.gr-linha { display: flex; flex-wrap: wrap; gap: 8px; }
+.gr-linha > .pr-b { flex: 1 1 8em; min-width: 0; white-space: normal; line-height: 1.2; padding: 6px 12px; text-align: center; min-height: var(--toque); }
+
+.gr-status { margin: 0; color: var(--tinta-2); font-size: var(--t-sm); min-height: 1.2em; overflow-wrap: anywhere; }
 .gr-status:empty { display: none; }
-.gr-erro { margin: 0; color: var(--erro); font-size: var(--t-sm); font-weight: 600; }
-.gr-caixa a { color: var(--tinta); text-decoration: underline; overflow-wrap: anywhere; }
-/* celular: a mesma aba, numa coluna */
-@media (max-width: 640px) {
-  .gr-caixa .linha { flex-direction: column; align-items: stretch; }
-  .gr-caixa .linha > * { width: 100%; }
-}
+
+/* contador da aba: círculo --tinta com o número de membros online */
+.aba-contador { display: inline-grid; place-items: center; min-width: 20px; height: 20px; margin-left: 6px; padding: 0 5px; border-radius: 99px;
+  background: var(--tinta); color: var(--fundo); font-family: var(--f-num); font-size: var(--t-xs); font-weight: 700; letter-spacing: 0; vertical-align: 1px; }
+/* quatro abas no painel: cabem em 375 px sem rolar */
+.pr-abas.quatro [role="tab"] { padding: 0 8px; letter-spacing: 0.04em; }
+
+/* linha de dica com o grupo (§19.6): o texto e, à direita, a etiqueta temporária de quem mexeu */
+.pr-dica-estado.com-grupo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 14px; line-height: 1.45; }
+.pr-dica-estado.com-grupo .dica-texto { flex: 1 1 18em; min-width: 0; }
+.dica-etiqueta { display: inline-flex; align-items: center; gap: 8px; background: var(--tinta); color: var(--fundo); padding: 4px 12px 4px 4px; border-radius: 99px;
+  font-size: var(--t-sm); font-weight: 600; animation: etiqueta-entra var(--dur) ease-out; }
+.dica-etiqueta .gr-ficha { width: 26px; height: 26px; font-size: var(--t-xs); background: var(--fundo); color: var(--tinta); border-color: var(--fundo); }
+@keyframes etiqueta-entra { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+.pr-dica-estado.recusa, .pr-dica-estado.bloqueado { border-left: 3px dashed var(--apagado); }
+.pr-dica-estado.recusa-desfeita { border-left: 3px solid var(--aviso); }
+.pr-dica-estado.recusa-desfeita .dica-texto::before { content: "▲ "; color: var(--aviso); font-weight: 700; }
+
+/* celular: a mesma aba, numa coluna; a linha de dica reserva 4 linhas para a etiqueta e as recusas não deslocarem o mapa */
+@media (max-width: 640px) { .pr-dica-estado.com-grupo { min-height: 6.8rem; } }

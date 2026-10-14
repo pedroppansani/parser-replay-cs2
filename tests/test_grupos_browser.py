@@ -214,7 +214,7 @@ def test_sem_permissao_a_alteracao_e_recusada_desfeita_e_a_dica_diz_o_motivo(con
     # a líder libera: a mesma ação passa e chega à líder
     pg.evaluate("async () => window.__lider.s.permite('u-tela', true)")
     pg.wait_for_function("() => Grupo._interno.podeDesenhar() && !document.querySelector('#pr-barra [data-ferramenta=\"caneta\"]').disabled")
-    assert pg.inner_text("#gr-permissao") == "Você pode desenhar"
+    assert pg.inner_text("#gr-permissao") == "✎ Você pode desenhar"
     arrasta_a_peca(pg)
     pg.wait_for_function("() => Object.values(window.__lider.ops).some((o) => o.tipo === 'move_peca' && o.autor === 'spinx')")
     assert posicao(pg) != antes
@@ -249,7 +249,7 @@ def test_todos_podem_desenhar_libera_todos_e_expulsar_tira_o_acesso_na_hora(cont
     assert recusa == "permissao"
     pg.evaluate("async () => window.__lider.s.todosPodem(true)")
     pg.wait_for_function("() => Grupo._interno.podeDesenhar()")
-    assert pg.inner_text("#gr-permissao") == "Você pode desenhar"
+    assert pg.inner_text("#gr-permissao") == "✎ Você pode desenhar"
     ok = pg.evaluate("""async () => { const c = window.__ana;
         return (await c.envia([c.op('move_peca', { peca: 'pecaztrike', passo: window.__passo, x: 2, y: 2 })])).ok; }""")
     assert ok
@@ -259,7 +259,7 @@ def test_todos_podem_desenhar_libera_todos_e_expulsar_tira_o_acesso_na_hora(cont
     # expulsar: o membro sai na hora, o servidor recusa leitura e escrita e ele não volta pela mesma conta
     pg.evaluate("async () => window.__lider.s.expulsa('u-tela')")
     pg.wait_for_function("() => Grupo._interno.G().fase === 'fora'")
-    assert "A líder tirou você deste grupo." in pg.inner_text("#gr-status")
+    assert "A líder tirou você deste grupo." in pg.inner_text("#gr-info")
     assert not pg.locator('#pr-barra [data-ferramenta="caneta"]').is_disabled()   # a tática local volta a ser dela
     nada = pg.evaluate("""async () => { const s = Sala.SalaFalsa(window.__servidorFalso, { uid: 'u-tela' });
         const e = await s.entrar(arguments[0], 'spinx'); return e.motivo; }""".replace("arguments[0]", repr(codigo)))
@@ -297,7 +297,7 @@ def test_cada_um_desfaz_so_o_que_e_seu(contexto, pagina_grupo):
 def test_o_cabecote_segue_a_lider_desligar_solta_e_voltar_religa(contexto, pagina_grupo):
     pg, _ = membro_na_sala(contexto, pagina_grupo)
     assert G(pg, "G.seguir") is True
-    assert pg.get_attribute('[data-acao="seguir"]', "aria-pressed") == "true"
+    assert pg.get_attribute('[data-acao="seguir"]', "aria-checked") == "true"
     pg.evaluate("() => window.__lider.s.anunciaCabecote({ modo: 'editor', t: 30 })")
     pg.wait_for_function("() => Prancheta._interno.S.t === 30")
     pg.evaluate("() => window.__lider.s.anunciaCabecote({ modo: 'reproducao', t: 12, tocando: false, velocidade: 2 })")
@@ -384,7 +384,7 @@ def test_a_lider_cria_pela_aba_e_controla_o_grupo(contexto, pagina_grupo):
     pg.wait_for_selector('.gr-membro[data-usuario="u-ana"]')
     assert "online" in pg.inner_text('.gr-membro[data-usuario="u-ana"]')
     pg.click('.gr-membro[data-usuario="u-ana"] [data-acao="permite"]')
-    pg.wait_for_function("() => document.querySelector('.gr-membro[data-usuario=\"u-ana\"] [data-acao=\"permite\"]').getAttribute('aria-pressed') === 'true'")
+    pg.wait_for_function("() => document.querySelector('.gr-membro[data-usuario=\"u-ana\"] [data-acao=\"permite\"]').getAttribute('aria-checked') === 'true'")
     pg.click('[data-acao="todos"]')
     pg.wait_for_function("() => Grupo._interno.G().todos === true")
     # a operação da líder chega a quem está na sala
@@ -427,7 +427,7 @@ def test_nick_e_dado_nunca_marcacao(contexto, pagina_grupo):
     pg.wait_for_selector('.gr-membro[data-usuario="u-mau"]')
     assert mau in pg.inner_text('.gr-membro[data-usuario="u-mau"]')
     assert pg.locator("#pr-painel-grupo img").count() == 0
-    pg.wait_for_function(f"() => document.getElementById('pr-dica-estado').textContent.startsWith({mau!r})")
+    pg.wait_for_function(f"() => ((document.querySelector('#pr-dica-estado .dica-frase') || {{}}).textContent || '').startsWith({mau!r})")
     assert pg.evaluate("() => window.__x") is None
     assert not pg._erros
 
@@ -436,9 +436,9 @@ def test_etiqueta_de_quem_alterou_some_em_3_segundos(contexto, pagina_grupo):
     pg, _ = membro_na_sala(contexto, pagina_grupo)
     pg.evaluate("""async () => { const L = window.__lider;
         await L.envia([L.op('move_peca', { peca: 'pecaztrike', passo: window.__passo, x: 9, y: 9 })]); }""")
-    pg.wait_for_function("() => document.getElementById('pr-dica-estado').textContent === 'nomad moveu ztrike'")
+    pg.wait_for_function("() => (document.querySelector('#pr-dica-estado .dica-frase') || {}).textContent === 'nomad moveu ztrike'")
     assert pg.evaluate("() => Grupo._interno.DURACAO_DA_ETIQUETA_MS") == 3000
-    pg.wait_for_function("() => document.getElementById('pr-dica-estado').textContent !== 'nomad moveu ztrike'", timeout=4500)
+    pg.wait_for_function("() => !document.querySelector('#pr-dica-estado .dica-frase')", timeout=4500)
 
 
 def test_entrada_recusada_diz_por_que_e_nao_entra(contexto, pagina_grupo):
@@ -448,12 +448,12 @@ def test_entrada_recusada_diz_por_que_e_nao_entra(contexto, pagina_grupo):
     pg.fill("#gr-nick", "NOMAD")                                    # nick já usado (sem caixa)
     pg.fill("#gr-codigo", codigo)
     pg.click('[data-acao="entrar"]')
-    pg.wait_for_function("() => document.getElementById('gr-status').textContent === 'Já tem alguém com esse nick no grupo.'")
+    pg.wait_for_function("() => (document.getElementById('gr-e-nick') || {}).textContent === '✕ Erro: Já tem alguém com esse nick no grupo.'")
     assert G(pg, "G.fase") == "fora"
     pg.fill("#gr-nick", "outro")
     pg.fill("#gr-codigo", "ABCDEFGH")
     pg.click('[data-acao="entrar"]')
-    pg.wait_for_function("() => document.getElementById('gr-status').textContent === 'Nenhum grupo com esse código.'")
+    pg.wait_for_function("() => (document.getElementById('gr-e-codigo') || {}).textContent === '✕ Erro: Nenhum grupo com esse código.'")
 
 
 def test_o_link_da_sala_abre_a_aba_com_o_codigo(contexto, pagina_grupo):

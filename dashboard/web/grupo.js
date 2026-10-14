@@ -49,7 +49,14 @@ var Grupo = (function () {
   var MAPA_DE_OUTRA_PAGINA = "A tática desse grupo é de outro mapa e a página dele não abriu.";
   var LEVANDO = "Esse grupo é de outro mapa: indo para a página dele…";
   var MAPA_VALIDO = /^de_[a-z0-9_]{1,30}$/;   // o check de salas.mapa (supabase/migrations)
-  var NO_GRUPO = "Num grupo, a tática é a do grupo. Saia do grupo para trocar de tática.";
+  var VOCE_ACOMPANHA = "<b>Você acompanha a tática:</b> só a líder desenha agora. Você ainda pode mover o cabeçote e dar play.";
+  var FOI_ENCERRADO = "<b>O grupo foi encerrado:</b> a tática ficou só para leitura.";
+  var SEM_O_GRUPO = "Enquanto isso, a prancheta funciona como sempre, sozinho.";
+  var SOZINHA = "Transferir fica desligado: ninguém mais no grupo.";
+  var REMOVIDO = "A líder tirou você deste grupo. A tática continua salva neste navegador.";
+  // as recusas que NÃO desfazem nada (o servidor só disse não) têm borda tracejada; as que desfazem levam ▲ e borda cheia (§19.6)
+  var RECUSA_SEM_DESFAZER = { permissao: true, encerrada: true };
+  var NO_GRUPO ="Num grupo, a tática é a do grupo. Saia do grupo para trocar de tática.";
 
   var cfg = null, sala = null, P = null;
   var G = novoEstado();
@@ -66,9 +73,10 @@ var Grupo = (function () {
       fila: [], enviando: false, enviadasEm: [],
       recebidas: {}, ultimo: null,   // {lamport, criada_em}: a última recebida (para a reconexão)
       chegando: [],
-      dica: null,                // {texto, ate}
-      status: "", erro: "",
-      confirmando: null, alvoTransferencia: "",
+      etiqueta: null,            // {autor, frase, ate}: "nomad moveu ztrike" (3 s)
+      recusa: null,              // {texto, desfeita, ate}: o motivo da recusa do servidor (6 s)
+      status: "", erro: "", info: "", erroCampo: null,   // erroCampo: {campo: "nick" | "codigo", texto}
+      confirmando: null, alvoTransferencia: "", expulsando: null,
       form: { nick: "", codigo: "" },
       anuncio: { ultimo: 0, timer: null, intervalo: null }
     };
@@ -137,6 +145,13 @@ var Grupo = (function () {
       if (e.key !== "Enter") return;
       if (e.target.id === "gr-codigo") { e.preventDefault(); entrar(); }
     });
+    // "Expulsar nomad? Confirmar · Cancelar": Esc e clique fora cancelam (sem o confirm() do navegador)
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && G.expulsando) cancelaExpulsao(true); });
+    document.addEventListener("click", function (e) {
+      if (!G.expulsando || !e.target.isConnected) return;
+      if (e.target.closest(".gr-confirma-expulsa") || e.target.closest('[data-acao="expulsa"]')) return;
+      cancelaExpulsao(false);
+    });
     renderiza();
     // veio de outra página de mapa com o nick: continua a entrada de onde ela parou (o servidor aceita
     // quem já é membro sem recontar nick nem limite). Sem o nick no link, só o clique em "Entrar" pede algo.
@@ -174,11 +189,11 @@ var Grupo = (function () {
   function criar() {
     if (G.fase !== "fora" || soNoSite()) return;
     var nick = (G.form.nick || "").trim();
-    if (!nickValido(nick)) { G.status = ENTRADA.nick_invalido; renderiza(); return; }
+    if (!nickValido(nick)) { G.erroCampo = { campo: "nick", texto: ENTRADA.nick_invalido }; renderiza(); return; }
     var doc = P.documento();
     var imp = impedimento(doc);
     if (imp) { G.status = imp; renderiza(); return; }
-    G.fase = "entrando"; G.status = "Criando o grupo…"; G.erro = ""; renderiza();
+    G.fase = "entrando"; G.status = "Criando o grupo…"; G.erro = ""; G.erroCampo = null; renderiza();
     var s = criaSala(), feito = null;
     s.prepara().then(function (uid) {
       G.uid = uid;
@@ -202,9 +217,9 @@ var Grupo = (function () {
   function entrar() {
     if (G.fase !== "fora" || soNoSite()) return;
     var nick = (G.form.nick || "").trim(), codigo = (G.form.codigo || "").trim().toUpperCase();
-    if (!nickValido(nick)) { G.status = ENTRADA.nick_invalido; renderiza(); return; }
-    if (!/^[A-Z0-9]{8}$/.test(codigo)) { G.status = "O código tem 8 letras e números."; renderiza(); return; }
-    G.fase = "entrando"; G.status = "Entrando no grupo…"; G.erro = ""; renderiza();
+    if (!nickValido(nick)) { G.erroCampo = { campo: "nick", texto: ENTRADA.nick_invalido }; renderiza(); return; }
+    if (!/^[A-Z0-9]{8}$/.test(codigo)) { G.erroCampo = { campo: "codigo", texto: "O código tem 8 letras e números." }; renderiza(); return; }
+    G.fase = "entrando"; G.status = "Entrando no grupo…"; G.erro = ""; G.erroCampo = null; renderiza();
     var s = criaSala(), info = null;
     s.prepara().then(function (uid) {
       G.uid = uid;
@@ -254,7 +269,7 @@ var Grupo = (function () {
     G.lider = info.lider; G.todos = !!info.todos_podem_desenhar; G.encerrada = !!info.encerrada;
     G.papel = info.lider === G.uid ? "lider" : "membro";
     G.seguir = G.papel === "membro";
-    G.status = ""; G.erro = "";
+    G.status = ""; G.erro = ""; G.info = ""; G.erroCampo = null;
     P.limpaHistorico();      // desfazer só o que é seu, no grupo
     if (window.history && history.replaceState) history.replaceState(null, "", location.pathname + location.search + "#sala=" + G.codigo);
     atualizaMembros();
@@ -264,9 +279,14 @@ var Grupo = (function () {
 
   function falhaAoEntrar(x) {
     G.fase = "fora";
-    if (x && x.motivo && ENTRADA[x.motivo]) { G.status = ENTRADA[x.motivo]; G.erro = ""; }
-    else if (x && x.texto) { G.status = x.texto; G.erro = ""; }
-    else { G.status = ""; G.erro = INDISPONIVEL; }
+    G.status = ""; G.erro = ""; G.erroCampo = null;
+    if (x && x.motivo && ENTRADA[x.motivo]) {
+      // nick recusado: erro no campo do nick; código recusado: no campo do código (§19.6); o resto, na linha de status
+      if (x.motivo === "nick_invalido" || x.motivo === "nick_em_uso") G.erroCampo = { campo: "nick", texto: ENTRADA[x.motivo] };
+      else if (x.motivo === "muitas_salas" || x.motivo === "sem_login") G.status = ENTRADA[x.motivo];
+      else G.erroCampo = { campo: "codigo", texto: ENTRADA[x.motivo] };
+    } else if (x && x.texto) G.erroCampo = { campo: "codigo", texto: x.texto };
+    else G.erro = INDISPONIVEL;
     if (sala && sala.desconecta) sala.desconecta();
     renderiza();
   }
@@ -334,7 +354,8 @@ var Grupo = (function () {
   function recusa(ops, motivo) {
     P.retira(ops.map(function (o) { return o.id; }));
     var m = motivo === "permissao" && G.encerrada ? "encerrada" : motivo;
-    mostraNaDica(RECUSA[m] || RECUSA.invalida, DURACAO_DA_RECUSA_MS);
+    G.recusa = { texto: RECUSA[m] || RECUSA.invalida, desfeita: !RECUSA_SEM_DESFAZER[m], ate: Date.now() + DURACAO_DA_RECUSA_MS };
+    expiraDaDica('recusa', DURACAO_DA_RECUSA_MS);
   }
 
   /* ----------------------------------------------------------------------
@@ -386,15 +407,31 @@ var Grupo = (function () {
     else if (t === "reativa") verbo = "refez uma alteração";
     else if (t === "renomeia") verbo = "renomeou a tática";
     else verbo = "alterou a tática";
-    mostraNaDica(String(op.autor) + " " + verbo, DURACAO_DA_ETIQUETA_MS);
+    G.etiqueta = { autor: String(op.autor), frase: String(op.autor) + " " + verbo, ate: Date.now() + DURACAO_DA_ETIQUETA_MS };
+    expiraDaDica('etiqueta', DURACAO_DA_ETIQUETA_MS);
   }
 
-  function mostraNaDica(texto, ms) {
-    G.dica = { texto: texto, ate: Date.now() + ms };
+  /** A etiqueta (3 s) e a recusa (6 s) saem sozinhas; uma nova substitui a anterior e reinicia o tempo. */
+  function expiraDaDica(qual, ms) {
     P.atualizaDica();
-    setTimeout(function () { if (G.dica && Date.now() >= G.dica.ate) { G.dica = null; P.atualizaDica(); } }, ms + 20);
+    setTimeout(function () { if (G[qual] && Date.now() >= G[qual].ate) { G[qual] = null; P.atualizaDica(); } }, ms + 20);
   }
-  function dicaDoGrupo() { return G.dica && Date.now() < G.dica.ate ? G.dica.texto : ""; }
+  /** O que a linha de dica mostra por causa do grupo (§19.6): {texto, html, classe, etiqueta} ou null. Prioridade:
+      recusa > texto fixo do estado (só assiste, encerrado) > texto normal da dica; a etiqueta é sempre somada. */
+  function dicaDoGrupo() {
+    var agora = Date.now(), r = null;
+    var rec = G.recusa && agora < G.recusa.ate ? G.recusa : null, et = G.etiqueta && agora < G.etiqueta.ate ? G.etiqueta : null;
+    function simples(html) { return html.replace(/<[^>]+>/g, ""); }
+    if (rec) r = { texto: rec.texto, html: "<b>" + esc(rec.texto) + "</b>", classe: rec.desfeita ? "recusa-desfeita" : "recusa" };
+    else if (G.fase === "dentro" && G.encerrada) r = { texto: simples(FOI_ENCERRADO), html: FOI_ENCERRADO, classe: "bloqueado" };
+    else if (G.fase === "dentro" && !podeDesenhar()) r = { texto: simples(VOCE_ACOMPANHA), html: VOCE_ACOMPANHA, classe: "bloqueado" };
+    if (et) {
+      r = r || {};
+      r.etiqueta = '<span class="dica-etiqueta" role="status"><span class="gr-ficha" aria-hidden="true">' + esc(iniciais(et.autor)) +
+        '</span><span class="dica-frase">' + esc(et.frase) + "</span></span>";
+    }
+    return r;
+  }
 
   /** Na reconexão (ou depois de entrar): o que chegou ao servidor desde a última recebida. */
   function sincroniza() {
@@ -553,7 +590,8 @@ var Grupo = (function () {
     var form = G.form;
     G = novoEstado();
     G.form = form;
-    G.status = motivo || "Você saiu do grupo. A tática continua salva neste navegador.";
+    if (motivo === ENTRADA.expulso) G.info = REMOVIDO;       // não é erro: aviso informativo no topo do formulário
+    else G.status = motivo || "Você saiu do grupo. A tática continua salva neste navegador.";
     if (window.history && history.replaceState) history.replaceState(null, "", location.pathname + location.search);
     aplicaPermissao();
     Prancheta._interno.abaDoPainel("grupo");
@@ -587,7 +625,7 @@ var Grupo = (function () {
     var b = e.target.closest("[data-acao]");
     if (!b || b.disabled) return;
     var acao = b.getAttribute("data-acao"), u = b.getAttribute("data-usuario");
-    G.status = "";
+    G.status = ""; G.erroCampo = null; G.info = "";
     if (acao === "criar") criar();
     else if (acao === "entrar") entrar();
     else if (acao === "copiar") copiaLink();
@@ -595,7 +633,13 @@ var Grupo = (function () {
     else if (acao === "permite") {
       var m = G.membros.filter(function (x) { return x.usuario === u; })[0];
       if (m) sala.permite(u, !m.pode_desenhar).then(resultadoDaAcao);
-    } else if (acao === "expulsa") sala.expulsa(u).then(resultadoDaAcao);
+    } else if (acao === "expulsa") { G.expulsando = u; renderiza(); }
+    else if (acao === "cancela-expulsa") cancelaExpulsao(true);
+    else if (acao === "confirma-expulsa") {
+      var quem = G.membros.filter(function (x) { return x.usuario === u; })[0];
+      G.expulsando = null;
+      sala.expulsa(u).then(function (r) { resultadoDaAcao(r); if (r && r.ok !== false && quem) { G.status = quem.nick + " foi removido do grupo."; renderiza(); } });
+    } else if (acao === "de-novo") { G.erro = ""; renderiza(); }
     else if (acao === "transferir") { G.confirmando = "transferir"; renderiza(); }
     else if (acao === "confirma-transferir") {
       var alvo = G.alvoTransferencia || (outros()[0] || {}).usuario;
@@ -618,87 +662,142 @@ var Grupo = (function () {
      ---------------------------------------------------------------------- */
   function iniciais(nick) { return String(nick || "?").trim().slice(0, 2).toUpperCase(); }
 
-  function chave(acao, ligada, texto, extra) {
-    return '<button type="button" class="pr-b gr-chave" data-acao="' + acao + '" aria-pressed="' + (ligada ? "true" : "false") + '"' +
-      (extra || "") + ">" + esc(texto) + "</button>";
+  function chave(acao, ligada, texto, extra, mini) {
+    return '<button type="button" class="chave' + (mini ? " mini" : "") + '" role="switch" aria-checked="' + (ligada ? "true" : "false") +
+      '" data-acao="' + acao + '"' + (extra || "") + "><span>" + esc(texto) + '</span><span class="estado">' + (ligada ? "Ligado" : "Desligado") +
+      '</span><span class="pino" aria-hidden="true"></span></button>';
+  }
+
+  /** Campo com o rótulo acima; o erro do campo (§19.6) vai em ✕ "Erro:" (--erro), ligado por aria-describedby. */
+  function campoComErro(id, rotulo, valor, extraInput, campo, classeDoInput) {
+    var erro = G.erroCampo && G.erroCampo.campo === campo ? G.erroCampo.texto : "";
+    return '<label class="gr-campo" for="' + id + '">' + esc(rotulo) +
+      '<input type="text" id="' + id + '"' + (classeDoInput ? ' class="' + classeDoInput + '"' : "") + extraInput + ' value="' + esc(valor) + '"' +
+      (erro ? ' aria-invalid="true" aria-describedby="gr-e-' + campo + '"' : "") + ">" +
+      (erro ? '<span class="erro-campo" id="gr-e-' + campo + '" role="alert">✕ Erro: ' + esc(erro) + "</span>" : "") + "</label>";
+  }
+
+  /** Bloco de aviso: "info" (nada deu errado) ou "erro" (falha de sistema: --erro, ✕ e a palavra "Erro:"). */
+  function aviso(tipo, texto, id) {
+    return '<div class="gr-aviso ' + tipo + '" role="' + (tipo === "erro" ? "alert" : "status") + '"' + (id ? ' id="' + id + '"' : "") + ">" +
+      (tipo === "erro" ? '<p><span aria-hidden="true">✕</span> <b>Erro:</b> ' + esc(texto) + "</p>"
+                       : '<span class="ico" aria-hidden="true">i</span><p>' + esc(texto) + "</p>") + "</div>";
   }
 
   function linhaDoMembro(m, comControles) {
     var online = !!G.online[m.usuario], ehLider = m.usuario === G.lider, souEu = m.usuario === G.uid;
     var papel = ehLider ? "líder" : (G.todos || m.pode_desenhar ? "pode desenhar" : "só assiste");
-    var h = '<li class="gr-membro" data-usuario="' + esc(m.usuario) + '">' +
+    var h = '<li class="gr-membro' + (online ? "" : " offline") + '" data-usuario="' + esc(m.usuario) + '">' +
       '<span class="gr-ficha" aria-hidden="true">' + esc(iniciais(m.nick)) + "</span>" +
       '<span class="gr-nome"><span class="gr-quem"><b>' + esc(m.nick) + "</b>" + (souEu ? " (você)" : "") + "</span>" +
       '<small><span class="gr-online' + (online ? " on" : "") + '" aria-hidden="true"></span>' + (online ? "online" : "offline") +
       " · " + esc(papel) + "</small></span>";
     if (comControles && !ehLider) {
-      h += '<span class="gr-controles">' +
-        chave("permite", m.pode_desenhar, "Pode desenhar", ' data-usuario="' + esc(m.usuario) + '" aria-label="' + esc(m.nick) + ' pode desenhar"' +
-              (G.encerrada ? ' disabled title="' + esc(RECUSA.encerrada) + '"' : "")) +
-        '<button type="button" class="pr-b" data-acao="expulsa" data-usuario="' + esc(m.usuario) + '" aria-label="Expulsar ' + esc(m.nick) + '">Expulsar</button>' +
-        "</span>";
+      if (G.expulsando === m.usuario) {
+        // "Expulsar nomad? Confirmar · Cancelar": confirmação em linha (decisão do Pedro sobre a §19); o foco vai para Cancelar
+        h += '<span class="gr-controles gr-confirma-expulsa" role="group" aria-label="Confirmar a expulsão de ' + esc(m.nick) + '">' +
+          '<span class="gr-pergunta">Expulsar <b>' + esc(m.nick) + "</b>?</span>" +
+          '<button type="button" class="pr-b" data-acao="confirma-expulsa" data-usuario="' + esc(m.usuario) + '">Confirmar</button>' +
+          '<button type="button" class="pr-b" id="gr-cancela-expulsa" data-acao="cancela-expulsa">Cancelar</button></span>';
+      } else {
+        h += '<span class="gr-controles">' +
+          chave("permite", m.pode_desenhar, "Pode desenhar", ' data-usuario="' + esc(m.usuario) + '" aria-label="' + esc(m.nick) + ' pode desenhar"' +
+                (G.encerrada ? ' disabled title="' + esc(RECUSA.encerrada) + '"' : ""), true) +
+          '<button type="button" class="pr-b" data-acao="expulsa" data-usuario="' + esc(m.usuario) + '" aria-label="Expulsar ' + esc(m.nick) + '"' +
+          (G.encerrada ? " disabled" : "") + ">Expulsar</button></span>";
+      }
     }
     return h + "</li>";
+  }
+
+  /** O contador da aba (§19.6): quantos estão online; só com grupo. */
+  function atualizaContador() {
+    var aba = $("pr-aba-grupo");
+    if (!aba) return;
+    var c = aba.querySelector(".aba-contador");
+    if (G.fase !== "dentro") { if (c) c.remove(); return; }
+    var n = G.membros.filter(function (m) { return G.online[m.usuario]; }).length;
+    if (!c) { c = document.createElement("span"); c.className = "aba-contador"; aba.appendChild(c); }
+    c.textContent = String(n); c.setAttribute("aria-label", n + " online");
+  }
+
+  function cancelaExpulsao(devolveFoco) {
+    var u = G.expulsando;
+    G.expulsando = null;
+    renderiza();
+    if (devolveFoco && u) {
+      var b = document.querySelector('#pr-painel-grupo .gr-membro[data-usuario="' + (window.CSS && CSS.escape ? CSS.escape(u) : u) + '"] [data-acao="expulsa"]');
+      if (b) b.focus();
+    }
   }
 
   function renderiza() {
     var painel = $("pr-painel-grupo");
     if (!painel) return;
+    if (G.expulsando && !G.membros.some(function (m) { return m.usuario === G.expulsando; })) G.expulsando = null;
     var foco = document.activeElement && painel.contains(document.activeElement) ? document.activeElement.id : null;
     var h = '<section class="caixa gr-caixa"><h2>Grupo</h2>';
     if (soNoSite()) {
       var link = cfg.site ? cfg.site.replace(/\/?$/, "/") + (cfg.pagina || "") : "";
       h += '<p class="gr-texto">' + esc(SO_NO_SITE) + (link ? ' <a href="' + esc(link) + '">' + esc(link) + "</a>" : "") + "</p>";
+    } else if (G.fase !== "dentro" && G.erro) {
+      // grupo indisponível: o formulário some (criar ou entrar falharia); a prancheta segue sozinha
+      h += aviso("erro", G.erro, "gr-erro") + '<button type="button" class="pr-b gr-largo" data-acao="de-novo">Tentar de novo</button>' +
+        '<p class="gr-texto gr-apagado">' + esc(SEM_O_GRUPO) + "</p>";
     } else if (G.fase !== "dentro") {
       var ocupado = G.fase === "entrando";
+      if (G.info) h += aviso("info", G.info, "gr-info");
       h += '<p class="gr-texto">Desenhe a tática junto, ao vivo: crie um grupo e mande o link, ou entre com o código.</p>' +
-        '<div class="linha"><label for="gr-nick">Seu nick</label>' +
-        '<input type="text" id="gr-nick" maxlength="24" autocomplete="nickname" value="' + esc(G.form.nick) + '"></div>' +
-        '<div class="linha"><button type="button" class="pr-b gr-principal" data-acao="criar"' + (ocupado ? " disabled" : "") + ">Criar grupo</button></div>" +
-        '<div class="linha"><label for="gr-codigo">Código</label>' +
-        '<input type="text" id="gr-codigo" maxlength="8" autocomplete="off" spellcheck="false" value="' + esc(G.form.codigo) + '">' +
-        '<button type="button" class="pr-b" data-acao="entrar"' + (ocupado ? " disabled" : "") + ">Entrar num grupo</button></div>" +
-        '<p class="pr-dica gr-guarda">' + esc(O_QUE_GUARDA) + "</p>";
+        campoComErro("gr-nick", "Seu nick", G.form.nick, ' maxlength="24" autocomplete="nickname"', "nick") +
+        '<button type="button" class="pr-b gr-principal gr-largo" data-acao="criar"' + (ocupado ? " disabled" : "") + ">Criar grupo</button>" +
+        '<div class="gr-ou" aria-hidden="true">ou</div>' +
+        campoComErro("gr-codigo", "Código do grupo", G.form.codigo, ' maxlength="8" autocomplete="off" spellcheck="false"', "codigo", "codigo") +
+        '<button type="button" class="pr-b gr-largo" data-acao="entrar"' + (ocupado ? " disabled" : "") + ">Entrar num grupo</button>" +
+        '<div class="gr-aviso info gr-guarda"><span class="ico" aria-hidden="true">i</span><p>' + esc(O_QUE_GUARDA) + "</p></div>";
     } else {
       h += '<div class="gr-codigo-linha"><span class="gr-rotulo">Código</span> <span class="gr-codigo" id="gr-codigo-sala">' + esc(G.codigo) + "</span>" +
         (G.papel === "lider" ? '<button type="button" class="pr-b" data-acao="copiar">Copiar link</button>' : "") + "</div>";
-      if (G.encerrada) h += '<p class="gr-texto">' + esc(RECUSA.encerrada) + "</p>";
+      if (G.encerrada) h += aviso("info", RECUSA.encerrada, "gr-encerrada");
       if (G.papel === "lider") {
-        h += '<div class="linha">' + chave("todos", G.todos, "Todos podem desenhar", G.encerrada ? ' disabled title="' + esc(RECUSA.encerrada) + '"' : "") + "</div>";
+        h += chave("todos", G.todos, "Todos podem desenhar", G.encerrada ? ' disabled title="' + esc(RECUSA.encerrada) + '"' : "");
       } else {
-        h += '<p class="gr-permissao" id="gr-permissao">' + esc(podeDesenhar() ? "Você pode desenhar" : (G.encerrada ? RECUSA.encerrada : "Só a líder desenha agora")) + "</p>" +
-          '<div class="linha">' + chave("seguir", G.seguir, "Seguir a líder") +
-          (G.seguir ? "" : '<button type="button" class="pr-b" data-acao="voltar">Voltar para a líder</button>') + "</div>";
+        h += '<p class="gr-permissao" id="gr-permissao">' + esc(podeDesenhar() ? "✎ Você pode desenhar" : (G.encerrada ? "Só leitura" : "Só a líder desenha agora")) + "</p>" +
+          chave("seguir", G.seguir, "Seguir a líder") +
+          (G.seguir ? "" : '<button type="button" class="pr-b gr-largo" data-acao="voltar">Voltar para a líder</button>');
       }
       h += '<h3 class="gr-sub">Membros (' + G.membros.length + " de " + Sala.MAX_MEMBROS + ')</h3><ul class="gr-membros">' +
         G.membros.map(function (m) { return linhaDoMembro(m, G.papel === "lider"); }).join("") + "</ul>";
       if (G.papel === "lider" && !G.encerrada) {
         if (G.confirmando === "transferir") {
           var lista = outros();
-          h += '<div class="gr-confirma"><label for="gr-transferir-para">Transferir a liderança para</label>' +
+          h += '<div class="gr-confirma"><label class="gr-campo" for="gr-transferir-para">Transferir a liderança para</label>' +
             '<select id="gr-transferir-para">' + lista.map(function (m) {
               return '<option value="' + esc(m.usuario) + '"' + (m.usuario === G.alvoTransferencia ? " selected" : "") + ">" + esc(m.nick) + "</option>";
             }).join("") + "</select>" +
-            '<div class="linha"><button type="button" class="pr-b" data-acao="confirma-transferir"' + (lista.length ? "" : " disabled") + ">Transferir</button>" +
+            '<div class="gr-linha"><button type="button" class="pr-b gr-principal" data-acao="confirma-transferir"' + (lista.length ? "" : " disabled") + ">Transferir</button>" +
             '<button type="button" class="pr-b" data-acao="cancela">Cancelar</button></div>' +
-            '<p class="pr-dica">Você vira membro e só desenha se a nova líder liberar.</p></div>';
+            '<p class="gr-texto gr-apagado">Você vira membro e só desenha se a nova líder liberar.</p></div>';
         } else if (G.confirmando === "encerrar") {
-          h += '<div class="gr-confirma"><p class="gr-texto">Encerrar o grupo? A tática fica só para leitura para todos, e ninguém mais entra.</p>' +
-            '<div class="linha"><button type="button" class="pr-b" data-acao="confirma-encerrar">Encerrar de vez</button>' +
+          h += '<div class="gr-confirma"><p class="gr-texto"><b>Encerrar o grupo?</b> A tática fica só para leitura para todos, e ninguém mais entra.</p>' +
+            '<div class="gr-linha"><button type="button" class="pr-b gr-principal" data-acao="confirma-encerrar">Encerrar de vez</button>' +
             '<button type="button" class="pr-b" data-acao="cancela">Cancelar</button></div></div>';
         } else {
-          h += '<div class="linha"><button type="button" class="pr-b" data-acao="transferir"' + (outros().length ? "" : ' disabled title="Ninguém mais no grupo."') +
+          var sozinha = !outros().length;
+          h += '<div class="gr-linha"><button type="button" class="pr-b" data-acao="transferir"' + (sozinha ? ' disabled title="' + esc(SOZINHA) + '"' : "") +
             ">Transferir liderança</button>" +
-            '<button type="button" class="pr-b" data-acao="encerrar">Encerrar grupo</button></div>';
+            '<button type="button" class="pr-b" data-acao="encerrar">Encerrar grupo</button></div>' +
+            (sozinha ? '<p class="gr-texto gr-apagado" id="gr-sozinha">' + esc(SOZINHA) + "</p>" : "");
         }
       }
-      if (G.papel !== "lider" || G.encerrada) h += '<div class="linha"><button type="button" class="pr-b" data-acao="sair">Sair do grupo</button></div>';
+      if (G.papel !== "lider" || G.encerrada) h += '<button type="button" class="pr-b gr-largo" data-acao="sair">Sair do grupo</button>';
     }
     h += '<p class="gr-status" id="gr-status" role="status" aria-live="polite">' + esc(G.status) + "</p>";
-    if (G.erro) h += '<p class="gr-erro" id="gr-erro" role="alert">✕ Erro: ' + esc(G.erro) + "</p>";
+    if (G.fase === "dentro" && G.erro) h += aviso("erro", G.erro, "gr-erro");
     h += "</section>";
     painel.innerHTML = h;
-    if (foco && $(foco)) $(foco).focus();
+    atualizaContador();
+    if (G.expulsando && $("gr-cancela-expulsa") && foco !== "gr-cancela-expulsa") $("gr-cancela-expulsa").focus();
+    else if (foco && $(foco)) $(foco).focus();
   }
 
   return {
