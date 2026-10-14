@@ -157,6 +157,20 @@ CAMPOS_COMUNS = ("id", "seq", "autor", "em", "tipo")
 
 _ID = re.compile(r"^[A-Za-z0-9_-]{6,64}$")
 
+# Operação recebida de fora (grupo, arquivo importado, tática guardada no navegador) não pode derrubar a
+# prancheta: o formato e o TIPO de cada campo são conferidos por UMA função (`problemas_da_operacao`), a mesma
+# no JS (`problemaDaOperacao`, em tactics.js; há teste de espelho com a lista de operações malformadas).
+SEQ_MAXIMO = 999_999_999_999_999                    # 15 dígitos: o mesmo teto do servidor do grupo (supabase/migrations)
+_ID_DA_OPERACAO = re.compile(r"^[0-9A-Za-z_-]{1,64}$")   # o mesmo formato que o servidor exige em `op.id`
+TAMANHO_MAXIMO_DA_CHAVE = 128
+# nomes que o objeto de um chaveamento (`estado.pecas[chave]`) já tem: nunca são chave de peça, passo, traço...
+NOMES_RESERVADOS = ("__proto__", "constructor", "prototype", "hasOwnProperty", "isPrototypeOf",
+                    "propertyIsEnumerable", "toLocaleString", "toString", "valueOf",
+                    "__defineGetter__", "__defineSetter__", "__lookupGetter__", "__lookupSetter__")
+# campos que são chave (id de passo, peça, granada, traço, ponto ou alvo) e campos que são texto
+CAMPOS_CHAVE = ("passo", "peca", "granada", "traco", "ponto", "alvo")
+CAMPOS_TEXTO = ("titulo", "rotulo")
+
 
 class TaticaInvalida(ValueError):
     """Arquivo de tática que não pode ser lido sem inventar dado."""
@@ -887,34 +901,31 @@ def problemas(doc: dict, calibracoes: dict[str, str] | None = None) -> list[str]
     andares = andares_do_mapa(doc["mapa"]) if "mapa" in doc else 1
 
     completas = [op for op in ops if isinstance(op, dict) and all(c in op for c in CAMPOS_COMUNS)]
-    por_id = {op["id"]: op for op in completas}
+    por_id = {op["id"]: op for op in completas if isinstance(op["id"], str)}
     vistos: set = set()
     maior = 0
     for n, op in enumerate(ops):
-        onde = f"operação {n}"
-        faltam = [c for c in CAMPOS_COMUNS if not (isinstance(op, dict) and c in op)]
-        if faltam:
-            erros.append(f"{onde} sem '{faltam[0]}'")
+        erros_da_op = problemas_da_operacao(op, andares, doc.get("versao", FORMATO), n)
+        erros += erros_da_op
+        if not (isinstance(op, dict) and all(c in op for c in CAMPOS_COMUNS)):
             continue
         onde = f"operação {n} ({op['tipo']})"
-        if op["tipo"] not in OPERACOES:
-            erros.append(f"operação desconhecida: {op['tipo']}")
-            continue
-        sem = [c for c in OPERACOES[op["tipo"]] if c not in op]
-        for c in sem:
-            erros.append(f"'{op['tipo']}' sem '{c}'")
-        if op["tipo"] in OPERACOES_DO_FORMATO_3 and doc.get("versao", FORMATO) < 3:
-            erros.append(f"{onde}: operação do formato 3 num arquivo do formato {doc.get('versao')}")
-        if op["id"] in vistos:
-            erros.append(f"operação repetida: {op['id']}")
-        vistos.add(op["id"])
-        if not _eh_inteiro(op["seq"]) or op["seq"] < 1:
-            erros.append(f"{onde}: número de ordem inválido")
-        else:
+        # o que só se vê com o log inteiro: id repetido, maior número de ordem e a operação de desfazer
+        if isinstance(op["id"], str):
+            if op["id"] in vistos:
+                erros.append(f"operação repetida: {op['id']}")
+            vistos.add(op["id"])
+        if _seq_valido(op["seq"]):
             maior = max(maior, op["seq"])
-        if sem:
-            continue
-        erros += _problemas_da_operacao(op, onde, andares, por_id)
+        if op["tipo"] in DESFAZER and isinstance(op.get("alvo"), str) and not erros_da_op:
+            alvo = por_id.get(op["alvo"])
+            if alvo is None:
+                erros.append(f"{onde}: mira a operação {op['alvo']}, que não está no log")
+            elif alvo["tipo"] in DESFAZER:
+                erros.append(f"{onde}: mira outra {alvo['tipo']} -- desfazer só mira operação de efeito")
+            elif alvo["autor"] != op["autor"]:
+                erros.append(f"{onde}: {op['autor']} mira operação de {alvo['autor']} -- "
+                             "cada um só desfaz o que é seu")
     if _eh_inteiro(doc.get("contador")) and doc["contador"] < maior:
         erros.append("o contador está abaixo do maior número de ordem do log")
     if not erros:
@@ -973,7 +984,120 @@ def problemas_da_origem(origem) -> list[str]:
     return erros
 
 
-def _problemas_da_operacao(op: dict, onde: str, andares: int, por_id: dict) -> list[str]:
+def _seq_valido(v) -> bool:
+    return _eh_inteiro(v) and 1 <= v <= SEQ_MAXIMO
+
+
+def _eh_chave(v) -> bool:
+    return isinstance(v, str) and 1 <= len(v) <= TAMANHO_MAXIMO_DA_CHAVE and v not in NOMES_RESERVADOS
+
+
+def _eh_lugar(v, minimo: int = 2, maximo: int = 3) -> bool:
+    """Lista de `minimo` a `maximo` números finitos (um lugar do mapa)."""
+    return isinstance(v, list) and minimo <= len(v) <= maximo and all(_eh_numero(c) for c in v)
+
+
+def _problemas_de_tipo(op: dict, onde: str) -> list[str]:
+    """O TIPO de cada campo (o que `aplica` e a tela supõem): texto onde é texto, número onde é número..."""
+    erros = []
+    t = op["tipo"]
+    for c in OPERACOES[t]:
+        if c in CAMPOS_CHAVE and not _eh_chave(op[c]):
+            erros.append(f"{onde}: '{c}' não é um identificador")
+        elif c in CAMPOS_TEXTO and not isinstance(op[c], str):
+            erros.append(f"{onde}: '{c}' não é texto")
+    if t in ("cria_peca", "move_peca"):      # nos outros tipos, `_problemas_dos_campos` já diz "x e y precisam ser números"
+        for c in ("x", "y"):
+            if not _eh_numero(op[c]):
+                erros.append(f"{onde}: '{c}' não é número")
+    if t == "nota_de_evento" and not isinstance(op["texto"], str):
+        erros.append(f"{onde}: 'texto' não é texto")
+    if t == "define_funcao" and op["funcao"] is not None and not isinstance(op["funcao"], str):
+        erros.append(f"{onde}: 'funcao' não é texto nem null")
+    if t in ("cria_granada", "move_granada"):
+        for c in ("origem", "destino"):
+            if not _eh_lugar(op[c]):
+                erros.append(f"{onde}: '{c}' não é um lugar (2 ou 3 números)")
+    if t == "cria_granada":
+        if op.get("jogador") is not None and not _eh_chave(op["jogador"]):
+            erros.append(f"{onde}: 'jogador' não é um identificador")
+        arr = op.get("arremesso")
+        if arr is not None:
+            if not isinstance(arr, dict):
+                erros.append(f"{onde}: arremesso não é um objeto")
+            else:
+                # só o TIPO do que existe; a falta de campo é de `_problemas_da_granada` ("arremesso real sem ...")
+                if any(c in arr and not isinstance(arr[c], str) for c in ("id", "comando")):
+                    erros.append(f"{onde}: arremesso com id ou comando que não é texto")
+                if any(c in arr and not _eh_lugar(arr[c]) for c in ("origem", "destino")):
+                    erros.append(f"{onde}: arremesso com origem ou destino que não é lugar")
+                if any(c in arr and not _eh_numero(arr[c]) for c in ("pitch", "yaw")):
+                    erros.append(f"{onde}: arremesso com pitch ou yaw que não é número")
+                if arr.get("fontes") is not None and not isinstance(arr["fontes"], dict):
+                    erros.append(f"{onde}: fontes do arremesso não é um objeto")
+    if t == "cria_traco":
+        if op.get("texto") is not None and not isinstance(op["texto"], str):
+            erros.append(f"{onde}: 'texto' não é texto")
+        if not isinstance(op["cor"], str):
+            erros.append(f"{onde}: cor não é texto")
+        if not isinstance(op["pontos"], list):
+            erros.append(f"{onde}: 'pontos' não é uma lista")
+        elif not all(_eh_lugar(p) for p in op["pontos"]):
+            erros.append(f"{onde}: ponto do traço malformado")
+    if t == "move_ponto" and op.get("yaw") is not None and not _eh_numero(op["yaw"]):
+        erros.append(f"{onde}: 'yaw' não é número")
+    if t == "cria_caminho" and isinstance(op["pontos"], list):
+        for pt in op["pontos"]:
+            if isinstance(pt, dict) and (
+                    (pt.get("yaw") is not None and not _eh_numero(pt["yaw"]))
+                    or (pt.get("nivel") is not None and not (_eh_inteiro(pt["nivel"]) and pt["nivel"] >= 0))):
+                erros.append(f"{onde}: yaw ou nível do ponto do caminho inválido")
+                break
+    return erros
+
+
+def problemas_da_operacao(op, andares: int = 1, versao: int = FORMATO, n: int | None = None) -> list[str]:
+    """Problemas de UMA operação, lista vazia = está boa. É a ÚNICA validação de operação do projeto:
+    `problemas` (arquivo), a carga do navegador e o grupo ao vivo passam por ela (no JS, a espelhada
+    `problemaDaOperacao`). Só olha a operação em si; o que depende do log inteiro (id repetido, alvo do
+    desfazer, contador) é de `problemas`. Nunca levanta, seja qual for o `op`."""
+    base = f"operação {n}" if n is not None else "operação"
+    if not isinstance(op, dict):
+        return [f"{base} não é um objeto"]
+    faltam = [c for c in CAMPOS_COMUNS if c not in op]
+    if faltam:
+        return [f"{base} sem '{faltam[0]}'"]
+    erros = []
+    if not (isinstance(op["id"], str) and _ID_DA_OPERACAO.fullmatch(op["id"]) and op["id"] not in NOMES_RESERVADOS):
+        erros.append(f"{base}: id fora do formato")
+    if not (isinstance(op["autor"], str) and 1 <= len(op["autor"]) <= 64):
+        erros.append(f"{base}: autor fora do formato")
+    if not isinstance(op["em"], str):
+        erros.append(f"{base}: 'em' não é texto")
+    if not _seq_valido(op["seq"]):
+        erros.append(f"{base}: número de ordem inválido")
+    if not isinstance(op["tipo"], str):
+        return erros + [f"{base}: tipo fora do formato"]
+    if op["tipo"] not in OPERACOES:
+        return erros + [f"operação desconhecida: {op['tipo']}"]
+    t = op["tipo"]
+    onde = f"{base} ({t})"
+    sem = [c for c in OPERACOES[t] if c not in op]
+    for c in sem:
+        erros.append(f"'{t}' sem '{c}'")
+    if t in OPERACOES_DO_FORMATO_3 and versao < 3:
+        erros.append(f"{onde}: operação do formato 3 num arquivo do formato {versao}")
+    if sem:
+        return erros
+    de_tipo = _problemas_de_tipo(op, onde)
+    erros += de_tipo
+    if de_tipo:
+        return erros
+    return erros + _problemas_dos_campos(op, onde, andares)
+
+
+def _problemas_dos_campos(op: dict, onde: str, andares: int) -> list[str]:
+    """Regras de VALOR de uma operação cujos campos já estão presentes e com o tipo certo."""
     erros = []
     t = op["tipo"]
     if t == "cria_peca" and op["lado"] not in LADOS:
@@ -1031,15 +1155,6 @@ def _problemas_da_operacao(op: dict, onde: str, andares: int, por_id: dict) -> l
         erros.append(f"{onde}: horário da granada não é número")
     if t == "cria_granada" and any(k in op and not (_eh_numero(op[k]) and op[k] >= 0) for k in ("voo_s", "efeito_s")):
         erros.append(f"{onde}: voo e efeito da granada precisam ser números >= 0")
-    if t in DESFAZER:
-        alvo = por_id.get(op["alvo"])
-        if alvo is None:
-            erros.append(f"{onde}: mira a operação {op['alvo']}, que não está no log")
-        elif alvo["tipo"] in DESFAZER:
-            erros.append(f"{onde}: mira outra {alvo['tipo']} -- desfazer só mira operação de efeito")
-        elif alvo["autor"] != op["autor"]:
-            erros.append(f"{onde}: {op['autor']} mira operação de {alvo['autor']} -- "
-                         "cada um só desfaz o que é seu")
     return erros
 
 

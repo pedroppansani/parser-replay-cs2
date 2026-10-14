@@ -1,0 +1,17 @@
+# Dependabot (L-6 da revisão de segurança dos grupos, fase 16b): abre PR para atualizar as Actions fixadas por SHA
+# (o comentário "# vX.Y.Z" ao lado do SHA é atualizado junto) e as dependências do pip. Nenhum PR entra sozinho:
+# o Pedro revisa e a suíte roda. O secret scanning é ligado nas configurações do repositório (não é arquivo).
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci"
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "deps"

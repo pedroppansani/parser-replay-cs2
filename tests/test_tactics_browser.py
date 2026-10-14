@@ -320,6 +320,29 @@ def test_espelho_js_python_com_todas_as_operacoes(contexto, pagina):
     assert interno(pg, f"I.ordemDeCriacao(I.aplica({json.dumps(ops)}))") == ordem_de_criacao(e_py)
 
 
+def test_espelho_da_validacao_de_operacao_com_as_malformadas(contexto, pagina):
+    """B-1: a validação ÚNICA de operação decide igual no JS e no Python para a lista de operações boas e
+    malformadas (tests/operacoes_malformadas.py), por operação e dentro de um arquivo inteiro."""
+    from metrics.tactics import IDENTIFICADOR, problemas, problemas_da_operacao
+    from tests.operacoes_malformadas import BOAS, MALFORMADAS, SEM_A_FORMA_MINIMA
+    pg = abre(contexto, pagina)
+    casos = [("boa " + o["tipo"], o) for o in BOAS] + MALFORMADAS + SEM_A_FORMA_MINIMA
+    textos = [json.dumps(o) for _, o in casos]
+    js = pg.evaluate("(ts) => ts.map((t) => Prancheta._interno.problemaDaOperacao(JSON.parse(t), 1, 3).length > 0)", textos)
+    for (rotulo, o), recusa_js in zip(casos, js):
+        assert recusa_js == bool(problemas_da_operacao(o, 1, 3)), rotulo
+        assert recusa_js == (not rotulo.startswith("boa ")), rotulo
+    base = [{"id": f"b{n:04d}", "seq": n, "autor": "pedro", "em": "2026-10-14T00:00:00Z", **d}
+            for n, d in ((1, {"tipo": "renomeia", "titulo": "x"}), (2, {"tipo": "cria_passo", "passo": "passo0001", "titulo": ""}))]
+    docs = [json.dumps({"formato": IDENTIFICADOR, "versao": 3, "id": "tatica001", "mapa": MAPA, "criada_por": "pedro",
+                        "criada_em": "x", "calibracao": "c", "contador": 10, "operacoes": base + [o]})
+            for _, o in MALFORMADAS + SEM_A_FORMA_MINIMA]
+    js_doc = pg.evaluate("(ds) => ds.map((d) => Prancheta._interno.problemas(JSON.parse(d), 1).length > 0)", docs)
+    assert all(js_doc)
+    for d in docs:
+        assert problemas(json.loads(d))
+
+
 def test_criar_tatica_na_pagina_da_partida_abre_a_prancheta_limpa(navegador, tmp_path_factory):
     from scripts.build_tactics_page import build_html as prancheta
     from scripts.build_web_page import build_html as partida

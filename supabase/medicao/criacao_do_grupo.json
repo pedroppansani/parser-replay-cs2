@@ -1,0 +1,204 @@
+{
+ "mapa": "de_dust2",
+ "operacoes": 62,
+ "rodadas": 5,
+ "cpu": 4,
+ "rede": {
+  "latenciaMs": 165,
+  "subidaBps": 1500000,
+  "descidaBps": 9000000
+ },
+ "base": "fb2a81bb",
+ "antes_rede": {
+  "mediana_s": 3.9042000000001864,
+  "todas_s": [
+   3.902,
+   3.909,
+   3.89,
+   3.904,
+   3.916
+  ],
+  "pedidos": [
+   [
+    "criar",
+    231
+   ],
+   [
+    "entrar",
+    48
+   ],
+   [
+    "sala",
+    17
+   ],
+   [
+    "membros",
+    17
+   ],
+   [
+    "envia",
+    38667
+   ],
+   [
+    "conecta",
+    24
+   ],
+   [
+    "operacoes",
+    30
+   ],
+   [
+    "sala",
+    17
+   ],
+   [
+    "membros",
+    17
+   ],
+   [
+    "envia",
+    21370
+   ],
+   [
+    "envia",
+    18394
+   ],
+   [
+    "envia",
+    389
+   ]
+  ]
+ },
+ "depois_rede": {
+  "mediana_s": 0.6948999999994412,
+  "todas_s": [
+   0.695,
+   0.686,
+   0.697,
+   0.695,
+   0.69
+  ],
+  "pedidos": [
+   [
+    "cria_sala",
+    77737
+   ],
+   [
+    "sala",
+    17
+   ],
+   [
+    "membros",
+    17
+   ],
+   [
+    "conecta",
+    24
+   ]
+  ]
+ },
+ "antes_cpu": {
+  "mediana_s": 3.4209000000003726,
+  "todas_s": [
+   3.396,
+   3.436,
+   3.421,
+   3.411,
+   3.43
+  ],
+  "pedidos": [
+   [
+    "criar",
+    231
+   ],
+   [
+    "entrar",
+    48
+   ],
+   [
+    "sala",
+    17
+   ],
+   [
+    "membros",
+    17
+   ],
+   [
+    "envia",
+    38667
+   ],
+   [
+    "conecta",
+    24
+   ],
+   [
+    "operacoes",
+    30
+   ],
+   [
+    "sala",
+    17
+   ],
+   [
+    "membros",
+    17
+   ],
+   [
+    "envia",
+    21370
+   ],
+   [
+    "envia",
+    18394
+   ],
+   [
+    "envia",
+    389
+   ]
+  ]
+ },
+ "depois_cpu": {
+  "mediana_s": 0.17569999999925495,
+  "todas_s": [
+   0.183,
+   0.17,
+   0.172,
+   0.18,
+   0.176
+  ],
+  "pedidos": [
+   [
+    "cria_sala",
+    77737
+   ],
+   [
+    "sala",
+    17
+   ],
+   [
+    "membros",
+    17
+   ],
+   [
+    "conecta",
+    24
+   ],
+   [
+    "operacoes",
+    30
+   ],
+   [
+    "sala",
+    17
+   ],
+   [
+    "membros",
+    17
+   ]
+  ]
+ },
+ "antes_formula_s": 5.823412000000372,
+ "antes_formula_rede_s": 2.402512,
+ "depois_formula_s": 1.2506066666659217,
+ "depois_formula_rede_s": 1.0749066666666667
+}

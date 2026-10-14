@@ -41,6 +41,7 @@ venv/
 *.rar
 *.7z
 .env
+.env.*
 *.log
 .ipynb_checkpoints/
 

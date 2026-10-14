@@ -53,3 +53,41 @@
   endereço se casar com o check de `salas.mapa`; no destino, mapa ainda diferente mostra aviso (nunca em laço).
   Abrir um link `#sala=` sem nick continua não fazendo pedido nenhum: só o clique entra. Para os testes, a
   `SalaFalsa` pode compartilhar o servidor entre páginas do mesmo navegador (`falsa.compartilhado`, localStorage).
+
+### Fase 16b: tetos de uso e o estado inicial (revisão de segurança de 2026-10-13, achado B-2 e itens L-1, L-2, L-3, L-5)
+
+- **O log da sala é o estado inicial seguido das operações.** Ao criar o grupo, as operações que a tática já tinha vão
+  numa linha só (`salas.operacoes_iniciais`), pela função `cria_sala(mapa, nick, estado_inicial)`, validada no servidor
+  (forma mínima de cada operação, 8 KB cada, tetos da sala); depois disso as operações seguem pela tabela `operacoes`.
+  Quem entra recebe o estado inicial no retorno de `entrar_na_sala` e aplica na ordem de sempre (Lamport, autor, id).
+  Nenhuma operação muda de significado. Motivo: com 300 operações por minuto por autor, subir um round inteiro em
+  lotes de 20 por segundo levaria minutos numa tática grande; medido com o maior round real (62 operações, 88.835
+  bytes) em Fast 4G, CPU 4x, mediana de 5: 3,90 s antes (12 pedidos) e 0,69 s depois (1 pedido), em
+  `supabase/medicao/criacao_do_grupo.json` (modelo de rede dentro da `SalaFalsa`, cliente de verdade; a parte B mede
+  contra o servidor real).
+- **Tetos de uso** (migração 7): 5.000 operações e 2 MB por sala (estado inicial incluído), o maior entre isso e 4x o maior
+  round real (68 operações e 88.835 bytes nos 1.152 rounds do corpus, `scripts/mede_round_na_prancheta.py`, em
+  `supabase/medicao/maior_round_na_prancheta.json`); 300 operações por minuto e 3.000 por hora por autor; 200 salas
+  ativas no servidor (200 x 2 MB = 400 MB, abaixo dos 500 MB do plano grátis); 30 chamadas por minuto de
+  `entrar_na_sala` por conta, sem gravar a chamada certa. Cada teto tem o seu código (`sala_no_limite`,
+  `autor_no_limite`, `servidor_cheio`, `muitas_chamadas`) e a sua frase na tela.
+- **Operação nova da prancheta exige migração nova.** O servidor só aceita `tipo` da lista de
+  `grupos.tipos_de_operacao()` (as 26 operações de `OPERACOES`); um teste compara a lista do SQL com a do `tactics.js` e a
+  do `metrics/tactics.py`. Sem a migração, o servidor recusa a operação nova (`operacao_invalida`).
+- **Outros:** o salto de Lamport é de no máximo 1.000 acima do maior da sala (L-2); `entrar_na_sala` trava a conta com
+  `pg_advisory_xact_lock` (L-1); a limpeza diária apaga anônimos órfãos com mais de 2 dias (sem sala, grupo nem
+  operação) e o cliente confere a sessão guardada e refaz o login sozinho (L-5).
+- **A tática que não vira grupo** deixa de ser a de "números de ordem repetidos" só no banco (o estado inicial não tem o
+  índice único por autor e Lamport); o cliente continua recusando por cautela (`impedimento`), sem mudar.
+
+## Fase 16b (cliente): revisão de segurança dos grupos
+
+- **Uma validação de operação só.** `problemaDaOperacao` (JS) e `problemas_da_operacao` (Python) conferem formato e
+  tipo de cada campo de toda operação que entra de fora: arquivo importado, tática guardada no navegador, documento
+  da sala e operação ao vivo. A inválida é descartada com a dica "Uma alteração recebida estava malformada e foi
+  ignorada." (uma por lote) e nunca vai ao log; nenhuma operação muda de significado, e o que o app emite continua
+  passando. Se uma operação válida ainda derruba o `reaplica`, o lote é desfeito. A tática salva que a validação
+  recusa abre como tática nova e o documento vai para a chave `...:recusada` do `localStorage`.
+- **Aviso de privacidade completo** (contato por issue do GitHub; nomes de autor listados antes de criar o grupo, sem
+  regravar operação) e **CSP por meta** em todas as páginas, com o host do Supabase só no `connect-src` da prancheta.
+  Detalhes e testes em `notas/seguranca/grupos.md`, seção 9.

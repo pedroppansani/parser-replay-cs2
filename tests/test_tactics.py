@@ -439,3 +439,43 @@ def test_validacao_da_origem_desconhecida(op, trecho):
         assert ps == []
     else:
         assert any(trecho in p for p in ps), ps
+
+
+# --- B-1 da revisão de segurança dos grupos: UMA validação de operação, no JS e no Python ---------------------
+
+def test_toda_operacao_malformada_e_recusada_e_nunca_levanta():
+    """`problemas_da_operacao` recusa cada operação malformada da lista (a mesma do espelho JS<->Python) sem
+    levantar exceção, e `valida` de um arquivo com ela levanta só `TaticaInvalida`."""
+    from metrics.tactics import problemas_da_operacao
+    from tests.operacoes_malformadas import MALFORMADAS, SEM_A_FORMA_MINIMA
+    for rotulo, op in MALFORMADAS + SEM_A_FORMA_MINIMA:
+        assert problemas_da_operacao(op, 1, FORMATO), rotulo
+        with pytest.raises(TaticaInvalida):
+            valida(_doc(_base() + [op], contador=10))
+
+
+def test_as_operacoes_boas_de_cada_tipo_passam_na_validacao_unica():
+    from metrics.tactics import OPERACOES, problemas_da_operacao
+    from tests.operacoes_malformadas import BOAS
+    assert {o["tipo"] for o in BOAS} == set(OPERACOES)      # uma boa de cada tipo
+    for op in BOAS:
+        assert problemas_da_operacao(op, 1, FORMATO) == [], op["tipo"]
+
+
+def test_a_validacao_de_arquivo_usa_a_mesma_funcao_da_operacao():
+    """`problemas` soma à lista de `problemas_da_operacao` só o que depende do log inteiro."""
+    from metrics.tactics import problemas, problemas_da_operacao
+    ops = _base()
+    ruim = _op(7, "cria_granada", granada="g2", arma="smoke", passo="p2", origem="x", destino=[1.0, 1.0])
+    ps = problemas(_doc(ops + [ruim]))
+    esperado = problemas_da_operacao(ruim, 1, FORMATO, 6)
+    assert esperado and all(e in ps for e in esperado)
+    # repetida e desfazer sem alvo são do log inteiro
+    assert any("repetida" in p for p in problemas(_doc(ops + [dict(ops[0])])))
+    assert any("não está no log" in p for p in problemas(_doc(ops + [_op(7, "anula", alvo="nao_existe_aqui")])))
+
+
+def test_seq_acima_do_teto_do_servidor_e_recusado_e_o_do_teto_passa():
+    from metrics.tactics import SEQ_MAXIMO, problemas_da_operacao
+    assert problemas_da_operacao(_op(SEQ_MAXIMO, "renomeia", titulo="a"), 1, FORMATO) == []
+    assert problemas_da_operacao(_op(SEQ_MAXIMO + 1, "renomeia", titulo="a"), 1, FORMATO)
