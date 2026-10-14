@@ -329,3 +329,34 @@ def test_mesmas_ocorrencias_em_dois_processos_com_hash_diferente(tmp_path):
         subprocess.run([sys.executable, "-c", codigo, m, str(arq)], check=True, cwd=RAIZ, env=env)
         saidas.append(arq.read_bytes())
     assert saidas[0] == saidas[1] and len(saidas[0]) > 1000
+
+
+# --- Fase 15: o limiar da partida vale por lado; toda ocorrência tem lado e relógio ----------------
+
+def test_o_limiar_da_partida_vale_por_lado():
+    # o mesmo jogador: 15 s no TR e 15 s no CT. Somados (30 s) passariam de 27 s; por lado, nenhum lado passa
+    def oc(side, i):
+        return {"steamid": 2, "side": side, "valor": 3.0, "filtro": None, "i": i}
+    linhas = [oc("t", i) for i in range(5)] + [oc("ct", i) for i in range(5)]
+    E._aplica_limiar(linhas, E.SEG_CEGUEIRA_ALIADO, None)
+    assert all(o["filtro"] == E.FILTRO_ABAIXO_DO_LIMIAR for o in linhas)
+    # 30 s num lado só passa
+    so_tr = [oc("t", i) for i in range(10)]
+    E._aplica_limiar(so_tr, E.SEG_CEGUEIRA_ALIADO, None)
+    assert all(o["filtro"] is None for o in so_tr)
+
+
+def test_toda_ocorrencia_tem_lado_e_relogio():
+    p = partida([kill(1000, 6, 1), kill(2000, 7, 2)], BASE, cegos=[cegueira(500, 2, 3, 5.0)])
+    tab = E.ocorrencias(p)
+    assert tab.height > 0
+    assert tab["side"].null_count() == 0 and tab["relogio"].null_count() == 0
+    # 1000 ticks a 64/s = 15,6 s depois do freeze: o relógio desce de 1:55 -> 1:39
+    r = tab.filter((pl.col("tipo") == E.PRIMEIRA_MORTE_SEM_TROCA)).row(0, named=True)
+    assert r["relogio"] == "1:39"
+
+
+def test_o_lado_vem_dos_ticks_quando_o_round_nao_tem_kill():
+    p = partida([], {}, cegos=[cegueira(100, 2, 3, 5.0)])
+    p.lados[(1, 2)] = "t"
+    assert E.flash_no_time(p)[0]["side"] == "t"

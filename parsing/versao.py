@@ -54,6 +54,11 @@ VERSAO_DO_PARSER = 2
 # Onde o complemento registra o que acrescentou a um interim existente.
 ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
 
+# 23 (2026-10-14) erros do Perfil, fase 15 (decisão 46): "flash no time" e "dano de utilidade no time" passam
+#    a somar e a aplicar o limiar POR LADO (antes, a soma era da partida, CT e TR juntos); a tabela
+#    erros_do_jogador.parquet ganha a coluna `relogio` ("1:14") e o lado de quem não aparece nas kills do
+#    round. Impacto: só erros_do_jogador.parquet muda (a coluna nova; o campo `filtro` e, com ele, os
+#    números só desses dois tipos); nenhum outro parquet nem número do corpus muda.
 # 22 (2026-10-13) erros da aba Perfil (fase 12, metrics/erros.py): tabela nova
 #    erros_do_jogador.parquet por partida; nenhum número que já existia muda
 # 21 (2026-10-05) economia (7.2.3): rating, ADR e KAST pela compra do time (eco,
@@ -112,7 +117,7 @@ ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
 #   (inclui a classe de economia do jogador no rating), unique com subset fica
 #   com a primeira linha. Antes, esses três casos dependiam da ordem de hash.
 # 1 (2026-09-20) primeira versão declarada, mesmo raciocínio acima.
-VERSAO_DAS_METRICAS = 22
+VERSAO_DAS_METRICAS = 23
 
 # Pastas cujo estado define o NÚMERO. `sujo` olha só estas: olhar o repositório
 # inteiro marcava todo reprocessamento como sujo, porque o próprio
