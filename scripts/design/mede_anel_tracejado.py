@@ -5,6 +5,13 @@ O anel duplo TRACEJADO da granada desenhada (fase 11) contra os radares, como o 
 
 Critério (prompt da fase 11, regra 2): um dos dois anéis passa de 3:1 em qualquer pixel do radar.
 
+Fase 15 (V3 da §19.7): o tracejado passou a ser em px de TELA (3,5 on / 3 off) e a granada desenhada ganhou o
+carimbo (quadrado de 4 px de --tinta com 1 px de --contorno por fora). O critério de "mesmo passo" deixou de ser só
+a leitura do código: `passo_de_tela` abre o `map_core.js` no navegador (1440 e 375 px, 1x e 2x), grava cada `stroke()`
+do anel e confere que o halo e o contorno saem com o MESMO passo e que ele vale 3,5/3 px de tela em toda largura e
+densidade. A conta de contraste (o pior pixel do MAIOR dos dois) vale nos pixels do anel e do carimbo: o carimbo é
+--tinta por dentro e --contorno por fora, os mesmos dois tokens, então o pior pixel dele é o mesmo número.
+
 Como o map_core.js desenha (anelDoGlifo com `tracejado`): o halo claro (token tinta) e o contorno escuro (token
 contorno) são tracejados NO MESMO PASSO, como o fantasma (§4.1). Onde há traço há os dois anéis; no vão não há
 anel nenhum (o radar aparece). Então, nos pixels do anel, a conta é a mesma do anel duplo cheio: o pior pixel do
@@ -56,16 +63,45 @@ def mede(pasta: str | None = None) -> list[dict]:
     return linhas
 
 
+PASSO_DE_TELA = (3.5, 3.0)       # §19.7 (V1/V3) e decisão do Pedro na §19.1
+TOLERANCIA_DO_PASSO = 0.01
+
+
+def passo_de_tela() -> list[dict]:
+    """Por largura e densidade: o passo em px de tela do halo e do contorno do anel da granada desenhada (chama o
+    `map_core.js` de verdade) e se os dois são iguais entre si e ao 3,5/3 px de tela."""
+    from scripts.design.mede_granada_real import confere_tracejado
+    out = []
+    for l in confere_tracejado():
+        aneis = [s for s in l["strokes"] if s["passo"]]            # os tracejados: halo e contorno (o corpo não é)
+        iguais = len(aneis) == 2 and aneis[0]["passo"] == aneis[1]["passo"]
+        de_tela = bool(aneis) and all(abs(a - b) <= TOLERANCIA_DO_PASSO
+                                      for s in aneis for a, b in zip(s["passo"], PASSO_DE_TELA))
+        out.append({"largura": l["largura"], "densidade": l["densidade"], "aneis": aneis,
+                    "mesmo_passo": iguais, "passo_de_tela": de_tela})
+    return out
+
+
 def main() -> int:
+    sys.stdout.reconfigure(encoding="utf-8")
     linhas = mede(sys.argv[1] if len(sys.argv) > 1 else None)
     print("== Anel duplo tracejado da granada desenhada x radares (pior pixel, radar com o par do mapa) ==\n")
     print(f"{'andar':<11} {'s':>5} {'b':>5}  {'halo+contorno no mesmo passo':>28}  {'só o halo tracejado (vão)':>26}")
     for l in linhas:
         print(f"{l['andar']:<11} {l['s']:5.2f} {l['b']:5.2f}  {l['mesmo_passo']:28.2f}  {l['so_o_halo']:26.2f}")
     falha = [l["andar"] for l in linhas if l["mesmo_passo"] < MINIMO]
-    print(f"\npior de todos (mesmo passo): {min(l['mesmo_passo'] for l in linhas):.2f}:1 (mínimo {MINIMO:.0f}:1)")
+    pior = min(l["mesmo_passo"] for l in linhas)
+    print(f"\npior de todos (mesmo passo; vale também para o carimbo): {pior:.2f}:1 (mínimo {MINIMO:.0f}:1)")
+    print("\n== passo em px de tela, no map_core.js (halo e contorno) ==")
+    passos = passo_de_tela()
+    for p in passos:
+        print(f"{p['largura']:>5} px {p['densidade']}x: " + " | ".join(f"{s['passo'][0]:.2f}/{s['passo'][1]:.2f}" for s in p["aneis"])
+              + f"   mesmo passo: {p['mesmo_passo']}   3,5/3 px de tela: {p['passo_de_tela']}")
     if falha:
         print("PARAR: abaixo de 3:1 em", ", ".join(falha))
+        return 1
+    if not all(p["mesmo_passo"] and p["passo_de_tela"] for p in passos):
+        print("PARAR: o passo do anel não é o 3,5/3 px de tela nos dois anéis")
         return 1
     return 0
 

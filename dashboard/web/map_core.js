@@ -399,9 +399,9 @@ window.MapCore = (function () {
   function nadeGlyph(ctx, kind, x, y, r, col, ang, desenhada) {
     ctx.save();
     ctx.translate(x, y);
-    // granada DESENHADA (fase 11): o anel duplo tracejado e o corpo a 85% -- não se confunde com a que aconteceu
+    // granada DESENHADA (fase 11, variante V3 da §19.7): o anel duplo tracejado em px de tela, o corpo a 100% e o
+    // carimbo no canto -- não se confunde com a que aconteceu (o carimbo é desenhado por último, no fim)
     if (ESTILO.anelDuplo || desenhada) anelDoGlifo(ctx, kind, r, ang, !!desenhada);
-    if (desenhada) ctx.globalAlpha *= ALFA_GRANADA_DESENHADA;
 
     // Contorno escuro por baixo do claro: o radar tem áreas claras E escuras, e
     // um traço branco sozinho sumia sobre o concreto claro da Mirage.
@@ -452,6 +452,7 @@ window.MapCore = (function () {
     } else if (kind === "molotov") {
       // Gota com a ponta na direção do voo: é o único tipo em que a orientação
       // diz alguma coisa, porque ele espalha fogo para onde caiu.
+      ctx.save();                       // a rotação não pode vazar para o carimbo da granada desenhada
       ctx.rotate((ang || 0) + Math.PI / 2);
       ctx.beginPath();
       ctx.moveTo(0, -r * 1.5);
@@ -459,6 +460,7 @@ window.MapCore = (function () {
       ctx.quadraticCurveTo(-r * 0.95, -r * 0.15, 0, -r * 1.5);
       ctx.fill();
       ctx.stroke();
+      ctx.restore();
     } else if (kind === "decoy") {
       // Quadrado vazado com um ponto no meio: é o único que não faz nada, e o
       // "oco com miolo" lê como imitação de granada.
@@ -483,6 +485,7 @@ window.MapCore = (function () {
       ctx.stroke();
     }
 
+    if (desenhada) carimboDaDesenhada(ctx, r);
     ctx.restore();
   }
 
@@ -535,21 +538,55 @@ window.MapCore = (function () {
   function defineAnelDuplo(ligado) { ESTILO.anelDuplo = !!ligado; }
 
   /* ---------------------------------------------------------------------
-     Granada DESENHADA (fase 11): carimbo sem horário e sem física, no "Desenhar" do replay e nos pincéis da
-     prancheta. Mesmo glifo da granada real (nadeGlyph), mas com o anel duplo tracejado e o corpo a 85%; a área
-     (smoke e molotov) é opcional e também tracejada.
+     Granada DESENHADA (fase 11; forma da fase 15, variante V3 da §19.7): carimbo sem horário e sem física, no
+     "Desenhar" do replay e nos pincéis da prancheta. Mesmo glifo da granada real (nadeGlyph), mas com o anel duplo
+     tracejado em px de TELA, um quadrado cheio no canto superior direito (o carimbo) e o corpo a 100% (o alfa de
+     85% saiu: a medição do design deu ΔE 0,2 a 0,6, não separa); a área (smoke e molotov) é opcional e tracejada
+     no mesmo passo.
      --------------------------------------------------------------------- */
   // Raio do glifo desenhado, em px do radar: um pouco maior que o da granada real no replay (5 a 5,5) para dar
   // para pegar e arrastar com o mouse. (Convenção visual.)
   var RAIO_GLIFO_DESENHADO = 7;
-  var ALFA_GRANADA_DESENHADA = 0.85;          // fonte: pedido da fase 11, regra 2
-  var TRACEJADO_DO_DESENHO = [5, 4];          // o mesmo passo do fantasma (entrega-sala-de-demo §4.1)
+  // Passo do tracejado em px de TELA (não do radar): em 375 px o passo de 5/4 do radar virava 1,6/1,3 px e se
+  // dissolvia. Fonte: entrega-sala-de-demo §19.7 (V1) e §19.1 (decisão do Pedro, fase 15).
+  var TRACEJADO_DO_DESENHO = [3.5, 3];
+  // Carimbo: quadrado cheio de 4 px de tela (--tinta, com 1 px de --contorno por fora) no canto superior direito,
+  // a 1,7 x raio + 2 px de tela do centro. Fonte: §19.7 (V3); medido por scripts/design/mede_granada_real.py.
+  var CARIMBO_LADO_TELA = 4, CARIMBO_CONTORNO_TELA = 1, CARIMBO_AFASTA_RAIO = 1.7, CARIMBO_AFASTA_TELA = 2;
   var ARMAS_DESENHADAS = ["smoke", "flash", "he", "molotov"];
+
+  /** Px de TELA (CSS) por unidade do contexto atual: a escala da transformação (zoom, radar e densidade) vezes a
+      razão entre o tamanho CSS e o tamanho interno do canvas. Fora da tela (sem tamanho CSS) usa a densidade. */
+  function pxDeTelaPorUnidade(ctx) {
+    var m = ctx.getTransform(), c = ctx.canvas;
+    var css = c && c.clientWidth && c.width ? c.clientWidth / c.width : 1 / (window.devicePixelRatio || 1);
+    return (Math.hypot(m.a, m.b) * css) || 1;
+  }
+
+  /** O tracejado da granada desenhada na unidade do contexto (o passo é em px de tela). */
+  function tracejadoDoDesenho(ctx) {
+    var k = pxDeTelaPorUnidade(ctx);
+    return TRACEJADO_DO_DESENHO.map(function (p) { return p / k; });
+  }
+
+  /** O carimbo da granada desenhada, no sistema do glifo (origem no centro, sem rotação): quadrado de 4 px de
+      tela com 1 px de contorno por fora, sem sombra. Nenhum glifo de granada é um quadrado cheio. */
+  function carimboDaDesenhada(ctx, r) {
+    var k = pxDeTelaPorUnidade(ctx), s = CARIMBO_LADO_TELA / k, o = CARIMBO_CONTORNO_TELA / k;
+    var cx = r * CARIMBO_AFASTA_RAIO + CARIMBO_AFASTA_TELA / k, cy = -cx;
+    ctx.save();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = token("contorno");
+    ctx.fillRect(cx - s / 2 - o, cy - s / 2 - o, s + 2 * o, s + 2 * o);
+    ctx.fillStyle = token("tinta");
+    ctx.fillRect(cx - s / 2, cy - s / 2, s, s);
+    ctx.restore();
+  }
 
   /** Área desenhada (só o contorno, tracejado): halo claro, contorno escuro e o traço na cor da granada. */
   function areaDesenhada(ctx, arma, X, Y, r) {
     ctx.save();
-    ctx.setLineDash(TRACEJADO_DO_DESENHO);
+    ctx.setLineDash(tracejadoDoDesenho(ctx));
     [[5, token("tinta")], [3, token("contorno")], [1.5, NADE_COLOR[arma]]].forEach(function (c) {
       ctx.lineWidth = c[0]; ctx.strokeStyle = c[1];
       ctx.beginPath(); ctx.arc(X, Y, r, 0, Math.PI * 2); ctx.stroke();
@@ -603,7 +640,7 @@ window.MapCore = (function () {
     ctx.lineJoin = "round";
     // tracejado: halo claro E contorno escuro no MESMO passo, como o fantasma (§4.1) -- onde há traço há os dois
     // anéis, e o anel duplo continua valendo (um dos dois passa de 3:1 em qualquer pixel do radar)
-    if (tracejado) ctx.setLineDash(TRACEJADO_DO_DESENHO);
+    if (tracejado) ctx.setLineDash(tracejadoDoDesenho(ctx));
     caminhoDoGlifo(ctx, kind, r, ang);
     ctx.lineWidth = 2 * (ANEL_CONTORNO + ANEL_HALO) + (kind === "he" ? 2 : 0);
     ctx.strokeStyle = token("tinta");
