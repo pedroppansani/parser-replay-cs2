@@ -52,7 +52,7 @@ valem lá também.
 - Granada desenhada é desenho (anel tracejado de tela, carimbo, corpo a 100%): sem horário, fora da
   linha do tempo e do roteiro; só "Converter em granada com horário" a torna evento (45)
 - Grupo só transporta o log, sem mudar operação; quem pode desenhar é o servidor (RLS): na recusa a
-  operação sai do log local, sem `anula`; sem grupo nada vai à rede (47)
+  operação sai do log local, sem `anula`; sem grupo nada vai à rede; o link `#sala=` nunca entra sozinho: com nick salvo a aba mostra um botão "Entrar no grupo da <mapa> como <nick>" e só o clique conecta (47)
 
 ## Calibração do Pedro (não resolva sozinho)
 

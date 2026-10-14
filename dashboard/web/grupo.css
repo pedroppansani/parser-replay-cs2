@@ -11,6 +11,10 @@
 .gr-largo { width: 100%; }
 .gr-principal { background: var(--tinta) !important; color: var(--fundo) !important; border-color: var(--tinta) !important; font-weight: 600; }
 .gr-guarda { font-size: var(--t-sm); }
+/* convite (link #sala= com nick salvo): o campo do nick e UM botão; o botão quebra linha (nome longo, 320 px) e tem 44 px */
+.gr-convite { display: grid; gap: 12px; }
+.gr-convite .gr-principal { white-space: normal; min-height: var(--toque); overflow-wrap: anywhere; }
+.gr-convite .gr-outro { white-space: normal; min-height: var(--toque); font-weight: 400; }
 .gr-caixa a { color: var(--tinta); text-decoration: underline; overflow-wrap: anywhere; }
 
 /* campo: o rótulo fica ACIMA (320 px não comporta ao lado); o do código usa a mono, em caixa alta, com espaçamento */

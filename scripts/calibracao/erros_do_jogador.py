@@ -205,7 +205,7 @@ def secao_constantes(cache: dict) -> list[str]:
 
 # --- 7.1b Quantos pontos a melhorar cada jogador teria (fase 12b) ------------------------------------------
 
-PERCENTIS_COMPARADOS = (50, E.PERCENTIL_PONTO_A_MELHORAR, 90)
+PERCENTIS_COMPARADOS = (50, 75, 90)                # o em uso (E.PERCENTIL_PONTO_A_MELHORAR) é um deles
 DIST_TROCA_COMPARADAS = (400.0, E.DIST_TROCA, 800.0)             # um menor, o atual e um maior
 ROTULO_LADO = E.ROTULO_DO_LADO
 
@@ -278,7 +278,7 @@ def secao_quantos_pontos(oc: pl.DataFrame, cache: dict | None) -> list[str]:
     for q in PERCENTIS_COMPARADOS:
         pj, por_tipo_de[q] = _pontos_por_jogador(linhas, ref, q)
         n, com, media, f = _resumo_de_pontos(pj)
-        marca = " (proposto)" if q == E.PERCENTIL_PONTO_A_MELHORAR else ""
+        marca = " (em uso)" if q == E.PERCENTIL_PONTO_A_MELHORAR else ""
         out.append(f"| {q}{marca} | {n} | {com} | {_fmt(100 * com / n, 0)}% | {_fmt(media, 2)} | {f[0]} | {f[1]} | "
                    f"{f[2]} | {f[3]} |")
     out += ["", "Pares (tipo, lado) que viram ponto a melhorar, por tipo:", "",

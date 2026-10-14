@@ -4251,6 +4251,10 @@ var Prancheta = (function () {
     grupo: {
       recebe: recebeDeFora, retira: retiraRecusadas, usaDocumento: usaDocumento, cabecote: cabecote,
       segueCabecote: segueCabecote, limpaHistorico: limpaHistorico, atualizaDica: atualizaDica,
+      nomeDoMapa: function () {
+        var m = (cfg.mapas || []).filter(function (x) { return x.mapa === cfg.mapa; })[0];
+        return (m && m.nome) || cfg.mapa || "";
+      },
       documento: function () { return S.doc; }, estado: function () { return S.estado; },
       emReproducao: function () { return !!S.reproducao; }, aplica: aplica, chaveDeOrdem: chaveDeOrdem
     },
