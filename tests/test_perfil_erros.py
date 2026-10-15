@@ -87,7 +87,7 @@ def test_o_custo_e_a_soma_das_quedas_em_pontos():
 def test_ponto_depende_da_tatica_usa_o_motivo_como_frase():
     oc = [{"nivel": E.DEPENDE, "motivo": E.MOTIVO_LURKER, "dwpa": -0.01, "round_num": r, "tick": 10 * r,
            "segundos": 12.0} for r in (3, 7)]
-    m = PE._ponto_a_melhorar(E.MORREU_ISOLADO, oc, 24, None, "lurker", False)
+    m = PE._ponto_a_melhorar(E.MORREU_SOZINHO, oc, 24, None, "lurker", False)
     assert m["frase"] == "Jogar longe do time é a função do lurker. " + E.CONFERIR_COM_O_TIME
     assert m["nivel_rotulo"] == "depende da tática" and m["contagem"] == "2 vezes em 24 rounds"
     assert [c["round"] for c in m["chips"]] == [3, 7] and m["chips"][0]["t"] == 12.0
