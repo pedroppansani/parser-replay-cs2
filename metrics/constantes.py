@@ -29,6 +29,11 @@ SEGUNDOS_DA_BOMBA = 40.0
 DURACAO_SMOKE_S = 20.0
 DURACAO_MOLOTOV_S = 7.03125
 
+# Raio da smoke em unidades do jogo: o mesmo do replay e da prancheta (RAIO_SMOKE_UNIDADES de
+# dashboard/web/map_core.js, "medida no jogo"). Usado pela linha de visão (metrics/visao.py, fase 18):
+# o segmento que passa a menos disto do centro de uma smoke ativa não enxerga.
+RAIO_SMOKE_UNIDADES = 144.0
+
 # Nome do mapa como a página escreve (seletor, índice, título da partida).
 NOME_DO_MAPA = {
     "de_ancient": "Ancient",
