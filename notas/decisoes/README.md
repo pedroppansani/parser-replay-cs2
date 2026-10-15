@@ -52,7 +52,7 @@ Uma nota por decisão. O `CLAUDE.md` traz a lista curta das que estão em vigor.
 | [19c](19c-formato-pela-troca-de-lado.md) | vigente | MR12 ou MR15 sai da troca de lado na demo. |
 | [19d](19d-economia-e-leitura.md) | vigente | Economia é leitura ao lado do round decisivo, nunca peso. |
 | [19e](19e-prorrogacao.md) | vigente | A prorrogação é modelada: o alvo sobe 4 a cada uma, até 5. |
-| [20](20-tres-blocos.md) | vigente | A aba de leitura tem três blocos fixos; o MVP mostra os componentes. |
+| [20](20-tres-blocos.md) | vigente | A aba de leitura tem três blocos fixos; o MVP é o maior rating, com empate dentro do erro. |
 | [20a](20a-destaque-negativo.md) | vigente | Destaque negativo só com número e referência. |
 | [20b](20b-bottom-frag.md) | vigente | Bottom frag exige distância destacada (MAD); mochila exige vitória. |
 | [20c](20c-comparabilidade.md) | vigente | Pontuação de função é "quanto acima do normal"; concentração ponderada. |

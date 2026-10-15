@@ -5,6 +5,10 @@
 - **Data:** 2026-09-19
 - **Resumo:** Traço comportamental é comparado dentro da função estrutural.
 
+## O que vale hoje
+
+No eixo carrega piano/baiter, cada braço é comparado com a população da mesma função dominante, não com o esperado por contexto de round (decisão 15e).
+
 ## Texto
 
 15c. **Traço comportamental é comparado DENTRO DA FUNÇÃO estrutural.**

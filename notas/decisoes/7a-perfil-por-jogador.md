@@ -5,6 +5,10 @@
 - **Data:** 2026-09-17 (entrada no arquivo; o texto não traz data)
 - **Resumo:** O perfil por jogador é a leitura; taxa sempre com bruto, referência e marca de amostra fraca.
 
+## O que vale hoje
+
+A referência `_ref` deixou de ser a mediana dos outros jogadores da partida: é a régua anônima do corpus (`metrics/perfil_reference.json`, decisão 30).
+
 ## Texto
 
 7a. **O perfil por jogador é a leitura principal dos dados comportamentais; o
