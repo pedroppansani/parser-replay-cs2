@@ -66,10 +66,6 @@ estão copiadas de `dashboard/web/CLAUDE.md` na seção "Espelho da prancheta e 
 - Pontuação de função: concentração ponderada pela fração de companheiros que ela supera (20c)
 - Clutch é 1vX com X ≥ 1; definição não é peso; nos cards, contagem e conversão juntas, com a
   quebra por X (22j)
-- Round Swing: regressão logística (não contagem por estado), bomba COM sinal; variação de
-  probabilidade pura, sem corte de round perdido; soma zero por evento, com o fim do round e
-  exceto morte sem matador inimigo; centrado em 1,00 e escalado pelo desvio
-  (22a, 22b, 22f, 22h, 22k)
 
 ## Arremesso
 
@@ -107,6 +103,10 @@ estão copiadas de `dashboard/web/CLAUDE.md` na seção "Espelho da prancheta e 
 - Economia estimada no CORPUS por arma mais cara + colete, lida da compra no fim do freeze;
   empate de classe divide o round; eco, força e compra cheia são agregação dessas classes, a fonte
   única de economia do projeto, sem limiar novo (8i)
+- Round Swing: regressão logística (não contagem por estado), bomba COM sinal; variação de
+  probabilidade pura, sem corte de round perdido; soma zero por evento, com o fim do round e
+  exceto morte sem matador inimigo; centrado em 1,00 e escalado pelo desvio
+  (22a, 22b, 22f, 22h, 22k)
 - Dividir pela média ou padronizar dá o mesmo rating com pesos ajustados: não "corrija" (22i)
 - Rating por lado, com kill assistida e morte trocada como componentes, na mesma escala de
   referência da calibração (22l)
