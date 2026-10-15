@@ -17,6 +17,7 @@ import subprocess
 import threading
 from functools import partial
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import pytest
 
@@ -186,8 +187,21 @@ def _abre_registrando(navegador, url):
     return ctx, pg, pedidos, erros
 
 
-def _locais(pedidos, base):
-    return sorted(p.replace(base + "/com/", "/").replace(base + "/sem/", "/") for p in pedidos)
+HOSTS_DE_FONTES = ("fonts.googleapis.com", "fonts.gstatic.com")
+
+
+def _hosts_fora_da_lista(pedidos, base):
+    """Hosts pedidos que não são o próprio site nem as fontes do Google (a URL exata das fontes muda de
+    versão entre aberturas e não é comparada). data: e blob: não saem da página."""
+    permitidos = {urlsplit(base).netloc, *HOSTS_DE_FONTES}
+    fora = set()
+    for p in pedidos:
+        u = urlsplit(p)
+        if u.scheme in ("data", "blob", "about"):
+            continue
+        if u.netloc not in permitidos:
+            fora.add(u.netloc or p)
+    return sorted(fora)
 
 
 def test_sem_grupo_aberto_nenhum_pedido_de_rede_a_mais_e_o_supabase_js_fica_fora(navegador, site_local):
@@ -203,8 +217,12 @@ def test_sem_grupo_aberto_nenhum_pedido_de_rede_a_mais_e_o_supabase_js_fica_fora
         com.click("#pr-aba-grupo")
         com.fill("#gr-nick", "nomad")
         com.wait_for_timeout(200)
-        assert _locais(pedidos_com, base) == _locais(pedidos_sem, base)
-        assert not any("supabase" in p for p in pedidos_com)
+        # sem grupo, nenhum pedido a host fora da lista (o site e as fontes do Google), nem ao Supabase
+        # nem ao arquivo do supabase-js, com e sem a configuração
+        assert _hosts_fora_da_lista(pedidos_sem, base) == []
+        assert _hosts_fora_da_lista(pedidos_com, base) == []
+        for pedidos in (pedidos_sem, pedidos_com):
+            assert not any("supabase" in p or gc.ARQUIVO_SUPABASE_JS in p for p in pedidos)
         # peso: a página com grupo leva só sala.js, grupo.js e o CSS da aba; o supabase-js não está nela
         html_sem = (site_local["raiz"] / "sem" / pagina).read_bytes()
         html_com = (site_local["raiz"] / "com" / pagina).read_bytes()
