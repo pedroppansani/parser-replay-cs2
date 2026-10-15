@@ -146,3 +146,18 @@
 | tempo mediano até o primeiro contato | Detalhes | idem |
 | "quem joga em cada jeito de jogar" (cards de estilo) | Detalhes | não está em outra aba |
 | nota "Como ler" | Detalhes | explica a tabela |
+
+- **Fase 18 (2026-10-15): definições do Pedro.** A troca é decidida pelo fato (o matador morreu por um aliado
+  dentro da janela, `_pares_de_trade`), nunca pela distância, e toda morte trocada sai de todos os tipos (cada
+  morte grava `trocada` e por quem em `mortes.parquet`). Round decidido sai de todos os tipos
+  (`LIMIAR_ROUND_GANHO` 0,95 e `LIMIAR_ROUND_PERDIDO` 0,05, chance do round logo antes do evento). "Visível para o
+  jogador" = linha de visão pelo mapa (colisão do awpy-data em `.tri`, com as smokes) + campo de visão
+  (`MEIO_FOV_GRAUS` 53,13) + não estar cego (`metrics/visao.py`; fonte e conferência contra a demo em
+  `notas/investigacoes/2026-10-15-fonte-de-visao.md`). "Não trocou" exige o matador visível na janela; "possível
+  bait" = sem engajar (sem tiro no cone `CONE_DO_TIRO_GRAUS` 6 e sem dano) e recuo acima de `RECUO_MINIMO` (120)
+  ou saída da linha de visão andando; o "atrás do aliado" saiu. "Perdeu a troca" exige engajar o matador e sai com
+  dois ou mais inimigos visíveis ao mesmo tempo ("enfrentou dois ou mais", registrado, nunca erro). "Morreu
+  isolado" virou "morreu sozinho" (nenhum aliado com o matador à vista nem a até `DIST_TROCA`). A situação conta os
+  vivos pelas mortes (o "0 contra 0" vinha das posições gravadas só nos ticks das kills); evento com 0 de dano ou
+  de cegueira não é ocorrência. `VERSAO_DAS_METRICAS` 24; só `erros_do_jogador.parquet`, `mortes.parquet` e a régua
+  mudam. Os exemplos da seção 7.2 ficam fixados em `scripts/calibracao/exemplos_fixados.json`.
