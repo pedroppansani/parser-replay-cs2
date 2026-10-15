@@ -360,6 +360,8 @@ Título "Jogadores no corpus"; aviso fixo (info) "Esta é a visão do corpus, n�
 - **Mínimos:** 10 tentativas para taxa; 3 partidas para o intervalo do rating.
 - **A conciliar com o encolhimento** na fase 7: se o encolhimento for adotado, o ponto passa a ser o valor encolhido e a faixa a do método escolhido; o componente já desenha qualquer faixa assimétrica.
 
+Método final: 95%, decidido na fase 7 (decisão 41).
+
 ### 7.4 Prancheta — ver §14 (seção separada para as fases 8 e 9).
 
 ---

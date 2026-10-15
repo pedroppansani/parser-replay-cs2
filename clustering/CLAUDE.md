@@ -3,6 +3,7 @@
 Complementa o `CLAUDE.md` da raiz e não o substitui. Uma regra por linha; (N) = nota em
 `notas/decisoes/`. Vale também para `scripts/fit_global_clusters.py`.
 
+<!-- bloco regras-clustering: inicio -->
 - Clustering é por (jogador, round), não por jogador (7)
 - As features são só COMPORTAMENTO: `damage`, `kills`, `trade_kills`, `utility_damage` e
   `survived` não voltam para a lista; `sem_contato` não é feature (o tempo até o contato nulo é
@@ -19,3 +20,4 @@ Complementa o `CLAUDE.md` da raiz e não o substitui. Uma regra por linha; (N) =
 
 - Nomes dos grupos (`cluster_names.json`): todo reajuste que renumerar os grupos exige conferir os
   nomes de novo (`py -3.12 -m scripts.fit_global_clusters --dry-run`).
+<!-- bloco regras-clustering: fim -->

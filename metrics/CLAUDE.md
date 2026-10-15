@@ -2,7 +2,7 @@
 
 Complementa o `CLAUDE.md` da raiz e não o substitui. Uma regra por linha; (N) = nota em
 `notas/decisoes/`. `metrics/tactics.py` e `metrics/annotations.py` espelham o JS: as regras deles
-estão em `dashboard/web/CLAUDE.md` e valem aqui.
+estão copiadas de `dashboard/web/CLAUDE.md` na seção "Espelho da prancheta e da anotação".
 
 ## Posição, mira e duelo
 
@@ -43,18 +43,8 @@ estão em `dashboard/web/CLAUDE.md` e valem aqui.
   espaço, segurar bomb sozinho, arma pior para o companheiro comprar); não reduza a entry (15)
 - Carrega piano e baiter são pontas de UM eixo (`sacrifice_index`), rótulo só além de ±0,5; "o time
   colheu" = venceu o round, vingou a morte dele ou matou quem ele cegou (15a)
-- Traço é comparado DENTRO da função, com o esperado do corpus; cada braço do eixo contra a
-  população da mesma função dominante (`quantis_por_funcao`); o valor absoluto fica ao lado do
-  normalizado (15c, 15e)
-- A escala dos papéis é do corpus (`archetype_reference.json`), nunca da partida (16)
-- Lurker: sem os rounds com AWP, contra a taxa esperada da função daqueles rounds (a própria função
-  lurker fica fora da régua), pelo `off_team_relativo`; abaixo de `MIN_ROUNDS_SEM_AWP` é DADO
-  INSUFICIENTE, não "não qualifica" (29, 31)
 - Rótulo de jogador: líder do time E acima do piso, com amostra mínima; suporte medido por round;
   estabilidade < 0,70 sai como "(tendência)", também na função estrutural (39)
-- O perfil por jogador é a leitura, não média de cluster: taxa sempre com bruto (`_n`, `_d`),
-  régua e amostra fraca (`_fraco`), também por lado (`_ct`, `_t`); cards de estilo pela maior
-  fração dos próprios rounds (7a)
 - Round sem contato tem tempo até o contato NULO, nunca um valor inventado (7b)
 
 ## Tempo, economia e KAST
@@ -63,9 +53,6 @@ estão em `dashboard/web/CLAUDE.md` e valem aqui.
   depois do fim do round é pós-round, com tempo positivo (8a)
 - KAST: o T é de quem teve a morte vingada; assistência por flash não é o A; sem dado novo, a
   definição não muda (8g)
-- Economia estimada no CORPUS por arma mais cara + colete, lida da compra no fim do freeze;
-  empate de classe divide o round; eco, força e compra cheia são agregação dessas classes, a fonte
-  única de economia do projeto, sem limiar novo (8i)
 
 ## Round decisivo, cards e rating
 
@@ -79,13 +66,6 @@ estão em `dashboard/web/CLAUDE.md` e valem aqui.
 - Pontuação de função: concentração ponderada pela fração de companheiros que ela supera (20c)
 - Clutch é 1vX com X ≥ 1; definição não é peso; nos cards, contagem e conversão juntas, com a
   quebra por X (22j)
-- Round Swing: regressão logística (não contagem por estado), bomba COM sinal; variação de
-  probabilidade pura, sem corte de round perdido; soma zero por evento, com o fim do round e
-  exceto morte sem matador inimigo; centrado em 1,00 e escalado pelo desvio
-  (22a, 22b, 22f, 22h, 22k)
-- Dividir pela média ou padronizar dá o mesmo rating com pesos ajustados: não "corrija" (22i)
-- Rating por lado, com kill assistida e morte trocada como componentes, na mesma escala de
-  referência da calibração (22l)
 
 ## Arremesso
 
@@ -106,10 +86,60 @@ estão em `dashboard/web/CLAUDE.md` e valem aqui.
   do round ficam de fora; "perto" só no mesmo andar (46)
 - Nada de tipo que o dado não mede (o inventário só é lido no fim do freeze: "utilidade no bolso"
   não existe nem se estima) (46)
+
+## Réguas do corpus (copiadas em `scripts/CLAUDE.md`, valem para os `fit_*`)
+
+<!-- bloco regras-fit-metricas: inicio -->
+- Traço é comparado DENTRO da função, com o esperado do corpus; cada braço do eixo contra a
+  população da mesma função dominante (`quantis_por_funcao`); o valor absoluto fica ao lado do
+  normalizado (15c, 15e)
+- A escala dos papéis é do corpus (`archetype_reference.json`), nunca da partida (16)
+- Lurker: sem os rounds com AWP, contra a taxa esperada da função daqueles rounds (a própria função
+  lurker fica fora da régua), pelo `off_team_relativo`; abaixo de `MIN_ROUNDS_SEM_AWP` é DADO
+  INSUFICIENTE, não "não qualifica" (29, 31)
+- O perfil por jogador é a leitura, não média de cluster: taxa sempre com bruto (`_n`, `_d`),
+  régua e amostra fraca (`_fraco`), também por lado (`_ct`, `_t`); cards de estilo pela maior
+  fração dos próprios rounds (7a)
+- Economia estimada no CORPUS por arma mais cara + colete, lida da compra no fim do freeze;
+  empate de classe divide o round; eco, força e compra cheia são agregação dessas classes, a fonte
+  única de economia do projeto, sem limiar novo (8i)
+- Round Swing: regressão logística (não contagem por estado), bomba COM sinal; variação de
+  probabilidade pura, sem corte de round perdido; soma zero por evento, com o fim do round e
+  exceto morte sem matador inimigo; centrado em 1,00 e escalado pelo desvio
+  (22a, 22b, 22f, 22h, 22k)
+- Dividir pela média ou padronizar dá o mesmo rating com pesos ajustados: não "corrija" (22i)
+- Rating por lado, com kill assistida e morte trocada como componentes, na mesma escala de
+  referência da calibração (22l)
 - Todo erro é de um lado só e nenhum tipo soma os dois; a régua é anônima por (lado, função), e
   os lados nunca se misturam, nem como queda (46)
 - Ponto a melhorar só acima do percentil 90 da régua e com pelo menos 2 ocorrências; custo é
   ΔWPA "pela estimativa do modelo"; `DIST_TROCA` só muda depois da calibração do Pedro (46)
+<!-- bloco regras-fit-metricas: fim -->
+
+## Espelho da prancheta e da anotação (`tactics.py`, `annotations.py`)
+
+<!-- copia de dashboard/web/CLAUDE.md#prancheta-espelho: inicio -->
+- A tática é um LOG DE OPERAÇÕES aplicado na ordem (seq, autor, id); mesclar é a união por id;
+  persistência só por `Armazem`; arquivo com formato, versão e calibração (outra é recusada); JS e
+  Python chegam ao MESMO estado; versão antiga é migrada em memória sem mudar operação (32)
+- Desfazer é só `anula`/`reativa`, do mesmo autor; nunca operação inversa por tipo; vida em PASSOS
+  (`dura_passos`); ordem de criação é a do log, sem contador próprio; granada do round liga ao
+  arremesso real, nunca por proximidade (32)
+- Reprodução é função pura do tempo (`estadoNoTempo`; no relógio, `cenaNoRelogio`): arrastar até t e
+  tocar até t dão o mesmo quadro; nada é editável durante ela (35, 42)
+- Toca no relógio só a tática com operação do formato 3 ou granada com horário; a só com passos toca
+  passo a passo; o significado de uma operação existente não muda (42)
+- Granada desenhada é desenho (anel tracejado de tela, carimbo, corpo a 100%): sem horário, fora da
+  linha do tempo e do roteiro; só "Converter em granada com horário" a torna evento (45)
+- Toda operação que entra de fora (arquivo, tática guardada, sala, ao vivo) passa por `problemaDaOperacao`, espelhada em `metrics/tactics.problemas_da_operacao`: validador único, nunca um segundo (47)
+- Operação nova da prancheta exige migração nova (`grupos.tipos_de_operacao()`, conferida contra `OPERACOES` do JS e do
+  Python); o log do grupo é o estado inicial, numa linha, seguido das operações; os tetos de uso são do servidor (47)
+<!-- copia de dashboard/web/CLAUDE.md#prancheta-espelho: fim -->
+<!-- copia de dashboard/web/CLAUDE.md#anotacao-unidade-de-jogo: inicio -->
+- Anotação guardada em unidade de jogo, com a impressão da calibração em cada traço; todo
+  redimensionamento passa por `reprojetaTudo()`, nunca redesenha do que está pintado; espaço +
+  arrastar move o mapa e nunca começa traço (23)
+<!-- copia de dashboard/web/CLAUDE.md#anotacao-unidade-de-jogo: fim -->
 
 ## Calibração do Pedro (não resolva sozinho)
 
