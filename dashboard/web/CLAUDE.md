@@ -46,6 +46,8 @@ valem lá também.
   tocar até t dão o mesmo quadro; nada é editável durante ela (35, 42)
 - Toca no relógio só a tática com operação do formato 3 ou granada com horário; a só com passos toca
   passo a passo; o significado de uma operação existente não muda (42)
+- Ponto atrasado é CALCULADO do log (`atrasosDosPontos`) e nunca guardado; desenha-se em `--aviso` com
+  "+N s" e texto equivalente; o contador de operações só aparece em "Detalhes técnicos" aberto (35, 43)
 - O round real é base travada (`origem.base_real`); editar um jogador em t corta o real dele depois
   de t e ancora o estado real em t; mover num round anda na velocidade medida; "Voltar ao real" anula
   pelo `anula` (43)
