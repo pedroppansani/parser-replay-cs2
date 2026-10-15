@@ -105,6 +105,10 @@ input[type=number] { flex: 0 0 72px; }
 .pr-lista li { padding: 4px 0; cursor: pointer; border-bottom: 1px solid var(--linha); }
 .pr-lista li:hover { background: var(--superficie-2); }
 #pr-aviso { color: var(--aviso); margin: 0; }
+/* "Detalhes técnicos": fechado por padrão; alvo de 44 px no summary, sem cor nova */
+.pr-detalhes { margin: 4px 0; }
+.pr-detalhes > summary { cursor: pointer; min-height: var(--toque); box-sizing: border-box; display: flex; align-items: center;
+                         color: var(--tinta-2); font-size: var(--t-xs); }
 #pr-historico { color: var(--apagado); font-size: 12px; }
 h3 { margin: 0 0 4px; font-size: 15px; }
 

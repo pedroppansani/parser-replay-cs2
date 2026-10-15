@@ -19,7 +19,19 @@ def test_cabecalho_volta_para_a_landing_e_para_as_partidas(contexto, pagina):
 def test_o_contador_de_operacoes_sai_da_tela_e_fica_no_exportado(contexto, pagina):
     pg = abre(contexto, pagina)
     assert pg.locator("#pr-historico").count() == 0
+    # migração autorizada pelo Pedro (fase 17): o contador existe, mas só dentro de "Detalhes técnicos".
+    # Fechado (estado padrão) ele não está visível; aberto, aparece. Quem usa a prancheta continua sem vê-lo sem pedir.
+    pg.evaluate("() => Prancheta._interno.abaDoPainel('tatica')")   # a aba onde o bloco mora, para o "invisível" não ser da aba
+    assert pg.locator("#pr-detalhes > summary").is_visible()
+    assert not pg.locator("#pr-detalhes").evaluate("e => e.open")
+    assert not pg.locator("#pr-contador").is_visible()
     assert "operações · contador" not in pg.inner_text("body")
+    pg.locator("#pr-detalhes > summary").click()
+    assert pg.locator("#pr-contador").is_visible()
+    n = pg.evaluate("() => Prancheta._interno.S.doc.operacoes.length")
+    c = pg.evaluate("() => Prancheta._interno.S.doc.contador")
+    assert pg.locator("#pr-contador").text_content() == f"{n} operações · contador {c}"
+    assert pg.locator("#pr-detalhes > summary").bounding_box()["height"] >= 44
     doc = pg.evaluate("() => Prancheta._interno.S.doc")
     assert "operacoes" in doc and "contador" in doc
 
