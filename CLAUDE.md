@@ -41,8 +41,11 @@ Uma regra por linha; o número entre parênteses é a nota em `notas/decisoes/`.
 - Cada partida grava a versão do parser (a do INTERIM, não a do código), a das métricas e o commit
   (`sujo` se havia mudança não commitada). Sobe a versão quem muda NÚMERO, com linha de histórico
   no módulo; partida sem versão é "desconhecida", não velha (27)
-- `scripts/reprocessa` não reajusta referência global por padrão (reajustar é decisão) e nunca
-  refaz os pesos do rating (28)
+- `scripts/reprocessa` nunca refaz os pesos do rating (28)
+- Ao incluir demo nova no corpus, o reajuste das referências (`archetype_reference`,
+  `economia_reference` e as outras com teste de reprodutibilidade) é obrigatório e deliberado:
+  é um passo próprio da fase, em commit próprio, com a tabela de impacto e a catraca conferida;
+  o `reprocessa` nunca reajusta sozinho (28); não se mescla demo nova sem esse passo (16, 8i)
 - `docs/` (site gerado) não vai para o repositório; o Pages é artefato do CI. Depois de mexer
   nisso: clonar do zero, rodar a suíte (teste que depende de `data/interim/` é PULADO, nunca
   quebra) e gerar o site só com o versionado (24)
@@ -57,7 +60,8 @@ Uma regra por linha; o número entre parênteses é a nota em `notas/decisoes/`.
 - O rating é implementação própria da metodologia do Rating 3.0, nunca apresentado como "o da
   HLTV" na interface, no código ou no README; o rótulo vem do resumo do módulo (22)
 - Catraca do rating (`tests/test_catraca_do_rating.py`): o patamar é o melhor valor medido e só
-  melhora; regravá-lo exige o OK do Pedro, em commit próprio com os dois números (22a)
+  melhora; regravar a catraca exige o OK do Pedro, dado no prompt da fase ou numa resposta dele, e
+  é feito em commit próprio com os dois números (22a)
 - Escada de validação: contagem exata antes de olhar o rating; print oficial casado com a partida
   pelo RATING, nunca pelo K-D (22g)
 - Comando de console (`setpos`/`setang`) só é exato depois de o Pedro conferir no jogo; até lá
@@ -115,8 +119,10 @@ Uma regra por linha; o número entre parênteses é a nota em `notas/decisoes/`.
   origem ao lado.
 - Polars e Parquet. Toda métrica devolve `(per_round, summary)`; não troque o per_round pelo
   agregado.
-- Uma branch por fase; um commit por passo, com a suíte passando; meça antes e depois. Merge só
-  com a suíte inteira e o CI verdes; depois, push e relatório com o hash do merge.
+- Uma branch por fase; um commit por item, com a suíte verde; meça antes e depois. Merge só com a
+  suíte inteira e o CI verdes, e sem confirmação só quando o prompt da fase autoriza por escrito;
+  sem essa autorização, pare antes do merge e traga o relatório ao Pedro. Depois do merge, push e
+  relatório com o hash do merge.
 - Teste existente não muda sem o Pedro aprovar.
 - Ponto de calibração é do Pedro: não resolva nenhum sozinho, pergunte. Cada `CLAUDE.md` de pasta
   lista os seus; o histórico está em `notas/calibracao.md`.
