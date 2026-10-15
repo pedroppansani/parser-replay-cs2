@@ -22,7 +22,7 @@
   (não vai para o endereço), e não o seletor de base que a decisão 30 proíbe. A aba Perfil fica
   como estava antes da fase 7.
 - **Entre partidas**, só em `jogadores.html` (o "lugar separado" da decisão 30): por steamid, razão
-  das somas, intervalo por bootstrap das partidas (semente fixa) e encolhimento para a média da
+  das somas, intervalo de 95% por bootstrap das partidas (semente fixa) e encolhimento para a média da
   função com peso m / (m + k), k por métrica estimado no corpus (variância dentro / entre jogadores).
   Sem variação entre jogadores (k indefinido), a página diz que o corpus não separa ninguém.
 - Rótulos das taxas do perfil em `metrics/player_profile.ROTULOS_DAS_TAXAS`, para as duas páginas.

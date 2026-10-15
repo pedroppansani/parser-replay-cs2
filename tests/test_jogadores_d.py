@@ -150,3 +150,16 @@ def test_filtro_sem_dado_mostra_o_vazio(navegador, tmp_path, dados):
         assert pg._erros == []
     finally:
         pg.close()
+
+
+def test_a_tela_diz_o_metodo_do_intervalo(navegador, tmp_path, dados):
+    """Fase 17 (resposta do Pedro): fica o intervalo de 95% da fase 7 (decisão 41), e a tela diz qual é, na
+    legenda "Como ler" embaixo das barras; o percentil do JS é o mesmo (2,5% e 97,5%)."""
+    from scripts.build_jogadores import WEB
+    pg = _abre(navegador, tmp_path, dados)
+    try:
+        assert pg.is_visible("#como-ler") and "intervalo de 95%" in pg.inner_text("#como-ler")
+    finally:
+        pg.close()
+    js = (WEB / "jogadores.html").read_text(encoding="utf-8")
+    assert "Math.floor(0.025 * vs.length)" in js and "Math.ceil(0.975 * vs.length)" in js

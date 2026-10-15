@@ -309,3 +309,78 @@ entram aqui quando uma decisão depende delas.
   migração, as outras bastam: rode `select grupos.limpa_salas_antigas();` no SQL Editor de vez em
   quando.
 - **Custo de deixar como está:** nenhum. Sem os passos, o site continua sem o botão de grupo.
+
+## 11. Leitor de tela na prancheta: o teste no NVDA (fase 17)
+
+- **Origem:** fase 17. A prancheta (`dashboard/web/tactics.js`, `tactics.html`) já tem as fichas do banco
+  como botões com nome e estado (`aria-label`, `aria-pressed`), os marcos de passo com nome, o resumo do
+  mapa em texto (`#pr-mapa-resumo`, a descrição do canvas), as abas do painel com `role=tab` e o
+  cabeçote da linha do tempo como `slider`. Eu conferi na **árvore de acessibilidade do Chrome**
+  (Playwright, `Accessibility.getFullAXTree`, 2026-10-15): os nomes entre aspas abaixo são os que a
+  árvore mostra. A árvore não diz o que o NVDA fala de fato nem em que ordem; isso só o teste mostra.
+- **Pergunta:** o NVDA fala o que a árvore promete? Em cada passo, o que você ouviu?
+- **O que a árvore mostrou:**
+  - O canvas é uma imagem chamada "Mapa da prancheta", com a descrição "Às 1:55: Nenhum jogador no
+    mapa."; com a ficha CT 1 no centro, "Às 1:55: 1 jogador no mapa: CT 1 em Middle.". Ele não entra
+    no Tab (é imagem): o leitor chega nele pelas setas ou pela tecla G.
+  - Ordem do Tab: os 5 links do topo, "MAPA" (caixa de combinação, "Mirage"), as 10 ferramentas,
+    "Reproduzir a tática passo a passo", os 3 botões de zoom, "Mapa em tela cheia (F)", "Atalhos (?)",
+    "Passo 1, 1:55", o cabeçote "Horário do round" (slider, valor "1:55"), "1:55" (dica "Ir para
+    1:55"), "Nota: Passo 1", a aba "JOGADORES" (selecionada) e as 10 fichas, de "CT 1: colocar no
+    mapa" a "TR 5: colocar no mapa", todas "não pressionado".
+  - Ficha pelo teclado: o 1º Enter muda o nome para "CT 1, pronta: clique no mapa, ou Enter de novo
+    para pôr no centro" (pressionado); o 2º põe a peça no centro e o nome vira "CT 1, no mapa:
+    selecionar" (não pressionado). A dica de estado (região `status`, educada) passa a "CT 1
+    selecionado · clique no mapa para traçar o caminho · …".
+  - Cabeçote: seta para a direita anda 1 s ("1:54"), Shift+seta 5 s, Home volta a "1:55" e End vai a
+    "0:00"; o resumo do mapa acompanha ("Às 1:54: …").
+  - **O ponto que a árvore não resolve:** as fichas respondem a Enter/Espaço pelo `keydown` e ao mouse
+    pelo `pointerup`, mas não ao evento `click` sozinho (conferi: `click()` não arma a ficha). No modo
+    de navegação o NVDA ativa o botão pelo clique do próprio Chrome, e não pela tecla; se esse clique
+    não gerar os eventos de ponteiro, o Enter na ficha não faz nada até você trocar para o modo de
+    foco (NVDA+Espaço). O passo 7 testa os dois.
+- **Antes de começar:** a tecla NVDA é o Insert (ou o Caps Lock, se você escolher na instalação).
+  NVDA+Espaço troca entre o modo de navegação (as letras pulam pela página: H título, G gráfico, B
+  botão) e o modo de foco (as letras vão para a página: N cria passo). O NVDA toca um som diferente
+  em cada troca. O papel pode vir com outra palavra (por exemplo "botão de alternância" ou "botão
+  alternar"): anote a palavra que ouvir.
+- **Os passos (10):**
+  1. **Instale:** baixe em [nvaccess.org/download](https://www.nvaccess.org/download/) e instale com as
+     opções padrão (português vem sozinho se o Windows estiver em português). Anote a versão (NVDA+N →
+     Ajuda → Sobre) e a do Chrome (`chrome://version`).
+  2. **Gere e abra:** na raiz do repositório, `py -3.12 -m scripts.build_site`; com o NVDA ligado
+     (Ctrl+Alt+N), abra `docs/prancheta_de_mirage.html` no Chrome. **Deve ouvir:** "Prancheta tática"
+     (o título da aba, seguido de "Google Chrome").
+  3. **Título e mapa:** aperte H. **Deve ouvir:** "PRANCHETA · MAPA Mirage", título nível 1 (pode
+     soletrar as maiúsculas). Aperte G. **Deve ouvir:** "Mapa da prancheta, gráfico", talvez seguido de
+     "Às 1:55: Nenhum jogador no mapa."; se não vier junto, aperte seta para baixo e o resumo deve vir
+     como texto.
+  4. **Marco do passo:** aperte Tab. **Deve ouvir:** "Passo 1, 1:55, botão".
+  5. **Cabeçote:** aperte Tab. **Deve ouvir:** "Horário do round, controle deslizante, 1:55" (o NVDA
+     entra sozinho no modo de foco). Aperte seta para a direita duas vezes: "1:54", "1:53". Aperte
+     Home: "1:55". Anote se ele fala o horário ("1:54") ou um número ("1").
+  6. **Abas:** aperte Tab até "JOGADORES, guia, selecionado" (passa por "1:55, botão" e "Nota: Passo
+     1, editar"). Aperte seta para a direita. **Deve ouvir:** "GRANADAS, guia, selecionado". Seta para
+     a esquerda volta a "JOGADORES".
+  7. **Ficha:** aperte Tab. **Deve ouvir:** "CT 1: colocar no mapa, botão (de alternância), não
+     pressionado". Aperte Enter **sem** trocar de modo e anote o que ouviu. Se o nome não mudou, aperte
+     NVDA+Espaço (modo de foco) e Enter de novo. **Deve ouvir:** "CT 1, pronta: clique no mapa, ou Enter
+     de novo para pôr no centro, pressionado". Anote em qual dos dois modos funcionou.
+  8. **Pôr no centro:** ainda no modo de foco, aperte Enter de novo. **Deve ouvir:** "CT 1, no mapa:
+     selecionar, não pressionado" e, logo depois ou um pouco mais tarde, "CT 1 selecionado · clique no
+     mapa para traçar o caminho · …" (a dica de estado).
+  9. **Resumo do mapa:** aperte NVDA+Espaço (volta ao modo de navegação) e depois G (ou Shift+G).
+     **Deve ouvir:** "Mapa da prancheta, gráfico" com "Às 1:55: 1 jogador no mapa: CT 1 em Middle."
+     (junto, ou com a seta para baixo).
+  10. **Novo passo:** Tab até a ficha CT 1, NVDA+Espaço (modo de foco) e aperte N. Depois NVDA+Espaço
+      (modo de navegação), G para voltar ao mapa e Tab duas vezes. **Deve ouvir:** "Passo 1, 1:55, botão"
+      e "Passo 2, 1:53, botão".
+- **O que anotar (por passo, uma linha basta):** o número do passo, o que ouviu (as palavras, mesmo que
+  incompletas) e, se não ouviu o esperado, o que veio no lugar: nada, o nome sem o estado
+  ("pressionado"), o estado sem o nome, a mensagem repetida, ou o NVDA falando a letra ("n") em vez de
+  agir. No 7, diga em qual modo o Enter funcionou. No 5, se ele leu o horário ou o número. No 8, se a
+  dica de estado foi lida e se cortou alguma coisa. Com a versão do NVDA e do Chrome (passo 1), isso me
+  basta para corrigir.
+- **Custo de deixar como está:** o que a árvore mostra está conferido; o que o NVDA fala, não. Quem usa
+  leitor de tela pode não conseguir pôr uma peça no mapa (o ponto do passo 7) sem que a gente saiba.
+- **Fora do computador:** nada; é tudo no Windows, com o fone ou o som ligado.
