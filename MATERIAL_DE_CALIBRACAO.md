@@ -797,7 +797,7 @@ Gerado por `py -3.12 -m scripts.calibracao.erros_do_jogador` (fase 12, decisão 
 | Dano de utilidade no time | 195 | 28 | 28 | 0 | abaixo do limiar da partida: 157; round de economia do time: 7; depois do fim do round: 3 |
 | Utilidade no bolso | não criado | — | — | — | o inventário na hora da morte não existe no dado (decisão 46) |
 
-**Mudança da fase 15 (decisão 46).** "Flash no time" e "dano de utilidade no time" eram somas da partida (CT e TR juntos); passam a ser POR LADO, com o mesmo limiar (`SEG_CEGUEIRA_ALIADO` 27 s e `DANO_UTILIDADE_ALIADO` 20) aplicado a cada lado. Ocorrências que seguem na tela (depois dos filtros), no corpus de 52 jogos: flash no time 880 antes, 530 depois; dano de utilidade no time 32 antes, 28 depois (o total detectado não muda: 3091 e 195). Os 10 exemplos sorteados abaixo NÃO foram refeitos.
+**Mudança da fase 15 (decisão 46).** "Flash no time" e "dano de utilidade no time" eram somas da partida (CT e TR juntos); passam a ser POR LADO, com o mesmo limiar (`SEG_CEGUEIRA_ALIADO` 27 s e `DANO_UTILIDADE_ALIADO` 20) aplicado a cada lado. Ocorrências que seguem na tela (depois dos filtros), no corpus de 52 jogos: flash no time 880 antes, 530 depois; dano de utilidade no time 32 antes, 28 depois (o total detectado não muda: 3091 e 195). Na fase 17 os exemplos de "flash no time" e "dano de utilidade no time" foram conferidos contra as regras de hoje: os que seguem sendo ocorrência ficaram, e só os que deixaram de ser foram sorteados de novo (marcados "(substituído na fase 17)" na coluna motivo).
 
 Ordem dos níveis (a primeira regra que se aplica decide): 1) round de eco ou pistola do time, ou time guardando arma (evento depois do plant num round que o time perdeu): fora; 2) morreu isolado sendo lurker: depende; 3) primeira morte sem troca sendo entry: depende; 4) morreu isolado ou primeira morte do AWPer no duelo de abertura: depende; 5) função só tendência: o motivo diz que a função não é firme; 6) não trocou, possível bait, perdeu a troca, flash no time e dano de utilidade no time: explícito; 7) o resto: depende. Por isso "morreu isolado" e "primeira morte sem troca" saem sempre como "depende da tática" (só o motivo muda).
 
@@ -836,8 +836,8 @@ Mediana 976,2, p75 1605,7, p90 2296,5, p95 2697,5.
 | Perdeu a troca | 812 | 812 | 812 |
 | Morreu isolado | 2627 | 2066 | 1568 |
 | Primeira morte sem troca | 691 | 691 | 691 |
-| Flash no time | 880 | 880 | 880 |
-| Dano de utilidade no time | 32 | 32 | 32 |
+| Flash no time | 530 | 530 | 530 |
+| Dano de utilidade no time | 28 | 28 | 28 |
 
 #### `S_DUELO` = 2 s
 
@@ -868,8 +868,8 @@ Mediana 4,8, p75 19,8, p90 46,7, p95 63,2.
 | Perdeu a troca | 812 | 812 | 812 |
 | Morreu isolado | 2066 | 2066 | 2066 |
 | Primeira morte sem troca | 691 | 691 | 691 |
-| Flash no time | 880 | 880 | 880 |
-| Dano de utilidade no time | 32 | 32 | 32 |
+| Flash no time | 530 | 530 | 530 |
+| Dano de utilidade no time | 28 | 28 | 28 |
 
 #### `SEG_CEGUEIRA_ALIADO` = 27 s
 
@@ -899,8 +899,8 @@ Mediana 8,7, p75 16,9, p90 27,1, p95 35,2.
 | Perdeu a troca | 812 | 812 | 812 |
 | Morreu isolado | 2066 | 2066 | 2066 |
 | Primeira morte sem troca | 691 | 691 | 691 |
-| Flash no time | 2534 | 880 | 1257 |
-| Dano de utilidade no time | 32 | 32 | 32 |
+| Flash no time | 2151 | 530 | 778 |
+| Dano de utilidade no time | 28 | 28 | 28 |
 
 #### `SEG_CEGUEIRA_ALIADO_UMA` = 4,8 s
 
@@ -929,8 +929,8 @@ Mediana 1,6, p75 3,2, p90 4,8, p95 5,8.
 | Perdeu a troca | 812 | 812 | 812 |
 | Morreu isolado | 2066 | 2066 | 2066 |
 | Primeira morte sem troca | 691 | 691 | 691 |
-| Flash no time | 1465 | 880 | 1026 |
-| Dano de utilidade no time | 32 | 32 | 32 |
+| Flash no time | 1265 | 530 | 714 |
+| Dano de utilidade no time | 28 | 28 | 28 |
 
 #### `DANO_UTILIDADE_ALIADO` = 20 de dano
 
@@ -959,8 +959,8 @@ Mediana 0,0, p75 1,0, p90 10,0, p95 19,0.
 | Perdeu a troca | 812 | 812 | 812 |
 | Morreu isolado | 2066 | 2066 | 2066 |
 | Primeira morte sem troca | 691 | 691 | 691 |
-| Flash no time | 880 | 880 | 880 |
-| Dano de utilidade no time | 18 | 32 | 0 |
+| Flash no time | 530 | 530 | 530 |
+| Dano de utilidade no time | 15 | 28 | 0 |
 
 #### `MIN_GRANADAS_NO_BOLSO`: não criada
 
@@ -1134,11 +1134,11 @@ Frase de como melhorar: "Avise antes de soltar e prefira a pop flash por cima do
 | 1 | match_05 | 16 | 1:01 | lilpeepfan- | dorfen | — | — | — | — | 3 contra 1 | 4,9 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_05.html#replay?round=16&t=60.81) | sim / não / depende da tática | sim / reescrever |
 | 2 | match_09 | 17 | 0:09 | Magnojezzz | zzeraj | — | — | — | — | 0 contra 0 | 6,1 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_09.html#replay?round=17&t=8.81) | sim / não / depende da tática | sim / reescrever |
 | 3 | match_31 | 3 | 0:13 | molodoy | YEKINDAR | — | — | — | — | 0 contra 0 | 2,0 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_31.html#replay?round=3&t=12.53) | sim / não / depende da tática | sim / reescrever |
-| 4 | match_31 | 14 | 1:10 | KSCERATO | FalleN | — | — | — | — | 4 contra 2 | 3,2 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_31.html#replay?round=14&t=69.72) | sim / não / depende da tática | sim / reescrever |
+| 4 | match_37 | 18 | 0:10 | w0nderful | Aleksib | — | — | — | — | 0 contra 0 | 1,9 | — | explícito | a flash dele cegou o próprio time (substituído na fase 17) | [abrir](docs/match_37.html#replay?round=18&t=9.8) | sim / não / depende da tática | sim / reescrever |
 | 5 | match_37 | 21 | 0:08 | chopper | magixx | — | — | — | — | 0 contra 0 | 6,2 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_37.html#replay?round=21&t=8.22) | sim / não / depende da tática | sim / reescrever |
-| 6 | match_38 | 19 | 0:08 | b1t | iM | — | — | — | — | 0 contra 0 | 3,8 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_38.html#replay?round=19&t=7.59) | sim / não / depende da tática | sim / reescrever |
-| 7 | match_42 | 2 | 1:06 | m0NESY | NiKo | — | — | — | — | 5 contra 4 | 3,2 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_42.html#replay?round=2&t=66.19) | sim / não / depende da tática | sim / reescrever |
-| 8 | match_42 | 36 | 0:10 | torzsi | Spinx | — | — | — | — | 0 contra 0 | 4,8 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_42.html#replay?round=36&t=9.91) | sim / não / depende da tática | sim / reescrever |
+| 6 | match_42 | 2 | 1:06 | m0NESY | NiKo | — | — | — | — | 5 contra 4 | 3,2 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_42.html#replay?round=2&t=66.19) | sim / não / depende da tática | sim / reescrever |
+| 7 | match_42 | 36 | 0:10 | torzsi | Spinx | — | — | — | — | 0 contra 0 | 4,8 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_42.html#replay?round=36&t=9.91) | sim / não / depende da tática | sim / reescrever |
+| 8 | match_44 | 5 | 0:16 | apEX | mezii | — | — | — | — | 4 contra 4 | 7,7 | — | explícito | a flash dele cegou o próprio time (substituído na fase 17) | [abrir](docs/match_44.html#replay?round=5&t=15.98) | sim / não / depende da tática | sim / reescrever |
 | 9 | match_50 | 9 | 0:17 | NiKo | kyousuke | — | — | — | — | 0 contra 0 | 4,4 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_50.html#replay?round=9&t=17.34) | sim / não / depende da tática | sim / reescrever |
 | 10 | match_51 | 6 | 0:30 | kyxsan | NiKo | — | — | — | — | 0 contra 0 | 5,2 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_51.html#replay?round=6&t=29.53) | sim / não / depende da tática | sim / reescrever |
 
@@ -1150,15 +1150,15 @@ Frase de como melhorar: "Confira onde o time está antes de soltar HE ou molotov
 
 | # | partida | round | relógio | jogador | aliado | matador | dist. ao aliado | dist. jogador–matador | dist. aliado–matador | situação | valor | ΔWPA | nível | motivo | replay | É erro mesmo? | A frase serve? |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | match_04 | 17 | 0:19 | nedorufe | L1nkero | — | — | — | — | 5 contra 4 | 9,0 | — | explícito | a granada dele feriu o próprio time | [abrir](docs/match_04.html#replay?round=17&t=18.62) | sim / não / depende da tática | sim / reescrever |
-| 2 | match_20 | 18 | 0:20 | TeSeS | kyousuke | — | — | — | — | 4 contra 4 | 38,0 | — | explícito | a granada dele feriu o próprio time | [abrir](docs/match_20.html#replay?round=18&t=20.05) | sim / não / depende da tática | sim / reescrever |
-| 3 | match_20 | 25 | 0:10 | FalleN | YEKINDAR | — | — | — | — | 0 contra 0 | 26,0 | — | explícito | a granada dele feriu o próprio time | [abrir](docs/match_20.html#replay?round=25&t=10.33) | sim / não / depende da tática | sim / reescrever |
-| 4 | match_24 | 18 | 0:35 | chopper | zont1x | — | — | — | — | 0 contra 0 | 28,0 | — | explícito | a granada dele feriu o próprio time | [abrir](docs/match_24.html#replay?round=18&t=35.28) | sim / não / depende da tática | sim / reescrever |
-| 5 | match_33 | 10 | 1:36 | ZywOo | flameZ | — | — | — | — | 0 contra 0 | 22,0 | — | explícito | a granada dele feriu o próprio time | [abrir](docs/match_33.html#replay?round=10&t=95.59) | sim / não / depende da tática | sim / reescrever |
-| 6 | match_39 | 11 | 1:28 | chopper | donk | — | — | — | — | 4 contra 3 | 24,0 | — | explícito | a granada dele feriu o próprio time | [abrir](docs/match_39.html#replay?round=11&t=88.17) | sim / não / depende da tática | sim / reescrever |
-| 7 | match_39 | 18 | 0:10 | magixx | chopper | — | — | — | — | 0 contra 0 | 45,0 | — | explícito | a granada dele feriu o próprio time | [abrir](docs/match_39.html#replay?round=18&t=9.61) | sim / não / depende da tática | sim / reescrever |
-| 8 | match_40 | 27 | 1:14 | b1t | iM | — | — | — | — | 2 contra 2 | 17,0 | — | explícito | a granada dele feriu o próprio time | [abrir](docs/match_40.html#replay?round=27&t=73.64) | sim / não / depende da tática | sim / reescrever |
-| 9 | match_40 | 30 | 0:28 | b1t | w0nderful | — | — | — | — | 0 contra 0 | 7,0 | — | explícito | a granada dele feriu o próprio time | [abrir](docs/match_40.html#replay?round=30&t=28.34) | sim / não / depende da tática | sim / reescrever |
+| 1 | match_20 | 18 | 0:20 | TeSeS | kyousuke | — | — | — | — | 4 contra 4 | 38,0 | — | explícito | a granada dele feriu o próprio time | [abrir](docs/match_20.html#replay?round=18&t=20.05) | sim / não / depende da tática | sim / reescrever |
+| 2 | match_20 | 25 | 0:10 | FalleN | YEKINDAR | — | — | — | — | 0 contra 0 | 26,0 | — | explícito | a granada dele feriu o próprio time | [abrir](docs/match_20.html#replay?round=25&t=10.33) | sim / não / depende da tática | sim / reescrever |
+| 3 | match_22 | 10 | 0:12 | woxic | XANTARES | — | — | — | — | 0 contra 0 | 27,0 | — | explícito | a granada dele feriu o próprio time (substituído na fase 17) | [abrir](docs/match_22.html#replay?round=10&t=11.86) | sim / não / depende da tática | sim / reescrever |
+| 4 | match_24 | 14 | 1:08 | chopper | donk | — | — | — | — | 5 contra 4 | 10,0 | — | explícito | a granada dele feriu o próprio time (substituído na fase 17) | [abrir](docs/match_24.html#replay?round=14&t=67.5) | sim / não / depende da tática | sim / reescrever |
+| 5 | match_24 | 18 | 0:35 | chopper | zont1x | — | — | — | — | 0 contra 0 | 28,0 | — | explícito | a granada dele feriu o próprio time | [abrir](docs/match_24.html#replay?round=18&t=35.28) | sim / não / depende da tática | sim / reescrever |
+| 6 | match_30 | 11 | 0:34 | yuurih | KSCERATO | — | — | — | — | 0 contra 0 | 22,0 | — | explícito | a granada dele feriu o próprio time (substituído na fase 17) | [abrir](docs/match_30.html#replay?round=11&t=34.5) | sim / não / depende da tática | sim / reescrever |
+| 7 | match_33 | 10 | 1:36 | ZywOo | flameZ | — | — | — | — | 0 contra 0 | 22,0 | — | explícito | a granada dele feriu o próprio time | [abrir](docs/match_33.html#replay?round=10&t=95.59) | sim / não / depende da tática | sim / reescrever |
+| 8 | match_39 | 11 | 1:28 | chopper | donk | — | — | — | — | 4 contra 3 | 24,0 | — | explícito | a granada dele feriu o próprio time | [abrir](docs/match_39.html#replay?round=11&t=88.17) | sim / não / depende da tática | sim / reescrever |
+| 9 | match_39 | 18 | 0:10 | magixx | chopper | — | — | — | — | 0 contra 0 | 45,0 | — | explícito | a granada dele feriu o próprio time | [abrir](docs/match_39.html#replay?round=18&t=9.61) | sim / não / depende da tática | sim / reescrever |
 | 10 | match_50 | 10 | 0:25 | Brollan | Spinx | — | — | — | — | 0 contra 0 | 27,0 | — | explícito | a granada dele feriu o próprio time | [abrir](docs/match_50.html#replay?round=10&t=25.45) | sim / não / depende da tática | sim / reescrever |
 
 ### 7.3 Sua resposta
