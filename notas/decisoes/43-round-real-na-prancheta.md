@@ -48,3 +48,11 @@
   soltar, o ponto de chegada mostra "chega 1:31", e a linha de dica diz "Spinx anda até o ponto:
   chega 1:31, 2,4 s depois de agora". Sem isso, como a peça continua no lugar em t, pareceria
   que o arrasto não funcionou. O aviso some na próxima ação (clique, cabeçote ou desfazer).
+- **Ponto-chave atrasado (fase 17).** O atraso é CALCULADO, nunca guardado (decisão 35): para cada
+  ponto, a chegada possível é a do ponto anterior mais a distância dividida pela velocidade medida
+  da função (no modo do ponto, `velocidade`); se o horário do ponto vem antes (por pelo menos
+  `LIMIAR_ATRASO_S`, 0,05 s), o atraso é a diferença. Fica fora do log, do JSON da página e do
+  formato 3. Na linha do tempo o ponto é preenchido em `--aviso` (nunca `--erro`), leva "+2,3 s" ao
+  lado e o mesmo em texto (`aria-label`, `title` e linha do roteiro). Pontos do round real
+  (operações até `base_real`) são fato e não ganham aviso. É a mesma conta de `chegadaPossivel`
+  (aviso da granada), agora por segmento.

@@ -195,6 +195,9 @@ h3 { margin: 0 0 4px; font-size: 15px; }
 /* granada: o glifo na caixa escura de 26 px, no horário da soltura (§14) */
 .pr-marca.granada { width: 26px; height: 26px; border: 1px solid var(--borda); border-radius: var(--r-sm); background: var(--contorno); }
 .pr-marca-glifo { display: block; width: 24px; height: 24px; pointer-events: none; }
+.pr-marca.atrasado { background: var(--aviso); border-color: var(--tinta); }   /* ponto atrasado: calculado, nunca guardado (44) */
+.pr-atraso { position: absolute; top: 50%; transform: translate(11px, -50%); font-family: var(--f-num); font-size: 10px;
+             line-height: 1; color: var(--aviso); white-space: nowrap; pointer-events: none; }
 .pr-marca.arrastando { outline: 2px solid var(--foco); cursor: grabbing; }
 .pr-marco { min-width: 18px; height: 16px; border-radius: 4px; font-size: 10px; line-height: 12px; color: var(--fundo);
             background: var(--tinta); cursor: pointer; }
