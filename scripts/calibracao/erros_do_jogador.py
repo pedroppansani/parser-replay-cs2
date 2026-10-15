@@ -394,8 +394,8 @@ def secao_exemplos(oc: pl.DataFrame) -> list[str]:
 NOTA_FASE15 = (
     '**Mudança da fase 15 (decisão 46).** "Flash no time" e "dano de utilidade no time" eram somas da partida (CT e TR juntos); passam a ser POR LADO, com '
     'o mesmo limiar (`SEG_CEGUEIRA_ALIADO` 27 s e `DANO_UTILIDADE_ALIADO` 20) aplicado a cada lado. Ocorrências que seguem na tela (depois dos filtros), no'
-    ' corpus de 52 jogos: flash no time 880 antes, 530 depois; dano de utilidade no time 32 antes, 28 depois (o total detectado não muda: 3091 e 195). Os 1'
-    '0 exemplos sorteados abaixo NÃO foram refeitos.'
+    ' corpus de 52 jogos: flash no time 880 antes, 530 depois; dano de utilidade no time 32 antes, 28 depois (o total detectado não muda: 3091 e 195). Na fase'
+    ' 17 os exemplos de "flash no time" e "dano de utilidade no time" foram conferidos contra as regras de hoje: os que seguem sendo ocorrência ficaram, e só os que deixaram de ser foram sorteados de novo (marcados "(substituído na fase 17)" na coluna motivo).'
     '')
 
 
