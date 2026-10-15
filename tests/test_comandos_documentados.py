@@ -11,8 +11,18 @@ COMANDO = re.compile(r"(?:py -3\.1\d|python)(?: -W ignore)? -m ((?:scripts|pesqu
                      r"(?:\.[a-z_0-9]+)+)")
 
 
+FORA = {".git", ".claude", ".venv", "venv", "node_modules", ".pytest_cache", "docs", "preview"}
+
+
+def _claude_mds():
+    """A raiz e os `CLAUDE.md` de pasta (as regras distribuídas da fase 14)."""
+    for f in sorted(RAIZ.rglob("CLAUDE.md")):
+        if not any(p in FORA for p in f.relative_to(RAIZ).parts[:-1]):
+            yield f
+
+
 def _documentos():
-    yield RAIZ / "CLAUDE.md"
+    yield from _claude_mds()
     yield RAIZ / "README.md"
     yield from sorted((RAIZ / "notas").rglob("*.md"))
     yield from (p for p in sorted(RAIZ.glob("*.md")) if p.name not in ("CLAUDE.md", "README.md"))
