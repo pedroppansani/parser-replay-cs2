@@ -69,7 +69,8 @@ não coube no comportamento do main, valeu o comportamento, e fica registrado aq
   índice de 0 a 100; vale o texto do Python (`D.dica_mira`).
 - **jogadores.html:** a forma é a do §7.3, o método é o da fase 7 (intervalo de 95% por reamostragem das
   partidas, ponto encolhido). Mínimos: taxa com menos de 10 tentativas só como bruto; menos de 3 partidas
-  sem faixa, em toda métrica (não só no rating). Reconciliar com os 90% do documento é decisão pendente.
+  sem faixa, em toda métrica (não só no rating). Os 90% do documento ficaram para trás: o Pedro decidiu, na fase 17
+  (2026-10-15), que fica o de 95% da fase 7 (decisão 41), e a legenda "Como ler" da página diz qual é.
 - **Prancheta:** o roteiro fica AO LADO da linha do tempo (fase 8), não embaixo. As marcas de ação da linha
   do tempo ficam menores que 44 px (com 44 px elas se sobrepõem e o clique cai na vizinha). "Detalhes
   técnicos" com a contagem de operações não entrou: a auditoria 5.3 tirou o contador da tela (há teste).
