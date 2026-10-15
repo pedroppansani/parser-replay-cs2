@@ -25,8 +25,6 @@ def _pixel_da_peca(pg, pid):
 
 
 def _com_peca(pg):
-    # o caminho por clique está pronto e desligado (CAMINHO_POR_CLIQUE): liga aqui
-    interno(pg, "(I.ligaCaminhoPorClique(true), 0)")
     arrasta_do_banco(pg, "ct", "1", 0.5, 0.5)
     pid = interno(pg, "Object.keys(S.estado.pecas)[0]")
     pg.keyboard.press("Escape"); pg.keyboard.press("Escape")
@@ -123,19 +121,6 @@ def test_botao_direito_fora_do_marco_grava_yaw_no_horario(contexto, pagina):
     (op,) = _ops(pg, "cria_caminho")
     assert op["pontos"][0]["t"] == 12 and op["pontos"][0]["yaw"] is not None
     assert _ops(pg, "gira_peca") == []
-
-
-def test_desligado_o_clique_continua_movendo_no_horario_do_cabecote(contexto, pagina):
-    pg = abre(contexto, pagina)
-    interno(pg, "(I.ligaCaminhoPorClique(false), 0)")      # fase 8a: o padrão agora é ligado
-    arrasta_do_banco(pg, "ct", "1", 0.5, 0.5)
-    pid = interno(pg, "S.sel.id")
-    assert "tracando_caminho" not in interno(pg, "Object.keys(I.ESTADOS)")
-    interno(pg, "(I.defineTempo(15), 0)")
-    interno(pg, f"(S.sel = {{tipo: 'peca', id: '{pid}'}}, 0)")
-    pg.mouse.click(*no_mapa(pg, 0.6, 0.55))
-    (op,) = _ops(pg, "cria_caminho")
-    assert op["pontos"][0]["t"] == 15 and interno(pg, "S.caminho") is None
 
 
 def test_funcao_muda_o_rotulo_e_a_velocidade_padrao_do_caminho(contexto, pagina):

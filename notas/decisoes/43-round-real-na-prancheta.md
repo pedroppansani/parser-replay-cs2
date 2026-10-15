@@ -56,3 +56,10 @@
   lado e o mesmo em texto (`aria-label`, `title` e linha do roteiro). Pontos do round real
   (operações até `base_real`) são fato e não ganham aviso. É a mesma conta de `chegadaPossivel`
   (aviso da granada), agora por segmento.
+- **Modo desligado do clique removido (fase 17, decisão do Pedro).** O interruptor
+  `CAMINHO_POR_CLIQUE` (nascido na 8.2, ligado na 8a) e a função de teste `ligaCaminhoPorClique`
+  saíram do `tactics.js`; o modo ligado (clicar na peça traça o caminho; clicar no vazio com a peça
+  selecionada começa um caminho, sem teletransporte) é o único. Saiu junto, só ele, o teste
+  `test_desligado_o_clique_continua_movendo_no_horario_do_cabecote` (escrito na fase 8 para um modo
+  que deixou de existir para quem usa). O helper `_com_peca` do teste do tempo perdeu a linha que
+  chamava o interruptor, sem mudar o que verifica. Nenhum outro teste mudou de comportamento.

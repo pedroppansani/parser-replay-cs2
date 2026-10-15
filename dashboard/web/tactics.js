@@ -1436,9 +1436,8 @@ var Prancheta = (function () {
 
   // TRAÇAR CAMINHO POR CLIQUE (8.2, ligado na 8a por decisão do Pedro): clicar
   // na peça, sem arrastar, entra em "traçando caminho"; segurar e arrastar move
-  // livremente. O mover por clique no vazio deixou de existir. Desligado (só os
-  // testes antigos do caminho usam o interruptor), volta o comportamento da 8.2.
-  var CAMINHO_POR_CLIQUE = true;
+  // livremente. O mover por clique no vazio deixou de existir (o modo desligado
+  // foi removido na fase 17, decisão 43).
 
   function iniciaCaminho(pid) {
     var q = quadro().pecas[pid];
@@ -1894,21 +1893,14 @@ var Prancheta = (function () {
       dica: function (c) { return "Buscar " + c.arma + " · clique onde ela deve cair"; } }
   };
 
-  // os textos com o caminho por clique ligado (ver CAMINHO_POR_CLIQUE)
+  // os textos do caminho por clique
   var ESTADO_TRACANDO = { entra: "clique numa peça, sem arrastar",
     clique: "acrescenta um ponto ao caminho (arrastar desenha à mão); Enter ou duplo clique conclui (um cria_caminho); Backspace tira o último ponto; Esc cancela o trecho",
     dica: function (c) { return c.peca + " · clique para marcar o caminho · arraste para desenhar à mão · Enter conclui · Esc cancela"; } };
   var PECA_COM_CAMINHO = { entra: "Esc durante um caminho, ou o nome dela no banco",
     clique: "no vazio: começa um caminho até lá (não teleporta: teleportar é arrastar); em outra peça: seleciona a outra; botão direito: vira para o ponto no horário do cabeçote",
     dica: function (c) { return c.peca + " selecionado · clique no mapa para traçar o caminho · arraste a peça para mover · botão direito para virar · 1–4 joga granada"; } };
-  var PECA_SEM_CAMINHO = ESTADOS.peca_selecionada;
-  if (CAMINHO_POR_CLIQUE) { ESTADOS.tracando_caminho = ESTADO_TRACANDO; ESTADOS.peca_selecionada = PECA_COM_CAMINHO; }
-  function ligaCaminhoPorClique(on) {
-    CAMINHO_POR_CLIQUE = !!on;
-    if (on) { ESTADOS.tracando_caminho = ESTADO_TRACANDO; ESTADOS.peca_selecionada = PECA_COM_CAMINHO; }
-    else { delete ESTADOS.tracando_caminho; ESTADOS.peca_selecionada = PECA_SEM_CAMINHO; S.caminho = null; }
-    if (S.doc) atualizaTudo();
-  }
+  ESTADOS.tracando_caminho = ESTADO_TRACANDO; ESTADOS.peca_selecionada = PECA_COM_CAMINHO;
 
   function contextoDaDica() {
     var a = S.acao || {}, g = S.sel && S.sel.tipo === "granada" ? S.estado.granadas[S.sel.id] : null;
@@ -2192,15 +2184,10 @@ var Prancheta = (function () {
         return;
       case "peca_selecionada":
         if (!alvo) {
-          if (CAMINHO_POR_CLIQUE) {
-            // no vazio: começa um caminho até lá (teleportar é arrastar)
-            iniciaCaminho(S.sel.id);
-            adicionaPonto(g);
-            atualizaTudo();
-            return;
-          }
-          // no vazio: a peça vai para lá, no andar ativo e no horário do cabeçote
-          gravaPosicao(S.sel.id, g[0], g[1], S.andar);
+          // no vazio: começa um caminho até lá (teleportar é arrastar)
+          iniciaCaminho(S.sel.id);
+          adicionaPonto(g);
+          atualizaTudo();
           return;
         }
         break;
@@ -2221,7 +2208,7 @@ var Prancheta = (function () {
     // livre, ou clique num item: seleciona o que está sob o ponteiro
     S.sel = alvo ? { tipo: alvo.tipo === "giro" ? "peca" : alvo.tipo, id: alvo.id } : (t.estado === "livre" ? null : S.sel);
     // clicar numa peça, sem arrastar, entra em "traçando caminho" (8.2)
-    if (alvo && alvo.tipo === "peca" && M3 && CAMINHO_POR_CLIQUE) iniciaCaminho(alvo.id);
+    if (alvo && alvo.tipo === "peca" && M3) iniciaCaminho(alvo.id);
     else if (!(S.sel && S.sel.tipo === "peca")) S.caminho = null;
     if (!alvo && t.estado === "livre") {
       var tr = tracoSob(t.px);
@@ -4479,7 +4466,7 @@ var Prancheta = (function () {
       problemasNoTempo: problemasNoTempo,
       vooEstimado: vooEstimado, velocidade: velocidade, M3: function () { return M3; },
       defineTempo: defineTempo, abaDoPainel: abaDoPainel, douglasPeucker: douglasPeucker, noMarco: noMarco, emiteLote: emiteLote,
-      TOLERANCIA_DP_PX: TOLERANCIA_DP_PX, ligaCaminhoPorClique: ligaCaminhoPorClique,
+      TOLERANCIA_DP_PX: TOLERANCIA_DP_PX,
       criaDoRound: criaDoRound, voltaAoReal: voltaAoReal, alternaFantasma: alternaFantasma, e3Real: e3Real,
       cortaReal: cortaReal, baseReal: baseReal,
       atrasosDosPontos: atrasosDosPontos, atualizaTudo: atualizaTudo, adiaArremesso: adiaArremesso, lugarDe: lugarDe, eventosDe: eventosDe, eventoEm: eventoEm,
