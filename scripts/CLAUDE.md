@@ -10,10 +10,8 @@ Complementa o `CLAUDE.md` da raiz e não o substitui. Uma regra por linha; (N) =
 - `clean_match.limpa` recusa apagar sem uma cópia de mesmo sha256 nas pastas irmãs
   "<projeto> - BACKUP*", lida NA HORA dos dois lados (lista gravada não vale), mesmo chamada pelo
   Python com `confirmar=True`; sem `confirmar`, só lista arquivo, tamanho, cópia e hash (36)
-- Escala dos papéis: reajuste com `fit_archetype_reference` sempre que processar demo nova ou mexer
-  num componente (16); economia: refazer `economia_reference.json` a cada demo nova, e a tabela
-  regerada tem de dar exatamente o arquivo gravado (8i). O `reprocessa` não faz isso por padrão:
-  reajustar é decisão (28)
+- Escala dos papéis: mexer num componente também pede o reajuste com `fit_archetype_reference`
+  (16); a tabela da economia regerada tem de dar exatamente o `economia_reference.json` gravado (8i)
 
 ## Rating
 
