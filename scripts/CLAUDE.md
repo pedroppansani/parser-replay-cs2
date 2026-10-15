@@ -12,6 +12,8 @@ Complementa o `CLAUDE.md` da raiz e não o substitui. Uma regra por linha; (N) =
   Python com `confirmar=True`; sem `confirmar`, só lista arquivo, tamanho, cópia e hash (36)
 - Escala dos papéis: mexer num componente também pede o reajuste com `fit_archetype_reference`
   (16); a tabela da economia regerada tem de dar exatamente o `economia_reference.json` gravado (8i)
+- Os exemplos da seção 7.2 são fixados em `scripts/calibracao/exemplos_fixados.json`; `--sortear-de-novo`
+  só quando as definições mudam (46)
 
 ## Rating
 
