@@ -2724,11 +2724,18 @@ var Prancheta = (function () {
       sel.value = S.doc.id;
     }
     if (document.activeElement !== $("pr-titulo")) $("pr-titulo").value = S.estado ? S.estado.titulo : "";
-    // o "N operações · contador N" saiu da tela (auditoria 5.3): é depuração, e
-    // continua inteiro no JSON exportado (`operacoes`, `contador`)
+    // o "N operações · contador N" é depuração (auditoria 5.3): só dentro de "Detalhes técnicos", fechado
+    // por padrão; continua inteiro no JSON exportado (`operacoes`, `contador`)
+    $("pr-contador").textContent = S.doc ? textoDoContador(S.doc) : "";
     var desc = $("pr-origem");
     desc.textContent = S.doc && S.doc.origem ? textoDaOrigem(S.doc.origem) : "";
     desc.hidden = !(S.doc && S.doc.origem);
+  }
+
+  /** "12 operações · contador 12" (singular com uma só). */
+  function textoDoContador(doc) {
+    var n = doc.operacoes.length;
+    return n + (n === 1 ? " operação" : " operações") + " · contador " + doc.contador;
   }
 
   function atualizaPassos() {
@@ -3349,6 +3356,10 @@ var Prancheta = (function () {
       el("div", { class: "linha" }, [el("label", { for: "pr-autor", texto: "Autor" }),
         el("input", { type: "text", id: "pr-autor", placeholder: "seu nome" })]),
       el("p", { class: "pr-meta", id: "pr-origem", hidden: "" }),
+      // depuração: fechado por padrão, para quem usa a prancheta não ver o contador sem pedir (auditoria 5.3)
+      el("details", { class: "pr-detalhes", id: "pr-detalhes" }, [
+        el("summary", { texto: "Detalhes técnicos" }),
+        el("p", { class: "pr-meta", id: "pr-contador" })]),
       el("p", { id: "pr-aviso", hidden: "" })]);
     abaDoPainel("jogadores");
   }
