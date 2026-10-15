@@ -3392,12 +3392,38 @@ var Prancheta = (function () {
   function plantDe(e3) { return e3 && e3.bomba ? e3.bomba.t : null; }
   function relogioEm(t) { return MapCore.relogio(t, plantDe(S.e3), null, M3.SEGUNDOS_DO_ROUND, M3.SEGUNDOS_DA_BOMBA); }
 
+  /** Quanto cada ponto-chave chega ATRASADO (decisão 35 + 44): CALCULADO do log, nunca guardado.
+      O jogador sai do ponto anterior e anda na velocidade medida da função dele (no modo do
+      ponto); se o horário do ponto vem antes disso, atraso = chegada possível - t do ponto.
+      Só conta atraso de pelo menos LIMIAR_ATRASO_S. Pontos do round real são fato, não
+      plano: não ganham aviso. Devolve { idDoPonto: segundos }. */
+  var LIMIAR_ATRASO_S = 0.05;
+  function atrasosDosPontos(e3, doc) {
+    var res = {};
+    if (!e3) return res;
+    var base = doc && doc.origem && ehInteiro(doc.origem.base_real) ? doc.origem.base_real : 0, real = {};
+    if (base) (doc.operacoes || []).forEach(function (o) { if (o.seq <= base) real[o.id] = true; });
+    Object.keys(e3.pecas).forEach(function (pid) {
+      var p = e3.pecas[pid];
+      p.pontos.forEach(function (pt, i) {
+        var ant = i > 0 ? p.pontos[i - 1] : null;
+        if (!ant || pt.fora || ant.fora || real[pt.id.split(":")[0]]) return;
+        var chega = ant.t + Math.hypot(pt.x - ant.x, pt.y - ant.y) / velocidade(p.funcao, pt.modo);
+        if (chega - pt.t >= LIMIAR_ATRASO_S) res[pt.id] = chega - pt.t;
+      });
+    });
+    return res;
+  }
+  /** "2,3" (um decimal, vírgula) para o texto do atraso. */
+  function segundosEmTexto(s) { return (Math.round(s * 10) / 10).toFixed(1).replace(".", ","); }
+
   /** Os eventos da tática, em ordem de horário: cada ponto-chave de cada peça,
       cada granada, o plant e cada marco. `alvo` é a chave da nota de evento
       (nota_de_evento): "<peça>/<ponto>", "<granada>", "bomba" ou "marco:<passo>". */
   function eventosDe(e3) {
     var ev = [];
     if (!e3) return ev;
+    var atrasos = atrasosDosPontos(e3, S.doc);
     e3.marcos.forEach(function (m, k) {
       ev.push({ alvo: "marco:" + m.passo, tipo: "marco", ordem: 0, t: m.t, x: null, y: null, nivel: 0,
                 texto: "Passo " + (k + 1) + (m.titulo ? " · " + m.titulo : "") });
@@ -3410,7 +3436,8 @@ var Prancheta = (function () {
         var acao = i === 0 || p.pontos[i - 1].fora ? "começa" : "chega";
         ev.push({ alvo: pid + "/" + pt.id, tipo: "ponto", peca: pid, ponto: pt.id, ordem: 1, t: pt.t,
                   x: pt.x, y: pt.y, nivel: pt.nivel,
-                  texto: nome + (p.funcao ? " (" + p.funcao + ")" : "") + " " + acao + (lugar ? " em " + lugar : "") });
+                  texto: nome + (p.funcao ? " (" + p.funcao + ")" : "") + " " + acao + (lugar ? " em " + lugar : "") +
+                         (tem(atrasos, pt.id) ? " (" + segundosEmTexto(atrasos[pt.id]) + " s atrasado)" : "") });
       });
     });
     Object.keys(e3.granadas).forEach(function (gid) {
@@ -3539,6 +3566,7 @@ var Prancheta = (function () {
       var pa = e3.pecas[a], pb = e3.pecas[b];
       return pa.lado.localeCompare(pb.lado) || rotuloDaPeca(pa).localeCompare(rotuloDaPeca(pb));
     });
+    var atrasos = atrasosDosPontos(e3, S.doc);
     var linhas = ids.map(function (pid) { return [pid, rotuloDaPeca(e3.pecas[pid]), e3.pecas[pid].lado]; });
     if (porJogador[""]) linhas.push(["", "Sem jogador", ""]);
     linhas.forEach(function (l) {
@@ -3555,8 +3583,14 @@ var Prancheta = (function () {
       }
       if (pid) e3.pecas[pid].pontos.forEach(function (pt) {
         if (pt.fora) return;
-        tr.appendChild(el("button", { class: "pr-marca " + l[2], "data-peca": pid, "data-ponto": pt.id,
-          style: "left:" + pctDe(pt.t, limite), title: l[1] + " · " + relogioEm(pt.t), "aria-label": l[1] + " " + relogioEm(pt.t) }));
+        // atrasado: preenchido em --aviso, com "+2,3 s" ao lado e o mesmo dito em texto (nunca só cor)
+        var atraso = tem(atrasos, pt.id) ? atrasos[pt.id] : null;
+        var dito = atraso === null ? "" : ", chega " + segundosEmTexto(atraso) + " s atrasado";
+        tr.appendChild(el("button", { class: "pr-marca " + l[2] + (atraso === null ? "" : " atrasado"), "data-peca": pid, "data-ponto": pt.id,
+          style: "left:" + pctDe(pt.t, limite), title: l[1] + " · " + relogioEm(pt.t) + dito,
+          "aria-label": l[1] + " " + relogioEm(pt.t) + dito }));
+        if (atraso !== null) tr.appendChild(el("span", { class: "pr-atraso", "data-atraso-de": pt.id,
+          style: "left:" + pctDe(pt.t, limite), "aria-hidden": "true", texto: "+" + segundosEmTexto(atraso) + " s" }));
       });
       (porJogador[pid] || []).forEach(function (gid) {
         var g = e3.granadas[gid];
@@ -4437,7 +4471,7 @@ var Prancheta = (function () {
       TOLERANCIA_DP_PX: TOLERANCIA_DP_PX, ligaCaminhoPorClique: ligaCaminhoPorClique,
       criaDoRound: criaDoRound, voltaAoReal: voltaAoReal, alternaFantasma: alternaFantasma, e3Real: e3Real,
       cortaReal: cortaReal, baseReal: baseReal,
-      adiaArremesso: adiaArremesso, lugarDe: lugarDe, eventosDe: eventosDe, eventoEm: eventoEm,
+      atrasosDosPontos: atrasosDosPontos, atualizaTudo: atualizaTudo, adiaArremesso: adiaArremesso, lugarDe: lugarDe, eventosDe: eventosDe, eventoEm: eventoEm,
       fimDaTatica: fimDaTatica, cenaNoRelogio: cenaNoRelogio, tocaNoRelogio: tocaNoRelogio, relogioEm: relogioEm, mudaHorarioDaGranada: mudaHorarioDaGranada, reproduzAte: function (t) { reproduzAte(t); },
       comecaReproducao: comecaReproducao, editaAqui: editaAqui, toca: function (s) { toca(s); },
       problemas: problemas, problemaDaOperacao: problemaDaOperacao, problemasDaOrigem: problemasDaOrigem, textoDaOrigem: textoDaOrigem,
