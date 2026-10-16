@@ -63,10 +63,10 @@ A pistola inicial com colete é o round de pistola, e não entra em nenhum dos t
 times têm a mesma compra limitada. Depois do empate da 8i, 110 dos 2.304 time-rounds ficam divididos
 entre dois grupos.
 
-**Para conferir (Pedro):** rifle_t2 com colete (Galil ou FAMAS com colete) está em "força" porque é
-a linha intermediária da 8i. Vence 61% dos rounds, mais que a compra cheia (56%), porque costuma
-enfrentar time quebrado. Se a leitura de jogo for "Galil com colete é compra cheia", a mudança é só
-na linha da tabela acima.
+**Conferido (Pedro, 2026-10-15): fica em força.** rifle_t2 com colete (Galil ou FAMAS com colete) está em
+"força" porque é a linha intermediária da 8i. Vence 61% dos rounds, mais que a compra cheia (56%), mas não
+por pegar eco: só 13% dos rounds dela são contra eco, e contra compra cheia ela vence 55% (74,5 rounds).
+Tabela por grupo do adversário em `notas/investigacoes/2026-10-15-galil-famas-por-adversario.md`.
 
 ## Texto
 
