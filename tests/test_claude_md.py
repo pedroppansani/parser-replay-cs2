@@ -4,8 +4,8 @@ A raiz é lida inteira em toda sessão; o `CLAUDE.md` de uma pasta só quando a 
 arquivos dali. Por isso cada um tem limite próprio, e a regra de uma decisão pode morar na raiz
 ou na pasta onde ela pode ser quebrada. O que este teste garante:
 
-- a raiz cabe em 15.000 bytes e cada `CLAUDE.md` de pasta em 5.000 (`metrics/` em 12.000 e
-  `scripts/` em 6.000, decisões do Pedro nas fases 14, 17a e 18, para caber as regras copiadas),
+- a raiz cabe em 15.000 bytes e cada `CLAUDE.md` de pasta em 5.000 (`metrics/` em 12.000,
+  `scripts/` e `dashboard/web/` em 6.000, decisões do Pedro nas fases 14, 17a e 18 e na troca do gráfico, para caber as regras copiadas),
   contados em UTF-8 com fim de linha LF;
 - todo número de decisão citado no fim de uma regra ("... (21a)") tem nota em `notas/decisoes/`;
 - toda decisão vigente é citada em algum `CLAUDE.md`, e a substituída ou revogada em nenhum;
@@ -25,7 +25,8 @@ NOTAS = RAIZ / "notas" / "decisoes"
 LIMITE_DA_RAIZ = 15_000              # bytes, com fim de linha LF (o limite que já existia)
 LIMITE_DA_PASTA = 5_000              # bytes, idem
 LIMITE_POR_PASTA = {"metrics/CLAUDE.md": 12_000,  # exceções decididas pelo Pedro (fase 14; fase 17a:
-                    "scripts/CLAUDE.md": 6_000}   # as regras copiadas entre pastas; fase 18: as regras dos erros)
+                    "scripts/CLAUDE.md": 6_000,   # as regras copiadas entre pastas; fase 18: as regras dos erros;
+                    "dashboard/web/CLAUDE.md": 6_000}  # 2026-10-16: a regra do "Quanto cada round pesou")
 FORA = {".git", ".claude", ".venv", "venv", "node_modules", ".pytest_cache", "docs", "preview"}
 # "(21a)" ou "(22a, 22b, 22k)" no fim de um item de lista
 CITACAO = re.compile(r"\((\d+[a-z]?(?:,\s*\d+[a-z]?)*)\)\s*$")

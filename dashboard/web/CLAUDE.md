@@ -16,6 +16,9 @@ valem lá também.
 - Páginas abrem como arquivo local; nenhuma CDN além do Google Fonts; no máximo 2 famílias (44)
 - Escolhas da nota 44 ("Como ficou na implementação") são deliberadas: página da partida sem o topo
   do site, coluna Mira com o texto do Python, mínimos de `jogadores.html`; não "corrija" de volta (44)
+- Aba Placar: "Quanto cada round pesou" tem o mesmo eixo X do gráfico de cima (viewBox de 900, pL 32,
+  pR 12); a barra é depois menos antes da curva publicada, o decisivo é o do payload, e textos e rótulos
+  vêm de `leitura/peso_dos_rounds.py` (19, 18)
 
 ## Cor e mapa
 
