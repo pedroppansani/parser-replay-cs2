@@ -33,22 +33,6 @@ entram aqui quando uma decisão depende delas.
   HLTV do corpus (por exemplo, NAVI x Spirit em Katowice) e veja se há uma coluna de dano de
   utilidade. Se houver, mande o print dela para as 13 partidas com HLTV.
 
-## 3. A variante do agrupamento de estilos (auditoria 4.7)
-
-- **Origem:** auditoria, item 4.7 (tempo até o contato nulo quando não há contato; decisão 17 da
-  versão das métricas).
-- **Pergunta:** fica a variante adotada, em que a coluna `sem_contato` existe mas não entra no
-  agrupamento?
-- **Opções:**
-  1. **Manter a adotada.** A concordância com os grupos anteriores fica em ARI 0,936, e os nomes dos
-     grupos foram remapeados. A tela de Estilos fica quase igual.
-  2. **`sem_contato` como feature do agrupamento.** O ARI cai para 0,652: um terço dos rounds muda
-     de grupo, e os grupos passam a separar "teve contato ou não" mais do que estilo.
-- **Recomendação:** a 1. Ter contato ou não é resultado do round, não estilo de jogo (decisão 7b:
-  só comportamento entra no agrupamento).
-- **Custo de deixar como está:** nenhum na tela. Só falta o seu "ok" para fechar o item.
-- **Fora do computador:** nada.
-
 ## 5. `TICK_PELO_PROJETIL_SEM_EVENTO` (demos da FACEIT)
 
 - **Origem:** `metrics/grenade_throws.py`; medição em `pesquisa/investiga_faceit.py`.

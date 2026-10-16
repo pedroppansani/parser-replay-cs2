@@ -21,6 +21,11 @@ por reamostragem das partidas 0,929 (era 0,920). `pesquisa/imputacao_clusters.py
 Efeito colateral medido: 11 rótulos "Abre o round" entram (o round sem contato saiu do
 denominador); a mediana do 1º contato muda em 350 jogador-partidas (mediana 3,0 s).
 
+**Item 4.7 fechado** (resposta do Pedro ao cartão 3 de `notas/PENDENCIAS_PARA_O_PEDRO.md`,
+2026-10-16): "Opção 1: mantém a adotada. Ter contato ou não é resultado do round, não estilo de
+jogo. Feche o item na nota da auditoria." Fica a variante adotada: `sem_contato` existe na tabela e
+não entra no agrupamento. Nada muda no código.
+
 ## Texto
 
 7b. **As features do clustering são só COMPORTAMENTO.** `damage`, `kills`,
