@@ -153,7 +153,9 @@
   (`LIMIAR_ROUND_GANHO` 0,95 e `LIMIAR_ROUND_PERDIDO` 0,05, chance do round logo antes do evento). "Visível para o
   jogador" = linha de visão pelo mapa (colisão do awpy-data em `.tri`, com as smokes) + campo de visão
   (`MEIO_FOV_GRAUS` 53,13) + não estar cego (`metrics/visao.py`; fonte e conferência contra a demo em
-  `notas/investigacoes/2026-10-15-fonte-de-visao.md`). "Não trocou" exige o matador visível na janela; "possível
+  `notas/investigacoes/2026-10-15-fonte-de-visao.md`). **Limitação conhecida:** a malha do awpy-data (conferida
+  por sha256) não tem portas nem objetos móveis: uma porta fechada ou um objeto que se move não bloqueia a linha
+  de visão. "Não trocou" exige o matador visível na janela; "possível
   bait" = sem engajar (sem tiro no cone `CONE_DO_TIRO_GRAUS` 6 e sem dano) e recuo acima de `RECUO_MINIMO` (120)
   ou saída da linha de visão andando; o "atrás do aliado" saiu. "Perdeu a troca" exige engajar o matador e sai com
   dois ou mais inimigos visíveis ao mesmo tempo ("enfrentou dois ou mais", registrado, nunca erro). "Morreu
