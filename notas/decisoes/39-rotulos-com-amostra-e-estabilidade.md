@@ -75,3 +75,8 @@ Perfil (regra 5 da decisão 46, "função só tendência") continua só com a re
 dos 730 jogador-lados com função dominante, 324 têm a chance fora do alfa; 174 deles já tinham a
 marca pela reamostragem e 150 a ganham agora; 16 a têm só pela reamostragem (340 marcas no total).
 Teste: `tests/test_marca_da_funcao.py`.
+
+**O limiar 0,70 fica** (resposta do Pedro ao cartão 4, "As 289 tendências", 2026-10-16). Resposta,
+como veio: "Opção 1: mantém 0,70. Lurker e segundo homem com marca de tendência são o achado, não um
+defeito. Feche o cartão." `LIMIAR_DE_TENDENCIA` continua 0,70 (`metrics/player_roles.py`), e os
+289 dos 531 rótulos de traço com "(tendência)" são a leitura pretendida, não um limiar alto demais.

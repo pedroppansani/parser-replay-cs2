@@ -49,25 +49,6 @@ entram aqui quando uma decisão depende delas.
 - **Custo de deixar como está:** nenhum na tela. Só falta o seu "ok" para fechar o item.
 - **Fora do computador:** nada.
 
-## 4. As 289 tendências
-
-- **Origem:** decisão 39 (estabilidade dos rótulos por reamostragem, limiar 0,70).
-- **Pergunta:** 289 dos 531 rótulos de traço saem com "(tendência)". Isso é o que você quer ver, ou
-  o limiar está alto demais?
-- **Números:** AWPer 7 de 94 são tendência; Lurker 46 de 56; Segundo homem 33 de 39. O rótulo
-  principal de 167 dos 358 jogadores com rótulo é tendência.
-- **Opções:**
-  1. **Manter 0,70** (o valor do texto da auditoria). Mais da metade dos rótulos sai com a marca.
-  2. **Baixar o limiar** (por exemplo, para 0,60). Menos rótulos com a marca, mais rótulos
-     afirmados que mudam ao reamostrar os rounds.
-  3. **Esconder em vez de marcar.** O rótulo abaixo de 0,70 não aparece. A tela fica com menos de
-     metade dos rótulos.
-- **Recomendação:** a 1. Lurker e Segundo homem são leituras de poucos rounds por partida. Que
-  sejam tendência é o achado, não um defeito. Mudar o limiar só faria a tela afirmar mais do que
-  o dado sustenta.
-- **Custo de deixar como está:** a tela parece hesitante nesses dois rótulos. O número está certo.
-- **Fora do computador:** nada.
-
 ## 5. `TICK_PELO_PROJETIL_SEM_EVENTO` (demos da FACEIT)
 
 - **Origem:** `metrics/grenade_throws.py`; medição em `pesquisa/investiga_faceit.py`.
