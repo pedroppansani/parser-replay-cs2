@@ -225,7 +225,7 @@ def _mede_partida(m: str) -> dict:
                 med["cone"].append(V.angulo_horizontal(r["player_yaw"], (r["player_X"], r["player_Y"]),
                                                        (r["victim_X"], r["victim_Y"])))
     # varreduras
-    cont = {"base": _contagem(base), "sem_tempo_minimo": _contagem(_varia(p, "min_tempo", 0.0))}
+    cont = {"base": _contagem(base), "sem_tempo_minimo": _contagem(_varia(p, "min_tempo", 1e-6))}  # qualquer amostra visível
     for chave, (_, baixo, alto, _) in FAIXAS.items():
         for valor in (baixo, alto):
             cont[(chave, valor)] = _contagem(_varia(p, chave, valor))
@@ -754,7 +754,7 @@ def secao(oc: pl.DataFrame, res: list[dict] | None, escolhidos: dict, antigas: p
                 f"quartis {_fmt(_percentil(bait, 0.25), 0)} e {_fmt(_percentil(bait, 0.75), 0)} u (mínimo "
                 f"{_fmt(min(bait) if bait else None, 0)}, máximo {_fmt(max(bait) if bait else None, 0)}).",
                 f"- \"Não trocou\" que sobram: {base[E.NAO_TROCOU]}.",
-                "- Casos que saíram SÓ pelo tempo mínimo de visão (as ocorrências com `MIN_TEMPO_VISIVEL` = 0 menos as de "
+                "- Casos que saíram SÓ pelo tempo mínimo de visão (as ocorrências com o mínimo valendo qualquer amostra visível menos as de "
                 "agora, com as outras regras iguais): " + "; ".join(
                     f"{E.TITULOS[t]} {sem[t] - base[t]}" for t in E.TIPOS) + ".",
                 "  Em \"morreu sozinho\" o número é negativo: com o mínimo, um aliado que viu o matador por menos de 0,5 s "
