@@ -89,6 +89,9 @@ estão copiadas de `dashboard/web/CLAUDE.md` na seção "Espelho da prancheta e 
   trocada não é erro em nenhum tipo; round com chance fora de 0,05–0,95 logo antes do evento fica fora (46)
 - "Visível para o jogador" = linha de visão pelo mapa (`metrics/visao.py`, malha conferida por sha256) +
   campo de visão (`MEIO_FOV_GRAUS`) + não cego; a visibilidade da demo é só conferência (46)
+- Matador visível só com 0,5 s somados (`MIN_TEMPO_VISIVEL`); quem engajou conta só em "perdeu a
+  troca"; bait exige recuo líquido de `MIN_RECUO_BAIT`; tipo abaixo de `MIN_CASOS_PARA_VALIDAR` casos
+  (contados do corpus) não é validado (46)
 - Nada de tipo que o dado não mede (o inventário só é lido no fim do freeze: "utilidade no bolso"
   não existe nem se estima) (46)
 
@@ -154,5 +157,6 @@ estão copiadas de `dashboard/web/CLAUDE.md` na seção "Espelho da prancheta e 
 - Altura dos olhos e diferença em pé/agachado (21c); mínimo por grupo da força (21a);
   `TICK_PELO_PROJETIL_SEM_EVENTO`, desligado.
 - Limiares do destaque, do round decisivo, da autópsia, dos papéis e dos erros do Perfil (46), com
-  `RECUO_MINIMO`, `MEIO_FOV_GRAUS`, `LIMIAR_ROUND_GANHO`, `LIMIAR_ROUND_PERDIDO` e `CONE_DO_TIRO_GRAUS`.
+  `MIN_RECUO_BAIT`, `MIN_TEMPO_VISIVEL`, `MIN_CASOS_PARA_VALIDAR`, `MEIO_FOV_GRAUS`,
+  `LIMIAR_ROUND_GANHO`, `LIMIAR_ROUND_PERDIDO` e `CONE_DO_TIRO_GRAUS`.
 - Pisos de função (31) e do eixo carrega piano/baiter; repick com mais de uma saída (15b).

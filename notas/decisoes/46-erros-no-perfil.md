@@ -163,3 +163,23 @@
   vivos pelas mortes (o "0 contra 0" vinha das posições gravadas só nos ticks das kills); evento com 0 de dano ou
   de cegueira não é ocorrência. `VERSAO_DAS_METRICAS` 24; só `erros_do_jogador.parquet`, `mortes.parquet` e a régua
   mudam. Os exemplos da seção 7.2 ficam fixados em `scripts/calibracao/exemplos_fixados.json`.
+
+- **Fase 18b (2026-10-16): calibração do Pedro.** (1) Quem engajou o matador (atirou nele no cone, deu dano ou andou
+  na direção dele com ele visível) conta só em "perdeu a troca", se morreu; "não trocou" fica para quem viu o matador e
+  não engajou (nenhum lance conta nos dois). (2) Bait exige `MIN_RECUO_BAIT` = 64 u de recuo LÍQUIDO:
+  `recuo = d(J(t_fim), M(t_v)) − d(J(t_v), M(t_v))`, no plano, com `t_v` a primeira amostra em que o jogador vê o
+  matador, `t_fim` a última amostra da janela de troca (até 5 s, cortada na morte de um dos dois e no fim do round) e
+  o matador parado onde estava em `t_v`; sair da linha de visão com menos que isso não é bait. O mesmo valor, ao
+  contrário (deslocamento líquido na direção do matador visível), é o "andou na direção dele" de "perdeu a troca".
+  O `RECUO_MINIMO` (120, pelo máximo) da fase 18 foi removido. (3) `MIN_TEMPO_VISIVEL` = 0,5 s, SOMADAS as amostras
+  visíveis da janela (não contínuo): vale para o matador visível em "não trocou" e no bait e para o aliado que tira
+  "morreu sozinho"; não vale para os dois ou mais visíveis de "perdeu a troca". (4) `MIN_CASOS_PARA_VALIDAR` = 10,
+  contado dos dados (`erros.casos_no_corpus`): um tipo abaixo não entra na validação nem em
+  `TIPOS_DE_ERRO_VALIDADOS` (teste), continua calculado e gravado, e no material ganha uma seção à parte com todos os
+  casos, fora de `exemplos_fixados.json`. Hoje só o bait (9 casos) fica abaixo. `VERSAO_DAS_METRICAS` 25.
+
+  Sensibilidade do recuo no corpus (informação para o futuro, não proposta): baits com recuo líquido de pelo menos
+
+  | recuo mínimo (u) | 0 | 16 | 32 | 48 | 64 |
+  |---|---|---|---|---|---|
+  | baits | 30 | 18 | 15 | 15 | 9 |

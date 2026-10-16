@@ -54,6 +54,11 @@ VERSAO_DO_PARSER = 2
 # Onde o complemento registra o que acrescentou a um interim existente.
 ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
 
+# 25 (2026-10-16) erros do Perfil, fase 18b (calibração do Pedro): quem engajou o matador conta só em "perdeu a
+#    troca" (sai de "não trocou"); bait exige recuo LÍQUIDO de pelo menos MIN_RECUO_BAIT (64 u; o RECUO_MINIMO
+#    120 pelo máximo e o "saiu da linha de visão" sozinho deixam de valer); o matador visível exige pelo menos
+#    MIN_TEMPO_VISIVEL (0,5 s somados) em "não trocou", no bait e no aliado que tira "morreu sozinho". Impacto:
+#    só erros_do_jogador.parquet e a régua erros_reference.json mudam.
 # 24 (2026-10-15) erros do Perfil, fase 18 (definições do Pedro): a troca é decidida pelo fato (nunca pela
 #    distância) e toda morte trocada sai de todos os tipos; round decidido (chance do round fora de 0,05 a 0,95)
 #    sai; "não trocou", "possível bait", "perdeu a troca" e "morreu sozinho" (era "morreu isolado") usam quem
@@ -125,7 +130,7 @@ ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
 #   (inclui a classe de economia do jogador no rating), unique com subset fica
 #   com a primeira linha. Antes, esses três casos dependiam da ordem de hash.
 # 1 (2026-09-20) primeira versão declarada, mesmo raciocínio acima.
-VERSAO_DAS_METRICAS = 24
+VERSAO_DAS_METRICAS = 25
 
 # Pastas cujo estado define o NÚMERO. `sujo` olha só estas: olhar o repositório
 # inteiro marcava todo reprocessamento como sujo, porque o próprio
