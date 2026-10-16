@@ -59,6 +59,7 @@ estão copiadas de `dashboard/web/CLAUDE.md` na seção "Espelho da prancheta e 
 
 - Decisivo = maior variação da chance de vitória; ponto sem retorno, déficit e placar apertado não
   voltam como peso; round isolado neutro (0,5), nunca a taxa da própria partida (19)
+- Variação em pp só por `metrics.formatting.format_pp` (`+25 pp`, `−19 pp`) (19)
 - Sem decisivo abaixo de 1,5× o round mais barato do formato (19b)
 - Prorrogação: o alvo sobe 4 a cada uma, até `MAX_PRORROGACOES_MODELADAS` (estado 0,5 ali); a
   recursão recebe o alvo do FORMATO, nunca o ajustado (19e)
