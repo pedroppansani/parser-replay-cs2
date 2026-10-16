@@ -61,6 +61,10 @@ As contagens atuais estão em `data/processed/numeros_citaveis.json` (bloco `esc
       `assistedflash` do evento de kill (um assistente por kill) dá 47/70 e soma
       36: conta de menos. A correção do tickrate é o cartão 12 das pendências;
       nada foi mudado.
+      **Resposta do Pedro (2026-10-16):** a assistência de flash da HLTV usa uma
+      regra que não conhecemos; a nossa é documentada e conferida pelo tick. O
+      degrau fica "não bate" até alguém trazer a regra da HLTV; não se persegue a
+      regra dela agora.
     - morte trocada (D(t)): 19/50 com a janela de 5s, e 30 a MAIS -- é a origem
       direta do excesso do KAST (8g). O total bate com janela de ~4,25s, mas nenhuma
       janela (2 a 6s), nem "vingada por qualquer um", nem "só a última vítima do
