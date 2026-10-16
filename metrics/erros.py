@@ -1,4 +1,4 @@
-"""Onde cada jogador custou rounds ao time nesta partida (fase 12, aba Perfil).
+"""Onde cada jogador custou rounds ao time nesta partida (fase 12, aba Perfil; definições da fase 18).
 
 JUSTIFICATIVA DE JOGO. A aba Perfil passa a responder "onde ele mais custou
 rounds e como melhorar". Cada TIPO de erro é uma função pura e determinística
@@ -15,6 +15,25 @@ sustenta. Por isso cada ocorrência carrega:
   do pedido (12.2, "Explícito ou depende da tática"; a primeira que se aplica
   decide).
 
+FASE 18 (definições do Pedro, que valem como definição e não sugestão):
+- **morte trocada não é erro de ninguém, em nenhum tipo**, qualquer que seja a
+  distância: a troca é decidida pelo FATO (o matador morreu por um aliado dentro
+  da janela, `_pares_de_trade`), nunca pela distância. Cada morte do corpus grava
+  se foi trocada e por quem (`mortes_trocadas`, arquivo `mortes.parquet`);
+- **round decidido fica fora** de todos os tipos: a chance de o time vencer o
+  round logo antes do evento (o modelo de round do rating) acima de
+  `LIMIAR_ROUND_GANHO` ou abaixo de `LIMIAR_ROUND_PERDIDO`;
+- quem estava vendo quem vem de `metrics.visao` (linha de visão pelo mapa +
+  campo de visão + não estar cego). "Não trocou" e "possível bait" exigem o
+  matador visível para o jogador na janela; "perdeu a troca" exige ter ido
+  trocar (engajado o matador) e sai quando dois ou mais inimigos estavam
+  visíveis ao mesmo tempo ("enfrentou dois ou mais", registrado, nunca erro);
+  "morreu isolado" passa a ser "morreu sozinho": nenhum aliado vivo tinha o
+  matador à vista nem estava a até `DIST_TROCA`;
+- a situação numérica conta os vivos pelas mortes (antes vinha das posições
+  gravadas só nos ticks das kills, e um evento antes da primeira morte do round
+  saía "0 contra 0").
+
 FONTE ÚNICA DE CADA CONCEITO (nada é redefinido aqui):
 - troca e janela de troca: `metrics.basic_metrics._pares_de_trade` com
   `metrics.constantes.JANELA_DE_TRADE_S` (decisões 40 e 41, fase 7);
@@ -26,7 +45,9 @@ FONTE ÚNICA DE CADA CONCEITO (nada é redefinido aqui):
 - ΔWPA: a variação da chance de vencer o ROUND na kill (o modelo de round do
   rating, `rating.variacao_por_kill`, o mesmo do Round Swing) vezes a alavanca
   do round na partida (`win_probability`: chance de vencer a partida se o time
-  vence o round menos se perde). Ver a nota de decisão 46.
+  vence o round menos se perde). Ver a nota de decisão 46;
+- chance de vencer o round antes do evento (round decidido): o mesmo modelo e o
+  mesmo estado (`rating._estado_completo`).
 
 "Utilidade no bolso" NÃO existe: o inventário só é lido no fim do freeze time
 (`parsing.parser.PROPS_DA_COMPRA`), não na hora da morte. O pedido manda não
@@ -41,6 +62,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Callable
 
 import polars as pl
 
@@ -52,12 +74,14 @@ from metrics.tactics import relogio as relogio_do_jogo
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-# --- Constantes novas (fase 12). Cada uma está no material de calibração, seção 7 ---------------
+# --- Constantes (fase 12). Cada uma está no material de calibração, seção 7 ----------------------
 
 # Distância de troca: até aqui um aliado vivo ainda consegue trocar a morte dentro da janela.
 # Origem: o raio de apoio que o projeto já usa para "companheiro por perto" (player_profile e
 # structural_roles, RAIO_COMPANHEIRO = 600, "o alcance em que uma troca ainda acontece"); conferido
-# na distribuição do corpus (MATERIAL_DE_CALIBRACAO.md, seção 7).
+# na distribuição do corpus (MATERIAL_DE_CALIBRACAO.md, seção 7). Fase 18: só entra em "morreu
+# sozinho" (um aliado a até isto não deixa a morte ser "sozinho"); nos outros tipos a distância é
+# contexto, não critério (a troca é decidida pelo fato).
 DIST_TROCA = 600.0
 
 # Duelo próprio: o jogador que levou ou causou dano nestes segundos antes da morte do aliado estava
@@ -69,13 +93,35 @@ S_DUELO = 2.0
 # pós-plant perdido): da soma por jogador-partida (520 valores; mediana 8,7 s, p90 27,1 s) e da
 # cegueira nos aliados por flash (2.814 flashes; mediana 1,6 s, p90 4,8 s). Histogramas e varredura
 # no material de calibração, seção 7.
-SEG_CEGUEIRA_ALIADO = 27.0        # soma na partida, segundos
+SEG_CEGUEIRA_ALIADO = 27.0        # soma no lado, segundos
 SEG_CEGUEIRA_ALIADO_UMA = 4.8     # numa flash só, segundos
 
-# Dano de HE ou molotov no próprio time, soma na partida. Origem: o percentil 95 do corpus por
+# Dano de HE ou molotov no próprio time, soma no lado. Origem: o percentil 95 do corpus por
 # jogador-partida (520 valores; mediana 0, p75 1, p90 10, p95 19). O p90 não serve: mais da metade
 # não feriu ninguém do time, e 10 de dano é um tique de molotov. Material de calibração, seção 7.
 DANO_UTILIDADE_ALIADO = 20.0
+
+# --- Constantes novas (fase 18). Cada uma está no material de calibração, seção 7 --------------
+
+# Recuo mínimo: a distância até o matador (com o matador parado onde estava quando ficou visível)
+# precisa subir mais que isto para o jogador ter recuado; o mesmo valor, ao contrário, é "andou na
+# direção dele" em "perdeu a troca". Origem: o limite de "praticamente parado" do projeto
+# (awp_metrics.HOLD_MAX_DISPLACEMENT = 120: abaixo disso, em 3 s, o jogador segurou o ângulo); o
+# histograma do recuo no corpus está no material.
+RECUO_MINIMO = 120.0
+
+# Round decidido: a chance de vitória do time (o modelo de round do rating), logo antes do evento,
+# acima de LIMIAR_ROUND_GANHO ou abaixo de LIMIAR_ROUND_PERDIDO. Origem: os valores propostos pelo
+# Pedro na fase 18 (0,95 e 0,05), simétricos: fora fica o que acontece quando a chance já é de 19
+# contra 1 (o 4 contra 1 caçando o último, o 1 contra 4 tentando salvar). Histograma no material.
+LIMIAR_ROUND_GANHO = 0.95
+LIMIAR_ROUND_PERDIDO = 0.05
+
+# "Atirou no matador": um tiro (weapon_fire) com o matador visível e a mira a menos disto da direção
+# até ele, no plano. Origem: o percentil 99 do mesmo ângulo nos tiros que ACERTARAM um inimigo no
+# corpus (23.502 acertos com o tiro no mesmo tick, 52 partidas: mediana 0,5°, p95 2,8°, p99 5,7°),
+# arredondado para cima: um tiro que erra perto do alvo ainda é um tiro nele.
+CONE_DO_TIRO_GRAUS = 6.0
 
 # Um tipo com menos ocorrências que isto não vira "ponto a melhorar": vai para "Detalhes" (pedido 12.5).
 MIN_OCORRENCIAS_PARA_PONTO = 2
@@ -95,27 +141,27 @@ TIPOS_DE_ERRO_VALIDADOS: frozenset[str] = frozenset()
 NAO_TROCOU = "nao_trocou"
 POSSIVEL_BAIT = "possivel_bait"
 PERDEU_A_TROCA = "perdeu_a_troca"
-MORREU_ISOLADO = "morreu_isolado"
+MORREU_SOZINHO = "morreu_sozinho"            # fase 18: era "morreu_isolado"
 PRIMEIRA_MORTE_SEM_TROCA = "primeira_morte_sem_troca"
 FLASH_NO_TIME = "flash_no_time"
 DANO_DE_UTILIDADE_NO_TIME = "dano_de_utilidade_no_time"
 
 # Ordem fixa: é a ordem das tabelas, do material e o desempate da tela.
-TIPOS = (NAO_TROCOU, POSSIVEL_BAIT, PERDEU_A_TROCA, MORREU_ISOLADO, PRIMEIRA_MORTE_SEM_TROCA,
+TIPOS = (NAO_TROCOU, POSSIVEL_BAIT, PERDEU_A_TROCA, MORREU_SOZINHO, PRIMEIRA_MORTE_SEM_TROCA,
          FLASH_NO_TIME, DANO_DE_UTILIDADE_NO_TIME)
 
 TITULOS = {
     NAO_TROCOU: "Não trocou o aliado",
     POSSIVEL_BAIT: "Possível bait",              # sempre com "possível": o dado mostra posição e tempo
     PERDEU_A_TROCA: "Perdeu a troca",
-    MORREU_ISOLADO: "Morreu isolado",
+    MORREU_SOZINHO: "Morreu sozinho",
     PRIMEIRA_MORTE_SEM_TROCA: "Primeira morte sem troca",
     FLASH_NO_TIME: "Flash no time",
     DANO_DE_UTILIDADE_NO_TIME: "Dano de utilidade no time",
 }
 
 # "Como melhorar": uma frase por tipo, fixa (decisão 18; propostas do pedido 12.3, a aprovar pelo
-# Pedro no material de calibração).
+# Pedro no material de calibração; a de "morreu sozinho" é a da fase 18).
 COMO_MELHORAR = {
     NAO_TROCOU: ("Jogue a uma distância de troca do parceiro e mirando o mesmo ponto que ele. Se ele cair, o "
                  "matador está exposto por alguns segundos: é a sua janela."),
@@ -123,8 +169,8 @@ COMO_MELHORAR = {
                     "antes quem entra e quem troca."),
     PERDEU_A_TROCA: ("Na troca, não pique o mesmo ângulo que acabou de matar o aliado. Mude o ângulo ou jogue "
                      "uma flash no matador antes."),
-    MORREU_ISOLADO: ("Se não é o lurker, jogue perto de um aliado e avise a posição. Morrer sozinho dá vantagem "
-                     "numérica de graça."),
+    MORREU_SOZINHO: ("Se não é o lurker, jogue onde um aliado consiga te trocar e avise a posição. Morrer sem "
+                     "troca dá vantagem numérica de graça."),
     PRIMEIRA_MORTE_SEM_TROCA: ("Sem ser o entry, evite o primeiro contato sozinho. Espere a informação ou alguém "
                                "para trocar."),
     FLASH_NO_TIME: "Avise antes de soltar e prefira a pop flash por cima do ângulo do aliado, não na frente dele.",
@@ -141,10 +187,10 @@ MOTIVO_AWPER = "segurar sozinho um ângulo de abertura é o trabalho do AWPer"
 MOTIVO_TENDENCIA = "a função não é firme nesta partida"
 MOTIVO_GERAL = "o dado mostra posição e tempo, não o que o time pediu"
 MOTIVO_EXPLICITO = {
-    NAO_TROCOU: "o aliado morreu perto dele e o matador saiu vivo da janela de troca",
-    POSSIVEL_BAIT: ("estava atrás do aliado, não atirou no matador e sobreviveu à janela de troca; "
-                    "o dado mostra posição e tempo, não intenção"),
-    PERDEU_A_TROCA: "foi para a troca e morreu sem matar quem matou o aliado",
+    NAO_TROCOU: "o aliado morreu, o matador ficou visível para ele e saiu vivo da janela de troca",
+    POSSIVEL_BAIT: ("o matador ficou visível para ele, ele não atirou nem causou dano e recuou ou saiu da linha "
+                    "de visão; o dado mostra posição e tempo, não intenção"),
+    PERDEU_A_TROCA: "foi para a troca (engajou o matador) e morreu sem matá-lo, com no máximo um inimigo à vista",
     FLASH_NO_TIME: "a flash dele cegou o próprio time",
     DANO_DE_UTILIDADE_NO_TIME: "a granada dele feriu o próprio time",
 }
@@ -158,10 +204,19 @@ ROTULO_DO_NIVEL = {EXPLICITO: "explícito", DEPENDE: "depende da tática"}
 FILTRO_ECONOMIA = "round de economia do time"
 FILTRO_GUARDANDO_ARMA = "time guardando arma (pós-plant perdido)"
 FILTRO_FIM_DO_ROUND = "depois do fim do round"
+FILTRO_ROUND_DECIDIDO = "round decidido"                          # fase 18
+FILTRO_MORTE_TROCADA = "morte trocada"                            # fase 18
 FILTRO_CEGO = "cego no momento"
 FILTRO_DUELO = "em duelo próprio"
 FILTRO_SEM_ARMA = "sem arma de fogo"
+FILTRO_MATADOR_FORA_DA_VISAO = "o matador não ficou visível para ele"          # fase 18
+FILTRO_ENGAJOU = "engajou o matador"                              # fase 18 (bait)
+FILTRO_NAO_RECUOU = "não recuou nem saiu da linha de visão"       # fase 18 (bait)
+FILTRO_SEM_ENGAJAMENTO = "não engajou o matador"                  # fase 18 (perdeu a troca)
+FILTRO_DOIS_OU_MAIS = "enfrentou dois ou mais ao mesmo tempo"     # fase 18: registrado, nunca erro
+FILTRO_ALIADO_COM_O_MATADOR = "um aliado tinha o matador à vista ou estava perto"   # fase 18 (morreu sozinho)
 FILTRO_1_CONTRA_N = "sem aliado vivo (1 contra N)"
+FILTRO_EVENTO_ZERADO = "evento sem dano ou sem cegueira"          # fase 18: evento com 0 não é ocorrência
 FILTRO_ABAIXO_DO_LIMIAR = "abaixo do limiar da partida"
 
 FIREARMS = frozenset(ARMA_PARA_GRUPO)            # nomes de exibição das armas de fogo (rating)
@@ -190,6 +245,10 @@ class Partida:
     rounds_jogados: dict = field(default_factory=dict)   # steamid -> rounds jogados
     lados: dict = field(default_factory=dict)     # (round, steamid) -> "ct"/"t", de todos os ticks (completa quem não aparece nas kills)
     degradado: list = field(default_factory=list)
+    # fase 18
+    visao: object | None = None   # metrics.visao.Visao: quem vê quem em cada tick (None: tipos de visão não calculados)
+    tiros: pl.DataFrame | None = None   # shots: round_num, tick, player_steamid, player_yaw
+    chance: Callable | None = None      # (round, time, tick, vivos do time, vivos do adversário) -> P(vencer o round)
 
 
 # --- Ajudantes (a mesma leitura para todos os tipos) ------------------------------------------
@@ -207,10 +266,17 @@ def distancia(a: dict, b: dict, corte: float | None) -> float:
     return math.hypot(float(a["X"]) - float(b["X"]), float(a["Y"]) - float(b["Y"]))
 
 
+def _ponto(e) -> dict:
+    """{X, Y, Z} de um estado da visão (x, y, z, yaw, agachado)."""
+    return {"X": e[0], "Y": e[1], "Z": e[2]}
+
+
 class _Indice:
     """Índices da partida para as perguntas que todo tipo faz (quem está vivo, onde, cego, em duelo)."""
 
     def __init__(self, p: Partida):
+        import bisect
+        self._bisect = bisect
         self.p = p
         self.janela = int(JANELA_DE_TRADE_S * p.tickrate)
         k = p.kills.sort(["round_num", "tick"], maintain_order=True)
@@ -220,12 +286,14 @@ class _Indice:
         for r in self.kills:
             if r["victim_steamid"] is not None:
                 self.morte.setdefault((int(r["round_num"]), int(r["victim_steamid"])), int(r["tick"]))
-        # mortes trocadas: (round, tick da morte, vítima) -- a definição da fase 7
+        # mortes trocadas: (round, tick da morte, vítima) -> (quem trocou, tick da troca) -- a definição da fase 7
         pares = _pares_de_trade(p.kills, JANELA_DE_TRADE_S, p.tickrate) if p.kills.height else None
-        self.trocadas = set()
+        self.troca: dict = {}
         if pares is not None:
-            for r in pares.select("round_num", "tick_prev", "victim_steamid_prev").iter_rows():
-                self.trocadas.add((int(r[0]), int(r[1]), int(r[2])))
+            for r in (pares.sort(["round_num", "tick_prev", "tick"], maintain_order=True)
+                      .select("round_num", "tick_prev", "victim_steamid_prev", "attacker_steamid", "tick").iter_rows()):
+                self.troca.setdefault((int(r[0]), int(r[1]), int(r[2])), (int(r[3]), int(r[4])))
+        self.trocadas = set(self.troca)
         # posições por (round, tick)
         self.pos: dict = {}
         for r in p.posicoes.sort(["round_num", "tick", "steamid"]).iter_rows(named=True):
@@ -247,6 +315,17 @@ class _Indice:
         for r in self.kills:
             if self.eh_kill_inimiga(r):
                 self.abertura.setdefault(int(r["round_num"]), (int(r["tick"]), int(r["victim_steamid"])))
+        # quem jogou cada round (para contar os vivos): os lados de todos os ticks; sem eles, o time inteiro
+        self.do_round: dict = {}
+        for (rn, sid) in sorted(p.lados):
+            self.do_round.setdefault(int(rn), []).append(int(sid))
+        # tiros por jogador e round, em ordem de tick
+        self.tiros: dict = {}
+        if p.tiros is not None and p.tiros.height:
+            for r in p.tiros.sort(["round_num", "tick"], maintain_order=True).select(
+                    "round_num", "tick", "player_steamid", "player_yaw").iter_rows():
+                if r[2] is not None:
+                    self.tiros.setdefault((int(r[0]), int(r[2])), []).append((int(r[1]), r[3]))
 
     def time(self, sid) -> str | None:
         return self.p.team_of.get(int(sid)) if sid is not None else None
@@ -258,8 +337,7 @@ class _Indice:
     def jogadores_em(self, rn: int, t: int) -> list[dict]:
         """As linhas de posição do tick mais próximo ANTES ou NO instante t (o tick exato, se houver)."""
         ticks = self.ticks_do_round.get(rn) or []
-        import bisect
-        i = bisect.bisect_right(ticks, t) - 1
+        i = self._bisect.bisect_right(ticks, t) - 1
         if i < 0:
             return []
         return self.pos.get((rn, ticks[i]), [])
@@ -301,7 +379,8 @@ class _Indice:
         return round((t - int(fe)) / self.p.tickrate, 2) if fe is not None else None
 
     def filtro_do_round(self, rn: int, sid: int, t: int) -> str | None:
-        """Regra 1 do pedido (e o fim do round): eco/pistola do time, time guardando arma, ou depois do fim."""
+        """Regra 1 do pedido (e o fim do round): eco/pistola do time, time guardando arma, ou depois do fim;
+        fase 18: e o round decidido (a chance de vitória do time logo antes do evento fora da faixa)."""
         meu = self.time(sid)
         eco = self.p.rounds_de_economia
         if eco is not None and (rn, meu) in eco:
@@ -313,6 +392,9 @@ class _Indice:
             return FILTRO_GUARDANDO_ARMA
         if r.get("end") is not None and t > int(r["end"]):
             return FILTRO_FIM_DO_ROUND
+        c = self.chance(rn, sid, t)
+        if c is not None and (c > LIMIAR_ROUND_GANHO or c < LIMIAR_ROUND_PERDIDO):
+            return FILTRO_ROUND_DECIDIDO
         return None
 
     def lado(self, rn: int, sid: int) -> str | None:
@@ -342,13 +424,23 @@ class _Indice:
         return relogio_do_jogo(seg(t), seg(r.get("bomb_plant")), seg(r.get("end")))
 
     def vivos_dos_times(self, rn: int, sid: int, t: int) -> tuple[int, int]:
-        """(vivos do time de sid, vivos do adversário) no instante t, antes do evento desse tick."""
+        """(vivos do time de sid, vivos do adversário) logo ANTES do evento do tick t, contados pelas mortes:
+        quem jogou o round (os lados dos ticks; sem eles, o time inteiro) e ainda não tinha morrido.
+
+        Fase 18: antes vinham das posições gravadas, que só existem nos ticks das kills; um evento antes da
+        primeira morte do round (a flash dos 0:08) não achava posição nenhuma e saía "0 contra 0"."""
         meu = self.time(sid)
-        linhas = self.jogadores_em(rn, t - 1) or self.jogadores_em(rn, t)
-        meus = sum(1 for r in linhas if self.time(r["steamid"]) == meu and self.vivo(rn, int(r["steamid"]), t - 1))
-        deles = sum(1 for r in linhas if self.time(r["steamid"]) not in (None, meu)
-                    and self.vivo(rn, int(r["steamid"]), t - 1))
+        quem = self.do_round.get(int(rn)) or sorted(self.p.team_of)
+        meus = sum(1 for s in quem if self.time(s) == meu and self.vivo(rn, s, t - 1))
+        deles = sum(1 for s in quem if self.time(s) not in (None, meu) and self.vivo(rn, s, t - 1))
         return meus, deles
+
+    def chance(self, rn: int, sid: int, t: int) -> float | None:
+        """P(o time de `sid` vencer o round) logo antes do evento do tick t, pelo modelo de round do rating."""
+        if self.p.chance is None:
+            return None
+        meus, deles = self.vivos_dos_times(rn, sid, t)
+        return self.p.chance(int(rn), self.time(sid), int(t), meus, deles)
 
     def dwpa(self, rn: int, t: int, vitima: int, time: str | None) -> float | None:
         """Queda da chance de o `time` vencer a PARTIDA na kill de `vitima` (negativa = queda)."""
@@ -359,19 +451,144 @@ class _Indice:
         delta = v["delta"] if self.time(vitima) == time else -v["delta"]
         return delta * alav
 
+    # --- fase 18: troca pelo fato e visão --------------------------------------------------------
+
+    def trocada(self, rn: int, t: int, vitima: int, pos_vitima: dict | None = None) -> tuple:
+        """(foi trocada, quem trocou, distância de quem trocou até a vítima na hora da morte)."""
+        tr = self.troca.get((int(rn), int(t), int(vitima)))
+        if tr is None:
+            return False, None, None
+        quem = tr[0]
+        d = None
+        if pos_vitima is not None and self.p.visao is not None:
+            e = self.p.visao.estado(rn, quem, t)
+            if e is not None:
+                d = distancia(_ponto(e), pos_vitima, self.p.corte_de_andar)
+        return True, quem, d
+
+    def fim_da_janela(self, rn: int, t: int, *quem) -> int:
+        """Último tick da janela de troca que começa em t: o fim da janela, o tick antes da morte de cada um de
+        `quem` (morto não vê nem é visto) e o fim do round."""
+        fim = t + self.janela
+        for s in quem:
+            m = self.morte.get((rn, int(s)))
+            if m is not None and m > t:
+                fim = min(fim, m - 1)
+        end = (self.rounds.get(rn) or {}).get("end")
+        if end is not None:
+            fim = min(fim, int(end))
+        return fim
+
+    def visao_do_matador(self, rn: int, t: int, fim: int, obs: int, matador: int) -> list[tuple[int, bool]]:
+        """[(tick, o matador estava visível para `obs`)] nas amostras de t a fim."""
+        v = self.p.visao
+        if v is None or fim < t:
+            return []
+        return [(s, v.visivel(rn, s, obs, matador)) for s in v.amostras(t, fim)]
+
+    def segundos_visivel(self, amostras: list[tuple[int, bool]]) -> float:
+        """Tempo (s) em que o matador ficou visível: cada amostra visível vale até a próxima amostra."""
+        tot = 0
+        for i, (s, vis) in enumerate(amostras):
+            if vis:
+                prox = amostras[i + 1][0] if i + 1 < len(amostras) else s + 1
+                tot += prox - s
+        return round(tot / self.p.tickrate, 2)
+
+    def deu_dano(self, rn: int, de: int, em: int, t0: int, t1: int) -> float:
+        return float(sum(float(d["dmg_health_real"] or 0) for d in self.dano
+                         if int(d["round_num"]) == rn and t0 <= d["tick"] <= t1 and d["attacker_steamid"] is not None
+                         and int(d["attacker_steamid"]) == de and d["victim_steamid"] is not None
+                         and int(d["victim_steamid"]) == em))
+
+    def atirou_nele(self, rn: int, de: int, em: int, t0: int, t1: int) -> bool:
+        """Um tiro de `de` entre t0 e t1 com `em` visível e a mira a menos de CONE_DO_TIRO_GRAUS dele."""
+        from metrics.visao import angulo_horizontal
+        v = self.p.visao
+        if v is None:
+            return False
+        for tk, yaw in self.tiros.get((int(rn), int(de)), []):
+            if tk < t0 or tk > t1 or yaw is None:
+                continue
+            eo, ea = v.estado(rn, de, tk), v.estado(rn, em, tk)
+            if eo is None or ea is None:
+                continue
+            if angulo_horizontal(float(yaw), eo, ea) < CONE_DO_TIRO_GRAUS and v.visivel(rn, tk, de, em):
+                return True
+        return False
+
+    def movimento(self, rn: int, obs: int, matador: int, amostras: list[tuple[int, bool]]) -> tuple:
+        """Com o matador PARADO onde estava na primeira amostra em que ficou visível: (o quanto o jogador se
+        afastou dele no máximo, o quanto se aproximou no máximo, se saiu da linha de visão andando).
+
+        "Saiu da linha de visão andando": numa amostra posterior o matador deixou de estar visível E, da
+        posição nova do jogador, a linha até a última posição em que o matador foi visto também está fechada
+        (foi o jogador que se mexeu, não o matador)."""
+        v = self.p.visao
+        vis = [s for s, ok in amostras if ok]
+        if v is None or not vis:
+            return 0.0, 0.0, False
+        s0 = vis[0]
+        e_m0, e_j0 = v.estado(rn, matador, s0), v.estado(rn, obs, s0)
+        if e_m0 is None or e_j0 is None:
+            return 0.0, 0.0, False
+        d0 = math.hypot(e_j0[0] - e_m0[0], e_j0[1] - e_m0[1])
+        longe = perto = 0.0
+        saiu = False
+        ultimo_visto = s0
+        for s, ok in amostras:
+            if s <= s0:
+                continue
+            e_j = v.estado(rn, obs, s)
+            if e_j is None:
+                continue
+            d = math.hypot(e_j[0] - e_m0[0], e_j[1] - e_m0[1])
+            longe, perto = max(longe, d - d0), max(perto, d0 - d)
+            if ok:
+                ultimo_visto = s
+            elif not saiu:
+                e_mv = v.estado(rn, matador, ultimo_visto)
+                if e_mv is not None and not v.linha_de_visao(rn, s, obs, matador, pos_obs=e_j, pos_alvo=e_mv):
+                    saiu = True
+        return round(longe, 1), round(perto, 1), saiu
+
+    def inimigos_visiveis(self, rn: int, obs: int, t0: int, t1: int) -> int:
+        """O maior número de inimigos vivos visíveis para `obs` AO MESMO TEMPO numa amostra de t0 a t1."""
+        v = self.p.visao
+        if v is None or t1 < t0:
+            return 0
+        meu = self.time(obs)
+        inimigos = [s for s in (self.do_round.get(int(rn)) or sorted(self.p.team_of))
+                    if self.time(s) not in (None, meu)]
+        maior = 0
+        for s in v.amostras(t0, t1):
+            n = sum(1 for x in inimigos if self.vivo(rn, x, s) and v.visivel(rn, s, obs, x))
+            maior = max(maior, n)
+        return maior
+
 
 def _base(ix: _Indice, tipo: str, rn: int, t: int, sid: int) -> dict:
     nome = ix.p.nomes.get(int(sid), str(sid))
     meus, deles = ix.vivos_dos_times(rn, sid, t)
+    c = ix.chance(rn, sid, t)
     return {"tipo": tipo, "match_id": ix.p.match_id, "round_num": rn, "tick": int(t), "segundos": ix.segundos(rn, t),
             "relogio": ix.relogio(rn, t), "steamid": int(sid), "name": nome, "side": ix.lado(rn, sid), "aliado_steamid": None, "aliado": None,
             "matador_steamid": None, "matador": None, "dist_aliado": None, "dist_matador_jogador": None,
             "dist_matador_aliado": None, "vivos_time": meus, "vivos_adversario": deles, "dwpa": None,
-            "valor": None, "filtro": None}
+            "valor": None, "filtro": None,
+            # fase 18: as colunas para julgar o lance
+            "chance_vitoria": None if c is None else round(float(c), 4), "matador_visivel": None,
+            "seg_matador_visivel": None, "atirou_no_matador": None, "dano_no_matador": None, "recuo": None,
+            "saiu_da_linha": None, "inimigos_visiveis": None, "trocada": None, "trocada_por_steamid": None,
+            "trocada_por": None, "dist_de_quem_trocou": None, "valor_soma_lado": None}
 
 
 def _r(x: float | None) -> float | None:
     return None if x is None or math.isinf(x) else round(float(x), 1)
+
+
+def _pos(k: dict, quem: str) -> dict:
+    return {"X": k[f"{quem}_X"], "Y": k[f"{quem}_Y"], "Z": k[f"{quem}_Z"]}
 
 
 # --- Tipos 1 e 2: não trocou o aliado e possível bait ----------------------------------------
@@ -383,64 +600,81 @@ def _mortes_de_aliado(ix: _Indice):
             yield k, int(k["round_num"]), int(k["tick"]), int(k["victim_steamid"]), int(k["attacker_steamid"])
 
 
-def nao_trocou(p: Partida, dist_troca: float = DIST_TROCA, s_duelo: float = S_DUELO,
-               _ix: _Indice | None = None) -> list[dict]:
-    """Um aliado morre; o jogador estava vivo, a no máximo `dist_troca` do aliado, e o matador NÃO morre
-    dentro da janela de troca (a morte não foi trocada, fase 7). Fica de fora: o jogador cego no momento,
-    em duelo próprio (levou ou causou dano nos `s_duelo` segundos antes) ou sem arma de fogo."""
-    ix = _ix or _Indice(p)
+def _candidatos_nao_trocou(p: Partida, s_duelo: float, ix: _Indice) -> list[dict]:
+    """Toda morte de aliado NÃO trocada, para cada companheiro vivo: a ocorrência com as colunas de visão, o
+    engajamento e o recuo já medidos e o filtro dos que não contam (fase 18). Base de "não trocou" e de
+    "possível bait"."""
     out = []
     for k, rn, t, v, a in _mortes_de_aliado(ix):
         if (rn, t, v) in ix.trocadas:
-            continue
-        pos_v = {"X": k["victim_X"], "Y": k["victim_Y"], "Z": k["victim_Z"]}
-        pos_a = {"X": k["attacker_X"], "Y": k["attacker_Y"], "Z": k["attacker_Z"]}
+            continue                          # morte trocada não é erro de ninguém (e não é candidata)
+        pos_v, pos_a = _pos(k, "victim"), _pos(k, "attacker")
         for r in ix.aliados_vivos(rn, v, t):
-            d = distancia(r, pos_v, p.corte_de_andar)
-            if d > dist_troca:
-                continue
             sid = int(r["steamid"])
+            fim = ix.fim_da_janela(rn, t, sid, a)
+            amostras = ix.visao_do_matador(rn, t, fim, sid, a)
+            visto = any(ok for _, ok in amostras)
+            atirou = ix.atirou_nele(rn, sid, a, t, fim)
+            dano = ix.deu_dano(rn, sid, a, t, fim)
+            longe, _, saiu = ix.movimento(rn, sid, a, amostras)
             oc = _base(ix, NAO_TROCOU, rn, t, sid)
             oc.update(aliado_steamid=v, aliado=p.nomes.get(v, str(v)), matador_steamid=a,
-                      matador=p.nomes.get(a, str(a)), dist_aliado=_r(d),
+                      matador=p.nomes.get(a, str(a)), dist_aliado=_r(distancia(r, pos_v, p.corte_de_andar)),
                       dist_matador_jogador=_r(distancia(r, pos_a, p.corte_de_andar)),
                       dist_matador_aliado=_r(distancia(pos_v, pos_a, p.corte_de_andar)),
-                      dwpa=ix.dwpa(rn, t, v, ix.time(sid)))
+                      dwpa=ix.dwpa(rn, t, v, ix.time(sid)), matador_visivel=visto,
+                      seg_matador_visivel=ix.segundos_visivel(amostras), atirou_no_matador=atirou,
+                      dano_no_matador=round(dano, 1), recuo=longe, saiu_da_linha=saiu, trocada=False)
             oc["filtro"] = (ix.filtro_do_round(rn, sid, t)
                             or (FILTRO_CEGO if ix.cego(rn, sid, t) else None)
                             or (FILTRO_DUELO if ix.em_duelo(rn, sid, t, s_duelo) else None)
-                            or (None if ix.tem_arma(rn, sid, t) else FILTRO_SEM_ARMA))
+                            or (None if ix.tem_arma(rn, sid, t) else FILTRO_SEM_ARMA)
+                            or (None if visto else FILTRO_MATADOR_FORA_DA_VISAO))
             out.append(oc)
     return out
 
 
+def nao_trocou(p: Partida, dist_troca: float = DIST_TROCA, s_duelo: float = S_DUELO,
+               _ix: _Indice | None = None, _cand: list | None = None) -> list[dict]:
+    """Um aliado morre, a morte NÃO é trocada (o matador não morre por um aliado dentro da janela: o fato, não a
+    distância), e o matador ficou VISÍVEL para o jogador em algum momento da janela (fase 18). Fica de fora: o
+    matador nunca visível para ele (abriu pela lateral, matou e recuou), o jogador cego no momento, em duelo
+    próprio (levou ou causou dano nos `s_duelo` segundos antes), sem arma de fogo, e os filtros do round
+    (eco, time guardando arma, depois do fim, round decidido). `dist_troca` não é mais critério (fica no
+    argumento para a varredura do material, que mostra que ele não muda nada)."""
+    ix = _ix or _Indice(p)
+    return [dict(oc) for oc in (_cand if _cand is not None else _candidatos_nao_trocou(p, s_duelo, ix))]
+
+
 def possivel_bait(p: Partida, dist_troca: float = DIST_TROCA, s_duelo: float = S_DUELO,
-                  _ix: _Indice | None = None) -> list[dict]:
-    """Subconjunto de "não trocou": o jogador estava ATRÁS do aliado em relação ao matador (mais longe do
-    matador do que o aliado), não causou dano ao matador na janela e sobreviveu à janela. Os filtros são os
-    mesmos de "não trocou". Sempre "possível": o dado mostra posição e tempo, não intenção."""
+                  recuo_minimo: float = RECUO_MINIMO, _ix: _Indice | None = None,
+                  _cand: list | None = None) -> list[dict]:
+    """Subconjunto de "não trocou" (fase 18): com o matador visível, o jogador NÃO engajou (não atirou nele nem
+    causou dano na janela) E se escondeu ou recuou: a distância até o matador (parado onde ficou visível) subiu
+    mais que `recuo_minimo`, ou o jogador saiu da linha de visão andando (e não porque o matador se mexeu).
+    O critério antigo de "estar atrás do aliado" saiu (o empate de distância nunca conta como atrás). Os
+    filtros de "não trocou" valem aqui; os que não engajaram mas não recuaram ficam com o motivo."""
     ix = _ix or _Indice(p)
     out = []
-    for oc in nao_trocou(p, dist_troca, s_duelo, _ix=ix):
-        rn, t, sid, a = oc["round_num"], oc["tick"], oc["steamid"], oc["matador_steamid"]
-        dj, da = oc["dist_matador_jogador"], oc["dist_matador_aliado"]
-        if dj is None or da is None or not dj > da:
-            continue
-        fim = t + ix.janela
-        atirou = any(int(d["round_num"]) == rn and t < d["tick"] <= fim and d["attacker_steamid"] is not None
-                     and int(d["attacker_steamid"]) == sid and d["victim_steamid"] is not None
-                     and int(d["victim_steamid"]) == a for d in ix.dano)
-        if atirou or not ix.vivo(rn, sid, fim):
-            continue
-        out.append({**oc, "tipo": POSSIVEL_BAIT})
+    for oc in (_cand if _cand is not None else _candidatos_nao_trocou(p, s_duelo, ix)):
+        b = {**oc, "tipo": POSSIVEL_BAIT}
+        if b["filtro"] is None:
+            if b["atirou_no_matador"] or (b["dano_no_matador"] or 0) > 0:
+                b["filtro"] = FILTRO_ENGAJOU
+            elif not ((b["recuo"] or 0) > recuo_minimo or b["saiu_da_linha"]):
+                b["filtro"] = FILTRO_NAO_RECUOU
+        out.append(b)
     return out
 
 
 # --- Tipo 3: perdeu a troca --------------------------------------------------------------------
 
-def perdeu_a_troca(p: Partida, _ix: _Indice | None = None) -> list[dict]:
-    """Um aliado morre; o jogador vai para a troca (causa dano ao matador ou morre para ele dentro da
-    janela) e morre dentro da janela sem matar o matador."""
+def perdeu_a_troca(p: Partida, recuo_minimo: float = RECUO_MINIMO, _ix: _Indice | None = None) -> list[dict]:
+    """Um aliado morre; o jogador ENGAJA o matador dentro da janela (atira nele, causa dano, ou anda mais que
+    `recuo_minimo` na direção dele com ele visível) e morre dentro da janela sem matá-lo, com no máximo UM
+    inimigo visível para ele ao mesmo tempo (fase 18). Dois ou mais visíveis: "enfrentou dois ou mais ao mesmo
+    tempo" (registrado com esse filtro, nunca erro). Sem engajamento não é tentativa de troca (morrer para o
+    mesmo inimigo num duelo separado é morrer sozinho). A morte do jogador trocada: fora."""
     ix = _ix or _Indice(p)
     out = []
     for k, rn, t, v, a in _mortes_de_aliado(ix):
@@ -454,56 +688,73 @@ def perdeu_a_troca(p: Partida, _ix: _Indice | None = None) -> list[dict]:
                         and int(x["attacker_steamid"]) == sid and int(x["victim_steamid"]) == a for x in ix.kills)
             if matou:
                 continue
-            deu_dano = any(int(d["round_num"]) == rn and t < d["tick"] <= fim and d["attacker_steamid"] is not None
-                           and int(d["attacker_steamid"]) == sid and d["victim_steamid"] is not None
-                           and int(d["victim_steamid"]) == a for d in ix.dano)
-            morreu_para_ele = any(int(x["round_num"]) == rn and x["tick"] == morte and int(x["victim_steamid"]) == sid
-                                  and x["attacker_steamid"] is not None and int(x["attacker_steamid"]) == a
-                                  for x in ix.kills)
-            if not (deu_dano or morreu_para_ele):
-                continue
+            fim_j = ix.fim_da_janela(rn, t, sid, a)
+            amostras = ix.visao_do_matador(rn, t, fim_j, sid, a)
+            visto = any(ok for _, ok in amostras)
+            dano = ix.deu_dano(rn, sid, a, t, morte)
+            atirou = ix.atirou_nele(rn, sid, a, t, morte)
+            longe, perto, saiu = ix.movimento(rn, sid, a, amostras)
+            andou = visto and perto > recuo_minimo
+            n_vis = ix.inimigos_visiveis(rn, sid, t, fim_j)
+            pos_v, pos_a = _pos(k, "victim"), _pos(k, "attacker")
+            k_morte = next((x for x in ix.kills if int(x["round_num"]) == rn and int(x["tick"]) == morte
+                            and x["victim_steamid"] is not None and int(x["victim_steamid"]) == sid), None)
+            pos_j = _pos(k_morte, "victim") if k_morte is not None else r
+            foi, quem, d_quem = ix.trocada(rn, morte, sid, pos_j)
             oc = _base(ix, PERDEU_A_TROCA, rn, morte, sid)
-            pos_v = {"X": k["victim_X"], "Y": k["victim_Y"], "Z": k["victim_Z"]}
-            pos_a = {"X": k["attacker_X"], "Y": k["attacker_Y"], "Z": k["attacker_Z"]}
             oc.update(aliado_steamid=v, aliado=p.nomes.get(v, str(v)), matador_steamid=a,
                       matador=p.nomes.get(a, str(a)), dist_aliado=_r(distancia(r, pos_v, p.corte_de_andar)),
                       dist_matador_jogador=_r(distancia(r, pos_a, p.corte_de_andar)),
                       dist_matador_aliado=_r(distancia(pos_v, pos_a, p.corte_de_andar)),
-                      dwpa=ix.dwpa(rn, morte, sid, ix.time(sid)))
-            oc["filtro"] = ix.filtro_do_round(rn, sid, morte)
+                      dwpa=ix.dwpa(rn, morte, sid, ix.time(sid)), matador_visivel=visto,
+                      seg_matador_visivel=ix.segundos_visivel(amostras), atirou_no_matador=atirou,
+                      dano_no_matador=round(dano, 1), recuo=longe, saiu_da_linha=saiu, inimigos_visiveis=n_vis,
+                      trocada=foi, trocada_por_steamid=quem, trocada_por=None if quem is None else p.nomes.get(quem, str(quem)),
+                      dist_de_quem_trocou=_r(d_quem))
+            engajou = atirou or dano > 0 or andou
+            oc["filtro"] = (ix.filtro_do_round(rn, sid, morte)
+                            or (FILTRO_MORTE_TROCADA if foi else None)
+                            or (None if engajou else FILTRO_SEM_ENGAJAMENTO)
+                            or (FILTRO_DOIS_OU_MAIS if n_vis >= 2 else None))
             out.append(oc)
     return out
 
 
-# --- Tipos 4 e 5: morreu isolado e primeira morte sem troca ---------------------------------------
+# --- Tipos 4 e 5: morreu sozinho e primeira morte sem troca ---------------------------------------
 
-def morreu_isolado(p: Partida, dist_troca: float = DIST_TROCA, _ix: _Indice | None = None) -> list[dict]:
-    """A morte do jogador não é trocada e NENHUM aliado vivo estava a até `dist_troca` dele. Fica de fora
-    a situação de 1 contra N (sem aliado vivo para ajudar)."""
+def morreu_sozinho(p: Partida, dist_troca: float = DIST_TROCA, _ix: _Indice | None = None) -> list[dict]:
+    """A morte do jogador NÃO é trocada (pelo fato, qualquer distância) e nenhum aliado vivo tinha o matador
+    visível na janela nem estava a até `dist_troca` dele (fase 18; era "morreu isolado", só pela distância).
+    Fica de fora a situação de 1 contra N (sem aliado vivo para ajudar) e o round decidido."""
     ix = _ix or _Indice(p)
     out = []
     for k, rn, t, v, a in _mortes_de_aliado(ix):
         if (rn, t, v) in ix.trocadas:
             continue
-        pos_v = {"X": k["victim_X"], "Y": k["victim_Y"], "Z": k["victim_Z"]}
+        pos_v = _pos(k, "victim")
         vivos = ix.aliados_vivos(rn, v, t)
         dists = [distancia(r, pos_v, p.corte_de_andar) for r in vivos]
         mais_perto = min(dists) if dists else None
-        if mais_perto is not None and mais_perto <= dist_troca:
-            continue
-        oc = _base(ix, MORREU_ISOLADO, rn, t, v)
+        perto = mais_perto is not None and mais_perto <= dist_troca
+        viu = False
+        for r in vivos:
+            fim = ix.fim_da_janela(rn, t, int(r["steamid"]), a)
+            if any(ok for _, ok in ix.visao_do_matador(rn, t, fim, int(r["steamid"]), a)):
+                viu = True
+                break
+        oc = _base(ix, MORREU_SOZINHO, rn, t, v)
         oc.update(matador_steamid=a, matador=p.nomes.get(a, str(a)), dist_aliado=_r(mais_perto),
-                  dist_matador_jogador=_r(distancia(pos_v, {"X": k["attacker_X"], "Y": k["attacker_Y"],
-                                                            "Z": k["attacker_Z"]}, p.corte_de_andar)),
-                  dwpa=ix.dwpa(rn, t, v, ix.time(v)))
-        oc["filtro"] = ix.filtro_do_round(rn, v, t) or (FILTRO_1_CONTRA_N if not vivos else None)
+                  dist_matador_jogador=_r(distancia(pos_v, _pos(k, "attacker"), p.corte_de_andar)),
+                  dwpa=ix.dwpa(rn, t, v, ix.time(v)), matador_visivel=viu, trocada=False)
+        oc["filtro"] = (ix.filtro_do_round(rn, v, t) or (FILTRO_1_CONTRA_N if not vivos else None)
+                        or (FILTRO_ALIADO_COM_O_MATADOR if (perto or viu) else None))
         out.append(oc)
     return out
 
 
 def primeira_morte_sem_troca(p: Partida, _ix: _Indice | None = None) -> list[dict]:
     """O jogador sofre a primeira morte do round (a primeira kill de inimigo, a mesma abertura de
-    metrics/impacto) e ela não é trocada."""
+    metrics/impacto) e ela não é trocada (pelo fato: o matador não morreu por um aliado na janela)."""
     ix = _ix or _Indice(p)
     out = []
     for k, rn, t, v, a in _mortes_de_aliado(ix):
@@ -511,27 +762,26 @@ def primeira_morte_sem_troca(p: Partida, _ix: _Indice | None = None) -> list[dic
             continue
         oc = _base(ix, PRIMEIRA_MORTE_SEM_TROCA, rn, t, v)
         oc.update(matador_steamid=a, matador=p.nomes.get(a, str(a)),
-                  dist_matador_jogador=_r(distancia({"X": k["victim_X"], "Y": k["victim_Y"], "Z": k["victim_Z"]},
-                                                    {"X": k["attacker_X"], "Y": k["attacker_Y"], "Z": k["attacker_Z"]},
-                                                    p.corte_de_andar)),
-                  dwpa=ix.dwpa(rn, t, v, ix.time(v)))
+                  dist_matador_jogador=_r(distancia(_pos(k, "victim"), _pos(k, "attacker"), p.corte_de_andar)),
+                  dwpa=ix.dwpa(rn, t, v, ix.time(v)), trocada=False)
         vivos = ix.aliados_vivos(rn, v, t)
         if vivos:
-            pos_v = {"X": k["victim_X"], "Y": k["victim_Y"], "Z": k["victim_Z"]}
+            pos_v = _pos(k, "victim")
             oc["dist_aliado"] = _r(min(distancia(r, pos_v, p.corte_de_andar) for r in vivos))
         oc["filtro"] = ix.filtro_do_round(rn, v, t)
         out.append(oc)
     return out
 
 
-# --- Tipos 7 e 8: flash no time e dano de utilidade no time --------------------------------------
+# --- Tipos 6 e 7: flash no time e dano de utilidade no time --------------------------------------
 
 def flash_no_time(p: Partida, seg_aliado: float = SEG_CEGUEIRA_ALIADO, seg_uma: float = SEG_CEGUEIRA_ALIADO_UMA,
                   _ix: _Indice | None = None) -> list[dict]:
-    """A cegueira imposta a aliados passa de `seg_aliado` na partida (soma) ou de `seg_uma` numa flash só.
+    """A cegueira imposta a aliados passa de `seg_aliado` no lado (soma) ou de `seg_uma` numa flash só.
     Uma ocorrência por flash que cegou companheiro (a mesma detonação: mesmo arremessador e mesmo tick);
-    `valor` é a soma dos segundos de cegueira nos aliados daquela flash. Com a soma da partida abaixo do
-    limiar, só a flash acima de `seg_uma` conta; as outras ficam de fora com o motivo."""
+    `valor` é a soma dos segundos de cegueira nos aliados daquela flash e `valor_soma_lado` a soma do
+    jogador naquele lado. Com a soma abaixo do limiar, só a flash acima de `seg_uma` conta; as outras ficam
+    de fora com o motivo. Uma flash com 0 s de cegueira não é ocorrência (fase 18)."""
     ix = _ix or _Indice(p)
     if p.blinds is None or p.blinds.height == 0:
         return []
@@ -548,7 +798,7 @@ def flash_no_time(p: Partida, seg_aliado: float = SEG_CEGUEIRA_ALIADO, seg_uma: 
         maior = max(cegos, key=lambda c: (c[1], -c[0]))
         oc.update(aliado_steamid=maior[0], aliado=p.nomes.get(maior[0], str(maior[0])),
                   valor=round(sum(d for _, d in cegos), 2))
-        oc["filtro"] = ix.filtro_do_round(rn, a, t)
+        oc["filtro"] = ix.filtro_do_round(rn, a, t) or (FILTRO_EVENTO_ZERADO if not oc["valor"] > 0 else None)
         out.append(oc)
     _aplica_limiar(out, seg_aliado, seg_uma)
     return out
@@ -557,13 +807,15 @@ def flash_no_time(p: Partida, seg_aliado: float = SEG_CEGUEIRA_ALIADO, seg_uma: 
 def _aplica_limiar(out: list[dict], limiar_partida: float, limiar_um: float | None) -> None:
     """Soma por (jogador, LADO) nas ocorrências que passaram nos filtros; abaixo do limiar, só o evento
     acima do limiar de um evento (se houver) continua. Fase 15 (decisão 46): todo erro é de um lado só,
-    então a soma e o limiar valem para cada lado (antes a soma era da partida, juntando CT e TR)."""
+    então a soma e o limiar valem para cada lado (antes a soma era da partida, juntando CT e TR).
+    Fase 18: a soma vai para `valor_soma_lado` em cada evento (o material mostra o evento e a soma)."""
     soma: dict = {}
     for oc in out:
         if oc["filtro"] is None:
             chave = (oc["steamid"], oc["side"])
             soma[chave] = soma.get(chave, 0.0) + oc["valor"]
     for oc in out:
+        oc["valor_soma_lado"] = round(soma.get((oc["steamid"], oc["side"]), 0.0), 2)
         if oc["filtro"] is not None or soma.get((oc["steamid"], oc["side"]), 0.0) > limiar_partida:
             continue
         if limiar_um is not None and oc["valor"] > limiar_um:
@@ -573,9 +825,14 @@ def _aplica_limiar(out: list[dict], limiar_partida: float, limiar_um: float | No
 
 def dano_de_utilidade_no_time(p: Partida, dano_aliado: float = DANO_UTILIDADE_ALIADO,
                               _ix: _Indice | None = None) -> list[dict]:
-    """O dano de HE ou molotov em aliados passa de `dano_aliado` na partida. Uma ocorrência por (round,
-    granada): HE pelo tick da explosão, o fogo da molotov junto no round; `valor` é o dano no próprio time.
-    O ΔWPA existe quando a granada matou o aliado (a kill tem variação no modelo); sem morte, é nulo."""
+    """O dano de HE ou molotov em aliados passa de `dano_aliado` no lado. Uma ocorrência por (round,
+    granada): HE pelo tick da explosão, o fogo da molotov junto no round; `valor` é o dano no próprio time e
+    `valor_soma_lado` a soma do jogador naquele lado. O ΔWPA existe quando a granada matou o aliado (a kill
+    tem variação no modelo); sem morte, é nulo.
+
+    Fase 18: um evento com 0 de dano não é ocorrência (`FILTRO_EVENTO_ZERADO`). O 0 vem do próprio jogo: o
+    `player_hurt` de granada em companheiro chega com `dmg_health` 0 e `dmg_armor` 0 (o aliado na borda da
+    explosão); antes, esse evento entrava se a SOMA do jogador no lado passasse do limiar."""
     ix = _ix or _Indice(p)
     grupos: dict = {}
     for d in ix.dano:
@@ -606,7 +863,7 @@ def dano_de_utilidade_no_time(p: Partida, dano_aliado: float = DANO_UTILIDADE_AL
                     and (k["weapon"] in HE_WEAPONS or k["weapon"] in FIRE_WEAPONS)):
                 oc["dwpa"] = ix.dwpa(rn, int(k["tick"]), int(k["victim_steamid"]), ix.time(a))
                 break
-        oc["filtro"] = ix.filtro_do_round(rn, a, g["tick"])
+        oc["filtro"] = ix.filtro_do_round(rn, a, g["tick"]) or (FILTRO_EVENTO_ZERADO if not oc["valor"] > 0 else None)
         out.append(oc)
     _aplica_limiar(out, dano_aliado, None)
     return out
@@ -616,7 +873,8 @@ def dano_de_utilidade_no_time(p: Partida, dano_aliado: float = DANO_UTILIDADE_AL
 
 def nivel_e_motivo(oc: dict, p: Partida, abertura: tuple | None = None) -> tuple[str | None, str | None]:
     """(nível, motivo) de uma ocorrência, pela ordem de regras do pedido; a primeira que se aplica decide.
-    Ocorrência com filtro (regra 1 e os filtros do tipo) fica de fora: (None, None)."""
+    Ocorrência com filtro (regra 1 e os filtros do tipo) fica de fora: (None, None). Fase 18: "não trocou" e
+    "possível bait" só existem com o matador visível (é condição de entrada), então saem sempre explícitos."""
     if oc.get("filtro") is not None:
         return None, None                                                     # regra 1 e filtros do tipo
     tipo = oc["tipo"]
@@ -626,11 +884,11 @@ def nivel_e_motivo(oc: dict, p: Partida, abertura: tuple | None = None) -> tuple
     def com_tendencia(motivo: str) -> str:                                   # regra 5
         return f"{motivo}; {MOTIVO_TENDENCIA}" if tendencia else motivo
 
-    if tipo == MORREU_ISOLADO and funcao == "lurker":
+    if tipo == MORREU_SOZINHO and funcao == "lurker":
         return DEPENDE, com_tendencia(MOTIVO_LURKER)                         # regra 2
     if tipo == PRIMEIRA_MORTE_SEM_TROCA and funcao == "entry":
         return DEPENDE, com_tendencia(MOTIVO_ENTRY)                          # regra 3
-    if tipo in (MORREU_ISOLADO, PRIMEIRA_MORTE_SEM_TROCA):
+    if tipo in (MORREU_SOZINHO, PRIMEIRA_MORTE_SEM_TROCA):
         eh_awper = funcao == "awper" or oc["steamid"] in p.awpers
         abriu = tipo == PRIMEIRA_MORTE_SEM_TROCA or abertura == (oc["tick"], oc["steamid"])
         if eh_awper and abriu:
@@ -644,12 +902,16 @@ def ocorrencias(p: Partida, **constantes) -> pl.DataFrame:
     """Todas as ocorrências de todos os tipos, com filtro, nível e motivo. Ordem determinística:
     tipo (na ordem de TIPOS), round, tick, jogador.
 
-    `constantes` troca DIST_TROCA, S_DUELO e os limiares (o material de calibração varre as faixas)."""
+    `constantes` troca DIST_TROCA, S_DUELO, RECUO_MINIMO e os limiares (o material de calibração varre as
+    faixas). LIMIAR_ROUND_GANHO e LIMIAR_ROUND_PERDIDO são lidos do módulo (a varredura os troca nele)."""
     ix = _Indice(p)
     dist = constantes.get("dist_troca", DIST_TROCA)
     s_duelo = constantes.get("s_duelo", S_DUELO)
-    linhas = (nao_trocou(p, dist, s_duelo, _ix=ix) + possivel_bait(p, dist, s_duelo, _ix=ix)
-              + perdeu_a_troca(p, _ix=ix) + morreu_isolado(p, dist, _ix=ix) + primeira_morte_sem_troca(p, _ix=ix)
+    recuo = constantes.get("recuo_minimo", RECUO_MINIMO)
+    cand = _candidatos_nao_trocou(p, s_duelo, ix)
+    linhas = (nao_trocou(p, dist, s_duelo, _ix=ix, _cand=cand)
+              + possivel_bait(p, dist, s_duelo, recuo, _ix=ix, _cand=cand)
+              + perdeu_a_troca(p, recuo, _ix=ix) + morreu_sozinho(p, dist, _ix=ix) + primeira_morte_sem_troca(p, _ix=ix)
               + flash_no_time(p, constantes.get("seg_aliado", SEG_CEGUEIRA_ALIADO),
                               constantes.get("seg_uma", SEG_CEGUEIRA_ALIADO_UMA), _ix=ix)
               + dano_de_utilidade_no_time(p, constantes.get("dano_aliado", DANO_UTILIDADE_ALIADO), _ix=ix))
@@ -668,6 +930,12 @@ ESQUEMA = {
     "matador_steamid": pl.UInt64, "matador": pl.String, "dist_aliado": pl.Float64,
     "dist_matador_jogador": pl.Float64, "dist_matador_aliado": pl.Float64, "vivos_time": pl.Int64,
     "vivos_adversario": pl.Int64, "dwpa": pl.Float64, "valor": pl.Float64, "filtro": pl.String,
+    # fase 18
+    "chance_vitoria": pl.Float64, "matador_visivel": pl.Boolean, "seg_matador_visivel": pl.Float64,
+    "atirou_no_matador": pl.Boolean, "dano_no_matador": pl.Float64, "recuo": pl.Float64,
+    "saiu_da_linha": pl.Boolean, "inimigos_visiveis": pl.Int64, "trocada": pl.Boolean,
+    "trocada_por_steamid": pl.UInt64, "trocada_por": pl.String, "dist_de_quem_trocou": pl.Float64,
+    "valor_soma_lado": pl.Float64,
     "nivel": pl.String, "motivo": pl.String,
 }
 
@@ -678,6 +946,32 @@ def por_jogador(tabela: pl.DataFrame) -> dict[int, list[dict]]:
     for oc in tabela.filter(pl.col("filtro").is_null()).iter_rows(named=True):
         out.setdefault(int(oc["steamid"]), []).append(oc)
     return out
+
+
+# --- Toda morte do corpus: trocada ou não, e por quem (fase 18) ------------------------------------
+
+ARQUIVO_MORTES = "mortes.parquet"
+ESQUEMA_MORTES = {"match_id": pl.String, "round_num": pl.Int64, "tick": pl.Int64, "victim_steamid": pl.UInt64,
+                  "vitima": pl.String, "attacker_steamid": pl.UInt64, "matador": pl.String, "trocada": pl.Boolean,
+                  "trocada_por_steamid": pl.UInt64, "trocada_por": pl.String, "tick_da_troca": pl.Int64,
+                  "dist_de_quem_trocou": pl.Float64}
+
+
+def mortes_trocadas(p: Partida) -> pl.DataFrame:
+    """Uma linha por morte por inimigo: se foi trocada (o matador morreu por um aliado da vítima dentro da
+    janela de troca, a definição da fase 7) e por quem, com a distância de quem trocou até a vítima na hora
+    da morte (no mesmo andar; vazia em andares diferentes ou sem posição)."""
+    ix = _Indice(p)
+    linhas = []
+    for k, rn, t, v, a in _mortes_de_aliado(ix):
+        foi, quem, d = ix.trocada(rn, t, v, _pos(k, "victim"))
+        tr = ix.troca.get((rn, t, v))
+        linhas.append({"match_id": p.match_id, "round_num": rn, "tick": t, "victim_steamid": v,
+                       "vitima": p.nomes.get(v, str(v)), "attacker_steamid": a, "matador": p.nomes.get(a, str(a)),
+                       "trocada": foi, "trocada_por_steamid": quem,
+                       "trocada_por": None if quem is None else p.nomes.get(quem, str(quem)),
+                       "tick_da_troca": None if tr is None else tr[1], "dist_de_quem_trocou": _r(d)})
+    return pl.DataFrame(linhas, schema=ESQUEMA_MORTES, orient="row") if linhas else pl.DataFrame(schema=ESQUEMA_MORTES)
 
 
 # --- Montagem a partir do processado e do interim ------------------------------------------------
@@ -692,6 +986,31 @@ def _primeira_arma(ticks: pl.DataFrame, rounds: pl.DataFrame) -> dict:
     return {(int(r[0]), int(r[1])): int(r[2]) for r in com_arma.iter_rows()}
 
 
+def _funcao_de_chance(kills, rounds, grupos, modelo, team_of, tickrate) -> Callable:
+    """P(time vencer o round) num tick, com os vivos dados: o mesmo modelo de round do rating e o mesmo
+    estado completo (`rating._estado_completo`: vivos, equipamento, bomba, lado e tempo)."""
+    import numpy as np
+
+    from metrics.rating import _equip_do_time, _equip_por_round, _estado_completo, _inicio_dos_rounds, _tempos
+    equip = _equip_por_round(grupos, team_of)
+    plant = {int(r["round_num"]): r["bomb_plant"] for r in rounds.select(["round_num", "bomb_plant"]).iter_rows(named=True)}
+    inicio = _inicio_dos_rounds(rounds)
+
+    def chance(rn: int, time: str | None, tick: int, vivos_meu: int, vivos_dele: int) -> float | None:
+        if time is None:
+            return None
+        outro = "B" if time == "A" else "A"
+        eq_meu, lado = _equip_do_time(equip, rn, time)
+        eq_dele, _ = _equip_do_time(equip, rn, outro)
+        t_plant = plant.get(rn)
+        antes = int(tick) - 1
+        bomba = t_plant is not None and antes >= int(t_plant)
+        x = _estado_completo(vivos_meu, vivos_dele, eq_meu - eq_dele, bomba, lado == "ct",
+                             *_tempos(antes, inicio.get(rn), t_plant, tickrate))
+        return float(modelo.prob(np.array([x]))[0])
+    return chance
+
+
 def carrega_partida(match_id: str, processed_root: Path | None = None, interim_root: Path | None = None) -> Partida:
     """A partida processada como os tipos de erro a leem (interim + processado + modelos do projeto)."""
     from leitura.insights import resolve_teams, score_progression
@@ -701,6 +1020,7 @@ def carrega_partida(match_id: str, processed_root: Path | None = None, interim_r
     from metrics.rating import ModeloDeRound, carrega_referencia, grupo_do_round, variacao_por_kill
     from metrics.structural_roles import estabilidade_da_funcao
     from metrics.timing import detect_tickrate
+    from metrics.visao import visao_da_partida
     from metrics.win_probability import detecta_formato, probabilidade_de_vitoria
     from parsing.parser import load_interim
 
@@ -754,7 +1074,8 @@ def carrega_partida(match_id: str, processed_root: Path | None = None, interim_r
     referencia = carrega_referencia()
     modelo = ModeloDeRound.da_referencia((referencia or {}).get("modelo_de_round"))
     variacao = {}
-    for linha in variacao_por_kill(kills, rounds, grupo_do_round(ticks, rounds), modelo, team_of, tickrate):
+    grupos = grupo_do_round(ticks, rounds)
+    for linha in variacao_por_kill(kills, rounds, grupos, modelo, team_of, tickrate):
         variacao[(linha["round_num"], linha["tick"], int(linha["victim_steamid"]))] = {
             "delta": linha["delta_vitima"], "vivos_antes": linha["vivos_antes"]}
     formato = detecta_formato(rounds, ticks)
@@ -776,7 +1097,12 @@ def carrega_partida(match_id: str, processed_root: Path | None = None, interim_r
         primeira_arma=_primeira_arma(ticks, rounds), team_of={int(k): v for k, v in team_of.items()}, nomes=nomes,
         corte_de_andar=floor_split_z(meta.get("map_name") or ""), rounds_de_economia=eco, funcoes=funcoes,
         awpers={int(s) for s in awpers}, variacao=variacao, alavanca=alavanca, rounds_jogados=rounds_jogados,
-        lados=lados, degradado=degradado)
+        lados=lados, degradado=degradado,
+        # fase 18: quem vê quem (linha de visão pelo mapa + campo de visão), os tiros e a chance do round
+        visao=visao_da_partida(ticks, meta.get("map_name") or "", tabelas.get("smokes"), tabelas.get("player_blind"),
+                               tickrate),
+        tiros=tabelas.get("shots"),
+        chance=_funcao_de_chance(kills, rounds, grupos, modelo, {int(k): v for k, v in team_of.items()}, tickrate))
 
 
 ARQUIVO = "erros_do_jogador.parquet"
@@ -950,8 +1276,10 @@ def carrega_referencia(caminho: Path = REFERENCIA_FILE) -> dict | None:
 
 def build(match_id: str, processed_root: Path | None = None) -> Path:
     """Grava data/processed/<partida>/erros_do_jogador.parquet: TODAS as ocorrências (com o filtro de cada
-    uma), para a página, a régua do corpus e o material de calibração lerem a mesma tabela."""
+    uma), para a página, a régua do corpus e o material de calibração lerem a mesma tabela; e (fase 18)
+    mortes.parquet: cada morte por inimigo, trocada ou não e por quem."""
     p = carrega_partida(match_id, processed_root)
-    out = (processed_root or PROJECT_ROOT / "data" / "processed") / match_id / ARQUIVO
-    ocorrencias(p).write_parquet(out)
-    return out
+    pasta = (processed_root or PROJECT_ROOT / "data" / "processed") / match_id
+    ocorrencias(p).write_parquet(pasta / ARQUIVO)
+    mortes_trocadas(p).write_parquet(pasta / ARQUIVO_MORTES)       # fase 18: toda morte, trocada ou não
+    return pasta / ARQUIVO

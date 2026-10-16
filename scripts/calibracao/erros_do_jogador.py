@@ -1,21 +1,36 @@
-"""Seção 7 do MATERIAL_DE_CALIBRACAO.md: "Erros na aba Perfil" (fase 12, item 12.4).
+"""Seção 7 do MATERIAL_DE_CALIBRACAO.md: "Erros na aba Perfil" (fase 12, item 12.4; refeita na fase 18).
 
-    py -3.12 -m scripts.calibracao.erros_do_jogador            # reescreve a seção 7 no material
-    py -3.12 -m scripts.calibracao.erros_do_jogador --tabela   # só a tabela de ocorrências por tipo
+    py -3.12 -m scripts.calibracao.erros_do_jogador                    # reescreve a seção 7 no material
+    py -3.12 -m scripts.calibracao.erros_do_jogador --sortear-de-novo  # idem, refazendo TODOS os exemplos
+    py -3.12 -m scripts.calibracao.erros_do_jogador --tabela           # só a tabela de ocorrências por tipo
 
 Lê as ocorrências gravadas (`data/processed/<partida>/erros_do_jogador.parquet`, de
 metrics/erros.build) e, para as varreduras das constantes, recalcula cada partida
-com outro valor (metrics/erros.ocorrencias aceita as constantes como argumento).
+com outro valor (metrics/erros.ocorrencias aceita as constantes como argumento), uma
+partida por processo (cada partida devolve só contagens; a soma é feita na ordem das
+partidas, então o resultado não depende do paralelo).
 
-Para cada constante nova: o valor proposto com a origem, o histograma no corpus e
-quantas ocorrências cada tipo teria no valor mais baixo e no mais alto de uma faixa
-razoável. Para cada tipo: 10 exemplos sorteados com semente fixa, no máximo 2 por
-partida, com o link do replay naquele instante e as duas perguntas do Pedro.
+Para cada constante: o valor proposto com a origem, o histograma no corpus e quantas
+ocorrências cada tipo teria no valor mais baixo e no mais alto de uma faixa razoável.
+
+EXEMPLOS FIXADOS (fase 18). Os 10 exemplos de cada tipo ficam gravados em
+`scripts/calibracao/exemplos_fixados.json` (versionado): tipo, partida, round, tick,
+jogador, aliado, semente e a data do sorteio. Ao rodar de novo, todo exemplo fixado
+que ainda é ocorrência pelas regras atuais FICA; só os que deixaram de ser são
+trocados, sorteados com a mesma semente, e o material marca "(substituído em <data>:
+<motivo>)". `--sortear-de-novo` refaz todos e só se usa quando as definições mudam.
+Depois que o Pedro começa a responder, os exemplos não podem trocar sem ele saber.
 """
 from __future__ import annotations
 
+import datetime
+import io
+import json
+import math
 import random
+import subprocess
 import sys
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 import polars as pl
@@ -26,11 +41,16 @@ RAIZ = Path(__file__).resolve().parents[2]
 PROCESSED = RAIZ / "data" / "processed"
 MATERIAL = RAIZ / "MATERIAL_DE_CALIBRACAO.md"
 TITULO_DA_SECAO = "## 7. Erros na aba Perfil"
+FIXADOS = Path(__file__).resolve().parent / "exemplos_fixados.json"
 
 # Sorteio dos exemplos: semente fixa (decisão 28) e no máximo 2 por partida (pedido 12.4).
 SEMENTE_DOS_EXEMPLOS = 20261013
 EXEMPLOS_POR_TIPO = 10
 MAX_EXEMPLOS_POR_PARTIDA = 2
+
+# O commit com as ocorrências da regra ANTIGA (antes da fase 18): a tabela "antes -> depois" compara com ele.
+ANTES_DA_FASE_18 = "622f7ab1"
+TIPO_ANTIGO = {E.MORREU_SOZINHO: "morreu_isolado"}
 
 # Faixas razoáveis de cada constante (o mais baixo e o mais alto que ainda fazem sentido de jogo).
 FAIXAS = {
@@ -39,9 +59,19 @@ FAIXAS = {
     "seg_aliado": ("SEG_CEGUEIRA_ALIADO", 5.0, 20.0, "s"),
     "seg_uma": ("SEG_CEGUEIRA_ALIADO_UMA", 2.0, 4.0, "s"),
     "dano_aliado": ("DANO_UTILIDADE_ALIADO", 25.0, 100.0, "de dano"),
+    "recuo_minimo": ("RECUO_MINIMO", 60.0, 250.0, "unidades"),
+    "meio_fov": ("MEIO_FOV_GRAUS", 45.0, 60.0, "graus"),
+    "limiar_round": ("LIMIAR_ROUND_GANHO / LIMIAR_ROUND_PERDIDO", 0.90, 0.98, "de chance"),
+    "cone": ("CONE_DO_TIRO_GRAUS", 3.0, 10.0, "graus"),
 }
-VALOR_ATUAL = {"dist_troca": E.DIST_TROCA, "s_duelo": E.S_DUELO, "seg_aliado": E.SEG_CEGUEIRA_ALIADO,
-               "seg_uma": E.SEG_CEGUEIRA_ALIADO_UMA, "dano_aliado": E.DANO_UTILIDADE_ALIADO}
+
+
+def _valor_atual() -> dict:
+    from metrics import visao as V
+    return {"dist_troca": E.DIST_TROCA, "s_duelo": E.S_DUELO, "seg_aliado": E.SEG_CEGUEIRA_ALIADO,
+            "seg_uma": E.SEG_CEGUEIRA_ALIADO_UMA, "dano_aliado": E.DANO_UTILIDADE_ALIADO,
+            "recuo_minimo": E.RECUO_MINIMO, "meio_fov": V.MEIO_FOV_GRAUS, "limiar_round": E.LIMIAR_ROUND_GANHO,
+            "cone": E.CONE_DO_TIRO_GRAUS}
 
 
 def partidas() -> list[str]:
@@ -54,7 +84,7 @@ def corpus() -> pl.DataFrame:
 
 def tabela_por_tipo(oc: pl.DataFrame) -> list[str]:
     """Antes dos filtros, depois dos filtros e por nível, um tipo por linha."""
-    linhas = ["| tipo | antes dos filtros | depois dos filtros | explícito | depende da tática | saiu pelos filtros (motivo: n) |",
+    linhas = ["| tipo | candidatos | depois dos filtros | explícito | depende da tática | saiu pelos filtros (motivo: n) |",
               "|---|---|---|---|---|---|"]
     for t in E.TIPOS:
         o = oc.filter(pl.col("tipo") == t)
@@ -68,6 +98,174 @@ def tabela_por_tipo(oc: pl.DataFrame) -> list[str]:
     linhas.append("| Utilidade no bolso | não criado | — | — | — | o inventário na hora da morte não existe no dado (decisão 46) |")
     return linhas
 
+
+# --- Antes -> depois (fase 18) ----------------------------------------------------------------------
+
+def _antigas() -> pl.DataFrame | None:
+    """As ocorrências da regra antiga (o commit ANTES_DA_FASE_18), lidas do git."""
+    tabelas = []
+    for m in partidas():
+        r = subprocess.run(["git", "show", f"{ANTES_DA_FASE_18}:data/processed/{m}/{E.ARQUIVO}"], cwd=RAIZ,
+                           capture_output=True)
+        if r.returncode != 0:
+            return None
+        tabelas.append(pl.read_parquet(io.BytesIO(r.stdout)))
+    return pl.concat(tabelas, how="vertical") if tabelas else None
+
+
+CHAVE = ["match_id", "round_num", "tick", "steamid"]
+
+
+def tabela_antes_depois(oc: pl.DataFrame, antigas: pl.DataFrame | None) -> list[str]:
+    if antigas is None:
+        return ["(sem o commit da regra antiga no git: a tabela não pôde ser feita)"]
+    out = ["| tipo | antes | depois | seguem | saíram | por qual motivo (n) | entraram | situação corrigida |",
+           "|---|---|---|---|---|---|---|---|"]
+    for t in E.TIPOS:
+        velhas = antigas.filter((pl.col("tipo") == TIPO_ANTIGO.get(t, t)) & pl.col("filtro").is_null())
+        novas = oc.filter(pl.col("tipo") == t)
+        chave = CHAVE + (["aliado_steamid"] if t in (E.NAO_TROCOU, E.POSSIVEL_BAIT, E.PERDEU_A_TROCA) else [])
+        v = velhas.select(chave + ["vivos_time", "vivos_adversario"]).unique(subset=chave, keep="first", maintain_order=True)
+        n = novas.select(chave + ["filtro", pl.col("vivos_time").alias("vt_novo"),
+                                  pl.col("vivos_adversario").alias("va_novo")]).unique(subset=chave, keep="first",
+                                                                                       maintain_order=True)
+        j = v.join(n, on=chave, how="left")
+        seguem = j.filter(pl.col("vt_novo").is_not_null() & pl.col("filtro").is_null())
+        sairam = j.filter(pl.col("vt_novo").is_null() | pl.col("filtro").is_not_null()).with_columns(
+            pl.col("filtro").fill_null("deixou de ser candidato"))
+        motivos = (sairam.group_by("filtro", maintain_order=True).len().sort(["len", "filtro"], descending=[True, False]))
+        txt = "; ".join(f"{r[0]}: {r[1]}" for r in motivos.iter_rows()) or "—"
+        depois = novas.filter(pl.col("filtro").is_null())
+        entraram = depois.select(chave).join(v.select(chave), on=chave, how="anti").height
+        corrigida = seguem.filter((pl.col("vivos_time") != pl.col("vt_novo"))
+                                  | (pl.col("vivos_adversario") != pl.col("va_novo"))).height
+        out.append(f"| {E.TITULOS[t]} | {velhas.height} | {depois.height} | {seguem.height} | {sairam.height} | {txt} | "
+                   f"{entraram} | {corrigida} |")
+    return out
+
+
+# --- Medidas e varreduras, uma partida por processo ---------------------------------------------------
+
+def _contagem(oc: pl.DataFrame) -> dict:
+    tot = {t: 0 for t in E.TIPOS}
+    for t, n in oc.filter(pl.col("filtro").is_null()).group_by("tipo", maintain_order=True).len().iter_rows():
+        tot[t] += n
+    return tot
+
+
+def _mede_partida(m: str) -> dict:
+    """Tudo o que a seção 7.1 precisa de UMA partida: as medidas dos histogramas e as contagens de cada
+    varredura. Devolve só números e tabelas pequenas, para a soma ser feita na ordem das partidas."""
+    from metrics import visao as V
+    p = E.carrega_partida(m)
+    ix = E._Indice(p)
+    base = E.ocorrencias(p)
+    med: dict = {k: [] for k in ("dist_troca", "s_duelo", "seg_aliado", "seg_uma", "dano_aliado", "recuo_minimo",
+                                 "meio_fov", "limiar_round", "cone")}
+    # DIST_TROCA: distância de cada aliado vivo a quem morreu; S_DUELO: tempo desde o último dano dele
+    for k, rn, t, v, a in E._mortes_de_aliado(ix):
+        pos_v = {"X": k["victim_X"], "Y": k["victim_Y"], "Z": k["victim_Z"]}
+        for r in ix.aliados_vivos(rn, v, t):
+            d = E.distancia(r, pos_v, p.corte_de_andar)
+            if d != math.inf:
+                med["dist_troca"].append(d)
+            ultimo = None
+            for x in ix.dano:
+                if int(x["round_num"]) == rn and x["tick"] <= t and (
+                        (x["attacker_steamid"] is not None and int(x["attacker_steamid"]) == int(r["steamid"]))
+                        or (x["victim_steamid"] is not None and int(x["victim_steamid"]) == int(r["steamid"]))) \
+                        and ix.time(x["attacker_steamid"]) != ix.time(x["victim_steamid"]):
+                    ultimo = x["tick"]
+            if ultimo is not None:
+                med["s_duelo"].append((t - ultimo) / p.tickrate)
+            # MEIO_FOV: o menor ângulo entre o olhar e o matador nas amostras com a linha livre
+            fim = ix.fim_da_janela(rn, t, int(r["steamid"]), a)
+            angs = []
+            for s in p.visao.amostras(t, fim):
+                eo, ea = p.visao.estado(rn, int(r["steamid"]), s), p.visao.estado(rn, a, s)
+                if eo is None or ea is None or p.visao.cego(rn, int(r["steamid"]), s):
+                    continue
+                if p.visao.linha_de_visao(rn, s, int(r["steamid"]), a):
+                    angs.append(V.angulo_horizontal(eo[3], eo, ea))
+            if angs:
+                med["meio_fov"].append(min(angs))
+    fl = base.filter((pl.col("tipo") == E.FLASH_NO_TIME) & pl.col("filtro").is_in([E.FILTRO_ABAIXO_DO_LIMIAR]).or_(
+        pl.col("filtro").is_null()))
+    med["seg_uma"] = fl["valor"].to_list()
+    soma: dict = {}
+    for r in fl.iter_rows(named=True):
+        soma[(r["steamid"], r["side"])] = soma.get((r["steamid"], r["side"]), 0.0) + r["valor"]
+    du = base.filter((pl.col("tipo") == E.DANO_DE_UTILIDADE_NO_TIME) & (pl.col("filtro").is_null()
+                                                                        | (pl.col("filtro") == E.FILTRO_ABAIXO_DO_LIMIAR)))
+    sd: dict = {}
+    for r in du.iter_rows(named=True):
+        sd[(r["steamid"], r["side"])] = sd.get((r["steamid"], r["side"]), 0.0) + r["valor"]
+    for sid in sorted(p.team_of):
+        for lado in E.LADOS:
+            med["seg_aliado"].append(soma.get((sid, lado), 0.0))
+            med["dano_aliado"].append(sd.get((sid, lado), 0.0))
+    nt = base.filter(pl.col("tipo") == E.NAO_TROCOU)
+    med["recuo_minimo"] = nt.filter(pl.col("filtro").is_null() & ~pl.col("atirou_no_matador")
+                                    & (pl.col("dano_no_matador") <= 0))["recuo"].to_list()
+    med["limiar_round"] = nt.filter(pl.col("filtro").is_null() | (pl.col("filtro") == E.FILTRO_ROUND_DECIDIDO))[
+        "chance_vitoria"].drop_nulls().to_list()
+    # CONE: o ângulo entre a mira e a vítima nos tiros que acertaram (dano no mesmo tick)
+    if p.tiros is not None and p.tiros.height and "player_X" in p.tiros.columns:
+        d = p.damages.filter(pl.col("attacker_steamid").is_not_null() & (pl.col("dmg_health_real") > 0)
+                             & (pl.col("attacker_side") != pl.col("victim_side"))).select(
+            "tick", "attacker_steamid", "victim_X", "victim_Y")
+        j = d.join(p.tiros.select("tick", "player_steamid", "player_X", "player_Y", "player_yaw"),
+                   left_on=["tick", "attacker_steamid"], right_on=["tick", "player_steamid"], how="inner")
+        for r in j.iter_rows(named=True):
+            if r["player_yaw"] is not None:
+                med["cone"].append(V.angulo_horizontal(r["player_yaw"], (r["player_X"], r["player_Y"]),
+                                                       (r["victim_X"], r["victim_Y"])))
+    # varreduras
+    cont = {"base": _contagem(base)}
+    for chave, (_, baixo, alto, _) in FAIXAS.items():
+        for valor in (baixo, alto):
+            cont[(chave, valor)] = _contagem(_varia(p, chave, valor))
+    dist = {d: _varia(p, "dist_troca", d).filter(pl.col("filtro").is_null()).select("match_id", "steamid", "side", "tipo")
+            for d in DIST_TROCA_COMPARADAS}
+    dois = base.filter(pl.col("tipo") == E.PERDEU_A_TROCA)
+    return {"m": m, "med": med, "cont": cont, "dist": dist,
+            "dois_ou_mais": dois.filter(pl.col("filtro") == E.FILTRO_DOIS_OU_MAIS).height,
+            "dois_ou_mais_qualquer": dois.filter((pl.col("inimigos_visiveis") >= 2) & (
+                pl.col("atirou_no_matador") | (pl.col("dano_no_matador") > 0))).height}
+
+
+def _varia(p: E.Partida, chave: str, valor: float) -> pl.DataFrame:
+    """As ocorrências da partida com UMA constante trocada (as outras no valor proposto)."""
+    if chave in ("dist_troca", "s_duelo", "seg_aliado", "seg_uma", "dano_aliado", "recuo_minimo"):
+        return E.ocorrencias(p, **{chave: valor})
+    if chave == "meio_fov":
+        antes = (p.visao.meio_fov, p.visao._cache)
+        p.visao.meio_fov, p.visao._cache = valor, {}
+        try:
+            return E.ocorrencias(p)
+        finally:
+            p.visao.meio_fov, p.visao._cache = antes
+    nomes = {"limiar_round": ("LIMIAR_ROUND_GANHO", "LIMIAR_ROUND_PERDIDO"), "cone": ("CONE_DO_TIRO_GRAUS",)}[chave]
+    guardado = {n: getattr(E, n) for n in nomes}
+    try:
+        if chave == "limiar_round":
+            E.LIMIAR_ROUND_GANHO, E.LIMIAR_ROUND_PERDIDO = valor, round(1.0 - valor, 6)
+        else:
+            E.CONE_DO_TIRO_GRAUS = valor
+        return E.ocorrencias(p)
+    finally:
+        for n, v in guardado.items():
+            setattr(E, n, v)
+
+
+def mede_corpus(processos: int | None = None) -> list[dict]:
+    ms = partidas()
+    with ProcessPoolExecutor(max_workers=processos or 6) as ex:
+        res = list(ex.map(_mede_partida, ms))
+    return sorted(res, key=lambda r: r["m"])                 # a ordem das partidas, não a de chegada
+
+
+# --- Histogramas e a seção 7.1 ------------------------------------------------------------------------
 
 def histograma(valores: list[float], cortes: list[float], unidade: str, marca: float | None = None) -> list[str]:
     """Histograma em texto, com a marca do valor proposto."""
@@ -95,46 +293,6 @@ def histograma(valores: list[float], cortes: list[float], unidade: str, marca: f
     return out
 
 
-def _medidas(cache: dict) -> dict[str, list[float]]:
-    """As distribuições do corpus que sustentam cada constante."""
-    dist_vizinho, s_desde_dano, cegueira_soma, cegueira_uma, dano_soma = [], [], [], [], []
-    for m, p in cache.items():
-        ix = E._Indice(p)
-        for k, rn, t, v, a in E._mortes_de_aliado(ix):
-            pos_v = {"X": k["victim_X"], "Y": k["victim_Y"], "Z": k["victim_Z"]}
-            for r in ix.aliados_vivos(rn, v, t):
-                d = E.distancia(r, pos_v, p.corte_de_andar)
-                if d != float("inf"):
-                    dist_vizinho.append(d)
-                if d <= E.DIST_TROCA:
-                    ultimo = None
-                    for x in ix.dano:
-                        if int(x["round_num"]) == rn and x["tick"] <= t and (
-                                (x["attacker_steamid"] is not None and int(x["attacker_steamid"]) == int(r["steamid"]))
-                                or (x["victim_steamid"] is not None and int(x["victim_steamid"]) == int(r["steamid"]))) \
-                                and ix.time(x["attacker_steamid"]) != ix.time(x["victim_steamid"]):
-                            ultimo = x["tick"]
-                    if ultimo is not None:
-                        s_desde_dano.append((t - ultimo) / p.tickrate)
-        fl = E.flash_no_time(p, _ix=ix)
-        soma: dict = {}
-        for o in fl:
-            if o["filtro"] in (None, E.FILTRO_ABAIXO_DO_LIMIAR):
-                cegueira_uma.append(o["valor"])
-                soma[o["steamid"]] = soma.get(o["steamid"], 0.0) + o["valor"]
-        for sid in p.team_of:
-            cegueira_soma.append(soma.get(sid, 0.0))
-        du = E.dano_de_utilidade_no_time(p, _ix=ix)
-        sd: dict = {}
-        for o in du:
-            if o["filtro"] in (None, E.FILTRO_ABAIXO_DO_LIMIAR):
-                sd[o["steamid"]] = sd.get(o["steamid"], 0.0) + o["valor"]
-        for sid in p.team_of:
-            dano_soma.append(sd.get(sid, 0.0))
-    return {"dist_troca": dist_vizinho, "s_duelo": s_desde_dano, "seg_aliado": cegueira_soma,
-            "seg_uma": cegueira_uma, "dano_aliado": dano_soma}
-
-
 def _percentil(v: list[float], q: float) -> float:
     s = sorted(v)
     if not s:
@@ -143,28 +301,35 @@ def _percentil(v: list[float], q: float) -> float:
     return s[i]
 
 
-def _contagens(cache: dict, **const) -> dict[str, int]:
-    tot = {t: 0 for t in E.TIPOS}
-    for p in cache.values():
-        o = E.ocorrencias(p, **const)
-        for t, n in o.filter(pl.col("filtro").is_null()).group_by("tipo", maintain_order=True).len().iter_rows():
-            tot[t] += n
-    return tot
-
-
 ORIGEM = {
     "dist_troca": ("o raio de apoio do projeto (RAIO_COMPANHEIRO = 600 do perfil e das funções: \"o alcance em que "
-                   "uma troca ainda acontece\"). O histograma é a distância de cada aliado vivo a quem morreu, na hora "
-                   "da morte, no mesmo andar."),
+                   "uma troca ainda acontece\"). Fase 18: só entra em \"morreu sozinho\" (um aliado a até isto não "
+                   "deixa a morte ser \"sozinho\"); nos outros tipos a distância é contexto. O histograma é a distância "
+                   "de cada aliado vivo a quem morreu, na hora da morte, no mesmo andar."),
     "s_duelo": ("tempo de um duelo de rifle (reação de ~0,25 s mais 0,3 a 1 s para matar), com folga. O histograma é, "
-                "para cada aliado a até DIST_TROCA de quem morreu, o tempo desde o último dano que ele deu ou levou de "
-                "um inimigo antes da morte."),
-    "seg_aliado": ("o percentil 90 da soma de cegueira imposta ao próprio time por jogador-partida no corpus (fora "
-                   "eco e pós-plant perdido)."),
+                "para cada aliado vivo de quem morreu, o tempo desde o último dano que ele deu ou levou de um inimigo "
+                "antes da morte."),
+    "seg_aliado": ("o percentil 90 da soma de cegueira imposta ao próprio time por jogador-partida no corpus (fase 12). "
+                   "O histograma é a soma por jogador-LADO (a regra desde a fase 15)."),
     "seg_uma": ("o percentil 90 da cegueira nos aliados por flash no corpus (uma flash cheia cega de 2 a 5 s; perto "
                 "do topo é a flash que estourou na cara do aliado). O histograma é a cegueira nos aliados por flash."),
-    "dano_aliado": ("o percentil 95 do dano de HE e molotov no próprio time por jogador-partida no corpus (fora eco e "
-                    "pós-plant perdido)."),
+    "dano_aliado": ("o percentil 95 do dano de HE e molotov no próprio time por jogador-partida no corpus (fase 12). "
+                    "O histograma é a soma por jogador-lado."),
+    "recuo_minimo": ("o limite de \"praticamente parado\" do projeto (`awp_metrics.HOLD_MAX_DISPLACEMENT` = 120: "
+                     "abaixo disso, em 3 s, o jogador segurou o ângulo). O histograma é o recuo (o quanto o jogador se "
+                     "afastou do matador, com o matador parado onde ficou visível) em \"não trocou\" sem engajamento; "
+                     "o mesmo valor, ao contrário, é o \"andou na direção dele\" de \"perdeu a troca\"."),
+    "meio_fov": ("a metade do campo de visão horizontal do CS2 em 16:9: 90 graus numa tela 4:3, alargados na tela "
+                 "larga mantendo a vertical (Hor+), dão 106,26 graus (tan(h/2) = 4/3). 45 é quem joga em 4:3. O "
+                 "histograma é, para cada aliado vivo de quem morreu, o menor ângulo entre o olhar dele e o matador "
+                 "nas amostras da janela com a linha de visão livre."),
+    "limiar_round": ("os valores propostos pelo Pedro na fase 18 (0,95 e 0,05), simétricos: a chance já de 19 contra 1. "
+                     "O histograma é a chance de o time do jogador vencer o round logo antes da morte do aliado, em "
+                     "\"não trocou\" (o modelo de round do rating). Na varredura, os dois limiares andam juntos "
+                     "(0,90 e 0,10; 0,98 e 0,02)."),
+    "cone": ("o percentil 99 do ângulo horizontal entre a mira e a vítima nos tiros que ACERTARAM um inimigo no "
+             "corpus, arredondado para cima: um tiro que erra perto do alvo ainda é um tiro nele. O histograma é esse "
+             "ângulo."),
 }
 CORTES = {
     "dist_troca": [0, 100, 200, 300, 400, 500, 600, 700, 800, 1000, 1200, 1500, 2000, 3000],
@@ -172,26 +337,34 @@ CORTES = {
     "seg_aliado": [0, 0.01, 2, 4, 6, 8, 10, 12, 15, 20, 30],
     "seg_uma": [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5],
     "dano_aliado": [0, 0.01, 10, 25, 40, 50, 60, 80, 100, 150],
+    "recuo_minimo": [0, 0.01, 30, 60, 90, 120, 150, 200, 250, 350, 500],
+    "meio_fov": [0, 5, 10, 20, 30, 40, 45, 50, 53.13, 55, 60, 75, 90, 120, 180],
+    "limiar_round": [0, 0.02, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.98],
+    "cone": [0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10, 15],
 }
+UNIDADE_DO_HISTOGRAMA = {"limiar_round": "chance de vitória do round"}
 
 
-def secao_constantes(cache: dict) -> list[str]:
-    med = _medidas(cache)
-    base = _contagens(cache)
-    out = ["### 7.1 As constantes novas", "",
+def secao_constantes(res: list[dict]) -> list[str]:
+    atual = _valor_atual()
+    base = {t: sum(r["cont"]["base"][t] for r in res) for t in E.TIPOS}
+    out = ["### 7.1 As constantes", "",
            "Valor proposto, origem, histograma no corpus e quantas ocorrências (depois dos filtros) cada tipo teria "
-           "no valor mais baixo e no mais alto da faixa. As outras constantes ficam no valor proposto em cada varredura.",
-           ""]
+           "no valor mais baixo e no mais alto da faixa. As outras constantes ficam no valor proposto em cada varredura. "
+           "As da fase 18 são `RECUO_MINIMO`, `MEIO_FOV_GRAUS`, `LIMIAR_ROUND_GANHO`/`LIMIAR_ROUND_PERDIDO` e "
+           "`CONE_DO_TIRO_GRAUS`.", ""]
     for chave, (nome, baixo, alto, unidade) in FAIXAS.items():
-        v = med[chave]
-        out += [f"#### `{nome}` = {_g(VALOR_ATUAL[chave])} {unidade}", "",
+        v = [x for r in res for x in r["med"][chave]]
+        marca = atual[chave]
+        out += [f"#### `{nome}` = {_g(marca)}" + ("" if chave == "limiar_round" else f" {unidade}")
+                + (f" / {_g(E.LIMIAR_ROUND_PERDIDO)}" if chave == "limiar_round" else ""), "",
                 f"Origem: {ORIGEM[chave]}", "",
-                f"Mediana {_fmt(_percentil(v, 0.5), 1)}, p75 {_fmt(_percentil(v, 0.75), 1)}, "
-                f"p90 {_fmt(_percentil(v, 0.90), 1)}, p95 {_fmt(_percentil(v, 0.95), 1)}.", ""]
-        out += histograma(v, CORTES[chave], unidade, VALOR_ATUAL[chave])
-        c_baixo = _contagens(cache, **{chave: baixo})
-        c_alto = _contagens(cache, **{chave: alto})
-        out += ["", f"| tipo | {nome} = {_g(baixo)} | proposto ({_g(VALOR_ATUAL[chave])}) | {nome} = {_g(alto)} |",
+                f"Mediana {_fmt(_percentil(v, 0.5), 2)}, p75 {_fmt(_percentil(v, 0.75), 2)}, "
+                f"p90 {_fmt(_percentil(v, 0.90), 2)}, p95 {_fmt(_percentil(v, 0.95), 2)}, p99 {_fmt(_percentil(v, 0.99), 2)}.", ""]
+        out += histograma(v, CORTES[chave], UNIDADE_DO_HISTOGRAMA.get(chave, unidade), marca)
+        c_baixo = {t: sum(r["cont"][(chave, baixo)][t] for r in res) for t in E.TIPOS}
+        c_alto = {t: sum(r["cont"][(chave, alto)][t] for r in res) for t in E.TIPOS}
+        out += ["", f"| tipo | {nome} = {_g(baixo)} | proposto ({_g(marca)}) | {nome} = {_g(alto)} |",
                 "|---|---|---|---|"]
         for t in E.TIPOS:
             out.append(f"| {E.TITULOS[t]} | {c_baixo[t]} | {base[t]} | {c_alto[t]} |")
@@ -214,8 +387,9 @@ def _linhas_de_contagem(oc: pl.DataFrame) -> list[dict]:
     """Um registro por (partida, jogador, lado) do corpus: função do lado e contagem de cada tipo (só o que
     passou nos filtros). Mesmo formato que o ajuste da régua (scripts/fit_erros_reference)."""
     conta: dict = {}
-    for m, sid, lado, tipo, n in (oc.filter(pl.col("filtro").is_null())
-                                  .group_by(["match_id", "steamid", "side", "tipo"], maintain_order=True)
+    if "filtro" in oc.columns:
+        oc = oc.filter(pl.col("filtro").is_null())
+    for m, sid, lado, tipo, n in (oc.group_by(["match_id", "steamid", "side", "tipo"], maintain_order=True)
                                   .len().iter_rows()):
         conta[(m, int(sid), lado, tipo)] = n
     linhas = []
@@ -251,7 +425,7 @@ def _resumo_de_pontos(por_jogador: dict) -> tuple[int, int, float, list[int]]:
     return n, sum(v >= 1 for v in vs), (sum(vs) / n if n else 0.0), faixas
 
 
-def secao_quantos_pontos(oc: pl.DataFrame, cache: dict | None) -> list[str]:
+def secao_quantos_pontos(oc: pl.DataFrame, res: list[dict] | None) -> list[str]:
     from scripts.fit_erros_reference import ajusta
 
     linhas = _linhas_de_contagem(oc)
@@ -287,19 +461,20 @@ def secao_quantos_pontos(oc: pl.DataFrame, cache: dict | None) -> list[str]:
     for t in E.TIPOS:
         out.append(f"| {E.TITULOS[t]} | " + " | ".join(str(por_tipo_de[q][t]) for q in PERCENTIS_COMPARADOS) + " |")
     out.append("")
-    if cache:
-        out += ["#### O efeito de `DIST_TROCA` em \"não trocou\" e \"possível bait\"", "",
-                "Cada linha recalcula as ocorrências do corpus com outro `DIST_TROCA` (o atual está marcado) e "
-                f"refaz a referência com elas. Ponto a melhorar com o percentil {E.PERCENTIL_PONTO_A_MELHORAR}. "
+    if res:
+        out += ["#### O efeito de `DIST_TROCA` em \"morreu sozinho\"", "",
+                "Fase 18: `DIST_TROCA` só entra em \"morreu sozinho\" (nos outros tipos a troca é decidida pelo fato e "
+                "a distância é contexto). Cada linha recalcula as ocorrências do corpus com outro `DIST_TROCA` (o atual "
+                f"está marcado) e refaz a referência com elas. Ponto a melhorar com o percentil {E.PERCENTIL_PONTO_A_MELHORAR}. "
                 "O valor da constante NÃO muda agora: depende da sua calibração.", "",
                 "| `DIST_TROCA` | tipo | ocorrências no corpus | média por jogador-lado | jogador-partidas com pelo "
                 "menos 1 ponto a melhorar | % |", "|---|---|---|---|---|---|"]
         for d in DIST_TROCA_COMPARADAS:
-            oc_d = pl.concat([E.ocorrencias(p, dist_troca=d) for p in cache.values()], how="vertical")
+            oc_d = pl.concat([r["dist"][d] for r in res], how="vertical")
             lin = _linhas_de_contagem(oc_d)
             ref_d = ajusta(lin)
             marca = " (atual)" if d == E.DIST_TROCA else ""
-            for t in (E.NAO_TROCOU, E.POSSIVEL_BAIT):
+            for t in (E.MORREU_SOZINHO,):
                 total = sum(x["contagens"][t] for x in lin)
                 pj = {}
                 for x in lin:
@@ -332,95 +507,235 @@ def link_do_replay(match_id: str, round_num: int, segundos: float | None) -> str
     return f"docs/{match_id}.html#replay?round={round_num}{t}"
 
 
-def exemplos(oc: pl.DataFrame, tipo: str) -> list[dict]:
-    """Até 10 ocorrências do tipo, sorteadas com semente fixa, no máximo 2 por partida."""
-    o = oc.filter((pl.col("tipo") == tipo) & pl.col("filtro").is_null()).to_dicts()
-    rng = random.Random(f"{SEMENTE_DOS_EXEMPLOS}-{tipo}")
-    rng.shuffle(o)
-    por_partida: dict[str, int] = {}
-    escolhidos = []
-    for x in o:
-        if por_partida.get(x["match_id"], 0) >= MAX_EXEMPLOS_POR_PARTIDA:
-            continue
-        por_partida[x["match_id"]] = por_partida.get(x["match_id"], 0) + 1
-        escolhidos.append(x)
-        if len(escolhidos) == EXEMPLOS_POR_TIPO:
-            break
-    return sorted(escolhidos, key=lambda x: (x["match_id"], x["round_num"], x["tick"], x["steamid"]))
-
-
 def _fmt(v, casas: int = 0) -> str:
-    if v is None:
+    if v is None or (isinstance(v, float) and math.isnan(v)):
         return "—"
     return f"{v:.{casas}f}".replace(".", ",")
 
 
-def secao_exemplos(oc: pl.DataFrame) -> list[str]:
+# --- Exemplos fixados (fase 18, complemento do Pedro) --------------------------------------------------
+
+def _chave(x: dict) -> tuple:
+    return (x["tipo"], x["match_id"], int(x["round_num"]), int(x["tick"]), int(x["steamid"]),
+            int(x["aliado_steamid"]) if x.get("aliado_steamid") is not None else None)
+
+
+def _registro(x: dict, data: str) -> dict:
+    return {"tipo": x["tipo"], "partida": x["match_id"], "round": int(x["round_num"]), "tick": int(x["tick"]),
+            "jogador": x["name"], "steamid": str(int(x["steamid"])),
+            "aliado_steamid": None if x.get("aliado_steamid") is None else str(int(x["aliado_steamid"])),
+            "semente": SEMENTE_DOS_EXEMPLOS, "data_do_sorteio": data}
+
+
+def _chave_do_registro(r: dict) -> tuple:
+    return (r["tipo"], r["partida"], int(r["round"]), int(r["tick"]), int(r["steamid"]),
+            int(r["aliado_steamid"]) if r.get("aliado_steamid") is not None else None)
+
+
+def le_fixados(caminho: Path = FIXADOS) -> dict:
+    if not caminho.exists():
+        return {"_leia_isto": "", "exemplos": {}}
+    return json.loads(caminho.read_text(encoding="utf-8"))
+
+
+def grava_fixados(fix: dict, caminho: Path = FIXADOS) -> None:
+    fix["_leia_isto"] = ("Exemplos da seção 7.2 do material de calibração (gerados por "
+                         "`py -3.12 -m scripts.calibracao.erros_do_jogador`). Um exemplo fixado só é trocado quando "
+                         "deixa de ser ocorrência pelas regras atuais, e o substituto diz quando e por quê; "
+                         "`--sortear-de-novo` refaz todos (só quando as definições mudam).")
+    caminho.write_text(json.dumps(fix, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+
+
+def escolhe_exemplos(oc: pl.DataFrame, fix: dict, hoje: str, sortear_de_novo: bool = False) -> dict:
+    """Para cada tipo, os exemplos fixados que ainda valem e os substitutos (mesma semente). Devolve o registro
+    novo ({tipo: [registros]}); um substituto tem `substitui`, `substituido_em` e `motivo_da_substituicao`."""
+    novo = {}
+    for t in E.TIPOS:
+        todas = {_chave(x): x for x in oc.filter(pl.col("tipo") == t).to_dicts()}
+        validas = [x for x in oc.filter((pl.col("tipo") == t) & pl.col("filtro").is_null()).to_dicts()]
+        anteriores = [] if sortear_de_novo else list((fix.get("exemplos") or {}).get(t, []))
+        ficam, trocados = [], []
+        for r in anteriores:
+            x = todas.get(_chave_do_registro(r))
+            if x is not None and x["filtro"] is None:
+                ficam.append(r)
+            else:
+                motivo = x["filtro"] if x is not None else "deixou de existir na tabela de ocorrências"
+                trocados.append((r, motivo))
+        por_partida: dict = {}
+        for r in ficam:
+            por_partida[r["partida"]] = por_partida.get(r["partida"], 0) + 1
+        usadas = {_chave_do_registro(r) for r in ficam} | {_chave_do_registro(r) for r, _ in trocados}
+        rng = random.Random(f"{SEMENTE_DOS_EXEMPLOS}-{t}")
+        ordem = list(validas)
+        rng.shuffle(ordem)
+        sorteados = []
+        faltam = EXEMPLOS_POR_TIPO - len(ficam)
+        for x in ordem:
+            if len(sorteados) >= faltam:
+                break
+            if _chave(x) in usadas or por_partida.get(x["match_id"], 0) >= MAX_EXEMPLOS_POR_PARTIDA:
+                continue
+            por_partida[x["match_id"]] = por_partida.get(x["match_id"], 0) + 1
+            usadas.add(_chave(x))
+            reg = _registro(x, hoje if (sortear_de_novo or not anteriores) else (anteriores[0]["data_do_sorteio"]))
+            if trocados:
+                velho, motivo = trocados[len(sorteados)] if len(sorteados) < len(trocados) else (None, None)
+                if velho is not None:
+                    reg.update(substitui={k: velho[k] for k in ("partida", "round", "tick", "jogador")},
+                               substituido_em=hoje, motivo_da_substituicao=motivo)
+            sorteados.append(reg)
+        novo[t] = sorted(ficam + sorteados, key=lambda r: (r["partida"], r["round"], r["tick"], int(r["steamid"])))
+    return novo
+
+
+def _linha_do_exemplo(oc_por_chave: dict, r: dict) -> dict:
+    return oc_por_chave[_chave_do_registro(r)]
+
+
+COLUNAS_TROCA = ("| # | partida | round | relógio | jogador | aliado | matador | dist. ao aliado | dist. jogador–matador "
+                 "| situação | chance de vitória antes | matador visível? (s na janela) | atirou ou deu dano no matador? "
+                 "| recuou (u) | inimigos visíveis ao mesmo tempo | morte trocada? (por quem, a que distância) | ΔWPA "
+                 "| nível | motivo | replay | É erro mesmo? |")
+COLUNAS_UTIL = ("| # | partida | round | relógio | jogador | aliado mais atingido | situação | chance de vitória antes "
+                "| {evento} | {soma} | ΔWPA | nível | motivo | replay | É erro mesmo? |")
+
+
+def _sim(v) -> str:
+    return "—" if v is None else ("sim" if v else "não")
+
+
+def secao_exemplos(oc: pl.DataFrame, escolhidos: dict) -> list[str]:
+    por_chave = {_chave(x): x for x in oc.to_dicts()}
     out = ["### 7.2 Dez exemplos por tipo", "",
            f"Sorteados com semente fixa ({SEMENTE_DOS_EXEMPLOS}), no máximo {MAX_EXEMPLOS_POR_PARTIDA} por partida, "
-           "só entre as ocorrências que passaram nos filtros. O relógio é o tempo decorrido desde o fim do freeze "
-           "time. O link abre o replay naquele round, 3 s antes do instante (gere o site com "
-           "`py -3.12 -m scripts.build_site`). Distâncias em unidades do jogo, no mesmo andar; \"—\" quando não se "
-           "aplica ou estão em andares diferentes. ΔWPA em pontos de chance de vitória da partida, pela estimativa "
-           "do modelo (negativo = o time perdeu chance).", "",
+           "só entre as ocorrências que passaram nos filtros, e FIXADOS em `scripts/calibracao/exemplos_fixados.json`: "
+           "rodar de novo mantém todo exemplo que ainda é ocorrência; o que deixar de ser é trocado e marcado "
+           "\"(substituído em <data>: <motivo>)\". Os exemplos da fase 17 não valem mais (as definições mudaram na "
+           "fase 18) e foram sorteados de novo. O relógio é o tempo decorrido desde o fim do freeze time. O link abre "
+           "o replay naquele round, 3 s antes do instante (gere o site com `py -3.12 -m scripts.build_site`). "
+           "Distâncias em unidades do jogo, no mesmo andar; \"—\" quando não se aplica ou estão em andares diferentes. "
+           "\"Visível\" é a linha de visão pelo mapa (com as smokes) dentro do campo de visão e sem estar cego "
+           "(`metrics/visao.py`). A chance de vitória é a do time do jogador vencer o ROUND logo antes do evento "
+           "(modelo de round do rating). ΔWPA em pontos de chance de vitória da partida, pela estimativa do modelo "
+           "(negativo = o time perdeu chance).", "",
            "**Regra de publicação:** o tipo só aparece no site com pelo menos 8 dos 10 confirmados: \"sim\" quando "
            "o nível é explícito, ou \"depende da tática\" quando o nível é depende.", ""]
+    nome = lambda s: (s or "—").replace("|", "\\|")  # noqa: E731
     for t in E.TIPOS:
-        ex = exemplos(oc, t)
+        ex = escolhidos.get(t, [])
         out += [f"#### {E.TITULOS[t]}", "", f"Frase de como melhorar: \"{E.COMO_MELHORAR[t]}\"", "",
                 "**A frase serve?** sim / reescrever: ____", ""]
         if not ex:
             out += ["(nenhuma ocorrência no corpus)", ""]
             continue
-        out += ["| # | partida | round | relógio | jogador | aliado | matador | dist. ao aliado | dist. jogador–matador "
-                "| dist. aliado–matador | situação | valor | ΔWPA | nível | motivo | replay | É erro mesmo? | A frase serve? |",
-                "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
-        for i, x in enumerate(ex, 1):
+        util = t in (E.FLASH_NO_TIME, E.DANO_DE_UTILIDADE_NO_TIME)
+        if util:
+            ev, so = (("cegueira desta flash (s)", "soma do jogador no lado (s)") if t == E.FLASH_NO_TIME
+                      else ("dano desta granada", "soma do jogador no lado"))
+            cab = COLUNAS_UTIL.format(evento=ev, soma=so)
+        else:
+            cab = COLUNAS_TROCA
+        out += [cab, "|" + "---|" * (cab.count("|") - 1)]
+        for i, r in enumerate(ex, 1):
+            x = _linha_do_exemplo(por_chave, r)
             situ = f"{x['vivos_time']} contra {x['vivos_adversario']}"
-            valor = "—" if x["valor"] is None else _fmt(x["valor"], 1)
+            chance = "—" if x["chance_vitoria"] is None else f"{_fmt(100 * x['chance_vitoria'], 0)}%"
             dw = "—" if x["dwpa"] is None else _fmt(100 * x["dwpa"], 1)
-            nome = lambda s: (s or "—").replace("|", "\\|")  # noqa: E731
-            out.append(
-                f"| {i} | {x['match_id']} | {x['round_num']} | {_relogio(x['segundos'])} | {nome(x['name'])} | "
-                f"{nome(x['aliado'])} | {nome(x['matador'])} | {_fmt(x['dist_aliado'])} | "
-                f"{_fmt(x['dist_matador_jogador'])} | {_fmt(x['dist_matador_aliado'])} | {situ} | {valor} | {dw} | "
-                f"{E.ROTULO_DO_NIVEL[x['nivel']]} | {x['motivo']} | "
-                f"[abrir]({link_do_replay(x['match_id'], x['round_num'], x['segundos'])}) | "
-                "sim / não / depende da tática | sim / reescrever |")
+            motivo = x["motivo"] or ""
+            if r.get("substituido_em"):
+                s = r["substitui"]
+                motivo += (f" (substituído em {r['substituido_em']}: {r['motivo_da_substituicao']}; era {s['partida']} "
+                           f"R{s['round']} {s['jogador']})")
+            comum = (f"| {i} | {x['match_id']} | {x['round_num']} | {_relogio(x['segundos'])} | {nome(x['name'])} | ")
+            fim = (f"| {dw} | {E.ROTULO_DO_NIVEL[x['nivel']]} | {motivo} | "
+                   f"[abrir]({link_do_replay(x['match_id'], x['round_num'], x['segundos'])}) | "
+                   "sim / não / depende da tática |")
+            if util:
+                casas = 2 if t == E.FLASH_NO_TIME else 1
+                out.append(comum + f"{nome(x['aliado'])} | {situ} | {chance} | {_fmt(x['valor'], casas)} | "
+                           f"{_fmt(x['valor_soma_lado'], casas)} " + fim)
+            else:
+                vis = _sim(x["matador_visivel"])
+                if x["matador_visivel"] and x["seg_matador_visivel"] is not None:
+                    vis += f" ({_fmt(x['seg_matador_visivel'], 1)} s)"
+                eng = "—" if x["atirou_no_matador"] is None else (
+                    f"{'atirou' if x['atirou_no_matador'] else 'não atirou'}; dano {_fmt(x['dano_no_matador'], 0)}")
+                if x["trocada"]:
+                    troca = f"sim ({nome(x['trocada_por'])}, {_fmt(x['dist_de_quem_trocou'])} u)"
+                else:
+                    troca = _sim(x["trocada"])
+                recuo = "—" if x["recuo"] is None else _fmt(x["recuo"], 0)
+                if x["saiu_da_linha"]:
+                    recuo += "; saiu da linha de visão"
+                out.append(comum + f"{nome(x['aliado'])} | {nome(x['matador'])} | {_fmt(x['dist_aliado'])} | "
+                           f"{_fmt(x['dist_matador_jogador'])} | {situ} | {chance} | {vis} | {eng} | {recuo} | "
+                           f"{'—' if x['inimigos_visiveis'] is None else x['inimigos_visiveis']} | {troca} " + fim)
         out.append("")
     return out
 
 
 NOTA_FASE15 = (
-    '**Mudança da fase 15 (decisão 46).** "Flash no time" e "dano de utilidade no time" eram somas da partida (CT e TR juntos); passam a ser POR LADO, com '
-    'o mesmo limiar (`SEG_CEGUEIRA_ALIADO` 27 s e `DANO_UTILIDADE_ALIADO` 20) aplicado a cada lado. Ocorrências que seguem na tela (depois dos filtros), no'
-    ' corpus de 52 jogos: flash no time 880 antes, 530 depois; dano de utilidade no time 32 antes, 28 depois (o total detectado não muda: 3091 e 195). Na fase'
-    ' 17 os exemplos de "flash no time" e "dano de utilidade no time" foram conferidos contra as regras de hoje: os que seguem sendo ocorrência ficaram, e só os que deixaram de ser foram sorteados de novo (marcados "(substituído na fase 17)" na coluna motivo).'
-    '')
+    '**Mudança da fase 15 (decisão 46).** "Flash no time" e "dano de utilidade no time" eram somas da partida (CT e '
+    'TR juntos); passam a ser POR LADO, com o mesmo limiar (`SEG_CEGUEIRA_ALIADO` 27 s e `DANO_UTILIDADE_ALIADO` 20) '
+    'aplicado a cada lado.')
+
+NOTA_FASE18 = (
+    "**Mudança da fase 18 (definições do Pedro).** (1) A troca é decidida pelo FATO (o matador morreu por um aliado "
+    "dentro da janela), nunca pela distância, e toda morte trocada sai de todos os tipos (cada morte do corpus grava "
+    "se foi trocada e por quem, em `mortes.parquet`). (2) Round decidido fica fora de todos os tipos: a chance de o "
+    f"time vencer o round logo antes do evento acima de {_g(E.LIMIAR_ROUND_GANHO)} ou abaixo de "
+    f"{_g(E.LIMIAR_ROUND_PERDIDO)}. (3) \"Não trocou\" exige o matador VISÍVEL para o jogador na janela; \"possível "
+    "bait\" é o subconjunto em que ele não engajou (não atirou nele nem deu dano) e recuou mais que `RECUO_MINIMO` "
+    "ou saiu da linha de visão andando (o critério \"atrás do aliado\" saiu). (4) \"Perdeu a troca\" exige ter ido "
+    "trocar (atirou, deu dano ou andou na direção do matador com ele visível) e sai com dois ou mais inimigos "
+    "visíveis ao mesmo tempo. (5) \"Morreu isolado\" virou \"morreu sozinho\": nenhum aliado vivo com o matador à "
+    "vista na janela nem a até `DIST_TROCA`. (6) A situação conta os vivos pelas mortes: antes vinha das posições "
+    "gravadas só nos ticks das kills, e uma flash ou granada antes da primeira morte do round saía \"0 contra 0\". "
+    "(7) Um evento com 0 de dano ou de cegueira não é ocorrência (o 0 vem do próprio jogo: o `player_hurt` do "
+    "aliado na borda da explosão). \"Candidatos\" agora inclui os casos registrados com o motivo de ficar de fora "
+    "(por exemplo, todo aliado vivo de quem morreu sem troca em \"não trocou\").")
+
+ORDEM_DOS_NIVEIS = (
+    "Ordem dos níveis (a primeira regra que se aplica decide): 1) round de eco ou pistola do time, time guardando "
+    "arma (evento depois do plant num round que o time perdeu), depois do fim do round ou round decidido: fora; "
+    "2) morreu sozinho sendo lurker: depende; 3) primeira morte sem troca sendo entry: depende; 4) morreu sozinho ou "
+    "primeira morte do AWPer no duelo de abertura: depende; 5) função só tendência: o motivo diz que a função não é "
+    "firme; 6) não trocou, possível bait, perdeu a troca, flash no time e dano de utilidade no time: explícito (os "
+    "dois primeiros só existem com o matador visível); 7) o resto: depende. Por isso \"morreu sozinho\" e "
+    "\"primeira morte sem troca\" saem sempre como \"depende da tática\" (só o motivo muda).")
 
 
-def secao(oc: pl.DataFrame, cache: dict | None) -> list[str]:
+def secao(oc: pl.DataFrame, res: list[dict] | None, escolhidos: dict, antigas: pl.DataFrame | None) -> list[str]:
     n = len(partidas())
     out = [TITULO_DA_SECAO, "",
-           "Gerado por `py -3.12 -m scripts.calibracao.erros_do_jogador` (fase 12, decisão 46). Os tipos de erro de "
-           f"`metrics/erros.py` sobre as {n} partidas do corpus. Nenhum tipo aparece no site até você confirmar os "
-           "exemplos: `TIPOS_DE_ERRO_VALIDADOS` começa vazia. Para ver a aba com todos os tipos marcados "
-           "\"em validação\": `py -3.12 -m scripts.build_site --mostrar-erros-nao-validados` (gera em `preview/`, "
-           "fora do git e nunca publicado).", "",
+           "Gerado por `py -3.12 -m scripts.calibracao.erros_do_jogador` (fase 12, decisão 46; definições da fase 18). "
+           f"Os tipos de erro de `metrics/erros.py` sobre as {n} partidas do corpus. Nenhum tipo aparece no site até "
+           "você confirmar os exemplos: `TIPOS_DE_ERRO_VALIDADOS` começa vazia. Para ver a aba com todos os tipos "
+           "marcados \"em validação\": `py -3.12 -m scripts.build_site --mostrar-erros-nao-validados` (gera em "
+           "`preview/`, fora do git e nunca publicado).", "",
            "### 7.0 Ocorrências por tipo no corpus", ""]
     out += tabela_por_tipo(oc)
-    out += ["", NOTA_FASE15]
-    out += ["", "Ordem dos níveis (a primeira regra que se aplica decide): 1) round de eco ou pistola do time, ou time "
-            "guardando arma (evento depois do plant num round que o time perdeu): fora; 2) morreu isolado sendo "
-            "lurker: depende; 3) primeira morte sem troca sendo entry: depende; 4) morreu isolado ou primeira morte do "
-            "AWPer no duelo de abertura: depende; 5) função só tendência: o motivo diz que a função não é firme; "
-            "6) não trocou, possível bait, perdeu a troca, flash no time e dano de utilidade no time: explícito; "
-            "7) o resto: depende. Por isso \"morreu isolado\" e \"primeira morte sem troca\" saem sempre como "
-            "\"depende da tática\" (só o motivo muda).", ""]
-    if cache:
-        out += secao_constantes(cache)
-    out += secao_quantos_pontos(oc, cache)
-    out += secao_exemplos(oc)
+    out += ["", NOTA_FASE18, "", NOTA_FASE15, "", "#### Antes -> depois da fase 18", "",
+            f"\"Antes\" são as ocorrências da regra antiga (commit `{ANTES_DA_FASE_18}`), \"depois\" as de agora. Uma "
+            "ocorrência antiga \"segue\" se a mesma (partida, round, tick, jogador e, nos tipos de troca, o aliado) "
+            "ainda passa nos filtros; se não, saiu com o motivo do filtro novo. \"Entraram\" são as novas que não "
+            "existiam (por exemplo, \"não trocou\" longe do aliado com o matador visível: a distância deixou de ser "
+            "critério). \"Situação corrigida\": das que seguem, quantas mudaram de \"N contra M\".", ""]
+    out += tabela_antes_depois(oc, antigas)
+    if res is not None:
+        dois = sum(r["dois_ou_mais"] for r in res)
+        dois_q = sum(r["dois_ou_mais_qualquer"] for r in res)
+        out += ["", "#### Enfrentou dois ou mais ao mesmo tempo (informação, não é erro)", "",
+                f"Foi trocar (engajou o matador), morreu sem matá-lo e tinha dois ou mais inimigos visíveis ao mesmo "
+                f"tempo na janela: {dois} casos que saíram de \"perdeu a troca\" por esse motivo ({dois_q} contando os "
+                "que já tinham saído antes por outro filtro, como o round decidido). Não é tipo de erro e não aparece "
+                "no Perfil."]
+    out += ["", ORDEM_DOS_NIVEIS, ""]
+    if res is not None:
+        out += secao_constantes(res)
+    out += secao_quantos_pontos(oc, res)
+    out += secao_exemplos(oc, escolhidos)
     out += ["### 7.3 Sua resposta", "",
             "Para cada tipo: quantos dos 10 exemplos você confirma, e se a frase de como melhorar serve. O tipo com 8 "
             "ou mais confirmados entra em `TIPOS_DE_ERRO_VALIDADOS` (`metrics/erros.py`) num item à parte; os "
@@ -447,9 +762,15 @@ def main(argv: list[str]) -> int:
     if "--tabela" in argv:
         print("\n".join(tabela_por_tipo(oc)))
         return 0
-    cache = {m: E.carrega_partida(m) for m in partidas()}
-    grava(secao(oc, cache))
-    print(f"seção 7 gravada em {MATERIAL.name} ({oc.height} ocorrências em {len(cache)} partidas)")
+    hoje = datetime.date.today().isoformat()
+    fix = le_fixados()
+    escolhidos = escolhe_exemplos(oc, fix, hoje, sortear_de_novo="--sortear-de-novo" in argv)
+    if escolhidos != fix.get("exemplos"):
+        fix["exemplos"] = escolhidos
+        grava_fixados(fix)
+    res = mede_corpus()
+    grava(secao(oc, res, escolhidos, _antigas()))
+    print(f"seção 7 gravada em {MATERIAL.name} ({oc.height} ocorrências em {len(res)} partidas)")
     return 0
 
 

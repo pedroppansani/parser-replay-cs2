@@ -1,0 +1,48 @@
+{
+  "_leia_isto": "Malhas de colisão dos mapas (fase 18, metrics/visao.py). Geradas por `py -3.12 -m scripts.visao_malhas` a partir do awpy-data; o .tri fica em ~/.awpy/tris.",
+  "fonte": "https://github.com/pnxenopoulos/awpy-data/releases/download/2000932/geometry.zip",
+  "versao_awpy_data": "2000932",
+  "sha256_geometry_zip": "06ab94c50e6024162a6b322cd28af660f80da2558c68a093e4fac0e9385ac216",
+  "mapas": {
+    "de_ancient": {
+      "triangulos": 455880,
+      "sha256_mesh": "991bd47e39c47ab07c74bd64fd76103c90cc569acce2ecda6b6adfe3064e3d02",
+      "sha256_tri": "0472fa56504cd65e18195c4b305d6116079fdc5efa986066d368a0f12a9b363c"
+    },
+    "de_anubis": {
+      "triangulos": 378619,
+      "sha256_mesh": "685fae82a5d01cc9faf312d91670e18ea0ded07f9e171fe9449e6f7a15992b49",
+      "sha256_tri": "1266dfb51f3082e45da0c410ece3d75ba47b7da1da77dce4e0319f806c7ee0ce"
+    },
+    "de_dust2": {
+      "triangulos": 239917,
+      "sha256_mesh": "a21f26cb5df390dd03e10a8b43da8c89781b5f5c7cf1216a31748fd23a341766",
+      "sha256_tri": "63982e65d6d1e5fedd2a808b8aba7a2b16a3dc73b5d19c47ccc7fad50cab0a3f"
+    },
+    "de_inferno": {
+      "triangulos": 547966,
+      "sha256_mesh": "897e6f22dc76ecd3815ce8214ae1eb3254b07f72ba7b5f9470430bd8749ed632",
+      "sha256_tri": "a7f13dc96caf11720826916a85a47ef818e27460839ff6ba451bd4e46ce17418"
+    },
+    "de_mirage": {
+      "triangulos": 73290,
+      "sha256_mesh": "d5e3aabe17583f07ca899236d015ecc46f7e542fa093ada4782944941b41e679",
+      "sha256_tri": "83fb4e353df15edbfd45bfc073546deae988745c5b1782c40473cac23a4da6be"
+    },
+    "de_nuke": {
+      "triangulos": 89563,
+      "sha256_mesh": "e9d78f26aa0aa705e4cdd16e98fae453ba99f6e8cfcc3a09aa3e549925b54984",
+      "sha256_tri": "647844668f76b11a0d57d466fc8e6b305aa8970bf08c8eba3f10bd39bfebb4af"
+    },
+    "de_overpass": {
+      "triangulos": 243902,
+      "sha256_mesh": "17b4fb32efd3be9b47308401aeaa97b358d66942a3b50e7d19bca3d7ff7824bc",
+      "sha256_tri": "bf580d64987de5b4c0847497dcb3de76ff302a69ac10af93687928a4946caae2"
+    },
+    "de_train": {
+      "triangulos": 428865,
+      "sha256_mesh": "b8c4f153f7bcc3a37216ff3c6721eb37562ad9d7aa514e315ccc443bc1576021",
+      "sha256_tri": "0594e9d6b05b38d41d0a87dc644d3a57b32f50c2eccc96082c74814ca5d87e60"
+    }
+  }
+}

@@ -54,6 +54,14 @@ VERSAO_DO_PARSER = 2
 # Onde o complemento registra o que acrescentou a um interim existente.
 ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
 
+# 24 (2026-10-15) erros do Perfil, fase 18 (definições do Pedro): a troca é decidida pelo fato (nunca pela
+#    distância) e toda morte trocada sai de todos os tipos; round decidido (chance do round fora de 0,05 a 0,95)
+#    sai; "não trocou", "possível bait", "perdeu a troca" e "morreu sozinho" (era "morreu isolado") usam quem
+#    estava vendo quem (metrics/visao.py: linha de visão pelo mapa + campo de visão + não cego); a situação
+#    numérica passa a contar os vivos pelas mortes (o "0 contra 0" do início do round); evento com 0 de dano ou
+#    de cegueira não é ocorrência. erros_do_jogador.parquet ganha as colunas de visão, engajamento, recuo,
+#    troca e chance; mortes.parquet é novo (cada morte: trocada ou não, e por quem). Impacto: só esses dois
+#    arquivos por partida e a régua erros_reference.json mudam; nenhum outro parquet nem número publicado.
 # 23 (2026-10-14) erros do Perfil, fase 15 (decisão 46): "flash no time" e "dano de utilidade no time" passam
 #    a somar e a aplicar o limiar POR LADO (antes, a soma era da partida, CT e TR juntos); a tabela
 #    erros_do_jogador.parquet ganha a coluna `relogio` ("1:14") e o lado de quem não aparece nas kills do
@@ -117,7 +125,7 @@ ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
 #   (inclui a classe de economia do jogador no rating), unique com subset fica
 #   com a primeira linha. Antes, esses três casos dependiam da ordem de hash.
 # 1 (2026-09-20) primeira versão declarada, mesmo raciocínio acima.
-VERSAO_DAS_METRICAS = 23
+VERSAO_DAS_METRICAS = 24
 
 # Pastas cujo estado define o NÚMERO. `sujo` olha só estas: olhar o repositório
 # inteiro marcava todo reprocessamento como sujo, porque o próprio
