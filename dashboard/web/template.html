@@ -757,7 +757,8 @@
   .legend { display: flex; gap: 16px; flex-wrap: wrap; font-family: var(--f-texto); font-size: 11px; color: var(--apagado); margin-top: 12px; }
   .legend span { display: inline-flex; align-items: center; gap: 6px; }
   .legend i { width: 9px; height: 9px; border-radius: 2px; }
-  /* "Quanto cada round pesou" (aba Placar): barra por round e a tabela para leitor de tela. Sem transição: com ou sem reduzir movimento, nada anima. */
+  /* "Quanto cada round pesou" (aba Placar): barra por round, cartões dos três maiores e a tabela para
+     leitor de tela. Sem transição: com ou sem reduzir movimento, nada anima. */
   .pesohit { cursor: pointer; fill: transparent; }
   .pesohit:focus { outline: none; }
   .pesohit:focus-visible { stroke: var(--foco); stroke-width: 2; }
@@ -765,6 +766,16 @@
   .pesobar.dec.hot { stroke-width: 3; }
   .peso-nota { margin-top: 10px; }
   .peso-nota[hidden] { display: none; }
+  .peso-cartao { padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .peso-cartao .pc-cab { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+    font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-weight: 700; font-size: 19px; }
+  .peso-cartao .pc-var { display: flex; align-items: baseline; gap: 7px; font-size: var(--t-sm); color: var(--tinta-2); }
+  .peso-cartao .pc-var i { flex: none; width: 9px; height: 9px; border-radius: 2px; }
+  .peso-cartao p { margin: 0; font-size: 13.5px; color: var(--tinta); }
+  .peso-cartao .pc-ir { align-self: flex-start; margin-top: auto; min-height: var(--toque); padding: 0 14px;
+    border: 1px solid var(--borda); border-radius: var(--r-sm); background: var(--superficie); color: var(--tinta);
+    font-family: var(--f-texto); font-size: 13px; cursor: pointer; }
+  .peso-cartao .pc-ir:hover { border-color: var(--tinta-2); }
   .so-leitor { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0;
     overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
@@ -1230,6 +1241,7 @@
       <p class="lead tight peso-nota" id="peso-nota"></p>
       <div class="so-leitor"><table id="peso-tabela"></table></div>
     </div>
+    <div class="pair peso-cartoes" id="peso-cartoes"></div>
   </section>
 
   <!-- JOGADORES -->
@@ -2941,6 +2953,25 @@
             "<td>" + esc(T.placares[i]) + "</td><td>" + esc(T.frases[i]) + "</td>" +
             "<td>" + esc(nomeLado(c.winner_team)) + "</td></tr>";
         }).join("") + "</tbody>";
+    }
+
+    // Os três rounds que mais mexeram, em ordem de peso: o mesmo texto da dica e o mesmo clique.
+    var cartoes = document.getElementById("peso-cartoes");
+    if (cartoes) {
+      cartoes.innerHTML = top.map(function (t, j) {
+        var c = curva[indice[t.round]], p = prog[t.round] || c, txt = T.cartoes[j] || {};
+        return "<article class='card peso-cartao'>" +
+          "<div class='pc-cab'><span>" + esc(txt.cabecalho) + "</span>" +
+          (t.round === decRound ? "<span class='tag decisivo'>decisivo</span>" : "") + "</div>" +
+          "<div class='pc-var'><i style='background:var(--" + (c.winner_team === "A" ? "ct" : "tr") + ")'></i>" +
+          esc(txt.variacao) + "</div>" +
+          "<p>" + esc(roundHeadline(PONTUADOS[t.round] || p, p)) + "</p>" +
+          "<button type='button' class='pc-ir' data-round='" + esc(t.round) + "'>Assistir no mapa</button>" +
+          "</article>";
+      }).join("");
+      Array.prototype.forEach.call(cartoes.querySelectorAll(".pc-ir"), function (b) {
+        b.addEventListener("click", function () { assisteRound(Number(b.getAttribute("data-round"))); });
+      });
     }
   })();
 
