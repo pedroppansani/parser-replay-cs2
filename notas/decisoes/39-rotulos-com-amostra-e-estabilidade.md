@@ -49,3 +49,29 @@ Isso muda o caráter da leitura; ligar é decisão do Pedro. Hoje a chance é s�
 fixa) e aplica a regra de `resume_por_lado`. O resumo por lado gravado não muda. Teste:
 `test_funcao_estrutural_instavel_sai_com_tendencia` (9 rounds de uma função e 6 de outra: 0,61, sai
 "(tendência)"; 14 e 2: estável).
+
+**Função acima do acaso: ligada só como aviso** (resposta do Pedro ao cartão 2 de
+`notas/PENDENCIAS_PARA_O_PEDRO.md`, 2026-10-16). Resposta, como veio: "Opção 3: ligar só como aviso.
+A função continua aparecendo. Quando a chance ao acaso passar de 0,05, ela ganha uma marca. Uma
+condição: a marca é a mesma da decisão 39. Use '(tendência)', com o mesmo tratamento visual, e não
+'(pode ser acaso)'. Para quem lê, as duas querem dizer a mesma coisa: 'o dado sugere, mas não
+sustenta com firmeza'. Duas marcas diferentes para isso confundem. O motivo específico de cada marca
+vai no `title` ou na dica da marca: 'Função dominante neste lado, mas com 12 rounds pode ser acaso
+(chance de 9%)' para a função estrutural; o texto atual da decisão 39 para os traços. Os rótulos não
+mudam, então nenhum número muda."
+
+Como ficou: `EXIGE_FUNCAO_ACIMA_DO_ACASO` segue `False` e a função dominante não muda. A marca
+"(tendência)" da função estrutural tem agora dois motivos, e continua UMA marca: a reamostragem
+instável (fase 12b) OU a `chance_ao_acaso` gravada fora do alfa (≥ 0,05, o complemento de "acima do
+acaso"; nenhum valor do corpus cai em 0,05 exato). A dica (`title` da etiqueta no cabeçalho da aba
+Perfil) diz o motivo, ou os dois, e sai do Python (`structural_roles.dica_da_tendencia`): "Função
+dominante neste lado, mas com 12 rounds pode ser acaso (chance de 21%)", "... mas se mantém em 61%
+das reamostragens dos rounds", ou os dois unidos por "e". A chance é inteira, com uma casa quando o
+inteiro cairia no próprio corte (6 de 12 no CT: "5,4%"). A conta lê o que já está gravado
+(`structural_roles_summary.parquet`), sem reprocesso; a marca é aplicada ao bloco da aba Perfil por
+`leitura/marca_da_funcao.py` no build. Os traços não mudam: a evidência deles já traz o texto desta
+decisão ("tendência: o rótulo se mantém em N% das reamostragens dos rounds"). O nível dos erros do
+Perfil (regra 5 da decisão 46, "função só tendência") continua só com a reamostragem. Medido nas 52:
+dos 730 jogador-lados com função dominante, 324 têm a chance fora do alfa; 174 deles já tinham a
+marca pela reamostragem e 150 a ganham agora; 16 a têm só pela reamostragem (340 marcas no total).
+Teste: `tests/test_marca_da_funcao.py`.

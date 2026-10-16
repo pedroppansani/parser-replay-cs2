@@ -33,26 +33,6 @@ entram aqui quando uma decisão depende delas.
   HLTV do corpus (por exemplo, NAVI x Spirit em Katowice) e veja se há uma coluna de dano de
   utilidade. Se houver, mande o print dela para as 13 partidas com HLTV.
 
-## 2. `EXIGE_FUNCAO_ACIMA_DO_ACASO`
-
-- **Origem:** decisão 39; `metrics/structural_roles.py`; medição em
-  `pesquisa/funcao_acima_do_acaso.py`.
-- **Pergunta:** a função dominante de um jogador num lado só aparece quando é improvável que tenha
-  saído do acaso (binomial, alfa 0,05)?
-- **Opções:**
-  1. **Ligar.** Tira a função dominante de 324 dos 730 jogador-lados. O lado TR quase some (251 →
-     48: entry 70 → 7, lurker 33 → 1, trader 44 → 4), e 82 dos 166 AWPers perdem o rótulo. Os cards
-     de função e o "sem função dominante" mudam em muitas páginas.
-  2. **Deixar desligado** (hoje). A chance ao acaso é gravada e não muda nada na tela.
-  3. **Ligar só como aviso.** A função continua, com "(pode ser acaso)" quando a chance passa de
-     0,05. Muda texto, não rótulo.
-- **Recomendação:** a 3. Com 12 rounds por lado, o teste exige 6 de 12 no TR e 7 de 12 no CT, o
-  que é rígido demais para uma partida só. Apagar quase todo o TR tira mais leitura do que
-  protege. O aviso diz a verdade sem esvaziar a tela.
-- **Custo de deixar como está:** funções dominantes que podem ser acaso aparecem sem nenhuma
-  marca. O "tendência" da decisão 39 cobre os rótulos de traço, não a função estrutural.
-- **Fora do computador:** nada.
-
 ## 3. A variante do agrupamento de estilos (auditoria 4.7)
 
 - **Origem:** auditoria, item 4.7 (tempo até o contato nulo quando não há contato; decisão 17 da

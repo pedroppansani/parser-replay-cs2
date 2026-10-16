@@ -934,7 +934,10 @@ def atribui_funcao(pontuado: pl.DataFrame) -> pl.DataFrame:
 # a regra tira a função dominante de 324 dos 730 jogador-lados e quase apaga o
 # lado TR (251 -> 48; entry 70 -> 7, lurker 33 -> 1, trader 44 -> 4), além de 82
 # dos 166 AWPers. Isso muda o caráter da leitura, e ligar é decisão do Pedro.
-# Com a constante em False a coluna `chance_ao_acaso` é gravada e nada mais muda.
+# Com a constante em False a coluna `chance_ao_acaso` é gravada e a função fica.
+# LIGADA SÓ COMO AVISO (resposta do Pedro ao cartão 2, 2026-10-16, decisão 39):
+# a constante segue False e a chance acima de ALFA dá a mesma marca "(tendência)"
+# da reamostragem, com o motivo na dica (`marca_da_funcao`, abaixo).
 ALFA_FUNCAO_ACIMA_DO_ACASO = 0.05
 EXIGE_FUNCAO_ACIMA_DO_ACASO = False
 
@@ -1119,6 +1122,54 @@ def estabilidade_da_funcao(por_round: pl.DataFrame, awpers_do_time: set | None =
                        "tendencia": bool(estab is not None and estab < LIMIAR_DE_TENDENCIA)})
     return pl.DataFrame(linhas, schema={"steamid": por_round.schema["steamid"], "side": pl.String,
                                         "funcao": pl.String, "estabilidade": pl.Float64, "tendencia": pl.Boolean})
+
+
+# A MARCA "(tendência)" DA FUNÇÃO ESTRUTURAL tem dois motivos, e é UMA marca só
+# (resposta do Pedro ao cartão 2, 2026-10-16, registrada na decisão 39): a
+# reamostragem instável (estabilidade abaixo de LIMIAR_DE_TENDENCIA) OU a chance
+# ao acaso gravada fora do alfa (ALFA_FUNCAO_ACIMA_DO_ACASO, o complemento de
+# "acima do acaso"). A função continua aparecendo; nenhum rótulo muda. O motivo
+# (um ou os dois) vai na dica da marca.
+def _pct_da_chance(chance: float) -> str:
+    """A chance como a dica escreve: inteira (`format_pct`), com uma casa quando o inteiro cairia no
+    próprio corte (0,054 viraria "5%", que não se lê como acima de 5%)."""
+    from metrics.formatting import format_pct
+    if round(chance * 100) <= round(ALFA_FUNCAO_ACIMA_DO_ACASO * 100):
+        return f"{chance * 100:.1f}".replace(".", ",") + "%"
+    return format_pct(chance)
+
+
+def dica_da_tendencia(rounds_no_lado: int, chance: float | None, estabilidade: float | None) -> str:
+    """O `title` da marca "(tendência)" da função dominante; vazio quando nenhum motivo se aplica.
+
+    "Função dominante neste lado, mas com 12 rounds pode ser acaso (chance de 9%)" (o texto do Pedro);
+    o motivo da reamostragem segue o texto da decisão 39 ("se mantém em N% das reamostragens")."""
+    from metrics.player_roles import LIMIAR_DE_TENDENCIA
+
+    partes = []
+    if chance is not None and chance >= ALFA_FUNCAO_ACIMA_DO_ACASO:
+        partes.append(f"com {int(rounds_no_lado)} rounds pode ser acaso (chance de {_pct_da_chance(chance)})")
+    if estabilidade is not None and estabilidade < LIMIAR_DE_TENDENCIA:
+        partes.append(f"se mantém em {estabilidade * 100:.0f}% das reamostragens dos rounds")
+    return "Função dominante neste lado, mas " + " e ".join(partes) if partes else ""
+
+
+def marca_da_funcao(resumo: pl.DataFrame, estabilidade: pl.DataFrame) -> dict:
+    """{(steamid, lado): {"funcao", "dica"}} das funções dominantes que saem com "(tendência)".
+
+    `resumo` é o `resume_por_lado` gravado (com `chance_ao_acaso`); `estabilidade` é o
+    `estabilidade_da_funcao` da mesma partida. Só entra a linha com função dominante (no empate e sem
+    função não há marca); a dica diz o motivo, ou os dois."""
+    estab = {(int(r["steamid"]), r["side"]): r for r in estabilidade.iter_rows(named=True)}
+    out = {}
+    for r in resumo.filter(pl.col("funcao").is_not_null()).iter_rows(named=True):
+        chave = (int(r["steamid"]), r["side"])
+        e = estab.get(chave) or {}
+        valor = e.get("estabilidade") if e.get("funcao") == r["funcao"] else None
+        dica = dica_da_tendencia(r["rounds_no_lado"], r.get("chance_ao_acaso"), valor)
+        if dica:
+            out[chave] = {"funcao": r["funcao"], "dica": dica}
+    return out
 
 
 def texto_empate(linha: dict) -> str:
