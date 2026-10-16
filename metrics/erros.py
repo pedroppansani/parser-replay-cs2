@@ -103,12 +103,24 @@ DANO_UTILIDADE_ALIADO = 20.0
 
 # --- Constantes novas (fase 18). Cada uma está no material de calibração, seção 7 --------------
 
-# Recuo mínimo: a distância até o matador (com o matador parado onde estava quando ficou visível)
-# precisa subir mais que isto para o jogador ter recuado; o mesmo valor, ao contrário, é "andou na
-# direção dele" em "perdeu a troca". Origem: o limite de "praticamente parado" do projeto
-# (awp_metrics.HOLD_MAX_DISPLACEMENT = 120: abaixo disso, em 3 s, o jogador segurou o ângulo); o
-# histograma do recuo no corpus está no material.
-RECUO_MINIMO = 120.0
+# --- Calibração do Pedro (fase 18b, decisão 46) ---------------------------------------------------
+
+# Recuo mínimo do bait: o deslocamento LÍQUIDO do jogador para longe do matador, do primeiro tick (amostra)
+# em que ele vê o matador até o fim da janela, com o matador parado onde estava nesse primeiro tick, tem de
+# ser de pelo menos isto. Abaixo (o passo de lado do jiggle) não é bait, nem saindo da linha de visão.
+# O mesmo valor, ao contrário (o deslocamento líquido NA DIREÇÃO do matador visível), é o "andou na
+# direção dele" que conta como engajar em "perdeu a troca" e tira o caso de "não trocou". Origem: decisão
+# do Pedro na fase 18b (64 u; substitui o RECUO_MINIMO = 120 da fase 18, que era a mesma medida pelo máximo
+# e não pelo líquido).
+MIN_RECUO_BAIT = 64.0
+
+# Tempo mínimo de visão: o matador precisa ter ficado visível pelo menos isto, SOMANDO as amostras visíveis
+# da janela (não precisa ser contínuo: o jiggle e o peek repetido também dão chance de troca, e a soma é o
+# tempo de exposição que o jogador teve). Vale para o matador visível em "não trocou" e no bait, e para o
+# aliado que tem o matador à vista e por isso tira um caso de "morreu sozinho"; NÃO vale para os "dois ou
+# mais inimigos visíveis" de "perdeu a troca" (ali qualquer amostra visível conta). Origem: decisão do
+# Pedro na fase 18b (0,5 s).
+MIN_TEMPO_VISIVEL = 0.5
 
 # Round decidido: a chance de vitória do time (o modelo de round do rating), logo antes do evento,
 # acima de LIMIAR_ROUND_GANHO ou abaixo de LIMIAR_ROUND_PERDIDO. Origem: os valores propostos pelo
@@ -135,6 +147,31 @@ MARGEM_PONTO_FORTE = 0.15
 # Tipos publicados no site. COMEÇA VAZIA (pedido 12.4): um tipo só entra depois que o Pedro
 # confirmar pelo menos 8 dos 10 exemplos do material de calibração (seção 7).
 TIPOS_DE_ERRO_VALIDADOS: frozenset[str] = frozenset()
+
+# Um tipo com menos ocorrências que isto no CORPUS (depois dos filtros) não entra na validação nem pode entrar
+# em TIPOS_DE_ERRO_VALIDADOS: com menos de 10 não dá para sortear os 10 exemplos da regra dos 8 de 10. A
+# contagem é calculada dos dados (`casos_no_corpus`), nunca uma lista escrita à mão: quando o corpus crescer e o
+# tipo passar do mínimo, ele volta à validação sem mudar código. O tipo continua calculado e gravado. Origem:
+# decisão do Pedro na fase 18b (o bait ficou com 9 casos).
+MIN_CASOS_PARA_VALIDAR = 10
+
+
+def casos_no_corpus(processed_root: Path | None = None) -> dict[str, int]:
+    """{tipo: ocorrências que passaram nos filtros} somadas nas partidas processadas (erros_do_jogador.parquet)."""
+    raiz = processed_root or PROJECT_ROOT / "data" / "processed"
+    tot = {t: 0 for t in TIPOS}
+    for arq in sorted(raiz.glob("match_*/erros_do_jogador.parquet")):
+        oc = pl.read_parquet(arq, columns=["tipo", "filtro"]).filter(pl.col("filtro").is_null())
+        for t, n in oc.group_by("tipo", maintain_order=True).len().iter_rows():
+            if t in tot:
+                tot[t] += int(n)
+    return tot
+
+
+def tipos_validaveis(casos: dict[str, int] | None = None) -> tuple[str, ...]:
+    """Os tipos com pelo menos MIN_CASOS_PARA_VALIDAR casos no corpus, na ordem de TIPOS."""
+    casos = casos_no_corpus() if casos is None else casos
+    return tuple(t for t in TIPOS if casos.get(t, 0) >= MIN_CASOS_PARA_VALIDAR)
 
 # --- Os tipos ---------------------------------------------------------------------------------
 
@@ -210,8 +247,9 @@ FILTRO_CEGO = "cego no momento"
 FILTRO_DUELO = "em duelo próprio"
 FILTRO_SEM_ARMA = "sem arma de fogo"
 FILTRO_MATADOR_FORA_DA_VISAO = "o matador não ficou visível para ele"          # fase 18
-FILTRO_ENGAJOU = "engajou o matador"                              # fase 18 (bait)
-FILTRO_NAO_RECUOU = "não recuou nem saiu da linha de visão"       # fase 18 (bait)
+FILTRO_POUCO_TEMPO_VISIVEL = "o matador ficou visível menos de 0,5 s"       # fase 18b
+FILTRO_ENGAJOU = "engajou o matador"                              # fase 18b: conta só em "perdeu a troca"
+FILTRO_NAO_RECUOU = "recuou menos de 64 unidades"                 # fase 18b (bait)
 FILTRO_SEM_ENGAJAMENTO = "não engajou o matador"                  # fase 18 (perdeu a troca)
 FILTRO_DOIS_OU_MAIS = "enfrentou dois ou mais ao mesmo tempo"     # fase 18: registrado, nunca erro
 FILTRO_ALIADO_COM_O_MATADOR = "um aliado tinha o matador à vista ou estava perto"   # fase 18 (morreu sozinho)
@@ -486,14 +524,23 @@ class _Indice:
             return []
         return [(s, v.visivel(rn, s, obs, matador)) for s in v.amostras(t, fim)]
 
-    def segundos_visivel(self, amostras: list[tuple[int, bool]]) -> float:
-        """Tempo (s) em que o matador ficou visível: cada amostra visível vale até a próxima amostra."""
+    def ticks_visivel(self, amostras: list[tuple[int, bool]]) -> int:
+        """Ticks em que o matador ficou visível, SOMADOS na janela: cada amostra visível vale até a próxima
+        amostra (a última, 1 tick)."""
         tot = 0
         for i, (s, vis) in enumerate(amostras):
             if vis:
                 prox = amostras[i + 1][0] if i + 1 < len(amostras) else s + 1
                 tot += prox - s
-        return round(tot / self.p.tickrate, 2)
+        return tot
+
+    def segundos_visivel(self, amostras: list[tuple[int, bool]]) -> float:
+        """Tempo (s) em que o matador ficou visível na janela (a soma de `ticks_visivel`)."""
+        return round(self.ticks_visivel(amostras) / self.p.tickrate, 2)
+
+    def visto_o_bastante(self, amostras: list[tuple[int, bool]]) -> bool:
+        """O matador ficou visível pelo menos MIN_TEMPO_VISIVEL (somado) na janela (fase 18b)."""
+        return visto_o_bastante(self.ticks_visivel(amostras) / self.p.tickrate)
 
     def deu_dano(self, rn: int, de: int, em: int, t0: int, t1: int) -> float:
         return float(sum(float(d["dmg_health_real"] or 0) for d in self.dano
@@ -518,8 +565,9 @@ class _Indice:
         return False
 
     def movimento(self, rn: int, obs: int, matador: int, amostras: list[tuple[int, bool]]) -> tuple:
-        """Com o matador PARADO onde estava na primeira amostra em que ficou visível: (o quanto o jogador se
-        afastou dele no máximo, o quanto se aproximou no máximo, se saiu da linha de visão andando).
+        """Com o matador PARADO onde estava na primeira amostra em que ficou visível: (o deslocamento LÍQUIDO do
+        jogador para longe dele, da primeira amostra visível até a última amostra da janela, negativo quando
+        se aproximou; se saiu da linha de visão andando, que fica só como contexto desde a fase 18b).
 
         "Saiu da linha de visão andando": numa amostra posterior o matador deixou de estar visível E, da
         posição nova do jogador, a linha até a última posição em que o matador foi visto também está fechada
@@ -527,15 +575,16 @@ class _Indice:
         v = self.p.visao
         vis = [s for s, ok in amostras if ok]
         if v is None or not vis:
-            return 0.0, 0.0, False
+            return 0.0, False
         s0 = vis[0]
         e_m0, e_j0 = v.estado(rn, matador, s0), v.estado(rn, obs, s0)
         if e_m0 is None or e_j0 is None:
-            return 0.0, 0.0, False
+            return 0.0, False
         d0 = math.hypot(e_j0[0] - e_m0[0], e_j0[1] - e_m0[1])
         longe = perto = 0.0
         saiu = False
         ultimo_visto = s0
+        d = d0
         for s, ok in amostras:
             if s <= s0:
                 continue
@@ -543,14 +592,14 @@ class _Indice:
             if e_j is None:
                 continue
             d = math.hypot(e_j[0] - e_m0[0], e_j[1] - e_m0[1])
-            longe, perto = max(longe, d - d0), max(perto, d0 - d)
             if ok:
                 ultimo_visto = s
             elif not saiu:
                 e_mv = v.estado(rn, matador, ultimo_visto)
                 if e_mv is not None and not v.linha_de_visao(rn, s, obs, matador, pos_obs=e_j, pos_alvo=e_mv):
                     saiu = True
-        return round(longe, 1), round(perto, 1), saiu
+        # fase 18b: o deslocamento LÍQUIDO (positivo = para longe), da primeira amostra visível até a última
+        return round(d - d0, 1), saiu
 
     def inimigos_visiveis(self, rn: int, obs: int, t0: int, t1: int) -> int:
         """O maior número de inimigos vivos visíveis para `obs` AO MESMO TEMPO numa amostra de t0 a t1."""
@@ -565,6 +614,16 @@ class _Indice:
             n = sum(1 for x in inimigos if self.vivo(rn, x, s) and v.visivel(rn, s, obs, x))
             maior = max(maior, n)
         return maior
+
+
+def visto_o_bastante(segundos: float) -> bool:
+    """Fase 18b: o tempo somado de visão chega a MIN_TEMPO_VISIVEL (0,49 s não chega; 0,50 s chega)."""
+    return segundos + 1e-9 >= MIN_TEMPO_VISIVEL
+
+
+def recuou_o_bastante(recuo: float | None) -> bool:
+    """Fase 18b: o deslocamento líquido para longe do matador chega a MIN_RECUO_BAIT (63 u não; 64 u sim)."""
+    return recuo is not None and recuo + 1e-9 >= MIN_RECUO_BAIT
 
 
 def _base(ix: _Indice, tipo: str, rn: int, t: int, sid: int) -> dict:
@@ -613,10 +672,16 @@ def _candidatos_nao_trocou(p: Partida, s_duelo: float, ix: _Indice) -> list[dict
             sid = int(r["steamid"])
             fim = ix.fim_da_janela(rn, t, sid, a)
             amostras = ix.visao_do_matador(rn, t, fim, sid, a)
-            visto = any(ok for _, ok in amostras)
-            atirou = ix.atirou_nele(rn, sid, a, t, fim)
-            dano = ix.deu_dano(rn, sid, a, t, fim)
-            longe, _, saiu = ix.movimento(rn, sid, a, amostras)
+            algum = any(ok for _, ok in amostras)
+            visto = ix.visto_o_bastante(amostras)
+            # o tiro e o dano contam até a morte dele, se ele morreu na janela (o mesmo recorte de "perdeu a troca")
+            morte_j = ix.morte.get((rn, sid))
+            ate = morte_j if morte_j is not None and t < morte_j <= t + ix.janela else fim
+            atirou = ix.atirou_nele(rn, sid, a, t, ate)
+            dano = ix.deu_dano(rn, sid, a, t, ate)
+            liquido, saiu = ix.movimento(rn, sid, a, amostras)
+            # engajar = a mesma regra de "perdeu a troca": atirou nele, deu dano, ou andou na direção dele visível
+            engajou = atirou or dano > 0 or (algum and recuou_o_bastante(-liquido))
             oc = _base(ix, NAO_TROCOU, rn, t, sid)
             oc.update(aliado_steamid=v, aliado=p.nomes.get(v, str(v)), matador_steamid=a,
                       matador=p.nomes.get(a, str(a)), dist_aliado=_r(distancia(r, pos_v, p.corte_de_andar)),
@@ -624,12 +689,14 @@ def _candidatos_nao_trocou(p: Partida, s_duelo: float, ix: _Indice) -> list[dict
                       dist_matador_aliado=_r(distancia(pos_v, pos_a, p.corte_de_andar)),
                       dwpa=ix.dwpa(rn, t, v, ix.time(sid)), matador_visivel=visto,
                       seg_matador_visivel=ix.segundos_visivel(amostras), atirou_no_matador=atirou,
-                      dano_no_matador=round(dano, 1), recuo=longe, saiu_da_linha=saiu, trocada=False)
+                      dano_no_matador=round(dano, 1), recuo=liquido, saiu_da_linha=saiu, trocada=False)
             oc["filtro"] = (ix.filtro_do_round(rn, sid, t)
                             or (FILTRO_CEGO if ix.cego(rn, sid, t) else None)
                             or (FILTRO_DUELO if ix.em_duelo(rn, sid, t, s_duelo) else None)
                             or (None if ix.tem_arma(rn, sid, t) else FILTRO_SEM_ARMA)
-                            or (None if visto else FILTRO_MATADOR_FORA_DA_VISAO))
+                            or (None if algum else FILTRO_MATADOR_FORA_DA_VISAO)
+                            or (None if visto else FILTRO_POUCO_TEMPO_VISIVEL)
+                            or (FILTRO_ENGAJOU if engajou else None))
             out.append(oc)
     return out
 
@@ -637,7 +704,9 @@ def _candidatos_nao_trocou(p: Partida, s_duelo: float, ix: _Indice) -> list[dict
 def nao_trocou(p: Partida, dist_troca: float = DIST_TROCA, s_duelo: float = S_DUELO,
                _ix: _Indice | None = None, _cand: list | None = None) -> list[dict]:
     """Um aliado morre, a morte NÃO é trocada (o matador não morre por um aliado dentro da janela: o fato, não a
-    distância), e o matador ficou VISÍVEL para o jogador em algum momento da janela (fase 18). Fica de fora: o
+    distância), e o matador ficou VISÍVEL para o jogador na janela (fase 18), por pelo menos MIN_TEMPO_VISIVEL
+    somados (fase 18b), e o jogador NÃO engajou o matador (fase 18b: quem atirou nele, deu dano ou andou na
+    direção dele visível conta só em "perdeu a troca", se morreu). Fica de fora: o
     matador nunca visível para ele (abriu pela lateral, matou e recuou), o jogador cego no momento, em duelo
     próprio (levou ou causou dano nos `s_duelo` segundos antes), sem arma de fogo, e os filtros do round
     (eco, time guardando arma, depois do fim, round decidido). `dist_troca` não é mais critério (fica no
@@ -647,29 +716,28 @@ def nao_trocou(p: Partida, dist_troca: float = DIST_TROCA, s_duelo: float = S_DU
 
 
 def possivel_bait(p: Partida, dist_troca: float = DIST_TROCA, s_duelo: float = S_DUELO,
-                  recuo_minimo: float = RECUO_MINIMO, _ix: _Indice | None = None,
+                  recuo_minimo: float | None = None, _ix: _Indice | None = None,
                   _cand: list | None = None) -> list[dict]:
-    """Subconjunto de "não trocou" (fase 18): com o matador visível, o jogador NÃO engajou (não atirou nele nem
-    causou dano na janela) E se escondeu ou recuou: a distância até o matador (parado onde ficou visível) subiu
-    mais que `recuo_minimo`, ou o jogador saiu da linha de visão andando (e não porque o matador se mexeu).
+    """Subconjunto de "não trocou" (que já exige o matador visível por MIN_TEMPO_VISIVEL e o jogador sem
+    engajar): o jogador RECUOU, isto é, o deslocamento líquido dele para longe do matador (parado onde estava na
+    primeira amostra visível), da primeira amostra visível até o fim da janela, é de pelo menos MIN_RECUO_BAIT
+    (fase 18b). Sair da linha de visão com menos que isso (o passo de lado do jiggle) não é bait.
     O critério antigo de "estar atrás do aliado" saiu (o empate de distância nunca conta como atrás). Os
     filtros de "não trocou" valem aqui; os que não engajaram mas não recuaram ficam com o motivo."""
     ix = _ix or _Indice(p)
     out = []
     for oc in (_cand if _cand is not None else _candidatos_nao_trocou(p, s_duelo, ix)):
         b = {**oc, "tipo": POSSIVEL_BAIT}
-        if b["filtro"] is None:
-            if b["atirou_no_matador"] or (b["dano_no_matador"] or 0) > 0:
-                b["filtro"] = FILTRO_ENGAJOU
-            elif not ((b["recuo"] or 0) > recuo_minimo or b["saiu_da_linha"]):
-                b["filtro"] = FILTRO_NAO_RECUOU
+        minimo = MIN_RECUO_BAIT if recuo_minimo is None else recuo_minimo
+        if b["filtro"] is None and not ((b["recuo"] or 0) + 1e-9 >= minimo):
+            b["filtro"] = FILTRO_NAO_RECUOU
         out.append(b)
     return out
 
 
 # --- Tipo 3: perdeu a troca --------------------------------------------------------------------
 
-def perdeu_a_troca(p: Partida, recuo_minimo: float = RECUO_MINIMO, _ix: _Indice | None = None) -> list[dict]:
+def perdeu_a_troca(p: Partida, recuo_minimo: float | None = None, _ix: _Indice | None = None) -> list[dict]:
     """Um aliado morre; o jogador ENGAJA o matador dentro da janela (atira nele, causa dano, ou anda mais que
     `recuo_minimo` na direção dele com ele visível) e morre dentro da janela sem matá-lo, com no máximo UM
     inimigo visível para ele ao mesmo tempo (fase 18). Dois ou mais visíveis: "enfrentou dois ou mais ao mesmo
@@ -693,8 +761,9 @@ def perdeu_a_troca(p: Partida, recuo_minimo: float = RECUO_MINIMO, _ix: _Indice 
             visto = any(ok for _, ok in amostras)
             dano = ix.deu_dano(rn, sid, a, t, morte)
             atirou = ix.atirou_nele(rn, sid, a, t, morte)
-            longe, perto, saiu = ix.movimento(rn, sid, a, amostras)
-            andou = visto and perto > recuo_minimo
+            liquido, saiu = ix.movimento(rn, sid, a, amostras)
+            minimo = MIN_RECUO_BAIT if recuo_minimo is None else recuo_minimo
+            andou = visto and -liquido + 1e-9 >= minimo
             n_vis = ix.inimigos_visiveis(rn, sid, t, fim_j)
             pos_v, pos_a = _pos(k, "victim"), _pos(k, "attacker")
             k_morte = next((x for x in ix.kills if int(x["round_num"]) == rn and int(x["tick"]) == morte
@@ -708,7 +777,7 @@ def perdeu_a_troca(p: Partida, recuo_minimo: float = RECUO_MINIMO, _ix: _Indice 
                       dist_matador_aliado=_r(distancia(pos_v, pos_a, p.corte_de_andar)),
                       dwpa=ix.dwpa(rn, morte, sid, ix.time(sid)), matador_visivel=visto,
                       seg_matador_visivel=ix.segundos_visivel(amostras), atirou_no_matador=atirou,
-                      dano_no_matador=round(dano, 1), recuo=longe, saiu_da_linha=saiu, inimigos_visiveis=n_vis,
+                      dano_no_matador=round(dano, 1), recuo=liquido, saiu_da_linha=saiu, inimigos_visiveis=n_vis,
                       trocada=foi, trocada_por_steamid=quem, trocada_por=None if quem is None else p.nomes.get(quem, str(quem)),
                       dist_de_quem_trocou=_r(d_quem))
             engajou = atirou or dano > 0 or andou
@@ -739,7 +808,7 @@ def morreu_sozinho(p: Partida, dist_troca: float = DIST_TROCA, _ix: _Indice | No
         viu = False
         for r in vivos:
             fim = ix.fim_da_janela(rn, t, int(r["steamid"]), a)
-            if any(ok for _, ok in ix.visao_do_matador(rn, t, fim, int(r["steamid"]), a)):
+            if ix.visto_o_bastante(ix.visao_do_matador(rn, t, fim, int(r["steamid"]), a)):     # fase 18b: 0,5 s
                 viu = True
                 break
         oc = _base(ix, MORREU_SOZINHO, rn, t, v)
@@ -902,12 +971,12 @@ def ocorrencias(p: Partida, **constantes) -> pl.DataFrame:
     """Todas as ocorrências de todos os tipos, com filtro, nível e motivo. Ordem determinística:
     tipo (na ordem de TIPOS), round, tick, jogador.
 
-    `constantes` troca DIST_TROCA, S_DUELO, RECUO_MINIMO e os limiares (o material de calibração varre as
+    `constantes` troca DIST_TROCA, S_DUELO, MIN_RECUO_BAIT e os limiares (o material de calibração varre as
     faixas). LIMIAR_ROUND_GANHO e LIMIAR_ROUND_PERDIDO são lidos do módulo (a varredura os troca nele)."""
     ix = _Indice(p)
     dist = constantes.get("dist_troca", DIST_TROCA)
     s_duelo = constantes.get("s_duelo", S_DUELO)
-    recuo = constantes.get("recuo_minimo", RECUO_MINIMO)
+    recuo = constantes.get("recuo_minimo", MIN_RECUO_BAIT)
     cand = _candidatos_nao_trocou(p, s_duelo, ix)
     linhas = (nao_trocou(p, dist, s_duelo, _ix=ix, _cand=cand)
               + possivel_bait(p, dist, s_duelo, recuo, _ix=ix, _cand=cand)

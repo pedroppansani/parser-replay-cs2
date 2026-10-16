@@ -54,8 +54,8 @@ def test_bait_1_pain_match_03_round_20_nao_e_bait():
     oc = [o for o in _do("match_03", 20, "PAiN-M-") if o["tick"] == 142858]
     bait = next(o for o in oc if o["tipo"] == E.POSSIVEL_BAIT)
     assert abs(bait["dist_matador_jogador"] - bait["dist_matador_aliado"]) < 1.0       # o empate de distância
-    esperado = bait["matador_visivel"] and not bait["atirou_no_matador"] and not bait["dano_no_matador"] and (
-        bait["recuo"] > E.RECUO_MINIMO or bait["saiu_da_linha"])
+    esperado = (bait["matador_visivel"] and E.visto_o_bastante(bait["seg_matador_visivel"])
+                and not bait["atirou_no_matador"] and not bait["dano_no_matador"] and E.recuou_o_bastante(bait["recuo"]))
     assert (bait["filtro"] is None) == bool(esperado)
     assert bait["filtro"] is not None                    # o dado: o matador não ficou visível para ele
 

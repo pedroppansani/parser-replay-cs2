@@ -48,9 +48,11 @@ SEMENTE_DOS_EXEMPLOS = 20261013
 EXEMPLOS_POR_TIPO = 10
 MAX_EXEMPLOS_POR_PARTIDA = 2
 
-# O commit com as ocorrências da regra ANTIGA (antes da fase 18): a tabela "antes -> depois" compara com ele.
-ANTES_DA_FASE_18 = "622f7ab1"
-TIPO_ANTIGO = {E.MORREU_SOZINHO: "morreu_isolado"}
+# O commit com as ocorrências da regra ANTERIOR: a tabela "antes -> depois" compara com ele. Fase 18b: o
+# "antes" é a fase 18 (o merge d02b0e7e, na main b3efc9da); na fase 18 era 622f7ab1 (a regra da fase 12).
+ANTES = "b3efc9da"
+ROTULO_DO_ANTES = "fase 18"
+TIPO_ANTIGO: dict = {}
 
 # Faixas razoáveis de cada constante (o mais baixo e o mais alto que ainda fazem sentido de jogo).
 FAIXAS = {
@@ -59,7 +61,8 @@ FAIXAS = {
     "seg_aliado": ("SEG_CEGUEIRA_ALIADO", 5.0, 20.0, "s"),
     "seg_uma": ("SEG_CEGUEIRA_ALIADO_UMA", 2.0, 4.0, "s"),
     "dano_aliado": ("DANO_UTILIDADE_ALIADO", 25.0, 100.0, "de dano"),
-    "recuo_minimo": ("RECUO_MINIMO", 60.0, 250.0, "unidades"),
+    "recuo_minimo": ("MIN_RECUO_BAIT", 32.0, 128.0, "unidades"),
+    "min_tempo": ("MIN_TEMPO_VISIVEL", 0.25, 1.0, "s"),
     "meio_fov": ("MEIO_FOV_GRAUS", 45.0, 60.0, "graus"),
     "limiar_round": ("LIMIAR_ROUND_GANHO / LIMIAR_ROUND_PERDIDO", 0.90, 0.98, "de chance"),
     "cone": ("CONE_DO_TIRO_GRAUS", 3.0, 10.0, "graus"),
@@ -70,7 +73,7 @@ def _valor_atual() -> dict:
     from metrics import visao as V
     return {"dist_troca": E.DIST_TROCA, "s_duelo": E.S_DUELO, "seg_aliado": E.SEG_CEGUEIRA_ALIADO,
             "seg_uma": E.SEG_CEGUEIRA_ALIADO_UMA, "dano_aliado": E.DANO_UTILIDADE_ALIADO,
-            "recuo_minimo": E.RECUO_MINIMO, "meio_fov": V.MEIO_FOV_GRAUS, "limiar_round": E.LIMIAR_ROUND_GANHO,
+            "recuo_minimo": E.MIN_RECUO_BAIT, "min_tempo": E.MIN_TEMPO_VISIVEL, "meio_fov": V.MEIO_FOV_GRAUS, "limiar_round": E.LIMIAR_ROUND_GANHO,
             "cone": E.CONE_DO_TIRO_GRAUS}
 
 
@@ -102,10 +105,10 @@ def tabela_por_tipo(oc: pl.DataFrame) -> list[str]:
 # --- Antes -> depois (fase 18) ----------------------------------------------------------------------
 
 def _antigas() -> pl.DataFrame | None:
-    """As ocorrências da regra antiga (o commit ANTES_DA_FASE_18), lidas do git."""
+    """As ocorrências da regra antiga (o commit ANTES), lidas do git."""
     tabelas = []
     for m in partidas():
-        r = subprocess.run(["git", "show", f"{ANTES_DA_FASE_18}:data/processed/{m}/{E.ARQUIVO}"], cwd=RAIZ,
+        r = subprocess.run(["git", "show", f"{ANTES}:data/processed/{m}/{E.ARQUIVO}"], cwd=RAIZ,
                            capture_output=True)
         if r.returncode != 0:
             return None
@@ -161,7 +164,7 @@ def _mede_partida(m: str) -> dict:
     ix = E._Indice(p)
     base = E.ocorrencias(p)
     med: dict = {k: [] for k in ("dist_troca", "s_duelo", "seg_aliado", "seg_uma", "dano_aliado", "recuo_minimo",
-                                 "meio_fov", "limiar_round", "cone")}
+                                 "meio_fov", "limiar_round", "cone", "min_tempo")}
     # DIST_TROCA: distância de cada aliado vivo a quem morreu; S_DUELO: tempo desde o último dano dele
     for k, rn, t, v, a in E._mortes_de_aliado(ix):
         pos_v = {"X": k["victim_X"], "Y": k["victim_Y"], "Z": k["victim_Z"]}
@@ -205,8 +208,9 @@ def _mede_partida(m: str) -> dict:
             med["seg_aliado"].append(soma.get((sid, lado), 0.0))
             med["dano_aliado"].append(sd.get((sid, lado), 0.0))
     nt = base.filter(pl.col("tipo") == E.NAO_TROCOU)
-    med["recuo_minimo"] = nt.filter(pl.col("filtro").is_null() & ~pl.col("atirou_no_matador")
-                                    & (pl.col("dano_no_matador") <= 0))["recuo"].to_list()
+    med["recuo_minimo"] = nt.filter(pl.col("filtro").is_null())["recuo"].to_list()
+    med["min_tempo"] = nt.filter(pl.col("filtro").is_null() | (pl.col("filtro") == E.FILTRO_POUCO_TEMPO_VISIVEL))[
+        "seg_matador_visivel"].to_list()
     med["limiar_round"] = nt.filter(pl.col("filtro").is_null() | (pl.col("filtro") == E.FILTRO_ROUND_DECIDIDO))[
         "chance_vitoria"].drop_nulls().to_list()
     # CONE: o ângulo entre a mira e a vítima nos tiros que acertaram (dano no mesmo tick)
@@ -221,7 +225,7 @@ def _mede_partida(m: str) -> dict:
                 med["cone"].append(V.angulo_horizontal(r["player_yaw"], (r["player_X"], r["player_Y"]),
                                                        (r["victim_X"], r["victim_Y"])))
     # varreduras
-    cont = {"base": _contagem(base)}
+    cont = {"base": _contagem(base), "sem_tempo_minimo": _contagem(_varia(p, "min_tempo", 1e-6))}  # qualquer amostra visível
     for chave, (_, baixo, alto, _) in FAIXAS.items():
         for valor in (baixo, alto):
             cont[(chave, valor)] = _contagem(_varia(p, chave, valor))
@@ -245,11 +249,14 @@ def _varia(p: E.Partida, chave: str, valor: float) -> pl.DataFrame:
             return E.ocorrencias(p)
         finally:
             p.visao.meio_fov, p.visao._cache = antes
-    nomes = {"limiar_round": ("LIMIAR_ROUND_GANHO", "LIMIAR_ROUND_PERDIDO"), "cone": ("CONE_DO_TIRO_GRAUS",)}[chave]
+    nomes = {"limiar_round": ("LIMIAR_ROUND_GANHO", "LIMIAR_ROUND_PERDIDO"), "cone": ("CONE_DO_TIRO_GRAUS",),
+             "min_tempo": ("MIN_TEMPO_VISIVEL",)}[chave]
     guardado = {n: getattr(E, n) for n in nomes}
     try:
         if chave == "limiar_round":
             E.LIMIAR_ROUND_GANHO, E.LIMIAR_ROUND_PERDIDO = valor, round(1.0 - valor, 6)
+        elif chave == "min_tempo":
+            E.MIN_TEMPO_VISIVEL = valor
         else:
             E.CONE_DO_TIRO_GRAUS = valor
         return E.ocorrencias(p)
@@ -315,10 +322,16 @@ ORIGEM = {
                 "do topo é a flash que estourou na cara do aliado). O histograma é a cegueira nos aliados por flash."),
     "dano_aliado": ("o percentil 95 do dano de HE e molotov no próprio time por jogador-partida no corpus (fase 12). "
                     "O histograma é a soma por jogador-lado."),
-    "recuo_minimo": ("o limite de \"praticamente parado\" do projeto (`awp_metrics.HOLD_MAX_DISPLACEMENT` = 120: "
-                     "abaixo disso, em 3 s, o jogador segurou o ângulo). O histograma é o recuo (o quanto o jogador se "
-                     "afastou do matador, com o matador parado onde ficou visível) em \"não trocou\" sem engajamento; "
-                     "o mesmo valor, ao contrário, é o \"andou na direção dele\" de \"perdeu a troca\"."),
+    "recuo_minimo": ("a decisão do Pedro na fase 18b (64 u: o passo de lado do jiggle não é bait). O recuo é o "
+                     "deslocamento LÍQUIDO do jogador para longe do matador (parado onde estava na primeira amostra "
+                     "visível), da primeira amostra visível até o fim da janela. Substitui o `RECUO_MINIMO` 120 da "
+                     "fase 18 (o máximo, e o bait também por \"saiu da linha de visão\"). O mesmo valor, ao contrário, "
+                     "é o \"andou na direção dele\" de \"perdeu a troca\". O histograma é o recuo em \"não trocou\"."),
+    "min_tempo": ("a decisão do Pedro na fase 18b (0,5 s), SOMANDO as amostras visíveis da janela (não precisa ser "
+                  "contínuo: o peek repetido também dá chance de troca). Vale para o matador visível em \"não "
+                  "trocou\" e no bait e para o aliado que tira \"morreu sozinho\"; não vale para os dois ou mais "
+                  "inimigos de \"perdeu a troca\". O histograma é o tempo visível em \"não trocou\" (os que "
+                  "passaram e os que saíram só por isso)."),
     "meio_fov": ("a metade do campo de visão horizontal do CS2 em 16:9: 90 graus numa tela 4:3, alargados na tela "
                  "larga mantendo a vertical (Hor+), dão 106,26 graus (tan(h/2) = 4/3). 45 é quem joga em 4:3. O "
                  "histograma é, para cada aliado vivo de quem morreu, o menor ângulo entre o olhar dele e o matador "
@@ -337,7 +350,8 @@ CORTES = {
     "seg_aliado": [0, 0.01, 2, 4, 6, 8, 10, 12, 15, 20, 30],
     "seg_uma": [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5],
     "dano_aliado": [0, 0.01, 10, 25, 40, 50, 60, 80, 100, 150],
-    "recuo_minimo": [0, 0.01, 30, 60, 90, 120, 150, 200, 250, 350, 500],
+    "recuo_minimo": [-500, -128, -64, -32, 0, 32, 64, 96, 128, 200, 300, 500],
+    "min_tempo": [0, 0.125, 0.25, 0.375, 0.5, 0.75, 1, 1.5, 2, 3, 5],
     "meio_fov": [0, 5, 10, 20, 30, 40, 45, 50, 53.13, 55, 60, 75, 90, 120, 180],
     "limiar_round": [0, 0.02, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.98],
     "cone": [0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10, 15],
@@ -351,8 +365,8 @@ def secao_constantes(res: list[dict]) -> list[str]:
     out = ["### 7.1 As constantes", "",
            "Valor proposto, origem, histograma no corpus e quantas ocorrências (depois dos filtros) cada tipo teria "
            "no valor mais baixo e no mais alto da faixa. As outras constantes ficam no valor proposto em cada varredura. "
-           "As da fase 18 são `RECUO_MINIMO`, `MEIO_FOV_GRAUS`, `LIMIAR_ROUND_GANHO`/`LIMIAR_ROUND_PERDIDO` e "
-           "`CONE_DO_TIRO_GRAUS`.", ""]
+           "As da fase 18 são `MEIO_FOV_GRAUS`, `LIMIAR_ROUND_GANHO`/`LIMIAR_ROUND_PERDIDO` e `CONE_DO_TIRO_GRAUS`; "
+           "as da calibração da fase 18b, `MIN_RECUO_BAIT` (no lugar do `RECUO_MINIMO`) e `MIN_TEMPO_VISIVEL`.", ""]
     for chave, (nome, baixo, alto, unidade) in FAIXAS.items():
         v = [x for r in res for x in r["med"][chave]]
         marca = atual[chave]
@@ -546,11 +560,22 @@ def grava_fixados(fix: dict, caminho: Path = FIXADOS) -> None:
     caminho.write_text(json.dumps(fix, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
-def escolhe_exemplos(oc: pl.DataFrame, fix: dict, hoje: str, sortear_de_novo: bool = False) -> dict:
-    """Para cada tipo, os exemplos fixados que ainda valem e os substitutos (mesma semente). Devolve o registro
-    novo ({tipo: [registros]}); um substituto tem `substitui`, `substituido_em` e `motivo_da_substituicao`."""
+def casos(oc: pl.DataFrame) -> dict[str, int]:
+    """{tipo: ocorrências que passaram nos filtros}, da mesma tabela que o material lê."""
+    return _contagem(oc)
+
+
+def escolhe_exemplos(oc: pl.DataFrame, fix: dict, hoje: str, sortear_de_novo: bool = False,
+                     validaveis: tuple | None = None) -> dict:
+    """Para cada tipo VALIDÁVEL (pelo menos E.MIN_CASOS_PARA_VALIDAR casos no corpus), os exemplos fixados que
+    ainda valem e os substitutos (mesma semente). Devolve o registro novo ({tipo: [registros]}); um substituto
+    tem `substitui`, `substituido_em` e `motivo_da_substituicao`. Um tipo abaixo do mínimo não tem exemplos de
+    validação (fase 18b): os casos dele vão todos para a seção "amostra insuficiente" do material."""
+    validaveis = E.tipos_validaveis(casos(oc)) if validaveis is None else validaveis
     novo = {}
     for t in E.TIPOS:
+        if t not in validaveis:
+            continue
         todas = {_chave(x): x for x in oc.filter(pl.col("tipo") == t).to_dicts()}
         validas = [x for x in oc.filter((pl.col("tipo") == t) & pl.col("filtro").is_null()).to_dicts()]
         anteriores = [] if sortear_de_novo else list((fix.get("exemplos") or {}).get(t, []))
@@ -605,14 +630,15 @@ def _sim(v) -> str:
     return "—" if v is None else ("sim" if v else "não")
 
 
-def secao_exemplos(oc: pl.DataFrame, escolhidos: dict) -> list[str]:
+def secao_exemplos(oc: pl.DataFrame, escolhidos: dict, validaveis: tuple | None = None) -> list[str]:
     por_chave = {_chave(x): x for x in oc.to_dicts()}
+    validaveis = E.tipos_validaveis(casos(oc)) if validaveis is None else validaveis
     out = ["### 7.2 Dez exemplos por tipo", "",
            f"Sorteados com semente fixa ({SEMENTE_DOS_EXEMPLOS}), no máximo {MAX_EXEMPLOS_POR_PARTIDA} por partida, "
            "só entre as ocorrências que passaram nos filtros, e FIXADOS em `scripts/calibracao/exemplos_fixados.json`: "
            "rodar de novo mantém todo exemplo que ainda é ocorrência; o que deixar de ser é trocado e marcado "
            "\"(substituído em <data>: <motivo>)\". Os exemplos da fase 17 não valem mais (as definições mudaram na "
-           "fase 18) e foram sorteados de novo. O relógio é o tempo decorrido desde o fim do freeze time. O link abre "
+           "fase 18) e foram sorteados de novo; na calibração da fase 18b, os que deixaram de ser ocorrência foram trocados (a marca diz quando e por quê), e um tipo abaixo de `MIN_CASOS_PARA_VALIDAR` não tem exemplos de validação. O relógio é o tempo decorrido desde o fim do freeze time. O link abre "
            "o replay naquele round, 3 s antes do instante (gere o site com `py -3.12 -m scripts.build_site`). "
            "Distâncias em unidades do jogo, no mesmo andar; \"—\" quando não se aplica ou estão em andares diferentes. "
            "\"Visível\" é a linha de visão pelo mapa (com as smokes) dentro do campo de visão e sem estar cego "
@@ -623,9 +649,21 @@ def secao_exemplos(oc: pl.DataFrame, escolhidos: dict) -> list[str]:
            "o nível é explícito, ou \"depende da tática\" quando o nível é depende.", ""]
     nome = lambda s: (s or "—").replace("|", "\\|")  # noqa: E731
     for t in E.TIPOS:
-        ex = escolhidos.get(t, [])
-        out += [f"#### {E.TITULOS[t]}", "", f"Frase de como melhorar: \"{E.COMO_MELHORAR[t]}\"", "",
-                "**A frase serve?** sim / reescrever: ____", ""]
+        if t in validaveis:
+            ex = escolhidos.get(t, [])
+            out += [f"#### {E.TITULOS[t]}", "", f"Frase de como melhorar: \"{E.COMO_MELHORAR[t]}\"", "",
+                    "**A frase serve?** sim / reescrever: ____", ""]
+        else:
+            # fase 18b: abaixo de MIN_CASOS_PARA_VALIDAR, todos os casos, só para conferir a definição
+            todos = oc.filter((pl.col("tipo") == t) & pl.col("filtro").is_null()).sort(
+                ["match_id", "round_num", "tick", "steamid"]).to_dicts()
+            ex = [_registro(x, "") for x in todos]
+            out += [f"#### {E.TITULOS[t]}: amostra insuficiente ({len(ex)} casos), só para conferir a definição", "",
+                    f"Com menos de {E.MIN_CASOS_PARA_VALIDAR} casos no corpus (`MIN_CASOS_PARA_VALIDAR`, contados dos "
+                    "dados), o tipo não entra na validação nem em `TIPOS_DE_ERRO_VALIDADOS`: não dá para sortear os 10 "
+                    "exemplos da regra dos 8 de 10. Ele continua calculado e gravado e volta à validação normal quando "
+                    "o corpus tiver casos suficientes. Estes são TODOS os casos (não são exemplos fixados): a "
+                    "pergunta é se a definição pega o que você chamaria de bait.", ""]
         if not ex:
             out += ["(nenhuma ocorrência no corpus)", ""]
             continue
@@ -675,6 +713,15 @@ def secao_exemplos(oc: pl.DataFrame, escolhidos: dict) -> list[str]:
     return out
 
 
+NOTA_FASE18B = (
+    "**Calibração da fase 18b (decisões do Pedro).** (1) Quem engajou o matador (atirou nele, deu dano ou andou na "
+    "direção dele com ele visível) conta só em \"perdeu a troca\" (se morreu); \"não trocou\" fica para quem viu o "
+    "matador e não engajou. (2) Bait exige recuo líquido de pelo menos `MIN_RECUO_BAIT` = 64 u (do primeiro tick em "
+    "que ele vê o matador até o fim da janela, com o matador parado onde estava nesse tick); sair da linha de visão "
+    "com menos que isso não é bait (o `RECUO_MINIMO` 120 da fase 18 saiu). (3) O matador visível precisa de pelo menos "
+    "`MIN_TEMPO_VISIVEL` = 0,5 s, somados os ticks visíveis da janela, em \"não trocou\", no bait e no aliado que tira "
+    "\"morreu sozinho\"; nos dois ou mais inimigos de \"perdeu a troca\", qualquer tick visível conta.")
+
 NOTA_FASE15 = (
     '**Mudança da fase 15 (decisão 46).** "Flash no time" e "dano de utilidade no time" eram somas da partida (CT e '
     'TR juntos); passam a ser POR LADO, com o mesmo limiar (`SEG_CEGUEIRA_ALIADO` 27 s e `DANO_UTILIDADE_ALIADO` 20) '
@@ -716,13 +763,26 @@ def secao(oc: pl.DataFrame, res: list[dict] | None, escolhidos: dict, antigas: p
            "`preview/`, fora do git e nunca publicado).", "",
            "### 7.0 Ocorrências por tipo no corpus", ""]
     out += tabela_por_tipo(oc)
-    out += ["", NOTA_FASE18, "", NOTA_FASE15, "", "#### Antes -> depois da fase 18", "",
-            f"\"Antes\" são as ocorrências da regra antiga (commit `{ANTES_DA_FASE_18}`), \"depois\" as de agora. Uma "
+    out += ["", NOTA_FASE18B, "", NOTA_FASE18, "", NOTA_FASE15, "", f"#### Antes ({ROTULO_DO_ANTES}) -> depois (fase 18b)", "",
+            f"\"Antes\" são as ocorrências da {ROTULO_DO_ANTES} (commit `{ANTES}`), \"depois\" as de agora. Uma "
             "ocorrência antiga \"segue\" se a mesma (partida, round, tick, jogador e, nos tipos de troca, o aliado) "
             "ainda passa nos filtros; se não, saiu com o motivo do filtro novo. \"Entraram\" são as novas que não "
-            "existiam (por exemplo, \"não trocou\" longe do aliado com o matador visível: a distância deixou de ser "
-            "critério). \"Situação corrigida\": das que seguem, quantas mudaram de \"N contra M\".", ""]
+            "existiam. \"Situação corrigida\": das que seguem, quantas mudaram de \"N contra M\".", ""]
     out += tabela_antes_depois(oc, antigas)
+    if res is not None:
+        base = {t: sum(r["cont"]["base"][t] for r in res) for t in E.TIPOS}
+        sem = {t: sum(r["cont"]["sem_tempo_minimo"][t] for r in res) for t in E.TIPOS}
+        bait = oc.filter((pl.col("tipo") == E.POSSIVEL_BAIT) & pl.col("filtro").is_null())["recuo"].sort().to_list()
+        out += ["", "#### Os números da calibração da fase 18b", "",
+                f"- \"Possível bait\" que sobram: {len(bait)}; recuo líquido deles: mediana {_fmt(_percentil(bait, 0.5), 0)} u, "
+                f"quartis {_fmt(_percentil(bait, 0.25), 0)} e {_fmt(_percentil(bait, 0.75), 0)} u (mínimo "
+                f"{_fmt(min(bait) if bait else None, 0)}, máximo {_fmt(max(bait) if bait else None, 0)}).",
+                f"- \"Não trocou\" que sobram: {base[E.NAO_TROCOU]}.",
+                "- Casos que saíram SÓ pelo tempo mínimo de visão (as ocorrências com o mínimo valendo qualquer amostra visível menos as de "
+                "agora, com as outras regras iguais): " + "; ".join(
+                    f"{E.TITULOS[t]} {sem[t] - base[t]}" for t in E.TIPOS) + ".",
+                "  Em \"morreu sozinho\" o número é negativo: com o mínimo, um aliado que viu o matador por menos de 0,5 s "
+                "não tira mais o caso, e a morte volta a ser \"morreu sozinho\"." if sem[E.MORREU_SOZINHO] < base[E.MORREU_SOZINHO] else ""]
     if res is not None:
         dois = sum(r["dois_ou_mais"] for r in res)
         dois_q = sum(r["dois_ou_mais_qualquer"] for r in res)
