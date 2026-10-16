@@ -46,6 +46,7 @@ from metrics.site_roles import (
     player_round_area_shares,
     player_round_areas,
 )
+from metrics.timing import detect_tickrate
 from parsing.parser import load_interim, parse_demo, save_interim
 from parsing.versao import versao_do_parser_do_interim, versoes
 
@@ -90,7 +91,13 @@ def process(
     outputs.update(compute_all_basic_metrics(tables))
 
     print("[4/6] Fase 2 -- AWP, crosshair placement, posicionamento e utility ...")
-    gren_round, gren_summary = compute_grenade_metrics(tables, roster_per_round(tables["ticks"]))
+    # O tickrate é o da DEMO (metrics/timing.py), nunca o padrão de uma função:
+    # sem ele a janela da flash e o tempo da primeira utility saíam a 128 tick
+    # numa demo de 64 (cartão 12, nota 22j).
+    tickrate = int(detect_tickrate(tables["rounds"], tables["ticks"])["tickrate"])
+    gren_round, gren_summary = compute_grenade_metrics(
+        tables, roster_per_round(tables["ticks"]), tickrate
+    )
     outputs["grenades_per_round"] = gren_round
     outputs["grenades_summary"] = gren_summary
 

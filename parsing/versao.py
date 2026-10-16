@@ -54,6 +54,12 @@ VERSAO_DO_PARSER = 2
 # Onde o complemento registra o que acrescentou a um interim existente.
 ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
 
+# 26 (2026-10-16) tickrate da flash (cartão 12, nota 22j): process_demo passa o tickrate DETECTADO da demo
+#    (metrics/timing.py) a compute_grenade_metrics, que usava o padrão 128 numa demo de 64. A janela de
+#    "ainda cega pela minha flash" deixa de ter o dobro da cegueira real (folga 0,5 s, não 1 s) e o
+#    first_utility_s deixa de sair pela metade. Impacto: flash_assists, flash_kills, first_utility_s e
+#    median_first_utility_s (grenades_*), kills_de_flash (impacto, perfil) e as réguas perfil_reference e
+#    erros_reference nessa chave; a cegueira em segundos (enemy/team_blind_seconds) não muda.
 # 25 (2026-10-16) erros do Perfil, fase 18b (calibração do Pedro): quem engajou o matador conta só em "perdeu a
 #    troca" (sai de "não trocou"); bait exige recuo LÍQUIDO de pelo menos MIN_RECUO_BAIT (64 u; o RECUO_MINIMO
 #    120 pelo máximo e o "saiu da linha de visão" sozinho deixam de valer); o matador visível exige pelo menos
@@ -130,7 +136,7 @@ ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
 #   (inclui a classe de economia do jogador no rating), unique com subset fica
 #   com a primeira linha. Antes, esses três casos dependiam da ordem de hash.
 # 1 (2026-09-20) primeira versão declarada, mesmo raciocínio acima.
-VERSAO_DAS_METRICAS = 25
+VERSAO_DAS_METRICAS = 26
 
 # Pastas cujo estado define o NÚMERO. `sujo` olha só estas: olhar o repositório
 # inteiro marcava todo reprocessamento como sujo, porque o próprio
