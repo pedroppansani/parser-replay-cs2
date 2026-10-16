@@ -3610,7 +3610,8 @@
       var cab = "<div class='nk'>" + esc(j.name) + "</div><div class='time-do-jog'>" + esc(j.time_nome) +
         (j.comecou ? " <span class='tag comecou " + esc(j.comecou) + "'>" + esc(j.comecou_rotulo) + "</span>" : "") +
         "</div><div class='funcs'>" + j.funcoes.map(function (f) {
-          return "<span class='tag" + (f.neutro ? " neutro" + (f.tendencia ? " tendencia" : "") : " decisivo") + "'>" +
+          return "<span class='tag" + (f.neutro ? " neutro" + (f.tendencia ? " tendencia" : "") : " decisivo") + "'" +
+            (f.dica ? " title='" + esc(f.dica) + "'" : "") + ">" +
             esc(f.lado) + " · " + esc(f.texto) + "</span>";
         }).join("") + "</div><p>" + esc(j.resumo) + "</p>";
       document.getElementById("pf-cab").innerHTML = cab;

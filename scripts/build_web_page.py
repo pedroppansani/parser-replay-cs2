@@ -242,7 +242,7 @@ def _vice_dentro_do_erro(mvp: dict | None, citaveis: dict) -> bool:
 
 
 def dados_da_pagina(match_id: str, base: Path | None = None, repo: str | None = None, preview: bool = False) -> dict:
-    from leitura import perfil_erros
+    from leitura import marca_da_funcao, perfil_erros
     from metrics.impacto import resumo_dos_grupos
     from scripts.numeros_citaveis import carrega
     base = base or PROJECT_ROOT / "data" / "processed" / match_id
@@ -262,8 +262,12 @@ def dados_da_pagina(match_id: str, base: Path | None = None, repo: str | None = 
             # aba Perfil (fase 12): pontos a melhorar, pontos fortes e comparação, com as frases prontas.
             # Só os tipos de erro validados entram (metrics.erros.TIPOS_DE_ERRO_VALIDADOS); `preview` mostra
             # todos, marcados "em validação", e só existe no build de preview/ (nunca publicado)
-            "perfil": perfil_erros.bloco_da_partida(base, payload, cabecalho_da_partida(match_id, base),
-                                                    preview=preview, repo=repo)}
+            # a função dominante com chance ao acaso acima do alfa ganha a mesma marca "(tendência)" da
+            # decisão 39, com o motivo na dica (cartão 2 do Pedro; leitura/marca_da_funcao.py)
+            "perfil": marca_da_funcao.aplica(
+                perfil_erros.bloco_da_partida(base, payload, cabecalho_da_partida(match_id, base),
+                                              preview=preview, repo=repo),
+                payload, marca_da_funcao.marca_da_partida(base))}
 
 
 def build_html(match_id: str, site: dict | None = None, base: Path | None = None, preview: bool = False) -> str:

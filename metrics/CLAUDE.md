@@ -44,7 +44,8 @@ estão copiadas de `dashboard/web/CLAUDE.md` na seção "Espelho da prancheta e 
 - Carrega piano e baiter são pontas de UM eixo (`sacrifice_index`), rótulo só além de ±0,5; "o time
   colheu" = venceu o round, vingou a morte dele ou matou quem ele cegou (15a)
 - Rótulo de jogador: líder do time E acima do piso, com amostra mínima; suporte medido por round;
-  estabilidade < 0,70 sai como "(tendência)", também na função estrutural (39)
+  estabilidade < 0,70 sai como "(tendência)", também na função estrutural, que ganha a mesma marca
+  quando a chance ao acaso passa de 0,05 (o motivo vai na dica, `structural_roles.dica_da_tendencia`) (39)
 - Round sem contato tem tempo até o contato NULO, nunca um valor inventado (7b)
 
 ## Tempo, economia e KAST

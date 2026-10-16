@@ -1,0 +1,70 @@
+{
+ "versao_das_metricas": 24,
+ "partidas": 52,
+ "tabelas": {
+  "rifle_t2": [
+   {
+    "adversario": "eco",
+    "rounds": 16.5,
+    "vitorias": 14.5,
+    "vitoria": 0.8788
+   },
+   {
+    "adversario": "pistola",
+    "rounds": 0.0,
+    "vitorias": 0.0,
+    "vitoria": null
+   },
+   {
+    "adversario": "forca",
+    "rounds": 37.55,
+    "vitorias": 22.85,
+    "vitoria": 0.6085
+   },
+   {
+    "adversario": "cheia",
+    "rounds": 74.55,
+    "vitorias": 40.85,
+    "vitoria": 0.548
+   },
+   {
+    "adversario": "total",
+    "rounds": 128.6,
+    "vitorias": 78.2,
+    "vitoria": 0.6081
+   }
+  ],
+  "rifle_t1": [
+   {
+    "adversario": "eco",
+    "rounds": 122.5,
+    "vitorias": 110.0,
+    "vitoria": 0.898
+   },
+   {
+    "adversario": "pistola",
+    "rounds": 4.7,
+    "vitorias": 3.2,
+    "vitoria": 0.6809
+   },
+   {
+    "adversario": "forca",
+    "rounds": 282.95,
+    "vitorias": 182.65,
+    "vitoria": 0.6455
+   },
+   {
+    "adversario": "cheia",
+    "rounds": 1093.7,
+    "vitorias": 546.6,
+    "vitoria": 0.4998
+   },
+   {
+    "adversario": "total",
+    "rounds": 1503.85,
+    "vitorias": 842.45,
+    "vitoria": 0.5602
+   }
+  ]
+ }
+}
