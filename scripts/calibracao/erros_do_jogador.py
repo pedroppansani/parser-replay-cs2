@@ -560,11 +560,22 @@ def grava_fixados(fix: dict, caminho: Path = FIXADOS) -> None:
     caminho.write_text(json.dumps(fix, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
-def escolhe_exemplos(oc: pl.DataFrame, fix: dict, hoje: str, sortear_de_novo: bool = False) -> dict:
-    """Para cada tipo, os exemplos fixados que ainda valem e os substitutos (mesma semente). Devolve o registro
-    novo ({tipo: [registros]}); um substituto tem `substitui`, `substituido_em` e `motivo_da_substituicao`."""
+def casos(oc: pl.DataFrame) -> dict[str, int]:
+    """{tipo: ocorrências que passaram nos filtros}, da mesma tabela que o material lê."""
+    return _contagem(oc)
+
+
+def escolhe_exemplos(oc: pl.DataFrame, fix: dict, hoje: str, sortear_de_novo: bool = False,
+                     validaveis: tuple | None = None) -> dict:
+    """Para cada tipo VALIDÁVEL (pelo menos E.MIN_CASOS_PARA_VALIDAR casos no corpus), os exemplos fixados que
+    ainda valem e os substitutos (mesma semente). Devolve o registro novo ({tipo: [registros]}); um substituto
+    tem `substitui`, `substituido_em` e `motivo_da_substituicao`. Um tipo abaixo do mínimo não tem exemplos de
+    validação (fase 18b): os casos dele vão todos para a seção "amostra insuficiente" do material."""
+    validaveis = E.tipos_validaveis(casos(oc)) if validaveis is None else validaveis
     novo = {}
     for t in E.TIPOS:
+        if t not in validaveis:
+            continue
         todas = {_chave(x): x for x in oc.filter(pl.col("tipo") == t).to_dicts()}
         validas = [x for x in oc.filter((pl.col("tipo") == t) & pl.col("filtro").is_null()).to_dicts()]
         anteriores = [] if sortear_de_novo else list((fix.get("exemplos") or {}).get(t, []))
@@ -619,14 +630,15 @@ def _sim(v) -> str:
     return "—" if v is None else ("sim" if v else "não")
 
 
-def secao_exemplos(oc: pl.DataFrame, escolhidos: dict) -> list[str]:
+def secao_exemplos(oc: pl.DataFrame, escolhidos: dict, validaveis: tuple | None = None) -> list[str]:
     por_chave = {_chave(x): x for x in oc.to_dicts()}
+    validaveis = E.tipos_validaveis(casos(oc)) if validaveis is None else validaveis
     out = ["### 7.2 Dez exemplos por tipo", "",
            f"Sorteados com semente fixa ({SEMENTE_DOS_EXEMPLOS}), no máximo {MAX_EXEMPLOS_POR_PARTIDA} por partida, "
            "só entre as ocorrências que passaram nos filtros, e FIXADOS em `scripts/calibracao/exemplos_fixados.json`: "
            "rodar de novo mantém todo exemplo que ainda é ocorrência; o que deixar de ser é trocado e marcado "
            "\"(substituído em <data>: <motivo>)\". Os exemplos da fase 17 não valem mais (as definições mudaram na "
-           "fase 18) e foram sorteados de novo. O relógio é o tempo decorrido desde o fim do freeze time. O link abre "
+           "fase 18) e foram sorteados de novo; na calibração da fase 18b, os que deixaram de ser ocorrência foram trocados (a marca diz quando e por quê), e um tipo abaixo de `MIN_CASOS_PARA_VALIDAR` não tem exemplos de validação. O relógio é o tempo decorrido desde o fim do freeze time. O link abre "
            "o replay naquele round, 3 s antes do instante (gere o site com `py -3.12 -m scripts.build_site`). "
            "Distâncias em unidades do jogo, no mesmo andar; \"—\" quando não se aplica ou estão em andares diferentes. "
            "\"Visível\" é a linha de visão pelo mapa (com as smokes) dentro do campo de visão e sem estar cego "
@@ -637,9 +649,21 @@ def secao_exemplos(oc: pl.DataFrame, escolhidos: dict) -> list[str]:
            "o nível é explícito, ou \"depende da tática\" quando o nível é depende.", ""]
     nome = lambda s: (s or "—").replace("|", "\\|")  # noqa: E731
     for t in E.TIPOS:
-        ex = escolhidos.get(t, [])
-        out += [f"#### {E.TITULOS[t]}", "", f"Frase de como melhorar: \"{E.COMO_MELHORAR[t]}\"", "",
-                "**A frase serve?** sim / reescrever: ____", ""]
+        if t in validaveis:
+            ex = escolhidos.get(t, [])
+            out += [f"#### {E.TITULOS[t]}", "", f"Frase de como melhorar: \"{E.COMO_MELHORAR[t]}\"", "",
+                    "**A frase serve?** sim / reescrever: ____", ""]
+        else:
+            # fase 18b: abaixo de MIN_CASOS_PARA_VALIDAR, todos os casos, só para conferir a definição
+            todos = oc.filter((pl.col("tipo") == t) & pl.col("filtro").is_null()).sort(
+                ["match_id", "round_num", "tick", "steamid"]).to_dicts()
+            ex = [_registro(x, "") for x in todos]
+            out += [f"#### {E.TITULOS[t]}: amostra insuficiente ({len(ex)} casos), só para conferir a definição", "",
+                    f"Com menos de {E.MIN_CASOS_PARA_VALIDAR} casos no corpus (`MIN_CASOS_PARA_VALIDAR`, contados dos "
+                    "dados), o tipo não entra na validação nem em `TIPOS_DE_ERRO_VALIDADOS`: não dá para sortear os 10 "
+                    "exemplos da regra dos 8 de 10. Ele continua calculado e gravado e volta à validação normal quando "
+                    "o corpus tiver casos suficientes. Estes são TODOS os casos (não são exemplos fixados): a "
+                    "pergunta é se a definição pega o que você chamaria de bait.", ""]
         if not ex:
             out += ["(nenhuma ocorrência no corpus)", ""]
             continue

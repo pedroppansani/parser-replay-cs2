@@ -4,91 +4,174 @@
     "nao_trocou": [
       {
         "tipo": "nao_trocou",
-        "partida": "match_12",
-        "round": 22,
-        "tick": 191356,
-        "jogador": "FalleN",
-        "steamid": "76561197960690195",
-        "aliado_steamid": "76561198164970560",
+        "partida": "match_02",
+        "round": 7,
+        "tick": 44405,
+        "jogador": "donk666",
+        "steamid": "76561198386265483",
+        "aliado_steamid": "76561198386673664",
         "semente": 20261013,
-        "data_do_sorteio": "2026-10-15"
+        "data_do_sorteio": "2026-10-15",
+        "substitui": {
+          "partida": "match_51",
+          "round": 8,
+          "tick": 58821,
+          "jogador": "Spinx"
+        },
+        "substituido_em": "2026-10-16",
+        "motivo_da_substituicao": "o matador ficou visível menos de 0,5 s"
       },
       {
         "tipo": "nao_trocou",
-        "partida": "match_19",
-        "round": 9,
-        "tick": 58732,
+        "partida": "match_04",
+        "round": 21,
+        "tick": 127495,
+        "jogador": "MolO11",
+        "steamid": "76561198058045464",
+        "aliado_steamid": "76561198449624359",
+        "semente": 20261013,
+        "data_do_sorteio": "2026-10-15",
+        "substitui": {
+          "partida": "match_12",
+          "round": 22,
+          "tick": 191356,
+          "jogador": "FalleN"
+        },
+        "substituido_em": "2026-10-16",
+        "motivo_da_substituicao": "o matador ficou visível menos de 0,5 s"
+      },
+      {
+        "tipo": "nao_trocou",
+        "partida": "match_10",
+        "round": 11,
+        "tick": 94114,
+        "jogador": "donk",
+        "steamid": "76561198386265483",
+        "aliado_steamid": "76561198995880877",
+        "semente": 20261013,
+        "data_do_sorteio": "2026-10-15",
+        "substitui": {
+          "partida": "match_19",
+          "round": 9,
+          "tick": 58732,
+          "jogador": "molodoy"
+        },
+        "substituido_em": "2026-10-16",
+        "motivo_da_substituicao": "o matador ficou visível menos de 0,5 s"
+      },
+      {
+        "tipo": "nao_trocou",
+        "partida": "match_14",
+        "round": 20,
+        "tick": 156483,
+        "jogador": "ropz",
+        "steamid": "76561197991272318",
+        "aliado_steamid": "76561197989744167",
+        "semente": 20261013,
+        "data_do_sorteio": "2026-10-15",
+        "substitui": {
+          "partida": "match_48",
+          "round": 15,
+          "tick": 133759,
+          "jogador": "torzsi"
+        },
+        "substituido_em": "2026-10-16",
+        "motivo_da_substituicao": "o matador ficou visível menos de 0,5 s"
+      },
+      {
+        "tipo": "nao_trocou",
+        "partida": "match_31",
+        "round": 31,
+        "tick": 281103,
         "jogador": "molodoy",
         "steamid": "76561198200982290",
         "aliado_steamid": "76561198134401925",
         "semente": 20261013,
-        "data_do_sorteio": "2026-10-15"
+        "data_do_sorteio": "2026-10-15",
+        "substitui": {
+          "partida": "match_40",
+          "round": 28,
+          "tick": 238173,
+          "jogador": "magixx"
+        },
+        "substituido_em": "2026-10-16",
+        "motivo_da_substituicao": "o matador ficou visível menos de 0,5 s"
       },
       {
         "tipo": "nao_trocou",
-        "partida": "match_19",
-        "round": 14,
-        "tick": 104442,
-        "jogador": "FalleN",
-        "steamid": "76561197960690195",
+        "partida": "match_32",
+        "round": 28,
+        "tick": 252085,
+        "jogador": "NiKo",
+        "steamid": "76561198041683378",
+        "aliado_steamid": "76561198057282432",
+        "semente": 20261013,
+        "data_do_sorteio": "2026-10-15",
+        "substitui": {
+          "partida": "match_30",
+          "round": 18,
+          "tick": 159792,
+          "jogador": "FalleN"
+        },
+        "substituido_em": "2026-10-16",
+        "motivo_da_substituicao": "engajou o matador"
+      },
+      {
+        "tipo": "nao_trocou",
+        "partida": "match_32",
+        "round": 34,
+        "tick": 304521,
+        "jogador": "YEKINDAR",
+        "steamid": "76561198134401925",
         "aliado_steamid": "76561198200982290",
         "semente": 20261013,
-        "data_do_sorteio": "2026-10-15"
+        "data_do_sorteio": "2026-10-15",
+        "substitui": {
+          "partida": "match_19",
+          "round": 14,
+          "tick": 104442,
+          "jogador": "FalleN"
+        },
+        "substituido_em": "2026-10-16",
+        "motivo_da_substituicao": "engajou o matador"
       },
       {
         "tipo": "nao_trocou",
-        "partida": "match_30",
-        "round": 18,
-        "tick": 159792,
-        "jogador": "FalleN",
-        "steamid": "76561197960690195",
-        "aliado_steamid": "76561198164970560",
+        "partida": "match_47",
+        "round": 10,
+        "tick": 82503,
+        "jogador": "ropz",
+        "steamid": "76561197991272318",
+        "aliado_steamid": "76561197989744167",
         "semente": 20261013,
-        "data_do_sorteio": "2026-10-15"
+        "data_do_sorteio": "2026-10-15",
+        "substitui": {
+          "partida": "match_39",
+          "round": 6,
+          "tick": 53458,
+          "jogador": "b1t"
+        },
+        "substituido_em": "2026-10-16",
+        "motivo_da_substituicao": "o matador ficou visível menos de 0,5 s"
       },
       {
         "tipo": "nao_trocou",
-        "partida": "match_39",
-        "round": 6,
-        "tick": 53458,
-        "jogador": "b1t",
-        "steamid": "76561198246607476",
-        "aliado_steamid": "76561199063068840",
+        "partida": "match_50",
+        "round": 4,
+        "tick": 29663,
+        "jogador": "kyousuke",
+        "steamid": "76561199032006224",
+        "aliado_steamid": "76561198057282432",
         "semente": 20261013,
-        "data_do_sorteio": "2026-10-15"
-      },
-      {
-        "tipo": "nao_trocou",
-        "partida": "match_40",
-        "round": 28,
-        "tick": 238173,
-        "jogador": "magixx",
-        "steamid": "76561199063238565",
-        "aliado_steamid": "76561198386265483",
-        "semente": 20261013,
-        "data_do_sorteio": "2026-10-15"
-      },
-      {
-        "tipo": "nao_trocou",
-        "partida": "match_48",
-        "round": 15,
-        "tick": 133759,
-        "jogador": "torzsi",
-        "steamid": "76561198355739212",
-        "aliado_steamid": "76561198138828475",
-        "semente": 20261013,
-        "data_do_sorteio": "2026-10-15"
-      },
-      {
-        "tipo": "nao_trocou",
-        "partida": "match_51",
-        "round": 8,
-        "tick": 58821,
-        "jogador": "Spinx",
-        "steamid": "76561198063336407",
-        "aliado_steamid": "76561198138828475",
-        "semente": 20261013,
-        "data_do_sorteio": "2026-10-15"
+        "data_do_sorteio": "2026-10-15",
+        "substitui": {
+          "partida": "match_53",
+          "round": 2,
+          "tick": 12116,
+          "jogador": "mezii"
+        },
+        "substituido_em": "2026-10-16",
+        "motivo_da_substituicao": "engajou o matador"
       },
       {
         "tipo": "nao_trocou",
@@ -97,129 +180,6 @@
         "tick": 116321,
         "jogador": "mezii",
         "steamid": "76561197973140692",
-        "aliado_steamid": "76561197991272318",
-        "semente": 20261013,
-        "data_do_sorteio": "2026-10-15"
-      },
-      {
-        "tipo": "nao_trocou",
-        "partida": "match_53",
-        "round": 2,
-        "tick": 12116,
-        "jogador": "mezii",
-        "steamid": "76561197973140692",
-        "aliado_steamid": "76561198113666193",
-        "semente": 20261013,
-        "data_do_sorteio": "2026-10-15"
-      }
-    ],
-    "possivel_bait": [
-      {
-        "tipo": "possivel_bait",
-        "partida": "match_10",
-        "round": 12,
-        "tick": 99153,
-        "jogador": "iM",
-        "steamid": "76561198050250233",
-        "aliado_steamid": "76561199076189612",
-        "semente": 20261013,
-        "data_do_sorteio": "2026-10-15"
-      },
-      {
-        "tipo": "possivel_bait",
-        "partida": "match_11",
-        "round": 9,
-        "tick": 72112,
-        "jogador": "Aleksib",
-        "steamid": "76561198013243326",
-        "aliado_steamid": "76561199076189612",
-        "semente": 20261013,
-        "data_do_sorteio": "2026-10-15"
-      },
-      {
-        "tipo": "possivel_bait",
-        "partida": "match_24",
-        "round": 10,
-        "tick": 93599,
-        "jogador": "zont1x",
-        "steamid": "76561198995880877",
-        "aliado_steamid": "76561199063238565",
-        "semente": 20261013,
-        "data_do_sorteio": "2026-10-15"
-      },
-      {
-        "tipo": "possivel_bait",
-        "partida": "match_24",
-        "round": 20,
-        "tick": 198917,
-        "jogador": "b1t",
-        "steamid": "76561198246607476",
-        "aliado_steamid": "76561198013243326",
-        "semente": 20261013,
-        "data_do_sorteio": "2026-10-15"
-      },
-      {
-        "tipo": "possivel_bait",
-        "partida": "match_25",
-        "round": 3,
-        "tick": 19937,
-        "jogador": "Aleksib",
-        "steamid": "76561198013243326",
-        "aliado_steamid": "76561198176878303",
-        "semente": 20261013,
-        "data_do_sorteio": "2026-10-15"
-      },
-      {
-        "tipo": "possivel_bait",
-        "partida": "match_31",
-        "round": 29,
-        "tick": 257339,
-        "jogador": "yuurih",
-        "steamid": "76561198164970560",
-        "aliado_steamid": "76561198200982290",
-        "semente": 20261013,
-        "data_do_sorteio": "2026-10-15"
-      },
-      {
-        "tipo": "possivel_bait",
-        "partida": "match_34",
-        "round": 7,
-        "tick": 47979,
-        "jogador": "torzsi",
-        "steamid": "76561198355739212",
-        "aliado_steamid": "76561198855375325",
-        "semente": 20261013,
-        "data_do_sorteio": "2026-10-15"
-      },
-      {
-        "tipo": "possivel_bait",
-        "partida": "match_41",
-        "round": 15,
-        "tick": 133272,
-        "jogador": "kyxsan",
-        "steamid": "76561198057282432",
-        "aliado_steamid": "76561198074762801",
-        "semente": 20261013,
-        "data_do_sorteio": "2026-10-15"
-      },
-      {
-        "tipo": "possivel_bait",
-        "partida": "match_42",
-        "round": 15,
-        "tick": 144235,
-        "jogador": "Brollan",
-        "steamid": "76561198138828475",
-        "aliado_steamid": "76561198355739212",
-        "semente": 20261013,
-        "data_do_sorteio": "2026-10-15"
-      },
-      {
-        "tipo": "possivel_bait",
-        "partida": "match_45",
-        "round": 11,
-        "tick": 66747,
-        "jogador": "apEX",
-        "steamid": "76561197989744167",
         "aliado_steamid": "76561197991272318",
         "semente": 20261013,
         "data_do_sorteio": "2026-10-15"
