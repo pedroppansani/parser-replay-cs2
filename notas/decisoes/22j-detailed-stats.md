@@ -41,6 +41,26 @@ As contagens atuais estão em `data/processed/numeros_citaveis.json` (bloco `esc
       kill do jogo guarda UM assistente; a HLTV conta a flash à parte. Pela
       cegueira reconstruída, "cegou e a vítima morreu ainda cega para um
       companheiro" acerta o total (+6) mas só 22/50 por jogador.
+    - **assistência de flash, degrau 4b (2026-10-16, cartão 1, resposta do Pedro:
+      "se não bater, não ajuste nada").** `escada_validacao.assistencia_flash`
+      compara o `flash_assists` GRAVADO (`grenades_summary.parquet`, o que entra
+      em "kills em inimigo cego por flash") com a A (f), contagem exata, em dois
+      níveis: as 70 linhas por mapa da transcrição (7 mapas, casados por mapa +
+      elenco + rounds) e os 80 jogadores das 8 séries inteiras. **Não bate:**
+      41/70 por mapa (nosso 88, HLTV 49) e 24/80 por série (369 contra 202), e
+      TODAS as divergências são para cima (+1 a +3 por mapa; até +19 por série,
+      torzsi em Falcons x MOUZ). Fica informativo: o teste
+      (`tests/test_escada_flash.py`) trava a montagem da comparação, não a
+      igualdade. Causa principal achada: `process_demo` chama
+      `compute_grenade_metrics` sem tickrate (padrão 128) numa demo de 64, e a
+      janela de cegueira gravada é o dobro da real (folga de 1 s em vez de 0,5 s);
+      o processado é reproduzido exatamente com 128. Com o tickrate detectado e a
+      mesma definição (diagnóstico impresso pela escada, não publicado): 51/70
+      por mapa (soma 54 contra 49), 41/80 por série, com 11 acima e 8 abaixo --
+      ainda não bate, então há outra regra da HLTV que não temos. O
+      `assistedflash` do evento de kill (um assistente por kill) dá 47/70 e soma
+      36: conta de menos. A correção do tickrate é o cartão 12 das pendências;
+      nada foi mudado.
     - morte trocada (D(t)): 19/50 com a janela de 5s, e 30 a MAIS -- é a origem
       direta do excesso do KAST (8g). O total bate com janela de ~4,25s, mas nenhuma
       janela (2 a 6s), nem "vingada por qualquer um", nem "só a última vítima do

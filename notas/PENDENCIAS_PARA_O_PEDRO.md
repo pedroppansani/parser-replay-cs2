@@ -8,30 +8,26 @@ entram aqui quando uma decisão depende delas.
 
 ---
 
-## 1. Dano de utilidade e assistência de flash na escada de validação
+## 1. Dano de utilidade na escada de validação (a parte da flash já foi feita)
 
 - **Origem:** fase 7, item 7.2 (validação das métricas de impacto). Escada em
   `scripts/escada_validacao.py`.
-- **Pergunta:** as assistências de flash e o dano de utilidade viram degraus da escada, conferidos
-  contra a HLTV?
-- **O que já existe:** os "Detailed stats" que você já colou (setembro) trazem a coluna A (f), de
-  assistências de flash. Ela está transcrita por mapa, em 74 linhas de
-  `data/reference/brutos/hltv_detalhado_por_mapa_2026-09-22.tsv`. O dano de utilidade não aparece
-  em nenhum dos prints colados.
-- **Opções:**
-  1. **Só a assistência de flash agora.** É um degrau novo de contagem exata por série, sem nada de
-     você. A tela não muda; muda o relatório da escada.
-  2. **Os dois.** Além do 1, você manda o print da HLTV que mostra o dano de utilidade por
-     jogador, se a HLTV publicar esse número nas estatísticas da partida.
-  3. **Nenhum.** As métricas de utilidade continuam validadas só por invariantes no corpus (dano de
-     utilidade ≤ dano total; cegueira ≤ duração × 5).
-- **Recomendação:** a 1 já, e a 2 se a página existir. A 1 não custa nada e testa a ligação entre
-  flash e kill, que hoje não tem gabarito.
-- **Custo de deixar como está:** "kills em inimigo cego por flash" e "dano por HE/molotov"
-  continuam na tela sem conferência externa.
-- **Fora do computador:** só para a opção 2. Abra a página de estatísticas de uma das partidas
-  HLTV do corpus (por exemplo, NAVI x Spirit em Katowice) e veja se há uma coluna de dano de
-  utilidade. Se houver, mande o print dela para as 13 partidas com HLTV.
+- **Sua resposta (2026-10-16):** opção 1 agora; a opção 2 fica com você. Este cartão fica aberto só
+  na parte do dano de utilidade.
+- **Feito, assistência de flash (fase 17-flash):** virou o degrau 4b da escada, por mapa e por série,
+  contagem exata, sem ajuste nenhum na métrica. **Não bate:** 41 de 70 linhas por mapa e 24 de 80
+  jogadores por série. Todas as divergências são para cima: contamos 88 contra 49 da HLTV nos mapas
+  transcritos. A tabela das divergências sai na própria escada
+  (`py -3.12 -m scripts.escada_validacao --rapido`, degrau 4b) e na nota 22j. A transcrição tem 70
+  linhas de jogador (7 mapas × 10), e não 74 como este cartão dizia: as outras 4 linhas do arquivo
+  são o comentário do cabeçalho. A causa principal achada pelo degrau está no cartão 12.
+- **O que ainda espera você:** o dano de utilidade. Os prints colados em setembro não o trazem. Veja
+  se a página de estatísticas de uma partida HLTV do corpus (por exemplo, NAVI x Spirit em Katowice)
+  publica uma coluna de dano de utilidade. Se publicar, mande o print dela para as 13 partidas com
+  HLTV.
+- **Enquanto isso:** o dano de utilidade continua validado só pelas invariantes do corpus (dano de
+  utilidade ≤ dano total; cegueira ≤ duração × 5).
+- **Custo de deixar como está:** "dano por HE/molotov" continua na tela sem conferência externa.
 
 ## 5. `TICK_PELO_PROJETIL_SEM_EVENTO` (demos da FACEIT)
 
@@ -329,3 +325,30 @@ entram aqui quando uma decisão depende delas.
 - **Custo de deixar como está:** o que a árvore mostra está conferido; o que o NVDA fala, não. Quem usa
   leitor de tela pode não conseguir pôr uma peça no mapa (o ponto do passo 7) sem que a gente saiba.
 - **Fora do computador:** nada; é tudo no Windows, com o fone ou o som ligado.
+
+## 12. A métrica de flash é gravada com 128 tick numa demo de 64 (achado do degrau 4b)
+
+- **Origem:** degrau 4b da escada (cartão 1, nota 22j). `scripts/process_demo.py` chama
+  `metrics.grenades.compute_grenade_metrics` sem o tickrate, e o padrão da função é 128. As demos
+  do corpus são de 64 tick (`metrics.timing.detect_tickrate`). A regra dura "o demo é 64 tick; nunca
+  assuma" é quebrada aqui.
+- **O que muda na métrica:** a janela "a vítima ainda estava cega pela minha flash" fica com o dobro
+  da cegueira real, e a folga fica com 1 s em vez de 0,5 s. Conferido: o processado é reproduzido
+  exatamente com 128 tick, nas 7 partidas transcritas por mapa.
+- **O que isso afeta na tela:** "kills em inimigo cego por flash" (`flash_assists` + `flash_kills`)
+  no perfil e no "Comparar dois", a régua do corpus dela, e o tempo da primeira utilidade
+  (`median_first_utility_s`), que usa o mesmo tickrate.
+- **Números (assistência de flash contra a HLTV, só diagnóstico):** a mesma definição, com o tickrate
+  detectado da demo, sobe de 41/70 para 51/70 por mapa (soma 54 contra 49 da HLTV) e de 24/80 para
+  41/80 por série. Também não bate: sobram 11 linhas acima e 8 abaixo, então a HLTV tem ainda outra
+  regra que não temos.
+- **Pergunta:** corrigir a chamada (passar o tickrate detectado)?
+- **Opções:**
+  1. **Corrigir.** Sobe a versão das métricas, com reprocesso do corpus e o reajuste das referências
+     que dependem dessas colunas. Os números publicados de flash mudam (para menos).
+  2. **Deixar como está.** O degrau 4b continua mostrando a divergência.
+- **Recomendação:** a 1. É uma regra dura quebrada, não uma escolha de definição. A correção não faz
+  a assistência bater com a HLTV, e o degrau continua informativo.
+- **Custo de deixar como está:** as métricas de flash da tela contam kills de até o dobro do tempo
+  de cegueira real.
+- **Fora do computador:** nada.
