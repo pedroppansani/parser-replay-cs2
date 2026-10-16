@@ -211,15 +211,93 @@ def test_o_empate_de_distancia_nao_e_atras():
     assert oc["filtro"] == E.FILTRO_NAO_RECUOU
 
 
-def test_possivel_bait_saiu_da_linha_andando_e_nao_quando_o_matador_saiu():
+def test_possivel_bait_saiu_da_linha_com_menos_de_64_nao_e_bait():
+    # fase 18b (era "saiu da linha andando conta"): sair da linha de visão com o passo de lado do jiggle não é bait
     muro = [parede(500, 100, 1000)]               # a linha y = 0 passa livre; de (300, 300) para o matador, fecha
     p = partida([kill(1000, 6, 1)], BASE, paredes=muro, onde_por_tick={1100: {2: (300, 300)}})
     oc = _do(E.possivel_bait(p), 2)[0]
-    assert oc["saiu_da_linha"] is True and oc["recuo"] < E.RECUO_MINIMO and oc["filtro"] is None
+    assert oc["saiu_da_linha"] is True and oc["recuo"] < E.MIN_RECUO_BAIT and oc["filtro"] == E.FILTRO_NAO_RECUOU
+    # saindo da linha E recuando 64 ou mais: bait
+    p = partida([kill(1000, 6, 1)], BASE, paredes=muro, onde_por_tick={1100: {2: (100, 300)}})
+    oc = _do(E.possivel_bait(p), 2)[0]
+    assert oc["recuo"] >= E.MIN_RECUO_BAIT and oc["filtro"] is None
     # o matador é quem foi para trás da parede, o jogador ficou parado: não é bait
     p = partida([kill(1000, 6, 1)], BASE, paredes=muro, onde_por_tick={1100: {6: (1000, 400)}})
     oc = _do(E.possivel_bait(p), 2)[0]
     assert oc["saiu_da_linha"] is False and oc["filtro"] == E.FILTRO_NAO_RECUOU
+
+
+# --- Fase 18b: as três decisões do Pedro, um caso de cada lado do limiar ---------------------------
+
+def test_recuo_de_63_nao_e_bait_e_de_64_e():
+    # o jogador 2 sai de (300, 0); o matador está parado em (1000, 0): recuo líquido = 63 e 64 unidades
+    for x, esperado in ((237, E.FILTRO_NAO_RECUOU), (236, None)):
+        oc = _do(E.possivel_bait(partida([kill(1000, 6, 1)], BASE, onde_por_tick={1100: {2: (x, 0)}})), 2)[0]
+        assert oc["recuo"] == pytest.approx(1000 - x - 700) and oc["filtro"] == esperado, x
+    assert not E.recuou_o_bastante(63.0) and E.recuou_o_bastante(64.0)
+
+
+def test_o_recuo_e_liquido_ate_o_fim_da_janela():
+    # recuou 250 e voltou: o líquido é 0, não é bait (a fase 18 contava o máximo)
+    vai_e_volta = {1100: {2: (50, 0)}, 1200: {2: (300, 0)}}
+    oc = _do(E.possivel_bait(partida([kill(1000, 6, 1)], BASE, onde_por_tick=vai_e_volta)), 2)[0]
+    assert oc["recuo"] == pytest.approx(0.0) and oc["filtro"] == E.FILTRO_NAO_RECUOU
+
+
+def test_tempo_minimo_de_visao_049_e_050():
+    assert not E.visto_o_bastante(0.49) and E.visto_o_bastante(0.50)
+    # o jogador vira as costas depois de 3 amostras (24 ticks = 0,375 s) ou de 4 (32 ticks = 0,5 s)
+    for vira, esperado in ((1024, E.FILTRO_POUCO_TEMPO_VISIVEL), (1032, None)):
+        p = partida([kill(1000, 6, 1)], BASE, olhar_por_tick={vira: {2: 180.0}})
+        oc = _do(E.nao_trocou(p), 2)[0]
+        assert oc["filtro"] == esperado, (vira, oc["seg_matador_visivel"])
+    # não precisa ser contínuo: 16 ticks, vira, volta e mais 16 ticks somam 0,5 s
+    p = partida([kill(1000, 6, 1)], BASE, olhar_por_tick={1016: {2: 180.0}, 1100: {2: 0.0}, 1116: {2: 180.0}})
+    oc = _do(E.nao_trocou(p), 2)[0]
+    assert oc["seg_matador_visivel"] == pytest.approx(0.5) and oc["filtro"] is None
+
+
+def test_tempo_minimo_vale_para_o_aliado_que_tira_o_morreu_sozinho():
+    # o aliado 2 a 1.300 vê o matador só 0,375 s: a morte do 1 segue "morreu sozinho"; com 0,5 s, sai
+    for vira, esperado in ((1024, None), (1032, E.FILTRO_ALIADO_COM_O_MATADOR)):
+        p = partida([kill(1000, 6, 1)], {**SOZINHO_18B, 2: (-1300, 0)}, olhar_por_tick={vira: {2: 180.0}})
+        assert _do(E.morreu_sozinho(p), 1)[0]["filtro"] == esperado, vira
+
+
+def test_tempo_minimo_nao_vale_para_dois_ou_mais_visiveis():
+    # o segundo inimigo aparece numa amostra só (o 7 fica atrás da parede a partir do tick 1009)
+    dois = {**BASE, 7: (1000, 150)}
+    p = partida([kill(1000, 6, 1), kill(1100, 6, 2, pv=(300, 0, 0))], dois, danos=[dano(1050, 2, 6)],
+                onde_por_tick={1004: {7: (5000, 150)}})
+    oc = _do(E.perdeu_a_troca(p), 2)[0]
+    assert oc["inimigos_visiveis"] == 2 and oc["filtro"] == E.FILTRO_DOIS_OU_MAIS
+
+
+def test_quem_engajou_o_matador_conta_so_em_perdeu_a_troca():
+    # atirou no matador e morreu sem matá-lo: "perdeu a troca", e não "não trocou"
+    k = [kill(1000, 6, 1), kill(1100, 6, 2, pv=(300, 0, 0))]
+    p = partida(k, BASE, tiros=[(1050, 2, 0.0)])
+    tab = E.ocorrencias(p).filter(pl.col("filtro").is_null() & (pl.col("steamid") == 2))
+    assert E.PERDEU_A_TROCA in tab["tipo"].to_list() and E.NAO_TROCOU not in tab["tipo"].to_list()
+    # atirou e sobreviveu: também não é "não trocou" (engajou)
+    p = partida([kill(1000, 6, 1)], BASE, tiros=[(1050, 2, 0.0)])
+    assert _do(E.nao_trocou(p), 2)[0]["filtro"] == E.FILTRO_ENGAJOU
+    # não engajou (parado, sem tiro, com o matador visível): "não trocou"
+    assert _do(E.nao_trocou(partida([kill(1000, 6, 1)], BASE)), 2)[0]["filtro"] is None
+
+
+def test_no_corpus_nenhum_lance_conta_em_nao_trocou_e_em_perdeu_a_troca():
+    arquivos = sorted((RAIZ / "data" / "processed").glob(f"match_*/{E.ARQUIVO}"))
+    if not arquivos:
+        pytest.skip("sem as ocorrências gravadas")
+    oc = pl.concat([pl.read_parquet(a) for a in arquivos]).filter(pl.col("filtro").is_null())
+    chave = ["match_id", "round_num", "steamid", "aliado_steamid"]
+    nt = oc.filter(pl.col("tipo") == E.NAO_TROCOU).select(chave)
+    pt = oc.filter(pl.col("tipo") == E.PERDEU_A_TROCA).select(chave)
+    assert nt.join(pt, on=chave, how="semi").height == 0
+
+
+SOZINHO_18B = {1: (0, 0), 6: (1000, 0)}
 
 
 def test_possivel_bait_herda_os_filtros_de_nao_trocou():
