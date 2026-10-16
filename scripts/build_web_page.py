@@ -241,8 +241,15 @@ def _vice_dentro_do_erro(mvp: dict | None, citaveis: dict) -> bool:
     return (mvp["rating"] - mvp["vice_rating"]) < citaveis["rating"]["fora_da_amostra"]["erro_medio"]
 
 
+def _nomes_dos_lados(c: dict | None) -> dict[str, str]:
+    """O nome de cada lado como a página o mostra; sem cabeçalho, o mesmo "Lado A/B" do JS."""
+    if not c:
+        return {"A": "Lado A", "B": "Lado B"}
+    return {k: v["nome"] for k, v in c["lados"].items()}
+
+
 def dados_da_pagina(match_id: str, base: Path | None = None, repo: str | None = None, preview: bool = False) -> dict:
-    from leitura import marca_da_funcao, perfil_erros
+    from leitura import marca_da_funcao, perfil_erros, peso_dos_rounds
     from metrics.impacto import resumo_dos_grupos
     from scripts.numeros_citaveis import carrega
     base = base or PROJECT_ROOT / "data" / "processed" / match_id
@@ -259,6 +266,8 @@ def dados_da_pagina(match_id: str, base: Path | None = None, repo: str | None = 
             "cabecalho": _cabecalho_para_a_pagina(cabecalho_da_partida(match_id, base)), "mapa": _nome_do_mapa(base, match_id),
             # "Abrir round na prancheta" (fase 9): a tolerância medida do caminho
             "round_na_prancheta": {"tolerancia_u": TOLERANCIA_U},
+            # "Quanto cada round pesou" (aba Placar): só texto, pronto; a barra o JS lê da curva do payload
+            "peso_dos_rounds": peso_dos_rounds.bloco(payload, _nomes_dos_lados(cabecalho_da_partida(match_id, base))),
             # aba Perfil (fase 12): pontos a melhorar, pontos fortes e comparação, com as frases prontas.
             # Só os tipos de erro validados entram (metrics.erros.TIPOS_DE_ERRO_VALIDADOS); `preview` mostra
             # todos, marcados "em validação", e só existe no build de preview/ (nunca publicado)
