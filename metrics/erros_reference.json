@@ -1116,39 +1116,39 @@
     "kills_de_flash_por_flash": {
       "ct": {
         "__todas__": {
-          "mediana": 0.14285714285714285,
+          "mediana": 0.08712121212121213,
           "n": 520,
           "n_valores": 290
         },
         "ancora": {
-          "mediana": 0.12916666666666665,
+          "mediana": 0.03571428571428571,
           "n": 104,
           "n_valores": 54
         },
         "awper": {
-          "mediana": 0.14285714285714285,
+          "mediana": 0.12698412698412698,
           "n": 79,
           "n_valores": 40
         },
         "coringa": {
-          "mediana": 0.17647058823529413,
+          "mediana": 0.08116883116883117,
           "n": 131,
           "n_valores": 78
         },
         "rotativo": {
-          "mediana": 0.125,
+          "mediana": 0.0,
           "n": 165,
           "n_valores": 101
         }
       },
       "t": {
         "__todas__": {
-          "mediana": 0.125,
+          "mediana": 0.0,
           "n": 520,
           "n_valores": 376
         },
         "awper": {
-          "mediana": 0.14285714285714285,
+          "mediana": 0.07142857142857142,
           "n": 87,
           "n_valores": 77
         },
@@ -1158,17 +1158,17 @@
           "n_valores": 44
         },
         "lurker": {
-          "mediana": 0.1111111111111111,
+          "mediana": 0.0,
           "n": 33,
           "n_valores": 21
         },
         "suporte": {
-          "mediana": 0.1875,
+          "mediana": 0.125,
           "n": 17,
           "n_valores": 17
         },
         "trader": {
-          "mediana": 0.125,
+          "mediana": 0.0,
           "n": 44,
           "n_valores": 29
         }
