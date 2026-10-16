@@ -75,3 +75,22 @@ def format_pct_par(a: float | None, b: float | None) -> tuple[str, str]:
     def uma_casa(x: float) -> str:
         return f"{float(x) * 100:.1f}".replace(".", ",") + "%"
     return uma_casa(a), uma_casa(b)
+
+
+# O sinal de menos tipográfico (U+2212), e não o hífen: "−19 pp" na barra, na dica e no cartão.
+MENOS = "−"
+
+
+def format_pp(delta: float | None) -> str:
+    """Variação de probabilidade em pontos percentuais, com sinal: `+25 pp`, `−19 pp`.
+
+    Inteira pelo mesmo motivo de `format_pct` (o modelo neutro não sustenta casa decimal), a não ser
+    que o inteiro dê zero numa variação que não é zero: aí sai com uma casa (`+0,4 pp`), senão a
+    barra que existe seria descrita como "0 pp".
+    """
+    if delta is None:
+        return "—"
+    pp = float(delta) * 100
+    texto = f"{abs(round(pp))}" if round(pp) != 0 or pp == 0 else f"{abs(pp):.1f}".replace(".", ",")
+    sinal = "+" if pp > 0 else MENOS if pp < 0 else ""
+    return f"{sinal}{texto} pp"

@@ -78,6 +78,9 @@ não coube no comportamento do main, valeu o comportamento, e fica registrado aq
 - **Acessibilidade da prancheta:** fichas do banco são botões (Enter arma; Enter de novo põe a peça no
   centro do mapa), os marcadores de passo têm nome e o canvas tem um resumo em texto
   (`#pr-mapa-resumo`, quem está onde e as granadas). Não houve teste com um leitor de tela de verdade.
+- **Depois da direção (2026-10-16):** na aba Placar, a curva "A chance de vitória, round a round" virou
+  "Quanto cada round pesou" (barras por round e três cartões; decisão 19, "A seção da página mudou de
+  forma"). Os tokens e componentes são os de hoje; a especificação v2 precisa cobrir esta seção.
 - **Medições:** A11 (texto no mapa) no replay dos 8 mapas com partida e na prancheta dos 10 mapas (tática
   sintética no centro de cada radar); A12 da landing e da partida; A10 no `scripts/design/interacao.py`.
   As referências de captura de cada fase estão em `notas/design/referencias/<fase>/`.
