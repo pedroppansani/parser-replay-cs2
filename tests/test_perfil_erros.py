@@ -41,10 +41,15 @@ def test_sem_tipo_validado_nenhum_erro_vai_para_o_bloco():
 
 
 def test_com_um_tipo_validado_so_ele_aparece():
-    b = _bloco(validados={E.NAO_TROCOU})
-    assert [t["id"] for t in b["tipos"]] == [E.NAO_TROCOU]
+    # fase 18b: o tipo validado é um que tem ponto a melhorar NESTA partida (a prévia diz qual), não um fixo:
+    # a regra é da interface (com um tipo validado, só ele aparece), não a contagem de um tipo numa partida
+    previa = [m["tipo"] for j in _bloco(preview=True)["jogadores"] for m in j["melhorar"]]
+    assert previa, "a partida do teste não tem nenhum ponto a melhorar na prévia"
+    tipo = next(t for t in E.TIPOS if t in previa)
+    b = _bloco(validados={tipo})
+    assert [t["id"] for t in b["tipos"]] == [tipo]
     tipos = {m["tipo"] for j in b["jogadores"] for m in j["melhorar"]}
-    assert tipos == {E.NAO_TROCOU}
+    assert tipos == {tipo}
     assert all(not m["em_validacao"] for j in b["jogadores"] for m in j["melhorar"])
 
 

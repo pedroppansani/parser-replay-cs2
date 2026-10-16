@@ -148,6 +148,31 @@ MARGEM_PONTO_FORTE = 0.15
 # confirmar pelo menos 8 dos 10 exemplos do material de calibração (seção 7).
 TIPOS_DE_ERRO_VALIDADOS: frozenset[str] = frozenset()
 
+# Um tipo com menos ocorrências que isto no CORPUS (depois dos filtros) não entra na validação nem pode entrar
+# em TIPOS_DE_ERRO_VALIDADOS: com menos de 10 não dá para sortear os 10 exemplos da regra dos 8 de 10. A
+# contagem é calculada dos dados (`casos_no_corpus`), nunca uma lista escrita à mão: quando o corpus crescer e o
+# tipo passar do mínimo, ele volta à validação sem mudar código. O tipo continua calculado e gravado. Origem:
+# decisão do Pedro na fase 18b (o bait ficou com 9 casos).
+MIN_CASOS_PARA_VALIDAR = 10
+
+
+def casos_no_corpus(processed_root: Path | None = None) -> dict[str, int]:
+    """{tipo: ocorrências que passaram nos filtros} somadas nas partidas processadas (erros_do_jogador.parquet)."""
+    raiz = processed_root or PROJECT_ROOT / "data" / "processed"
+    tot = {t: 0 for t in TIPOS}
+    for arq in sorted(raiz.glob("match_*/erros_do_jogador.parquet")):
+        oc = pl.read_parquet(arq, columns=["tipo", "filtro"]).filter(pl.col("filtro").is_null())
+        for t, n in oc.group_by("tipo", maintain_order=True).len().iter_rows():
+            if t in tot:
+                tot[t] += int(n)
+    return tot
+
+
+def tipos_validaveis(casos: dict[str, int] | None = None) -> tuple[str, ...]:
+    """Os tipos com pelo menos MIN_CASOS_PARA_VALIDAR casos no corpus, na ordem de TIPOS."""
+    casos = casos_no_corpus() if casos is None else casos
+    return tuple(t for t in TIPOS if casos.get(t, 0) >= MIN_CASOS_PARA_VALIDAR)
+
 # --- Os tipos ---------------------------------------------------------------------------------
 
 NAO_TROCOU = "nao_trocou"

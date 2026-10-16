@@ -609,3 +609,24 @@ def test_o_lado_vem_dos_ticks_quando_o_round_nao_tem_kill():
     p = partida([], {}, cegos=[cegueira(100, 2, 3, 5.0)])
     p.lados[(1, 2)] = "t"
     assert E.flash_no_time(p)[0]["side"] == "t"
+
+
+# --- Fase 18b: mínimo de casos para validar ---------------------------------------------------------
+
+def test_tipo_com_menos_de_10_casos_nao_e_validavel():
+    casos = {t: 50 for t in E.TIPOS}
+    casos[E.POSSIVEL_BAIT] = E.MIN_CASOS_PARA_VALIDAR - 1
+    assert E.POSSIVEL_BAIT not in E.tipos_validaveis(casos)
+    casos[E.POSSIVEL_BAIT] = E.MIN_CASOS_PARA_VALIDAR
+    assert E.POSSIVEL_BAIT in E.tipos_validaveis(casos)
+    assert E.MIN_CASOS_PARA_VALIDAR == 10
+
+
+def test_nenhum_tipo_validado_tem_menos_casos_que_o_minimo():
+    if not _corpus():
+        pytest.skip("sem as ocorrências gravadas")
+    casos = E.casos_no_corpus()
+    assert sum(casos.values()) > 0
+    for t in E.TIPOS_DE_ERRO_VALIDADOS:
+        assert casos[t] >= E.MIN_CASOS_PARA_VALIDAR, (t, casos[t])
+    assert set(E.TIPOS_DE_ERRO_VALIDADOS) <= set(E.tipos_validaveis(casos))
