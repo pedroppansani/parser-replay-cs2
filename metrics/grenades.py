@@ -86,6 +86,11 @@ EFFECTIVE_BLIND_SECONDS = 1.0
 # levar flash ainda está reposicionando a mira nos primeiros instantes.
 FLASH_ASSIST_GRACE_SECONDS = 0.5
 
+# O tickrate NÃO tem padrão em nenhuma função daqui: quem chama passa o que
+# `metrics.timing.detect_tickrate` leu da demo. O padrão 128 que existia fazia
+# o pipeline gravar a janela da flash com o dobro da cegueira real (e a folga
+# de 1 s) e o tempo da primeira utility pela metade (cartão 12, nota 22j).
+
 
 def _empty_kind_columns() -> list[pl.Expr]:
     return [pl.lit(0, dtype=pl.Int32).alias(f"{k}_thrown") for k in KIND_ORDER]
@@ -142,7 +147,7 @@ def flash_impact(
     player_blind: pl.DataFrame | None,
     kills: pl.DataFrame,
     roster: pl.DataFrame,
-    tickrate: int = 128,
+    tickrate: int,
 ) -> pl.DataFrame:
     """Efeito das flashes de cada jogador, por round.
 
@@ -294,7 +299,7 @@ def utility_damage_split(damages: pl.DataFrame, roster: pl.DataFrame) -> pl.Data
 
 
 def first_utility_time(
-    grenades: pl.DataFrame, rounds: pl.DataFrame, roster: pl.DataFrame, tickrate: int = 128
+    grenades: pl.DataFrame, rounds: pl.DataFrame, roster: pl.DataFrame, tickrate: int
 ) -> pl.DataFrame:
     """Segundos entre o fim do freeze time e a primeira granada do jogador no round.
 
@@ -324,7 +329,7 @@ def first_utility_time(
 
 
 def compute_grenade_metrics(
-    tables: dict[str, pl.DataFrame], roster: pl.DataFrame, tickrate: int = 128
+    tables: dict[str, pl.DataFrame], roster: pl.DataFrame, tickrate: int
 ) -> tuple[pl.DataFrame, pl.DataFrame]:
     """Junta tudo numa tabela por (round, jogador) e no agregado da partida."""
     grenades = tables.get("grenades")

@@ -189,13 +189,11 @@ def assistencia_flash() -> pl.DataFrame:
 
 
 def assistencia_flash_no_tick_detectado(af: pl.DataFrame) -> pl.DataFrame:
-    """DIAGNÓSTICO do degrau 4b, não número publicado: a MESMA definição
-    (`metrics.grenades.flash_impact`, sem mudar janela nem limiar) recalculada do
-    interim com o tickrate DETECTADO da demo (`metrics.timing`). O pipeline chama
-    `compute_grenade_metrics` sem tickrate, e o padrão do módulo é 128; a demo é
-    64, então a janela de cegueira gravada é o dobro da real (e a folga 1 s em vez
-    de 0,5 s). Esta função só mede quanto disso explica a divergência; a correção
-    é decisão do Pedro (cartão 1). Sem interim, devolve vazio."""
+    """CONFERÊNCIA do degrau 4b: a MESMA definição (`metrics.grenades.flash_impact`)
+    recalculada do interim com o tickrate DETECTADO da demo (`metrics.timing`). Até a
+    versão 25 das métricas o pipeline gravava com o padrão 128 numa demo de 64 (janela
+    com o dobro da cegueira real); desde a 26 (cartão 12) o gravado tem de ser igual a
+    este recálculo. Sem interim, devolve vazio."""
     from metrics.basic_metrics import roster_per_round
     from metrics.grenades import flash_impact
     from metrics.timing import detect_tickrate
@@ -242,8 +240,9 @@ def _imprime_assistencia_flash(af: pl.DataFrame) -> None:
                   .select("unidade", "nome", "nosso", "oficial", "dif"))
         diag = assistencia_flash_no_tick_detectado(af)
         if diag.height:
-            print("   Diagnóstico (não publicado): a mesma definição com o tickrate detectado da demo,")
-            print("   em vez do padrão 128 com que o pipeline grava (ver a nota 22j):")
+            igual = bool((diag["no_tick_detectado"] == diag["nosso"]).all())
+            print("   Conferência: a mesma definição recalculada do interim com o tickrate detectado"
+                  f" da demo {'é igual' if igual else 'NÃO é igual'} ao gravado (cartão 12, nota 22j):")
             for nivel, rotulo in (("mapa", "por mapa "), ("serie", "por série")):
                 g = diag.filter(pl.col("nivel") == nivel)
                 d = g["no_tick_detectado"] - g["oficial"]

@@ -326,7 +326,28 @@ entram aqui quando uma decisão depende delas.
   leitor de tela pode não conseguir pôr uma peça no mapa (o ponto do passo 7) sem que a gente saiba.
 - **Fora do computador:** nada; é tudo no Windows, com o fone ou o som ligado.
 
-## 12. A métrica de flash é gravada com 128 tick numa demo de 64 (achado do degrau 4b)
+## 12. A métrica de flash era gravada com 128 tick numa demo de 64 (achado do degrau 4b) -- FECHADO
+
+- **Fechado (2026-10-17), branch `fix-tickrate-flash`, commits `b236627c` (código), `d43d603f`
+  (réguas) e `ff25974c` (corpus); o hash do merge entra depois.** Sua resposta: "corrija agora".
+  `scripts/process_demo.py` lê o tickrate da demo (`metrics.timing.detect_tickrate`) e o passa a
+  `compute_grenade_metrics`; as funções de `metrics/grenades.py` não têm mais padrão de tickrate.
+  Versão das métricas 25 -> 26, corpus reprocessado, `perfil_reference` e `erros_reference` refeitas
+  (só `kills_de_flash_por_flash` muda). Teste novo: `tests/test_tickrate_lido_da_demo.py`.
+- **Antes -> depois (corpus, 52 partidas):** `flash_assists` 857 -> 527 (mediana por jogador 2 -> 1);
+  `flash_kills` 231 -> 126 (1 -> 0); "kills em inimigo cego" (as duas somadas) 1.088 -> 653
+  (3 -> 1,5), régua da taxa por flash 0,14 -> 0,07; `median_first_utility_s` dobra (mediana por
+  jogador 4,3 s -> 8,6 s; não aparece na tela). Rating, degraus 1 a 4 e a catraca: intactos.
+- **Degrau 4b depois da correção:** 51/70 por mapa (nosso 54, HLTV 49) e 41/80 por série (235
+  contra 202). Continua "não bate" (resposta sua na nota 22j).
+- **Ficou para você (parada do prompt):** a busca achou outros lugares que ASSUMEM 64 fora da flash
+  (padrões `tickrate: int = 64` em basic, AWP, crosshair, posicionamento, rating e outros; o
+  `TICKRATE = 64` do replay; o `rating(..., 64)` do `fit_rating` e da escada; o meio passo de
+  gravidade `800/128` da rota A). Nenhum muda número hoje (o corpus é todo de 64); estão na lista
+  `PENDENTES` do teste novo, que cai quando cada um for corrigido.
+
+O texto original do cartão:
+
 
 - **Origem:** degrau 4b da escada (cartão 1, nota 22j). `scripts/process_demo.py` chama
   `metrics.grenades.compute_grenade_metrics` sem o tickrate, e o padrão da função é 128. As demos
