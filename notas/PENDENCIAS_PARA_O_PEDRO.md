@@ -329,7 +329,7 @@ entram aqui quando uma decisão depende delas.
 ## 12. A métrica de flash era gravada com 128 tick numa demo de 64 (achado do degrau 4b) -- FECHADO
 
 - **Fechado (2026-10-17), merge `a7db5dc9`, branch `fix-tickrate-flash`, commits `b236627c` (código), `d43d603f`
-  (réguas) e `ff25974c` (corpus); o hash do merge entra depois.** Sua resposta: "corrija agora".
+  (réguas) e `ff25974c` (corpus).** Sua resposta: "corrija agora".
   `scripts/process_demo.py` lê o tickrate da demo (`metrics.timing.detect_tickrate`) e o passa a
   `compute_grenade_metrics`; as funções de `metrics/grenades.py` não têm mais padrão de tickrate.
   Versão das métricas 25 -> 26, corpus reprocessado, `perfil_reference` e `erros_reference` refeitas
