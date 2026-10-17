@@ -65,6 +65,13 @@ As contagens atuais estão em `data/processed/numeros_citaveis.json` (bloco `esc
       regra que não conhecemos; a nossa é documentada e conferida pelo tick. O
       degrau fica "não bate" até alguém trazer a regra da HLTV; não se persegue a
       regra dela agora.
+      **Resultado da correção do tickrate (cartão 12, 2026-10-17, métricas versão 26):**
+      o pipeline passa o tickrate DETECTADO a `compute_grenade_metrics` (sem padrão 128).
+      O gravado agora é igual ao recalculado com o tickrate da demo, e a escada confere
+      isso no 4b. Degrau 4b: 51/70 por mapa (nosso 54 contra 49) e 41/80 por série
+      (235 contra 202), com 11 acima e 8 abaixo por mapa: continua "não bate". No
+      corpus, `flash_assists` vai de 857 para 527 e `flash_kills` de 231 para 126; o
+      rating e os degraus 1 a 4 não mudam.
     - morte trocada (D(t)): 19/50 com a janela de 5s, e 30 a MAIS -- é a origem
       direta do excesso do KAST (8g). O total bate com janela de ~4,25s, mas nenhuma
       janela (2 a 6s), nem "vingada por qualquer um", nem "só a última vítima do

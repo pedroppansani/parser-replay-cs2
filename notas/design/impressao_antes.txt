@@ -66,7 +66,7 @@ jogadores.html::D.k.kast_eco = 41.635
 jogadores.html::D.k.kast_forca = 8.428
 jogadores.html::D.k.kills_contra_compra_cheia = 3.531
 jogadores.html::D.k.kills_contra_eco = 7.44
-jogadores.html::D.k.kills_de_flash_por_flash = 22.07
+jogadores.html::D.k.kills_de_flash_por_flash = 11.253
 jogadores.html::D.k.kills_por_pos_plant = 15.536
 jogadores.html::D.k.kills_por_retake = 10.204
 jogadores.html::D.k.pct_aberturas_vencidas_ct = 4.616
@@ -109,7 +109,7 @@ jogadores.html::D.k.rating_eco = 11.545
 jogadores.html::D.k.rating_forca = 11.663
 jogadores.html::D.k.segundos_de_cegueira_por_flash = 94.05
 jogadores.html::D.k.taxa_conversao_clutch = 20.939
-jogadores.html::D.linhas = itens n=520 sha256:02cf2364af00495f
+jogadores.html::D.linhas = itens n=520 sha256:1b50868a4959fa72
 jogadores.html::D.n_bootstrap = 400
 jogadores.html::D.semente = 20261004
 match_01.html::PAGINA.round_na_prancheta.tolerancia_u = 32
