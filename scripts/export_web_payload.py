@@ -95,7 +95,10 @@ def build(match_id: str) -> Path:
          "enemies_flashed", "enemy_blind_seconds", "team_blind_seconds", "flash_assists",
          "smoke_thrown", "utility_damage", "nades_per_round"]
     )
-    traits = rd("player_traits").select(["name", "team", "trait", "label", "evidence", "priority"])
+    # `ordem`: a ordem na tela (player_roles.ordem_na_tela; 1 = o título do cartão)
+    traits = rd("player_traits")
+    traits = traits.select(["name", "team", "trait", "label", "evidence", "priority"]
+                           + (["ordem"] if "ordem" in traits.columns else []))
     # Rótulo instável na reamostragem dos rounds vira "tendência", com o texto
     # pronto do Python (metrics/player_roles.py, LIMIAR_DE_TENDENCIA).
     cheio = rd("player_roles")
