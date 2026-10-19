@@ -30,6 +30,27 @@ mesmo processo: o KMeans soma em várias threads. Com uma thread só (`threadpoo
 execuções dão o mesmo modelo. O `global_model.json` gravado ficou como estava (o reajuste não o muda
 além desse ruído); tornar o ajuste determinístico é correção pendente da decisão 28.
 
+### Os nomes, presos ao PERFIL (resposta do Pedro à seção 2 do material, 2026-10-19)
+
+O nome segue o perfil, não o número do grupo: num reajuste que renumere, cada nome vai para o grupo
+que tem a mesma assinatura. Conferido no modelo reajustado pelas features que distinguem cada grupo
+(|z| contra a média do corpus; o reconhecimento é `pesquisa/proposta_grupos.PERFIS`, e cada grupo
+casou com um perfil só):
+
+| perfil | nome | grupo | o que o distingue (z) |
+|---|---|---|---|
+| mira | Mira fora da altura | 1 | mira na altura da cabeça −2,29; placement −1,54 |
+| junto | Junto e rápido | 2 | maior distância do time −0,75; distância média −0,65; 1º contato −0,65; entrando em briga +0,54 |
+| longe | Segura longe do time | 0 | distância média do time +1,25; maior distância +1,16 |
+| roda | Roda o mapa | 3 | regiões visitadas +0,89; 1º contato +0,73 |
+
+Só o nome do perfil "junto" mudou ("Entra em bloco" → "Junto e rápido"); os outros três já estavam
+no grupo certo.
+
+**Aviso do material sobre o perfil "mira":** 34% dos rounds dele são na Nuke, contra 17% do corpus
+(2,0x a fatia do mapa). Parte do grupo pode ser efeito do mapa, não estilo do jogador. Medido de
+novo no modelo reajustado: os mesmos 34%.
+
 ## Texto
 
 8. **O KMeans não nomeia os grupos.** Apelido de jogo ("lurker", "âncora",
