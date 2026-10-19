@@ -96,6 +96,13 @@ S_DUELO = 2.0
 SEG_CEGUEIRA_ALIADO = 27.0        # soma no lado, segundos
 SEG_CEGUEIRA_ALIADO_UMA = 4.8     # numa flash só, segundos
 
+# Cegueira mínima de UMA flash para ela ser ocorrência de "flash no time": abaixo disto (a cegueira desta flash
+# nos aliados, a coluna "cegueira desta flash" do material) a flash não é ocorrência, mesmo com a soma do lado
+# acima de SEG_CEGUEIRA_ALIADO. A soma continua contando TODAS as flashes (ela mede o padrão). Em segundos do
+# evento do jogo (`blind_duration`, que não passa por conversão de tick). Origem: calibração do Pedro
+# (2026-10-16, decisão 46): os 3 exemplos reprovados cegavam ~1 s (0,98, 1,21 e 1,43 s).
+MIN_CEGUEIRA_FLASH_ALIADO = 2.0
+
 # Dano de HE ou molotov no próprio time, soma no lado. Origem: o percentil 95 do corpus por
 # jogador-partida (520 valores; mediana 0, p75 1, p90 10, p95 19). O p90 não serve: mais da metade
 # não feriu ninguém do time, e 10 de dano é um tique de molotov. Material de calibração, seção 7.
@@ -256,6 +263,7 @@ FILTRO_ALIADO_COM_O_MATADOR = "um aliado tinha o matador à vista ou estava pert
 FILTRO_1_CONTRA_N = "sem aliado vivo (1 contra N)"
 FILTRO_EVENTO_ZERADO = "evento sem dano ou sem cegueira"          # fase 18: evento com 0 não é ocorrência
 FILTRO_ABAIXO_DO_LIMIAR = "abaixo do limiar da partida"
+FILTRO_CEGUEIRA_CURTA = "a flash cegou o time menos de 2,0 s"   # calibração do Pedro (MIN_CEGUEIRA_FLASH_ALIADO)
 
 FIREARMS = frozenset(ARMA_PARA_GRUPO)            # nomes de exibição das armas de fogo (rating)
 
@@ -850,7 +858,9 @@ def flash_no_time(p: Partida, seg_aliado: float = SEG_CEGUEIRA_ALIADO, seg_uma: 
     Uma ocorrência por flash que cegou companheiro (a mesma detonação: mesmo arremessador e mesmo tick);
     `valor` é a soma dos segundos de cegueira nos aliados daquela flash e `valor_soma_lado` a soma do
     jogador naquele lado. Com a soma abaixo do limiar, só a flash acima de `seg_uma` conta; as outras ficam
-    de fora com o motivo. Uma flash com 0 s de cegueira não é ocorrência (fase 18)."""
+    de fora com o motivo. Uma flash com 0 s de cegueira não é ocorrência (fase 18). Calibração do Pedro: a flash
+    que cegou o time menos de MIN_CEGUEIRA_FLASH_ALIADO também não é (`FILTRO_CEGUEIRA_CURTA`), mesmo com a soma
+    acima do limiar; ela continua na soma do lado, que é aplicada ANTES desse corte."""
     ix = _ix or _Indice(p)
     if p.blinds is None or p.blinds.height == 0:
         return []
@@ -870,7 +880,15 @@ def flash_no_time(p: Partida, seg_aliado: float = SEG_CEGUEIRA_ALIADO, seg_uma: 
         oc["filtro"] = ix.filtro_do_round(rn, a, t) or (FILTRO_EVENTO_ZERADO if not oc["valor"] > 0 else None)
         out.append(oc)
     _aplica_limiar(out, seg_aliado, seg_uma)
+    for oc in out:                     # depois da soma: a flash curta conta no padrão, mas não é ocorrência
+        if oc["filtro"] is None and not cegou_o_bastante(oc["valor"]):
+            oc["filtro"] = FILTRO_CEGUEIRA_CURTA
     return out
+
+
+def cegou_o_bastante(segundos: float | None) -> bool:
+    """A flash cegou o time pelo menos MIN_CEGUEIRA_FLASH_ALIADO (1,99 s não chega; 2,00 s chega)."""
+    return segundos is not None and segundos + 1e-9 >= MIN_CEGUEIRA_FLASH_ALIADO
 
 
 def _aplica_limiar(out: list[dict], limiar_partida: float, limiar_um: float | None) -> None:

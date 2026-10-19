@@ -54,6 +54,10 @@ VERSAO_DO_PARSER = 2
 # Onde o complemento registra o que acrescentou a um interim existente.
 ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
 
+# 27 (2026-10-19) erros do Perfil, calibração do Pedro (respostas de 2026-10-16): "flash no time" exige
+#    MIN_CEGUEIRA_FLASH_ALIADO (2,0 s) na flash; a mais curta sai (FILTRO_CEGUEIRA_CURTA) mas continua na soma
+#    do lado. Impacto: só erros_do_jogador.parquet e a régua erros_reference.json mudam. A branch não
+#    mesclada calibracao-pisos também usa 27 (os pisos de função): quem mesclar depois sobe para 28.
 # 26 (2026-10-16) tickrate da flash (cartão 12, nota 22j): process_demo passa o tickrate DETECTADO da demo
 #    (metrics/timing.py) a compute_grenade_metrics, que usava o padrão 128 numa demo de 64. A janela de
 #    "ainda cega pela minha flash" deixa de ter o dobro da cegueira real (folga 0,5 s, não 1 s) e o
@@ -136,7 +140,7 @@ ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
 #   (inclui a classe de economia do jogador no rating), unique com subset fica
 #   com a primeira linha. Antes, esses três casos dependiam da ordem de hash.
 # 1 (2026-09-20) primeira versão declarada, mesmo raciocínio acima.
-VERSAO_DAS_METRICAS = 26
+VERSAO_DAS_METRICAS = 27
 
 # Pastas cujo estado define o NÚMERO. `sujo` olha só estas: olhar o repositório
 # inteiro marcava todo reprocessamento como sujo, porque o próprio
