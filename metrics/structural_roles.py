@@ -1093,7 +1093,7 @@ def estabilidade_da_funcao(por_round: pl.DataFrame, awpers_do_time: set | None =
     reposição, N_REAMOSTRAGENS sorteios com a semente fixa, e a fração dos sorteios em que a função
     dominante (pela regra de `resume_por_lado`) continua a mesma. Abaixo de LIMIAR_DE_TENDENCIA, a
     função é só tendência. Sem função dominante na partida, a linha sai com estabilidade nula.
-    Usada pela aba Perfil (metrics/erros.py, fase 12); não muda o resumo por lado gravado."""
+    Usada pela aba Perfil (metrics/erros/__init__.py, fase 12); não muda o resumo por lado gravado."""
     from metrics.player_roles import LIMIAR_DE_TENDENCIA, N_REAMOSTRAGENS, SEMENTE_DA_REAMOSTRAGEM
 
     n = N_REAMOSTRAGENS if n is None else n

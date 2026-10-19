@@ -1,4 +1,4 @@
-"""Tipos de erro da aba Perfil (fase 12, metrics/erros.py; definições da fase 18), com situações montadas à mão.
+"""Tipos de erro da aba Perfil (fase 12, metrics/erros/__init__.py; definições da fase 18), com situações montadas à mão.
 
 Cada tipo tem uma situação que deve contar e uma que não deve para cada filtro da tabela do
 pedido (12.6, item 1); a ordem "explícito ou depende" tem um teste por regra (item 3); o eco fica
@@ -6,7 +6,7 @@ fora (item 4); e a mesma partida em dois processos com PYTHONHASHSEED diferente 
 ocorrências (item 2).
 
 Fase 18 (18.5, item 2): as situações montadas trazem também o olhar de cada jogador (yaw), as paredes
-(triângulos) e os tiros, porque "visível para o jogador" (metrics/visao.py) entra nas definições. Os testes
+(triângulos) e os tiros, porque "visível para o jogador" (metrics/erros/visao.py) entra nas definições. Os testes
 que verificavam a definição antiga (distância de troca, "atrás do aliado", "morrer para o matador já é ir
 para a troca") foram migrados para a nova; os casos que o Pedro já julgou, com os dados reais, estão em
 tests/test_erros_casos_julgados.py.
@@ -23,7 +23,7 @@ import polars as pl
 import pytest
 
 from metrics import erros as E
-from metrics import visao as V
+from metrics.erros import visao as V
 
 RAIZ = Path(__file__).resolve().parent.parent
 TR = 64

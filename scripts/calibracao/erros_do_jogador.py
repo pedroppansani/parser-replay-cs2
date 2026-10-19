@@ -5,8 +5,8 @@
     py -3.12 -m scripts.calibracao.erros_do_jogador --tabela           # só a tabela de ocorrências por tipo
 
 Lê as ocorrências gravadas (`data/processed/<partida>/erros_do_jogador.parquet`, de
-metrics/erros.build) e, para as varreduras das constantes, recalcula cada partida
-com outro valor (metrics/erros.ocorrencias aceita as constantes como argumento), uma
+metrics/erros/__init__.py: build) e, para as varreduras das constantes, recalcula cada partida
+com outro valor (metrics/erros/__init__.py: ocorrencias aceita as constantes como argumento), uma
 partida por processo (cada partida devolve só contagens; a soma é feita na ordem das
 partidas, então o resultado não depende do paralelo).
 
@@ -70,7 +70,7 @@ FAIXAS = {
 
 
 def _valor_atual() -> dict:
-    from metrics import visao as V
+    from metrics.erros import visao as V
     return {"dist_troca": E.DIST_TROCA, "s_duelo": E.S_DUELO, "seg_aliado": E.SEG_CEGUEIRA_ALIADO,
             "seg_uma": E.SEG_CEGUEIRA_ALIADO_UMA, "dano_aliado": E.DANO_UTILIDADE_ALIADO,
             "recuo_minimo": E.MIN_RECUO_BAIT, "min_tempo": E.MIN_TEMPO_VISIVEL, "meio_fov": V.MEIO_FOV_GRAUS, "limiar_round": E.LIMIAR_ROUND_GANHO,
@@ -159,7 +159,7 @@ def _contagem(oc: pl.DataFrame) -> dict:
 def _mede_partida(m: str) -> dict:
     """Tudo o que a seção 7.1 precisa de UMA partida: as medidas dos histogramas e as contagens de cada
     varredura. Devolve só números e tabelas pequenas, para a soma ser feita na ordem das partidas."""
-    from metrics import visao as V
+    from metrics.erros import visao as V
     p = E.carrega_partida(m)
     ix = E._Indice(p)
     base = E.ocorrencias(p)

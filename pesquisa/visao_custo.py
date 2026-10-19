@@ -2,7 +2,7 @@
 
     py -3.12 -m pesquisa.visao_custo [n_consultas]
 
-Para cada mapa: lê o .tri, monta a grade (`metrics.visao.Malha`) e responde `n` segmentos entre
+Para cada mapa: lê o .tri, monta a grade (`metrics.erros.visao.Malha`) e responde `n` segmentos entre
 posições reais de jogadores (olhos a olhos, pares do mesmo tick de uma partida daquele mapa).
 Na Mirage e na Nuke (as malhas menores) monta também o `awpy.visibility.VisibilityChecker` do awpy
 2.0.2 e compara resposta a resposta e o tempo. Só imprime.
@@ -16,7 +16,7 @@ import time
 import numpy as np
 import polars as pl
 
-from metrics import visao
+from metrics.erros import visao
 
 RAIZ = visao.Path(__file__).resolve().parents[1]
 

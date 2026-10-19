@@ -576,7 +576,7 @@ def _delta_da_kill(modelo: "ModeloDeRound", antes: dict, vivos: dict, beneficiad
 
     Antes e depois no MESMO instante (o tick da kill): o que o evento muda são os vivos; o tempo que
     passa entre dois eventos não é de ninguém. Uma conta só, usada pelo Round Swing (`swing_por_evento`)
-    e pelo custo dos erros da aba Perfil (`variacao_por_kill`, metrics/erros.py)."""
+    e pelo custo dos erros da aba Perfil (`variacao_por_kill`, metrics/erros/__init__.py)."""
     p_antes = modelo.prob(np.array([_estado_completo(
         antes[beneficiado], antes[adversario], dif_equip, bomba, eh_ct, *tempos)]))[0]
     p_depois = modelo.prob(np.array([_estado_completo(

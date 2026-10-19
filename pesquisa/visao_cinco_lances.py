@@ -20,7 +20,7 @@ from pathlib import Path
 
 import polars as pl
 
-from metrics import visao
+from metrics.erros import visao
 from metrics.constantes import JANELA_DE_TRADE_S
 
 RAIZ = Path(__file__).resolve().parents[1]

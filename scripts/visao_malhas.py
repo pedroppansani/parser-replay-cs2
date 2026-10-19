@@ -11,7 +11,7 @@ triângulos, os vértices em float32 e os índices em uint32). Este script baixa
 (`VERSAO_AWPY_DATA`), confere o sha256 do zip contra o manifest dela, e escreve cada mapa como .tri
 (9 float32 por triângulo, o formato que `awpy.visibility.VisibilityChecker.read_tri_file` lê) em
 `~/.awpy/tris/`, o diretório do awpy 2.0.2. O sha256 de cada .tri vai para `metrics/visao_malhas.json`
-(versionado): o pipeline recusa uma malha diferente (`metrics.visao.carrega_malha`).
+(versionado): o pipeline recusa uma malha diferente (`metrics.erros.visao.carrega_malha`).
 
 A malha é a do cliente da versão escolhida (outubro de 2026), não a da data de cada demo: uma mudança
 de mapa entre a demo e essa versão muda a linha de visão naquele trecho. A conferência contra a
@@ -33,7 +33,7 @@ from pathlib import Path
 
 import numpy as np
 
-from metrics import visao
+from metrics.erros import visao
 
 VERSAO_AWPY_DATA = "2000932"            # release de 2026-10-15 (patch 1.41.9.1, build 25947352)
 SHA256_GEOMETRY_ZIP = "06ab94c50e6024162a6b322cd28af660f80da2558c68a093e4fac0e9385ac216"
