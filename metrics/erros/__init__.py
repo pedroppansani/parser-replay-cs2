@@ -23,7 +23,7 @@ FASE 18 (definições do Pedro, que valem como definição e não sugestão):
 - **round decidido fica fora** de todos os tipos: a chance de o time vencer o
   round logo antes do evento (o modelo de round do rating) acima de
   `LIMIAR_ROUND_GANHO` ou abaixo de `LIMIAR_ROUND_PERDIDO`;
-- quem estava vendo quem vem de `metrics.visao` (linha de visão pelo mapa +
+- quem estava vendo quem vem de `metrics.erros.visao` (linha de visão pelo mapa +
   campo de visão + não estar cego). "Não trocou" e "possível bait" exigem o
   matador visível para o jogador na janela; "perdeu a troca" exige ter ido
   trocar (engajado o matador) e sai quando dois ou mais inimigos estavam
@@ -72,7 +72,7 @@ from metrics.grenades import EFFECTIVE_BLIND_SECONDS, FIRE_WEAPONS, HE_WEAPONS
 from metrics.rating import ARMA_PARA_GRUPO
 from metrics.tactics import relogio as relogio_do_jogo
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
 # --- Constantes (fase 12). Cada uma está no material de calibração, seção 7 ----------------------
 
@@ -284,7 +284,7 @@ class Partida:
     lados: dict = field(default_factory=dict)     # (round, steamid) -> "ct"/"t", de todos os ticks (completa quem não aparece nas kills)
     degradado: list = field(default_factory=list)
     # fase 18
-    visao: object | None = None   # metrics.visao.Visao: quem vê quem em cada tick (None: tipos de visão não calculados)
+    visao: object | None = None   # metrics.erros.visao.Visao: quem vê quem em cada tick (None: tipos de visão não calculados)
     tiros: pl.DataFrame | None = None   # shots: round_num, tick, player_steamid, player_yaw
     chance: Callable | None = None      # (round, time, tick, vivos do time, vivos do adversário) -> P(vencer o round)
 
@@ -550,7 +550,7 @@ class _Indice:
 
     def atirou_nele(self, rn: int, de: int, em: int, t0: int, t1: int) -> bool:
         """Um tiro de `de` entre t0 e t1 com `em` visível e a mira a menos de CONE_DO_TIRO_GRAUS dele."""
-        from metrics.visao import angulo_horizontal
+        from metrics.erros.visao import angulo_horizontal
         v = self.p.visao
         if v is None:
             return False
@@ -1089,7 +1089,7 @@ def carrega_partida(match_id: str, processed_root: Path | None = None, interim_r
     from metrics.rating import ModeloDeRound, carrega_referencia, grupo_do_round, variacao_por_kill
     from metrics.structural_roles import estabilidade_da_funcao
     from metrics.timing import detect_tickrate
-    from metrics.visao import visao_da_partida
+    from metrics.erros.visao import visao_da_partida
     from metrics.win_probability import detecta_formato, probabilidade_de_vitoria
     from parsing.parser import load_interim
 
@@ -1175,7 +1175,7 @@ def carrega_partida(match_id: str, processed_root: Path | None = None, interim_r
 
 
 ARQUIVO = "erros_do_jogador.parquet"
-REFERENCIA_FILE = Path(__file__).resolve().parent / "erros_reference.json"
+REFERENCIA_FILE = Path(__file__).resolve().parent.parent / "erros_reference.json"
 
 # --- Pontos fortes: métricas que já existem no perfil, em que MAIS é melhor --------------------------
 # (chave do perfil, formato, o que o denominador conta). Ficam de fora as que não têm direção de jogo

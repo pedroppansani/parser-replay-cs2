@@ -1,4 +1,4 @@
-"""Quem vê quem (fase 18, item 18.1; metrics/visao.py): linha de visão pelo mapa + campo de visão.
+"""Quem vê quem (fase 18, item 18.1; metrics/erros/visao.py): linha de visão pelo mapa + campo de visão.
 
 - a grade dá a MESMA resposta que o verificador do awpy 2.0.2 (`awpy.visibility.VisibilityChecker`),
   num conjunto de paredes montado à mão e, se a malha estiver no disco, na Mirage;
@@ -14,7 +14,7 @@ import numpy as np
 import polars as pl
 import pytest
 
-from metrics import visao as V
+from metrics.erros import visao as V
 
 
 def _parede(x: float, y0: float = -500.0, y1: float = 500.0, z0: float = -100.0, z1: float = 300.0) -> np.ndarray:
