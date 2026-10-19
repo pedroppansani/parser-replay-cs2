@@ -33,7 +33,7 @@ def _bloco(**kw) -> dict:
 # --- O bloco do Python --------------------------------------------------------------------------------
 
 def test_sem_tipo_validado_nenhum_erro_vai_para_o_bloco():
-    b = _bloco()
+    b = _bloco(validados=frozenset())
     assert b["estado"] == "em_validacao" and b["tipos"] == []
     assert all(j["melhorar"] == [] and j["uma_vez"] == [] and j["contagens"] == {} for j in b["jogadores"])
     assert b["textos"]["em_validacao"] == "Em validação: os tipos de erro aparecem depois de conferidos"
@@ -135,6 +135,7 @@ def test_com_a_lista_vazia_nenhum_tipo_aparece_na_pagina_e_com_um_so_ele(monkeyp
     from scripts.build_web_page import build_html
     _base()
     titulos = list(E.TITULOS.values())
+    monkeypatch.setattr(E, "TIPOS_DE_ERRO_VALIDADOS", frozenset())
     html = build_html(PARTIDA)
     assert not any(t in html for t in titulos), [t for t in titulos if t in html]
     monkeypatch.setattr(E, "TIPOS_DE_ERRO_VALIDADOS", frozenset({E.PERDEU_A_TROCA}))
@@ -144,12 +145,14 @@ def test_com_a_lista_vazia_nenhum_tipo_aparece_na_pagina_e_com_um_so_ele(monkeyp
 
 
 def test_docs_publicado_nao_tem_tipo_de_erro():
+    # só os tipos NÃO validados ficam fora do publicado (desde 2026-10-16 há tipos validados, decisão 46)
     paginas = sorted((RAIZ / "docs").glob("match_*.html"))
     if not paginas:
         pytest.skip("sem docs/ gerado")
+    fora = [E.TITULOS[t] for t in E.TIPOS if t not in E.TIPOS_DE_ERRO_VALIDADOS]
     for p in paginas:
         texto = p.read_text(encoding="utf-8")
-        assert not any(t in texto for t in E.TITULOS.values()), p.name
+        assert not any(t in texto for t in fora), p.name
 
 
 # --- No navegador --------------------------------------------------------------------------------------
@@ -236,9 +239,10 @@ def test_a_comparacao_so_oferece_jogadores_desta_partida(navegador, previa):
         ctx.close()
 
 
-def test_sem_tipo_validado_a_secao_diz_em_validacao_e_detalhes_fecha(navegador, tmp_path):
+def test_sem_tipo_validado_a_secao_diz_em_validacao_e_detalhes_fecha(navegador, tmp_path, monkeypatch):
     from scripts.build_web_page import build_html
     _base()
+    monkeypatch.setattr(E, "TIPOS_DE_ERRO_VALIDADOS", frozenset())
     html = tmp_path / f"{PARTIDA}.html"
     html.write_text(build_html(PARTIDA), encoding="utf-8")
     ctx, pg = _abre(navegador, html, largura=375)
