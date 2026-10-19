@@ -20,6 +20,11 @@ que ainda é ocorrência pelas regras atuais FICA; só os que deixaram de ser s�
 trocados, sorteados com a mesma semente, e o material marca "(substituído em <data>:
 <motivo>)". `--sortear-de-novo` refaz todos e só se usa quando as definições mudam.
 Depois que o Pedro começa a responder, os exemplos não podem trocar sem ele saber.
+
+RESPOSTAS GRAVADAS (calibração de 2026-10-16). As respostas do Pedro, por exemplo e com a data, ficam em
+`scripts/calibracao/respostas_do_pedro.json` (gravado à mão; este script só lê). O material mostra a resposta
+já dada no lugar da pergunta, e um exemplo respondido nunca volta como pergunta: nem fica pendente, nem é
+sorteado como substituto de outro.
 """
 from __future__ import annotations
 
@@ -42,16 +47,19 @@ PROCESSED = RAIZ / "data" / "processed"
 MATERIAL = RAIZ / "MATERIAL_DE_CALIBRACAO.md"
 TITULO_DA_SECAO = "## 7. Erros na aba Perfil"
 FIXADOS = Path(__file__).resolve().parent / "exemplos_fixados.json"
+RESPOSTAS = Path(__file__).resolve().parent / "respostas_do_pedro.json"
 
 # Sorteio dos exemplos: semente fixa (decisão 28) e no máximo 2 por partida (pedido 12.4).
 SEMENTE_DOS_EXEMPLOS = 20261013
 EXEMPLOS_POR_TIPO = 10
 MAX_EXEMPLOS_POR_PARTIDA = 2
 
-# O commit com as ocorrências da regra ANTERIOR: a tabela "antes -> depois" compara com ele. Fase 18b: o
-# "antes" é a fase 18 (o merge d02b0e7e, na main b3efc9da); na fase 18 era 622f7ab1 (a regra da fase 12).
-ANTES = "b3efc9da"
-ROTULO_DO_ANTES = "fase 18"
+# O commit com as ocorrências da regra ANTERIOR: a tabela "antes -> depois" compara com ele. Calibração de
+# 2026-10-16: o "antes" é a main com a fase 18b (3c4afd79, versão 26); na fase 18b era b3efc9da (a fase 18) e na
+# fase 18, 622f7ab1 (a regra da fase 12).
+ANTES = "3c4afd79"
+ROTULO_DO_ANTES = "fase 18b"
+ROTULO_DO_DEPOIS = "calibração de 2026-10-16"
 TIPO_ANTIGO: dict = {}
 
 # Faixas razoáveis de cada constante (o mais baixo e o mais alto que ainda fazem sentido de jogo).
@@ -60,6 +68,7 @@ FAIXAS = {
     "s_duelo": ("S_DUELO", 1.0, 4.0, "s"),
     "seg_aliado": ("SEG_CEGUEIRA_ALIADO", 5.0, 20.0, "s"),
     "seg_uma": ("SEG_CEGUEIRA_ALIADO_UMA", 2.0, 4.0, "s"),
+    "min_cegueira": ("MIN_CEGUEIRA_FLASH_ALIADO", 1.0, 3.0, "s"),
     "dano_aliado": ("DANO_UTILIDADE_ALIADO", 25.0, 100.0, "de dano"),
     "recuo_minimo": ("MIN_RECUO_BAIT", 32.0, 128.0, "unidades"),
     "min_tempo": ("MIN_TEMPO_VISIVEL", 0.25, 1.0, "s"),
@@ -72,7 +81,8 @@ FAIXAS = {
 def _valor_atual() -> dict:
     from metrics.erros import visao as V
     return {"dist_troca": E.DIST_TROCA, "s_duelo": E.S_DUELO, "seg_aliado": E.SEG_CEGUEIRA_ALIADO,
-            "seg_uma": E.SEG_CEGUEIRA_ALIADO_UMA, "dano_aliado": E.DANO_UTILIDADE_ALIADO,
+            "seg_uma": E.SEG_CEGUEIRA_ALIADO_UMA, "min_cegueira": E.MIN_CEGUEIRA_FLASH_ALIADO,
+            "dano_aliado": E.DANO_UTILIDADE_ALIADO,
             "recuo_minimo": E.MIN_RECUO_BAIT, "min_tempo": E.MIN_TEMPO_VISIVEL, "meio_fov": V.MEIO_FOV_GRAUS, "limiar_round": E.LIMIAR_ROUND_GANHO,
             "cone": E.CONE_DO_TIRO_GRAUS}
 
@@ -163,8 +173,8 @@ def _mede_partida(m: str) -> dict:
     p = E.carrega_partida(m)
     ix = E._Indice(p)
     base = E.ocorrencias(p)
-    med: dict = {k: [] for k in ("dist_troca", "s_duelo", "seg_aliado", "seg_uma", "dano_aliado", "recuo_minimo",
-                                 "meio_fov", "limiar_round", "cone", "min_tempo")}
+    med: dict = {k: [] for k in ("dist_troca", "s_duelo", "seg_aliado", "seg_uma", "min_cegueira", "dano_aliado",
+                                 "recuo_minimo", "meio_fov", "limiar_round", "cone", "min_tempo")}
     # DIST_TROCA: distância de cada aliado vivo a quem morreu; S_DUELO: tempo desde o último dano dele
     for k, rn, t, v, a in E._mortes_de_aliado(ix):
         pos_v = {"X": k["victim_X"], "Y": k["victim_Y"], "Z": k["victim_Z"]}
@@ -192,9 +202,11 @@ def _mede_partida(m: str) -> dict:
                     angs.append(V.angulo_horizontal(eo[3], eo, ea))
             if angs:
                 med["meio_fov"].append(min(angs))
-    fl = base.filter((pl.col("tipo") == E.FLASH_NO_TIME) & pl.col("filtro").is_in([E.FILTRO_ABAIXO_DO_LIMIAR]).or_(
-        pl.col("filtro").is_null()))
+    # toda flash que passou nos filtros do round: a curta (MIN_CEGUEIRA_FLASH_ALIADO) também, porque ela conta na soma
+    fl = base.filter((pl.col("tipo") == E.FLASH_NO_TIME) & pl.col("filtro").is_in(
+        [E.FILTRO_ABAIXO_DO_LIMIAR, E.FILTRO_CEGUEIRA_CURTA]).or_(pl.col("filtro").is_null()))
     med["seg_uma"] = fl["valor"].to_list()
+    med["min_cegueira"] = fl["valor"].to_list()
     soma: dict = {}
     for r in fl.iter_rows(named=True):
         soma[(r["steamid"], r["side"])] = soma.get((r["steamid"], r["side"]), 0.0) + r["valor"]
@@ -240,7 +252,7 @@ def _mede_partida(m: str) -> dict:
 
 def _varia(p: E.Partida, chave: str, valor: float) -> pl.DataFrame:
     """As ocorrências da partida com UMA constante trocada (as outras no valor proposto)."""
-    if chave in ("dist_troca", "s_duelo", "seg_aliado", "seg_uma", "dano_aliado", "recuo_minimo"):
+    if chave in ("dist_troca", "s_duelo", "seg_aliado", "seg_uma", "min_cegueira", "dano_aliado", "recuo_minimo"):
         return E.ocorrencias(p, **{chave: valor})
     if chave == "meio_fov":
         antes = (p.visao.meio_fov, p.visao._cache)
@@ -320,6 +332,10 @@ ORIGEM = {
                    "O histograma é a soma por jogador-LADO (a regra desde a fase 15)."),
     "seg_uma": ("o percentil 90 da cegueira nos aliados por flash no corpus (uma flash cheia cega de 2 a 5 s; perto "
                 "do topo é a flash que estourou na cara do aliado). O histograma é a cegueira nos aliados por flash."),
+    "min_cegueira": ("a calibração do Pedro (2026-10-16): os 3 exemplos reprovados de \"flash no time\" cegavam ~1 s "
+                     "(0,98, 1,21 e 1,43 s). A flash que cegou o time menos que isto não é ocorrência, mas continua na "
+                     "soma do lado (que mede o padrão). Em segundos do evento do jogo (`blind_duration`). O histograma é "
+                     "a cegueira nos aliados por flash (o mesmo de `SEG_CEGUEIRA_ALIADO_UMA`)."),
     "dano_aliado": ("o percentil 95 do dano de HE e molotov no próprio time por jogador-partida no corpus (fase 12). "
                     "O histograma é a soma por jogador-lado."),
     "recuo_minimo": ("a decisão do Pedro na fase 18b (64 u: o passo de lado do jiggle não é bait). O recuo é o "
@@ -349,6 +365,7 @@ CORTES = {
     "s_duelo": [0, 0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 7, 10, 15],
     "seg_aliado": [0, 0.01, 2, 4, 6, 8, 10, 12, 15, 20, 30],
     "seg_uma": [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5],
+    "min_cegueira": [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5],
     "dano_aliado": [0, 0.01, 10, 25, 40, 50, 60, 80, 100, 150],
     "recuo_minimo": [-500, -128, -64, -32, 0, 32, 64, 96, 128, 200, 300, 500],
     "min_tempo": [0, 0.125, 0.25, 0.375, 0.5, 0.75, 1, 1.5, 2, 3, 5],
@@ -366,7 +383,8 @@ def secao_constantes(res: list[dict]) -> list[str]:
            "Valor proposto, origem, histograma no corpus e quantas ocorrências (depois dos filtros) cada tipo teria "
            "no valor mais baixo e no mais alto da faixa. As outras constantes ficam no valor proposto em cada varredura. "
            "As da fase 18 são `MEIO_FOV_GRAUS`, `LIMIAR_ROUND_GANHO`/`LIMIAR_ROUND_PERDIDO` e `CONE_DO_TIRO_GRAUS`; "
-           "as da calibração da fase 18b, `MIN_RECUO_BAIT` (no lugar do `RECUO_MINIMO`) e `MIN_TEMPO_VISIVEL`.", ""]
+           "as da calibração da fase 18b, `MIN_RECUO_BAIT` (no lugar do `RECUO_MINIMO`) e `MIN_TEMPO_VISIVEL`; a da "
+           "calibração de 2026-10-16, `MIN_CEGUEIRA_FLASH_ALIADO`.", ""]
     for chave, (nome, baixo, alto, unidade) in FAIXAS.items():
         v = [x for r in res for x in r["med"][chave]]
         marca = atual[chave]
@@ -560,17 +578,36 @@ def grava_fixados(fix: dict, caminho: Path = FIXADOS) -> None:
     caminho.write_text(json.dumps(fix, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
+def le_respostas(caminho: Path = RESPOSTAS) -> dict:
+    """{"exemplos": {chave do exemplo: {resposta, data, nota}}, "tipos": {tipo: {frase_serve, confirmados, de,
+    resultado, data, como}}}. Com várias rodadas, vale a mais recente (a lista está em ordem de data)."""
+    out: dict = {"exemplos": {}, "tipos": {}}
+    if not caminho.exists():
+        return out
+    dados = json.loads(caminho.read_text(encoding="utf-8"))
+    for rodada in sorted(dados.get("rodadas") or [], key=lambda r: r["data"]):
+        for t, info in (rodada.get("tipos") or {}).items():
+            out["tipos"][t] = {**{k: v for k, v in info.items() if k != "exemplos"}, "data": rodada["data"],
+                               "como": rodada.get("como")}
+            for e in info.get("exemplos") or []:
+                out["exemplos"][_chave_do_registro({**e, "tipo": t})] = {
+                    "resposta": e["resposta"], "data": rodada["data"], "nota": e.get("nota")}
+    return out
+
+
 def casos(oc: pl.DataFrame) -> dict[str, int]:
     """{tipo: ocorrências que passaram nos filtros}, da mesma tabela que o material lê."""
     return _contagem(oc)
 
 
 def escolhe_exemplos(oc: pl.DataFrame, fix: dict, hoje: str, sortear_de_novo: bool = False,
-                     validaveis: tuple | None = None) -> dict:
+                     validaveis: tuple | None = None, respondidos: set | None = None) -> dict:
     """Para cada tipo VALIDÁVEL (pelo menos E.MIN_CASOS_PARA_VALIDAR casos no corpus), os exemplos fixados que
     ainda valem e os substitutos (mesma semente). Devolve o registro novo ({tipo: [registros]}); um substituto
     tem `substitui`, `substituido_em` e `motivo_da_substituicao`. Um tipo abaixo do mínimo não tem exemplos de
-    validação (fase 18b): os casos dele vão todos para a seção "amostra insuficiente" do material."""
+    validação (fase 18b): os casos dele vão todos para a seção "amostra insuficiente" do material. `respondidos`
+    (as chaves de `le_respostas`) nunca são sorteados como substitutos: um exemplo respondido não volta como
+    pergunta."""
     validaveis = E.tipos_validaveis(casos(oc)) if validaveis is None else validaveis
     novo = {}
     for t in E.TIPOS:
@@ -590,7 +627,8 @@ def escolhe_exemplos(oc: pl.DataFrame, fix: dict, hoje: str, sortear_de_novo: bo
         por_partida: dict = {}
         for r in ficam:
             por_partida[r["partida"]] = por_partida.get(r["partida"], 0) + 1
-        usadas = {_chave_do_registro(r) for r in ficam} | {_chave_do_registro(r) for r, _ in trocados}
+        usadas = ({_chave_do_registro(r) for r in ficam} | {_chave_do_registro(r) for r, _ in trocados}
+                  | set(respondidos or ()))
         rng = random.Random(f"{SEMENTE_DOS_EXEMPLOS}-{t}")
         ordem = list(validas)
         rng.shuffle(ordem)
@@ -630,8 +668,38 @@ def _sim(v) -> str:
     return "—" if v is None else ("sim" if v else "não")
 
 
-def secao_exemplos(oc: pl.DataFrame, escolhidos: dict, validaveis: tuple | None = None) -> list[str]:
+PERGUNTA = "sim / não / depende da tática"
+
+
+def _resposta(resp: dict | None) -> str:
+    """A célula "É erro mesmo?": a resposta já dada (com a data) ou a pergunta."""
+    if not resp:
+        return PERGUNTA
+    nota = f"; {resp['nota']}" if resp.get("nota") else ""
+    return f"**{resp['resposta']}** (respondido em {resp['data']}{nota})"
+
+
+def _situacao_do_tipo(t: str, info: dict | None, ex: list[dict], respostas: dict) -> list[str]:
+    """A linha de estado do tipo: validado (e em TIPOS_DE_ERRO_VALIDADOS), ou o que falta responder."""
+    if not info:
+        return []
+    faltam = [i for i, r in enumerate(ex, 1) if _chave_do_registro(r) not in respostas]
+    if t in E.TIPOS_DE_ERRO_VALIDADOS:
+        txt = (f"**Validado** com as respostas de {info['data']}: {info['confirmados']} de {info['de']} confirmados; está "
+               "em `TIPOS_DE_ERRO_VALIDADOS` e aparece no Perfil publicado.")
+    else:
+        txt = (f"**Ainda não validado.** Respostas de {info['data']}: {info['confirmados']} de {info['de']} confirmados "
+               f"({info['resultado']}).")
+    if faltam:
+        txt += " Falta responder: " + ", ".join(f"#{i}" for i in faltam) + " (os novos, marcados \"substituído\")."
+    return [txt, ""]
+
+
+def secao_exemplos(oc: pl.DataFrame, escolhidos: dict, validaveis: tuple | None = None,
+                   respostas: dict | None = None) -> list[str]:
     por_chave = {_chave(x): x for x in oc.to_dicts()}
+    respostas = respostas or {"exemplos": {}, "tipos": {}}
+    resp_ex = respostas["exemplos"]
     validaveis = E.tipos_validaveis(casos(oc)) if validaveis is None else validaveis
     out = ["### 7.2 Dez exemplos por tipo", "",
            f"Sorteados com semente fixa ({SEMENTE_DOS_EXEMPLOS}), no máximo {MAX_EXEMPLOS_POR_PARTIDA} por partida, "
@@ -646,13 +714,21 @@ def secao_exemplos(oc: pl.DataFrame, escolhidos: dict, validaveis: tuple | None 
            "(modelo de round do rating). ΔWPA em pontos de chance de vitória da partida, pela estimativa do modelo "
            "(negativo = o time perdeu chance).", "",
            "**Regra de publicação:** o tipo só aparece no site com pelo menos 8 dos 10 confirmados: \"sim\" quando "
-           "o nível é explícito, ou \"depende da tática\" quando o nível é depende.", ""]
+           "o nível é explícito, ou \"depende da tática\" quando o nível é depende.", "",
+           "**Respostas já dadas** (`scripts/calibracao/respostas_do_pedro.json`): a coluna \"É erro mesmo?\" mostra a "
+           "resposta e a data no lugar da pergunta; um exemplo respondido não volta como pergunta nem é sorteado como "
+           "substituto. As respostas de 2026-10-16 foram dadas a partir das colunas da tabela (visibilidade, dano, "
+           "recuo, situação, chance), não assistindo aos replays. Um exemplo respondido que deixou de ser ocorrência "
+           "pela regra nova é trocado, e o substituto diz qual era e o que foi respondido.", ""]
     nome = lambda s: (s or "—").replace("|", "\\|")  # noqa: E731
     for t in E.TIPOS:
+        info = respostas["tipos"].get(t)
         if t in validaveis:
             ex = escolhidos.get(t, [])
-            out += [f"#### {E.TITULOS[t]}", "", f"Frase de como melhorar: \"{E.COMO_MELHORAR[t]}\"", "",
-                    "**A frase serve?** sim / reescrever: ____", ""]
+            frase = ("**A frase serve?** sim / reescrever: ____" if not info or info.get("frase_serve") is None
+                     else f"**A frase serve?** **{'sim' if info['frase_serve'] else 'não'}** (respondido em {info['data']})")
+            out += [f"#### {E.TITULOS[t]}", "", f"Frase de como melhorar: \"{E.COMO_MELHORAR[t]}\"", "", frase, ""]
+            out += _situacao_do_tipo(t, info, ex, resp_ex)
         else:
             # fase 18b: abaixo de MIN_CASOS_PARA_VALIDAR, todos os casos, só para conferir a definição
             todos = oc.filter((pl.col("tipo") == t) & pl.col("filtro").is_null()).sort(
@@ -664,6 +740,9 @@ def secao_exemplos(oc: pl.DataFrame, escolhidos: dict, validaveis: tuple | None 
                     "exemplos da regra dos 8 de 10. Ele continua calculado e gravado e volta à validação normal quando "
                     "o corpus tiver casos suficientes. Estes são TODOS os casos (não são exemplos fixados): a "
                     "pergunta é se a definição pega o que você chamaria de bait.", ""]
+            if info:
+                out += [f"Respostas de {info['data']}: a regra pega bait em {info['confirmados']} dos {info['de']} "
+                        f"({info['resultado']}).", ""]
         if not ex:
             out += ["(nenhuma ocorrência no corpus)", ""]
             continue
@@ -683,12 +762,15 @@ def secao_exemplos(oc: pl.DataFrame, escolhidos: dict, validaveis: tuple | None 
             motivo = x["motivo"] or ""
             if r.get("substituido_em"):
                 s = r["substitui"]
+                velho = next((v for k, v in resp_ex.items() if k[0] == t and k[1] == s["partida"]
+                              and k[2] == int(s["round"]) and k[3] == int(s["tick"])), None)
+                ja = f", respondido \"{velho['resposta']}\" em {velho['data']}" if velho else ""
                 motivo += (f" (substituído em {r['substituido_em']}: {r['motivo_da_substituicao']}; era {s['partida']} "
-                           f"R{s['round']} {s['jogador']})")
+                           f"R{s['round']} {s['jogador']}{ja})")
             comum = (f"| {i} | {x['match_id']} | {x['round_num']} | {_relogio(x['segundos'])} | {nome(x['name'])} | ")
             fim = (f"| {dw} | {E.ROTULO_DO_NIVEL[x['nivel']]} | {motivo} | "
                    f"[abrir]({link_do_replay(x['match_id'], x['round_num'], x['segundos'])}) | "
-                   "sim / não / depende da tática |")
+                   f"{_resposta(resp_ex.get(_chave_do_registro(r)))} |")
             if util:
                 casas = 2 if t == E.FLASH_NO_TIME else 1
                 out.append(comum + f"{nome(x['aliado'])} | {situ} | {chance} | {_fmt(x['valor'], casas)} | "
@@ -721,6 +803,15 @@ NOTA_FASE18B = (
     "com menos que isso não é bait (o `RECUO_MINIMO` 120 da fase 18 saiu). (3) O matador visível precisa de pelo menos "
     "`MIN_TEMPO_VISIVEL` = 0,5 s, somados os ticks visíveis da janela, em \"não trocou\", no bait e no aliado que tira "
     "\"morreu sozinho\"; nos dois ou mais inimigos de \"perdeu a troca\", qualquer tick visível conta.")
+
+NOTA_CALIBRACAO_2026_10_16 = (
+    "**Calibração de 2026-10-16 (respostas do Pedro, dadas a partir das colunas da tabela e não assistindo aos "
+    "replays).** Validados com 8 ou mais de 10: não trocou o aliado (8), perdeu a troca (9), morreu sozinho (8), "
+    "primeira morte sem troca (10) e dano de utilidade no time (10); estão em `TIPOS_DE_ERRO_VALIDADOS` e aparecem "
+    "no Perfil publicado. As frases de como melhorar dos seis tipos servem como estão. \"Flash no time\" teve 7 de "
+    "10: os 3 reprovados cegavam ~1 s, e a regra nova `MIN_CEGUEIRA_FLASH_ALIADO` = 2,0 s tira a flash que cegou o "
+    "time menos que isso (ela continua na soma do lado, que mede o padrão); os 3 foram substituídos e só eles "
+    "esperam resposta. O bait continua fora (amostra insuficiente).")
 
 NOTA_FASE15 = (
     '**Mudança da fase 15 (decisão 46).** "Flash no time" e "dano de utilidade no time" eram somas da partida (CT e '
@@ -755,15 +846,18 @@ ORDEM_DOS_NIVEIS = (
 
 def secao(oc: pl.DataFrame, res: list[dict] | None, escolhidos: dict, antigas: pl.DataFrame | None) -> list[str]:
     n = len(partidas())
+    validados = [E.TITULOS[x] for x in E.TIPOS if x in E.TIPOS_DE_ERRO_VALIDADOS]
     out = [TITULO_DA_SECAO, "",
            "Gerado por `py -3.12 -m scripts.calibracao.erros_do_jogador` (fase 12, decisão 46; definições da fase 18). "
-           f"Os tipos de erro de `metrics/erros.py` sobre as {n} partidas do corpus. Nenhum tipo aparece no site até "
-           "você confirmar os exemplos: `TIPOS_DE_ERRO_VALIDADOS` começa vazia. Para ver a aba com todos os tipos "
-           "marcados \"em validação\": `py -3.12 -m scripts.build_site --mostrar-erros-nao-validados` (gera em "
-           "`preview/`, fora do git e nunca publicado).", "",
+           f"Os tipos de erro de `metrics/erros/` sobre as {n} partidas do corpus. Um tipo só aparece no site depois "
+           "de você confirmar 8 dos 10 exemplos (`TIPOS_DE_ERRO_VALIDADOS`); hoje: "
+           + (", ".join(validados) if validados else "nenhum") + ". Para ver a aba com todos os tipos "
+           "(os não validados marcados \"em validação\"): `py -3.12 -m scripts.build_site --mostrar-erros-nao-validados` "
+           "(gera em `preview/`, fora do git e nunca publicado).", "",
            "### 7.0 Ocorrências por tipo no corpus", ""]
     out += tabela_por_tipo(oc)
-    out += ["", NOTA_FASE18B, "", NOTA_FASE18, "", NOTA_FASE15, "", f"#### Antes ({ROTULO_DO_ANTES}) -> depois (fase 18b)", "",
+    out += ["", NOTA_CALIBRACAO_2026_10_16, "", NOTA_FASE18B, "", NOTA_FASE18, "", NOTA_FASE15, "",
+            f"#### Antes ({ROTULO_DO_ANTES}) -> depois ({ROTULO_DO_DEPOIS})", "",
             f"\"Antes\" são as ocorrências da {ROTULO_DO_ANTES} (commit `{ANTES}`), \"depois\" as de agora. Uma "
             "ocorrência antiga \"segue\" se a mesma (partida, round, tick, jogador e, nos tipos de troca, o aliado) "
             "ainda passa nos filtros; se não, saiu com o motivo do filtro novo. \"Entraram\" são as novas que não "
@@ -773,7 +867,7 @@ def secao(oc: pl.DataFrame, res: list[dict] | None, escolhidos: dict, antigas: p
         base = {t: sum(r["cont"]["base"][t] for r in res) for t in E.TIPOS}
         sem = {t: sum(r["cont"]["sem_tempo_minimo"][t] for r in res) for t in E.TIPOS}
         bait = oc.filter((pl.col("tipo") == E.POSSIVEL_BAIT) & pl.col("filtro").is_null())["recuo"].sort().to_list()
-        out += ["", "#### Os números da calibração da fase 18b", "",
+        out += ["", "#### Os números da calibração da fase 18b (com as regras de agora)", "",
                 f"- \"Possível bait\" que sobram: {len(bait)}; recuo líquido deles: mediana {_fmt(_percentil(bait, 0.5), 0)} u, "
                 f"quartis {_fmt(_percentil(bait, 0.25), 0)} e {_fmt(_percentil(bait, 0.75), 0)} u (mínimo "
                 f"{_fmt(min(bait) if bait else None, 0)}, máximo {_fmt(max(bait) if bait else None, 0)}).",
@@ -795,11 +889,17 @@ def secao(oc: pl.DataFrame, res: list[dict] | None, escolhidos: dict, antigas: p
     if res is not None:
         out += secao_constantes(res)
     out += secao_quantos_pontos(oc, res)
-    out += secao_exemplos(oc, escolhidos)
+    respostas = le_respostas()
+    out += secao_exemplos(oc, escolhidos, respostas=respostas)
+    pendentes = [(x, i) for x in E.TIPOS for i, r in enumerate(escolhidos.get(x, []), 1)
+                 if _chave_do_registro(r) not in respostas["exemplos"]]
     out += ["### 7.3 Sua resposta", "",
             "Para cada tipo: quantos dos 10 exemplos você confirma, e se a frase de como melhorar serve. O tipo com 8 "
-            "ou mais confirmados entra em `TIPOS_DE_ERRO_VALIDADOS` (`metrics/erros.py`) num item à parte; os "
-            "reprovados ficam fora da tela, e eu trago uma proposta de ajuste com os números.", ""]
+            "ou mais confirmados entra em `TIPOS_DE_ERRO_VALIDADOS` (`metrics/erros/__init__.py`) num item à parte; os "
+            "reprovados ficam fora da tela, e eu trago uma proposta de ajuste com os números. As respostas ficam "
+            "gravadas por exemplo em `scripts/calibracao/respostas_do_pedro.json`.", "",
+            ("Falta responder: " + "; ".join(f"{E.TITULOS[x]} #{i}" for x, i in pendentes) + ".") if pendentes
+            else "Nenhum exemplo esperando resposta.", ""]
     return out
 
 
@@ -824,7 +924,8 @@ def main(argv: list[str]) -> int:
         return 0
     hoje = datetime.date.today().isoformat()
     fix = le_fixados()
-    escolhidos = escolhe_exemplos(oc, fix, hoje, sortear_de_novo="--sortear-de-novo" in argv)
+    escolhidos = escolhe_exemplos(oc, fix, hoje, sortear_de_novo="--sortear-de-novo" in argv,
+                                  respondidos=set(le_respostas()["exemplos"]))
     if escolhidos != fix.get("exemplos"):
         fix["exemplos"] = escolhidos
         grava_fixados(fix)

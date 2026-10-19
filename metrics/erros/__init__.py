@@ -853,7 +853,7 @@ def primeira_morte_sem_troca(p: Partida, _ix: _Indice | None = None) -> list[dic
 # --- Tipos 6 e 7: flash no time e dano de utilidade no time --------------------------------------
 
 def flash_no_time(p: Partida, seg_aliado: float = SEG_CEGUEIRA_ALIADO, seg_uma: float = SEG_CEGUEIRA_ALIADO_UMA,
-                  _ix: _Indice | None = None) -> list[dict]:
+                  _ix: _Indice | None = None, min_cegueira: float | None = None) -> list[dict]:
     """A cegueira imposta a aliados passa de `seg_aliado` no lado (soma) ou de `seg_uma` numa flash só.
     Uma ocorrência por flash que cegou companheiro (a mesma detonação: mesmo arremessador e mesmo tick);
     `valor` é a soma dos segundos de cegueira nos aliados daquela flash e `valor_soma_lado` a soma do
@@ -881,14 +881,16 @@ def flash_no_time(p: Partida, seg_aliado: float = SEG_CEGUEIRA_ALIADO, seg_uma: 
         out.append(oc)
     _aplica_limiar(out, seg_aliado, seg_uma)
     for oc in out:                     # depois da soma: a flash curta conta no padrão, mas não é ocorrência
-        if oc["filtro"] is None and not cegou_o_bastante(oc["valor"]):
+        if oc["filtro"] is None and not cegou_o_bastante(oc["valor"], min_cegueira):
             oc["filtro"] = FILTRO_CEGUEIRA_CURTA
     return out
 
 
-def cegou_o_bastante(segundos: float | None) -> bool:
-    """A flash cegou o time pelo menos MIN_CEGUEIRA_FLASH_ALIADO (1,99 s não chega; 2,00 s chega)."""
-    return segundos is not None and segundos + 1e-9 >= MIN_CEGUEIRA_FLASH_ALIADO
+def cegou_o_bastante(segundos: float | None, minimo: float | None = None) -> bool:
+    """A flash cegou o time pelo menos MIN_CEGUEIRA_FLASH_ALIADO (1,99 s não chega; 2,00 s chega). `minimo` troca o
+    valor (a varredura do material de calibração)."""
+    minimo = MIN_CEGUEIRA_FLASH_ALIADO if minimo is None else minimo
+    return segundos is not None and segundos + 1e-9 >= minimo
 
 
 def _aplica_limiar(out: list[dict], limiar_partida: float, limiar_um: float | None) -> None:
@@ -989,7 +991,7 @@ def ocorrencias(p: Partida, **constantes) -> pl.DataFrame:
     """Todas as ocorrências de todos os tipos, com filtro, nível e motivo. Ordem determinística:
     tipo (na ordem de TIPOS), round, tick, jogador.
 
-    `constantes` troca DIST_TROCA, S_DUELO, MIN_RECUO_BAIT e os limiares (o material de calibração varre as
+    `constantes` troca DIST_TROCA, S_DUELO, MIN_RECUO_BAIT, MIN_CEGUEIRA_FLASH_ALIADO e os limiares (o material de calibração varre as
     faixas). LIMIAR_ROUND_GANHO e LIMIAR_ROUND_PERDIDO são lidos do módulo (a varredura os troca nele)."""
     ix = _Indice(p)
     dist = constantes.get("dist_troca", DIST_TROCA)
@@ -1000,7 +1002,8 @@ def ocorrencias(p: Partida, **constantes) -> pl.DataFrame:
               + possivel_bait(p, dist, s_duelo, recuo, _ix=ix, _cand=cand)
               + perdeu_a_troca(p, recuo, _ix=ix) + morreu_sozinho(p, dist, _ix=ix) + primeira_morte_sem_troca(p, _ix=ix)
               + flash_no_time(p, constantes.get("seg_aliado", SEG_CEGUEIRA_ALIADO),
-                              constantes.get("seg_uma", SEG_CEGUEIRA_ALIADO_UMA), _ix=ix)
+                              constantes.get("seg_uma", SEG_CEGUEIRA_ALIADO_UMA), _ix=ix,
+                              min_cegueira=constantes.get("min_cegueira"))
               + dano_de_utilidade_no_time(p, constantes.get("dano_aliado", DANO_UTILIDADE_ALIADO), _ix=ix))
     for oc in linhas:
         oc["nivel"], oc["motivo"] = nivel_e_motivo(oc, p, ix.abertura.get(oc["round_num"]))

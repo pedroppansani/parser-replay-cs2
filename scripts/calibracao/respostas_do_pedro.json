@@ -1,0 +1,765 @@
+{
+  "_leia_isto": "Respostas do Pedro aos exemplos da seção 7.2 do material de calibração, por exemplo e com a data. Lidas por `scripts.calibracao.erros_do_jogador`: o material mostra a resposta já dada e um exemplo respondido nunca volta como pergunta (nem como substituto). A chave de um exemplo é (tipo, partida, round, tick, steamid, aliado_steamid), a mesma de `exemplos_fixados.json`. Gravado à mão a partir da resposta do Pedro; o código só lê.",
+  "rodadas": [
+    {
+      "data": "2026-10-16",
+      "como": "a partir das colunas da tabela do material (visibilidade, dano, recuo, situação, chance), não assistindo aos replays",
+      "tipos": {
+        "nao_trocou": {
+          "frase_serve": true,
+          "confirmados": 8,
+          "de": 10,
+          "resultado": "valida",
+          "exemplos": [
+            {
+              "partida": "match_02",
+              "round": 7,
+              "tick": 44405,
+              "jogador": "donk666",
+              "steamid": "76561198386265483",
+              "aliado_steamid": "76561198386673664",
+              "numero_no_material": 1,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_04",
+              "round": 21,
+              "tick": 127495,
+              "jogador": "MolO11",
+              "steamid": "76561198058045464",
+              "aliado_steamid": "76561198449624359",
+              "numero_no_material": 2,
+              "resposta": "depende da tática",
+              "nota": "o matador ficou visível só 0,5 s"
+            },
+            {
+              "partida": "match_10",
+              "round": 11,
+              "tick": 94114,
+              "jogador": "donk",
+              "steamid": "76561198386265483",
+              "aliado_steamid": "76561198995880877",
+              "numero_no_material": 3,
+              "resposta": "depende da tática",
+              "nota": "o matador ficou visível só 0,5 s"
+            },
+            {
+              "partida": "match_14",
+              "round": 20,
+              "tick": 156483,
+              "jogador": "ropz",
+              "steamid": "76561197991272318",
+              "aliado_steamid": "76561197989744167",
+              "numero_no_material": 4,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_31",
+              "round": 31,
+              "tick": 281103,
+              "jogador": "molodoy",
+              "steamid": "76561198200982290",
+              "aliado_steamid": "76561198134401925",
+              "numero_no_material": 5,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_32",
+              "round": 28,
+              "tick": 252085,
+              "jogador": "NiKo",
+              "steamid": "76561198041683378",
+              "aliado_steamid": "76561198057282432",
+              "numero_no_material": 6,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_32",
+              "round": 34,
+              "tick": 304521,
+              "jogador": "YEKINDAR",
+              "steamid": "76561198134401925",
+              "aliado_steamid": "76561198200982290",
+              "numero_no_material": 7,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_47",
+              "round": 10,
+              "tick": 82503,
+              "jogador": "ropz",
+              "steamid": "76561197991272318",
+              "aliado_steamid": "76561197989744167",
+              "numero_no_material": 8,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_50",
+              "round": 4,
+              "tick": 29663,
+              "jogador": "kyousuke",
+              "steamid": "76561199032006224",
+              "aliado_steamid": "76561198057282432",
+              "numero_no_material": 9,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_52",
+              "round": 11,
+              "tick": 116321,
+              "jogador": "mezii",
+              "steamid": "76561197973140692",
+              "aliado_steamid": "76561197991272318",
+              "numero_no_material": 10,
+              "resposta": "sim"
+            }
+          ]
+        },
+        "possivel_bait": {
+          "frase_serve": null,
+          "confirmados": 8,
+          "de": 9,
+          "resultado": "continua fora (amostra insuficiente: 9 casos, abaixo de MIN_CASOS_PARA_VALIDAR)",
+          "exemplos": [
+            {
+              "partida": "match_04",
+              "round": 21,
+              "tick": 127495,
+              "jogador": "MolO11",
+              "steamid": "76561198058045464",
+              "aliado_steamid": "76561198449624359",
+              "numero_no_material": 1,
+              "resposta": "é bait"
+            },
+            {
+              "partida": "match_06",
+              "round": 17,
+              "tick": 101488,
+              "jogador": "Alperen",
+              "steamid": "76561198363161241",
+              "aliado_steamid": "76561199071912329",
+              "numero_no_material": 2,
+              "resposta": "não é bait",
+              "nota": "2 contra 4 com 7% de chance: recuar ali é salvar ou jogar o tempo"
+            },
+            {
+              "partida": "match_22",
+              "round": 6,
+              "tick": 36651,
+              "jogador": "iM",
+              "steamid": "76561198050250233",
+              "aliado_steamid": "76561199063068840",
+              "numero_no_material": 3,
+              "resposta": "é bait"
+            },
+            {
+              "partida": "match_26",
+              "round": 6,
+              "tick": 49230,
+              "jogador": "donk",
+              "steamid": "76561198386265483",
+              "aliado_steamid": "76561198045898864",
+              "numero_no_material": 4,
+              "resposta": "é bait"
+            },
+            {
+              "partida": "match_32",
+              "round": 9,
+              "tick": 68171,
+              "jogador": "NiKo",
+              "steamid": "76561198041683378",
+              "aliado_steamid": "76561197996678278",
+              "numero_no_material": 5,
+              "resposta": "é bait"
+            },
+            {
+              "partida": "match_34",
+              "round": 21,
+              "tick": 169449,
+              "jogador": "mezii",
+              "steamid": "76561197973140692",
+              "aliado_steamid": "76561197989744167",
+              "numero_no_material": 6,
+              "resposta": "é bait"
+            },
+            {
+              "partida": "match_39",
+              "round": 17,
+              "tick": 151235,
+              "jogador": "magixx",
+              "steamid": "76561199063238565",
+              "aliado_steamid": "76561198045898864",
+              "numero_no_material": 7,
+              "resposta": "é bait"
+            },
+            {
+              "partida": "match_45",
+              "round": 4,
+              "tick": 17609,
+              "jogador": "YEKINDAR",
+              "steamid": "76561198134401925",
+              "aliado_steamid": "76561198200982290",
+              "numero_no_material": 8,
+              "resposta": "é bait"
+            },
+            {
+              "partida": "match_45",
+              "round": 7,
+              "tick": 40301,
+              "jogador": "FalleN",
+              "steamid": "76561197960690195",
+              "aliado_steamid": "76561198164970560",
+              "numero_no_material": 9,
+              "resposta": "é bait"
+            }
+          ]
+        },
+        "perdeu_a_troca": {
+          "frase_serve": true,
+          "confirmados": 9,
+          "de": 10,
+          "resultado": "valida",
+          "exemplos": [
+            {
+              "partida": "match_02",
+              "round": 10,
+              "tick": 59480,
+              "jogador": "OG_Pablo_",
+              "steamid": "76561198341345321",
+              "aliado_steamid": "76561198386673664",
+              "numero_no_material": 1,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_04",
+              "round": 3,
+              "tick": 26488,
+              "jogador": "donk666",
+              "steamid": "76561198386265483",
+              "aliado_steamid": "76561199009212418",
+              "numero_no_material": 2,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_08",
+              "round": 8,
+              "tick": 60844,
+              "jogador": "PoisonLilies",
+              "steamid": "76561199142961371",
+              "aliado_steamid": "76561198255704740",
+              "numero_no_material": 3,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_11",
+              "round": 10,
+              "tick": 79606,
+              "jogador": "iM",
+              "steamid": "76561198050250233",
+              "aliado_steamid": "76561199076189612",
+              "numero_no_material": 4,
+              "resposta": "depende da tática"
+            },
+            {
+              "partida": "match_21",
+              "round": 3,
+              "tick": 36051,
+              "jogador": "woxic",
+              "steamid": "76561198083485506",
+              "aliado_steamid": "76561198812513923",
+              "numero_no_material": 5,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_22",
+              "round": 6,
+              "tick": 36651,
+              "jogador": "w0nderful",
+              "steamid": "76561199063068840",
+              "aliado_steamid": "76561198246607476",
+              "numero_no_material": 6,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_32",
+              "round": 26,
+              "tick": 234223,
+              "jogador": "molodoy",
+              "steamid": "76561198200982290",
+              "aliado_steamid": "76561197960690195",
+              "numero_no_material": 7,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_32",
+              "round": 28,
+              "tick": 250985,
+              "jogador": "kyousuke",
+              "steamid": "76561199032006224",
+              "aliado_steamid": "76561198074762801",
+              "numero_no_material": 8,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_33",
+              "round": 14,
+              "tick": 121856,
+              "jogador": "torzsi",
+              "steamid": "76561198355739212",
+              "aliado_steamid": "76561198138828475",
+              "numero_no_material": 9,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_46",
+              "round": 16,
+              "tick": 145919,
+              "jogador": "FalleN",
+              "steamid": "76561197960690195",
+              "aliado_steamid": "76561198164970560",
+              "numero_no_material": 10,
+              "resposta": "sim"
+            }
+          ]
+        },
+        "morreu_sozinho": {
+          "frase_serve": true,
+          "confirmados": 8,
+          "de": 10,
+          "resultado": "valida",
+          "exemplos": [
+            {
+              "partida": "match_04",
+              "round": 19,
+              "tick": 116740,
+              "jogador": "MolO11",
+              "steamid": "76561198058045464",
+              "aliado_steamid": null,
+              "numero_no_material": 1,
+              "resposta": "não",
+              "nota": "2 contra 5 (5% de chance): não tinha como ter apoio"
+            },
+            {
+              "partida": "match_05",
+              "round": 17,
+              "tick": 108746,
+              "jogador": "gwizdakk",
+              "steamid": "76561198855383911",
+              "aliado_steamid": null,
+              "numero_no_material": 2,
+              "resposta": "depende da tática"
+            },
+            {
+              "partida": "match_11",
+              "round": 20,
+              "tick": 185270,
+              "jogador": "tN1R",
+              "steamid": "76561198872013168",
+              "aliado_steamid": null,
+              "numero_no_material": 3,
+              "resposta": "depende da tática"
+            },
+            {
+              "partida": "match_15",
+              "round": 15,
+              "tick": 120231,
+              "jogador": "YEKINDAR",
+              "steamid": "76561198134401925",
+              "aliado_steamid": null,
+              "numero_no_material": 4,
+              "resposta": "depende da tática"
+            },
+            {
+              "partida": "match_20",
+              "round": 30,
+              "tick": 252892,
+              "jogador": "kyousuke",
+              "steamid": "76561199032006224",
+              "aliado_steamid": null,
+              "numero_no_material": 5,
+              "resposta": "depende da tática"
+            },
+            {
+              "partida": "match_22",
+              "round": 7,
+              "tick": 48189,
+              "jogador": "Wicadia",
+              "steamid": "76561198812513923",
+              "aliado_steamid": null,
+              "numero_no_material": 6,
+              "resposta": "depende da tática"
+            },
+            {
+              "partida": "match_23",
+              "round": 20,
+              "tick": 155472,
+              "jogador": "apEX",
+              "steamid": "76561197989744167",
+              "aliado_steamid": null,
+              "numero_no_material": 7,
+              "resposta": "depende da tática"
+            },
+            {
+              "partida": "match_25",
+              "round": 19,
+              "tick": 172207,
+              "jogador": "w0nderful",
+              "steamid": "76561199063068840",
+              "aliado_steamid": null,
+              "numero_no_material": 8,
+              "resposta": "depende da tática"
+            },
+            {
+              "partida": "match_26",
+              "round": 11,
+              "tick": 93010,
+              "jogador": "zont1x",
+              "steamid": "76561198995880877",
+              "aliado_steamid": null,
+              "numero_no_material": 9,
+              "resposta": "depende da tática"
+            },
+            {
+              "partida": "match_45",
+              "round": 15,
+              "tick": 111819,
+              "jogador": "YEKINDAR",
+              "steamid": "76561198134401925",
+              "aliado_steamid": null,
+              "numero_no_material": 10,
+              "resposta": "não",
+              "nota": "5 contra 5 sem nenhuma distância de aliado (a investigar)"
+            }
+          ]
+        },
+        "primeira_morte_sem_troca": {
+          "frase_serve": true,
+          "confirmados": 10,
+          "de": 10,
+          "resultado": "valida",
+          "exemplos": [
+            {
+              "partida": "match_01",
+              "round": 11,
+              "tick": 53672,
+              "jogador": "s-chilla",
+              "steamid": "76561198964042711",
+              "aliado_steamid": null,
+              "numero_no_material": 1,
+              "resposta": "depende da tática"
+            },
+            {
+              "partida": "match_02",
+              "round": 5,
+              "tick": 32132,
+              "jogador": "bezimienny",
+              "steamid": "76561197979126082",
+              "aliado_steamid": null,
+              "numero_no_material": 2,
+              "resposta": "depende da tática"
+            },
+            {
+              "partida": "match_09",
+              "round": 16,
+              "tick": 106840,
+              "jogador": "newnickname7",
+              "steamid": "76561199687771533",
+              "aliado_steamid": null,
+              "numero_no_material": 3,
+              "resposta": "depende da tática"
+            },
+            {
+              "partida": "match_12",
+              "round": 12,
+              "tick": 100695,
+              "jogador": "flameZ",
+              "steamid": "76561197978835160",
+              "aliado_steamid": null,
+              "numero_no_material": 4,
+              "resposta": "depende da tática"
+            },
+            {
+              "partida": "match_26",
+              "round": 12,
+              "tick": 100021,
+              "jogador": "donk",
+              "steamid": "76561198386265483",
+              "aliado_steamid": null,
+              "numero_no_material": 5,
+              "resposta": "depende da tática"
+            },
+            {
+              "partida": "match_32",
+              "round": 26,
+              "tick": 233953,
+              "jogador": "YEKINDAR",
+              "steamid": "76561198134401925",
+              "aliado_steamid": null,
+              "numero_no_material": 6,
+              "resposta": "depende da tática"
+            },
+            {
+              "partida": "match_42",
+              "round": 30,
+              "tick": 277857,
+              "jogador": "kyousuke",
+              "steamid": "76561199032006224",
+              "aliado_steamid": null,
+              "numero_no_material": 7,
+              "resposta": "depende da tática"
+            },
+            {
+              "partida": "match_46",
+              "round": 4,
+              "tick": 24431,
+              "jogador": "ZywOo",
+              "steamid": "76561198113666193",
+              "aliado_steamid": null,
+              "numero_no_material": 8,
+              "resposta": "depende da tática"
+            },
+            {
+              "partida": "match_52",
+              "round": 2,
+              "tick": 8527,
+              "jogador": "controlez",
+              "steamid": "76561198362438171",
+              "aliado_steamid": null,
+              "numero_no_material": 9,
+              "resposta": "depende da tática"
+            },
+            {
+              "partida": "match_53",
+              "round": 15,
+              "tick": 113943,
+              "jogador": "Mzinho",
+              "steamid": "76561198838822582",
+              "aliado_steamid": null,
+              "numero_no_material": 10,
+              "resposta": "depende da tática"
+            }
+          ]
+        },
+        "flash_no_time": {
+          "frase_serve": true,
+          "confirmados": 7,
+          "de": 10,
+          "resultado": "não valida agora: regra nova MIN_CEGUEIRA_FLASH_ALIADO (2,0 s) e 3 exemplos novos; com 3 de 3, fecha 10/10 e entra",
+          "exemplos": [
+            {
+              "partida": "match_20",
+              "round": 24,
+              "tick": 209213,
+              "jogador": "NiKo",
+              "steamid": "76561198041683378",
+              "aliado_steamid": "76561198057282432",
+              "numero_no_material": 1,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_29",
+              "round": 14,
+              "tick": 136553,
+              "jogador": "FalleN",
+              "steamid": "76561197960690195",
+              "aliado_steamid": "76561198058500492",
+              "numero_no_material": 2,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_32",
+              "round": 19,
+              "tick": 163018,
+              "jogador": "TeSeS",
+              "steamid": "76561197996678278",
+              "aliado_steamid": "76561198074762801",
+              "numero_no_material": 3,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_32",
+              "round": 29,
+              "tick": 254459,
+              "jogador": "yuurih",
+              "steamid": "76561198164970560",
+              "aliado_steamid": "76561198058500492",
+              "numero_no_material": 4,
+              "resposta": "não",
+              "nota": "cegueira de ~1 s"
+            },
+            {
+              "partida": "match_39",
+              "round": 2,
+              "tick": 12029,
+              "jogador": "donk",
+              "steamid": "76561198386265483",
+              "aliado_steamid": "76561198045898864",
+              "numero_no_material": 5,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_39",
+              "round": 4,
+              "tick": 31707,
+              "jogador": "Aleksib",
+              "steamid": "76561198013243326",
+              "aliado_steamid": "76561198050250233",
+              "numero_no_material": 6,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_42",
+              "round": 10,
+              "tick": 92751,
+              "jogador": "torzsi",
+              "steamid": "76561198355739212",
+              "aliado_steamid": "76561198193174134",
+              "numero_no_material": 7,
+              "resposta": "não",
+              "nota": "cegueira de ~1 s"
+            },
+            {
+              "partida": "match_42",
+              "round": 11,
+              "tick": 98700,
+              "jogador": "torzsi",
+              "steamid": "76561198355739212",
+              "aliado_steamid": "76561198138828475",
+              "numero_no_material": 8,
+              "resposta": "não",
+              "nota": "cegueira de ~1 s"
+            },
+            {
+              "partida": "match_46",
+              "round": 9,
+              "tick": 65827,
+              "jogador": "yuurih",
+              "steamid": "76561198164970560",
+              "aliado_steamid": "76561198134401925",
+              "numero_no_material": 9,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_51",
+              "round": 18,
+              "tick": 143880,
+              "jogador": "torzsi",
+              "steamid": "76561198355739212",
+              "aliado_steamid": "76561198855375325",
+              "numero_no_material": 10,
+              "resposta": "sim"
+            }
+          ]
+        },
+        "dano_de_utilidade_no_time": {
+          "frase_serve": true,
+          "confirmados": 10,
+          "de": 10,
+          "resultado": "valida",
+          "exemplos": [
+            {
+              "partida": "match_09",
+              "round": 16,
+              "tick": 106804,
+              "jogador": "wh1temink",
+              "steamid": "76561198851406744",
+              "aliado_steamid": "76561199687771533",
+              "numero_no_material": 1,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_20",
+              "round": 25,
+              "tick": 212048,
+              "jogador": "FalleN",
+              "steamid": "76561197960690195",
+              "aliado_steamid": "76561198134401925",
+              "numero_no_material": 2,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_22",
+              "round": 10,
+              "tick": 71299,
+              "jogador": "woxic",
+              "steamid": "76561198083485506",
+              "aliado_steamid": "76561198044118796",
+              "numero_no_material": 3,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_24",
+              "round": 11,
+              "tick": 111217,
+              "jogador": "jL",
+              "steamid": "76561198176878303",
+              "aliado_steamid": "76561198050250233",
+              "numero_no_material": 4,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_24",
+              "round": 14,
+              "tick": 146022,
+              "jogador": "chopper",
+              "steamid": "76561198045898864",
+              "aliado_steamid": "76561198386265483",
+              "numero_no_material": 5,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_30",
+              "round": 11,
+              "tick": 92792,
+              "jogador": "yuurih",
+              "steamid": "76561198164970560",
+              "aliado_steamid": "76561198058500492",
+              "numero_no_material": 6,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_31",
+              "round": 28,
+              "tick": 248428,
+              "jogador": "YEKINDAR",
+              "steamid": "76561198134401925",
+              "aliado_steamid": "76561198200982290",
+              "numero_no_material": 7,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_42",
+              "round": 4,
+              "tick": 24846,
+              "jogador": "torzsi",
+              "steamid": "76561198355739212",
+              "aliado_steamid": "76561198138828475",
+              "numero_no_material": 8,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_49",
+              "round": 20,
+              "tick": 169358,
+              "jogador": "Brollan",
+              "steamid": "76561198138828475",
+              "aliado_steamid": "76561198193174134",
+              "numero_no_material": 9,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_51",
+              "round": 11,
+              "tick": 84233,
+              "jogador": "NiKo",
+              "steamid": "76561198041683378",
+              "aliado_steamid": "76561198057282432",
+              "numero_no_material": 10,
+              "resposta": "sim"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
