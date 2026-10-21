@@ -782,7 +782,7 @@ Até você revisar: nada entra em `MANUAL_ENTRY_ANGLES`, e o ângulo visto em me
 
 ## 7. Erros na aba Perfil
 
-Gerado por `py -3.12 -m scripts.calibracao.erros_do_jogador` (fase 12, decisão 46; definições da fase 18). Os tipos de erro de `metrics/erros/` sobre as 52 partidas do corpus. Um tipo só aparece no site depois de você confirmar 8 dos 10 exemplos (`TIPOS_DE_ERRO_VALIDADOS`); hoje: Não trocou o aliado, Perdeu a troca, Morreu sozinho, Primeira morte sem troca, Dano de utilidade no time. Para ver a aba com todos os tipos (os não validados marcados "em validação"): `py -3.12 -m scripts.build_site --mostrar-erros-nao-validados` (gera em `preview/`, fora do git e nunca publicado).
+Gerado por `py -3.12 -m scripts.calibracao.erros_do_jogador` (fase 12, decisão 46; definições da fase 18). Os tipos de erro de `metrics/erros/` sobre as 52 partidas do corpus. Um tipo só aparece no site depois de você confirmar 8 dos 10 exemplos (`TIPOS_DE_ERRO_VALIDADOS`); hoje: Não trocou o aliado, Perdeu a troca, Morreu sozinho, Primeira morte sem troca, Flash no time, Dano de utilidade no time. Para ver a aba com todos os tipos (os não validados marcados "em validação"): `py -3.12 -m scripts.build_site --mostrar-erros-nao-validados` (gera em `preview/`, fora do git e nunca publicado).
 
 ### 7.0 Ocorrências por tipo no corpus
 
@@ -797,7 +797,7 @@ Gerado por `py -3.12 -m scripts.calibracao.erros_do_jogador` (fase 12, decisão 
 | Dano de utilidade no time | 195 | 26 | 26 | 0 | abaixo do limiar da partida: 121; evento sem dano ou sem cegueira: 24; round decidido: 14; round de economia do time: 7; depois do fim do round: 3 |
 | Utilidade no bolso | não criado | — | — | — | o inventário na hora da morte não existe no dado (decisão 46) |
 
-**Calibração de 2026-10-16 (respostas do Pedro, dadas a partir das colunas da tabela e não assistindo aos replays).** Validados com 8 ou mais de 10: não trocou o aliado (8), perdeu a troca (9), morreu sozinho (8), primeira morte sem troca (10) e dano de utilidade no time (10); estão em `TIPOS_DE_ERRO_VALIDADOS` e aparecem no Perfil publicado. As frases de como melhorar dos seis tipos servem como estão. "Flash no time" teve 7 de 10: os 3 reprovados cegavam ~1 s, e a regra nova `MIN_CEGUEIRA_FLASH_ALIADO` = 2,0 s tira a flash que cegou o time menos que isso (ela continua na soma do lado, que mede o padrão); os 3 foram substituídos e só eles esperam resposta. O bait continua fora (amostra insuficiente).
+**Calibração de 2026-10-16 (respostas do Pedro, dadas a partir das colunas da tabela e não assistindo aos replays).** Validados com 8 ou mais de 10: não trocou o aliado (8), perdeu a troca (9), morreu sozinho (8), primeira morte sem troca (10) e dano de utilidade no time (10); estão em `TIPOS_DE_ERRO_VALIDADOS` e aparecem no Perfil publicado. As frases de como melhorar dos seis tipos servem como estão. "Flash no time" teve 7 de 10: os 3 reprovados cegavam ~1 s, e a regra nova `MIN_CEGUEIRA_FLASH_ALIADO` = 2,0 s tira a flash que cegou o time menos que isso (ela continua na soma do lado, que mede o padrão); os 3 foram substituídos e, em 2026-10-21, o Pedro respondeu "sim" nos 3 (#1 molodoy, #4 kyxsan, #10 910): fecha 10 de 10 e a flash no time entra em `TIPOS_DE_ERRO_VALIDADOS`. O bait continua fora (amostra insuficiente).
 
 **Calibração da fase 18b (decisões do Pedro).** (1) Quem engajou o matador (atirou nele, deu dano ou andou na direção dele com ele visível) conta só em "perdeu a troca" (se morreu); "não trocou" fica para quem viu o matador e não engajou. (2) Bait exige recuo líquido de pelo menos `MIN_RECUO_BAIT` = 64 u (do primeiro tick em que ele vê o matador até o fim da janela, com o matador parado onde estava nesse tick); sair da linha de visão com menos que isso não é bait (o `RECUO_MINIMO` 120 da fase 18 saiu). (3) O matador visível precisa de pelo menos `MIN_TEMPO_VISIVEL` = 0,5 s, somados os ticks visíveis da janela, em "não trocou", no bait e no aliado que tira "morreu sozinho"; nos dois ou mais inimigos de "perdeu a troca", qualquer tick visível conta.
 
@@ -1358,22 +1358,22 @@ Frase de como melhorar: "Sem ser o entry, evite o primeiro contato sozinho. Espe
 
 Frase de como melhorar: "Avise antes de soltar e prefira a pop flash por cima do ângulo do aliado, não na frente dele."
 
-**A frase serve?** **sim** (respondido em 2026-10-16)
+**A frase serve?** **sim** (respondido em 2026-10-21)
 
-**Ainda não validado.** Respostas de 2026-10-16: 7 de 10 confirmados (não valida agora: regra nova MIN_CEGUEIRA_FLASH_ALIADO (2,0 s) e 3 exemplos novos; com 3 de 3, fecha 10/10 e entra). Falta responder: #1, #4, #10 (os novos, marcados "substituído").
+**Validado** com as respostas de 2026-10-21: 10 de 10 confirmados; está em `TIPOS_DE_ERRO_VALIDADOS` e aparece no Perfil publicado.
 
 | # | partida | round | relógio | jogador | aliado mais atingido | situação | chance de vitória antes | cegueira desta flash (s) | soma do jogador no lado (s) | ΔWPA | nível | motivo | replay | É erro mesmo? |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | match_14 | 16 | 0:09 | molodoy | KSCERATO | 5 contra 5 | 61% | 2,77 | 35,82 | — | explícito | a flash dele cegou o próprio time (substituído em 2026-10-19: a flash cegou o time menos de 2,0 s; era match_42 R11 torzsi, respondido "não" em 2026-10-16) | [abrir](docs/match_14.html#replay?round=16&t=8.81) | sim / não / depende da tática |
+| 1 | match_14 | 16 | 0:09 | molodoy | KSCERATO | 5 contra 5 | 61% | 2,77 | 35,82 | — | explícito | a flash dele cegou o próprio time (substituído em 2026-10-19: a flash cegou o time menos de 2,0 s; era match_42 R11 torzsi, respondido "não" em 2026-10-16) | [abrir](docs/match_14.html#replay?round=16&t=8.81) | **sim** (respondido em 2026-10-21) |
 | 2 | match_20 | 24 | 1:02 | NiKo | kyxsan | 5 contra 4 | 50% | 6,78 | 14,20 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_20.html#replay?round=24&t=61.72) | **sim** (respondido em 2026-10-16) |
 | 3 | match_29 | 14 | 1:24 | FalleN | KSCERATO | 5 contra 4 | 60% | 4,86 | 7,71 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_29.html#replay?round=14&t=83.59) | **sim** (respondido em 2026-10-16) |
-| 4 | match_31 | 20 | 0:15 | kyxsan | TeSeS | 5 contra 5 | 34% | 3,32 | 27,95 | — | explícito | a flash dele cegou o próprio time (substituído em 2026-10-19: a flash cegou o time menos de 2,0 s; era match_32 R29 yuurih, respondido "não" em 2026-10-16) | [abrir](docs/match_31.html#replay?round=20&t=15.47) | sim / não / depende da tática |
+| 4 | match_31 | 20 | 0:15 | kyxsan | TeSeS | 5 contra 5 | 34% | 3,32 | 27,95 | — | explícito | a flash dele cegou o próprio time (substituído em 2026-10-19: a flash cegou o time menos de 2,0 s; era match_32 R29 yuurih, respondido "não" em 2026-10-16) | [abrir](docs/match_31.html#replay?round=20&t=15.47) | **sim** (respondido em 2026-10-21) |
 | 5 | match_32 | 19 | 0:45 | TeSeS | m0NESY | 4 contra 2 | 92% | 7,59 | 15,52 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_32.html#replay?round=19&t=44.72) | **sim** (respondido em 2026-10-16) |
 | 6 | match_39 | 2 | 1:19 | donk | chopper | 4 contra 5 | 42% | 5,49 | 15,00 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_39.html#replay?round=2&t=78.59) | **sim** (respondido em 2026-10-16) |
 | 7 | match_39 | 4 | 1:30 | Aleksib | iM | 5 contra 4 | 68% | 8,74 | 9,89 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_39.html#replay?round=4&t=90.45) | **sim** (respondido em 2026-10-16) |
 | 8 | match_46 | 9 | 0:24 | yuurih | YEKINDAR | 5 contra 4 | 70% | 5,10 | 25,34 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_46.html#replay?round=9&t=24.16) | **sim** (respondido em 2026-10-16) |
 | 9 | match_51 | 18 | 0:45 | torzsi | Jimpphat | 3 contra 5 | 12% | 5,93 | 8,06 | — | explícito | a flash dele cegou o próprio time | [abrir](docs/match_51.html#replay?round=18&t=44.88) | **sim** (respondido em 2026-10-16) |
-| 10 | match_53 | 11 | 0:10 | 910 | Mzinho | 5 contra 4 | 63% | 6,80 | 30,36 | — | explícito | a flash dele cegou o próprio time (substituído em 2026-10-19: a flash cegou o time menos de 2,0 s; era match_42 R10 torzsi, respondido "não" em 2026-10-16) | [abrir](docs/match_53.html#replay?round=11&t=10.2) | sim / não / depende da tática |
+| 10 | match_53 | 11 | 0:10 | 910 | Mzinho | 5 contra 4 | 63% | 6,80 | 30,36 | — | explícito | a flash dele cegou o próprio time (substituído em 2026-10-19: a flash cegou o time menos de 2,0 s; era match_42 R10 torzsi, respondido "não" em 2026-10-16) | [abrir](docs/match_53.html#replay?round=11&t=10.2) | **sim** (respondido em 2026-10-21) |
 
 #### Dano de utilidade no time
 
@@ -1400,4 +1400,4 @@ Frase de como melhorar: "Confira onde o time está antes de soltar HE ou molotov
 
 Para cada tipo: quantos dos 10 exemplos você confirma, e se a frase de como melhorar serve. O tipo com 8 ou mais confirmados entra em `TIPOS_DE_ERRO_VALIDADOS` (`metrics/erros/__init__.py`) num item à parte; os reprovados ficam fora da tela, e eu trago uma proposta de ajuste com os números. As respostas ficam gravadas por exemplo em `scripts/calibracao/respostas_do_pedro.json`.
 
-Falta responder: Flash no time #1; Flash no time #4; Flash no time #10.
+Nenhum exemplo esperando resposta.
