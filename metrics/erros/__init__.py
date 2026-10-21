@@ -96,6 +96,13 @@ S_DUELO = 2.0
 SEG_CEGUEIRA_ALIADO = 27.0        # soma no lado, segundos
 SEG_CEGUEIRA_ALIADO_UMA = 4.8     # numa flash só, segundos
 
+# Cegueira mínima de UMA flash para ela ser ocorrência de "flash no time": abaixo disto (a cegueira desta flash
+# nos aliados, a coluna "cegueira desta flash" do material) a flash não é ocorrência, mesmo com a soma do lado
+# acima de SEG_CEGUEIRA_ALIADO. A soma continua contando TODAS as flashes (ela mede o padrão). Em segundos do
+# evento do jogo (`blind_duration`, que não passa por conversão de tick). Origem: calibração do Pedro
+# (2026-10-16, decisão 46): os 3 exemplos reprovados cegavam ~1 s (0,98, 1,21 e 1,43 s).
+MIN_CEGUEIRA_FLASH_ALIADO = 2.0
+
 # Dano de HE ou molotov no próprio time, soma no lado. Origem: o percentil 95 do corpus por
 # jogador-partida (520 valores; mediana 0, p75 1, p90 10, p95 19). O p90 não serve: mais da metade
 # não feriu ninguém do time, e 10 de dano é um tique de molotov. Material de calibração, seção 7.
@@ -144,9 +151,13 @@ MAX_PONTOS_FORTES = 2             # pedido 12.5
 # porque as métricas têm escalas diferentes (porcentagem, dano, segundos).
 MARGEM_PONTO_FORTE = 0.15
 
-# Tipos publicados no site. COMEÇA VAZIA (pedido 12.4): um tipo só entra depois que o Pedro
-# confirmar pelo menos 8 dos 10 exemplos do material de calibração (seção 7).
-TIPOS_DE_ERRO_VALIDADOS: frozenset[str] = frozenset()
+# Tipos publicados no site. Começou vazia (pedido 12.4): um tipo só entra depois que o Pedro confirmar pelo
+# menos 8 dos 10 exemplos do material de calibração (seção 7). Respostas de 2026-10-16 (decisão 46; gravadas em
+# scripts/calibracao/respostas_do_pedro.json): não trocou 8/10, perdeu a troca 9/10, morreu sozinho 8/10, primeira
+# morte sem troca 10/10, dano de utilidade no time 10/10. Flash no time (7/10) ficou de fora até os 3 exemplos
+# novos da regra MIN_CEGUEIRA_FLASH_ALIADO; o bait, por amostra insuficiente.
+TIPOS_DE_ERRO_VALIDADOS: frozenset[str] = frozenset({
+    "nao_trocou", "perdeu_a_troca", "morreu_sozinho", "primeira_morte_sem_troca", "dano_de_utilidade_no_time"})
 
 # Um tipo com menos ocorrências que isto no CORPUS (depois dos filtros) não entra na validação nem pode entrar
 # em TIPOS_DE_ERRO_VALIDADOS: com menos de 10 não dá para sortear os 10 exemplos da regra dos 8 de 10. A
@@ -256,6 +267,7 @@ FILTRO_ALIADO_COM_O_MATADOR = "um aliado tinha o matador à vista ou estava pert
 FILTRO_1_CONTRA_N = "sem aliado vivo (1 contra N)"
 FILTRO_EVENTO_ZERADO = "evento sem dano ou sem cegueira"          # fase 18: evento com 0 não é ocorrência
 FILTRO_ABAIXO_DO_LIMIAR = "abaixo do limiar da partida"
+FILTRO_CEGUEIRA_CURTA = "a flash cegou o time menos de 2,0 s"   # calibração do Pedro (MIN_CEGUEIRA_FLASH_ALIADO)
 
 FIREARMS = frozenset(ARMA_PARA_GRUPO)            # nomes de exibição das armas de fogo (rating)
 
@@ -845,12 +857,14 @@ def primeira_morte_sem_troca(p: Partida, _ix: _Indice | None = None) -> list[dic
 # --- Tipos 6 e 7: flash no time e dano de utilidade no time --------------------------------------
 
 def flash_no_time(p: Partida, seg_aliado: float = SEG_CEGUEIRA_ALIADO, seg_uma: float = SEG_CEGUEIRA_ALIADO_UMA,
-                  _ix: _Indice | None = None) -> list[dict]:
+                  _ix: _Indice | None = None, min_cegueira: float | None = None) -> list[dict]:
     """A cegueira imposta a aliados passa de `seg_aliado` no lado (soma) ou de `seg_uma` numa flash só.
     Uma ocorrência por flash que cegou companheiro (a mesma detonação: mesmo arremessador e mesmo tick);
     `valor` é a soma dos segundos de cegueira nos aliados daquela flash e `valor_soma_lado` a soma do
     jogador naquele lado. Com a soma abaixo do limiar, só a flash acima de `seg_uma` conta; as outras ficam
-    de fora com o motivo. Uma flash com 0 s de cegueira não é ocorrência (fase 18)."""
+    de fora com o motivo. Uma flash com 0 s de cegueira não é ocorrência (fase 18). Calibração do Pedro: a flash
+    que cegou o time menos de MIN_CEGUEIRA_FLASH_ALIADO também não é (`FILTRO_CEGUEIRA_CURTA`), mesmo com a soma
+    acima do limiar; ela continua na soma do lado, que é aplicada ANTES desse corte."""
     ix = _ix or _Indice(p)
     if p.blinds is None or p.blinds.height == 0:
         return []
@@ -870,7 +884,17 @@ def flash_no_time(p: Partida, seg_aliado: float = SEG_CEGUEIRA_ALIADO, seg_uma: 
         oc["filtro"] = ix.filtro_do_round(rn, a, t) or (FILTRO_EVENTO_ZERADO if not oc["valor"] > 0 else None)
         out.append(oc)
     _aplica_limiar(out, seg_aliado, seg_uma)
+    for oc in out:                     # depois da soma: a flash curta conta no padrão, mas não é ocorrência
+        if oc["filtro"] is None and not cegou_o_bastante(oc["valor"], min_cegueira):
+            oc["filtro"] = FILTRO_CEGUEIRA_CURTA
     return out
+
+
+def cegou_o_bastante(segundos: float | None, minimo: float | None = None) -> bool:
+    """A flash cegou o time pelo menos MIN_CEGUEIRA_FLASH_ALIADO (1,99 s não chega; 2,00 s chega). `minimo` troca o
+    valor (a varredura do material de calibração)."""
+    minimo = MIN_CEGUEIRA_FLASH_ALIADO if minimo is None else minimo
+    return segundos is not None and segundos + 1e-9 >= minimo
 
 
 def _aplica_limiar(out: list[dict], limiar_partida: float, limiar_um: float | None) -> None:
@@ -971,7 +995,7 @@ def ocorrencias(p: Partida, **constantes) -> pl.DataFrame:
     """Todas as ocorrências de todos os tipos, com filtro, nível e motivo. Ordem determinística:
     tipo (na ordem de TIPOS), round, tick, jogador.
 
-    `constantes` troca DIST_TROCA, S_DUELO, MIN_RECUO_BAIT e os limiares (o material de calibração varre as
+    `constantes` troca DIST_TROCA, S_DUELO, MIN_RECUO_BAIT, MIN_CEGUEIRA_FLASH_ALIADO e os limiares (o material de calibração varre as
     faixas). LIMIAR_ROUND_GANHO e LIMIAR_ROUND_PERDIDO são lidos do módulo (a varredura os troca nele)."""
     ix = _Indice(p)
     dist = constantes.get("dist_troca", DIST_TROCA)
@@ -982,7 +1006,8 @@ def ocorrencias(p: Partida, **constantes) -> pl.DataFrame:
               + possivel_bait(p, dist, s_duelo, recuo, _ix=ix, _cand=cand)
               + perdeu_a_troca(p, recuo, _ix=ix) + morreu_sozinho(p, dist, _ix=ix) + primeira_morte_sem_troca(p, _ix=ix)
               + flash_no_time(p, constantes.get("seg_aliado", SEG_CEGUEIRA_ALIADO),
-                              constantes.get("seg_uma", SEG_CEGUEIRA_ALIADO_UMA), _ix=ix)
+                              constantes.get("seg_uma", SEG_CEGUEIRA_ALIADO_UMA), _ix=ix,
+                              min_cegueira=constantes.get("min_cegueira"))
               + dano_de_utilidade_no_time(p, constantes.get("dano_aliado", DANO_UTILIDADE_ALIADO), _ix=ix))
     for oc in linhas:
         oc["nivel"], oc["motivo"] = nivel_e_motivo(oc, p, ix.abertura.get(oc["round_num"]))

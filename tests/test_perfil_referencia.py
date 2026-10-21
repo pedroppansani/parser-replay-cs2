@@ -174,7 +174,8 @@ def test_o_limite_do_card_e_o_p90_da_celula_escolhida():
 
 
 def test_o_publicado_usa_os_fortes_por_lado():
-    """Fase 16a: com `FORTES_POR_LADO_PUBLICADOS` ligada, a aba Perfil publicada (erros em validação) tem os
+    """Fase 16a: com `FORTES_POR_LADO_PUBLICADOS` ligada, a aba Perfil publicada (desde 2026-10-16 com os tipos
+    validados; antes, erros em validação) tem os
     pontos fortes e o resumo calculados por (lado, função), com `lado` nos cards e os textos novos; o cálculo
     é o mesmo da prévia (a fonte é `_pontos_fortes`)."""
     from scripts.build_web_page import cabecalho_da_partida
@@ -186,14 +187,16 @@ def test_o_publicado_usa_os_fortes_por_lado():
     cab = cabecalho_da_partida("match_47", base)
     pub = PE.bloco_da_partida(base, payload, cab)
     previa = PE.bloco_da_partida(base, payload, cab, preview=True)
-    assert pub["estado"] == "em_validacao" and pub["textos"] == PE.TEXTOS
+    assert pub["estado"] == "normal" and pub["textos"] == PE.TEXTOS
     assert pub["textos"]["nenhum_erro"] == "Nada acima do normal para a função nesta partida"
     ref = E.carrega_referencia()
     perfis = {int(p["steamid"]): p for p in payload["player_profile"]}
     por_lado = E.metricas_por_lado(pl.read_parquet(base / "player_profile_rounds.parquet"),
                                    pl.read_parquet(base / "impacto_per_round.parquet"))
     for j in pub["jogadores"]:
-        assert j["melhorar"] == [] and j["uma_vez"] == []
+        validados = {E.TITULOS[t] for t in E.TIPOS_DE_ERRO_VALIDADOS}
+        assert all(m["tipo"] in E.TIPOS_DE_ERRO_VALIDADOS for m in j["melhorar"])
+        assert all(u["titulo"] in validados for u in j["uma_vez"])
         assert all(f["lado"] in ("ct", "t") and f["referencia"].startswith("referência: ") for f in j["fortes"])
     for j in pub["jogadores"]:
         sid = next(s for s, p in perfis.items() if p["name"] == j["name"])

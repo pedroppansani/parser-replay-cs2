@@ -8,7 +8,8 @@ de `notas/PENDENCIAS_PARA_O_PEDRO.md` e nas notas de decisão).
 
 - `GRUPOS_ATIVOS = False` (`scripts/grupos_config.py`): só vira `True` com o LIBERADO do agente `seguranca` e a
   confirmação do Pedro. A palavra do papel de serviço do Supabase não aparece em nenhum arquivo versionado (há teste).
-- `TIPOS_DE_ERRO_VALIDADOS` vazia até o item 3 da calibração (abaixo). `FORTES_POR_LADO_PUBLICADOS = True`.
+- `TIPOS_DE_ERRO_VALIDADOS`: cinco tipos na branch `calibracao-erros-validados` (não mesclada); vazia na `main`.
+  `FORTES_POR_LADO_PUBLICADOS = True`. Flash no time espera a resposta do Pedro aos 3 exemplos novos.
 - `MIN_CASOS_PARA_VALIDAR = 10`: hoje só o "possível bait" (9 casos) fica fora.
 - Merge sem confirmação só quando o prompt da fase autoriza por escrito (regra da raiz).
 - Limites dos CLAUDE.md (tests/test_claude_md.py): raiz 15.000 no teste e meta 10.000; `metrics/` 12.000;
@@ -18,7 +19,8 @@ de `notas/PENDENCIAS_PARA_O_PEDRO.md` e nas notas de decisão).
 - Dados: `data/interim` e `demos/` só por junction de leitura nos worktrees, removida no fim (regra 36). O
   reprocesso grava caminhos absolutos de demo no `data/manifest.json`: restaurar `caminho` e `existe` (só versão,
   commit, data e `sujo` podem mudar).
-- Versão das métricas na `main`: 26 (a 27 está só na branch `calibracao-pisos`, não mesclada).
+- Versão das métricas na `main`: 26. A 27 está em DUAS branches não mescladas: `calibracao-pisos` (pisos) e
+  `calibracao-erros-validados` (flash no time); a segunda a ser mesclada sobe para 28.
 
 ## Feito (merges na `main`, todos com CI verde)
 

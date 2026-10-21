@@ -524,6 +524,25 @@
     "flash_no_time": [
       {
         "tipo": "flash_no_time",
+        "partida": "match_14",
+        "round": 16,
+        "tick": 122656,
+        "jogador": "molodoy",
+        "steamid": "76561198200982290",
+        "aliado_steamid": "76561198058500492",
+        "semente": 20261013,
+        "data_do_sorteio": "2026-10-15",
+        "substitui": {
+          "partida": "match_42",
+          "round": 11,
+          "tick": 98700,
+          "jogador": "torzsi"
+        },
+        "substituido_em": "2026-10-19",
+        "motivo_da_substituicao": "a flash cegou o time menos de 2,0 s"
+      },
+      {
+        "tipo": "flash_no_time",
         "partida": "match_20",
         "round": 24,
         "tick": 209213,
@@ -546,23 +565,31 @@
       },
       {
         "tipo": "flash_no_time",
+        "partida": "match_31",
+        "round": 20,
+        "tick": 184628,
+        "jogador": "kyxsan",
+        "steamid": "76561198057282432",
+        "aliado_steamid": "76561197996678278",
+        "semente": 20261013,
+        "data_do_sorteio": "2026-10-15",
+        "substitui": {
+          "partida": "match_32",
+          "round": 29,
+          "tick": 254459,
+          "jogador": "yuurih"
+        },
+        "substituido_em": "2026-10-19",
+        "motivo_da_substituicao": "a flash cegou o time menos de 2,0 s"
+      },
+      {
+        "tipo": "flash_no_time",
         "partida": "match_32",
         "round": 19,
         "tick": 163018,
         "jogador": "TeSeS",
         "steamid": "76561197996678278",
         "aliado_steamid": "76561198074762801",
-        "semente": 20261013,
-        "data_do_sorteio": "2026-10-15"
-      },
-      {
-        "tipo": "flash_no_time",
-        "partida": "match_32",
-        "round": 29,
-        "tick": 254459,
-        "jogador": "yuurih",
-        "steamid": "76561198164970560",
-        "aliado_steamid": "76561198058500492",
         "semente": 20261013,
         "data_do_sorteio": "2026-10-15"
       },
@@ -590,28 +617,6 @@
       },
       {
         "tipo": "flash_no_time",
-        "partida": "match_42",
-        "round": 10,
-        "tick": 92751,
-        "jogador": "torzsi",
-        "steamid": "76561198355739212",
-        "aliado_steamid": "76561198193174134",
-        "semente": 20261013,
-        "data_do_sorteio": "2026-10-15"
-      },
-      {
-        "tipo": "flash_no_time",
-        "partida": "match_42",
-        "round": 11,
-        "tick": 98700,
-        "jogador": "torzsi",
-        "steamid": "76561198355739212",
-        "aliado_steamid": "76561198138828475",
-        "semente": 20261013,
-        "data_do_sorteio": "2026-10-15"
-      },
-      {
-        "tipo": "flash_no_time",
         "partida": "match_46",
         "round": 9,
         "tick": 65827,
@@ -631,6 +636,25 @@
         "aliado_steamid": "76561198855375325",
         "semente": 20261013,
         "data_do_sorteio": "2026-10-15"
+      },
+      {
+        "tipo": "flash_no_time",
+        "partida": "match_53",
+        "round": 11,
+        "tick": 78288,
+        "jogador": "910",
+        "steamid": "76561199203563345",
+        "aliado_steamid": "76561198838822582",
+        "semente": 20261013,
+        "data_do_sorteio": "2026-10-15",
+        "substitui": {
+          "partida": "match_42",
+          "round": 10,
+          "tick": 92751,
+          "jogador": "torzsi"
+        },
+        "substituido_em": "2026-10-19",
+        "motivo_da_substituicao": "a flash cegou o time menos de 2,0 s"
       }
     ],
     "dano_de_utilidade_no_time": [

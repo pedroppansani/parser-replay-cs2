@@ -183,3 +183,31 @@
   | recuo mínimo (u) | 0 | 16 | 32 | 48 | 64 |
   |---|---|---|---|---|---|
   | baits | 30 | 18 | 15 | 15 | 9 |
+
+- **Calibração de 2026-10-16 (respostas do Pedro à seção 7 do material; aplicadas em 2026-10-19).** As respostas
+  da seção 7 foram dadas em 2026-10-16, **a partir das colunas da tabela do material (visibilidade, dano, recuo,
+  situação, chance), e não assistindo aos replays**. Ficam gravadas por exemplo, com a data e esse "como", em
+  `scripts/calibracao/respostas_do_pedro.json`; o gerador mostra a resposta dada no lugar da pergunta e nunca
+  sorteia um exemplo respondido como substituto.
+
+  | tipo | confirmados | resultado |
+  |---|---|---|
+  | não trocou o aliado | 8/10 (depende no #2 e no #3, visíveis só 0,5 s) | validado |
+  | perdeu a troca | 9/10 (depende no #4) | validado |
+  | morreu sozinho | 8/10 (não no #1 e no #10) | validado |
+  | primeira morte sem troca | 10/10 | validado |
+  | dano de utilidade no time | 10/10 | validado |
+  | flash no time | 7/10 (não no #4, #7 e #8: cegueira de ~1 s) | não valida agora |
+  | possível bait | a regra pega bait em 8 dos 9 (o #2 não é bait) | continua fora (amostra insuficiente) |
+
+  As frases de como melhorar dos seis tipos servem como estão. (1) `TIPOS_DE_ERRO_VALIDADOS` recebe os cinco
+  validados: a aba Perfil publicada passa a mostrá-los com as regras que já existiam (percentil 90 da referência,
+  pelo menos 2 ocorrências, no máximo 3 por jogador). (2) Regra nova em "flash no time":
+  `MIN_CEGUEIRA_FLASH_ALIADO` = 2,0 s. A flash cuja cegueira nos aliados (a coluna "cegueira desta flash") fica
+  abaixo disso não é ocorrência (`FILTRO_CEGUEIRA_CURTA`), mesmo com a soma do lado acima do limiar; a soma
+  continua contando todas as flashes, porque mede o padrão (o corte é aplicado depois da soma). Segundos do
+  evento do jogo, sem conversão de tick. No corpus: 485 -> 372 ocorrências (113 saem; CT 151 -> 127, TR 334 ->
+  245); nenhum outro tipo muda e a soma do lado é idêntica. `VERSAO_DAS_METRICAS` 27 (a branch não mesclada
+  `calibracao-pisos` também usa 27); só `erros_do_jogador.parquet` (17 partidas) e os histogramas de
+  `flash_no_time` em `erros_reference.json` mudam. Os 3 exemplos reprovados foram substituídos sem
+  `--sortear-de-novo` (marcados "substituído em 2026-10-19"); com 3 de 3 nos novos, o tipo fecha 10/10 e entra.
