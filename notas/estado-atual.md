@@ -1,6 +1,6 @@
 # Estado atual do trabalho (para abrir uma sessão limpa)
 
-Atualizado em 2026-10-19, ao fim da divisão do `metrics/CLAUDE.md`. Os prompts de origem citados estão em
+Atualizado em 2026-10-21, depois do item 3 da calibração e da resposta do Pedro sobre o plano da v2 e o Supabase. Os prompts de origem citados estão em
 `C:\Users\User\Desktop\Claude outputs\` (os mais antigos já não estão no disco; o que eles pediram está nos cartões
 de `notas/PENDENCIAS_PARA_O_PEDRO.md` e nas notas de decisão).
 
@@ -8,8 +8,10 @@ de `notas/PENDENCIAS_PARA_O_PEDRO.md` e nas notas de decisão).
 
 - `GRUPOS_ATIVOS = False` (`scripts/grupos_config.py`): só vira `True` com o LIBERADO do agente `seguranca` e a
   confirmação do Pedro. A palavra do papel de serviço do Supabase não aparece em nenhum arquivo versionado (há teste).
-- `TIPOS_DE_ERRO_VALIDADOS`: cinco tipos na branch `calibracao-erros-validados` (não mesclada); vazia na `main`.
-  `FORTES_POR_LADO_PUBLICADOS = True`. Flash no time espera a resposta do Pedro aos 3 exemplos novos.
+- `TIPOS_DE_ERRO_VALIDADOS`: cinco tipos na `main` (não trocou, perdeu a troca, morreu sozinho, primeira morte sem
+  troca, dano de utilidade no time). O Pedro respondeu "sim" aos 3 exemplos novos de "flash no time" (2026-10-21):
+  ela entra na branch `calibracao-flash-validada` (não mesclada). O possível bait fica fora (9 casos, abaixo de
+  `MIN_CASOS_PARA_VALIDAR`). `FORTES_POR_LADO_PUBLICADOS = True`.
 - `MIN_CASOS_PARA_VALIDAR = 10`: hoje só o "possível bait" (9 casos) fica fora.
 - Merge sem confirmação só quando o prompt da fase autoriza por escrito (regra da raiz).
 - Limites dos CLAUDE.md (tests/test_claude_md.py): raiz 15.000 no teste e meta 10.000; `metrics/` 12.000;
@@ -19,8 +21,14 @@ de `notas/PENDENCIAS_PARA_O_PEDRO.md` e nas notas de decisão).
 - Dados: `data/interim` e `demos/` só por junction de leitura nos worktrees, removida no fim (regra 36). O
   reprocesso grava caminhos absolutos de demo no `data/manifest.json`: restaurar `caminho` e `existe` (só versão,
   commit, data e `sujo` podem mudar).
-- Versão das métricas na `main`: 26. A 27 está em DUAS branches não mescladas: `calibracao-pisos` (pisos) e
-  `calibracao-erros-validados` (flash no time); a segunda a ser mesclada sobe para 28.
+- Versão das métricas na `main`: 27 (flash no time com `MIN_CEGUEIRA_FLASH_ALIADO`). A branch `calibracao-pisos`
+  também usou 27 e vai subir para 28 ao ser mesclada.
+- **Supabase (resposta do Pedro, 2026-10-21):** push protection ligado no GitHub e plano Free sem cartão. O projeto
+  `parser-cs2-grupos` está PAUSADO por inatividade (o Free pausa depois de 7 dias sem uso). **(1) A parte B está
+  destravada, mas antes de começar ela eu peço ao Pedro para reativar o projeto e espero ele confirmar.** A ordem
+  não muda: a parte B fica para DEPOIS da v2-7. **(2) Pendência para a revisão de segurança:** no Free o projeto
+  pausa depois de 7 dias sem uso, então os grupos no ar podem parar se ninguém usar; isso precisa de uma decisão
+  do Pedro antes de ligar o `GRUPOS_ATIVOS`.
 
 ## Feito (merges na `main`, todos com CI verde)
 
@@ -47,33 +55,39 @@ de `notas/PENDENCIAS_PARA_O_PEDRO.md` e nas notas de decisão).
 | Fase 17: degrau 4b da escada (assistência de flash; não bate) | `4a48c75f` |
 | Tickrate lido da demo na flash e na utilidade (versão 26, cartão 12) | `a7db5dc9` |
 | Divisão do `metrics/CLAUDE.md` (`metrics/erros/CLAUDE.md`) | `0f487a09` |
+| `notas/estado-atual.md` criado | `f138103c` |
+| Calibração, item 2: grupos de estilo (nomes pelo perfil; o reajuste reproduz o modelo) | `3c4afd79` |
+| Calibração, item 3: cinco tipos de erro validados, `MIN_CEGUEIRA_FLASH_ALIADO`, versão 27 | `7775cd27` |
 
 ## Em andamento
 
-- **Calibração, item 1 (pisos de função)**, branch `calibracao-pisos` (worktree `.claude/worktrees/cal-pisos`),
-  NÃO mesclada. Origem: `PROMPT-respostas-calibracao-pedro.md`. Duas paradas aguardam o Pedro:
-  1. o piso de suporte em 40 s ainda deixa sh1ro (match_38), w0nderful (match_25) e donk (match_05, FACEIT)
-     acima do corte; o piso ficou em 20 s;
-  2. a `jogadores.html` mudaria 3.187 dos 5.120 números exibidos (15 jogadores mudam de função no corpus, e a
-     página puxa cada número para a média da função): conta como "rótulo autorizado" ou a função da página fica
-     separada do rótulo?
-  A linha de regra nova dos pisos (264 bytes) entra no `metrics/CLAUDE.md` depois da divisão.
+- `calibracao-flash-validada` (worktree `cal-flash`): a flash no time entra nos tipos validados (3 de 3 "sim").
+- `fix-tickrate-resto` (worktree `fix-resto`): os lugares que ainda assumem 64 tick, sem mudar nenhum número; junto,
+  a contagem de testes do `numeros_citaveis`.
+- `calibracao-pisos` (worktree `cal-pisos`, NÃO mesclada, em pausa até a flash validada entrar): o Pedro decidiu o
+  piso de suporte em **40 s** (se um AWPer ou o donk ficar acima do corte, a prioridade de exibição mostra "AWPer" e
+  o rótulo de suporte do donk é aceito) e a `jogadores.html` é decisão técnica: aceitar a mudança dos números
+  exibidos como consequência dos rótulos autorizados (o dado embutido não muda), documentar e trazer as capturas.
+  Vai subir a versão das métricas para 28 e reprocessar.
 
-## Fila (na ordem)
+## Fila (na ordem; o Pedro decidiu em 2026-10-21)
 
-1. Calibração, item 1 (acima), item 2 (grupos de estilo: reajustar o KMeans e gravar os nomes pelo perfil) e
-   item 3 (erros validados, `MIN_CEGUEIRA_FLASH_ALIADO = 2,0 s`, três exemplos novos de flash, duas investigações
-   e duas propostas, as respostas gravadas como dado). Origem: `PROMPT-respostas-calibracao-pedro.md`. A frase
-   "as respostas da seção 7 foram dadas em 2026-10-16, a partir das colunas da tabela, e não assistindo aos
-   replays" entra na nota 46 no item 3.
-2. `fix-tickrate-resto`: os lugares que ainda assumem 64 tick (lista de pendentes em
-   `tests/test_tickrate_lido_da_demo.py`), sem mudar nenhum número (prova por sha256 dos dados do corpus) e com
-   testes de 128 tick. Origem: `PROMPT-resposta-tickrate-resto-divisao-claude-md.md`.
-3. Atualizar a contagem de testes em `numeros_citaveis` (autorizado; pode ir junto do próximo merge).
-4. Cartão 5 (`TICK_PELO_PROJETIL_SEM_EVENTO`, com a sua própria subida de versão e tabela antes → depois), cartão 6
-   (histograma da força da rota B) e cartão 7 (os `.rar`: espaço em disco ≥ 12 GB, pasta `demos/entrada/_extraido/`
-   conferida antes, sha256 de cada `.dem`). Origem: os cartões de `notas/PENDENCIAS_PARA_O_PEDRO.md`.
-5. Cartão 9, a refatoração, por último. Trazer junto a proposta de gerar a contagem de testes no build pela coleta
-   do pytest (só propor).
-6. Parado do lado do Pedro: o cartão 10 (Supabase) e depois a parte B dos grupos e a nova revisão do `seguranca`;
-   o dano de utilidade na escada (cartão 1, prints da HLTV); o roteiro do NVDA (cartão 11).
+1. Flash validada e pisos (acima), nessa ordem; `fix-tickrate-resto`.
+2. O resto da fase 17: cartão 5 (`TICK_PELO_PROJETIL_SEM_EVENTO`, com a sua própria subida de versão e a tabela
+   antes → depois), cartão 6 (histograma da força da rota B) e cartão 7 (os `.rar`: espaço em disco ≥ 12 GB,
+   `demos/entrada/_extraido/` conferida antes, sha256 de cada `.dem`, regra 36).
+3. Cartão 9, a refatoração, ANTES da v2-1 (ela mexe na estrutura e a v2 na forma). Trazer junto a proposta (só
+   propor) de gerar a contagem de testes no build pela coleta do pytest.
+4. A v2 (GOAT.demo), plano aprovado em `C:/Users/User/Desktop/Claude outputs/PLANO-v2-0.md`: v2-1 base (não
+   muda a aparência; o escuro atual vira `data-tema="escuro"`), v2-2 marca, v2-3 e v2-4 em sequência numa branch de
+   integração e para a `main` no mesmo push, v2-5 e v2-6 em paralelo depois de a v2-4 mesclar o `map_core.js`, v2-7
+   verificação final. Condições de cada fase: suíte verde, impressão dos números idêntica, só as capturas e os
+   testes autorizados mudam. Dúvidas do plano respondidas (todas as recomendações aceitas); só os testes de visual
+   da seção 4.4 podem mudar; o `scripts/CLAUDE.md` não ganha linha (se precisar, parar e propor divisão). Na v2-7:
+   pôr no PENDENCIAS o `curl` do `Content-Encoding` dos dois agentes depois do deploy e o fallback da fonte mono no
+   macOS. Fase própria depois da v2: a comparação por grupos do Perfil, com a regra de empate do Pedro.
+5. Parte B dos grupos, DEPOIS da v2-7 e só depois de o Pedro reativar o projeto Supabase e confirmar (ver as
+   regras temporárias). Junto: plano Free, a maior tática real (máximo, mediana e p95 de operações), `gitleaks`,
+   `npm audit` e `pip-audit`, e o `.claude/worktrees/` no `.gitignore`; depois o `grupos.md` para o `seguranca`.
+6. Do lado do Pedro: o dano de utilidade na escada (cartão 1, prints da HLTV); o roteiro do NVDA (cartão 11); o
+   cartão 10 (Supabase); a fase 6 (`fase-6-decisivo`); a investigação do awpy 3 fica numa sessão separada.
