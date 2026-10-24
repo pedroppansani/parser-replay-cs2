@@ -22,8 +22,9 @@
   regra explícita. Mudança na biblioteca só entra com piora 0 (`py -3.12 -m pesquisa.piora_rota_a`).
 - **Teste permanente.** Lido contra inferido nas partidas com demo, nas metas da rota A
   (`tests/test_verdade_do_arremesso.py`).
-- **Demos sem `grenade_thrown` (FACEIT).** O tick ainda vem da ancoragem; a regra do tick pelo projétil
-  está pronta e DESLIGADA (`TICK_PELO_PROJETIL_SEM_EVENTO`), à espera do Pedro.
+- **Demos sem `grenade_thrown` (FACEIT).** O tick sai do primeiro ponto do projétil
+  (`TICK_PELO_PROJETIL_SEM_EVENTO`, ligado no cartão 5 com o OK do Pedro, 2026-10-24, versão das métricas 30);
+  sem o tick t-1 na tabela, o arremesso fica com a ancoragem, declarada em `fonte_tick`.
 
 Os números atuais (metas dentro e fora da amostra, cobertura) estão em
 `data/processed/numeros_citaveis.json`, bloco `arremessos`.

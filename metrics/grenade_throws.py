@@ -923,12 +923,9 @@ ARMA_DO_EVENTO = {"smokegrenade": "smoke", "flashbang": "flash", "hegrenade": "h
 # são os da tabela de ticks em t-1 em 100% (20.862; 1 sem o tick). A ancoragem,
 # que era a fonte do tick nessas demos, acerta o tick em só 41%.
 # `pesquisa/investiga_faceit.py` e `tests/test_tick_pelo_projetil.py`.
-# DESLIGADA até o Pedro aprovar: ligá-la muda o que dois testes existentes de
-# test_grenade_throws.py afirmam ("sem evento, a ancoragem continua valendo" e
-# "a ancoragem acha o tick da soltura"), e exige subir VERSAO_DAS_METRICAS,
-# reprocessar e regerar a biblioteca (medido: piora 0, 447 botões a mais, 2.390
-# comandos da FACEIT mudam).
-TICK_PELO_PROJETIL_SEM_EVENTO = False
+# LIGADA desde o cartão 5 (OK do Pedro, 2026-10-24; versão das métricas 30). Sem o
+# tick t-1 na tabela, o arremesso continua com a ancoragem, declarada em `fonte_tick`.
+TICK_PELO_PROJETIL_SEM_EVENTO = True
 
 
 def evento_pelo_projetil(ancorados: list[dict], tk: "_Ticks") -> pl.DataFrame:

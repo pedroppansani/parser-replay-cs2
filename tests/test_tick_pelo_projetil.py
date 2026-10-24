@@ -56,12 +56,12 @@ def test_evento_reconstruido_usa_o_tick_do_projetil_e_a_tabela_em_t_menos_1():
 
 @pytest.fixture
 def ligada(monkeypatch):
-    """A regra está DESLIGADA na produção até o Pedro aprovar; aqui ela liga."""
+    """A regra está ligada na produção desde o cartão 5; a fixture deixa isso explícito."""
     monkeypatch.setattr(gt, "TICK_PELO_PROJETIL_SEM_EVENTO", True)
 
 
-def test_desligada_por_padrao_ate_a_aprovacao():
-    assert gt.TICK_PELO_PROJETIL_SEM_EVENTO is False
+def test_ligada_desde_o_cartao_5():
+    assert gt.TICK_PELO_PROJETIL_SEM_EVENTO is True
 
 
 @pytest.mark.parametrize("partida", PARTIDAS_COM_EVENTO)
