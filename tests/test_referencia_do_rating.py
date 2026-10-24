@@ -65,12 +65,16 @@ def test_a_referencia_da_fixture_se_reproduz():
              ESPERADO_NA_FIXTURE.read_text(encoding="utf-8"))
 
 
+# sem partida nenhuma (o CI não tem o interim) o all() daria True: a lista vazia também pula
+_PARTIDAS_DO_CORPUS = partidas_disponiveis()
+
+
 @pytest.mark.skipif(
-    not all((INTERIM_REAL / m).is_dir() for m in partidas_disponiveis()),
+    not _PARTIDAS_DO_CORPUS or not all((INTERIM_REAL / m).is_dir() for m in _PARTIDAS_DO_CORPUS),
     reason="sem o interim do corpus inteiro (o CI usa a fixture)",
 )
 def test_a_referencia_do_corpus_se_reproduz():
-    _confere(texto_da_referencia(partidas_disponiveis()), REFERENCIA_FILE.read_text(encoding="utf-8"))
+    _confere(texto_da_referencia(_PARTIDAS_DO_CORPUS), REFERENCIA_FILE.read_text(encoding="utf-8"))
 
 
 def test_a_tolerancia_do_ci_aceita_o_ultimo_bit_e_pega_mudanca_de_verdade(monkeypatch):
