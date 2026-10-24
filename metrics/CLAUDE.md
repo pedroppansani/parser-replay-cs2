@@ -47,6 +47,9 @@ Antes de mexer nos erros do Perfil (`metrics/erros/`), leia `metrics/erros/CLAUD
 - Rótulo de jogador: líder do time E acima do piso, com amostra mínima; suporte medido por round;
   estabilidade < 0,70 sai como "(tendência)", também na função estrutural, que ganha a mesma marca
   quando a chance ao acaso passa de 0,05 (o motivo vai na dica, `structural_roles.dica_da_tendencia`) (39)
+- Rótulo na tela: o AWPer sempre ganha; sem ele, a maior margem valor ÷ piso (`ordem_na_tela`); os
+  outros ficam no dado; o Lurker não vale com "Abre o round" na mesma partida (`EXCLUSOES`); piso
+  respondido é constante com a data e o tamanho do corpus (31)
 - Round sem contato tem tempo até o contato NULO, nunca um valor inventado (7b)
 
 ## Tempo, economia e KAST

@@ -47,13 +47,13 @@ def test_ancora_exige_o_minimo_de_rounds_do_lado():
 
 
 def test_suporte_e_medido_por_round_e_nao_pelo_total():
-    """24 s em 30 rounds (0,8 por round) passava do piso de 20 s no total."""
-    assert pr.PISO_SUPORTE_POR_ROUND == pytest.approx(20.0 / 21)
-    longa = _sinais(enemy_blind_por_round=[24.0 / 30, 0.1], enemy_blind_seconds=[24.0, 3.0], rounds_jogados=[30, 30])
+    """48 s em 30 rounds (1,6 por round) passava do piso de 40 s no total (piso de 2026-10-24)."""
+    assert pr.PISO_SUPORTE_POR_ROUND == pytest.approx(40.0 / 21)
+    longa = _sinais(enemy_blind_por_round=[48.0 / 30, 0.1], enemy_blind_seconds=[48.0, 3.0], rounds_jogados=[30, 30])
     assert pr.assign_traits(longa).filter(pl.col("trait") == "support").height == 0
-    curta = _sinais(enemy_blind_por_round=[24.0 / 20, 0.1], enemy_blind_seconds=[24.0, 2.0], rounds_jogados=[20, 20])
+    curta = _sinais(enemy_blind_por_round=[48.0 / 20, 0.1], enemy_blind_seconds=[48.0, 2.0], rounds_jogados=[20, 20])
     linha = pr.assign_traits(curta).filter(pl.col("trait") == "support").row(0, named=True)
-    assert linha["steamid"] == 1 and linha["evidence"] == "24s de cegueira imposta a inimigos"
+    assert linha["steamid"] == 1 and linha["evidence"] == "48s de cegueira imposta a inimigos"
 
 
 def _partida(nome: str):

@@ -3381,7 +3381,8 @@
         var roleTxt = p.role || "sem função dominante";
 
         var chips = (byPlayer[p.name] || [])
-          .sort(function (a, b) { return a.priority - b.priority; })
+          // a ordem da tela vem do Python (player_roles.ordem_na_tela); sem ela, a prioridade
+          .sort(function (a, b) { return a.ordem != null ? a.ordem - b.ordem : a.priority - b.priority; })
           .slice(1)  // a primeira já é o título do cartão
           .map(function (t) { return "<span class='chip'>" + esc(t.evidence) + "</span>"; })
           .join("");

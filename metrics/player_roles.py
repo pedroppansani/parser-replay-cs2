@@ -27,8 +27,10 @@ Como um rótulo é atribuído: o jogador precisa (1) liderar o PRÓPRIO TIME na
 métrica daquela função e (2) passar de um piso absoluto. A comparação é dentro
 do time porque função é uma divisão interna — "é o que mais joga AWP no time"
 descreve um papel; "joga mais AWP que a média dos 10" só descreve a partida.
-Quando duas funções se qualificam, vale a de maior prioridade (ver TRAIT_SPECS),
-e as outras continuam aparecendo como características.
+Quando duas funções se qualificam, a tela mostra UMA como título (`ordem_na_tela`:
+o AWPer sempre ganha; sem AWPer, a maior margem relativa acima do piso, valor ÷
+piso), e as outras continuam no dado e aparecem como características. O Lurker
+não vale para quem tem "Abre o round" na mesma partida (`EXCLUSOES`).
 
 Os pisos são pontos de calibração, não constantes universais. Foram revistos
 sobre 9 partidas (90 jogador-partidas, 18 times-partida) -- foi essa revisão que
@@ -60,6 +62,24 @@ from metrics.structural_roles import MIN_ROUNDS_POR_LADO
 # que a taxa vira 0 ou 1 com três rounds (decisão do Pedro, 2026-09-24).
 MIN_ROUNDS_AWP_DO_TIME = 4
 
+# PISOS DE FUNÇÃO (decisão 31). Respondidos pelo Pedro no material de calibração
+# (seção 1, registrados em DATA_DOS_PISOS) sobre o corpus de PARTIDAS_DOS_PISOS
+# partidas (JOGADOR_PARTIDAS_DOS_PISOS jogador-partidas; 43 partidas profissionais).
+# A fronteira de cada um (os líderes mais perto de cada lado) está na nota 31.
+DATA_DOS_PISOS = "2026-10-17"
+PARTIDAS_DOS_PISOS = 52
+JOGADOR_PARTIDAS_DOS_PISOS = 520
+# AWPer: MANTIDO. O Pedro deu 0,333 SE o awp_share fosse "AWP na mão / todos os
+# rounds"; ele é "dos rounds em que o TIME teve AWP, em quantos ela era dele"
+# (awp_do_time), que já tira o round sem dinheiro para AWP. Nessa definição um
+# líder com 1/3 dividiria a AWP com mais dois -- não é o AWPer. Medido: o menor
+# líder com amostra tem 0,556, então 0,333 e 0,533 dão os mesmos 94 rótulos.
+PISO_AWPER = 0.533
+PISO_ABRE_O_ROUND = 0.320             # mantido
+PISO_ANCORA = 0.90                    # sobe de 0,80 (resposta do Pedro)
+PISO_SEGUNDO_HOMEM = 0.350            # mantido
+PISO_PRINCIPAL_FRAGGER = 85.0         # mantido
+
 # Quanto o jogador precisa estar ACIMA do esperado da função para ser lurker.
 # CORTE ESTATÍSTICO (decisão do Pedro, 2026-09-26): entre os 102 líderes de time
 # das 43 partidas profissionais, maior vazio e Otsu caem os dois em 1,284 e o
@@ -68,7 +88,7 @@ MIN_ROUNDS_AWP_DO_TIME = 4
 # quando os métodos concordam, vale o corte. Substituiu o 1,5x de convenção.
 # Efeito medido nas 52: característica Lurker 55 -> 56, um título muda
 # (Jimpphat, match_41, 1,494x: Âncora -> Lurker); m0NESY segue com 0 rótulos
-# de Lurker nos 12 jogador-partidas dele.
+# de Lurker nos 12 jogador-partidas dele. MANTIDO na resposta de DATA_DOS_PISOS.
 PISO_LURK_RELATIVO = 1.284
 
 # AMOSTRA MÍNIMA DE TODO RÓTULO (auditoria, 2026-10-02). Antes só AWPer e Lurker
@@ -97,9 +117,14 @@ MIN_ROUNDS_DE_CT_PARA_ANCORA = MIN_ROUNDS_POR_LADO
 # corpus (21, de 14 a 36; pesquisa/rotulos_amostra.py): 20 / 21 = 0,952 s por
 # round. Efeito medido nas 52: 1 rótulo muda (donk na match_40, 24,4 s em 30
 # rounds = 0,81) -- mesma lista, sem a dependência da duração.
+# Resposta do Pedro (DATA_DOS_PISOS): testar 30 s e, com sh1ro, w0nderful ou donk ainda acima,
+# usar 40 s. Em 30 os três ficavam acima; em 40 ainda ficam sh1ro (match_38), w0nderful
+# (match_25) e donk (match_05): aceito -- o AWPer aparece como AWPer na tela (ordem_na_tela) e o
+# suporte do donk numa partida é aceito, como o do ZywOo. Fronteira na nota 31.
 PISO_SUPORTE_SEGUNDOS_ANTIGO = 20.0
+PISO_SUPORTE_SEGUNDOS = 40.0
 ROUNDS_MEDIANOS_DO_CORPUS = 21
-PISO_SUPORTE_POR_ROUND = PISO_SUPORTE_SEGUNDOS_ANTIGO / ROUNDS_MEDIANOS_DO_CORPUS
+PISO_SUPORTE_POR_ROUND = PISO_SUPORTE_SEGUNDOS / ROUNDS_MEDIANOS_DO_CORPUS
 
 # Rounds SEM AWP mínimos para afirmar lurk. 8 é o mesmo mínimo que o projeto já
 # usa para afirmar uma taxa de jogador (player_profile.MIN_ROUNDS_PARA_TAXA);
@@ -169,7 +194,7 @@ TRAIT_SPECS: list[Trait] = [
         # já fica acima de 53% em todas as 52 partidas. O piso é GUARDA para o
         # caso que ainda não apareceu: time que divide a AWP entre dois
         # jogadores, em que o "líder" tem 45% e não é o AWPer de ninguém.
-        floor=0.533,
+        floor=PISO_AWPER,
         priority=1,
         phrase=lambda v: f"a AWP do time era dele em {v * 100:.0f}% dos rounds com AWP",
         coluna_amostra="awp_rounds_do_time",
@@ -201,7 +226,7 @@ TRAIT_SPECS: list[Trait] = [
         # Com 5 jogadores, o acaso daria 0,20 a cada um. O líder de time observado
         # vai de 0,25 a 0,53 (mediana 0,33); 0,32 separa quem abre de fato de quem
         # só foi o menos lento de um time sem entry definido.
-        floor=0.32,
+        floor=PISO_ABRE_O_ROUND,
         priority=2,
         phrase=lambda v: f"foi o primeiro do time a encostar no adversário em {v * 100:.0f}% dos rounds",
         coluna_amostra="rounds_jogados",
@@ -272,7 +297,7 @@ TRAIT_SPECS: list[Trait] = [
         label="Âncora de bomb",
         column="never_left_share",
         high_is=True,
-        floor=0.80,
+        floor=PISO_ANCORA,
         priority=5,
         phrase=lambda v: f"não rotacionou em {v * 100:.0f}% dos rounds de CT",
         coluna_amostra="n_rounds_ct",
@@ -283,7 +308,7 @@ TRAIT_SPECS: list[Trait] = [
         label="Segundo homem",
         column="trade_share",
         high_is=True,
-        floor=0.35,
+        floor=PISO_SEGUNDO_HOMEM,
         priority=6,
         phrase=lambda v: f"{v * 100:.0f}% das kills foram trade",
         coluna_amostra="total_kills",
@@ -294,13 +319,40 @@ TRAIT_SPECS: list[Trait] = [
         label="Principal fragger",
         column="adr",
         high_is=True,
-        floor=85.0,
+        floor=PISO_PRINCIPAL_FRAGGER,
         priority=7,
         phrase=lambda v: f"{v:.0f} de ADR",
         coluna_amostra="rounds_jogados",
         minimo_amostra=MIN_ROUNDS_PARA_ROTULO,
     ),
 ]
+
+# Rótulo que NÃO vale para quem tem outro na mesma partida: {tirado: por causa de}.
+# Lurker sem "Abre o round" (resposta do Pedro, DATA_DOS_PISOS): ficar longe do
+# time por entrar na frente não é lurkar (xertioN, que é entry, e apEX). Vale no
+# dado (player_traits), não só na tela, e também na reamostragem da estabilidade.
+EXCLUSOES = {"lurk": "entry"}
+
+# O rótulo que a tela mostra quando o jogador tem mais de um (resposta do Pedro,
+# DATA_DOS_PISOS): o AWPer sempre ganha; sem ele, a maior margem relativa acima do
+# piso (valor ÷ piso); no empate da margem, a prioridade de TRAIT_SPECS. Os outros
+# rótulos continuam no dado e aparecem depois, nessa mesma ordem.
+ROTULO_QUE_SEMPRE_GANHA = "awp"
+
+
+def ordem_na_tela(traits: pl.DataFrame) -> pl.DataFrame:
+    """Acrescenta `margem` (valor ÷ piso) e `ordem` (1 = o título do cartão) por jogador."""
+    if traits.height == 0:
+        return traits.with_columns(pl.lit(None, dtype=pl.Float64).alias("margem"),
+                                   pl.lit(None, dtype=pl.UInt32).alias("ordem"))
+    pisos = {s.key: s.floor for s in TRAIT_SPECS}
+    return (traits
+            .with_columns((pl.col("value") / pl.col("trait").replace_strict(pisos, return_dtype=pl.Float64))
+                          .alias("margem"))
+            .sort(["steamid", (pl.col("trait") != ROTULO_QUE_SEMPRE_GANHA), "margem", "priority"],
+                  descending=[False, False, True, False], maintain_order=True)
+            .with_columns(pl.int_range(1, pl.len() + 1, dtype=pl.UInt32).over("steamid").alias("ordem"))
+            .sort(["team", "name", "priority"], maintain_order=True))
 
 
 def _coluna_opcional(df: pl.DataFrame | None, colunas: list[str]) -> pl.DataFrame:
@@ -611,6 +663,11 @@ def assign_traits(signals: pl.DataFrame) -> pl.DataFrame:
                 }
             )
 
+    # EXCLUSOES: o rótulo tirado não vale para quem tem o outro na mesma partida
+    for tirado, por in EXCLUSOES.items():
+        com = {r["steamid"] for r in rows if r["trait"] == por}
+        rows = [r for r in rows if not (r["trait"] == tirado and r["steamid"] in com)]
+
     if not rows:
         return pl.DataFrame(
             schema={
@@ -734,6 +791,22 @@ def _qualifica(spec: Trait, num: np.ndarray, den: np.ndarray, amostra: np.ndarra
     return ok
 
 
+def _qualificados(sinais: dict, soma: Callable[[np.ndarray], np.ndarray]) -> dict[str, np.ndarray]:
+    """{rótulo: jogador x reamostragem qualificado}, com as EXCLUSOES aplicadas
+    reamostragem a reamostragem (a mesma regra de `assign_traits`)."""
+    oks = {}
+    for spec in TRAIT_SPECS:
+        partes = sinais.get(spec.key)
+        if partes is None:
+            continue
+        num, den, amostra = (soma(m) for m in partes)
+        oks[spec.key] = _qualifica(spec, num, den, amostra, sinais["times"])
+    for tirado, por in EXCLUSOES.items():
+        if tirado in oks and por in oks:
+            oks[tirado] = oks[tirado] & ~oks[por]
+    return oks
+
+
 def estabilidade_dos_rotulos(outputs: dict[str, pl.DataFrame], features: pl.DataFrame,
                              signals: pl.DataFrame, team_of: dict[int, str],
                              n: int = N_REAMOSTRAGENS, semente: int = SEMENTE_DA_REAMOSTRAGEM) -> pl.DataFrame:
@@ -746,13 +819,9 @@ def estabilidade_dos_rotulos(outputs: dict[str, pl.DataFrame], features: pl.Data
     vezes = np.stack([np.bincount(s, minlength=n_rounds) for s in sorteio], axis=1).astype(float)
     ids = signals["steamid"].to_list()
     linhas = []
-    for spec in TRAIT_SPECS:
-        partes = sinais.get(spec.key)
-        if partes is None:
-            continue
-        num, den, amostra = (m @ vezes for m in partes)
-        fracao = _qualifica(spec, num, den, amostra, sinais["times"]).mean(axis=1)
-        linhas += [{"steamid": s, "trait": spec.key, "estabilidade": float(f)} for s, f in zip(ids, fracao) if f > 0]
+    for chave, ok in _qualificados(sinais, lambda m: m @ vezes).items():
+        fracao = ok.mean(axis=1)
+        linhas += [{"steamid": s, "trait": chave, "estabilidade": float(f)} for s, f in zip(ids, fracao) if f > 0]
     return pl.DataFrame(linhas, schema={"steamid": signals.schema["steamid"], "trait": pl.String,
                                         "estabilidade": pl.Float64})
 
@@ -764,13 +833,8 @@ def rotulos_na_partida_inteira(outputs: dict[str, pl.DataFrame], features: pl.Da
     sinais = sinais_por_round(outputs, features, signals, team_of)
     ids = signals["steamid"].to_list()
     fora = set()
-    for spec in TRAIT_SPECS:
-        partes = sinais.get(spec.key)
-        if partes is None:
-            continue
-        num, den, amostra = (m.sum(axis=1, keepdims=True) for m in partes)
-        ok = _qualifica(spec, num, den, amostra, sinais["times"])[:, 0]
-        fora |= {(s, spec.key) for s, q in zip(ids, ok) if q}
+    for chave, ok in _qualificados(sinais, lambda m: m.sum(axis=1, keepdims=True)).items():
+        fora |= {(s, chave) for s, q in zip(ids, ok[:, 0]) if q}
     return fora
 
 
@@ -811,15 +875,16 @@ def build_player_roles(
     team_of, _ = resolve_teams(ticks)
     signals = build_signals(outputs, features, team_of)
     traits = assign_traits(signals)
-    traits = (
+    traits = ordem_na_tela(
         traits.join(estabilidade_dos_rotulos(outputs, features, signals, team_of).with_columns(
             pl.col("steamid").cast(traits.schema["steamid"])), on=["steamid", "trait"], how="left")
         .with_columns(pl.col("estabilidade").fill_null(0.0))
         .with_columns((pl.col("estabilidade") < LIMIAR_DE_TENDENCIA).alias("tendencia"))
     )
 
+    # o título é o primeiro na ordem da tela (ordem_na_tela), não o de menor prioridade
     headline = (
-        traits.sort(["steamid", "priority"])
+        traits.sort(["steamid", "ordem"])
         .group_by("steamid", maintain_order=True)
         .agg(
             pl.col("label").first().alias("role"),
