@@ -8,10 +8,9 @@ de `notas/PENDENCIAS_PARA_O_PEDRO.md` e nas notas de decisão).
 
 - `GRUPOS_ATIVOS = False` (`scripts/grupos_config.py`): só vira `True` com o LIBERADO do agente `seguranca` e a
   confirmação do Pedro. A palavra do papel de serviço do Supabase não aparece em nenhum arquivo versionado (há teste).
-- `TIPOS_DE_ERRO_VALIDADOS`: cinco tipos na `main` (não trocou, perdeu a troca, morreu sozinho, primeira morte sem
-  troca, dano de utilidade no time). O Pedro respondeu "sim" aos 3 exemplos novos de "flash no time" (2026-10-21):
-  ela entra na branch `calibracao-flash-validada` (não mesclada). O possível bait fica fora (9 casos, abaixo de
-  `MIN_CASOS_PARA_VALIDAR`). `FORTES_POR_LADO_PUBLICADOS = True`.
+- `TIPOS_DE_ERRO_VALIDADOS`: seis tipos na `main` (não trocou, perdeu a troca, morreu sozinho, primeira morte sem
+  troca, dano de utilidade no time e flash no time, esta validada em 2026-10-21, 10/10). O possível bait fica fora
+  (9 casos, abaixo de `MIN_CASOS_PARA_VALIDAR`). `FORTES_POR_LADO_PUBLICADOS = True`.
 - `MIN_CASOS_PARA_VALIDAR = 10`: hoje só o "possível bait" (9 casos) fica fora.
 - Merge sem confirmação só quando o prompt da fase autoriza por escrito (regra da raiz).
 - Limites dos CLAUDE.md (tests/test_claude_md.py): raiz 15.000 no teste e meta 10.000; `metrics/` 12.000;
@@ -58,10 +57,10 @@ de `notas/PENDENCIAS_PARA_O_PEDRO.md` e nas notas de decisão).
 | `notas/estado-atual.md` criado | `f138103c` |
 | Calibração, item 2: grupos de estilo (nomes pelo perfil; o reajuste reproduz o modelo) | `3c4afd79` |
 | Calibração, item 3: cinco tipos de erro validados, `MIN_CEGUEIRA_FLASH_ALIADO`, versão 27 | `7775cd27` |
+| Flash no time validada (10/10) e no Perfil | `33a9159d` |
 
 ## Em andamento
 
-- `calibracao-flash-validada` (worktree `cal-flash`): a flash no time entra nos tipos validados (3 de 3 "sim").
 - `fix-tickrate-resto` (worktree `fix-resto`): os lugares que ainda assumem 64 tick, sem mudar nenhum número; junto,
   a contagem de testes do `numeros_citaveis`.
 - `calibracao-pisos` (worktree `cal-pisos`, NÃO mesclada, em pausa até a flash validada entrar): o Pedro decidiu o
@@ -72,7 +71,7 @@ de `notas/PENDENCIAS_PARA_O_PEDRO.md` e nas notas de decisão).
 
 ## Fila (na ordem; o Pedro decidiu em 2026-10-21)
 
-1. Flash validada e pisos (acima), nessa ordem; `fix-tickrate-resto`.
+1. Pisos (acima) e `fix-tickrate-resto`.
 2. O resto da fase 17: cartão 5 (`TICK_PELO_PROJETIL_SEM_EVENTO`, com a sua própria subida de versão e a tabela
    antes → depois), cartão 6 (histograma da força da rota B) e cartão 7 (os `.rar`: espaço em disco ≥ 12 GB,
    `demos/entrada/_extraido/` conferida antes, sha256 de cada `.dem`, regra 36).

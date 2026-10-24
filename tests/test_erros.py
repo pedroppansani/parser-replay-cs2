@@ -526,9 +526,10 @@ def test_regra_7_o_resto_depende_da_tatica():
 
 
 def test_tipos_validados_sao_os_confirmados_pelo_pedro():
-    # começou vazia (pedido 12.4); as respostas de 2026-10-16 validaram cinco tipos (decisão 46)
+    # começou vazia (pedido 12.4); as respostas de 2026-10-16 e 2026-10-21 validaram seis tipos (decisão 46)
     assert E.TIPOS_DE_ERRO_VALIDADOS == frozenset({E.NAO_TROCOU, E.PERDEU_A_TROCA, E.MORREU_SOZINHO,
-                                                   E.PRIMEIRA_MORTE_SEM_TROCA, E.DANO_DE_UTILIDADE_NO_TIME})
+                                                   E.PRIMEIRA_MORTE_SEM_TROCA, E.FLASH_NO_TIME,
+                                                   E.DANO_DE_UTILIDADE_NO_TIME})
 
 
 # --- O corpus ---------------------------------------------------------------------------------------

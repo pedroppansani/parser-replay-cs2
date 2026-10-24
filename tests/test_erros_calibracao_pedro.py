@@ -52,10 +52,19 @@ from scripts.calibracao import erros_do_jogador as G  # noqa: E402
 RAIZ = Path(__file__).resolve().parent.parent
 
 
-def test_os_validados_sao_tipos_conhecidos_sem_flash_nem_bait():
+def test_os_validados_sao_tipos_conhecidos_sem_o_bait():
     assert E.TIPOS_DE_ERRO_VALIDADOS <= set(E.TIPOS)
-    assert E.FLASH_NO_TIME not in E.TIPOS_DE_ERRO_VALIDADOS and E.POSSIVEL_BAIT not in E.TIPOS_DE_ERRO_VALIDADOS
-    assert len(E.TIPOS_DE_ERRO_VALIDADOS) == 5
+    assert E.POSSIVEL_BAIT not in E.TIPOS_DE_ERRO_VALIDADOS
+    assert len(E.TIPOS_DE_ERRO_VALIDADOS) == 6
+
+
+def test_flash_no_time_validada_com_as_tres_respostas_de_2026_10_21():
+    assert E.FLASH_NO_TIME in E.TIPOS_DE_ERRO_VALIDADOS
+    r = G.le_respostas()
+    assert r["tipos"][E.FLASH_NO_TIME]["confirmados"] == 10 and r["tipos"][E.FLASH_NO_TIME]["data"] == "2026-10-21"
+    novas = {k: v for k, v in r["exemplos"].items() if v["data"] == "2026-10-21"}
+    assert sorted(k[1:3] for k in novas) == [("match_14", 16), ("match_31", 20), ("match_53", 11)]
+    assert all(v["resposta"] == "sim" for v in novas.values())
 
 
 def test_os_tipos_validados_aparecem_no_perfil_publicado():
@@ -74,7 +83,7 @@ def test_os_tipos_validados_aparecem_no_perfil_publicado():
     assert all(len(m["chips"]) >= E.MIN_OCORRENCIAS_PARA_PONTO for m in melhorar)
     html = build_html("match_32")
     assert any(E.TITULOS[m["tipo"]] in html for m in melhorar)
-    assert E.TITULOS[E.FLASH_NO_TIME] not in html and E.TITULOS[E.POSSIVEL_BAIT] not in html
+    assert E.TITULOS[E.POSSIVEL_BAIT] not in html
 
 
 # --- As respostas gravadas não voltam como pergunta ----------------------------------------------------------
@@ -134,9 +143,10 @@ def test_as_respostas_de_2026_10_16_estao_gravadas_por_exemplo():
     tipos = resp["tipos"]
     assert {t: (v["confirmados"], v["de"]) for t, v in tipos.items()} == {
         E.NAO_TROCOU: (8, 10), E.POSSIVEL_BAIT: (8, 9), E.PERDEU_A_TROCA: (9, 10), E.MORREU_SOZINHO: (8, 10),
-        E.PRIMEIRA_MORTE_SEM_TROCA: (10, 10), E.FLASH_NO_TIME: (7, 10), E.DANO_DE_UTILIDADE_NO_TIME: (10, 10)}
-    assert all(v["data"] == "2026-10-16" and "não assistindo aos replays" in v["como"] for v in tipos.values())
-    assert len(resp["exemplos"]) == 69
+        E.PRIMEIRA_MORTE_SEM_TROCA: (10, 10), E.FLASH_NO_TIME: (10, 10), E.DANO_DE_UTILIDADE_NO_TIME: (10, 10)}
+    assert all(v["data"] == "2026-10-16" and "não assistindo aos replays" in v["como"]
+               for t, v in tipos.items() if t != E.FLASH_NO_TIME)
+    assert len(resp["exemplos"]) == 72
     # um tipo validado tem pelo menos 8 de 10 confirmados
     for t in E.TIPOS_DE_ERRO_VALIDADOS:
         assert tipos[t]["confirmados"] >= 8 and tipos[t]["de"] == 10

@@ -810,8 +810,9 @@ NOTA_CALIBRACAO_2026_10_16 = (
     "primeira morte sem troca (10) e dano de utilidade no time (10); estão em `TIPOS_DE_ERRO_VALIDADOS` e aparecem "
     "no Perfil publicado. As frases de como melhorar dos seis tipos servem como estão. \"Flash no time\" teve 7 de "
     "10: os 3 reprovados cegavam ~1 s, e a regra nova `MIN_CEGUEIRA_FLASH_ALIADO` = 2,0 s tira a flash que cegou o "
-    "time menos que isso (ela continua na soma do lado, que mede o padrão); os 3 foram substituídos e só eles "
-    "esperam resposta. O bait continua fora (amostra insuficiente).")
+    "time menos que isso (ela continua na soma do lado, que mede o padrão); os 3 foram substituídos e, em "
+    "2026-10-21, o Pedro respondeu \"sim\" nos 3 (#1 molodoy, #4 kyxsan, #10 910): fecha 10 de 10 e a flash no time "
+    "entra em `TIPOS_DE_ERRO_VALIDADOS`. O bait continua fora (amostra insuficiente).")
 
 NOTA_FASE15 = (
     '**Mudança da fase 15 (decisão 46).** "Flash no time" e "dano de utilidade no time" eram somas da partida (CT e '

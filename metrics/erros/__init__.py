@@ -154,10 +154,11 @@ MARGEM_PONTO_FORTE = 0.15
 # Tipos publicados no site. Começou vazia (pedido 12.4): um tipo só entra depois que o Pedro confirmar pelo
 # menos 8 dos 10 exemplos do material de calibração (seção 7). Respostas de 2026-10-16 (decisão 46; gravadas em
 # scripts/calibracao/respostas_do_pedro.json): não trocou 8/10, perdeu a troca 9/10, morreu sozinho 8/10, primeira
-# morte sem troca 10/10, dano de utilidade no time 10/10. Flash no time (7/10) ficou de fora até os 3 exemplos
-# novos da regra MIN_CEGUEIRA_FLASH_ALIADO; o bait, por amostra insuficiente.
+# morte sem troca 10/10, dano de utilidade no time 10/10. Flash no time: 7/10 em 2026-10-16 e, com os 3 exemplos
+# novos da regra MIN_CEGUEIRA_FLASH_ALIADO confirmados em 2026-10-21, 10/10. O bait fica de fora (amostra insuficiente).
 TIPOS_DE_ERRO_VALIDADOS: frozenset[str] = frozenset({
-    "nao_trocou", "perdeu_a_troca", "morreu_sozinho", "primeira_morte_sem_troca", "dano_de_utilidade_no_time"})
+    "nao_trocou", "perdeu_a_troca", "morreu_sozinho", "primeira_morte_sem_troca", "flash_no_time",
+    "dano_de_utilidade_no_time"})
 
 # Um tipo com menos ocorrências que isto no CORPUS (depois dos filtros) não entra na validação nem pode entrar
 # em TIPOS_DE_ERRO_VALIDADOS: com menos de 10 não dá para sortear os 10 exemplos da regra dos 8 de 10. A
