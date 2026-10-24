@@ -54,6 +54,9 @@ VERSAO_DO_PARSER = 2
 # Onde o complemento registra o que acrescentou a um interim existente.
 ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
 
+# 29 (2026-10-24) cartão 13: metrics/rating_reference.json regravado pelo fit_rating de hoje (o versionado vinha
+#    de um estado de 03/10 que não se reproduzia); 13 médias e desvios mudam no último bit, o rating muda só no
+#    último dígito, a catraca e os pesos não mudam. Teste novo: tests/test_referencia_do_rating.py.
 # 28 (2026-10-24) pisos de função (resposta do Pedro ao material de calibração, decisão 31): âncora 0,80 -> 0,90;
 #    suporte 20 -> 40 s de cegueira (por round: 40/21);
 #    o Lurker não vale para quem tem "Abre o round" na mesma partida (EXCLUSOES, também na reamostragem); o
@@ -146,7 +149,7 @@ ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
 #   (inclui a classe de economia do jogador no rating), unique com subset fica
 #   com a primeira linha. Antes, esses três casos dependiam da ordem de hash.
 # 1 (2026-09-20) primeira versão declarada, mesmo raciocínio acima.
-VERSAO_DAS_METRICAS = 28
+VERSAO_DAS_METRICAS = 29
 
 # Pastas cujo estado define o NÚMERO. `sujo` olha só estas: olhar o repositório
 # inteiro marcava todo reprocessamento como sujo, porque o próprio

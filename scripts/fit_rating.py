@@ -100,7 +100,7 @@ def partidas_disponiveis() -> list[str]:
     )
 
 
-def modelo_global(ids: list[str]) -> ModeloDeRound:
+def modelo_global(ids: list[str], pasta_interim: Path | None = None) -> ModeloDeRound:
     """Um modelo de round só, ajustado no conjunto -- não um por partida.
 
     Mesmo motivo da decisão 11: um modelo por partida aprende as idiossincrasias
@@ -108,7 +108,7 @@ def modelo_global(ids: list[str]) -> ModeloDeRound:
     """
     Xs, ys = [], []
     for mid in ids:
-        tabelas, team_of, vencedor, _ = carrega_partida(mid)
+        tabelas, team_of, vencedor, _ = carrega_partida(mid, pasta_interim)
         grupos = grupo_do_round(tabelas["ticks"], tabelas["rounds"])
         X, y = amostras_de_round(
             tabelas["kills"], tabelas["rounds"], grupos, team_of, vencedor, tickrate_da_partida(tabelas)
@@ -122,7 +122,7 @@ def modelo_global(ids: list[str]) -> ModeloDeRound:
 
 
 def componentes_do_corpus(ids: list[str], modelo: ModeloDeRound,
-                          referencia: dict | None = None) -> pl.DataFrame:
+                          referencia: dict | None = None, pasta_interim: Path | None = None) -> pl.DataFrame:
     """Os seis sub-ratings de cada jogador em cada partida.
 
     `referencia` é a escala em que os `norm_*` saem. Passá-la é o que mantém a
@@ -136,7 +136,7 @@ def componentes_do_corpus(ids: list[str], modelo: ModeloDeRound,
     """
     linhas = []
     for mid in ids:
-        tabelas, team_of, vencedor, kast = carrega_partida(mid)
+        tabelas, team_of, vencedor, kast = carrega_partida(mid, pasta_interim)
         _, resumo = rating(tabelas, team_of, vencedor, kast, tickrate_da_partida(tabelas),
                            referencia=referencia, modelo=modelo)
         # o rating sai por steamid; o rating oficial foi transcrito por nick, que é
@@ -185,14 +185,18 @@ def referencia_de(comp: pl.DataFrame, modelo: ModeloDeRound, ids: list[str]) -> 
     }
 
 
+def texto_da_referencia(ids: list[str], pasta_interim: Path | None = None) -> str:
+    """O conteúdo exato de `rating_reference.json` (cartão 13: o teste o compara com o versionado)."""
+    modelo = modelo_global(ids, pasta_interim)
+    referencia = referencia_de(componentes_do_corpus(ids, modelo, pasta_interim=pasta_interim), modelo, ids)
+    return json.dumps(referencia, ensure_ascii=False, indent=2)
+
+
 def ajusta_referencia(ids: list[str]) -> dict:
     """Calcula e grava as médias de escala do conjunto."""
-    modelo = modelo_global(ids)
-    referencia = referencia_de(componentes_do_corpus(ids, modelo), modelo, ids)
-    REFERENCIA_FILE.write_text(
-        json.dumps(referencia, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-    return referencia
+    texto = texto_da_referencia(ids)
+    REFERENCIA_FILE.write_text(texto, encoding="utf-8")
+    return json.loads(texto)
 
 
 # Demo de FACEIT vem com nome de UUID ("1-0007ce25-...dem"); demo profissional

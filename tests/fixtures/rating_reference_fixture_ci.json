@@ -1,0 +1,101 @@
+{
+  "medias": {
+    "kills_limpas": 0.5746179434409779,
+    "kills_assistidas": 0.1128281583652618,
+    "dano": 75.09700896600376,
+    "sobrevivencia": 0.3155254515599343,
+    "mortes_trocadas": 0.13646141215106733,
+    "kast": 0.7070114942528737,
+    "multikills": 0.19707687932048085,
+    "round_swing": -5.104928513359197e-05
+  },
+  "desvios": {
+    "kills_limpas": 0.20550934341355634,
+    "kills_assistidas": 0.06549970545575637,
+    "dano": 20.376493295715782,
+    "sobrevivencia": 0.20470478262233363,
+    "mortes_trocadas": 0.07437358973786963,
+    "kast": 0.1516369893988577,
+    "multikills": 0.14529769676562593,
+    "round_swing": 0.06212583383113656
+  },
+  "medias_por_lado": {
+    "ct": {
+      "medias": {
+        "kills_limpas": 0.5155756261022927,
+        "kills_assistidas": 0.12157244444444444,
+        "dano": 72.23580295238094,
+        "sobrevivencia": 0.2576190476190476,
+        "mortes_trocadas": 0.10499999999999998,
+        "kast": 0.6961904761904762,
+        "multikills": 0.13905128336272776,
+        "round_swing": 0.02160137119819627
+      },
+      "desvios": {
+        "kills_limpas": 0.16454110739714847,
+        "kills_assistidas": 0.11823409624012629,
+        "dano": 22.411914005794525,
+        "sobrevivencia": 0.24142360333604967,
+        "mortes_trocadas": 0.10079911048961827,
+        "kast": 0.19558835260785934,
+        "multikills": 0.14573810256787983,
+        "round_swing": 0.06714144453948721
+      },
+      "jogador_partidas": 20
+    },
+    "t": {
+      "medias": {
+        "kills_limpas": 0.6653906929613596,
+        "kills_assistidas": 0.11955883597883595,
+        "dano": 83.08063906878306,
+        "sobrevivencia": 0.34825757575757565,
+        "mortes_trocadas": 0.15694805194805195,
+        "kast": 0.7232467532467532,
+        "multikills": 0.27158438864838863,
+        "round_swing": -0.02154428541879213
+      },
+      "desvios": {
+        "kills_limpas": 0.35696224952574096,
+        "kills_assistidas": 0.16637724489262495,
+        "dano": 36.15774450719661,
+        "sobrevivencia": 0.2507006441120807,
+        "mortes_trocadas": 0.1232845907136384,
+        "kast": 0.254990630703975,
+        "multikills": 0.25509615985294526,
+        "round_swing": 0.0969600661524091
+      },
+      "jogador_partidas": 20
+    }
+  },
+  "dispersao_alvo": 0.545015536374016,
+  "n_partidas": 2,
+  "n_jogador_partidas": 20,
+  "modelo_de_round": {
+    "amostras": 600,
+    "treinou": true,
+    "brier": 0.07964681640291049,
+    "auc": 0.9608777777777777,
+    "coeficientes": {
+      "dif_vivos": 1.2907538038746227,
+      "dif_equip_milhares": 0.19324510433124426,
+      "bomba_a_favor": 0.36558457348309237,
+      "eh_ct": -2.828338987022568,
+      "razao_de_vivos": 1.6344263925107463,
+      "eliminacao": 0.3249543472393471,
+      "tempo_do_round": -0.43546715494156624,
+      "tempo_da_bomba": 2.249737698971141
+    },
+    "intercepto": 1.4144381292386259
+  },
+  "pesos_usados": {
+    "kills_limpas": 0.25,
+    "kills_assistidas": 0.03,
+    "dano": 0.18,
+    "sobrevivencia": 0.12,
+    "mortes_trocadas": 0.03,
+    "kast": 0.15,
+    "multikills": 0.09,
+    "round_swing": 0.15
+  },
+  "aviso": "Medias de escala do conjunto. Os PESOS ainda sao provisorios: os oficiais da HLTV sao fechados e os daqui so podem ser estimados por regressao contra ratings publicados (--fit-pesos)."
+}
