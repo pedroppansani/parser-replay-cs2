@@ -17,6 +17,8 @@ de `notas/PENDENCIAS_PARA_O_PEDRO.md` e nas notas de decisão).
   `scripts/` e `dashboard/web/` 6.000; as outras pastas, inclusive `metrics/erros/`, 5.000. Se um precisar passar
   do limite, não suba de novo: pare e traga uma proposta de divisão.
 - A branch `fase-6-decisivo` e as tags `baseline-*` não são apagadas.
+- Comando longo (suíte, reprocesso, build, capturas): um por chamada, com `timeout` e a saída em `notas/logs/`
+  (fora do git); se passar do limite, parar e dizer ao Pedro qual foi (pedido dele, 2026-10-24).
 - Dados: `data/interim` e `demos/` só por junction de leitura nos worktrees, removida no fim (regra 36). O
   reprocesso grava caminhos absolutos de demo no `data/manifest.json`: restaurar `caminho` e `existe` (só versão,
   commit, data e `sujo` podem mudar).
@@ -58,21 +60,20 @@ de `notas/PENDENCIAS_PARA_O_PEDRO.md` e nas notas de decisão).
 | Calibração, item 3: cinco tipos de erro validados, `MIN_CEGUEIRA_FLASH_ALIADO`, versão 27 | `7775cd27` |
 | Flash no time validada (10/10) e no Perfil | `33a9159d` |
 | Calibração, item 1: pisos de função (suporte 40 s, versão 28; 21 jogadores mudam de função na `jogadores.html`, nota 31) | `d5562e76` |
+| `fix-tickrate-resto`: tickrate lido da demo em todo lugar, sem mudar nenhum número (sha256 dos dados igual ao da `main`); contagem de testes 1.678 | `47c0f840` |
 
 ## Em andamento
 
-- `fix-tickrate-resto` (worktree `fix-resto`): os lugares que ainda assumem 64 tick, sem mudar nenhum número; junto,
-  a contagem de testes do `numeros_citaveis`.
+Nada.
 
 ## Fila (na ordem; o Pedro decidiu em 2026-10-21)
 
-1. `fix-tickrate-resto` (acima).
-2. O resto da fase 17: cartão 5 (`TICK_PELO_PROJETIL_SEM_EVENTO`, com a sua própria subida de versão e a tabela
+1. O resto da fase 17: cartão 5 (`TICK_PELO_PROJETIL_SEM_EVENTO`, com a sua própria subida de versão e a tabela
    antes → depois), cartão 6 (histograma da força da rota B) e cartão 7 (os `.rar`: espaço em disco ≥ 12 GB,
    `demos/entrada/_extraido/` conferida antes, sha256 de cada `.dem`, regra 36).
-3. Cartão 9, a refatoração, ANTES da v2-1 (ela mexe na estrutura e a v2 na forma). Trazer junto a proposta (só
+2. Cartão 9, a refatoração, ANTES da v2-1 (ela mexe na estrutura e a v2 na forma). Trazer junto a proposta (só
    propor) de gerar a contagem de testes no build pela coleta do pytest.
-4. A v2 (GOAT.demo), plano aprovado em `C:/Users/User/Desktop/Claude outputs/PLANO-v2-0.md`: v2-1 base (não
+3. A v2 (GOAT.demo), plano aprovado em `C:/Users/User/Desktop/Claude outputs/PLANO-v2-0.md`: v2-1 base (não
    muda a aparência; o escuro atual vira `data-tema="escuro"`), v2-2 marca, v2-3 e v2-4 em sequência numa branch de
    integração e para a `main` no mesmo push, v2-5 e v2-6 em paralelo depois de a v2-4 mesclar o `map_core.js`, v2-7
    verificação final. Condições de cada fase: suíte verde, impressão dos números idêntica, só as capturas e os
@@ -80,8 +81,8 @@ de `notas/PENDENCIAS_PARA_O_PEDRO.md` e nas notas de decisão).
    da seção 4.4 podem mudar; o `scripts/CLAUDE.md` não ganha linha (se precisar, parar e propor divisão). Na v2-7:
    pôr no PENDENCIAS o `curl` do `Content-Encoding` dos dois agentes depois do deploy e o fallback da fonte mono no
    macOS. Fase própria depois da v2: a comparação por grupos do Perfil, com a regra de empate do Pedro.
-5. Parte B dos grupos, DEPOIS da v2-7 e só depois de o Pedro reativar o projeto Supabase e confirmar (ver as
+4. Parte B dos grupos, DEPOIS da v2-7 e só depois de o Pedro reativar o projeto Supabase e confirmar (ver as
    regras temporárias). Junto: plano Free, a maior tática real (máximo, mediana e p95 de operações), `gitleaks`,
    `npm audit` e `pip-audit`, e o `.claude/worktrees/` no `.gitignore`; depois o `grupos.md` para o `seguranca`.
-6. Do lado do Pedro: o dano de utilidade na escada (cartão 1, prints da HLTV); o roteiro do NVDA (cartão 11); o
+5. Do lado do Pedro: o dano de utilidade na escada (cartão 1, prints da HLTV); o roteiro do NVDA (cartão 11); o
    cartão 10 (Supabase); a fase 6 (`fase-6-decisivo`); a investigação do awpy 3 fica numa sessão separada.
