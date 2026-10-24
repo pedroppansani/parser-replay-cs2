@@ -35,6 +35,7 @@ from metrics.grenade_throws import (  # noqa: E402
     BOTAO_DA_FORCA, COMANDO_CONFERIDO_NO_JOGO, ROTULOS_FORCA, comando_de_console,
     grenade_throws, grupos_de_forca, rotula_forca,
 )
+from metrics.timing import detect_tickrate  # noqa: E402
 from parsing.parser import load_interim  # noqa: E402
 
 INTERIM = PROJECT_ROOT / "data" / "interim"
@@ -44,14 +45,6 @@ LINEUPS_DIR = PROJECT_ROOT / "data" / "lineups"
 # Versão do formato do arquivo da biblioteca. A página recusa versão que não
 # conhece.
 FORMATO_LINEUPS = 1
-
-TICKRATE_PADRAO = 64
-
-
-def _tickrate(match_id: str) -> int:
-    meta = json.loads((PROCESSED / match_id / "match_meta.json").read_text(encoding="utf-8"))
-    return int(meta.get("tickrate") or TICKRATE_PADRAO)
-
 
 def arremessos_do_corpus() -> pl.DataFrame:
     """Todos os arremessos das partidas com interim, com mapa, tempo e jogador."""
@@ -63,7 +56,7 @@ def arremessos_do_corpus() -> pl.DataFrame:
         meta = json.loads((proc / "match_meta.json").read_text(encoding="utf-8"))
         t = load_interim(INTERIM, d.name)
         t["rounds"] = pl.read_parquet(proc / "rounds.parquet")
-        tr = _tickrate(d.name)
+        tr = int(detect_tickrate(t["rounds"], t["ticks"])["tickrate"])   # o da demo
         pr, _ = grenade_throws(t, tr)
         if pr.height == 0:
             continue

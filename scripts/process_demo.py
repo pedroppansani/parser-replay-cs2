@@ -87,29 +87,29 @@ def process(
 
     outputs: dict[str, pl.DataFrame] = {}
 
+    # O tickrate é o da DEMO (metrics/timing.py), nunca o padrão de uma função: nenhuma
+    # métrica tem padrão e todas o recebem daqui (cartão 12, nota 22j).
+    tickrate = int(detect_tickrate(tables["rounds"], tables["ticks"])["tickrate"])
+
     print("[3/6] Fase 1 -- métricas básicas (ADR, KAST, trades, utility) ...")
-    outputs.update(compute_all_basic_metrics(tables))
+    outputs.update(compute_all_basic_metrics(tables, tickrate))
 
     print("[4/6] Fase 2 -- AWP, crosshair placement, posicionamento e utility ...")
-    # O tickrate é o da DEMO (metrics/timing.py), nunca o padrão de uma função:
-    # sem ele a janela da flash e o tempo da primeira utility saíam a 128 tick
-    # numa demo de 64 (cartão 12, nota 22j).
-    tickrate = int(detect_tickrate(tables["rounds"], tables["ticks"])["tickrate"])
     gren_round, gren_summary = compute_grenade_metrics(
         tables, roster_per_round(tables["ticks"]), tickrate
     )
     outputs["grenades_per_round"] = gren_round
     outputs["grenades_summary"] = gren_summary
 
-    awp_round, awp_summary = calculate_awp_metrics(tables)
+    awp_round, awp_summary = calculate_awp_metrics(tables, tickrate)
     outputs["awp_per_round"] = awp_round
     outputs["awp_summary"] = awp_summary
 
-    ch_round, ch_summary, ch_samples = calculate_crosshair_metrics(tables, map_name)
+    ch_round, ch_summary, ch_samples = calculate_crosshair_metrics(tables, map_name, tickrate=tickrate)
     outputs["crosshair_per_round"] = ch_round
     outputs["crosshair_summary"] = ch_summary
 
-    pos = calculate_positioning_metrics(tables, map_name)
+    pos = calculate_positioning_metrics(tables, map_name, tickrate=tickrate)
     outputs["setup_snapshot"] = pos["setup_snapshot"]
     outputs["zone_occupancy"] = pos["zone_occupancy"]
     outputs["standard_setup"] = pos["standard_setup"]
@@ -140,7 +140,7 @@ def process(
 
     print("[5/6] Fase 3 -- clustering de estilos de jogo (PCA + KMeans) ...")
     features = build_feature_matrix(
-        outputs, ch_round, pos["position_profile"], tables["damages"], tables["rounds"]
+        outputs, ch_round, pos["position_profile"], tables["damages"], tables["rounds"], tickrate
     )
     outputs["cluster_features"] = features
 

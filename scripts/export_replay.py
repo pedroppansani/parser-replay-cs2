@@ -5,7 +5,7 @@ Exporta o replay simplificado: trajetórias, kills e eventos de bomba por round.
 específicos" previsto na Fase 3. A ideia não é recriar o jogo, é conseguir
 responder "o que aconteceu naquele round?" sem abrir o CS2.
 
-Amostragem: uma posição a cada 16 ticks (4 por segundo a 64 tick). É suave o
+Amostragem: 4 posições por segundo (uma a cada 16 ticks a 64 tick, 32 a 128). É suave o
 bastante pra leitura de movimento e mantém o arquivo pequeno — o painel precisa
 ser autocontido, sem servidor.
 
@@ -24,12 +24,12 @@ from metrics.constantes import DURACAO_MOLOTOV_S, DURACAO_SMOKE_S, SEGUNDOS_DA_B
 
 from metrics.round_breakdown import frase_da_morte
 from metrics.sides import team_of_side
+from metrics.timing import detect_tickrate
 from parsing.parser import kills_do_round_jogado
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-SAMPLE_EVERY = 16  # ticks (4 quadros por segundo a 64 tick)
-TICKRATE = 64  # medido, não assumido — ver metrics/timing.py
+AMOSTRAS_POR_SEGUNDO = 4   # quadros do replay por segundo; o passo em ticks sai do tickrate da demo
 
 # Classes de entidade do demo -> categoria legível.
 #
@@ -53,7 +53,7 @@ from metrics.grenade_throws import GRENADE_KIND  # noqa: E402
 # Folga pra casar o dano de HE com a detonação que o causou: o player_hurt cai
 # no mesmo tick na maioria das vezes, mas vítimas processadas no tick seguinte
 # aparecem alguns ticks depois.
-POP_DAMAGE_TICKS = int(0.5 * TICKRATE)
+POP_DAMAGE_S = 0.5
 
 # Abaixo disso o inimigo perde o HUD, não a briga — é o limiar que separa flash
 # efetiva de flash de raspão. Mesmo valor usado em metrics/grenades.py.
@@ -61,13 +61,11 @@ EFFECTIVE_BLIND_SECONDS = 1.0
 
 # Quanto o replay continua depois de a vitória ser decidida, pra a última morte
 # e o desarme caberem na linha do tempo.
-TAIL_TICKS = int(4.0 * TICKRATE)
+TAIL_S = 4.0
 # Folga antes do começo oficial do próximo round, onde os jogadores já foram
 # teleportados pro spawn.
-RESET_MARGIN_TICKS = int(1.5 * TICKRATE)
+RESET_MARGIN_S = 1.5
 
-SMOKE_TICKS = int(DURACAO_SMOKE_S * TICKRATE)        # metrics/constantes.py
-INFERNO_TICKS = int(DURACAO_MOLOTOV_S * TICKRATE)
 
 # Relógio do jogo. No CS2 o round dura 1:55 e o cronômetro só começa a correr
 # quando o freeze time acaba — que é exatamente onde o replay começa (`t0` é o
@@ -174,6 +172,14 @@ def build(match_id: str) -> Path:
 
     rounds = pl.read_parquet(processed / "rounds.parquet")
     ticks = pl.read_parquet(interim / "ticks.parquet")
+    # o tickrate é o da demo (metrics/timing.py), gravado no replay para o JS; nada é assumido
+    tickrate = int(detect_tickrate(rounds, ticks)["tickrate"])
+    sample_every = tickrate // AMOSTRAS_POR_SEGUNDO
+    pop_damage_ticks = int(POP_DAMAGE_S * tickrate)
+    tail_ticks = int(TAIL_S * tickrate)
+    reset_margin_ticks = int(RESET_MARGIN_S * tickrate)
+    smoke_ticks = int(DURACAO_SMOKE_S * tickrate)        # metrics/constantes.py
+    inferno_ticks = int(DURACAO_MOLOTOV_S * tickrate)
     kills = pl.read_parquet(interim / "kills.parquet")
     # mortes do tempo parado não pertencem a round nenhum (ver parsing.parser)
     kills = kills_do_round_jogado(kills, rounds)
@@ -192,7 +198,7 @@ def build(match_id: str) -> Path:
 
     # de que arremesso veio cada smoke, fogo e granada em voo (a "Tática deste
     # instante" liga o efeito ao lance real, sem inventar origem)
-    lances = lances_do_corpo(match_id, rounds, TICKRATE)
+    lances = lances_do_corpo(match_id, rounds, tickrate)
     fogo = fogo_para_projetil(infernos, grenades)
 
     out_rounds = []
@@ -208,12 +214,12 @@ def build(match_id: str) -> Path:
         # `official_end` — lá os jogadores já foram teleportados pro spawn do
         # round seguinte, e isso apareceria como um salto no mapa.
         t_decided = int(r["end"])
-        hard_stop = int(r["official_end"]) - RESET_MARGIN_TICKS if r["official_end"] is not None else None
-        t1 = t_decided + TAIL_TICKS
+        hard_stop = int(r["official_end"]) - reset_margin_ticks if r["official_end"] is not None else None
+        t1 = t_decided + tail_ticks
         if hard_stop is not None:
             t1 = min(t1, max(t_decided, hard_stop))
 
-        frames = list(range(t0, t1 + 1, SAMPLE_EVERY))
+        frames = list(range(t0, t1 + 1, sample_every))
         if len(frames) < 2:
             continue
 
@@ -305,7 +311,7 @@ def build(match_id: str) -> Path:
             posição contínua (`pos`) e interpola entre quadros -- quem compara
             com o quadro inteiro é que estava jogando fora a precisão.
             """
-            bruto = (int(tick) - t0) / SAMPLE_EVERY
+            bruto = (int(tick) - t0) / sample_every
             return round(max(0.0, min(float(len(frames) - 1), bruto)), 3)
 
         def frame_index_of(tick: int) -> int:
@@ -326,7 +332,7 @@ def build(match_id: str) -> Path:
                 {
                     "type": "kill",
                     "f": frame_of(k["tick"]),
-                    "t": round((int(k["tick"]) - t0) / TICKRATE, 1),
+                    "t": round((int(k["tick"]) - t0) / tickrate, 1),
                     "x": int(round(k["victim_X"])),
                     "y": int(round(k["victim_Y"])),
                     "ax": int(round(k["attacker_X"])) if k["attacker_X"] is not None else None,
@@ -357,7 +363,7 @@ def build(match_id: str) -> Path:
                     {
                         "type": {"plant": "plant", "defuse": "defuse", "detonate": "explode"}[b["event"]],
                         "f": frame_of(b["tick"]),
-                        "t": round((int(b["tick"]) - t0) / TICKRATE, 1),
+                        "t": round((int(b["tick"]) - t0) / tickrate, 1),
                         "x": int(round(b["X"])) if b["X"] is not None else None,
                         "y": int(round(b["Y"])) if b["Y"] is not None else None,
                         "player": b["name"],
@@ -472,7 +478,7 @@ def build(match_id: str) -> Path:
                         {
                             "n": b["user_name"],
                             "f0": frame_of(b["tick"]),
-                            "f1": frame_of(int(b["tick"]) + int(dur * TICKRATE)),
+                            "f1": frame_of(int(b["tick"]) + int(dur * tickrate)),
                             "s": round(dur, 1),
                         }
                     )
@@ -480,7 +486,7 @@ def build(match_id: str) -> Path:
                     {
                         "k": "flash",
                         "f": frame_of(d["tick"]),
-                        "t": round((int(d["tick"]) - t0) / TICKRATE, 1),
+                        "t": round((int(d["tick"]) - t0) / tickrate, 1),
                         "x": int(round(d["x"])),
                         "y": int(round(d["y"])),
                         "by": d["user_name"],
@@ -503,14 +509,14 @@ def build(match_id: str) -> Path:
                     near = he_dmg.filter(
                         (pl.col("attacker_steamid") == d["user_steamid"])
                         & (pl.col("tick") >= d["tick"])
-                        & (pl.col("tick") <= d["tick"] + POP_DAMAGE_TICKS)
+                        & (pl.col("tick") <= d["tick"] + pop_damage_ticks)
                     )
                     dmg = int(near["dmg_health_real"].sum() or 0)
                 pops.append(
                     {
                         "k": "he",
                         "f": frame_of(d["tick"]),
-                        "t": round((int(d["tick"]) - t0) / TICKRATE, 1),
+                        "t": round((int(d["tick"]) - t0) / tickrate, 1),
                         "x": int(round(d["x"])),
                         "y": int(round(d["y"])),
                         "by": d["user_name"],
@@ -534,7 +540,7 @@ def build(match_id: str) -> Path:
                 # tempo negativo atrás de um clamp em zero.
                 "t0": int(t0),
                 "t1": int(t1),
-                "seconds": round((t1 - t0) / TICKRATE, 1),
+                "seconds": round((t1 - t0) / tickrate, 1),
                 "decided_f": frame_of(t_decided),
                 "weapons": weapon_names,
                 "places": place_names,
@@ -543,8 +549,8 @@ def build(match_id: str) -> Path:
                 "nades": nades,
                 "pops": sorted(pops, key=lambda p: p["f"]),
                 "blinds": blinds,
-                "smokes": zones(smokes, SMOKE_TICKS, lambda z: int(z["entity_id"])),
-                "fires": zones(infernos, INFERNO_TICKS, lambda z: fogo.get((rn, int(z["entity_id"])))),
+                "smokes": zones(smokes, smoke_ticks, lambda z: int(z["entity_id"])),
+                "fires": zones(infernos, inferno_ticks, lambda z: fogo.get((rn, int(z["entity_id"])))),
             }
         )
 
@@ -557,13 +563,13 @@ def build(match_id: str) -> Path:
 
     # Freeze medido no próprio dado, em vez de assumido: é a evidência de que o
     # replay começa onde o cronômetro do round começa a correr.
-    freeze_seconds = float(((rounds["freeze_end"] - rounds["start"]) / TICKRATE).median())
+    freeze_seconds = float(((rounds["freeze_end"] - rounds["start"]) / tickrate).median())
 
     payload = {
         "bounds": bounds,
-        "sample_hz": TICKRATE / SAMPLE_EVERY,
-        "sample_every": SAMPLE_EVERY,
-        "tickrate": TICKRATE,
+        "sample_hz": tickrate / sample_every,
+        "sample_every": sample_every,
+        "tickrate": tickrate,
         "map": map_name,
         "levels": levels,
         "clock": {

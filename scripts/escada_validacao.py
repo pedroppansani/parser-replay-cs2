@@ -253,14 +253,14 @@ def _imprime_assistencia_flash(af: pl.DataFrame) -> None:
 def swing() -> pl.DataFrame:
     """Degrau 5: o Round Swing deste projeto, em pontos percentuais, contra o oficial."""
     from metrics.rating import ModeloDeRound, carrega_referencia, rating
-    from scripts.fit_rating import carrega_partida
+    from scripts.fit_rating import carrega_partida, tickrate_da_partida
 
     referencia = carrega_referencia()
     modelo = ModeloDeRound.da_referencia((referencia or {}).get("modelo_de_round"))
     linhas = []
     for mid, v in _ler("hltv_componentes.json").items():
         tabelas, team_of, vencedor, kast = carrega_partida(mid)
-        _, resumo = rating(tabelas, team_of, vencedor, kast, 64, referencia=referencia, modelo=modelo)
+        _, resumo = rating(tabelas, team_of, vencedor, kast, tickrate_da_partida(tabelas), referencia=referencia, modelo=modelo)
         nick = dict(tabelas["ticks"].group_by("steamid", maintain_order=True).agg(pl.col("name").last()).iter_rows())
         nosso = {nick.get(j["steamid"]): 100 * j["sub_round_swing"] for j in resumo["jogadores"]}
         for nome, o in v["jogadores"].items():

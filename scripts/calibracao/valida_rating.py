@@ -37,6 +37,7 @@ from metrics.economia import ajusta_tabela, confrontos_da_partida  # noqa: E402
 from metrics.rating import PESOS_PROVISORIOS, ModeloDeRound, amostras_de_round, grupo_do_round, rating  # noqa: E402
 from scripts.fit_rating import (  # noqa: E402
     _linhas_com_alvo, _times_dos_jogadores, carrega_partida, partidas_disponiveis, referencia_de,
+    tickrate_da_partida,
 )
 
 SAIDA = RAIZ / "metrics" / "rating_validacao.json"
@@ -51,15 +52,17 @@ class Corpus:
 
     def __init__(self, ids: list[str]):
         self.ids = ids
-        self.partida, self.amostras, self.confrontos, self.nick = {}, {}, {}, {}
+        self.partida, self.amostras, self.confrontos, self.nick, self.tickrate = {}, {}, {}, {}, {}
         for mid in ids:
             tabelas, team_of, vencedor, kast = carrega_partida(mid)
+            self.tickrate[mid] = tickrate_da_partida(tabelas)   # antes de enxugar os ticks
             ticks = tabelas["ticks"]
             self.nick[mid] = dict(ticks.group_by("steamid", maintain_order=True).agg(pl.col("name").last()).iter_rows())
             tabelas = {**tabelas, "ticks": ticks.select([c for c in COLUNAS_DE_TICKS if c in ticks.columns])}
             self.partida[mid] = (tabelas, team_of, vencedor, kast)
             grupos = grupo_do_round(tabelas["ticks"], tabelas["rounds"])
-            self.amostras[mid] = amostras_de_round(tabelas["kills"], tabelas["rounds"], grupos, team_of, vencedor)
+            self.amostras[mid] = amostras_de_round(tabelas["kills"], tabelas["rounds"], grupos, team_of, vencedor,
+                                                self.tickrate[mid])
             compra = tabelas.get("compra")
             self.confrontos[mid] = (confrontos_da_partida(compra, team_of, vencedor)
                                     if compra is not None and compra.height else pl.DataFrame())
@@ -76,7 +79,7 @@ class Corpus:
         linhas = []
         for mid in ids:
             tabelas, team_of, vencedor, kast = self.partida[mid]
-            _, resumo = rating(tabelas, team_of, vencedor, kast, 64, referencia=referencia, modelo=modelo,
+            _, resumo = rating(tabelas, team_of, vencedor, kast, self.tickrate[mid], referencia=referencia, modelo=modelo,
                                tabela_economia=economia)
             for j in resumo["jogadores"]:
                 linhas.append({**j, "name": self.nick[mid].get(j["steamid"]), "match_id": mid})

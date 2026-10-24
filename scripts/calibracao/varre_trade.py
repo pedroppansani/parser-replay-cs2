@@ -24,9 +24,9 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 os.chdir(ROOT)
 from metrics.basic_metrics import roster_per_round  # noqa: E402
+from metrics.timing import detect_tickrate  # noqa: E402
 from parsing.parser import load_interim  # noqa: E402
 
-TR = 64
 JANELAS = [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.25, 4.5, 5.0, 5.5, 6.0, 7.0, 8.0]
 DISTANCIAS = [None, 500.0, 900.0, 1500.0]
 
@@ -36,9 +36,11 @@ AP = {"sh1ro": "SH1R0", "mzinho": "Mzinho", "Techno": "Techno4K"}
 mapas_da_serie = {m: s for s, v in det["series"].items() if v["serie_completa_no_corpus"] for m in v["mapas"]}
 ids = sorted(set(comp) | set(mapas_da_serie))
 DADOS = {m: load_interim(ROOT / "data/interim", m) for m in ids}
+# o tickrate de cada partida, lido dela (metrics/timing.py)
+TR = {m: int(detect_tickrate(t["rounds"], t["ticks"])["tickrate"]) for m, t in DADOS.items()}
 
 
-def trocas(k, janela_s, por_quem, dist_max):
+def trocas(k, janela_s, por_quem, dist_max, tickrate):
     """(round, vítima) -> morte trocada, na definição pedida."""
     inim = k.filter(pl.col("attacker_steamid").is_not_null() & (pl.col("attacker_side") != pl.col("victim_side")))
     a = inim.select("round_num", "tick", pl.col("victim_steamid").alias("v"),
@@ -48,7 +50,7 @@ def trocas(k, janela_s, por_quem, dist_max):
                  pl.col("attacker_side").alias("lvin"), pl.col("attacker_X").alias("ax"),
                  pl.col("attacker_Y").alias("ay"))
     j = a.join(b, on=["round_num", "mat"]).filter(
-        (pl.col("t2") >= pl.col("tick")) & (pl.col("t2") - pl.col("tick") <= janela_s * TR))
+        (pl.col("t2") >= pl.col("tick")) & (pl.col("t2") - pl.col("tick") <= janela_s * tickrate))
     if por_quem == "companheiro":
         j = j.filter(pl.col("lvin") == pl.col("lv"))
     if dist_max is not None:
@@ -84,7 +86,7 @@ for janela in JANELAS:
             dt_ok = dt_n = dt_dif = 0
             por_serie = {}
             for mid, t in DADOS.items():
-                tro = trocas(t["kills"], janela, por_quem, dist)
+                tro = trocas(t["kills"], janela, por_quem, dist, TR[mid])
                 if mid in comp:
                     nosso = kast_rounds(t, tro)
                     for nome, j in comp[mid]["jogadores"].items():

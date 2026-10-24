@@ -25,9 +25,8 @@ import polars as pl
 RAIZ = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(RAIZ))
 from metrics.rating import grupo_do_round  # noqa: E402
-from scripts.fit_rating import carrega_partida, partidas_disponiveis  # noqa: E402
+from scripts.fit_rating import carrega_partida, partidas_disponiveis, tickrate_da_partida  # noqa: E402
 
-TICKRATE = 64
 TEMPO_DO_ROUND_S = 115.0          # relógio do round no competitivo (1:55)
 TEMPO_DA_BOMBA_S = 40.0           # a mesma constante que metrics/timing.py usa para achar o tickrate
 DOBRAS = 10
@@ -37,6 +36,7 @@ def amostras(mid: str) -> pl.DataFrame:
     """Uma linha por (kill, lado): o estado DEPOIS da kill e se aquele lado venceu o round."""
     tabelas, team_of, vencedor, _ = carrega_partida(mid)
     rounds, kills = tabelas["rounds"], tabelas["kills"]
+    tickrate = tickrate_da_partida(tabelas)   # o da partida, nunca um 64 escrito
     grupos = grupo_do_round(tabelas["ticks"], rounds)
     eq = (grupos.with_columns(pl.col("steamid").map_elements(lambda s: team_of.get(s), return_dtype=pl.String).alias("time"))
           .drop_nulls("time").group_by(["round_num", "time"], maintain_order=True)
@@ -57,8 +57,8 @@ def amostras(mid: str) -> pl.DataFrame:
                 continue
             vivos[tv] -= 1
             plantada = plant is not None and k["tick"] >= int(plant)
-            decorrido = max(0.0, (k["tick"] - int(inicio)) / TICKRATE)
-            da_bomba = max(0.0, (k["tick"] - int(plant)) / TICKRATE) if plantada else 0.0
+            decorrido = max(0.0, (k["tick"] - int(inicio)) / tickrate)
+            da_bomba = max(0.0, (k["tick"] - int(plant)) / tickrate) if plantada else 0.0
             for time in ("A", "B"):
                 outro = "B" if time == "A" else "A"
                 if (rn, time) not in equip or (rn, outro) not in equip:
