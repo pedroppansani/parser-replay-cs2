@@ -32,9 +32,9 @@
   ],
   "versao": {
     "parser": 2,
-    "metricas": 28,
-    "commit": "afc859316344",
-    "sujo": false,
+    "metricas": 29,
+    "commit": "34178d5ef4ab",
+    "sujo": true,
     "awpy": "2.0.2",
     "demoparser2": "0.42.0"
   }
