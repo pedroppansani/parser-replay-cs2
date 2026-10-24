@@ -92,7 +92,7 @@ FEATURES_DE_RESULTADO_REMOVIDAS = [
 ]
 
 
-def first_contact_per_player_round(damages: pl.DataFrame, rounds: pl.DataFrame, tickrate: int = 64) -> pl.DataFrame:
+def first_contact_per_player_round(damages: pl.DataFrame, rounds: pl.DataFrame, tickrate: int) -> pl.DataFrame:
     """Segundos entre o fim do freeze time e o primeiro contato do jogador.
 
     Contato = causou ou sofreu dano. É o separador mais direto entre quem abre o
@@ -115,7 +115,7 @@ def build_feature_matrix(
     position_profile: pl.DataFrame,
     damages: pl.DataFrame,
     rounds: pl.DataFrame,
-    tickrate: int = 64,
+    tickrate: int,
 ) -> pl.DataFrame:
     """Monta uma linha por (round, jogador) com todas as features do clustering."""
     adr = basic["adr_per_round"].select(["round_num", "steamid", "name", "damage"])

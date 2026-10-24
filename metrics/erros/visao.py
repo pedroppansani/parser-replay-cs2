@@ -379,7 +379,7 @@ def cegueira_efetiva(blinds: pl.DataFrame | None, tickrate: int) -> dict:
 
 
 def visao_da_partida(ticks: pl.DataFrame, mapa: str, smokes_df: pl.DataFrame | None,
-                     blinds: pl.DataFrame | None = None, tickrate: int = 64, tris_dir: Path | None = None) -> Visao:
+                     blinds: pl.DataFrame | None, tickrate: int, tris_dir: Path | None = None) -> Visao:
     """A visão de uma partida do interim: a malha do mapa, as smokes (início e fim pelo interim) e a cegueira."""
     from metrics.constantes import DURACAO_SMOKE_S
     smokes = []

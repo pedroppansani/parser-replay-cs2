@@ -198,7 +198,7 @@ def analyze_round(
     grenades: pl.DataFrame | None,
     team_of: dict[int, str],
     side_of_team,
-    tickrate: int = 64,
+    tickrate: int,
     ultimo_round: int | None = None,
 ) -> dict:
     """Monta a autópsia de um round para o time que perdeu."""
@@ -468,7 +468,7 @@ def build_breakdowns(
     grenades: pl.DataFrame | None,
     team_of: dict[int, str],
     side_of_team,
-    tickrate: int = 64,
+    tickrate: int,
 ) -> list[dict]:
     """Autópsia de todos os rounds da partida."""
     ultimo = int(rounds["round_num"].max())

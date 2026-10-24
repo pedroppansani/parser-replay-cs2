@@ -253,7 +253,7 @@ def add_contact_window_flag(
     shots: pl.DataFrame,
     damages: pl.DataFrame,
     window_seconds: float = CONTACT_WINDOW_SECONDS,
-    tickrate: int = 64,
+    *, tickrate: int,
 ) -> pl.DataFrame:
     """Marca as amostras que estão na janela que antecede um contato do jogador.
 
@@ -399,6 +399,7 @@ def calculate_crosshair_metrics(
     tables: dict[str, pl.DataFrame],
     map_name: str,
     sample_every: int = SAMPLE_EVERY_N_TICKS,
+    *, tickrate: int,
 ) -> tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame]:
     """Roda o pipeline completo de crosshair placement.
 
@@ -415,7 +416,7 @@ def calculate_crosshair_metrics(
 
     samples = sample_aim_states(ticks, rounds, sample_every)
     samples = _nearest_enemy_per_sample(samples, ticks)
-    samples = add_contact_window_flag(samples, tables["shots"], tables["damages"])
+    samples = add_contact_window_flag(samples, tables["shots"], tables["damages"], tickrate=tickrate)
     samples = score_samples(samples, pitch_reference, angle_lookup)
 
     per_round = (

@@ -101,7 +101,7 @@ def awp_rounds(ticks: pl.DataFrame) -> pl.DataFrame:
 def first_awp_engagements(
     shots: pl.DataFrame,
     rounds: pl.DataFrame,
-    tickrate: int = 64,
+    tickrate: int,
 ) -> pl.DataFrame:
     """Primeiro tiro de AWP de cada jogador em cada round, com o tempo desde o
     fim do freeze time (ou seja, desde que o round "abriu" de verdade).
@@ -136,7 +136,7 @@ def classify_engagement_style(
     engagements: pl.DataFrame,
     ticks: pl.DataFrame,
     window_seconds: float = PRE_ENGAGEMENT_WINDOW_SECONDS,
-    tickrate: int = 64,
+    *, tickrate: int,
 ) -> pl.DataFrame:
     """Classifica cada primeira briga de AWP como hold / peek / intermediário.
 
@@ -243,7 +243,7 @@ def resolve_engagement_outcomes(
     engagements: pl.DataFrame,
     kills: pl.DataFrame,
     resolution_seconds: float = ENGAGEMENT_RESOLUTION_SECONDS,
-    tickrate: int = 64,
+    *, tickrate: int,
 ) -> pl.DataFrame:
     """Diz se o AWPer ganhou ou perdeu a primeira briga dele no round.
 
@@ -337,7 +337,7 @@ def opening_kills_with_awp(kills: pl.DataFrame) -> pl.DataFrame:
 
 
 def calculate_awp_metrics(
-    tables: dict[str, pl.DataFrame], tickrate: int = 64
+    tables: dict[str, pl.DataFrame], tickrate: int
 ) -> tuple[pl.DataFrame, pl.DataFrame]:
     """Junta tudo: uma linha por (round, AWPer) com a briga daquele round, e um
     resumo agregado por jogador.

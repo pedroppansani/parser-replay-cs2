@@ -484,7 +484,7 @@ def _estado_completo(vivos_meu: int, vivos_dele: int, dif_equip: float, bomba: b
 
 def amostras_de_round(
     kills: pl.DataFrame, rounds: pl.DataFrame, grupos: pl.DataFrame,
-    team_of: dict[int, str], vencedor_por_round: dict[int, str], tickrate: int = 64,
+    team_of: dict[int, str], vencedor_por_round: dict[int, str], tickrate: int,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Uma linha de treino por (evento, lado): o estado e se aquele lado venceu."""
     equip_por_round = (
@@ -901,7 +901,7 @@ def carrega_referencia() -> dict | None:
 def sub_ratings(
     kills: pl.DataFrame, damages: pl.DataFrame, rounds: pl.DataFrame,
     grupos: pl.DataFrame, swing: pl.DataFrame, kast: pl.DataFrame,
-    celulas: dict, team_of: dict[int, str], tickrate: int = 64,
+    celulas: dict, team_of: dict[int, str], tickrate: int,
 ) -> pl.DataFrame:
     """Os seis componentes por jogador, ainda em unidade bruta (por round).
 
@@ -990,7 +990,7 @@ def sub_ratings(
     # crédito de volta -- morrer e o time trocar não é morrer à toa.
     from metrics.basic_metrics import DEFAULT_TRADE_WINDOW_SECONDS, traded_deaths
 
-    trocadas = traded_deaths(kills, DEFAULT_TRADE_WINDOW_SECONDS, tickrate)
+    trocadas = traded_deaths(kills, DEFAULT_TRADE_WINDOW_SECONDS, tickrate=tickrate)
     trocadas_por_jogador = (
         trocadas.filter(pl.col("was_traded")).group_by("steamid", maintain_order=True).agg(pl.len().alias("mortes_trocadas"))
         .select(pl.col("steamid").cast(pl.Int64), "mortes_trocadas")
@@ -1242,7 +1242,7 @@ def rating(
     if modelo is None and referencia and (referencia.get("modelo_de_round") or {}).get("treinou"):
         modelo = ModeloDeRound.da_referencia(referencia["modelo_de_round"])
     if modelo is None:
-        X, y = amostras_de_round(kills, rounds, grupos, team_of, vencedor_por_round)
+        X, y = amostras_de_round(kills, rounds, grupos, team_of, vencedor_por_round, tickrate)
         modelo = ModeloDeRound().treina(X, y)
         degradado.append(
             "modelo de round treinado só nesta partida (sem o modelo global)" if modelo.metricas.get("treinou")

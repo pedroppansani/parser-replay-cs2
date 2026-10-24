@@ -191,7 +191,7 @@ def _pares_de_trade(kills: pl.DataFrame, trade_window_seconds: float, tickrate: 
 def traded_deaths(
     kills: pl.DataFrame,
     trade_window_seconds: float = DEFAULT_TRADE_WINDOW_SECONDS,
-    tickrate: int = 64,
+    *, tickrate: int,
 ) -> pl.DataFrame:
     """Quem teve a morte vingada: o T do KAST.
 
@@ -213,7 +213,7 @@ def traded_deaths(
 def identify_trade_kills(
     kills: pl.DataFrame,
     trade_window_seconds: float = DEFAULT_TRADE_WINDOW_SECONDS,
-    tickrate: int = 64,
+    *, tickrate: int,
 ) -> pl.DataFrame:
     """Marca quais kills são "trade kills": o attacker matou quem, pouco antes,
     tinha acabado de matar um companheiro de time do attacker.
@@ -240,10 +240,10 @@ def calculate_trade_kills(
     kills: pl.DataFrame,
     roster: pl.DataFrame,
     trade_window_seconds: float = DEFAULT_TRADE_WINDOW_SECONDS,
-    tickrate: int = 64,
+    *, tickrate: int,
 ) -> tuple[pl.DataFrame, pl.DataFrame]:
     """Quantas kills de cada jogador foram trade kills, por round e agregado."""
-    kills_flagged = identify_trade_kills(kills, trade_window_seconds, tickrate)
+    kills_flagged = identify_trade_kills(kills, trade_window_seconds, tickrate=tickrate)
     kills_flagged = enemy_kills(kills_flagged)
 
     per_round = (
@@ -282,7 +282,7 @@ def calculate_kast(
     kills: pl.DataFrame,
     roster: pl.DataFrame,
     trade_window_seconds: float = DEFAULT_TRADE_WINDOW_SECONDS,
-    tickrate: int = 64,
+    *, tickrate: int,
 ) -> tuple[pl.DataFrame, pl.DataFrame]:
     """KAST% = % de rounds em que o jogador teve pelo menos um: Kill, Assist,
     Survived (sobreviveu o round) ou foi Traded (a morte dele foi vingada por um
@@ -317,7 +317,7 @@ def calculate_kast(
 
     died = deaths_per_round(kills)
 
-    was_traded = traded_deaths(kills, trade_window_seconds, tickrate)
+    was_traded = traded_deaths(kills, trade_window_seconds, tickrate=tickrate)
 
     per_round = (
         roster.select(["round_num", "steamid", "name"])
@@ -360,7 +360,7 @@ def calculate_kast(
 # Ponto de entrada único
 # ---------------------------------------------------------------------------
 
-def compute_all_basic_metrics(tables: dict[str, pl.DataFrame]) -> dict[str, pl.DataFrame]:
+def compute_all_basic_metrics(tables: dict[str, pl.DataFrame], tickrate: int) -> dict[str, pl.DataFrame]:
     """Roda as 4 métricas da Fase 1 e devolve um dict com todas as tabelas
     (per_round e summary de cada uma), prontas pra salvar em parquet ou plugar
     no dashboard.
@@ -369,8 +369,8 @@ def compute_all_basic_metrics(tables: dict[str, pl.DataFrame]) -> dict[str, pl.D
 
     adr_round, adr_summary = calculate_adr(tables["damages"], roster)
     util_round, util_summary = calculate_utility_damage(tables["damages"], roster)
-    trade_round, trade_summary = calculate_trade_kills(tables["kills"], roster)
-    kast_round, kast_summary = calculate_kast(tables["kills"], roster)
+    trade_round, trade_summary = calculate_trade_kills(tables["kills"], roster, tickrate=tickrate)
+    kast_round, kast_summary = calculate_kast(tables["kills"], roster, tickrate=tickrate)
 
     return {
         "adr_per_round": adr_round,

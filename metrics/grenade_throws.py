@@ -655,8 +655,12 @@ FAIXA_POSTURA_NEUTRA = tuple(float(x) for x in _CONSTANTES_DO_GABARITO["faixa_po
 # -0,1953 u/tick² a 64 tick) -- o resíduo de uma parábola com g fixo em três
 # ticks. Tolerância 0,05 u/tick²: acerta m_hGroundEntity em 433/434 e os 9 de
 # escada/rampa; 0,01 perde 10 casos e 0,1 marca chão plano como ar.
+# A gravidade por tick² cai com o quadrado do tickrate (a 128 tick é -0,0488), então a
+# tolerância medida a 64 tick escala junto; sem isso, a 128, o chão (0) cairia "dentro" dela.
+# O mesmo vale para as janelas em ticks do jump-throw abaixo: estão em ticks DE 64 (TICKRATE_DA_MEDICAO).
 GRAVIDADE = 800.0
 TOL_SEGUNDA_DIFERENCA = 0.05
+TICKRATE_DA_MEDICAO = 64
 # Janela de posição usada para achar a decolagem (a mesma do gabarito).
 JANELA_DECOLAGEM_TICKS = 64
 
@@ -665,8 +669,7 @@ JANELA_DECOLAGEM_TICKS = 64
 # erro máximo por usar 298,868 é 3,1 u/s na vertical, 3,9 na granada).
 VZ_PULO = 298.868
 # A parábola ajustada dá a vz de decolagem meio passo de gravidade abaixo da
-# gravada (800/128 = 6,25; medido -6,22 na mediana, n = 95).
-MEIO_PASSO_GRAVIDADE = 800.0 / 128.0
+# gravada: GRAVIDADE / (2 * tickrate) = 6,25 a 64 tick (medido -6,22 na mediana, n = 95).
 # Estimada + meio passo tem de ficar a até isto de VZ_PULO para ser um pulo
 # limpo: p99 dos arremessos cuja velocidade o modelo acerta = 8,57 (n = 93),
 # arredondado para cima. As parábolas quebradas ficam ~158 abaixo.
@@ -714,6 +717,7 @@ def estado_vertical(z: np.ndarray, xy: np.ndarray, tickrate: int) -> dict:
                   (z[s + 1] - z[s - 1]) * tickrate / 2])
     base = {"vz_derivada": float(v[2]), "vh": v[:2], "ticks_desde_decolagem": None, "z_ref": 0.0}
     g_tick = -GRAVIDADE / tickrate ** 2
+    tol = TOL_SEGUNDA_DIFERENCA * (TICKRATE_DA_MEDICAO / tickrate) ** 2
     d2 = z[2:] - 2 * z[1:-1] + z[:-2]          # d2[i] centrado em z[i+1]
     # a contagem começa na segunda diferença centrada em t-1 (i = s - 2): é a
     # convenção medida no gabarito -- com ela a decolagem estimada bate com a
@@ -721,7 +725,7 @@ def estado_vertical(z: np.ndarray, xy: np.ndarray, tickrate: int) -> dict:
     # decolagem sai até 0,7 tick adiantada
     i = s - 2
     n = 0
-    while i >= 0 and abs(d2[i] - g_tick) < TOL_SEGUNDA_DIFERENCA:
+    while i >= 0 and abs(d2[i] - g_tick) < tol:
         n += 1
         i -= 1
     # soltura no tick de um pouso ou de uma decolagem: a mudança de estado
@@ -732,8 +736,8 @@ def estado_vertical(z: np.ndarray, xy: np.ndarray, tickrate: int) -> dict:
     # menos uma é anômala (nem chão ~0 nem gravidade). Degrau e chão irregular
     # dão anomalia sem a gravidade ao lado e continuam "chão".
     vizinhas = [d2[k] for k in (s - 3, s - 2, s - 1) if 0 <= k < len(d2)]
-    tem_gravidade = any(abs(x - g_tick) < TOL_SEGUNDA_DIFERENCA for x in vizinhas)
-    tem_anomalia = any(abs(x) >= TOL_SEGUNDA_DIFERENCA and abs(x - g_tick) >= TOL_SEGUNDA_DIFERENCA for x in vizinhas)
+    tem_gravidade = any(abs(x - g_tick) < tol for x in vizinhas)
+    tem_anomalia = any(abs(x) >= tol and abs(x - g_tick) >= tol for x in vizinhas)
     transicao = tem_gravidade and tem_anomalia
     if n == 0:
         if v[2] > VZ_SUBIDA_AMBIGUA:
@@ -748,9 +752,9 @@ def estado_vertical(z: np.ndarray, xy: np.ndarray, tickrate: int) -> dict:
     tau_dec = (b - np.sqrt(disc)) / GRAVIDADE
     vz_dec = b - GRAVIDADE * tau_dec
     base = {**base, "ticks_desde_decolagem": float(-tau_dec * tickrate)}
-    if abs(vz_dec + MEIO_PASSO_GRAVIDADE - VZ_PULO) > LIMITE_VZ_DECOLAGEM:
+    if abs(vz_dec + GRAVIDADE / (2 * tickrate) - VZ_PULO) > LIMITE_VZ_DECOLAGEM:
         return {**base, "regra": "ambíguo: parábola sem pulo limpo", "no_ar": None, "vz": None}
-    t = round(-tau_dec * tickrate)
+    t = round(-tau_dec * TICKRATE_DA_MEDICAO)   # ticks equivalentes a 64, a unidade das janelas
     if t < JANELA_REGRA_FIXA[0]:
         return {**base, "regra": "janela 0-5 (sem gabarito)", "no_ar": True, "vz": None}
     if t <= JANELA_REGRA_FIXA[1]:
