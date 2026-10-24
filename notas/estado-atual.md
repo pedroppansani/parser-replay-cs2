@@ -71,9 +71,11 @@ Nada.
 1. O resto da fase 17: cartão 5 (`TICK_PELO_PROJETIL_SEM_EVENTO`, com a sua própria subida de versão e a tabela
    antes → depois), cartão 6 (histograma da força da rota B) e cartão 7 (os `.rar`: espaço em disco ≥ 12 GB,
    `demos/entrada/_extraido/` conferida antes, sha256 de cada `.dem`, regra 36).
-2. Cartão 9, a refatoração, ANTES da v2-1 (ela mexe na estrutura e a v2 na forma). Trazer junto a proposta (só
+2. Cartão 13 (a referência do rating não se reproduz no último bit), ANTES da refatoração; espera o OK
+   do Pedro, porque mexe no rating.
+3. Cartão 9, a refatoração, ANTES da v2-1 (ela mexe na estrutura e a v2 na forma). Trazer junto a proposta (só
    propor) de gerar a contagem de testes no build pela coleta do pytest.
-3. A v2 (GOAT.demo), plano aprovado em `C:/Users/User/Desktop/Claude outputs/PLANO-v2-0.md`: v2-1 base (não
+4. A v2 (GOAT.demo), plano aprovado em `C:/Users/User/Desktop/Claude outputs/PLANO-v2-0.md`: v2-1 base (não
    muda a aparência; o escuro atual vira `data-tema="escuro"`), v2-2 marca, v2-3 e v2-4 em sequência numa branch de
    integração e para a `main` no mesmo push, v2-5 e v2-6 em paralelo depois de a v2-4 mesclar o `map_core.js`, v2-7
    verificação final. Condições de cada fase: suíte verde, impressão dos números idêntica, só as capturas e os
@@ -81,8 +83,8 @@ Nada.
    da seção 4.4 podem mudar; o `scripts/CLAUDE.md` não ganha linha (se precisar, parar e propor divisão). Na v2-7:
    pôr no PENDENCIAS o `curl` do `Content-Encoding` dos dois agentes depois do deploy e o fallback da fonte mono no
    macOS. Fase própria depois da v2: a comparação por grupos do Perfil, com a regra de empate do Pedro.
-4. Parte B dos grupos, DEPOIS da v2-7 e só depois de o Pedro reativar o projeto Supabase e confirmar (ver as
+5. Parte B dos grupos, DEPOIS da v2-7 e só depois de o Pedro reativar o projeto Supabase e confirmar (ver as
    regras temporárias). Junto: plano Free, a maior tática real (máximo, mediana e p95 de operações), `gitleaks`,
    `npm audit` e `pip-audit`, e o `.claude/worktrees/` no `.gitignore`; depois o `grupos.md` para o `seguranca`.
-5. Do lado do Pedro: o dano de utilidade na escada (cartão 1, prints da HLTV); o roteiro do NVDA (cartão 11); o
+6. Do lado do Pedro: o dano de utilidade na escada (cartão 1, prints da HLTV); o roteiro do NVDA (cartão 11); o
    cartão 10 (Supabase); a fase 6 (`fase-6-decisivo`); a investigação do awpy 3 fica numa sessão separada.

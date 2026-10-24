@@ -373,3 +373,33 @@ O texto original do cartão:
 - **Custo de deixar como está:** as métricas de flash da tela contam kills de até o dobro do tempo
   de cegueira real.
 - **Fora do computador:** nada.
+
+---
+
+## 13. A referência do rating não se reproduz no último bit (achado do `fix-tickrate-resto`, 2026-10-24)
+
+- **O que é:** rodar `py -3.12 -m scripts.fit_rating` hoje dá um `metrics/rating_reference.json`
+  diferente do versionado em 13 médias e desvios, todos no último bit do float (diferença relativa
+  até 5e-15; os pesos não mudam). Com o arquivo novo, o rating de 85 jogadores muda no 16º dígito;
+  na tela, nada muda. A regra 28 diz que qualquer diferença entre execuções é bug.
+- **O que já foi descartado (medido, logs em `notas/logs/ref-rating-*-2026-10-24.log`):**
+  - não é o `fix-tickrate-resto`: o código de antes dele dá o mesmo resultado que o de hoje;
+  - não é código novo: o commit que gravou a referência (`74aa78fe`, 03/10), rodado hoje, também
+    não reproduz o arquivo que ele mesmo gravou, nem com o `data/processed` de antes dele;
+  - não são as bibliotecas: polars 1.44.2 e numpy 2.4.4, fixas no `requirements.txt`, instaladas em
+    17/09; o `data/interim` não muda desde antes de 03/10;
+  - não é paralelismo: com 1, 4 e 12 threads do polars o resultado é o mesmo, byte a byte.
+  - Pista: no próprio `74aa78fe`, o `kast` e as `mortes_trocadas` já tinham mudado só no último bit,
+    sem nada que mexesse nesses dois componentes. O arquivo versionado veio de um estado de 03/10
+    que não dá para refazer (provavelmente código ainda não commitado na hora de gerar).
+- **Hoje a geração é determinística;** ela só não bate com o arquivo versionado. O
+  `fix-tickrate-resto` entrou com a referência da `main`, e por isso nenhum número mudou.
+- **Opções:**
+  1. Regravar a referência com o valor de hoje, em commit próprio, com a versão das métricas
+     subindo, a tabela antes → depois (o rating muda só no 16º dígito, a catraca fica igual) e um
+     teste novo: o `fit_rating` tem de reproduzir o arquivo versionado byte a byte.
+  2. Deixar como está e só pôr o teste com tolerância de 1e-12.
+- **Recomendação:** a 1, antes da refatoração (cartão 9). A refatoração vai mexer no `fit_rating`
+  e no `rating`, e sem um ponto de partida reproduzível não dá para provar que ela não mudou nenhum
+  número. Como mexe no rating, mesmo que só no último dígito, preciso do seu OK.
+- **Fora do computador:** nada.
