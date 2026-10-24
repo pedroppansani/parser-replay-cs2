@@ -14,7 +14,7 @@ import polars as pl
 import pytest
 
 from metrics import erros as E
-from metrics import visao as V
+from metrics.erros import visao as V
 
 RAIZ = Path(__file__).resolve().parent.parent
 TIPOS_DE_TROCA = (E.NAO_TROCOU, E.POSSIVEL_BAIT, E.PERDEU_A_TROCA, E.MORREU_SOZINHO, E.PRIMEIRA_MORTE_SEM_TROCA)

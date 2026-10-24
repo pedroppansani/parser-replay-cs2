@@ -1,4 +1,4 @@
-"""Tipos de erro da aba Perfil (fase 12, metrics/erros.py; definições da fase 18), com situações montadas à mão.
+"""Tipos de erro da aba Perfil (fase 12, metrics/erros/__init__.py; definições da fase 18), com situações montadas à mão.
 
 Cada tipo tem uma situação que deve contar e uma que não deve para cada filtro da tabela do
 pedido (12.6, item 1); a ordem "explícito ou depende" tem um teste por regra (item 3); o eco fica
@@ -6,7 +6,7 @@ fora (item 4); e a mesma partida em dois processos com PYTHONHASHSEED diferente 
 ocorrências (item 2).
 
 Fase 18 (18.5, item 2): as situações montadas trazem também o olhar de cada jogador (yaw), as paredes
-(triângulos) e os tiros, porque "visível para o jogador" (metrics/visao.py) entra nas definições. Os testes
+(triângulos) e os tiros, porque "visível para o jogador" (metrics/erros/visao.py) entra nas definições. Os testes
 que verificavam a definição antiga (distância de troca, "atrás do aliado", "morrer para o matador já é ir
 para a troca") foram migrados para a nova; os casos que o Pedro já julgou, com os dados reais, estão em
 tests/test_erros_casos_julgados.py.
@@ -23,7 +23,7 @@ import polars as pl
 import pytest
 
 from metrics import erros as E
-from metrics import visao as V
+from metrics.erros import visao as V
 
 RAIZ = Path(__file__).resolve().parent.parent
 TR = 64
@@ -525,8 +525,11 @@ def test_regra_7_o_resto_depende_da_tatica():
     assert _nivel(p, E.PRIMEIRA_MORTE_SEM_TROCA, 1)[:2] == (E.DEPENDE, E.MOTIVO_GERAL)
 
 
-def test_tipos_validados_comeca_vazia():
-    assert E.TIPOS_DE_ERRO_VALIDADOS == frozenset()
+def test_tipos_validados_sao_os_confirmados_pelo_pedro():
+    # começou vazia (pedido 12.4); as respostas de 2026-10-16 e 2026-10-21 validaram seis tipos (decisão 46)
+    assert E.TIPOS_DE_ERRO_VALIDADOS == frozenset({E.NAO_TROCOU, E.PERDEU_A_TROCA, E.MORREU_SOZINHO,
+                                                   E.PRIMEIRA_MORTE_SEM_TROCA, E.FLASH_NO_TIME,
+                                                   E.DANO_DE_UTILIDADE_NO_TIME})
 
 
 # --- O corpus ---------------------------------------------------------------------------------------

@@ -8,7 +8,7 @@ Um jogador-lado é um jogador numa partida, num dos lados. A célula (lado, fun�
 com a mesma função no mesmo lado; "__todas__" é o lado inteiro. Os lados nunca se misturam. Guarda:
 - por tipo de erro, o HISTOGRAMA das contagens por jogador-lado ({contagem: quantos}), do qual a página
   tira o percentil (metrics.erros.PERCENTIL_PONTO_A_MELHORAR) e a mediana;
-- por métrica de ponto forte (metrics/erros.METRICAS_DE_PONTO_FORTE), recalculada só com os rounds do lado,
+- por métrica de ponto forte (metrics/erros/__init__.py: METRICAS_DE_PONTO_FORTE), recalculada só com os rounds do lado,
   a mediana do valor (só valores medidos e sem amostra fraca).
 Nenhum nome nem steamid (decisão 30). Célula com menos de MIN_REF_LADO_FUNCAO jogador-lados não é usada
 pela página (vale o lado inteiro), mas fica registrada com o seu n. Refazer quando o corpus crescer, junto

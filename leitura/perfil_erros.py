@@ -1,7 +1,7 @@
 """A aba Perfil nova (fase 12): o bloco da página, com todas as frases prontas (decisão 18).
 
 Responde, para cada jogador desta partida, nesta ordem:
-1. onde ele mais custou rounds ao time (até 3 pontos a melhorar, dos tipos de metrics/erros.py);
+1. onde ele mais custou rounds ao time (até 3 pontos a melhorar, dos tipos de metrics/erros/__init__.py);
 2. o que ele fez bem (até 2 pontos fortes, das métricas que já existem no perfil);
 3. como ele se compara com outro jogador DESTA partida nesses pontos (decisão 30).
 

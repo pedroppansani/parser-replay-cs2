@@ -117,9 +117,14 @@ MIN_ROUNDS_DE_CT_PARA_ANCORA = MIN_ROUNDS_POR_LADO
 # corpus (21, de 14 a 36; pesquisa/rotulos_amostra.py): 20 / 21 = 0,952 s por
 # round. Efeito medido nas 52: 1 rótulo muda (donk na match_40, 24,4 s em 30
 # rounds = 0,81) -- mesma lista, sem a dependência da duração.
+# Resposta do Pedro (DATA_DOS_PISOS): testar 30 s e, com sh1ro, w0nderful ou donk ainda acima,
+# usar 40 s. Em 30 os três ficavam acima; em 40 ainda ficam sh1ro (match_38), w0nderful
+# (match_25) e donk (match_05): aceito -- o AWPer aparece como AWPer na tela (ordem_na_tela) e o
+# suporte do donk numa partida é aceito, como o do ZywOo. Fronteira na nota 31.
 PISO_SUPORTE_SEGUNDOS_ANTIGO = 20.0
+PISO_SUPORTE_SEGUNDOS = 40.0
 ROUNDS_MEDIANOS_DO_CORPUS = 21
-PISO_SUPORTE_POR_ROUND = PISO_SUPORTE_SEGUNDOS_ANTIGO / ROUNDS_MEDIANOS_DO_CORPUS
+PISO_SUPORTE_POR_ROUND = PISO_SUPORTE_SEGUNDOS / ROUNDS_MEDIANOS_DO_CORPUS
 
 # Rounds SEM AWP mínimos para afirmar lurk. 8 é o mesmo mínimo que o projeto já
 # usa para afirmar uma taxa de jogador (player_profile.MIN_ROUNDS_PARA_TAXA);

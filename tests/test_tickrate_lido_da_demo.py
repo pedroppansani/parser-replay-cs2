@@ -45,7 +45,7 @@ PENDENTES = {
     ("metrics/positioning.py", "tickrate: int = 64"): "padrão; process_demo não passa",
     ("metrics/rating.py", "tickrate: int = 64"): "padrão; o insights passa o detectado",
     ("metrics/round_breakdown.py", "tickrate: int = 64"): "padrão; o build_breakdown passa o detectado",
-    ("metrics/visao.py", "tickrate: int = 64"): "padrão; o erros passa o detectado",
+    ("metrics/erros/visao.py", "tickrate: int = 64"): "padrão; o erros passa o detectado",
     ("metrics/verdade_do_arremesso.py", "json.loads(meta.read_text(encoding='utf-8')).get('tickrate', 64)"):
         "queda quando o replay não grava o tickrate",
     ("metrics/verdade_do_arremesso.py", "json.loads(meta.read_text(encoding='utf-8')).get('tickrate', 64) or 64"):

@@ -33,6 +33,7 @@ def test_pisos_respondidos_sao_constantes_com_data_e_corpus():
     assert pisos["anchor"] == pr.PISO_ANCORA == 0.90
     assert pisos["trade"] == pr.PISO_SEGUNDO_HOMEM == 0.350
     assert pisos["frag"] == pr.PISO_PRINCIPAL_FRAGGER == 85.0
+    assert pisos["support"] == pr.PISO_SUPORTE_POR_ROUND == pr.PISO_SUPORTE_SEGUNDOS / 21 == 40.0 / 21
     assert pr.DATA_DOS_PISOS == "2026-10-17"
     assert (pr.PARTIDAS_DOS_PISOS, pr.JOGADOR_PARTIDAS_DOS_PISOS) == (52, 520)
 

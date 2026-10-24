@@ -60,7 +60,7 @@ FRACAO_DO_CORPO = 0.5
 
 # Onde ficam os .tri (o mesmo diretório do awpy 2.0.2: awpy.data.TRIS_DIR) e o registro dos sha256.
 TRIS_DIR = Path.home() / ".awpy" / "tris"
-REGISTRO_DAS_MALHAS = Path(__file__).resolve().parent / "visao_malhas.json"
+REGISTRO_DAS_MALHAS = Path(__file__).resolve().parent.parent / "visao_malhas.json"
 
 # Tamanho da célula da grade do plano (unidades). Só muda o tempo da consulta, nunca a resposta:
 # cada triângulo entra em toda célula que a caixa dele toca, e o segmento percorre todas as células
