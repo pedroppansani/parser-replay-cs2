@@ -37,6 +37,7 @@ from metrics.archetypes import MIN_ROUNDS_FUNCAO_NA_REFERENCIA
 from metrics.player_roles import resolve_teams
 from metrics.sides import side_of_team
 from metrics.positioning import position_samples
+from metrics.timing import detect_tickrate
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
@@ -55,6 +56,11 @@ def winner_team_by_round(rounds: pl.DataFrame) -> dict[int, str]:
         rn = int(row["round_num"])
         out[rn] = "A" if row["winner"] == side_of_team("A", rn) else "B"
     return out
+
+
+def _tickrate(tables: dict) -> int:
+    """O tickrate da partida (metrics/timing.py), nunca um 64 escrito."""
+    return int(detect_tickrate(tables["rounds"], tables["ticks"])["tickrate"])
 
 
 def carrega_partida(match_id: str) -> tuple[dict, dict, pl.DataFrame, pl.DataFrame, dict, dict]:
@@ -101,7 +107,8 @@ def main() -> None:
         carregadas[match_id] = carrega_partida(match_id)
         tables, outputs, positions, areas, team_of, winners = carregadas[match_id]
         per_round, _ = compute_for_match(
-            tables, outputs, positions, areas, team_of, winners, reference=None
+            tables, outputs, positions, areas, team_of, winners,
+            tickrate=_tickrate(tables), reference=None
         )
         rounds_de_isca.append(per_round.select("funcao_do_round", "isca_no_round", "sacrificio"))
 
@@ -144,7 +151,7 @@ def main() -> None:
     for match_id, (tables, outputs, positions, areas, team_of, winners) in carregadas.items():
         _, resumo = compute_for_match(
             tables, outputs, positions, areas, team_of, winners,
-            reference={"isca_por_funcao": isca_por_funcao,
+            tickrate=_tickrate(tables), reference={"isca_por_funcao": isca_por_funcao,
                        "sacrificio_por_funcao": sac_por_funcao},
         )
         pedacos.append(resumo.with_columns(pl.lit(match_id).alias("match_id")))

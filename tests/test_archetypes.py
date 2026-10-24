@@ -255,7 +255,7 @@ def _cena_bait(distancia: float, trocou: bool) -> pl.DataFrame:
             "is_alive": [True, True],
         }
     ).with_columns(pl.col("round_num").cast(pl.UInt32))
-    return bait_events(k, ticks, {1: "A", 2: "A", 99: "B"})
+    return bait_events(k, ticks, {1: "A", 2: "A", 99: "B"}, tickrate=64)
 
 
 def test_companheiro_caindo_perto_sem_troca_vira_oportunidade():

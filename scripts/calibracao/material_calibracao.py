@@ -28,6 +28,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from clustering.playstyle import describe_clusters  # noqa: E402
+from metrics.timing import detect_tickrate  # noqa: E402
 from metrics.identidade import com_nome_de_exibicao  # noqa: E402
 from metrics.grenade_throws import (  # noqa: E402
     TOLERANCIA_BOTAO, VELOCIDADE_BOTAO, comando_de_console, grenade_throws, grupos_de_forca, rotula_forca, trajetorias)
@@ -88,11 +89,13 @@ def secao_grupos() -> list[str]:
 
 def secao_forca() -> list[str]:
     partes = []
+    tickrate = {}   # o de cada partida, lido dela (metrics/timing.py)
     for mid in PARTIDAS_FORCA:
         if not (INTERIM / mid / "ticks.parquet").exists():
             continue
         t = load_interim(INTERIM, mid)
-        pr, _ = grenade_throws(t, 64)
+        tickrate[mid] = int(detect_tickrate(t["rounds"], t["ticks"])["tickrate"])
+        pr, _ = grenade_throws(t, tickrate[mid])
         if pr.height:
             fr = pl.read_parquet(PROCESSED / mid / "rounds.parquet").select("round_num", "freeze_end")
             partes.append(pr.join(fr.with_columns(pl.col("round_num").cast(pr.schema["round_num"])),
@@ -109,7 +112,7 @@ def secao_forca() -> list[str]:
     for (r,), grp in rot.sort("botao").group_by("forca", maintain_order=True):
         e = grp.filter(pl.col("reproducao_exata") & (pl.col("movimento") == "parado"))
         e = (e if e.height else grp).sort("velocidade_arremesso").row(min(1, max(0, (e.height or 1) - 1)), named=True)
-        seg = (e["tick_soltura"] - e["freeze_end"]) / 64
+        seg = (e["tick_soltura"] - e["freeze_end"]) / tickrate[e["match_id"]]
         out.append(f"| {r} | {grp['velocidade_arremesso'].mean():.0f} u/s | {grp.height} | "
                    f"{e['thrower']}, {e['kind']}, {e['match_id']} round {e['round_num']} "
                    f"({int(seg // 60)}:{int(seg % 60):02d}), {e['postura']}, {e['movimento']} |")
@@ -124,7 +127,8 @@ def secao_forca() -> list[str]:
 def secao_console() -> list[str]:
     mid, rn, jogador = CONSOLE
     t = load_interim(INTERIM, mid)
-    pr, _ = grenade_throws(t, 64)
+    tickrate = int(detect_tickrate(t["rounds"], t["ticks"])["tickrate"])
+    pr, _ = grenade_throws(t, tickrate)
     c = pr.filter((pl.col("round_num") == rn) & (pl.col("thrower") == jogador) & (pl.col("kind") == "smoke"))
     if c.height == 0:
         return ["## 4. Teste do comando de console", "", "arremesso de referência não encontrado", ""]
@@ -133,7 +137,7 @@ def secao_console() -> list[str]:
         (pl.col("entity_id") == r["entity_id"]) & (pl.col("round_num") == rn)).sort("tick")
     fim = traj.row(-1, named=True)
     fr = dict(t["rounds"].select("round_num", "freeze_end").iter_rows())
-    seg = (r["tick_soltura"] - fr[rn]) / 64
+    seg = (r["tick_soltura"] - fr[rn]) / tickrate
     mapa = json.loads((PROCESSED / mid / "match_meta.json").read_text(encoding="utf-8"))["map_name"]
     return ["## 4. Teste do comando de console", "",
             f"Arremesso: **{jogador}**, smoke, **{mid}** ({mapa}) round {rn}, "

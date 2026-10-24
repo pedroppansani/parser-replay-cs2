@@ -585,7 +585,7 @@ def build(match_id: str) -> Path:
 
     referencia = load_reference()
     papeis_round, papeis = compute_for_match(
-        tabelas, saidas, positions, areas, team_of, vencedor_por_round, reference=referencia
+        tabelas, saidas, positions, areas, team_of, vencedor_por_round, tickrate=tickrate, reference=referencia
     )
     # Convenção do projeto: o round a round é persistido junto do agregado, porque
     # é nele que a validação manual acontece. Um índice de papel plausível pode

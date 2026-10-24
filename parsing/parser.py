@@ -18,6 +18,7 @@ import polars as pl
 from awpy import Demo
 from awpy.parsers.rounds import apply_round_num
 
+from metrics.timing import detect_tickrate
 from parsing.versao import VERSAO_DO_PARSER
 
 # Ticks é tratado à parte das outras tabelas porque é MUITO maior (uma linha por
@@ -98,20 +99,23 @@ PROPS_DA_COMPRA = ["inventory", "balance", "cash_spent_this_round", "has_helmet"
 
 def parse_demo(
     dem_path: Path | str,
-    tickrate: int = 64,
     verbose: bool = False,
     player_props: list[str] | None = None,
 ) -> Demo:
-    """Parseia um .dem e devolve o objeto Demo do awpy com as tabelas já populadas."""
+    """Parseia um .dem e devolve o objeto Demo do awpy com as tabelas já populadas.
+
+    O tickrate não é parâmetro: sai da própria demo (`metrics/timing.py`) depois do parse e
+    fica em `demo.tickrate` (o awpy só o lê nas durações de smoke/molotov e no KAST dele)."""
     dem_path = Path(dem_path)
     if not dem_path.exists():
         raise FileNotFoundError(f"Demo não encontrado: {dem_path}")
 
-    demo = Demo(path=dem_path, tickrate=tickrate, verbose=verbose)
+    demo = Demo(path=dem_path, verbose=verbose)
     demo.parse(
         events=demo.default_events + EXTRA_EVENTS,
         player_props=player_props if player_props is not None else PLAYER_PROPS,
     )
+    demo.tickrate = int(detect_tickrate(demo.rounds, demo.ticks)["tickrate"])
     return demo
 
 

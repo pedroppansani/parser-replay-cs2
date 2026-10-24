@@ -29,6 +29,7 @@ from pathlib import Path
 import numpy as np
 import polars as pl
 
+from metrics.timing import detect_tickrate
 from parsing.parser import dano_real_no_mesmo_tick, eventos_do_round_jogado, kills_do_round_jogado
 from metrics.rating import (
     ModeloDeRound,
@@ -87,6 +88,11 @@ def carrega_partida(match_id: str, pasta_interim: Path | None = None) -> tuple:
     return tabelas, team_of, vencedor, kast
 
 
+def tickrate_da_partida(tabelas: dict) -> int:
+    """O tickrate DA PARTIDA (metrics/timing.py), nunca um 64 escrito: as calibrações leem daqui."""
+    return int(detect_tickrate(tabelas["rounds"], tabelas["ticks"])["tickrate"])
+
+
 def partidas_disponiveis() -> list[str]:
     return sorted(
         d.name for d in (PROJECT_ROOT / "data" / "processed").glob("match_*")
@@ -105,7 +111,7 @@ def modelo_global(ids: list[str]) -> ModeloDeRound:
         tabelas, team_of, vencedor, _ = carrega_partida(mid)
         grupos = grupo_do_round(tabelas["ticks"], tabelas["rounds"])
         X, y = amostras_de_round(
-            tabelas["kills"], tabelas["rounds"], grupos, team_of, vencedor
+            tabelas["kills"], tabelas["rounds"], grupos, team_of, vencedor, tickrate_da_partida(tabelas)
         )
         if X.shape[0]:
             Xs.append(X)
@@ -131,7 +137,7 @@ def componentes_do_corpus(ids: list[str], modelo: ModeloDeRound,
     linhas = []
     for mid in ids:
         tabelas, team_of, vencedor, kast = carrega_partida(mid)
-        _, resumo = rating(tabelas, team_of, vencedor, kast, 64,
+        _, resumo = rating(tabelas, team_of, vencedor, kast, tickrate_da_partida(tabelas),
                            referencia=referencia, modelo=modelo)
         # o rating sai por steamid; o rating oficial foi transcrito por nick, que é
         # o que a HLTV mostra -- mesma fonte de nome do elenco (resolve_teams)

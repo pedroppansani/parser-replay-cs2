@@ -95,7 +95,7 @@ def setup_snapshot(
     ticks: pl.DataFrame,
     rounds: pl.DataFrame,
     seconds_after_freeze: float = SETUP_SECONDS_AFTER_FREEZE,
-    tickrate: int = 64,
+    *, tickrate: int,
 ) -> pl.DataFrame:
     """Onde cada jogador estava no momento de "setup" de cada round.
 
@@ -242,13 +242,13 @@ def player_position_profile(positions: pl.DataFrame, setup: pl.DataFrame) -> pl.
 
 
 def calculate_positioning_metrics(
-    tables: dict[str, pl.DataFrame], map_name: str | None = None
+    tables: dict[str, pl.DataFrame], map_name: str | None = None, *, tickrate: int
 ) -> dict[str, pl.DataFrame]:
     """Roda o pipeline de posicionamento e devolve todas as tabelas de uma vez."""
     ticks, rounds = tables["ticks"], tables["rounds"]
 
     positions = position_samples(ticks, rounds)
-    setup = setup_snapshot(ticks, rounds)
+    setup = setup_snapshot(ticks, rounds, tickrate=tickrate)
     occupancy = zone_occupancy(setup)
     standard = standard_setup(occupancy)
     deviation = setup_deviation(occupancy, standard, map_name)

@@ -221,7 +221,7 @@ def bait_events(
     kills: pl.DataFrame,
     ticks: pl.DataFrame,
     team_of: dict[int, str],
-    tickrate: int = 64,
+    tickrate: int,
     max_distance: float = BAIT_MAX_DISTANCE,
     trade_window_seconds: float = TRADE_WINDOW_SECONDS,
 ) -> pl.DataFrame:
@@ -331,7 +331,7 @@ def repick_engagements(styles: pl.DataFrame) -> pl.DataFrame:
 
 def marca_repick(
     styles: pl.DataFrame, ticks: pl.DataFrame, kills: pl.DataFrame,
-    damages: pl.DataFrame | None, shots: pl.DataFrame | None, tickrate: int = 64,
+    damages: pl.DataFrame | None, shots: pl.DataFrame | None, tickrate: int,
 ) -> pl.DataFrame:
     """Repick = retomar um angulo que foi CONTESTADO.
 
@@ -566,7 +566,7 @@ def solo_hold_signals(player_areas: pl.DataFrame) -> pl.DataFrame:
 
 
 def flash_convertida(
-    blinds: pl.DataFrame | None, kills: pl.DataFrame, tickrate: int = 64,
+    blinds: pl.DataFrame | None, kills: pl.DataFrame, tickrate: int,
     janela_s: float = SEGUNDOS_FLASH_RETORNO,
 ) -> pl.DataFrame:
     """Rounds em que o jogador cegou um inimigo que um COMPANHEIRO matou logo depois.
@@ -1418,7 +1418,7 @@ def compute_for_match(
     player_areas: pl.DataFrame,
     team_of: dict[int, str],
     winner_team_of_round: dict[int, str],
-    tickrate: int = 64,
+    tickrate: int,
     reference: dict | None = None,
 ) -> tuple[pl.DataFrame, pl.DataFrame]:
     """Monta todos os papeis de uma partida. Devolve (per_round, summary).

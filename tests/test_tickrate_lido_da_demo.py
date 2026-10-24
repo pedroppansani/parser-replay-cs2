@@ -3,19 +3,20 @@
 Regra dura da raiz: "O demo é 64 tick; nunca assuma (`metrics/timing.py` detecta)". O padrão
 `tickrate: int = 128` de `metrics/grenades.py`, que o `scripts/process_demo.py` usava sem passar
 o tickrate, gravou a janela da flash com o dobro da cegueira real. Este teste lê o código de
-`metrics/` e de `scripts/` (AST, sem importar nada) e falha em qualquer destas formas:
+`metrics/`, `scripts/`, `parsing/`, `clustering/` e `leitura/` (AST, sem importar nada) e falha em qualquer destas formas:
 
 - parâmetro `tickrate`/`tick_rate` com padrão numérico (`tickrate: int = 64`);
-- constante de módulo com o tickrate escrito (`TICKRATE = 64`, `TR = 64`);
+- constante de módulo com o tickrate escrito (`TICKRATE = 64`, `TR = 64`) ou em ticks com 64/128
+  (`..._TICKS = 64`);
 - conta com 64 ou 128 como operando de `*`, `/` ou `//` (`/ 64`, `* 64`, `800 / 128`);
 - 64 ou 128 passado como argumento de chamada (`rating(..., 64)`, `.get("tickrate", 64)`) ou
   como queda de um `or` (`... or 64`).
 
 O valor tem de vir de `metrics.timing.detect_tickrate` (ou do `tickrate` que o build grava a partir
-dele). As exceções ficam em duas listas: `EXCECOES` (definitivas, justificadas) e `PENDENTES`
-(assumem 64 fora da flash e da utility; o número está certo no corpus, que é todo de 64, mas a
-correção é decisão do Pedro, e cada linha sai da lista quando for corrigida). Linha nova que cair
-numa das formas acima e não estiver em nenhuma lista quebra o teste.
+dele). As exceções ficam em `EXCECOES` (definitivas, justificadas). `PENDENTES` está VAZIA (as funções
+não têm padrão e os scripts leem o tickrate da partida); qualquer linha nova que caia numa das
+formas acima e não esteja em `EXCECOES` quebra o teste. A prova de que cada função corrigida
+funciona a 128 tick está em `tests/test_tickrate_128.py`.
 """
 from __future__ import annotations
 
@@ -23,7 +24,7 @@ import ast
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
-PASTAS = ("metrics", "scripts")
+PASTAS = ("metrics", "scripts", "parsing", "clustering", "leitura")
 LITERAIS = {64, 128}
 NOMES_DE_TICKRATE = {"tickrate", "tick_rate"}
 
@@ -31,39 +32,21 @@ NOMES_DE_TICKRATE = {"tickrate", "tick_rate"}
 EXCECOES = {
     # A própria detecção: os candidatos e a queda quando a demo não tem âncora nenhuma.
     ("metrics/timing.py", "DEFAULT_TICKRATE = 64"): "a queda da detecção, único lugar do padrão",
+    # Constantes em ticks sem conversão para segundo: o 64 é uma contagem de quadros, não um tickrate.
+    ("metrics/grenade_throws.py", "TICKRATE_DA_MEDICAO = 64"):
+        "o tickrate em que o gabarito foi medido (tolerância da 2ª diferença e janelas do jump-throw "
+        "em ticks); a conta escala por (64 / tickrate), o tickrate da demo é o argumento",
+    ("metrics/grenade_throws.py", "JANELA_DECOLAGEM_TICKS = 64"):
+        "janela de posições (64 ticks de dados) com que o gabarito do jogo foi medido; a conta usa o "
+        "tickrate recebido, a janela é só quantos pontos olhar",
+    ("metrics/positioning.py", "POSITION_SAMPLE_EVERY_N_TICKS = 64"):
+        "passo de amostragem da posição em ticks (1 s a 64 tick); não converte tick em segundo, só "
+        "decide quantas amostras guardar para o mapa de calor",
 }
 
-# Assumem 64 sem ler da demo, fora da flash e da utility. Parada do cartão 12: listadas para o
-# Pedro antes de qualquer correção (o corpus é todo de 64, então nenhum número publicado está
-# errado por elas hoje).
-PENDENTES = {
-    ("metrics/archetypes.py", "tickrate: int = 64"): "padrão; o insights passa o detectado",
-    # (o structural_roles tem padrão None e detecta da demo: não é achado)
-    ("metrics/awp_metrics.py", "tickrate: int = 64"): "padrão; process_demo não passa",
-    ("metrics/basic_metrics.py", "tickrate: int = 64"): "padrão; process_demo não passa",
-    ("metrics/crosshair.py", "tickrate: int = 64"): "padrão; process_demo não passa",
-    ("metrics/positioning.py", "tickrate: int = 64"): "padrão; process_demo não passa",
-    ("metrics/rating.py", "tickrate: int = 64"): "padrão; o insights passa o detectado",
-    ("metrics/round_breakdown.py", "tickrate: int = 64"): "padrão; o build_breakdown passa o detectado",
-    ("metrics/erros/visao.py", "tickrate: int = 64"): "padrão; o erros passa o detectado",
-    ("metrics/verdade_do_arremesso.py", "json.loads(meta.read_text(encoding='utf-8')).get('tickrate', 64)"):
-        "queda quando o replay não grava o tickrate",
-    ("metrics/verdade_do_arremesso.py", "json.loads(meta.read_text(encoding='utf-8')).get('tickrate', 64) or 64"):
-        "idem",
-    ("metrics/grenade_throws.py", "800.0 / 128.0"): "meio passo de gravidade a 64 tick (rota A, piora 0)",
-    ("scripts/build_lineups.py", "TICKRATE_PADRAO = 64"): "queda quando o replay não grava o tickrate",
-    ("scripts/export_replay.py", "TICKRATE = 64"): "o replay grava 64 sem detectar",
-    ("scripts/calibracao/valida_modelo_de_round.py", "TICKRATE = 64"): "calibração do modelo de round",
-    ("scripts/calibracao/varre_trade.py", "TR = 64"): "varredura da janela de trade",
-    ("scripts/calibracao/valida_rating.py", "rating(tabelas, team_of, vencedor, kast, 64, referencia=referencia, modelo=modelo, x)"):
-        "validação do rating",
-    ("scripts/calibracao/material_calibracao.py", "grenade_throws(t, 64)"): "material de calibração",
-    ("scripts/calibracao/material_calibracao.py", "(e['tick_soltura'] - e['freeze_end']) / 64"): "idem",
-    ("scripts/calibracao/material_calibracao.py", "(r['tick_soltura'] - fr[rn]) / 64"): "idem",
-    ("scripts/escada_validacao.py", "rating(tabelas, team_of, vencedor, kast, 64, referencia=referencia, modelo=modelo)"):
-        "degrau 5 da escada (swing)",
-    ("scripts/fit_rating.py", "rating(tabelas, team_of, vencedor, kast, 64, referencia=referencia, modelo=modelo)"): "ajuste dos pesos do rating",
-}
+# Esvaziada (cartão 12, 2026-10-21): todo tickrate vem da demo e é passado para baixo; as funções
+# não têm padrão. Linha nova que caia numa das formas acima quebra o teste.
+PENDENTES: dict[tuple[str, str], str] = {}
 
 
 def _e_literal(no: ast.AST) -> bool:
@@ -102,7 +85,8 @@ def achados() -> list[tuple[str, int, str]]:
                 if isinstance(no, (ast.Assign, ast.AnnAssign)) and _e_literal(no.value):
                     alvos = no.targets if isinstance(no, ast.Assign) else [no.target]
                     nomes = [t.id for t in alvos if isinstance(t, ast.Name)]
-                    if any("TICKRATE" in n.upper() or "TICK_RATE" in n.upper() or n == "TR" for n in nomes):
+                    if any("TICKRATE" in n.upper() or "TICK_RATE" in n.upper() or n == "TR" or "TICKS" in n
+                           for n in nomes):
                         achou = no
                 elif isinstance(no, ast.BinOp) and isinstance(no.op, (ast.Mult, ast.Div, ast.FloorDiv)):
                     if _e_literal(no.left) or _e_literal(no.right):

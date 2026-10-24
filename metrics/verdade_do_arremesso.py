@@ -5,13 +5,13 @@ do arremesso usa estas funções. O relatório continua no script de pesquisa.
 """
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 import numpy as np
 import polars as pl
 
 from metrics.grenade_throws import grenade_throws
+from metrics.timing import detect_tickrate
 from parsing.parser import TABELAS_DA_VERDADE, load_interim
 
 RAIZ = Path(__file__).resolve().parents[1]
@@ -24,13 +24,6 @@ def partidas_com_verdade(pasta: Path = INTERIM) -> list[str]:
                   if d.is_dir() and all((d / f"{n}.parquet").exists() for n in TABELAS_DA_VERDADE))
 
 
-def _tickrate(partida: str) -> int:
-    meta = PROCESSED / partida / "match_meta.json"
-    if meta.exists():
-        return int(json.loads(meta.read_text(encoding="utf-8")).get("tickrate", 64) or 64)
-    return 64
-
-
 def compara(partida: str, verdade: Path | None = None) -> dict:
     """Concordância lido x inferido numa partida (contagens, não só taxas)."""
     t = load_interim(INTERIM, partida)
@@ -39,7 +32,7 @@ def compara(partida: str, verdade: Path | None = None) -> dict:
             t[n] = pl.read_parquet(Path(verdade) / partida / f"{n}.parquet")
     if (PROCESSED / partida / "rounds.parquet").exists():
         t["rounds"] = pl.read_parquet(PROCESSED / partida / "rounds.parquet")
-    tr = _tickrate(partida)
+    tr = int(detect_tickrate(t["rounds"], t["ticks"])["tickrate"])   # o da demo, nunca um 64 escrito
     lido, _ = grenade_throws(t, tr)
     inferido, _ = grenade_throws({k: v for k, v in t.items() if k not in TABELAS_DA_VERDADE}, tr)
     chave = ["round_num", "entity_id", "tick_soltura"]
