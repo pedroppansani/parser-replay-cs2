@@ -57,6 +57,7 @@ de `notas/PENDENCIAS_PARA_O_PEDRO.md` e nas notas de decisão).
 | `notas/estado-atual.md` criado | `f138103c` |
 | Calibração, item 2: grupos de estilo (nomes pelo perfil; o reajuste reproduz o modelo) | `3c4afd79` |
 | Calibração, item 3: cinco tipos de erro validados, `MIN_CEGUEIRA_FLASH_ALIADO`, versão 27 | `7775cd27` |
+| Flash no time validada (10/10) e no Perfil | `33a9159d` |
 
 ## Em andamento
 
