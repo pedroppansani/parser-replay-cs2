@@ -20,8 +20,7 @@ de `notas/PENDENCIAS_PARA_O_PEDRO.md` e nas notas de decisão).
 - Dados: `data/interim` e `demos/` só por junction de leitura nos worktrees, removida no fim (regra 36). O
   reprocesso grava caminhos absolutos de demo no `data/manifest.json`: restaurar `caminho` e `existe` (só versão,
   commit, data e `sujo` podem mudar).
-- Versão das métricas na `main`: 27 (flash no time com `MIN_CEGUEIRA_FLASH_ALIADO`). A branch `calibracao-pisos`
-  também usou 27 e vai subir para 28 ao ser mesclada.
+- Versão das métricas na `main`: 28 (pisos de função; a 27 foi a flash no time). O cartão 5 sobe para 29.
 - **Supabase (resposta do Pedro, 2026-10-21):** push protection ligado no GitHub e plano Free sem cartão. O projeto
   `parser-cs2-grupos` está PAUSADO por inatividade (o Free pausa depois de 7 dias sem uso). **(1) A parte B está
   destravada, mas antes de começar ela eu peço ao Pedro para reativar o projeto e espero ele confirmar.** A ordem
@@ -58,20 +57,16 @@ de `notas/PENDENCIAS_PARA_O_PEDRO.md` e nas notas de decisão).
 | Calibração, item 2: grupos de estilo (nomes pelo perfil; o reajuste reproduz o modelo) | `3c4afd79` |
 | Calibração, item 3: cinco tipos de erro validados, `MIN_CEGUEIRA_FLASH_ALIADO`, versão 27 | `7775cd27` |
 | Flash no time validada (10/10) e no Perfil | `33a9159d` |
+| Calibração, item 1: pisos de função (suporte 40 s, versão 28; 21 jogadores mudam de função na `jogadores.html`, nota 31) | `d5562e76` |
 
 ## Em andamento
 
 - `fix-tickrate-resto` (worktree `fix-resto`): os lugares que ainda assumem 64 tick, sem mudar nenhum número; junto,
   a contagem de testes do `numeros_citaveis`.
-- `calibracao-pisos` (worktree `cal-pisos`, NÃO mesclada, em pausa até a flash validada entrar): o Pedro decidiu o
-  piso de suporte em **40 s** (se um AWPer ou o donk ficar acima do corte, a prioridade de exibição mostra "AWPer" e
-  o rótulo de suporte do donk é aceito) e a `jogadores.html` é decisão técnica: aceitar a mudança dos números
-  exibidos como consequência dos rótulos autorizados (o dado embutido não muda), documentar e trazer as capturas.
-  Vai subir a versão das métricas para 28 e reprocessar.
 
 ## Fila (na ordem; o Pedro decidiu em 2026-10-21)
 
-1. Pisos (acima) e `fix-tickrate-resto`.
+1. `fix-tickrate-resto` (acima).
 2. O resto da fase 17: cartão 5 (`TICK_PELO_PROJETIL_SEM_EVENTO`, com a sua própria subida de versão e a tabela
    antes → depois), cartão 6 (histograma da força da rota B) e cartão 7 (os `.rar`: espaço em disco ≥ 12 GB,
    `demos/entrada/_extraido/` conferida antes, sha256 de cada `.dem`, regra 36).
