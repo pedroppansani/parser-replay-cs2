@@ -110,7 +110,7 @@ def test_kast_da_o_t_a_quem_teve_a_morte_vingada_e_nao_ao_inimigo():
              "attacker_side": "ct", "victim_steamid": 111, "victim_side": "t"},
         ]
     )
-    per_round, _ = calculate_kast(kills, roster_per_round(ticks))
+    per_round, _ = calculate_kast(kills, roster_per_round(ticks), tickrate=TICKRATE)
     linha = {r["steamid"]: r for r in per_round.iter_rows(named=True)}
     assert linha[222]["was_traded"] is True and linha[222]["kast_round"] is True   # vingado
     assert linha[111]["was_traded"] is False                                       # o inimigo
@@ -120,7 +120,7 @@ def test_kast_da_o_t_a_quem_teve_a_morte_vingada_e_nao_ao_inimigo():
     tarde = kills.with_columns(
         pl.when(pl.col("attacker_steamid") == 333).then(1000 + int(10 * TICKRATE)).otherwise(pl.col("tick")).alias("tick")
     )
-    per_round, _ = calculate_kast(tarde, roster_per_round(ticks))
+    per_round, _ = calculate_kast(tarde, roster_per_round(ticks), tickrate=TICKRATE)
     assert per_round.filter(pl.col("steamid") == 222)["kast_round"].to_list() == [False]
 
 
@@ -200,7 +200,7 @@ def test_calculate_trade_kills_summary_counts_correctly():
     roster = pl.DataFrame(
         {"round_num": [1, 1, 1], "steamid": [111, 222, 333], "name": ["A", "B", "C"], "side": ["t", "ct", "ct"]}
     )
-    _, summary = calculate_trade_kills(kills, roster)
+    _, summary = calculate_trade_kills(kills, roster, tickrate=TICKRATE)
     row = summary.filter(pl.col("steamid") == 333).row(0, named=True)
     assert row["total_kills"] == 1
     assert row["total_trade_kills"] == 1
@@ -252,7 +252,7 @@ def test_kast_true_when_only_survived():
     )
     kills = _kills_df([])
     roster = roster_per_round(ticks)
-    per_round, summary = calculate_kast(kills, roster)
+    per_round, summary = calculate_kast(kills, roster, tickrate=TICKRATE)
     assert per_round["kast_round"].to_list() == [True]
     assert summary.row(0, named=True)["kast_pct"] == 100.0
 
@@ -277,7 +277,7 @@ def test_kast_false_when_died_and_not_traded():
         ]
     )
     roster = roster_per_round(ticks)
-    per_round, summary = calculate_kast(kills, roster)
+    per_round, summary = calculate_kast(kills, roster, tickrate=TICKRATE)
     row = per_round.filter(pl.col("steamid") == 1).row(0, named=True)
     assert row["survived"] is False
     assert row["kast_round"] is False
@@ -297,7 +297,7 @@ def test_kast_morte_contada_nao_e_sobrevivencia_mesmo_com_vida_no_ultimo_tick():
         [{"round_num": 1, "tick": 260, "attacker_steamid": 99, "attacker_side": "ct",
           "victim_steamid": 1, "victim_side": "t"}]
     )
-    per_round, _ = calculate_kast(kills, roster_per_round(ticks))
+    per_round, _ = calculate_kast(kills, roster_per_round(ticks), tickrate=TICKRATE)
     row = per_round.row(0, named=True)
     assert row["survived"] is False and row["kast_round"] is False
 
@@ -319,5 +319,5 @@ def test_kast_nao_conta_assistencia_por_flash():
             {"round_num": 1, "tick": 900, "attacker_steamid": 3, "attacker_side": "ct",
              "victim_steamid": 2, "victim_side": "t"},
         ]).with_columns(pl.Series("assistedflash", [flash, False]))
-        per_round, _ = calculate_kast(kills, roster_per_round(ticks))
+        per_round, _ = calculate_kast(kills, roster_per_round(ticks), tickrate=TICKRATE)
         assert per_round.filter(pl.col("steamid") == 2)["kast_round"].to_list() == [esperado], flash
