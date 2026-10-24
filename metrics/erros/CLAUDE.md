@@ -15,8 +15,8 @@ continua valendo aqui. Uma regra por linha; (N) = nota em `notas/decisoes/`.
 - Matador visível só com 0,5 s somados (`MIN_TEMPO_VISIVEL`); quem engajou conta só em "perdeu a
   troca"; bait exige recuo líquido de `MIN_RECUO_BAIT`; tipo abaixo de `MIN_CASOS_PARA_VALIDAR` casos
   (contados do corpus) não é validado (46)
-- Validados (respostas do Pedro de 2026-10-16, `TIPOS_DE_ERRO_VALIDADOS`): não trocou, perdeu a troca, morreu
-  sozinho, primeira morte sem troca e dano de utilidade no time; flash no time só com 3 de 3 nos exemplos novos;
+- Validados (respostas do Pedro de 2026-10-16 e 2026-10-21, `TIPOS_DE_ERRO_VALIDADOS`): não trocou, perdeu a
+  troca, morreu sozinho, primeira morte sem troca, flash no time (10/10 com os 3 exemplos novos) e dano de utilidade;
   as respostas ficam por exemplo em `scripts/calibracao/respostas_do_pedro.json` e não voltam como pergunta (46)
 - Flash no time: a flash que cegou o time menos de `MIN_CEGUEIRA_FLASH_ALIADO` (2,0 s) não é ocorrência, mesmo
   com a soma do lado acima do limiar; a soma continua contando todas (46)

@@ -197,7 +197,7 @@
   | morreu sozinho | 8/10 (não no #1 e no #10) | validado |
   | primeira morte sem troca | 10/10 | validado |
   | dano de utilidade no time | 10/10 | validado |
-  | flash no time | 7/10 (não no #4, #7 e #8: cegueira de ~1 s) | não valida agora |
+  | flash no time | 7/10 (não no #4, #7 e #8: cegueira de ~1 s) | não valida agora; 10/10 em 2026-10-21 (abaixo) |
   | possível bait | a regra pega bait em 8 dos 9 (o #2 não é bait) | continua fora (amostra insuficiente) |
 
   As frases de como melhorar dos seis tipos servem como estão. (1) `TIPOS_DE_ERRO_VALIDADOS` recebe os cinco
@@ -211,3 +211,11 @@
   `calibracao-pisos` também usa 27); só `erros_do_jogador.parquet` (17 partidas) e os histogramas de
   `flash_no_time` em `erros_reference.json` mudam. Os 3 exemplos reprovados foram substituídos sem
   `--sortear-de-novo` (marcados "substituído em 2026-10-19"); com 3 de 3 nos novos, o tipo fecha 10/10 e entra.
+
+- **Flash no time validada (2026-10-21).** O Pedro respondeu "sim" nos 3 exemplos novos (#1 molodoy, match_14 R16;
+  #4 kyxsan, match_31 R20; #10 910, match_53 R11), gravados em `scripts/calibracao/respostas_do_pedro.json` numa
+  rodada de 2026-10-21 (resposta ao prompt da fase; não declara se foi pelas colunas ou pelo replay). Somados
+  aos 7 "sim" de 2026-10-16, o tipo fecha 10/10, entra em `TIPOS_DE_ERRO_VALIDADOS` (372 casos, acima de
+  `MIN_CASOS_PARA_VALIDAR`) e a aba Perfil publicada passa a mostrar "Flash no time". As frases de dica dos seis
+  tipos já estavam aprovadas. Nenhum dado de métrica muda (`VERSAO_DAS_METRICAS` segue 27): só o que o Perfil
+  mostra. Falta só o "possível bait" (9 casos, amostra insuficiente).

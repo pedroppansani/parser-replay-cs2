@@ -760,6 +760,50 @@
           ]
         }
       }
+    },
+    {
+      "data": "2026-10-21",
+      "como": "resposta do Pedro ao prompt da fase (sim nos exemplos novos #1, #4 e #10 de flash no time, os que entraram com a regra MIN_CEGUEIRA_FLASH_ALIADO); somados aos 7 sim de 2026-10-16, fecha 10 de 10",
+      "tipos": {
+        "flash_no_time": {
+          "frase_serve": true,
+          "confirmados": 10,
+          "de": 10,
+          "resultado": "valida",
+          "exemplos": [
+            {
+              "partida": "match_14",
+              "round": 16,
+              "tick": 122656,
+              "jogador": "molodoy",
+              "steamid": "76561198200982290",
+              "aliado_steamid": "76561198058500492",
+              "numero_no_material": 1,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_31",
+              "round": 20,
+              "tick": 184628,
+              "jogador": "kyxsan",
+              "steamid": "76561198057282432",
+              "aliado_steamid": "76561197996678278",
+              "numero_no_material": 4,
+              "resposta": "sim"
+            },
+            {
+              "partida": "match_53",
+              "round": 11,
+              "tick": 78288,
+              "jogador": "910",
+              "steamid": "76561199203563345",
+              "aliado_steamid": "76561198838822582",
+              "numero_no_material": 10,
+              "resposta": "sim"
+            }
+          ]
+        }
+      }
     }
   ]
 }
