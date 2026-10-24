@@ -376,7 +376,14 @@ O texto original do cartão:
 
 ---
 
-## 13. A referência do rating não se reproduz no último bit (achado do `fix-tickrate-resto`, 2026-10-24)
+## 13. A referência do rating não se reproduz no último bit (achado do `fix-tickrate-resto`, 2026-10-24) -- FECHADO
+
+- **Fechado (2026-10-24), merge `2d547d7b`.** Sua resposta: opção 1. Referência regravada pelo `fit_rating` de
+  hoje, versão das métricas 28 -> 29. O rating principal não muda em nenhum jogador; só os ratings por situação
+  de compra (cheia, força, eco) mudam, no máximo 9e-16. Catraca, pesos e validação intactos. Teste novo
+  `tests/test_referencia_do_rating.py`: byte a byte no Windows (fixture e corpus); no CI (Linux) tolerância
+  relativa de 1e-12, porque lá o modelo de round sai diferente no último bit (medido na fixture: 15 de 75
+  números, diferença relativa máxima 6,8e-14). O texto abaixo é o cartão como foi aberto.
 
 - **O que é:** rodar `py -3.12 -m scripts.fit_rating` hoje dá um `metrics/rating_reference.json`
   diferente do versionado em 13 médias e desvios, todos no último bit do float (diferença relativa
