@@ -295,12 +295,12 @@ def test_roles_are_compared_within_the_team_not_across_the_match():
     utility ficaria sem suporte nenhum, o que não descreve como ele joga.
     """
     # O suporte é medido POR ROUND desde 2026-10-02 (PISO_SUPORTE_POR_ROUND):
-    # os mesmos segundos totais, numa partida de 22 rounds.
+    # os mesmos segundos totais, numa partida de 22 rounds (B1 com 50 s: o piso é 40 s desde 2026-10-24).
     rounds = 22
     signals = _signals([
         {"steamid": s, "name": n, "team": t, "enemy_blind_seconds": seg,
          "rounds_jogados": rounds, "enemy_blind_por_round": seg / rounds}
-        for s, n, t, seg in ((1, "A1", "A", 80.0), (2, "A2", "A", 10.0), (3, "B1", "B", 30.0), (4, "B2", "B", 5.0))
+        for s, n, t, seg in ((1, "A1", "A", 80.0), (2, "A2", "A", 10.0), (3, "B1", "B", 50.0), (4, "B2", "B", 5.0))
     ])
     support = assign_traits(signals).filter(pl.col("trait") == "support")
     assert sorted(support["name"].to_list()) == ["A1", "B1"]
