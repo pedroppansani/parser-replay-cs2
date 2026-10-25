@@ -82,10 +82,10 @@ window.MapCore = (function () {
   }
 
   // Cor de cada tipo de granada: os tokens --smoke, --molotov, --he, --flash da direção "Sala de
-  // demo" (decisão 44; contraste e ΔE medidos por metrics/paleta.py). decoy: --apagado.
+  // demo" (decisão 44; contraste e ΔE medidos por metrics/paleta.py). decoy: --apagado-mapa (o canvas lê os tokens do mapa, decisão 48).
   // Lidos dos tokens na carga: o `map_core.js` roda depois do <style> da página.
   var NADE_COLOR = { smoke: token("smoke"), molotov: token("molotov"), he: token("he"),
-                     flash: token("flash"), decoy: token("apagado") };
+                     flash: token("flash"), decoy: token("apagado-mapa") };
 
   /* ---------------------------------------------------------------------
      Projeção. A mesma conta do resto do projeto (scripts/prepare_radar.py,
@@ -578,7 +578,7 @@ window.MapCore = (function () {
     ctx.shadowBlur = 0;
     ctx.fillStyle = token("contorno");
     ctx.fillRect(cx - s / 2 - o, cy - s / 2 - o, s + 2 * o, s + 2 * o);
-    ctx.fillStyle = token("tinta");
+    ctx.fillStyle = token("tinta-mapa");
     ctx.fillRect(cx - s / 2, cy - s / 2, s, s);
     ctx.restore();
   }
@@ -587,7 +587,7 @@ window.MapCore = (function () {
   function areaDesenhada(ctx, arma, X, Y, r) {
     ctx.save();
     ctx.setLineDash(tracejadoDoDesenho(ctx));
-    [[5, token("tinta")], [3, token("contorno")], [1.5, NADE_COLOR[arma]]].forEach(function (c) {
+    [[5, token("tinta-mapa")], [3, token("contorno")], [1.5, NADE_COLOR[arma]]].forEach(function (c) {
       ctx.lineWidth = c[0]; ctx.strokeStyle = c[1];
       ctx.beginPath(); ctx.arc(X, Y, r, 0, Math.PI * 2); ctx.stroke();
     });
@@ -643,7 +643,7 @@ window.MapCore = (function () {
     if (tracejado) ctx.setLineDash(tracejadoDoDesenho(ctx));
     caminhoDoGlifo(ctx, kind, r, ang);
     ctx.lineWidth = 2 * (ANEL_CONTORNO + ANEL_HALO) + (kind === "he" ? 2 : 0);
-    ctx.strokeStyle = token("tinta");
+    ctx.strokeStyle = token("tinta-mapa");
     ctx.stroke();
     ctx.lineWidth = 2 * ANEL_CONTORNO + (kind === "he" ? 2 : 0);
     ctx.strokeStyle = token("contorno");
@@ -653,7 +653,7 @@ window.MapCore = (function () {
 
   /** Disco com o anel duplo por baixo (peça viva): halo claro, contorno escuro e a cor do lado. */
   function discoComAnel(ctx, X, Y, r, cor, caminho) {
-    ctx.fillStyle = token("tinta");
+    ctx.fillStyle = token("tinta-mapa");
     ctx.beginPath(); caminho(r + ANEL_CONTORNO + ANEL_HALO); ctx.fill();
     ctx.fillStyle = token("contorno");
     ctx.beginPath(); caminho(r + ANEL_CONTORNO); ctx.fill();
@@ -682,7 +682,7 @@ window.MapCore = (function () {
     o = o || {};
     var m = ROT.ctx.getTransform();
     ROT.lista.push({ txt: String(texto), x: m.a * X + m.c * Y + m.e, y: m.b * X + m.d * Y + m.f,
-                     cor: o.cor || token("tinta"), fonte: o.fonte || "texto", italico: !!o.italico,
+                     cor: o.cor || token("tinta-mapa"), fonte: o.fonte || "texto", italico: !!o.italico,
                      prioridade: o.prioridade || 0, dy: o.dy || 0, alfa: o.alfa == null ? 1 : o.alfa });
   }
 
@@ -843,7 +843,7 @@ window.MapCore = (function () {
     ctx.shadowColor = corComAlfa("contorno", 0.55);
     ctx.shadowBlur = 6 * e;
     ctx.shadowOffsetY = 1 * e;
-    ctx.fillStyle = token("tinta");
+    ctx.fillStyle = token("tinta-mapa");
     ctx.beginPath();
     if (comDirecao) caminhoDaGota(ctx, X, Y, 8.2 * e, PONTA_DISTANCIA * e, anguloDeTela(o.yaw));
     else ctx.arc(X, Y, 8.2 * e, 0, Math.PI * 2);
@@ -869,7 +869,7 @@ window.MapCore = (function () {
     // anel de vida: encolhe conforme o jogador toma dano
     var hp = Math.max(0, Math.min(100, o.hp)) / 100;
     if (hp < 1) {
-      ctx.strokeStyle = token("tinta");
+      ctx.strokeStyle = token("tinta-mapa");
       ctx.lineWidth = 2.4 * e;
       ctx.beginPath();
       ctx.arc(X, Y, 10.4 * e, -Math.PI / 2, -Math.PI / 2 + hp * Math.PI * 2);
@@ -877,12 +877,12 @@ window.MapCore = (function () {
     }
 
     var yNome = Y - (comDirecao ? NOME_ACIMA_COM_DIRECAO : NOME_ACIMA) * e;
-    ctx.font = "600 " + (12 * e) + "px " + token("f-texto");   // o nome é texto: Archivo (mono só em número)
+    ctx.font = "600 " + (12 * e) + "px " + token("f-texto");   // o nome é texto: Geist (mono só em número)
     ctx.textAlign = "center";
     ctx.lineWidth = 3 * e;
     ctx.strokeStyle = corComAlfa("contorno", 0.85);
     ctx.strokeText(o.nome.slice(0, 9), X, yNome);
-    ctx.fillStyle = token("tinta");
+    ctx.fillStyle = token("tinta-mapa");
     ctx.fillText(o.nome.slice(0, 9), X, yNome);
   }
 
@@ -903,7 +903,7 @@ window.MapCore = (function () {
         ctx.moveTo(X - d, Y - d); ctx.lineTo(X + d, Y + d);
         ctx.moveTo(X + d, Y - d); ctx.lineTo(X - d, Y + d);
       };
-      xis(); ctx.lineWidth = 8 * e; ctx.strokeStyle = token("tinta"); ctx.stroke();
+      xis(); ctx.lineWidth = 8 * e; ctx.strokeStyle = token("tinta-mapa"); ctx.stroke();
       xis(); ctx.lineWidth = 5.5 * e; ctx.strokeStyle = token("contorno"); ctx.stroke();
       ctx.globalAlpha = 0.6;
       xis(); ctx.lineWidth = 3 * e; ctx.strokeStyle = color; ctx.stroke();
@@ -916,7 +916,7 @@ window.MapCore = (function () {
       // passo (5/4), e o traço na cor do lado por cima -- o anel duplo vale com o disco vazado
       var rf = 6 * e;
       ctx.setLineDash([5, 4]);
-      ctx.lineWidth = 7 * e; ctx.strokeStyle = token("tinta");
+      ctx.lineWidth = 7 * e; ctx.strokeStyle = token("tinta-mapa");
       ctx.beginPath(); ctx.arc(X, Y, rf, 0, Math.PI * 2); ctx.stroke();
       ctx.lineWidth = 4.5 * e; ctx.strokeStyle = token("contorno");
       ctx.beginPath(); ctx.arc(X, Y, rf, 0, Math.PI * 2); ctx.stroke();
@@ -924,14 +924,14 @@ window.MapCore = (function () {
       ctx.beginPath(); ctx.arc(X, Y, rf, 0, Math.PI * 2); ctx.stroke();
       ctx.setLineDash([]);
       ctx.restore();
-      if (o.nome && ROT.ativo) rotulo(o.nome, X, Y - (o.rotuloAcima != null ? o.rotuloAcima : NOME_ACIMA), { cor: token("tinta-2"), italico: true, prioridade: -1, dy: 2 });
+      if (o.nome && ROT.ativo) rotulo(o.nome, X, Y - (o.rotuloAcima != null ? o.rotuloAcima : NOME_ACIMA), { cor: token("tinta-2-mapa"), italico: true, prioridade: -1, dy: 2 });
       return;
     }
 
     if (o.estado === "outro_andar") {
       // anel vazado sobre o anel duplo inteiro; a seta ▲/▼ com o mesmo contorno escuro
       var rr = 5.5 * e;
-      ctx.lineWidth = 2 * e + 2 * (ANEL_CONTORNO + ANEL_HALO); ctx.strokeStyle = token("tinta");
+      ctx.lineWidth = 2 * e + 2 * (ANEL_CONTORNO + ANEL_HALO); ctx.strokeStyle = token("tinta-mapa");
       ctx.beginPath(); ctx.arc(X, Y, rr, 0, Math.PI * 2); ctx.stroke();
       ctx.lineWidth = 2 * e + 2 * ANEL_CONTORNO; ctx.strokeStyle = token("contorno");
       ctx.beginPath(); ctx.arc(X, Y, rr, 0, Math.PI * 2); ctx.stroke();
@@ -967,7 +967,7 @@ window.MapCore = (function () {
 
     var hp = Math.max(0, Math.min(100, o.hp)) / 100;
     if (hp < 1) {
-      ctx.strokeStyle = token("tinta");
+      ctx.strokeStyle = token("tinta-mapa");
       ctx.lineWidth = 2.2 * e;
       ctx.beginPath();
       ctx.arc(X, Y, 12.6 * e, -Math.PI / 2, -Math.PI / 2 + hp * Math.PI * 2);
@@ -977,8 +977,8 @@ window.MapCore = (function () {
 
     if (o.nome && ROT.ativo) {
       // `rotuloAcima` (px do contexto): quem desenha a peça maior (prancheta) diz onde o nome começa
-      if (o.rotuloAcima != null) rotulo(o.nome.slice(0, 9), X, Y - o.rotuloAcima, { cor: token("tinta"), prioridade: o.selecionado ? 10 : 1, dy: 2 });
-      else rotulo(o.nome.slice(0, 9), X, Y, { cor: token("tinta"), prioridade: o.selecionado ? 10 : 0,
+      if (o.rotuloAcima != null) rotulo(o.nome.slice(0, 9), X, Y - o.rotuloAcima, { cor: token("tinta-mapa"), prioridade: o.selecionado ? 10 : 1, dy: 2 });
+      else rotulo(o.nome.slice(0, 9), X, Y, { cor: token("tinta-mapa"), prioridade: o.selecionado ? 10 : 0,
                                               dy: (comDirecao ? NOME_ACIMA_COM_DIRECAO : NOME_ACIMA) - 4 });
     }
   }

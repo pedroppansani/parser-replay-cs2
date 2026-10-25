@@ -364,7 +364,7 @@ window.MapAnnotations = (function () {
     // a granada desenhada selecionada: anel --foco em volta (arrastar move; Delete apaga)
     if (S.selGranada && !erguida && tracosDoRound().indexOf(S.selGranada) >= 0) {
       var c = jogoParaPixel(S.selGranada.pontos[0][0], S.selGranada.pontos[0][1]);
-      ctxC.save(); ctxC.strokeStyle = MapCore.token("foco"); ctxC.lineWidth = 2;
+      ctxC.save(); ctxC.strokeStyle = MapCore.token("foco-mapa"); ctxC.lineWidth = 2;
       ctxC.beginPath(); ctxC.arc(c[0], c[1], MapCore.RAIO_GLIFO_DESENHADO * 2.4, 0, Math.PI * 2); ctxC.stroke(); ctxC.restore();
     }
   }
@@ -378,7 +378,7 @@ window.MapAnnotations = (function () {
       applyView(ctxR);
       var gc = pixelParaJogo(S.cursor[0], S.cursor[1]);
       caminhoDoTraco(ctxR, { ferramenta: "granada", arma: S.armaDesenho, pontos: [gc], area: false });
-      ctxR.save(); ctxR.strokeStyle = MapCore.token("foco"); ctxR.lineWidth = 2;
+      ctxR.save(); ctxR.strokeStyle = MapCore.token("foco-mapa"); ctxR.lineWidth = 2;
       ctxR.beginPath(); ctxR.moveTo(S.cursor[0] - 14, S.cursor[1]); ctxR.lineTo(S.cursor[0] + 14, S.cursor[1]);
       ctxR.moveTo(S.cursor[0], S.cursor[1] - 14); ctxR.lineTo(S.cursor[0], S.cursor[1] + 14); ctxR.stroke(); ctxR.restore();
     }
@@ -762,7 +762,7 @@ window.MapAnnotations = (function () {
     fora.width = W;
     fora.height = H + 46;
     var c = fora.getContext("2d");
-    c.fillStyle = MapCore.token("fundo");
+    c.fillStyle = MapCore.token("fundo-mapa");
     c.fillRect(0, 0, fora.width, fora.height);
     // Exporta o que está VISÍVEL agora -- inclusive o zoom e os traços que a
     // linha do tempo ainda não revelou. A resolução interna muda com a tela;
@@ -771,7 +771,7 @@ window.MapAnnotations = (function () {
     c.drawImage(camada, 0, 0, W, H);
 
     var ctx2 = opts.contexto ? opts.contexto() : {};
-    c.fillStyle = MapCore.token("tinta");
+    c.fillStyle = MapCore.token("tinta-mapa");
     c.font = "15px " + MapCore.token("f-num");   // o carimbo: partida, round e instante (mono nos números)
     c.textBaseline = "middle";
     var carimbo = [ctx2.partida, ctx2.mapa, "Round " + (S.round == null ? "?" : S.round),
