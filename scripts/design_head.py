@@ -44,6 +44,13 @@ def aplica(html: str) -> str:
     return html.replace(MARCADOR_TOKENS, tokens_css()).replace(MARCADOR_FONTES, fontes_html())
 
 
+def _wordmark_liso() -> str:
+    """O wordmark liso da marca a 17 px de altura (entrega-v2-goatdemo §1: abaixo de 24 px, sem a mira), na cor
+    do texto (currentColor); o nome acessível fica no link."""
+    svg = (WEB / "marca" / "goatdemo-liso.svg").read_text(encoding="utf-8").strip()
+    return svg.replace(' role="img" aria-label="GOAT.demo"', ' width="123" height="17" aria-hidden="true" focusable="false"')
+
+
 def topo_do_site(atual: str, prancheta: str | None, repo: str) -> str:
     """O topo do site (entrega-sala-de-demo §7): marca e quatro links -- Partidas, Jogadores, Prancheta, GitHub.
     `atual` é "partidas", "jogadores" ou "prancheta" (recebe aria-current). O CSS fica em cada página."""
@@ -55,7 +62,6 @@ def topo_do_site(atual: str, prancheta: str | None, repo: str) -> str:
         links.append(("prancheta", prancheta, "Prancheta"))
     nav = "".join(f'<a href="{e(h)}"{" aria-current=\"page\"" if k == atual else ""}>{t}</a>' for k, h, t in links)
     return (f'<header class="site-topo">\n'
-            f'    <a class="marca" href="index.html" aria-label="Parser de Replay CS2, início">'
-            f'<span class="marca-longa">Parser de Replay</span><b>CS2</b></a>\n'
+            f'    <a class="marca" href="index.html" aria-label="GOAT.demo, início">{_wordmark_liso()}</a>\n'
             f'    <nav class="site-nav" aria-label="Principal">{nav}<a href="{e(repo)}">GitHub</a></nav>\n'
             f'  </header>')
