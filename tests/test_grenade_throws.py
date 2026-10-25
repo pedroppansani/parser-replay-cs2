@@ -14,6 +14,7 @@ import numpy as np
 import polars as pl
 import pytest
 
+import metrics.grenade_throws as gt
 from metrics.grenade_throws import (
     ALTURA_OLHOS_AGACHADO,
     ALTURA_OLHOS_EM_PE,
@@ -167,7 +168,7 @@ def test_a_convencao_invertida_quebra_a_altura_derivada():
 
 # --- A) Ancoragem -----------------------------------------------------------
 
-def test_a_ancoragem_acha_o_tick_da_soltura_e_nao_o_do_clique():
+def test_a_ancoragem_acha_o_tick_da_soltura_e_nao_o_do_clique(monkeypatch):
     """O clique fica 7 ticks antes; o ângulo que importa é o da soltura.
 
     O jogador está em MOVIMENTO de propósito. Com ele parado, a posição e a mira
@@ -177,6 +178,9 @@ def test_a_ancoragem_acha_o_tick_da_soltura_e_nao_o_do_clique():
     na mediana), mas torna este teste sem conteúdo: só dá pra provar que a
     ancoragem acha o tick certo quando existe um tick certo a achar.
     """
+    # cartão 5: sem evento, a regra do projétil acharia o tick antes da ancoragem;
+    # o que se prova aqui é a ancoragem, que segue valendo onde falta o tick t-1
+    monkeypatch.setattr(gt, "TICK_PELO_PROJETIL_SEM_EVENTO", False)
     tab = _cenario([_um(atraso=7, v_jogador=[180.0, 140.0, 0.0])])
     pr, _ = grenade_throws(tab, TICKRATE)
     assert pr["tick_soltura"][0] - pr["tick_clique"][0] == 7
@@ -415,8 +419,9 @@ def test_o_tick_oficial_e_a_verdade_e_a_ancoragem_fica_como_validacao():
     assert resumo["ancoragem_vs_oficial"]["n"] == 1
 
 
-def test_sem_evento_oficial_a_ancoragem_continua_valendo():
-    """Demo sem `grenade_thrown` (ou evento de outra granada): nada muda."""
+def test_sem_evento_oficial_a_ancoragem_continua_valendo(monkeypatch):
+    """Evento de outra granada: nada muda. Demo sem `grenade_thrown`: o tick sai do
+    projétil (cartão 5); com a regra desligada, volta a ser a ancoragem."""
     tab = _cenario([_um()])
     t_primeiro = int(tab["grenades"]["tick"].min())
     pr, resumo = grenade_throws(_evento_oficial(tab, t_primeiro, 100, -10.0, 45.0,
@@ -425,6 +430,9 @@ def test_sem_evento_oficial_a_ancoragem_continua_valendo():
     assert pr["delta_ancoragem_ticks"][0] is None
     assert resumo["avanco_na_mira_mediano"] is None
 
+    pr_sem, _ = grenade_throws(tab, TICKRATE)
+    assert pr_sem["fonte_tick"][0] == "projetil"
+    monkeypatch.setattr(gt, "TICK_PELO_PROJETIL_SEM_EVENTO", False)
     pr_sem, _ = grenade_throws(tab, TICKRATE)
     assert pr_sem["fonte_tick"][0] == "ancoragem"
 

@@ -54,6 +54,9 @@ VERSAO_DO_PARSER = 2
 # Onde o complemento registra o que acrescentou a um interim existente.
 ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
 
+# 30 (2026-10-24) cartão 5: TICK_PELO_PROJETIL_SEM_EVENTO ligado; nas demos sem grenade_thrown (FACEIT) o tick da
+#    soltura sai do primeiro ponto do projétil (acertava 41% pela ancoragem; 100% medido nas 43 partidas com o evento).
+#    Impacto: só a biblioteca de arremessos e os parquets de arremesso das partidas FACEIT; rating não muda.
 # 29 (2026-10-24) cartão 13: metrics/rating_reference.json regravado pelo fit_rating de hoje (o versionado vinha
 #    de um estado de 03/10 que não se reproduzia); 13 médias e desvios mudam no último bit, o rating muda só no
 #    último dígito, a catraca e os pesos não mudam. Teste novo: tests/test_referencia_do_rating.py.
@@ -149,7 +152,7 @@ ARQUIVO_DO_COMPLEMENTO = "complemento_rota_b.json"
 #   (inclui a classe de economia do jogador no rating), unique com subset fica
 #   com a primeira linha. Antes, esses três casos dependiam da ordem de hash.
 # 1 (2026-09-20) primeira versão declarada, mesmo raciocínio acima.
-VERSAO_DAS_METRICAS = 29
+VERSAO_DAS_METRICAS = 30
 
 # Pastas cujo estado define o NÚMERO. `sujo` olha só estas: olhar o repositório
 # inteiro marcava todo reprocessamento como sujo, porque o próprio

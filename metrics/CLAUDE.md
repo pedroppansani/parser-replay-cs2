@@ -145,6 +145,6 @@ Antes de mexer nos erros do Perfil (`metrics/erros/`), leia `metrics/erros/CLAUD
 - Janela de trade (5,0 s) e limiares de peek/hold, contato, pré-fire e rotação.
 - Pesos do crédito do Round Swing e todos os de `round_spectacle.py`.
 - Altura dos olhos e diferença em pé/agachado (21c); mínimo por grupo da força (21a);
-  `TICK_PELO_PROJETIL_SEM_EVENTO`, desligado.
+  `TICK_PELO_PROJETIL_SEM_EVENTO`, ligado (cartão 5).
 - Limiares do destaque, do round decisivo, da autópsia e dos papéis.
 - Pisos de função (31) e do eixo carrega piano/baiter; repick com mais de uma saída (15b).
