@@ -17,6 +17,9 @@ de `notas/PENDENCIAS_PARA_O_PEDRO.md` e nas notas de decisão).
   `scripts/` e `dashboard/web/` 6.000; as outras pastas, inclusive `metrics/erros/`, 5.000. Se um precisar passar
   do limite, não suba de novo: pare e traga uma proposta de divisão.
 - A branch `fase-6-decisivo` e as tags `baseline-*` não são apagadas.
+- **Portões da v2 (Pedro, 2026-10-25):** v2-3 + v2-4 (landing e páginas claras, juntas) e v2-5 (prancheta) ESPERAM o OK
+  do Pedro depois da prévia local (`preview-v2/index.html`) e antes do merge; eu mando o caminho e uma lista curta do que
+  conferir. v2-2, v2-6 e v2-7 seguem sem esperar. Em toda fase da v2 há prévia local.
 - Comando longo (suíte, reprocesso, build, capturas): um por chamada, com `timeout` e a saída em `notas/logs/`
   (fora do git); se passar do limite, parar e dizer ao Pedro qual foi (pedido dele, 2026-10-24).
 - Dados: `data/interim` e `demos/` só por junction de leitura nos worktrees, removida no fim (regra 36). O
