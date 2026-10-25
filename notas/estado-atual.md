@@ -62,15 +62,18 @@ de `notas/PENDENCIAS_PARA_O_PEDRO.md` e nas notas de decisão).
 | Calibração, item 1: pisos de função (suporte 40 s, versão 28; 21 jogadores mudam de função na `jogadores.html`, nota 31) | `d5562e76` |
 | Cartão 13: referência do rating regravada e presa por teste (byte a byte no Windows, 1e-12 no CI), versão 29 | `2d547d7b` |
 | Cartão 5: tick da soltura pelo projétil nas demos da FACEIT (piora 0, +447 botões, 2.390 comandos mudam), versão 30 | `4f1407a7` |
+| v2-1 (base da GOAT.demo): fontes Geist no site, tokens em dois temas (o site fica no escuro de hoje), CSP sem Google Fonts, nota 48 | `abe79b27` |
 | `fix-tickrate-resto`: tickrate lido da demo em todo lugar, sem mudar nenhum número (sha256 dos dados igual ao da `main`); contagem de testes 1.678 | `47c0f840` |
 
 ## Em andamento
 
 Nada.
 
+- Para a v2-4 (pedir autorização ao Pedro): `tests/test_acessibilidade.py::test_dim_tem_contraste…` lê o primeiro `--apagado` do `tokens.css`; na v2-1 o bloco escuro ficou primeiro para ele seguir intacto. O `template.html` ainda lê `--tinta`/`--fundo` do tema para o canvas do replay (v2-4); o `ct`/`tr` da prancheta ainda não usam os `-mapa` (v2-5); sobra `'DM Sans'` em `map_core.js`; `aceite.py` ainda procura "JetBrains" (v2-7).
+
 ## Fila (na ordem; o Pedro mudou em 2026-10-24)
 
-1. A v2 (GOAT.demo), plano aprovado em `C:/Users/User/Desktop/Claude outputs/PLANO-v2-0.md`: v2-1 base (não
+1. A v2 (GOAT.demo), v2-1 FEITA (próxima: v2-2 marca), plano aprovado em `C:/Users/User/Desktop/Claude outputs/PLANO-v2-0.md`: v2-1 base (não
    muda a aparência; o escuro atual vira `data-tema="escuro"`), v2-2 marca, v2-3 e v2-4 em sequência numa branch de
    integração e para a `main` no mesmo push, v2-5 e v2-6 em paralelo depois de a v2-4 mesclar o `map_core.js`, v2-7
    verificação final. Condições de cada fase: suíte verde, impressão dos números idêntica, só as capturas e os
