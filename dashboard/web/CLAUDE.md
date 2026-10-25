@@ -13,7 +13,8 @@ valem lá também.
 - Aviso de régua montado no JS só a partir de `regua_origem` e dos números que viajam no perfil (30)
 - O replay navega por TICK; fora da janela exportada, a entrada não é clicável e o motivo vai no
   `title` (8d)
-- Páginas abrem como arquivo local; nenhuma CDN além do Google Fonts; no máximo 2 famílias (44)
+- Páginas abrem como arquivo local, sem CDN nem Google Fonts: Geist e Geist Mono em `fontes/` (o build
+  copia de `dashboard/web/fontes/`), no máximo 2 famílias; `gera_fontes`/`mede_fallback` não rodam no build (48)
 - Escolhas da nota 44 ("Como ficou na implementação") são deliberadas: página da partida sem o topo
   do site, coluna Mira com o texto do Python, mínimos de `jogadores.html`; não "corrija" de volta (44)
 - Aba Placar: "Quanto cada round pesou" tem o mesmo eixo X do gráfico de cima (viewBox de 900, pL 32,
@@ -25,6 +26,8 @@ valem lá também.
 - CT azul, TR dourado; cada granada mantém a forma do `nadeGlyph`; uma cor, um papel: cor de lado só
   para o lado (por round, o lado daquele round), destaque só no verde do decisivo, vitória e link
   sem matiz; `--erro` e `--aviso` nunca marcam erro de jogador (44, 46)
+- Tema por página (`<html data-tema>`); `tokens.css` tem o bloco claro, o escuro e o comum; o canvas lê só
+  `*-mapa` e as granadas, iguais nos dois temas (48)
 - Cor nova ou trocada passa por `py -3.12 -m metrics.paleta` contra o fundo onde aparece (texto
   4,5:1, marca 3:1, ΔE2000 ≥ 8 no pior par daltônico); o scatter de clusters segue facetado (10)
 - Mapa, peças e granadas em canvas, com UM núcleo (`map_core.js`); `desenhaJogador` não ganha

@@ -144,7 +144,7 @@ Uma regra por linha; o número entre parênteses é a nota em `notas/decisoes/`.
 - `dashboard/web/CLAUDE.md`: template, mapa, cores, replay, anotação, prancheta e grupos.
 - `tests/CLAUDE.md`: invariantes, controles e testes que pulam sem dado ou navegador.
 - `notas/decisoes/README.md`: índice das decisões. `notas/glossario.md`: termos.
-  `notas/design/entrega-sala-de-demo.md`: design (§12 é regra dura).
+  `notas/design/entrega-sala-de-demo.md`: design (§12 é regra dura); v2: `notas/design/entrega-v2-goatdemo.md`.
 - Pendências: `notas/PENDENCIAS_PARA_O_PEDRO.md`, `PENDENCIAS_NO_JOGO.md`, `RECUPERACAO_DEMOS.md`,
   `notas/limitacoes.md`.
 - `pesquisa/`: exploratórios (teste não importa) · `legado/`: sem uso · `data/processed/`

@@ -5,6 +5,9 @@
 - **Data:** 2026-10-08
 - **Resumo:** O site passa a ter uma direção visual única: tema escuro, placar no estilo do HUD, paleta revalidada contra o fundo do tema, duas famílias de fonte, radar dessaturado por mapa e marcas com anel duplo. A forma vem do documento de entrega; o comportamento continua sendo o do main.
 
+> **Revista pela 48 em 2026-10-25** ([48-direcao-visual-goatdemo.md](48-direcao-visual-goatdemo.md)): o tema único,
+> as fontes Archivo e JetBrains Mono e o Google Fonts. O resto desta nota continua vigente.
+
 ## Texto
 
 44. **Direção visual "Sala de demo"** (design-A a design-E, 2026-10-08). O documento de entrega
