@@ -1,4 +1,4 @@
-# Parser de Replay CS2
+# GOAT.demo · Replay de CS2
 
 [![Testa e publica o site](https://github.com/pedroppansani/parser-replay-cs2/actions/workflows/pages.yml/badge.svg)](https://github.com/pedroppansani/parser-replay-cs2/actions/workflows/pages.yml)
 
@@ -144,7 +144,14 @@ A licença cobre só o código. Não cobre o que é de terceiros:
 - **Estatísticas oficiais** em `data/reference/` são da HLTV, transcritas das
   páginas públicas de cada partida para conferir os números daqui.
 - **Radares dos mapas** em `assets/radars/` vêm dos arquivos do próprio jogo
-  (via awpy) e pertencem à Valve.
+  (via awpy) e pertencem à Valve, assim como tudo o que o site deriva deles.
+- **Agentes** (as figuras de jogador do site) são derivados de gravações do
+  jogo e pertencem à Valve.
+- O projeto é de portfólio, **sem fins comerciais**, e não tem ligação com a
+  Valve. A marca GOAT.demo (a cabra e o nome desenhado) é desenho próprio,
+  sem logotipo nem ícone da Valve ou do Counter-Strike.
+- **Fontes Geist e Geist Mono** (Vercel) em `dashboard/web/fontes/`, sob a
+  SIL Open Font License 1.1 (`dashboard/web/fontes/OFL.txt`).
 - **Demos** (`.dem`) são gravações de partidas de terceiros e não são
   distribuídas neste repositório; o que está versionado é o resultado do
   processamento.
