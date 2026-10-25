@@ -137,13 +137,13 @@ def cabecalho_html(match_id: str, base: Path, site: dict | None) -> dict[str, st
 
 
 def titulo_da_pagina(match_id: str, base: Path | None = None) -> str:
-    """O <title> por partida: "A 17 × 19 B · Dust II · GOAT.demo · Replay de CS2"; sem placar, só o mapa e a marca."""
+    """O <title> por partida: "A 17 × 19 B · Dust II · GOAT.demo · Replay de CS2"; sem placar, só o mapa."""
     from scripts.meta_da_pagina import MARCA
     base = base or PROJECT_ROOT / "data" / "processed" / match_id
     c = cabecalho_da_partida(match_id, base)
     mapa = _nome_do_mapa(base, match_id)
     if not c:
-        return f"{mapa} · {MARCA}"
+        return mapa
     a, b = c["lados"]["A"], c["lados"]["B"]
     evento = _evento_se_o_titulo_repete(match_id, c)
     return f"{a['nome']} {a['pontos']} × {b['pontos']} {b['nome']} · {mapa}{' · ' + evento if evento else ''} · {MARCA}"
