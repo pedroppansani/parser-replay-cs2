@@ -222,16 +222,19 @@ _DECLARACAO = re.compile(r"^\s*--([a-z0-9-]+):\s*(#[0-9a-fA-F]{6})\s*;", re.M)
 
 def le_tokens(caminho: Path = TOKENS, tema: str = TEMA_DAS_PAGINAS) -> dict[str, str]:
     """Os tokens de cor de um TEMA (linhas `--nome: #hex;`, um token por linha), pela cascata do CSS numa
-    página `<html data-tema="tema">`: os blocos `:root` (o claro é `:root, [data-tema="claro"]`) e, por cima,
-    o bloco `[data-tema="<tema>"]`, na ordem do arquivo."""
+    página `<html data-tema="tema">`: primeiro os blocos `:root` (o claro é `:root, [data-tema="claro"]`) e, por
+    cima, os do tema (`[data-tema="<tema>"]`, que no escuro também é `:root[data-tema="escuro"]` e pesa mais que
+    o `:root`, em qualquer ordem no arquivo)."""
     if tema not in TEMAS:
         raise ValueError(f"tema desconhecido: {tema!r} (os temas são {TEMAS})")
     texto = re.sub(r"/\*.*?\*/", "", caminho.read_text(encoding="utf-8"), flags=re.S)
+    blocos = [({s.strip() for s in seletor.split(",")}, corpo)
+              for seletor, corpo in re.findall(r"([^{}]+)\{([^{}]*)\}", texto)]
     tk: dict[str, str] = {}
-    for seletor, corpo in re.findall(r"([^{}]+)\{([^{}]*)\}", texto):
-        seletores = {s.strip() for s in seletor.split(",")}
-        if ":root" in seletores or f'[data-tema="{tema}"]' in seletores:
-            tk.update((nome, cor.lower()) for nome, cor in _DECLARACAO.findall(corpo))
+    for do_root in (True, False):
+        for seletores, corpo in blocos:
+            if (":root" in seletores) == do_root and (do_root or f'[data-tema="{tema}"]' in seletores):
+                tk.update((nome, cor.lower()) for nome, cor in _DECLARACAO.findall(corpo))
     return tk
 
 

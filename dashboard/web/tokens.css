@@ -16,6 +16,48 @@
 @font-face{font-family:"Geist Mono Fallback";src:local("Consolas");font-weight:100 500;size-adjust:109.13%;ascent-override:92.09%;descent-override:27.03%;line-gap-override:0.00%}
 @font-face{font-family:"Geist Mono Fallback";src:local("Consolas Bold");font-weight:600 900;size-adjust:109.13%;ascent-override:92.09%;descent-override:27.03%;line-gap-override:0.00%}
 
+/* ---------------- ESCURO (o escuro de hoje, da Sala de demo, com o nome novo; o violeta da prancheta é a v2-5) ---------------- */
+/* `:root[data-tema="escuro"]` pesa mais que o `:root` do claro: o escuro vale na página escura qualquer que seja
+   a ordem. Ele vem primeiro porque é o tema de todas as páginas hoje (v2-1). */
+:root[data-tema="escuro"], [data-tema="escuro"] {
+  color-scheme: dark;
+
+  --fundo: #0b0f14;
+  --superficie: #121820;
+  --superficie-2: #1a222d;
+  --tl-fundo: #0e131a;
+
+  --tinta: #e8edf2;
+  --tinta-2: #aab5c1;
+  --apagado: #8b97a5;
+  --linha: #222b37;
+  --borda: #66758a;
+  --foco: #ffffff;
+
+  --ct: #4a90e8;
+  --ct-texto: #6ea8f2;
+  --tr: #e0a23a;
+  --tr-texto: #e9b65a;
+
+  --decisivo: #2fae7c;
+  --aviso: #ffea3d;
+  --erro: #ff6b6b;
+  --acao: #ffffff;           /* novo na v2 (sem uso no escuro de hoje): o branco do --foco com o fundo por cima */
+  --acao-ink: #0b0f14;
+
+  --vitoria: var(--tinta);
+  --link: var(--tinta);
+  --neutro: var(--apagado);
+
+  --ct-area: rgba(74, 144, 232, 0.22);
+  --tr-area: rgba(224, 162, 58, 0.22);
+  --decisivo-area: rgba(47, 174, 124, 0.16);
+  --aviso-area: rgba(255, 234, 61, 0.10);
+  --erro-area: rgba(255, 107, 107, 0.10);
+
+  --sombra-pop: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
 /* ---------------- CLARO (entrega §2.1; valores do protótipo v2) ---------------- */
 :root, [data-tema="claro"] {
   color-scheme: light;
@@ -61,46 +103,6 @@
 
   /* ---- Sombra: só o popover; na página clara, bem mais leve ---- */
   --sombra-pop: 0 8px 24px rgba(0, 0, 0, 0.12);
-}
-
-/* ---------------- ESCURO (o escuro de hoje, da Sala de demo, com o nome novo; o violeta da prancheta é a v2-5) ---------------- */
-[data-tema="escuro"] {
-  color-scheme: dark;
-
-  --fundo: #0b0f14;
-  --superficie: #121820;
-  --superficie-2: #1a222d;
-  --tl-fundo: #0e131a;
-
-  --tinta: #e8edf2;
-  --tinta-2: #aab5c1;
-  --apagado: #8b97a5;
-  --linha: #222b37;
-  --borda: #66758a;
-  --foco: #ffffff;
-
-  --ct: #4a90e8;
-  --ct-texto: #6ea8f2;
-  --tr: #e0a23a;
-  --tr-texto: #e9b65a;
-
-  --decisivo: #2fae7c;
-  --aviso: #ffea3d;
-  --erro: #ff6b6b;
-  --acao: #ffffff;           /* novo na v2 (sem uso no escuro de hoje): o branco do --foco com o fundo por cima */
-  --acao-ink: #0b0f14;
-
-  --vitoria: var(--tinta);
-  --link: var(--tinta);
-  --neutro: var(--apagado);
-
-  --ct-area: rgba(74, 144, 232, 0.22);
-  --tr-area: rgba(224, 162, 58, 0.22);
-  --decisivo-area: rgba(47, 174, 124, 0.16);
-  --aviso-area: rgba(255, 234, 61, 0.10);
-  --erro-area: rgba(255, 107, 107, 0.10);
-
-  --sombra-pop: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
 /* ---------------- iguais nos dois temas: o mapa, a tipografia e a forma ---------------- */
