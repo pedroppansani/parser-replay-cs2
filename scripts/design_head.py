@@ -1,19 +1,22 @@
-"""O <head> da direção visual "Sala de demo": tokens e fontes (decisão 44).
+"""O <head> da direção visual: tokens e fontes (decisões 44 e 48).
 
 Um lugar só, usado pela página da partida, pela prancheta, pela página de jogadores e pela
 landing. Os tokens (cores, fontes, espaços, raios) moram em `dashboard/web/tokens.css`; as fontes
-são duas famílias (entrega-sala-de-demo §5), com a MESMA URL em todas as páginas.
+são duas famílias, Geist e Geist Mono, hospedadas no próprio site (entrega-v2-goatdemo §3.1): os
+woff2 ficam em `dashboard/web/fontes/` e o build os copia para `fontes/`, ao lado das páginas.
+Nenhum pedido ao Google Fonts. Sem `<link rel=preload crossorigin>`: em `file://` o preload com
+crossorigin é bloqueado por CORS (medido no protótipo).
 """
 from __future__ import annotations
 
+import shutil
 from pathlib import Path
 
 WEB = Path(__file__).resolve().parent.parent / "dashboard" / "web"
 
-# Archivo (eixo wdth 75-100, pesos 400-700) e JetBrains Mono (400 e 600), display=swap.
-# Fonte: entrega-sala-de-demo §5.
-FONTES_URL = ("https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,400..700"
-              "&family=JetBrains+Mono:wght@400;600&display=swap")
+# As duas famílias carregadas (A6) e os arquivos, relativos à página (o build copia FONTES_DIR para fontes/).
+FONTES_DIR = WEB / "fontes"
+FONTES = (("Geist", "geist-latin.woff2"), ("Geist Mono", "geist-mono-latin.woff2"))
 
 MARCADOR_TOKENS = "/*__TOKENS__*/"
 MARCADOR_FONTES = "<!--__FONTES__-->"
@@ -24,9 +27,16 @@ def tokens_css() -> str:
 
 
 def fontes_html() -> str:
-    return ('<link rel="preconnect" href="https://fonts.googleapis.com">\n'
-            '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
-            f'<link rel="stylesheet" href="{FONTES_URL}">')
+    """Os dois @font-face: eixo wght de 400 a 600 (o que o gera_fontes deixou), display=swap. Os fallbacks
+    medidos estão no tokens.css."""
+    faces = "\n".join(f'@font-face {{ font-family: "{familia}"; src: url(fontes/{arquivo}) format("woff2"); '
+                      f'font-weight: 400 600; font-display: swap; }}' for familia, arquivo in FONTES)
+    return f"<style>\n{faces}\n</style>"
+
+
+def copia_fontes(saida: Path) -> None:
+    """Os woff2 e a licença (OFL.txt) em `<saida>/fontes/`, ao lado das páginas (docs/ e preview/)."""
+    shutil.copytree(FONTES_DIR, saida / "fontes", dirs_exist_ok=True)
 
 
 def aplica(html: str) -> str:

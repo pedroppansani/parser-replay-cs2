@@ -1,0 +1,25 @@
+tokens lidos de tokens.css: 33
+tema: claro
+criterios: texto >= 4.5:1 e marca >= 3.0:1 contra os fundos onde a cor aparece; dE daltonico >= 8.0 no pior par de cada grupo
+fundos: fundo #ffffff (página), superficie #fafafa (cards e painéis), superficie-2 #f5f5f5 (elevado: hover, aba ativa, popover, aviso), tl-fundo #fafafa (linha do tempo (replay e prancheta))
+
+== CONTRASTE ==
+tinta        #0a0a0a  texto >= 4.5  fundo 19.80  superficie 18.97  superficie-2 18.16  tl-fundo 18.97   PASSA
+tinta-2      #525252  texto >= 4.5  fundo  7.81  superficie  7.49  superficie-2  7.17  tl-fundo  7.49   PASSA
+apagado      #6b6b6b  texto >= 4.5  fundo  5.33  superficie  5.11  superficie-2  4.89  tl-fundo  5.11   PASSA
+borda        #858585  marca >= 3.0  fundo  3.69  superficie  3.54  superficie-2  3.38   PASSA
+foco         #0a0a0a  marca >= 3.0  fundo 19.80  superficie 18.97  superficie-2 18.16  tl-fundo 18.97   PASSA
+ct           #2a78d6  marca >= 3.0  fundo  4.42  superficie  4.23  superficie-2  4.05  tl-fundo  4.23   PASSA
+ct-texto     #1f62c4  texto >= 4.5  fundo  5.83  superficie  5.58  superficie-2  5.35   PASSA
+tr           #d9662a  marca >= 3.0  fundo  3.57  superficie  3.42  superficie-2  3.27  tl-fundo  3.42   PASSA
+tr-texto     #822810  texto >= 4.5  fundo  9.29  superficie  8.90  superficie-2  8.52   PASSA
+decisivo     #0b6b4a  texto >= 4.5  fundo  6.53  superficie  6.26  superficie-2  5.99  tl-fundo  6.26   PASSA
+aviso        #9c6004  texto >= 4.5  fundo  5.14  superficie  4.92  superficie-2  4.71  tl-fundo  4.92   PASSA
+erro         #b81c42  texto >= 4.5  fundo  6.40  superficie  6.13  superficie-2  5.87   PASSA
+acao-ink     #ffffff  texto >= 4.5  acao 19.80   PASSA
+
+== DALTONISMO (pior par de cada grupo) ==
+graficos (decisao 10)      dE normal  40.6 [ct x decisivo]  dE daltonico  13.6 [tr x decisivo (protanopia)]  PASSA
+estados no painel          dE normal  17.3 [tr-texto x erro]  dE daltonico  10.0 [aviso x erro (deuteranopia)]  PASSA
+
+RESULTADO: PASSA

@@ -67,8 +67,8 @@ def test_toda_pagina_do_site_tem_a_meta_csp_com_as_fontes_do_google(paginas):
         d = _diretivas(_csp_da(html))
         assert d["default-src"] == "'self'", nome
         assert d["script-src"] == "'self' 'unsafe-inline'", nome
-        assert d["style-src"] == "'self' 'unsafe-inline' https://fonts.googleapis.com", nome
-        assert d["font-src"] == "https://fonts.gstatic.com", nome
+        assert d["style-src"] == "'self' 'unsafe-inline'", nome
+        assert d["font-src"] == "'self'", nome
         assert "data:" in d["img-src"] and "'self'" in d["img-src"], nome
         assert d["object-src"] == "'none'" and d["base-uri"] == "'none'", nome
         # a meta vem antes de qualquer script e estilo: só vale para o que vem depois dela

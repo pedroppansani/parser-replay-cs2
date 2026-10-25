@@ -1,0 +1,100 @@
+/* GOAT.demo · direção v2 (variação A) · tokens. Fonte: tokens-va.css (validado por validacao/paleta_v3.py). Um --token: #hex; por linha. */
+:root, [data-tema="claro"] {
+  --fundo: #ffffff;           /* página */
+  --superficie: #fafafa;      /* cards e painéis (R1: #fafafa) */
+  --superficie-2: #f5f5f5;    /* elevado: hover, linha selecionada (R1: #f5f5f5) */
+  --radar: #0f141b;           /* o mapa é SEMPRE escuro, nos dois temas */
+  --tl-fundo: #fafafa;        /* eventos e linha do tempo */
+
+  --tinta: #0a0a0a;           /* texto (R1) */
+  --tinta-2: #525252;         /* secundário (R1 usa #737373: 4,35:1 sobre #f5f5f5, reprova) */
+  --apagado: #6b6b6b;         /* rótulo e referência: 4,89:1 sobre a superfície 2 */
+  --linha: #e5e5e5;           /* divisória decorativa (R1) */
+  --borda: #858585;           /* borda de controle (R1 usa #e5e5e5: 1,26:1, reprova a marca de 3:1) */
+  --foco: #0a0a0a;
+
+  --ct: #2a78d6;
+  --ct-texto: #1f62c4;
+  --tr: #d9662a;
+  --tr-texto: #822810;
+  --decisivo: #0b6b4a;
+  --aviso: #9c6004;
+  --erro: #b81c42;            /* R1: #e7000b, 4,38:1 sobre a superfície 2 */
+
+  --acao: #0a0a0a;            /* botão principal (R1: preto sobre branco) */
+  --acao-ink: #ffffff;
+
+  /* no mapa (sempre sobre o radar escuro): iguais nos dois temas */
+  --ct-mapa: #4a90e8;
+  --tr-mapa: #e0a23a;
+  --smoke: #d1d9e0;
+  --flash: #f9f5b8;
+  --he: #ff4da6;
+  --molotov: #d65d00;
+  --aviso-mapa: #ffea3d;
+  --foco-mapa: #ffffff;
+  --tinta-mapa: #ffffff;
+  --contorno: #05080b;
+}
+
+/* ---------------- ESCURO VIOLETA (R3: pretos puxados para o violeta, borda violeta, sem sombra) ---------------- */
+[data-tema="escuro"] {
+  --fundo: #04061c;           /* página (R3) */
+  --superficie: #0c0a2b;      /* card (R3) */
+  --superficie-2: #15153d;    /* elevado: hover, aba ativa, popover */
+  --radar: #0f141b;
+  --tl-fundo: #080a24;
+
+  --tinta: #ffffff;
+  --tinta-2: #b4b4bb;         /* R3: terciário */
+  --apagado: #9b9ba4;         /* R3: secundário */
+  --linha: #292a4d;           /* R3: borda violeta fina, decorativa (1,4:1) */
+  --borda: #6a6ca0;           /* borda de controle: 3,54:1 sobre a superfície 2 */
+  --foco: #ffffff;
+
+  --ct: #4a90e8;
+  --ct-texto: #6ea8f2;
+  --tr: #e0a23a;
+  --tr-texto: #e9b65a;
+  --decisivo: #2fae7c;
+  --aviso: #ffea3d;
+  --erro: #ff6b6b;
+
+  --acao: #ffffff;            /* botão normal; o "quente" é o do Reproduzir (abaixo) */
+  --acao-ink: #04061c;
+  --quente-1: #ffb4a0;        /* R3: coral do degradê (extremo claro) */
+  --quente-2: #ff3a63;        /* R3: vermelho do degradê */
+  --quente-ink: #04061c;
+
+  --ct-mapa: #4a90e8;
+  --tr-mapa: #e0a23a;
+  --smoke: #d1d9e0;
+  --flash: #f9f5b8;
+  --he: #ff4da6;
+  --molotov: #d65d00;
+  --aviso-mapa: #ffea3d;
+  --foco-mapa: #ffffff;
+  --tinta-mapa: #ffffff;
+  --contorno: #05080b;
+}
+
+/* ---------------- forma, tipo, movimento (iguais nos dois temas) ---------------- */
+:root {
+  --f-texto: "Geist", "Geist Fallback", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-num: "Geist Mono", "Geist Mono Fallback", ui-monospace, "SF Mono", Menlo, monospace;
+  --t-xs: .75rem; --t-sm: .875rem; --t-base: 1rem; --t-lg: 1.25rem; --t-xl: 1.5rem; --t-2xl: 2rem; --t-3xl: 2.5rem;
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-6: 24px; --s-8: 32px; --s-12: 48px;
+  --r-card: 16px; --r-ctl: 999px; --r-cab: 999px; --r-moldura: 20px; --r-mapa: 12px;
+  --toque: 44px; --dur: 220ms; --curva: cubic-bezier(.3, 1.25, .5, 1);
+  --nav-h: 76px;   /* altura da navbar flutuante + a folga de cima; o JS atualiza com a medida real (C2) */
+}
+@media (prefers-reduced-motion: reduce) { :root { --dur: 0ms; } }
+
+/* ---------------- fontes hospedadas no site (C3): Geist e Geist Mono, OFL, subconjunto latino ---------------- */
+@font-face { font-family: "Geist"; src: url(../fontes/geist-latin.woff2) format("woff2"); font-weight: 400 600; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fontes/geist-mono-latin.woff2) format("woff2"); font-weight: 400 600; font-display: swap; }
+/* gerado por validacao/mede_fallback.py (medido no Chrome, Windows) */
+@font-face{font-family:"Geist Fallback";src:local("Arial");font-weight:100 500;size-adjust:101.17%;ascent-override:99.33%;descent-override:29.16%;line-gap-override:0.00%}
+@font-face{font-family:"Geist Fallback";src:local("Arial Bold");font-weight:600 900;size-adjust:99.45%;ascent-override:101.05%;descent-override:29.66%;line-gap-override:0.00%}
+@font-face{font-family:"Geist Mono Fallback";src:local("Consolas");font-weight:100 500;size-adjust:109.13%;ascent-override:92.09%;descent-override:27.03%;line-gap-override:0.00%}
+@font-face{font-family:"Geist Mono Fallback";src:local("Consolas Bold");font-weight:600 900;size-adjust:109.13%;ascent-override:92.09%;descent-override:27.03%;line-gap-override:0.00%}

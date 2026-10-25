@@ -1,10 +1,11 @@
 """
-Validador da paleta (versão 2, direção visual "Sala de demo", decisão 44): ΔE2000 entre as cores
-que aparecem juntas, em visão normal e em daltonismo, e o contraste de cada cor contra os fundos
-do tema onde ela aparece.
+Validador da paleta (decisão 44, estendido por tema na 48): ΔE2000 entre as cores que aparecem
+juntas, em visão normal e em daltonismo, e o contraste de cada cor contra os fundos do tema onde
+ela aparece. São TRÊS saídas: o tema claro, o tema escuro e o mapa (o canvas, sempre escuro).
 
-    py -3.12 -m metrics.paleta                     # a paleta em uso (dashboard/web/tokens.css)
-    py -3.12 -m metrics.paleta "#2fae7c" "#4a3aa7"  # candidatos para a cor do round decisivo
+    py -3.12 -m metrics.paleta                      # os três: claro, escuro e mapa (dashboard/web/tokens.css)
+    py -3.12 -m metrics.paleta --tema escuro        # um só
+    py -3.12 -m metrics.paleta "#2fae7c" "#4a3aa7"  # candidatos para a cor do round decisivo (nos dois temas)
 
 POR QUE EXISTE
 --------------
@@ -14,17 +15,18 @@ vez por causa disso: o registro dizia que "esmeralda" estava reprovada, quando o
 reprovado era o esmeralda CLARO -- o defeito era luminância, não matiz, e a
 diferença só apareceu porque os números foram refeitos.
 
-CRITÉRIOS (entrega-sala-de-demo §9; as contas de cor não mudaram, só o que é medido):
-  - contraste contra os FUNDOS do tema (FUNDOS), cada cor só onde aparece (PALETA):
+CRITÉRIOS (entrega-sala-de-demo §9 e entrega-v2-goatdemo §2; as contas de cor não mudaram):
+  - contraste contra os FUNDOS do tema, cada cor só onde aparece (PALETA_TEMA, PALETA_MAPA):
     >= 4,5:1 para cor de TEXTO e >= 3:1 para cor de MARCA (peça, ícone, barra, borda de
-    controle, foco); texto escuro sobre cor sólida entra como texto
-  - daltonismo, por GRUPO de cores que aparecem juntas (GRUPOS): pior par em dicromacia
+    controle, foco); texto sobre cor sólida entra como texto
+  - daltonismo, por GRUPO de cores que aparecem juntas: pior par em dicromacia
     com ΔE2000 >= DELTA_E_MINIMO_DALTONICO
-  - os pares nomeados (PARES_NOMEADOS) sempre impressos, nas três visões
+  - os pares nomeados sempre impressos, nas três visões
+  - o mapa: as cores do canvas contra --radar, e iguais nos dois temas
 
-A paleta é LIDA do arquivo de tokens (nunca copiada à mão para cá): validar uma paleta diferente
-da que está no ar é o jeito clássico de aprovar uma cor que a página não usa. A saída com os
-tokens atuais está fixada em tests/fixtures/paleta_v2_saida.txt (a da §9.2 do documento).
+A paleta é LIDA do arquivo de tokens (nunca copiada à mão para cá), com a cascata do CSS: o tema
+claro é o bloco `:root, [data-tema="claro"]` mais os blocos `:root`; o escuro é isso sobrescrito
+pelo bloco `[data-tema="escuro"]`. As saídas estão fixadas em tests/fixtures/paleta_<tema>_saida.txt.
 
 LIMITE DO MODELO, e ele importa: a simulação de dicromacia é Viénot, Brettel e
 Mollon (1999), em LMS. Ela APROXIMA protanopia e deuteranopia; não cobre
@@ -33,6 +35,7 @@ comuns que a dicromacia completa. Passar aqui é piso, não certificado.
 """
 from __future__ import annotations
 
+import argparse
 import itertools
 import math
 import re
@@ -143,58 +146,97 @@ def simula_dicromacia(cor: str, tipo: str):
 
 # --- Avaliação ---------------------------------------------------------------
 
-# Fundos do tema: token -> onde aparece (fonte: entrega-sala-de-demo §9.1).
+TEMAS = ("claro", "escuro")
+# Em que tema as páginas estão (decisão 48): na v2-1 todas no escuro de hoje; é o tema que `le_tokens()` lê
+# sem argumento, e o das cores dos gráficos (`paleta_em_uso`). Muda quando uma página trocar de tema (v2-4).
+TEMA_DAS_PAGINAS = "escuro"
+
+# Fundos do tema: token -> onde aparece (fonte: entrega-v2-goatdemo §2.1).
 FUNDOS = {
     "fundo": "página",
     "superficie": "cards e painéis",
     "superficie-2": "elevado: hover, aba ativa, popover, aviso",
-    "radar": "canvas do mapa (peças e granadas)",
     "tl-fundo": "linha do tempo (replay e prancheta)",
 }
+_F = list(FUNDOS)
+_FSS = ["fundo", "superficie", "superficie-2"]
 
-# token, papel, fundos onde aparece. Texto escuro sobre cor sólida (ficha, botão, "venceu")
-# entra como "texto", com o fundo sendo a própria cor sólida.
-PALETA = [
-    ("tinta",      "texto", ["fundo", "superficie", "superficie-2", "radar", "tl-fundo"]),
-    ("tinta-2",    "texto", ["fundo", "superficie", "superficie-2", "tl-fundo"]),
-    ("apagado",    "texto", ["fundo", "superficie", "superficie-2", "tl-fundo"]),
-    ("borda",      "marca", ["fundo", "superficie", "superficie-2"]),
-    ("ct",         "marca", ["fundo", "superficie", "radar", "tl-fundo"]),
-    ("ct-texto",   "texto", ["fundo", "superficie", "superficie-2"]),
-    ("tr",         "marca", ["fundo", "superficie", "radar", "tl-fundo"]),
-    ("tr-texto",   "texto", ["fundo", "superficie", "superficie-2"]),
-    ("decisivo",   "texto", ["fundo", "superficie", "superficie-2", "tl-fundo"]),
-    ("smoke",      "marca", ["radar", "tl-fundo"]),
-    ("flash",      "marca", ["radar", "tl-fundo"]),
-    ("he",         "marca", ["radar", "tl-fundo"]),
-    ("molotov",    "marca", ["radar", "tl-fundo"]),
-    ("aviso",      "texto", ["superficie", "superficie-2", "radar", "tl-fundo"]),
-    ("erro",       "texto", ["fundo", "superficie", "superficie-2"]),
-    ("foco",       "marca", ["fundo", "superficie", "superficie-2", "radar", "tl-fundo"]),
-    ("fundo",      "texto", ["ct", "tr", "decisivo", "aviso", "tinta"]),
+# token, papel, fundos onde aparece (os mesmos nos dois temas). Texto sobre cor sólida entra como "texto",
+# com o fundo sendo a própria cor sólida.
+PALETA_TEMA = [
+    ("tinta",      "texto", _F),
+    ("tinta-2",    "texto", _F),
+    ("apagado",    "texto", _F),
+    ("borda",      "marca", _FSS),
+    ("foco",       "marca", _F),
+    ("ct",         "marca", _F),
+    ("ct-texto",   "texto", _FSS),
+    ("tr",         "marca", _F),
+    ("tr-texto",   "texto", _FSS),
+    ("decisivo",   "texto", _F),
+    ("aviso",      "texto", _F),
+    ("erro",       "texto", _FSS),
+    ("acao-ink",   "texto", ["acao"]),
 ]
-
-# Grupos de cores que aparecem juntas (o ΔE é medido por grupo).
-GRUPOS = {
+# O escuro de hoje tem mais: texto escuro sobre a cor sólida (ficha, botão, "venceu") e as granadas na linha do
+# tempo escura. No claro isso só é medido quando a página clara existir (v2-4).
+PALETA_SO_ESCURO = [
+    ("fundo",      "texto", ["ct", "tr", "decisivo", "aviso", "tinta"]),
+    ("smoke",      "marca", ["tl-fundo"]),
+    ("flash",      "marca", ["tl-fundo"]),
+    ("he",         "marca", ["tl-fundo"]),
+    ("molotov",    "marca", ["tl-fundo"]),
+]
+GRUPOS_TEMA = {
     "graficos (decisao 10)": ["ct", "tr", "decisivo"],
-    "radar e linha do tempo": ["ct", "tr", "decisivo", "smoke", "flash", "he", "molotov", "aviso"],
     "estados no painel": ["ct-texto", "tr-texto", "decisivo", "aviso", "erro"],
 }
-PARES_NOMEADOS = [("molotov", "tr"), ("molotov", "decisivo")]
+GRUPOS_SO_ESCURO = {"linha do tempo": ["ct", "tr", "decisivo", "smoke", "flash", "he", "molotov", "aviso"]}
+PARES_SO_ESCURO = [("molotov", "tr"), ("molotov", "decisivo")]
+
+# O mapa (canvas): sempre sobre o radar escuro; os mesmos valores nos dois temas.
+PALETA_MAPA = [
+    ("ct-mapa",      "marca", ["radar"]),
+    ("tr-mapa",      "marca", ["radar"]),
+    ("smoke",        "marca", ["radar"]),
+    ("flash",        "marca", ["radar"]),
+    ("he",           "marca", ["radar"]),
+    ("molotov",      "marca", ["radar"]),
+    ("aviso-mapa",   "texto", ["radar"]),
+    ("tinta-mapa",   "texto", ["radar", "fundo-mapa"]),
+    ("tinta-2-mapa", "texto", ["radar"]),
+    ("apagado-mapa", "texto", ["radar"]),
+    ("foco-mapa",    "marca", ["radar"]),
+]
+GRUPOS_MAPA = {"no mapa": ["ct-mapa", "tr-mapa", "smoke", "flash", "he", "molotov", "aviso-mapa"]}
+PARES_MAPA = [("molotov", "tr-mapa")]
+# Os tokens que o canvas lê: iguais nos dois temas (conferido em `avalia(..., "mapa", outro=...)`).
+TOKENS_DO_MAPA = tuple(dict.fromkeys(["radar", "fundo-mapa", "contorno",
+                                      *(n for nome, _, fundos in PALETA_MAPA for n in (nome, *fundos))]))
 
 # Os três tokens que formam a paleta dos gráficos da partida (decisão 10).
 TOKENS_DOS_GRAFICOS = (("ct", "A_azul"), ("tr", "B_laranja"), ("decisivo", "decisivo"))
 
+_DECLARACAO = re.compile(r"^\s*--([a-z0-9-]+):\s*(#[0-9a-fA-F]{6})\s*;", re.M)
 
-def le_tokens(caminho: Path = TOKENS) -> dict[str, str]:
-    """Os tokens de cor do arquivo de estilo: linhas `--nome: #hex;` (um token por linha)."""
-    texto = caminho.read_text(encoding="utf-8")
-    return {m.group(1): m.group(2).lower()
-            for m in re.finditer(r"^\s*--([a-z0-9-]+):\s*(#[0-9a-fA-F]{6})\s*;", texto, re.M)}
+
+def le_tokens(caminho: Path = TOKENS, tema: str = TEMA_DAS_PAGINAS) -> dict[str, str]:
+    """Os tokens de cor de um TEMA (linhas `--nome: #hex;`, um token por linha), pela cascata do CSS numa
+    página `<html data-tema="tema">`: os blocos `:root` (o claro é `:root, [data-tema="claro"]`) e, por cima,
+    o bloco `[data-tema="<tema>"]`, na ordem do arquivo."""
+    if tema not in TEMAS:
+        raise ValueError(f"tema desconhecido: {tema!r} (os temas são {TEMAS})")
+    texto = re.sub(r"/\*.*?\*/", "", caminho.read_text(encoding="utf-8"), flags=re.S)
+    tk: dict[str, str] = {}
+    for seletor, corpo in re.findall(r"([^{}]+)\{([^{}]*)\}", texto):
+        seletores = {s.strip() for s in seletor.split(",")}
+        if ":root" in seletores or f'[data-tema="{tema}"]' in seletores:
+            tk.update((nome, cor.lower()) for nome, cor in _DECLARACAO.findall(corpo))
+    return tk
 
 
 def paleta_em_uso() -> dict[str, str]:
-    """As cores dos gráficos da partida (CT, TR e decisivo), lidas dos tokens."""
+    """As cores dos gráficos da partida (CT, TR e decisivo), lidas dos tokens do tema das páginas."""
     tk = le_tokens()
     return {rotulo: tk[token] for token, rotulo in TOKENS_DOS_GRAFICOS if token in tk}
 
@@ -204,18 +246,32 @@ def _labs(cor: str) -> dict:
             **{t: rgb_para_lab(simula_dicromacia(cor, t)) for t in DICROMACIAS}}
 
 
-def avalia(tk: dict[str, str], rotulo_da_origem: str) -> tuple[list[str], int]:
-    """O relatório completo (as linhas) e quantas verificações falharam."""
+def regras(tema: str) -> tuple[list, dict, list]:
+    """(paleta, grupos, pares nomeados) de "claro", "escuro" ou "mapa"."""
+    if tema == "mapa":
+        return PALETA_MAPA, GRUPOS_MAPA, PARES_MAPA
+    if tema == "escuro":
+        return PALETA_TEMA + PALETA_SO_ESCURO, {**GRUPOS_TEMA, **GRUPOS_SO_ESCURO}, PARES_SO_ESCURO
+    return PALETA_TEMA, GRUPOS_TEMA, []
+
+
+def avalia(tk: dict[str, str], rotulo_da_origem: str, tema: str = TEMA_DAS_PAGINAS,
+           outro: dict[str, str] | None = None) -> tuple[list[str], int]:
+    """O relatório completo de um tema (as linhas) e quantas verificações falharam. No "mapa", `outro` são os
+    tokens do outro tema: cada token do canvas tem de ter o mesmo valor nos dois."""
+    paleta, grupos, pares = regras(tema)
+    fundos = {"radar": "canvas do mapa", "fundo-mapa": "imagem exportada do mapa"} if tema == "mapa" else FUNDOS
     linhas = [f"tokens lidos de {rotulo_da_origem}: {len(tk)}",
+              f"tema: {tema}",
               f"criterios: texto >= {LIMIAR['texto']}:1 e marca >= {LIMIAR['marca']}:1 contra os fundos onde a cor aparece; "
               f"dE daltonico >= {DELTA_E_MINIMO_DALTONICO} no pior par de cada grupo",
-              "fundos: " + ", ".join(f"{k} {tk[k]} ({v})" for k, v in FUNDOS.items()), ""]
+              "fundos: " + ", ".join(f"{k} {tk[k]} ({v})" for k, v in fundos.items()), ""]
     falhas = 0
 
     linhas.append("== CONTRASTE ==")
-    for nome, tipo, fundos in PALETA:
+    for nome, tipo, onde in paleta:
         lim = LIMIAR[tipo]
-        medidas = [(f, contraste(tk[nome], tk[f])) for f in fundos]
+        medidas = [(f, contraste(tk[nome], tk[f])) for f in onde]
         ok = min(r for _, r in medidas) >= lim
         falhas += not ok
         linhas.append(f"{nome:<13}{tk[nome]:<9}{tipo:<6}>= {lim:<4} "
@@ -224,48 +280,72 @@ def avalia(tk: dict[str, str], rotulo_da_origem: str) -> tuple[list[str], int]:
     linhas.append("")
 
     linhas.append("== DALTONISMO (pior par de cada grupo) ==")
-    for grupo, nomes in GRUPOS.items():
+    for grupo, nomes in grupos.items():
         labs = {n: _labs(tk[n]) for n in nomes}
-        pares = list(itertools.combinations(nomes, 2))
-        normal = min((delta_e_2000(labs[a]["normal"], labs[b]["normal"]), f"{a} x {b}") for a, b in pares)
+        combinacoes = list(itertools.combinations(nomes, 2))
+        normal = min((delta_e_2000(labs[a]["normal"], labs[b]["normal"]), f"{a} x {b}") for a, b in combinacoes)
         dalt = min((delta_e_2000(labs[a][t], labs[b][t]), f"{a} x {b} ({t})")
-                   for a, b in pares for t in DICROMACIAS)
+                   for a, b in combinacoes for t in DICROMACIAS)
         ok = dalt[0] >= DELTA_E_MINIMO_DALTONICO
         falhas += not ok
         linhas.append(f"{grupo:<26} dE normal {normal[0]:5.1f} [{normal[1]}]  "
                       f"dE daltonico {dalt[0]:5.1f} [{dalt[1]}]  {'PASSA' if ok else 'FALHA'}")
     linhas.append("")
 
-    linhas.append("== PARES NOMEADOS ==")
-    for a, b in PARES_NOMEADOS:
-        la, lb = _labs(tk[a]), _labs(tk[b])
-        vals = {t: delta_e_2000(la[t], lb[t]) for t in la}
-        ok = min(vals[t] for t in DICROMACIAS) >= DELTA_E_MINIMO_DALTONICO
-        falhas += not ok
-        linhas.append(f"{a} {tk[a]} x {b} {tk[b]}: "
-                      + "  ".join(f"{t} {d:5.1f}" for t, d in vals.items())
-                      + f"   {'PASSA' if ok else 'FALHA'}")
-    linhas.append("")
+    if pares:
+        linhas.append("== PARES NOMEADOS ==")
+        for a, b in pares:
+            la, lb = _labs(tk[a]), _labs(tk[b])
+            vals = {t: delta_e_2000(la[t], lb[t]) for t in la}
+            ok = min(vals[t] for t in DICROMACIAS) >= DELTA_E_MINIMO_DALTONICO
+            falhas += not ok
+            linhas.append(f"{a} {tk[a]} x {b} {tk[b]}: "
+                          + "  ".join(f"{t} {d:5.1f}" for t, d in vals.items())
+                          + f"   {'PASSA' if ok else 'FALHA'}")
+        linhas.append("")
+
+    if tema == "mapa" and outro is not None:
+        linhas.append("== MAPA IGUAL NOS DOIS TEMAS ==")
+        diferentes = [n for n in TOKENS_DO_MAPA if tk.get(n) != outro.get(n)]
+        falhas += bool(diferentes)
+        linhas.append(f"{len(TOKENS_DO_MAPA)} tokens do canvas: "
+                      + (f"FALHA ({', '.join(diferentes)})" if diferentes else "iguais   PASSA"))
+        linhas.append("")
     linhas.append("RESULTADO: " + ("PASSA" if falhas == 0 else f"FALHA ({falhas})"))
     return linhas, falhas
 
 
+def relatorio(tema: str, caminho: Path = TOKENS) -> tuple[list[str], int]:
+    """A saída de "claro", "escuro" ou "mapa", lida do arquivo de tokens."""
+    origem = caminho.relative_to(RAIZ).as_posix() if caminho.is_relative_to(RAIZ) else caminho.name
+    if tema == "mapa":
+        return avalia(le_tokens(caminho, "escuro"), origem, "mapa", outro=le_tokens(caminho, "claro"))
+    return avalia(le_tokens(caminho, tema), origem, tema)
+
+
 def main(argv: list[str] | None = None) -> int:
-    argv = sys.argv[1:] if argv is None else argv
-    tk = le_tokens()
-    origem = TOKENS.relative_to(RAIZ).as_posix()
-    if not argv:
-        linhas, falhas = avalia(tk, origem)
-        print("\n".join(linhas))
-        return 0 if falhas == 0 else 1
-    # candidatos: cada um substitui só a cor do round decisivo; as demais são as dos tokens
+    ap = argparse.ArgumentParser(description="Valida a paleta dos tokens, por tema (decisões 10, 44 e 48).")
+    ap.add_argument("candidatos", nargs="*", help="cores candidatas para --decisivo (substituem só ela)")
+    ap.add_argument("--tema", choices=[*TEMAS, "mapa"], action="append",
+                    help="o tema a validar (repetível); sem ele, claro, escuro e mapa")
+    args = ap.parse_args(sys.argv[1:] if argv is None else argv)
     total = 0
-    for cor in argv:
-        print(f"== candidato para --decisivo: {cor}")
-        linhas, falhas = avalia({**tk, "decisivo": cor.lower()}, origem)
-        print("\n".join(linhas))
-        print()
-        total += falhas
+    if not args.candidatos:
+        for tema in args.tema or [*TEMAS, "mapa"]:
+            linhas, falhas = relatorio(tema)
+            print("\n".join(linhas))
+            print()
+            total += falhas
+        return 0 if total == 0 else 1
+    # candidatos: cada um substitui só a cor do round decisivo nos temas; as demais são as dos tokens
+    origem = TOKENS.relative_to(RAIZ).as_posix()
+    for cor in args.candidatos:
+        for tema in [t for t in (args.tema or TEMAS) if t != "mapa"]:
+            print(f"== candidato para --decisivo: {cor} (tema {tema})")
+            linhas, falhas = avalia({**le_tokens(tema=tema), "decisivo": cor.lower()}, origem, tema)
+            print("\n".join(linhas))
+            print()
+            total += falhas
     return 0 if total == 0 else 1
 
 

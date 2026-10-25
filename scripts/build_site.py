@@ -245,7 +245,7 @@ def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | Non
 
     from scripts.design_head import aplica, topo_do_site  # tokens e fontes (decisão 44)
     return aplica(f"""<!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-tema="escuro">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -494,6 +494,9 @@ def build(repo_url: str, preview: bool = False) -> Path:
         raise SystemExit("Nenhuma partida com a cadeia completa. Rode scripts/process_all_demos.py.")
 
     saida.mkdir(parents=True, exist_ok=True)
+    # as fontes Geist e Geist Mono (decisão 48) ficam em fontes/, ao lado das páginas
+    from scripts.design_head import copia_fontes
+    copia_fontes(saida)
     for old in saida.glob("*.html"):
         old.unlink()
 
