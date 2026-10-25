@@ -1,2 +1,4 @@
 # Código de terceiros fixado por sha256 (fase 13): o git não pode trocar fim de linha
 dashboard/web/vendor/** -text
+# Fontes Geist e a licença OFL (decisão 48): binário e cópia sem mudança, sem conversão de fim de linha
+dashboard/web/fontes/** -text
