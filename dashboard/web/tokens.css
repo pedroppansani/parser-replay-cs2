@@ -1,51 +1,124 @@
-/* Tokens da direção visual "Sala de demo" (decisão 44). FONTE ÚNICA das cores, fontes, espaços e raios:
-   o build injeta este arquivo (pelo marcador de tokens) no template da partida, na prancheta, na
-   página de jogadores e na landing, e o validador da paleta (metrics/paleta.py) lê as linhas
-   "--nome: #hex;" daqui. Copiado de notas/design/prototipo/tokens.css (entrega-sala-de-demo §3). */
+/* Tokens da direção visual v2 "GOAT.demo" (decisão 48, que revê a 44). FONTE ÚNICA das cores, fontes, espaços e
+   raios: o build injeta este arquivo (pelo marcador de tokens) no template da partida, na prancheta, na página de
+   jogadores e na landing, e o validador da paleta (metrics/paleta.py) lê as linhas "--nome: #hex;" daqui, POR
+   TEMA (claro, escuro e mapa). Mantenha um token por linha, com o hex de 6 dígitos.
 
-/* Fallbacks com a largura medida da Archivo (fechamento, 2026-10-04): quando a fonte chega
-   (display=swap) o texto não muda de número de linhas, e o CLS da landing não sobe.
-   Razão medida no Chrome: Archivo 400 / Arial 400 = 0,973; Archivo 700 a 75% / Arial 700 = 0,774. */
-@font-face { font-family: "Archivo Fallback"; src: local("Arial"), local("Helvetica"), local("Liberation Sans"); size-adjust: 97.3%; }
-/* mono: Consolas (Windows) tem avanço de 0,55 em; JetBrains Mono, 0,60 em -> 109%. Menlo e SF Mono (macOS) já são ~0,60 em.
-   Os apelidos "... Fallback" são fontes do sistema (sem download): não contam como família carregada (A6). §19.8 */
-@font-face { font-family: "JetBrains Mono Fallback"; src: local("Consolas"); size-adjust: 109%; }
-@font-face { font-family: "JetBrains Mono Fallback 2"; src: local("Menlo"), local("SF Mono"), local("Courier New"), local("Liberation Mono"); size-adjust: 100%; }
-@font-face { font-family: "Archivo Cond Fallback"; src: local("Arial Bold"), local("Arial"), local("Helvetica"), local("Liberation Sans"); size-adjust: 77.4%; }
+   Tema por página: <html data-tema="claro|escuro">. Na v2-1 TODA página está no escuro, que é o escuro de hoje
+   (Sala de demo) com o nome novo; o claro (notas/design/prototipo-v2/tokens.css) só entra quando uma página
+   inteira mudar (v2-4). O canvas do mapa é SEMPRE escuro e lê só os tokens *-mapa (e as granadas), iguais nos
+   dois temas. Especificação: notas/design/entrega-v2-goatdemo.md §2 e §3. */
 
-/* =========================================================================
-   Parser de Replay CS2 · tokens da direção 2 "Sala de demo" (2026-10-04)
-   Tema único, escuro. Cada cor tem UM papel (tabela em projetos/parser-cs2.md).
-   As linhas "--nome: #hex;" são lidas pelo validador (validacao/paleta_v2.py):
-   mantenha um token por linha, com o hex de 6 dígitos.
-   ========================================================================= */
-:root {
+/* Fallbacks medidos da Geist e da Geist Mono (scripts/design/mede_fallback.py, Chrome no Windows; entrega §3.2):
+   quando a fonte chega (display=swap) o texto não muda de número de linhas. São fontes do sistema (local()), sem
+   download: não contam como família carregada (A6). Os dois @font-face da Geist vêm de scripts/design_head.py. */
+@font-face{font-family:"Geist Fallback";src:local("Arial");font-weight:100 500;size-adjust:101.17%;ascent-override:99.33%;descent-override:29.16%;line-gap-override:0.00%}
+@font-face{font-family:"Geist Fallback";src:local("Arial Bold");font-weight:600 900;size-adjust:99.45%;ascent-override:101.05%;descent-override:29.66%;line-gap-override:0.00%}
+@font-face{font-family:"Geist Mono Fallback";src:local("Consolas");font-weight:100 500;size-adjust:109.13%;ascent-override:92.09%;descent-override:27.03%;line-gap-override:0.00%}
+@font-face{font-family:"Geist Mono Fallback";src:local("Consolas Bold");font-weight:600 900;size-adjust:109.13%;ascent-override:92.09%;descent-override:27.03%;line-gap-override:0.00%}
+
+/* ---------------- ESCURO (o escuro de hoje, da Sala de demo, com o nome novo; o violeta da prancheta é a v2-5) ---------------- */
+/* `:root[data-tema="escuro"]` pesa mais que o `:root` do claro: o escuro vale na página escura qualquer que seja
+   a ordem. Ele vem primeiro porque é o tema de todas as páginas hoje (v2-1). */
+:root[data-tema="escuro"], [data-tema="escuro"] {
   color-scheme: dark;
 
-  /* ---- Fundos (contra eles o contraste é medido) ---- */
-  --fundo: #0b0f14;          /* página */
-  --superficie: #121820;     /* cards, painéis, barra de ferramentas */
-  --superficie-2: #1a222d;   /* elevado: hover, aba ativa, popover, aviso */
-  --radar: #0f141b;          /* fundo do canvas do mapa (peças e granadas) */
-  --tl-fundo: #0e131a;       /* fundo da linha do tempo (replay e prancheta) */
+  --fundo: #0b0f14;
+  --superficie: #121820;
+  --superficie-2: #1a222d;
+  --tl-fundo: #0e131a;
 
-  /* ---- Texto ---- */
-  --tinta: #e8edf2;          /* texto principal */
-  --tinta-2: #aab5c1;        /* texto secundário */
-  --apagado: #8b97a5;        /* rótulos, referência, "neutro", "amostra pequena" */
+  --tinta: #e8edf2;
+  --tinta-2: #aab5c1;
+  --apagado: #8b97a5;
+  --linha: #222b37;
+  --borda: #66758a;
+  --foco: #ffffff;
 
-  /* ---- Linhas ---- */
-  --linha: #222b37;          /* divisória decorativa (sem requisito de contraste) */
-  --borda: #66758a;          /* borda de controle (botão, campo, chip): >= 3:1 */
-
-  /* ---- Lados (marca = peça, barra, área; texto = rótulo) ---- */
   --ct: #4a90e8;
   --ct-texto: #6ea8f2;
   --tr: #e0a23a;
   --tr-texto: #e9b65a;
 
-  /* ---- Destaque: round decisivo, MVP, "o que decidiu" ---- */
   --decisivo: #2fae7c;
+  --aviso: #ffea3d;
+  --erro: #ff6b6b;
+  --acao: #ffffff;           /* novo na v2 (sem uso no escuro de hoje): o branco do --foco com o fundo por cima */
+  --acao-ink: #0b0f14;
+
+  --vitoria: var(--tinta);
+  --link: var(--tinta);
+  --neutro: var(--apagado);
+
+  --ct-area: rgba(74, 144, 232, 0.22);
+  --tr-area: rgba(224, 162, 58, 0.22);
+  --decisivo-area: rgba(47, 174, 124, 0.16);
+  --aviso-area: rgba(255, 234, 61, 0.10);
+  --erro-area: rgba(255, 107, 107, 0.10);
+
+  --sombra-pop: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* ---------------- CLARO (entrega §2.1; valores do protótipo v2) ---------------- */
+:root, [data-tema="claro"] {
+  color-scheme: light;
+
+  /* ---- Fundos (contra eles o contraste é medido) ---- */
+  --fundo: #ffffff;          /* página */
+  --superficie: #fafafa;     /* cards, painéis, navbar */
+  --superficie-2: #f5f5f5;   /* elevado: hover, aba ativa, popover */
+  --tl-fundo: #fafafa;       /* linha do tempo */
+
+  /* ---- Texto e linhas ---- */
+  --tinta: #0a0a0a;          /* texto principal, vitória, link */
+  --tinta-2: #525252;        /* texto secundário */
+  --apagado: #6b6b6b;        /* rótulos, referência, "neutro", "amostra pequena" */
+  --linha: #e5e5e5;          /* divisória decorativa (sem requisito de contraste) */
+  --borda: #858585;          /* borda de controle (botão, campo, chip): >= 3:1 */
+  --foco: #0a0a0a;           /* anel de foco do teclado na página (no mapa: --foco-mapa) */
+
+  /* ---- Lados (marca = peça, barra, área; texto = rótulo) ---- */
+  --ct: #2a78d6;
+  --ct-texto: #1f62c4;
+  --tr: #d9662a;
+  --tr-texto: #822810;
+
+  /* ---- Destaque e estados ---- */
+  --decisivo: #0b6b4a;       /* round decisivo, MVP, "o que decidiu" */
+  --aviso: #9c6004;          /* sempre com ícone ▲ e a palavra */
+  --erro: #b81c42;           /* falha de sistema; sempre com ícone e a palavra "Erro" */
+  --acao: #0a0a0a;           /* botão principal, aba ativa */
+  --acao-ink: #ffffff;
+
+  /* ---- Papéis SEM cor própria (de propósito) ---- */
+  --vitoria: var(--tinta);   /* vencedor: tinta + a palavra "venceu"; perdedor: --tinta-2 */
+  --link: var(--tinta);      /* link: tinta + sublinhado sempre visível */
+  --neutro: var(--apagado);  /* neutro e amostra pequena: apagado + borda tracejada + rótulo */
+
+  /* ---- Translúcidos derivados das cores do tema (áreas no gráfico; nunca texto) ---- */
+  --ct-area: rgba(42, 120, 214, 0.22);
+  --tr-area: rgba(217, 102, 42, 0.22);
+  --decisivo-area: rgba(11, 107, 74, 0.16);
+  --aviso-area: rgba(156, 96, 4, 0.10);
+  --erro-area: rgba(184, 28, 66, 0.10);
+
+  /* ---- Sombra: só o popover; na página clara, bem mais leve ---- */
+  --sombra-pop: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* ---------------- iguais nos dois temas: o mapa, a tipografia e a forma ---------------- */
+:root {
+  /* ---- Mapa (canvas, sempre sobre o radar escuro; entrega §2.2 e plano v2-0 §4.3). Os de texto, foco e
+     fundo são os valores escuros de hoje, para o canvas não mudar de pixel. ---- */
+  --radar: #0f141b;          /* fundo do canvas do mapa (peças e granadas) */
+  --fundo-mapa: #0b0f14;     /* fundo da imagem exportada do mapa (o carimbo embaixo) */
+  --tinta-mapa: #e8edf2;     /* rótulos, nomes, relógio e traços no mapa */
+  --tinta-2-mapa: #aab5c1;   /* secundário no mapa */
+  --apagado-mapa: #8b97a5;   /* rótulo apagado e a granada isca (decoy) */
+  --foco-mapa: #ffffff;      /* seleção e foco no mapa */
+  --ct-mapa: #4a90e8;
+  --tr-mapa: #e0a23a;
+  --aviso-mapa: #ffea3d;
+  --contorno: #05080b;       /* contorno escuro de peça e glifo no radar (não é cor de papel) */
 
   /* ---- Granadas (sempre com forma própria) ---- */
   --smoke: #d1d9e0;          /* nuvem de três arcos */
@@ -53,62 +126,43 @@
   --he: #ff4da6;             /* anel serrilhado vazado */
   --molotov: #d65d00;        /* gota com a ponta na direção do voo */
 
-  /* ---- Estados ---- */
-  --aviso: #ffea3d;          /* "chega 2,3 s atrasado", dado degradado; sempre com ícone ▲ e a palavra */
-  --erro: #ff6b6b;           /* falha de carga ou de arquivo; sempre com ícone e a palavra "Erro" */
-
-  /* ---- Foco e seleção ---- */
-  --foco: #ffffff;           /* anel de foco do teclado (2 px + 2 px de folga) e seleção no mapa */
-  --contorno: #05080b;       /* contorno escuro de peça e glifo no radar (não é cor de papel) */
-
-  /* ---- Papéis SEM cor própria (de propósito; justificativa no documento) ---- */
-  --vitoria: var(--tinta);   /* vencedor: tinta + a palavra "venceu"; perdedor: --tinta-2 */
-  --link: var(--tinta);      /* link: tinta + sublinhado sempre visível */
-  --neutro: var(--apagado);  /* neutro e amostra pequena: apagado + borda tracejada + rótulo */
-
-  /* ---- Translúcidos derivados (áreas no gráfico; nunca texto) ---- */
-  --ct-area: rgba(74, 144, 232, 0.22);
-  --tr-area: rgba(224, 162, 58, 0.22);
-  --decisivo-area: rgba(47, 174, 124, 0.16);
-  --aviso-area: rgba(255, 234, 61, 0.10);
-  --erro-area: rgba(255, 107, 107, 0.10);
-
-  /* ---- Tipografia: 2 famílias ---- */
-  --f-texto: "Archivo", "Archivo Fallback", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --f-cond: "Archivo", "Archivo Cond Fallback", "Archivo Fallback", sans-serif;  /* onde a Archivo usa largura 75% */
-  --f-num: "JetBrains Mono", "JetBrains Mono Fallback", "JetBrains Mono Fallback 2", ui-monospace, monospace;
-  /* Acréscimo do projeto (decisão 44): bloco de código e comando usam a mono do SISTEMA; a JetBrains Mono
-     fica só para número (A6). Não é uma terceira família carregada. */
+  /* ---- Tipografia: 2 famílias, hospedadas no site (dashboard/web/fontes/, OFL) ---- */
+  --f-texto: "Geist", "Geist Fallback", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-cond: var(--f-texto);  /* a v2 não tem condensada: o nome antigo fica até a v2-4 tirar o uso */
+  --f-num: "Geist Mono", "Geist Mono Fallback", ui-monospace, "SF Mono", Menlo, monospace;
+  /* Acréscimo do projeto (decisão 44, mantido pela 48): comando que se copia usa a mono do SISTEMA (0/O e
+     l/1 distintos); a Geist Mono fica só para número (A6). Não é uma terceira família carregada. */
   --f-codigo: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  /* largura (eixo wdth da Archivo) */
   --larg-condensada: 75%;
   --larg-normal: 100%;
-  /* escala (Sistema-Base, razão 1.25, base 16) */
-  --t-xs: 0.75rem;    /* 12: rótulo condensado em caixa alta */
-  --t-sm: 0.875rem;   /* 14: texto secundário */
-  --t-base: 1rem;     /* 16: texto */
-  --t-lg: 1.25rem;    /* 20 */
-  --t-xl: 1.563rem;   /* 25 */
-  --t-2xl: 1.953rem;  /* 31 */
-  --t-3xl: 2.441rem;  /* 39 */
+  /* escala (Sistema-Base, razão 1.25, base 16): a de hoje; a do protótipo v2 entra com as páginas */
+  --t-xs: 0.75rem;
+  --t-sm: 0.875rem;
+  --t-base: 1rem;
+  --t-lg: 1.25rem;
+  --t-xl: 1.563rem;
+  --t-2xl: 1.953rem;
+  --t-3xl: 2.441rem;
   --t-placar: clamp(1.5rem, 6vw, 2.75rem);
   --t-relogio: 1.75rem;
+  /* a Geist vai de 400 a 600 (eixo wght limitado no gera_fontes): 600 é o mais forte que existe */
   --peso-texto: 400;
   --peso-medio: 600;
-  --peso-forte: 700;
+  --peso-forte: 600;
 
-  /* ---- Espaço e raios (Sistema-Base) ---- */
+  /* ---- Espaço e raios ---- */
   --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-6: 24px; --s-8: 32px; --s-12: 48px;
-  --r-sm: 3px;   /* botão, chip, campo */
-  --r-md: 4px;   /* card, painel */
+  --r-sm: 3px;   /* botão, chip, campo (de hoje) */
+  --r-md: 4px;   /* card, painel (de hoje) */
   --r-full: 9999px; /* só peça e ficha de jogador */
-
-  /* ---- Sombras: quase nenhuma (tema escuro usa linha, não sombra) ---- */
-  --sombra-pop: 0 8px 24px rgba(0, 0, 0, 0.5);   /* popover, dica flutuante */
+  /* forma da v2 (entrega §4), ainda sem uso: entra com as páginas */
+  --r-card: 16px; --r-ctl: 999px; --r-cab: 999px; --r-moldura: 20px; --r-mapa: 12px;
   --sombra-peca: 0 0 0 1.5px #05080b;            /* contorno escuro da peça no radar */
 
   /* ---- Alvos e movimento ---- */
   --toque: 44px;
   --dur: 120ms;
+  --curva: cubic-bezier(.3, 1.25, .5, 1);
+  --nav-h: 76px;   /* altura da navbar flutuante + a folga; o JS da v2-3 mede a real (C2) */
 }
 @media (prefers-reduced-motion: reduce) { :root { --dur: 0ms; } }

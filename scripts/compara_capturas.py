@@ -89,6 +89,10 @@ saida = Path(sys.argv[1]); saida.mkdir(parents=True, exist_ok=True)
 for mid in json.loads(sys.argv[2]):
     (saida / f"{mid}.html").write_text(build_html(mid), encoding="utf-8")
 (saida / "prancheta.html").write_text(prancheta(sys.argv[3]), encoding="utf-8")
+# as fontes hospedadas no site (decisão 48) ficam ao lado das páginas, como no build; a revisão antiga não as tem
+import shutil
+if Path("dashboard/web/fontes").is_dir():
+    shutil.copytree("dashboard/web/fontes", saida / "fontes", dirs_exist_ok=True)
 """
 
 # Registra onde cada jogador é desenhado (pixels do radar) quando a página tem

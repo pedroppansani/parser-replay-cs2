@@ -1,4 +1,4 @@
-"""Os tokens da direção "Sala de demo" (decisão 44): uma fonte só para cor e fonte (design-A)."""
+"""Os tokens da direção visual (decisões 44 e 48): uma fonte só para cor e fonte, por tema."""
 from __future__ import annotations
 
 import re
@@ -26,14 +26,21 @@ FONTES_DO_CSS = [WEB / "template.html", WEB / "tactics.css", WEB / "annotations.
                  RAIZ / "scripts" / "build_site.py"]
 
 
-def test_tokens_css_tem_os_mesmos_valores_do_prototipo_do_design():
-    """O arquivo do projeto só acrescenta (--f-codigo); nenhum valor do design é alterado."""
-    proto = (RAIZ / "notas" / "design" / "prototipo" / "tokens.css").read_text(encoding="utf-8")
-    projeto = TOKENS.read_text(encoding="utf-8")
-    declaracoes = lambda t: dict(re.findall(r"^\s*(--[a-z0-9-]+):\s*([^;]+);", t, re.M))  # noqa: E731
-    do_design, do_projeto = declaracoes(proto), declaracoes(projeto)
-    assert {k: v for k, v in do_projeto.items() if k in do_design} == do_design
-    assert set(do_projeto) - set(do_design) == {"--f-codigo"}
+def test_tokens_css_tem_os_valores_do_prototipo_v2_no_claro_e_os_de_hoje_no_escuro():
+    """v2-1 (decisão 48): o claro e a forma são os do protótipo v2; o escuro é o da Sala de demo (as páginas
+    ficam nele e não mudam de cor) e o canvas lê os *-mapa com os valores escuros de hoje."""
+    proto_v2 = RAIZ / "notas" / "design" / "prototipo-v2" / "tokens.css"
+    claro_do_design, claro = le_tokens(proto_v2, "claro"), le_tokens(tema="claro")
+    # a única diferença é deliberada: o texto do mapa fica no #e8edf2 de hoje (plano v2-0 §4.3), não no #ffffff
+    assert {k for k, v in claro_do_design.items() if claro.get(k) != v} == {"tinta-mapa"}
+    declaracoes = lambda t: dict(re.findall(r"(--[a-z0-9-]+):\s*([^;]+);", t))  # noqa: E731
+    do_design, do_projeto = declaracoes(proto_v2.read_text(encoding="utf-8")), declaracoes(TOKENS.read_text(encoding="utf-8"))
+    for forma in ("--f-texto", "--f-num", "--r-card", "--r-ctl", "--r-cab", "--r-moldura", "--r-mapa", "--curva", "--nav-h"):
+        assert do_projeto[forma] == do_design[forma], forma
+    sala = (RAIZ / "notas" / "design" / "prototipo" / "tokens.css").read_text(encoding="utf-8")
+    de_hoje = dict(re.findall(r"^\s*--([a-z0-9-]+):\s*(#[0-9a-f]{6});", sala, re.M))
+    escuro = le_tokens(tema="escuro")
+    assert {k: escuro[k] for k in de_hoje} == de_hoje
 
 
 @pytest.mark.parametrize("arquivo", FONTES_DO_CSS, ids=lambda a: a.name)
@@ -62,20 +69,26 @@ def test_nenhuma_variavel_antiga_sobrou():
 
 
 def test_paginas_geradas_nao_deixam_marcador_e_carregam_so_as_duas_familias():
+    """As duas famílias (Geist e Geist Mono) vêm do próprio site, em fontes/; nenhum pedido ao Google Fonts (48)."""
     from scripts.build_jogadores import build_html as jogadores
     from scripts.build_tactics_page import build_html as prancheta
     from scripts.build_web_page import build_html as partida
-    from scripts.design_head import FONTES_URL
+    from scripts.design_head import FONTES, FONTES_DIR
     paginas = {"partida": partida("match_02"), "prancheta": prancheta("de_mirage"), "jogadores": jogadores()}
     from scripts.build_site import build_index
     paginas["landing"] = build_index([], "https://github.com/pedroppansani/parser-replay-cs2", [], numeros=None, imagem=None)
     for nome, html in paginas.items():
         assert "__TOKENS__" not in html and "__FONTES__" not in html, nome
-        assert html.count(FONTES_URL) == 1, nome
-        for velha in ("Bricolage", "Figtree", "DM Mono", "DM+Mono"):
+        for velha in ("Bricolage", "Figtree", "DM Mono", "DM+Mono", "Archivo", "JetBrains", "fonts.googleapis", "fonts.gstatic"):
             assert velha not in html, (nome, velha)
-        assert "--fundo: #0b0f14" in html and "Archivo Fallback" in html, nome
-    assert FONTES_URL.count("family=") == 2
+        baixadas = re.findall(r'font-family: "([^"]+)"; src: url\(fontes/([^)]+)\)', html)
+        assert baixadas == [(f, a) for f, a in FONTES], nome
+        assert html.count("src: url(") == 2, nome
+        # a página continua no escuro de hoje (v2-1)
+        assert '<html lang="pt-BR" data-tema="escuro">' in html and "--fundo: #0b0f14" in html, nome
+        assert "Geist Fallback" in html and "Geist Mono Fallback" in html, nome
+    assert {f for f, _ in FONTES} == {"Geist", "Geist Mono"}
+    assert all((FONTES_DIR / a).stat().st_size > 0 for _, a in FONTES) and (FONTES_DIR / "OFL.txt").exists()
 
 
 def test_o_favicon_tem_as_duas_bolinhas_nas_cores_dos_tokens():

@@ -7,8 +7,8 @@ O GitHub Pages não deixa mandar cabeçalho HTTP, então a Content-Security-Poli
 O que a política deixa:
 - scripts e estilos inline (as páginas são autocontidas: tokens, CSS e JS dentro do HTML) e do próprio site
   (o supabase-js vendorizado, carregado por script dinâmico só ao abrir um grupo, nunca de CDN);
-- as fontes do Google Fonts (a única origem externa do site, decisão 44): CSS em fonts.googleapis.com e os
-  arquivos em fonts.gstatic.com;
+- as fontes do próprio site (Geist e Geist Mono em `fontes/`, ao lado da página, decisão 48): nenhuma origem
+  externa de estilo nem de fonte;
 - imagens do próprio site e `data:` (o favicon e as capturas embutidas);
 - `connect-src`: só o próprio site. A página da PRANCHETA, e só ela, soma o host do projeto Supabase (https e
   wss) quando o build tem a configuração do grupo (`scripts/grupos_config.py`); sem configuração ou com
@@ -45,8 +45,8 @@ def politica(hosts_de_conexao: list[str] | None = None) -> str:
     return "; ".join([
         "default-src 'self'",
         "script-src 'self' 'unsafe-inline'",
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-        "font-src https://fonts.gstatic.com",
+        "style-src 'self' 'unsafe-inline'",
+        "font-src 'self'",
         "img-src 'self' data:",
         f"connect-src {conexao}",
         "object-src 'none'",

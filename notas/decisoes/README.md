@@ -89,3 +89,4 @@ Uma nota por decisão. O `CLAUDE.md` traz a lista curta das que estão em vigor.
 | [36](36-preservacao-de-dados.md) | vigente | Nenhum `.dem`, interim ou backup é apagado sem lista confirmada e cópia por sha256. |
 | [37](37-pagina-e-dado.md) | vigente | Número de corpus vem de `numeros_citaveis.json`; texto do dado passa por `esc()`; CI testa antes de publicar. |
 | [38](38-times-canonicos.md) | vigente | Todo agregado por time usa `metrics/times.nome_canonico`. |
+| [48](48-direcao-visual-goatdemo.md) | vigente | Direção v2 "GOAT.demo": tema por página, mapa sempre escuro (`*-mapa`), Geist no próprio site, CSP sem origem externa; revê a 44. |

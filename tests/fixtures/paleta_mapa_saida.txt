@@ -1,0 +1,28 @@
+tokens lidos de tokens.css: 33
+tema: mapa
+criterios: texto >= 4.5:1 e marca >= 3.0:1 contra os fundos onde a cor aparece; dE daltonico >= 8.0 no pior par de cada grupo
+fundos: radar #0f141b (canvas do mapa), fundo-mapa #0b0f14 (imagem exportada do mapa)
+
+== CONTRASTE ==
+ct-mapa      #4a90e8  marca >= 3.0  radar  5.67   PASSA
+tr-mapa      #e0a23a  marca >= 3.0  radar  8.27   PASSA
+smoke        #d1d9e0  marca >= 3.0  radar 12.95   PASSA
+flash        #f9f5b8  marca >= 3.0  radar 16.53   PASSA
+he           #ff4da6  marca >= 3.0  radar  6.04   PASSA
+molotov      #d65d00  marca >= 3.0  radar  4.77   PASSA
+aviso-mapa   #ffea3d  texto >= 4.5  radar 15.04   PASSA
+tinta-mapa   #e8edf2  texto >= 4.5  radar 15.69  fundo-mapa 16.32   PASSA
+tinta-2-mapa #aab5c1  texto >= 4.5  radar  8.88   PASSA
+apagado-mapa #8b97a5  texto >= 4.5  radar  6.22   PASSA
+foco-mapa    #ffffff  marca >= 3.0  radar 18.48   PASSA
+
+== DALTONISMO (pior par de cada grupo) ==
+no mapa                    dE normal  14.9 [flash x aviso-mapa]  dE daltonico  12.3 [tr-mapa x molotov (deuteranopia)]  PASSA
+
+== PARES NOMEADOS ==
+molotov #d65d00 x tr-mapa #e0a23a: normal  22.0  protanopia  19.1  deuteranopia  12.3   PASSA
+
+== MAPA IGUAL NOS DOIS TEMAS ==
+14 tokens do canvas: iguais   PASSA
+
+RESULTADO: PASSA
