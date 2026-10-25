@@ -91,14 +91,18 @@ def test_paginas_geradas_nao_deixam_marcador_e_carregam_so_as_duas_familias():
     assert all((FONTES_DIR / a).stat().st_size > 0 for _, a in FONTES) and (FONTES_DIR / "OFL.txt").exists()
 
 
-def test_o_favicon_tem_as_duas_bolinhas_nas_cores_dos_tokens():
+def test_o_favicon_e_a_cabra_c_da_marca_em_0a0a0a():
+    # v2-2 (decisão 48, entrega-v2-goatdemo §1): o favicon é a cabra C da marca em #0a0a0a, sem cor de lado
     from urllib.parse import unquote
 
     from scripts.meta_da_pagina import FAVICON
+    svg = unquote(FAVICON.removeprefix("data:image/svg+xml,"))
+    cabra = (WEB / "marca" / "cabra-c.svg").read_text(encoding="utf-8")
+    assert svg == " ".join(cabra.replace("currentColor", "#0a0a0a").split())
+    assert 'fill="#0a0a0a"' in svg and "currentColor" not in svg
     tk = le_tokens()
-    svg = unquote(FAVICON)
-    for token in ("fundo", "ct", "tr"):
-        assert tk[token] in svg, token
+    for token in ("ct", "tr"):
+        assert tk[token] not in svg, token
 
 
 def test_as_cores_das_granadas_do_canvas_vem_dos_tokens(contexto, pagina):

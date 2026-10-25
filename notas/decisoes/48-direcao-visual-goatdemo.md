@@ -51,6 +51,12 @@ na v2-4.
 - **Autocontida.** A pasta `docs/` abre sem rede (melhor que antes, que precisava do Google). Um HTML solto,
   copiado sem a pasta `fontes/`, cai no fallback medido (teste `test_fontes_file_browser`).
 
+**Marca (v2-2).** `dashboard/web/marca/` tem só a cabra C, o `goatdemo.svg` (com a mira, de 24 px para cima) e o
+`goatdemo-liso.svg`, gerados por `scripts/design/gera_marca.py` (não roda no build). O favicon é a cabra C em
+`#0a0a0a` (`scripts/meta_da_pagina.FAVICON`), todo `<title>`/`og:title` termina em `MARCA` ("GOAT.demo · Replay
+de CS2") e o topo atual mostra o wordmark liso a 17 px. Nada de agente, Valve ou CS2 na marca. A `og:image`
+continua `replay.png` até a v2-6.
+
 **Medido na v2-1 (2026-10-25, Chrome no Windows, `file://`):** com a CSP do site, a Geist e a Geist Mono chegam
 a `loaded` na landing, numa partida e na prancheta, sem violação; com `font-src 'none'` (controle) as duas são
 bloqueadas e a violação aparece. Um `<script src="agente/agente-tr.js">` criado pelo JS depois da carga também

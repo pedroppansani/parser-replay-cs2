@@ -1,5 +1,5 @@
-"""Favicon e Open Graph das páginas do site (auditoria, item 5.4; favicon novo na decisão 44). Um lugar só,
-usado pela landing, pelas páginas de partida e pela prancheta.
+"""Favicon e Open Graph das páginas do site (auditoria, item 5.4; favicon da marca GOAT.demo na decisão 48). Um
+lugar só, usado pela landing, pelas páginas de partida e pela prancheta.
 
 O favicon é um SVG embutido (data URI): as páginas continuam autocontidas e
 abrem como arquivo local. A imagem do Open Graph é a captura do replay que o
@@ -9,19 +9,19 @@ página sai sem `og:image`.
 from __future__ import annotations
 
 import html
+from pathlib import Path
 from urllib.parse import quote
 
 from scripts.csp import meta_csp
 
-# Duas bolinhas, CT e TR, no fundo do tema (entrega-sala-de-demo §10): as cores são os tokens
-# --fundo, --ct e --tr de dashboard/web/tokens.css (o favicon é um SVG embutido e não lê CSS).
-_FAVICON_SVG = (
-    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'>"
-    "<rect width='32' height='32' rx='6' fill='#0b0f14'/>"
-    "<circle cx='11' cy='16' r='6' fill='#4a90e8'/><circle cx='21' cy='16' r='6' fill='#e0a23a'/></svg>"
-)
+# A cabra C da marca em #0a0a0a (entrega-v2-goatdemo §1); o SVG versionado usa currentColor, que num favicon
+# embutido não tem de onde herdar cor.
+_FAVICON_SVG = " ".join((Path(__file__).resolve().parents[1] / "dashboard" / "web" / "marca" / "cabra-c.svg")
+                        .read_text(encoding="utf-8").replace("currentColor", "#0a0a0a").split())
 FAVICON = "data:image/svg+xml," + quote(_FAVICON_SVG, safe="/:=' ")
 IMAGEM_OG = "replay.png"
+# o nome do site no fim de todo <title> e og:title (entrega-v2-goatdemo §1: nunca "GOAT" sozinho)
+MARCA = "GOAT.demo · Replay de CS2"
 
 
 def url_do_site(repo_url: str | None) -> str | None:

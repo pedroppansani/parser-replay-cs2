@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Cabra Pico">
+<defs><mask id="cm" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64">
+  <rect width="64" height="64" fill="#fff"/>
+  <g transform="translate(32 33.5) scale(.66) translate(-32 -32)" fill="#000">
+    <path d="M27 21 C15 22 6 15 6 3 C12 8 18 9 31 14 Z"/>
+    <path d="M37 21 C49 22 58 15 58 3 C52 8 46 9 33 14 Z"/>
+    <path d="M20 24 L5 26 L12 34 L21 34 Z"/>
+    <path d="M44 24 L59 26 L52 34 L43 34 Z"/>
+    <path d="M19 21 L45 21 L41 41 L36 56 L32 63 L28 56 L23 41 Z"/>
+    <path d="M24 33 L30 35.4 L30 37.6 Z M40 33 L34 35.4 L34 37.6 Z" fill="#fff"/>
+  </g>
+  <path d="M30.6 0 H33.4 V5 H30.6 Z M30.6 59 H33.4 V64 H30.6 Z M0 30.6 H8 V33.4 H0 Z M56 30.6 H64 V33.4 H56 Z" fill="#000"/>
+</mask></defs>
+<path d="M32 1 L59 16.5 V47.5 L32 63 L5 47.5 V16.5 Z" fill="currentColor" mask="url(#cm)"/>
+</svg>
