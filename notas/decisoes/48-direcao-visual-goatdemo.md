@@ -24,7 +24,8 @@ na v2-4.
 
 - **Tema por página.** `tokens.css` tem o bloco `:root, [data-tema="claro"]`, o bloco `[data-tema="escuro"]` e
   um `:root` com o que é igual nos dois (mapa, tipografia, forma). Toda página declara o tema no `<html>`.
-  Na v2-1 todas ficam em `data-tema="escuro"`, que é o escuro de hoje (Sala de demo) com o nome novo: o site
+  O escuro é `:root[data-tema="escuro"], [data-tema="escuro"]`, que pesa mais que o `:root` e vale em
+  qualquer ordem; na v2-1 ele vem primeiro no arquivo. Na v2-1 todas ficam em `data-tema="escuro"`, que é o escuro de hoje (Sala de demo) com o nome novo: o site
   não muda de cor. O claro entra quando uma página inteira estiver pronta (v2-4); o escuro violeta da prancheta
   na v2-5 (nesse dia o bloco escuro troca de valores).
 - **O mapa é sempre escuro.** O canvas (`map_core.js`, `tactics.js`, `annotations.js`) lê só `tinta-mapa`,
@@ -39,7 +40,9 @@ na v2-4.
   wght de 400 a 600, versionados em `dashboard/web/fontes/` com o `OFL.txt`. Os dois `@font-face` saem de
   `scripts/design_head.fontes_html()` (marcador `<!--__FONTES__-->`) com `url(fontes/…)`; os 4 `@font-face`
   de fallback medidos ficam no `tokens.css`. Sem `<link rel=preload crossorigin>` (em `file://` o CORS o
-  bloqueia). O peso mais forte é 600 (`--peso-forte`), porque a fonte não tem 700.
+  bloqueia). O peso mais forte é 600 (`--peso-forte`), porque a fonte não tem 700. A Geist não tem largura
+  condensada: onde a Archivo a 75% cabia em 375 px (título da prancheta, as quatro abas do painel), o CSS
+  deixa encolher ou tira o espaçamento no celular.
 - **Build.** `scripts/build_site.py` copia `dashboard/web/fontes/` para `fontes/` ao lado das páginas
   (`docs/` e `preview/`, por `design_head.copia_fontes`); `scripts/compara_capturas.py` faz o mesmo nas páginas
   que gera. `scripts/design/gera_fontes.py` (precisa do `fontTools`) e `scripts/design/mede_fallback.py`
