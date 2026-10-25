@@ -29,7 +29,15 @@ entram aqui quando uma decisão depende delas.
   utilidade ≤ dano total; cegueira ≤ duração × 5).
 - **Custo de deixar como está:** "dano por HE/molotov" continua na tela sem conferência externa.
 
-## 5. `TICK_PELO_PROJETIL_SEM_EVENTO` (demos da FACEIT)
+## 5. `TICK_PELO_PROJETIL_SEM_EVENTO` (demos da FACEIT) -- FECHADO
+
+- **Fechado (2026-10-25), merge `4f1407a7`.** Sua resposta: ligar (opção 1). Versão das métricas 29 -> 30.
+  `pesquisa.piora_rota_a --antes main`: piora 0; 447 botões ganhos; 17 arremessos ficam neutros por regra
+  explícita; 6 entram na biblioteca e 22 saem (saldo de -16); 2.390 comandos de console da FACEIT mudam. Por mapa
+  (exatos): ancient 1248 -> 1242, anubis 2176 -> 2177, mirage 6712 -> 6701, nuke 3797 -> 3797; com botão: 13.199
+  -> 13.614. Só as 9 partidas da FACEIT sem `grenade_thrown` mudam; rating, perfis, insights e
+  `numeros_citaveis` ficam iguais (sha256). Testes migrados: dois de `test_grenade_throws.py` e a trava
+  "desligada por padrão". O texto abaixo é o cartão como foi aberto.
 
 - **Origem:** `metrics/grenade_throws.py`; medição em `pesquisa/investiga_faceit.py`.
 - **Pergunta:** nas demos sem o evento `grenade_thrown` (as da FACEIT), o tick da soltura passa a

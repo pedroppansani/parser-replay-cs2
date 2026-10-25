@@ -22,8 +22,7 @@ de `notas/PENDENCIAS_PARA_O_PEDRO.md` e nas notas de decisão).
 - Dados: `data/interim` e `demos/` só por junction de leitura nos worktrees, removida no fim (regra 36). O
   reprocesso grava caminhos absolutos de demo no `data/manifest.json`: restaurar `caminho` e `existe` (só versão,
   commit, data e `sujo` podem mudar).
-- Versão das métricas na `main`: 29 (cartão 13, referência do rating regravada; a 28 foi os pisos). O cartão 5
-  sobe para 30.
+- Versão das métricas na `main`: 30 (cartão 5, tick pelo projétil na FACEIT; a 29 foi a referência do rating).
 - **Supabase (resposta do Pedro, 2026-10-21):** push protection ligado no GitHub e plano Free sem cartão. O projeto
   `parser-cs2-grupos` está PAUSADO por inatividade (o Free pausa depois de 7 dias sem uso). **(1) A parte B está
   destravada, mas antes de começar ela eu peço ao Pedro para reativar o projeto e espero ele confirmar.** A ordem
@@ -62,6 +61,7 @@ de `notas/PENDENCIAS_PARA_O_PEDRO.md` e nas notas de decisão).
 | Flash no time validada (10/10) e no Perfil | `33a9159d` |
 | Calibração, item 1: pisos de função (suporte 40 s, versão 28; 21 jogadores mudam de função na `jogadores.html`, nota 31) | `d5562e76` |
 | Cartão 13: referência do rating regravada e presa por teste (byte a byte no Windows, 1e-12 no CI), versão 29 | `2d547d7b` |
+| Cartão 5: tick da soltura pelo projétil nas demos da FACEIT (piora 0, +447 botões, 2.390 comandos mudam), versão 30 | `4f1407a7` |
 | `fix-tickrate-resto`: tickrate lido da demo em todo lugar, sem mudar nenhum número (sha256 dos dados igual ao da `main`); contagem de testes 1.678 | `47c0f840` |
 
 ## Em andamento
@@ -70,8 +70,7 @@ Nada.
 
 ## Fila (na ordem; o Pedro mudou em 2026-10-24)
 
-1. Cartão 5 (`TICK_PELO_PROJETIL_SEM_EVENTO`, com a sua própria subida de versão, 30, e a tabela antes → depois).
-2. A v2 (GOAT.demo), plano aprovado em `C:/Users/User/Desktop/Claude outputs/PLANO-v2-0.md`: v2-1 base (não
+1. A v2 (GOAT.demo), plano aprovado em `C:/Users/User/Desktop/Claude outputs/PLANO-v2-0.md`: v2-1 base (não
    muda a aparência; o escuro atual vira `data-tema="escuro"`), v2-2 marca, v2-3 e v2-4 em sequência numa branch de
    integração e para a `main` no mesmo push, v2-5 e v2-6 em paralelo depois de a v2-4 mesclar o `map_core.js`, v2-7
    verificação final. Condições de cada fase: suíte verde, impressão dos números idêntica, só as capturas e os
@@ -81,12 +80,12 @@ Nada.
    relatório, para o Pedro testar no navegador antes do merge.** Na v2-7: pôr no PENDENCIAS o `curl` do
    `Content-Encoding` dos dois agentes depois do deploy e o fallback da fonte mono no macOS. Fase própria depois
    da v2: a comparação por grupos do Perfil, com a regra de empate do Pedro.
-3. Depois da v2-7: cartão 6 (histograma da força da rota B), cartão 7 (os `.rar`: espaço em disco ≥ 12 GB,
+2. Depois da v2-7: cartão 6 (histograma da força da rota B), cartão 7 (os `.rar`: espaço em disco ≥ 12 GB,
    `demos/entrada/_extraido/` conferida antes, sha256 de cada `.dem`, regra 36) e cartão 9 (a refatoração, com a
    proposta, só propor, de gerar a contagem de testes no build pela coleta do pytest). A refatoração passou para
    depois da v2 por decisão do Pedro; ela continua tendo de provar que nenhum número muda.
-4. Parte B dos grupos, DEPOIS da v2-7 e só depois de o Pedro reativar o projeto Supabase e confirmar (ver as
+3. Parte B dos grupos, DEPOIS da v2-7 e só depois de o Pedro reativar o projeto Supabase e confirmar (ver as
    regras temporárias). Junto: plano Free, a maior tática real (máximo, mediana e p95 de operações), `gitleaks`,
    `npm audit` e `pip-audit`, e o `.claude/worktrees/` no `.gitignore`; depois o `grupos.md` para o `seguranca`.
-5. Do lado do Pedro: o dano de utilidade na escada (cartão 1, prints da HLTV); o roteiro do NVDA (cartão 11); o
+4. Do lado do Pedro: o dano de utilidade na escada (cartão 1, prints da HLTV); o roteiro do NVDA (cartão 11); o
    cartão 10 (Supabase); a fase 6 (`fase-6-decisivo`); a investigação do awpy 3 fica numa sessão separada.
