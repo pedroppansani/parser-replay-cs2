@@ -115,7 +115,7 @@ def test_o_titulo_e_unico_por_partida_e_traz_placar_mapa_e_o_site():
     titulos = {m: titulo_da_pagina(m) for m in _partidas()}
     assert len(set(titulos.values())) == len(titulos), [t for t in titulos.values() if list(titulos.values()).count(t) > 1]
     for t in titulos.values():
-        assert t.endswith(" · Parser de Replay CS2") and " × " in t, t
+        assert t.endswith(" · GOAT.demo · Replay de CS2") and " × " in t, t
 
 
 def test_a_descricao_diz_quem_venceu_onde_e_em_que_round():

@@ -27,7 +27,7 @@ from scripts.build_tactics_page import build_html as build_prancheta
 from scripts.build_web_page import build_html
 
 from metrics.constantes import NOME_DO_MAPA
-from scripts.meta_da_pagina import meta_tags, url_do_site
+from scripts.meta_da_pagina import MARCA, meta_tags, url_do_site
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
@@ -155,7 +155,7 @@ TITULO_DO_TOPO = "Lê gravações de partidas de Counter-Strike 2 e mostra o que
 FRASE_DO_TOPO = ("Cada partida vira uma página: o replay no mapa, o round que virou o jogo e o que cada jogador fez. "
                  "Os números são conferidos contra a estatística oficial, e quando o dado não sustenta uma afirmação "
                  "a página diz que não sabe.")
-TITULO_DA_PAGINA = "Parser de Replay CS2 · partidas lidas round a round"
+TITULO_DA_PAGINA = f"Partidas lidas round a round · {MARCA}"
 ROTULO_ORIGEM = {"profissional": "Profissionais", "faceit": "FACEIT"}
 
 

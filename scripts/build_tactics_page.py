@@ -43,7 +43,7 @@ def mapas_disponiveis() -> list[str]:
 
 
 from scripts.csp import hosts_do_projeto  # noqa: E402
-from scripts.meta_da_pagina import meta_tags  # noqa: E402
+from scripts.meta_da_pagina import MARCA, meta_tags  # noqa: E402
 from metrics.tactics import modelo3_para_a_pagina  # noqa: E402
 
 
@@ -102,6 +102,7 @@ def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | Non
         (WEB / "tactics.html").read_text(encoding="utf-8")
         .replace("/*__ANNOTATIONS_CSS__*/", (WEB / "annotations.css").read_text(encoding="utf-8"))
         .replace("/*__TACTICS_CSS__*/", (WEB / "tactics.css").read_text(encoding="utf-8"))
+        .replace("<!--__TITULO__-->", f"Prancheta tática · {rotulos.get(mapa, mapa)} · {MARCA}")
         .replace("<!--__TOPO__-->", topo_do_site("prancheta", arquivo_da_pagina(mapa), REPO))
         .replace("/*__MAP_CORE__*/", (WEB / "map_core.js").read_text(encoding="utf-8"))
         .replace("/*__TACTICS_JS__*/", (WEB / "tactics.js").read_text(encoding="utf-8"))
@@ -113,7 +114,7 @@ def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | Non
         .replace("/*__LUGARES__*/null", _js(lugares))
         .replace("<!--__GRUPO__-->", bloco_do_grupo(grupo))
         .replace("<!--__META__-->", meta_tags(
-            f"Prancheta tática · {rotulos.get(mapa, mapa)}",
+            f"Prancheta tática · {rotulos.get(mapa, mapa)} · {MARCA}",
             f"Monte uma tática na {rotulos.get(mapa, mapa)}: jogadores, granadas reais do corpus e passos.",
             site, arquivo_da_pagina(mapa),
             # só a prancheta fala com o Supabase: o host do projeto entra no connect-src dela e de mais nenhuma página

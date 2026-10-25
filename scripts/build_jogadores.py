@@ -16,7 +16,7 @@ from pathlib import Path
 from metrics.agregado_jogadores import para_a_pagina
 from metrics.constantes import NOME_DO_MAPA
 from scripts.json_em_script import js
-from scripts.meta_da_pagina import meta_tags
+from scripts.meta_da_pagina import MARCA, meta_tags
 
 RAIZ = Path(__file__).resolve().parents[1]
 WEB = RAIZ / "dashboard" / "web"
@@ -71,8 +71,8 @@ def build_html(site: str | None = None) -> str:
     topo = topo_do_site("jogadores", arquivo_da_pagina("de_mirage" if "de_mirage" in mapas else mapas[0]) if mapas else None, REPO)
     return aplica((WEB / "jogadores.html").read_text(encoding="utf-8")
             .replace("<!--__TOPO__-->", topo)
-            .replace("<!--__TITULO__-->", html.escape(TITULO))
-            .replace("<!--__META__-->", meta_tags(TITULO, TEXTOS["aviso"], site, ARQUIVO))
+            .replace("<!--__TITULO__-->", html.escape(f"{TITULO} · {MARCA}"))
+            .replace("<!--__META__-->", meta_tags(f"{TITULO} · {MARCA}", TEXTOS["aviso"], site, ARQUIVO))
             .replace("/*__MAP_CORE__*/", (WEB / "map_core.js").read_text(encoding="utf-8"))
             .replace("/*__DADOS__*/null", js(dados))
             .replace("/*__TEXTOS__*/null", js(TEXTOS)))

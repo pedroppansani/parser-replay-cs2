@@ -55,7 +55,7 @@ def test_o_h1_da_partida_e_o_placar_no_formato_do_hud():
     assert (c["lados"]["A"]["pontos"], c["lados"]["B"]["pontos"]) == (m["score_a"], m["score_b"])
     assert c["mapa"] == "Mirage"
     assert titulo_da_pagina("match_02") == (
-        f"{c['lados']['A']['nome']} {m['score_a']} × {m['score_b']} {c['lados']['B']['nome']} · Mirage · Parser de Replay CS2")
+        f"{c['lados']['A']['nome']} {m['score_a']} × {m['score_b']} {c['lados']['B']['nome']} · Mirage · GOAT.demo · Replay de CS2")
 
 
 def test_rotulos_da_mesma_tela_nao_se_repetem_e_os_textos_trocados():
