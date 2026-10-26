@@ -294,7 +294,7 @@ window.MapCore = (function () {
     ctx.lineCap = "round";
 
     if (t.ferramenta === "texto") {
-      ctx.font = (t.espessura * 5 + 10) + "px 'DM Sans', system-ui, sans-serif";
+      ctx.font = (t.espessura * 5 + 10) + "px system-ui, sans-serif";   // v2-4: saiu o nome de uma fonte antiga que a página nunca carregou
       ctx.textBaseline = "middle";
       ctx.fillText(t.texto || "", p[0][0], p[0][1]);
       return;
