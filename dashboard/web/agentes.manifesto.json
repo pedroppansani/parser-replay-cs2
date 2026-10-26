@@ -1,0 +1,32 @@
+{
+  "descricao": "Agentes em listras da landing (entrega-v2-goatdemo §6, decisão 48). Os .js são gerados à mão por scripts/converte_agente.py (não roda no build) a partir de gravações do jogo da Valve, sem fins comerciais. Vídeos e modelos ficam fora do repositório; aqui só o sha256 de cada um. tests/test_agente.py confere o sha256 dos dois .js.",
+  "modelos": {
+    "isnet-general-use.onnx": {"uso": "recorte do agente (rembg)", "licenca": "Apache-2.0", "onde": "cache do rembg do usuário", "sha256": "60920e99c45464f2ba57bee2ad08c919a52bbf852739e96947fbb4358c0d964a"},
+    "slimsam-77-uniform/vision_encoder.onnx": {"uso": "arma e mãos (Xenova/slimsam-77-uniform)", "licenca": "Apache-2.0", "bytes": 23276014, "onde": "~/.cache/modelos-goat/", "sha256": "9f8433273a6750b587779baa0cf5508111001bf7e7acfcf585d370139fd366d0"},
+    "slimsam-77-uniform/prompt_encoder_mask_decoder.onnx": {"uso": "arma e mãos (Xenova/slimsam-77-uniform)", "licenca": "Apache-2.0", "bytes": 16557892, "onde": "~/.cache/modelos-goat/", "sha256": "f4514391764fbd56e08e119060d874ecd7d52994bfb1968af159e12d4943b5bb"}
+  },
+  "agentes": {
+    "tr": {
+      "arquivo": "agente/agente-tr.js",
+      "nome_no_arquivo": "TR",
+      "sha256": "857fb00c859b2d0c78a89ce729e1b51dc9bd004d4c9bba249e8550c984cb20dd",
+      "quadro_fixo": "agente/agente-tr-quadro.svg",
+      "quadro_fixo_sha256": "4164edc97c0eeb383d5180410f1d1a577120893d1e1daec4ed592feb15ba3f80",
+      "video": {"arquivo": "TimeIA\\Iriun\\Sites\\Base-Design\\prototipos\\parser-cs2-v2\\fonte-agente\\agente-tr-menu.mp4", "sha256": "4d1f75489d2f4f6a92ad71b94c9b9ab4bc97b6e0c4b69b22bc3ec6352337b615"},
+      "corte_de_privacidade_y": 590,
+      "trecho": {"inicio_s": 0.6, "fim_s": 4.2, "transicao_cruzada_s": 0.4, "fps": 30, "quadros": 90, "loop_s": 3.0, "quadro_de_referencia_s": 2.5},
+      "parametros": {"linhas": 77, "colunas": 240, "tons_pct": [60, 74, 88, 100], "espessura_do_passo": [0.42, 0.48, 0.56, 0.66], "arma_fina_min_px": 1.2, "cortes_de_tom": [0.30, 0.52, 0.74], "histerese": 0.04, "suavizacao_quadros": 1.5, "aspecto": 0.95, "fecho": "cruzado", "arma": "260,305;380,355;420,420;470,385;540,425;600,450;628,463", "maos": "300,360;520,400"}
+    },
+    "ct": {
+      "arquivo": "agente/agente-ct.js",
+      "nome_no_arquivo": "CT-A",
+      "sha256": "a71af4e0b29258360d9e884ebcd62f2d61076e46d5764a62652d7fcc0c023317",
+      "quadro_fixo": "agente/agente-ct-quadro.svg",
+      "quadro_fixo_sha256": "1174ba90c55ef0004903a72ce6dac426a56b84e4d5f9ef73125ca10e02cfb5a5",
+      "video": {"arquivo": "TimeIA\\Iriun\\Sites\\Base-Design\\prototipos\\parser-cs2-v2\\fonte-agente\\agente-ct-inspecao-claro.mp4", "sha256": "6f047147e14d83d19a12b84097dd5dde9bc3a01067ddde5de4d7ac208f874321"},
+      "corte_de_privacidade_y": 545,
+      "trecho": {"inicio_s": 3.2, "fim_s": 5.4, "fps": 30, "quadros": 67, "quadros_guardados": 77, "ciclo_s": 5.07, "quadro_de_referencia_s": 4.3, "fecho": "vai-e-volta", "fator": 1.15},
+      "parametros": {"linhas": 77, "colunas": 240, "tons_pct": [60, 74, 88, 100], "espessura_do_passo": [0.42, 0.48, 0.56, 0.66], "suavizacao_quadros": 1.5, "aspecto": 0.95, "arma": "120,275;300,235;320,290;380,215;450,190;470,186", "maos": "240,280;410,225", "maos_escuras": true, "lentes": "305,86;349,95", "filtro": "321,134", "cabeca": 23, "corpo_linhas_23_a_76_do_js_sha256": "1560be31d437cd9edf5d8d3651d18b81c1f64a5516fc992b55d446f4bdc7337c"}
+    }
+  }
+}
