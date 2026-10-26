@@ -41,3 +41,53 @@ def test_nenhum_teste_importa_o_gerador_do_agente():
     assert not achados, achados
     build = (RAIZ / "scripts" / "build_site.py").read_text(encoding="utf-8")
     assert "converte_agente" not in build
+
+
+sync_api = pytest.importorskip("playwright.sync_api")
+
+from tests.test_tactics_browser import navegador  # noqa: E402,F401  (fixture)
+
+
+@pytest.fixture(scope="module")
+def site(tmp_path_factory):
+    """A landing gerada com o agente/ ao lado, como no site."""
+    from scripts.build_site import build_index, copia_agente
+    pasta = tmp_path_factory.mktemp("landing")
+    copia_agente(pasta)
+    (pasta / "index.html").write_text(build_index([], "https://example.invalid/repo", [], numeros=None), encoding="utf-8")
+    return pasta / "index.html"
+
+
+@pytest.mark.parametrize("lado", ["tr", "ct"])
+def test_so_o_agente_sorteado_e_baixado_e_toca(navegador, site, lado):
+    ctx = navegador.new_context(viewport={"width": 375, "height": 800})
+    pg = ctx.new_page()
+    pedidos, erros = [], []
+    pg.on("request", lambda r: pedidos.append(r.url))
+    pg.on("pageerror", lambda e: erros.append(str(e)))
+    try:
+        pg.goto(site.as_uri() + f"?agente={lado}")
+        pg.wait_for_function("() => document.getElementById('agente').classList.contains('pronto')", timeout=10000)
+        agentes = [u.rsplit("/", 1)[-1] for u in pedidos if "/agente/" in u]
+        assert agentes == [f"agente-{lado}.js"]
+        assert pg.get_attribute("#agente", "data-lado") == lado
+        assert pg.get_attribute("#agente", "aria-label") == f"Agente {lado.upper()} com fuzil"
+        assert erros == []
+    finally:
+        ctx.close()
+
+
+def test_sem_javascript_aparece_o_quadro_fixo_do_tr(navegador, site):
+    ctx = navegador.new_context(viewport={"width": 375, "height": 800}, java_script_enabled=False)
+    pg = ctx.new_page()
+    pedidos = []
+    pg.on("request", lambda r: pedidos.append(r.url))
+    try:
+        pg.goto(site.as_uri() + "?agente=ct")
+        assert pg.get_attribute("#agente", "aria-label") == "Agente TR com fuzil"
+        assert pg.is_visible("#agente .q-tr") and not pg.is_visible("#agente .q-ct")
+        caixa = pg.locator("#agente").bounding_box()
+        assert caixa["width"] > 100 and abs(caixa["width"] / caixa["height"] - 251 / 264) < 0.02
+        assert not [u for u in pedidos if "/agente/" in u]
+    finally:
+        ctx.close()

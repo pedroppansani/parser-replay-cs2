@@ -118,7 +118,8 @@ def _origem(match_id: str) -> str | None:
 
 
 def partida_de_exemplo(matches: list[dict]) -> dict | None:
-    """A partida do botão "Ver uma partida" da landing.
+    """A partida de exemplo da landing: desde a v2-3 é o PRIMEIRO card da grade, em destaque (o botão principal
+    "Explorar partidas" leva à lista; plano v2-0, dúvida 2, opção A).
 
     Critério declarado, para a escolha não ser gosto: entre as partidas
     PROFISSIONAIS com radar e com round decisivo (um jogo apertado tem mais o
@@ -139,27 +140,82 @@ def partida_de_exemplo(matches: list[dict]) -> dict | None:
     return (com_radar or matches)[0]
 
 
-def legenda_da_captura(matches: list[dict]) -> str | None:
-    """Que round a imagem do topo mostra: o quadro fixo de scripts/capturas_readme.py na partida de exemplo."""
-    from scripts.capturas_readme import ROUND
-    m = partida_de_exemplo(matches)
-    if not m or not m.get("lados"):
-        return None
-    a, b = m["lados"]["A"]["nome"], m["lados"]["B"]["nome"]
-    return f"Replay do round {ROUND} de {a} × {b}, em {m['map_label']}."
-
-
-# Textos do topo da landing (entrega-sala-de-demo §7.1): linguagem comum, sem jargão.
-ROTULO_DO_TOPO = "Projeto de portfólio · Python e JavaScript · site estático"
-TITULO_DO_TOPO = "Lê gravações de partidas de Counter-Strike 2 e mostra o que decidiu cada jogo"
-FRASE_DO_TOPO = ("Cada partida vira uma página: o replay no mapa, o round que virou o jogo e o que cada jogador fez. "
-                 "Os números são conferidos contra a estatística oficial, e quando o dado não sustenta uma afirmação "
-                 "a página diz que não sabe.")
+# Textos da landing (entrega-v2-goatdemo §5.2 e §5.7, aceitos pelo Pedro no plano v2-0, dúvidas 1, 2 e 9). Saem
+# daqui, prontos, como a decisão 18 manda: o HTML não escreve frase própria. Nenhum número de corpus aqui (37): os
+# três números e a linha do corpus vêm de numeros_citaveis.json.
+TEXTOS_DA_LANDING = {
+    "titulo": "Cada round, explicado.",
+    "subtitulo": ("Veja a partida de CS2 como uma jogada: onde cada um estava, o que cada granada fez e por que o "
+                  "round virou."),
+    "explorar": "Explorar partidas",
+    "adicionar": "Adicionar demo",
+    "em_breve": "Em breve",
+    "em_breve_frase": "Envio de demo próprio. Por enquanto, explore as partidas do corpus.",
+    "numeros": "Três números validados",
+    "partidas": "Partidas",
+    "exemplo": "Para começar: a profissional decidida num round, de placar mais apertado",
+    "vazio": "Nenhuma partida com esse filtro.",
+    "mostrar_todos": "Mostrar todos os mapas",
+    "dialogo_titulo": "Adicionar demo",
+    "fechar": "Fechar",
+    "dialogo_aviso": "O envio de demo próprio ainda não está disponível.",
+    "dialogo_frase": ("Hoje as partidas são processadas no computador do autor, em Python, e o site mostra o resultado. "
+                      "Para sugerir uma partida, abra uma issue no GitHub com o link da demo."),
+    "dialogo_issue": "Abrir uma issue no GitHub",
+    "rodape_marca": f"{MARCA}",
+    "rodape_projeto": "Projeto de portfólio, sem fins comerciais.",
+    "rodape_metodo": "Como os números são conferidos",
+    "rodape_github": "Código no GitHub",
+    "rodape_terceiros": ("Os mapas e os pontos das laterais vêm dos radares do jogo, e os agentes desta página são derivados "
+                         "de gravações do jogo: pertencem à Valve, e o projeto não tem ligação com ela. "
+                         "Fontes Geist e Geist Mono (SIL OFL 1.1)."),
+    "agente": {"tr": "Agente TR com fuzil", "ct": "Agente CT com fuzil"},
+    "pular": "Pular para o conteúdo",
+}
+TITULO_DO_TOPO = TEXTOS_DA_LANDING["titulo"]
+FRASE_DO_TOPO = TEXTOS_DA_LANDING["subtitulo"]
 TITULO_DA_PAGINA = f"Partidas lidas round a round · {MARCA}"
 ROTULO_ORIGEM = {"profissional": "Profissionais", "faceit": "FACEIT"}
+# Tema da landing (decisão 48). A especificação a põe no claro; o claro espera a autorização do Pedro para
+# tests/test_tokens.py, que hoje exige o escuro em toda página gerada (ver o relatório da v2-3).
+TEMA_DA_LANDING = "escuro"
+# Laterais em pontos a partir de 1440 px (§5.2 item 4): Mirage à esquerda, Dust II à direita (as duas do protótipo)
+LATERAIS = (("e", "de_mirage"), ("d", "de_dust2"))
+AGENTE_DIR = Path(__file__).resolve().parent.parent / "dashboard" / "web" / "agente"
 
 
-def _card(m: dict) -> str:
+def copia_agente(saida: Path) -> None:
+    """Os dois .js do agente em `<saida>/agente/` (o tocador baixa só o sorteado). Os quadros fixos vão no HTML."""
+    (saida / "agente").mkdir(parents=True, exist_ok=True)
+    for js in sorted(AGENTE_DIR.glob("agente-*.js")):
+        shutil.copyfile(js, saida / "agente" / js.name)
+
+
+def _quadro_do_agente(lado: str, escondido: bool) -> str:
+    """O quadro fixo do agente em SVG (gerado junto com o .js, ver o manifesto), em linha: aparece sem JavaScript."""
+    svg = (AGENTE_DIR / f"agente-{lado}-quadro.svg").read_text(encoding="utf-8").strip()
+    estilo = ' style="display:none"' if escondido else ""
+    return svg.replace('<svg xmlns="http://www.w3.org/2000/svg"',
+                       f'<svg aria-hidden="true" focusable="false" class="q-{lado}"{estilo}', 1)
+
+
+def _titulo_pixelado() -> str:
+    svg = (AGENTE_DIR.parent / "landing" / "titulo-pixel.svg").read_text(encoding="utf-8").strip()
+    return svg.replace('<svg xmlns="http://www.w3.org/2000/svg"', '<svg class="pix"', 1)
+
+
+def _lateral(lado: str, mapa: str) -> str:
+    """Um mapa em pontos (máscara gerada no build a partir do radar do .json, scripts/design/gera_pontos)."""
+    from html import escape as e
+
+    from scripts.design.gera_pontos import data_uri
+    if not (PROJECT_ROOT / "assets" / "radars" / f"{mapa}.json").exists():
+        return ""
+    return (f'<div class="lateral {lado}" aria-hidden="true" style="--m:url({data_uri(mapa)})"><div class="pts"><i></i><u></u>'
+            f'</div><span>{e(MAP_LABEL.get(mapa, mapa))}</span></div>')
+
+
+def _card(m: dict, exemplo: bool = False) -> str:
     from html import escape as e
     lados = m.get("lados") or {}
     venceu = m.get("venceu")
@@ -173,8 +229,11 @@ def _card(m: dict) -> str:
     topo_esq = e(str(m["map_label"])) + (" · FACEIT" if m.get("origem") == "faceit" else "")
     rounds = f'<span class="num">{m["rounds"]}</span> rounds' + (" · prorrogação" if (m.get("rounds") or 0) > 24 else "")
     topo_dir = (e(m["evento"]) + " · " if m.get("evento") else "") + rounds
+    # a partida de exemplo (critério declarado em partida_de_exemplo) é o primeiro card, em destaque (dúvida 2, A)
+    destaque = (f' data-exemplo="1"', f'        <span class="cp-exemplo">{e(TEXTOS_DA_LANDING["exemplo"])}</span>\n') if exemplo else ("", "")
     return (f'      <a class="mcard cp" data-mapa="{e(str(m.get("map", "")))}" data-origem="{e(str(m.get("origem") or ""))}" '
-            f'href="{e(m["file"])}">\n'
+            f'href="{e(m["file"])}"{destaque[0]}>\n'
+            + destaque[1] +
             f'        <span class="cp-topo"><span>{topo_esq}</span><span>{topo_dir}</span></span>\n'
             f'        {linha("A", m["score_a"])}\n        {linha("B", m["score_b"])}\n'
             f'        <span class="cp-frase">{e(m.get("decisor") or "")}</span>\n'
@@ -183,40 +242,31 @@ def _card(m: dict) -> str:
 
 
 def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | None = None,
-                numeros: dict | None = None, imagem: str | None = None,
-                imagem_tamanho: tuple[int, int] | None = None, legenda: str | None = None) -> str:
-    """A landing (entrega-sala-de-demo §7.1). `numeros` é o documento de numeros_citaveis.json (os três
-    números do topo vêm dele, nunca escritos aqui); `imagem` é o arquivo da captura do replay ao lado da
-    página, com `imagem_tamanho` (largura, altura) para não empurrar o layout e `legenda` dizendo qual round é.
-    Ordem no HTML = ordem do celular: texto, números, imagem; no desktop a imagem vai para a direita por CSS."""
+                numeros: dict | None = None, imagem: str | None = None) -> str:
+    """A landing (entrega-v2-goatdemo §5.2). `numeros` é o documento de numeros_citaveis.json (os três números e a
+    linha do corpus vêm dele, nunca escritos aqui). `imagem` não é mais usada na página desde a v2-3 (a captura
+    do replay continua só como og:image, até a v2-6). Ordem no HTML = ordem do celular: título, botões, agente,
+    números, partidas, rodapé."""
     from collections import Counter
     from html import escape as e
 
+    from scripts.design_head import aplica, topo_do_site, v2_js  # tokens, fontes e a navbar (decisão 48)
     from scripts.numeros_citaveis import blocos_de_texto, tres_numeros
+    T = TEXTOS_DA_LANDING
 
     # todo texto que vem do dado (nicks, mapa, frase do decisor) é escapado: um nick com `<` não vira marcação
-    grade = ordem_da_grade(matches)
-    cards = "\n".join(_card(m) for m in grade)
-
     exemplo = partida_de_exemplo(matches)
+    grade = ordem_da_grade(matches)
+    if exemplo is not None:
+        grade = [exemplo] + [m for m in grade if m is not exemplo]
+    cards = "\n".join(_card(m, exemplo=m is exemplo) for m in grade)
+
     tres = "".join(
         f"""        <div class="num-item"><dt><b class="num">{e(n['valor'])}</b>{e(n['rotulo'])}</dt><dd>{e(n['contexto'])}</dd></div>\n"""
         for n in (tres_numeros(numeros) if numeros else []))
     corpus = e(blocos_de_texto(numeros)["corpus"]) if numeros else ""
     prancheta_do_exemplo = next((p for p in (pranchetas or []) if exemplo and p.get("mapa") == exemplo.get("map")),
                                 (pranchetas or [None])[0])
-    botoes = "".join([
-        f'<a class="btn principal" id="btn-partida" href="{e(exemplo["file"])}">Ver uma partida</a>' if exemplo else "",
-        f'<a class="btn" id="btn-prancheta" href="{e(prancheta_do_exemplo["file"])}">Prancheta tática</a>' if prancheta_do_exemplo else "",
-        f'<a class="btn fantasma" id="btn-github" href="{e(repo_url)}">Código no GitHub ↗</a>',
-    ])
-    tam = (f' width="{imagem_tamanho[0]}" height="{imagem_tamanho[1]}"' if imagem_tamanho else "")
-    cap = f"<figcaption>{e(legenda)}</figcaption>" if legenda else ""
-    figura = (f"""    <figure class="figura">
-      <div class="moldura"><img src="{e(imagem)}"{tam} loading="lazy" decoding="async"
-        alt="Replay de uma partida no radar, com a direção do olhar de cada jogador"></div>
-      {cap}
-    </figure>""" if imagem else "")
 
     # filtros: origem (Profissionais por padrão) e mapa, com a contagem de cada um
     por_origem = Counter(m.get("origem") for m in grade)
@@ -233,19 +283,12 @@ def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | Non
         f'<span class="num">{n}</span></button>'
         for k, n in sorted(por_mapa.items(), key=lambda kv: (-kv[1], str(rotulo_mapa[kv[0]]))))
 
-    links = " · ".join(f'<a href="{e(p["file"])}">{e(p["label"])}</a>' for p in (pranchetas or []))
-    bloco_prancheta = (f"""
-  <section class="box" aria-labelledby="h-prancheta">
-    <h2 id="h-prancheta">Prancheta tática</h2>
-    <p>Monte uma jogada no mapa vazio: peças, passos e granadas. Clique onde a granada deve cair e a
-      prancheta mostra os arremessos reais do corpus que caem ali, com o comando de console que os
-      reproduz. {links}</p>
-  </section>
-""" if links else "")
+    laterais = "".join(_lateral(lado, mapa) for lado, mapa in LATERAIS)
+    agente_js = (AGENTE_DIR.parent / "agente.js").read_text(encoding="utf-8")
+    rotulos_do_agente = T["agente"]
 
-    from scripts.design_head import aplica, topo_do_site  # tokens e fontes (decisão 44)
     return aplica(f"""<!DOCTYPE html>
-<html lang="pt-BR" data-tema="escuro">
+<html lang="pt-BR" data-tema="{TEMA_DA_LANDING}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -253,144 +296,171 @@ def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | Non
 {meta_tags(TITULO_DA_PAGINA, FRASE_DO_TOPO, url_do_site(repo_url))}
 <!--__FONTES__-->
 <style>
-  /* Os tokens (cores, fontes, espaços) vêm de dashboard/web/tokens.css, injetado no build. */
+  /* Os tokens (cores, fontes, espaços) vêm de dashboard/web/tokens.css; a navbar, de dashboard/web/v2.css. */
   /*__TOKENS__*/
+  /*__V2__*/
   * {{ box-sizing: border-box; }}
   :where(button, a[href], select, input, textarea, summary, [tabindex]):focus-visible {{
     outline: 2px solid var(--foco); outline-offset: 2px;
   }}
-  body {{ margin: 0; background: var(--fundo); color: var(--tinta); font-family: var(--f-texto);
+  body {{ margin: 0; background: var(--fundo); color: var(--tinta); font: 400 var(--t-base)/1.55 var(--f-texto);
     -webkit-font-smoothing: antialiased; }}
-  .shell {{ max-width: 1280px; margin: 0 auto; padding: 0 16px 64px; }}
-  .num {{ font-family: var(--f-num); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }}
+  h1, h2, p, figure, dl, dd {{ margin: 0; }}
+  .sr {{ position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }}
+  .shell {{ max-width: 1212px; margin: 0 auto; padding: 0 16px; }}
+  main {{ outline: none; }}
+  .num {{ font-family: var(--f-num); font-variant-numeric: tabular-nums; }}
 
-  /* topo do site: marca e quatro links (§7) */
-  .site-topo {{ display: flex; align-items: center; justify-content: space-between; gap: 4px 16px; flex-wrap: nowrap;
-    border-bottom: 1px solid var(--linha); margin: 0 -16px; padding: 0 16px; }}
-  .marca {{ display: inline-flex; align-items: center; min-height: var(--toque); min-width: var(--toque); flex: none;
-    font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.04em; color: var(--tinta); text-decoration: none; }}
-  .marca b {{ color: var(--tr-texto); margin-left: 0.3em; }}
-  .site-nav {{ display: flex; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }}
-  .site-nav::-webkit-scrollbar {{ display: none; }}
-  .site-nav a {{ display: inline-flex; align-items: center; min-height: var(--toque); padding: 0 10px; flex: none;
-    color: var(--tinta-2); text-decoration: none; font-size: var(--t-sm); }}
-  .site-nav a[aria-current] {{ color: var(--tinta); box-shadow: inset 0 -2px 0 var(--tinta); }}
-  .site-nav a:hover {{ color: var(--tinta); }}
-  @media (max-width: 640px) {{ .marca .marca-longa {{ display: none; }} .marca b {{ margin-left: 0; }} .site-nav a {{ padding: 0 7px; }} }}
-
-  /* topo da landing: texto, números, imagem (ordem do celular); no desktop a imagem vai para a direita */
-  .heroi {{ display: grid; gap: 24px; padding: 28px 0 8px; }}
-  @media (min-width: 960px) {{
-    .heroi {{ grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); grid-template-areas: "texto figura" "numeros figura";
-      align-items: start; gap: 24px 40px; padding-top: 48px; }}
-    .heroi > .heroi-texto {{ grid-area: texto; }} .heroi > .numeros-heroi {{ grid-area: numeros; }} .heroi > .figura {{ grid-area: figura; }}
+  /* topo: título pixelado, subtítulo, as duas ações e o agente à direita (2 colunas em >= 761 px) */
+  .heroi {{ display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 32px; align-items: center;
+    padding: 40px 0 16px; }}
+  .heroi-texto {{ display: grid; gap: 20px; justify-items: start; }}
+  .pix {{ display: block; width: 100%; max-width: 620px; height: auto; color: var(--tinta); }}
+  .sub {{ color: var(--tinta-2); font-size: var(--t-lg); max-width: 44ch; }}
+  .acoes {{ display: flex; flex-wrap: wrap; gap: 12px; }}
+  .btn {{ display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: var(--toque);
+    padding: 0 20px; border-radius: var(--r-ctl); border: 1px solid var(--borda); background: transparent;
+    color: var(--tinta); font: inherit; font-weight: 500; cursor: pointer; text-decoration: none; white-space: nowrap; }}
+  .btn:hover {{ background: var(--superficie-2); }}
+  .btn.prim {{ background: var(--acao); color: var(--acao-ink); border-color: var(--acao); }}
+  .btn.prim:hover {{ opacity: 0.88; }}
+  .tag {{ display: inline-flex; align-items: center; min-height: 24px; padding: 0 10px; border-radius: var(--r-ctl);
+    border: 1px dashed var(--borda); color: var(--tinta-2); font-size: var(--t-xs); font-weight: 500; white-space: nowrap; }}
+  .em-breve {{ display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--tinta-2); font-size: var(--t-sm); }}
+  /* o agente (§6.2): caixa fixa 251/264 com qualquer lado (CLS 0); sem JS, o quadro fixo do TR */
+  .agente {{ position: relative; justify-self: center; width: min(100%, 300px); aspect-ratio: 251 / 264; margin: 0;
+    color: var(--tinta); }}
+  .agente svg, .agente canvas {{ position: absolute; inset: 0; width: 100%; height: 100%; display: block; }}
+  .agente canvas {{ opacity: 0; }}
+  .agente.pronto canvas {{ opacity: 1; }} .agente.pronto svg {{ opacity: 0; }}
+  .agente .corte {{ position: absolute; left: 4%; right: 4%; bottom: -6px; height: 3px; border-radius: 2px; background: var(--ct); }}
+  .agente[data-lado="tr"] .corte {{ background: var(--tr); }}
+  @media (max-width: 760px) {{
+    .heroi {{ grid-template-columns: minmax(0, 1fr); padding-top: 24px; }}
+    .agente {{ width: min(70%, 240px); }}
   }}
-  .rot {{ font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-weight: 700; font-size: var(--t-xs);
-    letter-spacing: 0.1em; text-transform: uppercase; color: var(--apagado); margin: 0; }}
-  .heroi h1 {{ margin: 10px 0 14px; font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-weight: 700;
-    font-size: clamp(2rem, 6.4vw, 3.4rem); line-height: 1.02; letter-spacing: -0.01em; text-wrap: balance; }}
-  .lead {{ color: var(--tinta-2); font-size: 1.0625rem; line-height: 1.55; max-width: 52ch; margin: 0 0 22px; }}
-  .caminhos {{ display: flex; flex-wrap: wrap; gap: 10px; }}
-  .btn {{ display: inline-flex; align-items: center; justify-content: center; gap: 0.45em; min-height: var(--toque);
-    padding: 0 18px; border-radius: var(--r-sm); border: 1px solid var(--borda); background: var(--superficie);
-    color: var(--tinta); font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-weight: 700;
-    font-size: var(--t-sm); letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; white-space: nowrap; }}
-  .btn:hover {{ background: var(--superficie-2); border-color: var(--tinta-2); }}
-  .btn.principal {{ background: var(--tinta); color: var(--fundo); border-color: var(--tinta); }}
-  .btn.fantasma {{ background: none; border-color: transparent; text-decoration: underline; text-underline-offset: 4px; }}
-  .tres {{ display: grid; margin: 0; border: 1px solid var(--borda); border-radius: var(--r-md); background: var(--superficie); }}
-  @media (min-width: 760px) {{ .tres {{ grid-template-columns: repeat(3, 1fr); }} }}
-  .tres > div {{ padding: 16px; border-top: 1px solid var(--linha); }}
-  .tres > div:first-child {{ border-top: 0; }}
-  @media (min-width: 760px) {{ .tres > div {{ border-top: 0; border-left: 1px solid var(--linha); }} .tres > div:first-child {{ border-left: 0; }} }}
-  .tres dt {{ font-weight: 600; }}
-  .tres dt .num {{ display: block; font-size: 2.1rem; line-height: 1.1; font-weight: 600; margin-bottom: 4px; white-space: nowrap; }}
-  /* em três colunas a célula fica estreita: o número diminui para "410 de 410" caber numa linha */
-  @media (min-width: 760px) {{ .tres dt .num {{ font-size: clamp(1.4rem, 2.2vw, 2.1rem); }} }}
-  .tres dd {{ margin: 6px 0 0; color: var(--tinta-2); font-size: var(--t-sm); line-height: 1.5; }}
-  .corpus {{ margin: 12px 0 0; color: var(--tinta-2); font-size: var(--t-sm); }}
-  .corpus a {{ color: var(--tinta); }}
-  .figura {{ margin: 0; }}
-  .figura .moldura {{ border: 1px solid var(--borda); border-radius: var(--r-md); overflow: hidden; background: var(--radar); }}
-  .figura img {{ display: block; width: 100%; height: auto; }}
-  .figura figcaption {{ font-size: var(--t-sm); color: var(--tinta-2); margin-top: 8px; }}
 
-  /* grade de partidas */
-  .grade-topo {{ display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; margin: 48px 0 12px; }}
-  .grade-topo h2 {{ margin: 0; font-family: var(--f-cond); font-stretch: var(--larg-condensada); text-transform: uppercase;
-    font-size: 1.5rem; letter-spacing: 0.02em; }}
-  .grade-topo h2 .num {{ color: var(--apagado); font-size: 0.8em; }}
-  .filtros {{ display: grid; gap: 8px; min-width: 0; max-width: 100%; }}
-  @media (min-width: 960px) {{ .filtros {{ grid-auto-flow: column; }} }}
-  .chips {{ display: flex; flex-wrap: wrap; gap: 6px; }}
-  .filtro-mapas {{ flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; padding-bottom: 2px; }}
-  @media (min-width: 760px) {{ .filtro-mapas {{ flex-wrap: wrap; overflow: visible; }} }}
-  .chip {{ flex: none; min-height: var(--toque); padding: 0 14px; border-radius: var(--r-sm); cursor: pointer; font: inherit;
-    font-size: var(--t-sm); border: 1px solid var(--borda); background: var(--superficie); color: var(--tinta-2); }}
-  .chip:hover {{ color: var(--tinta); border-color: var(--tinta-2); }}
-  .chip[aria-pressed="true"] {{ background: var(--tinta); color: var(--fundo); border-color: var(--tinta); }}
-  .chip .num {{ font-size: var(--t-xs); margin-left: 4px; }}
-  .grid {{ display: grid; gap: 10px; }}
-  @media (min-width: 640px) {{ .grid {{ grid-template-columns: repeat(2, 1fr); }} }}
-  @media (min-width: 1024px) {{ .grid {{ grid-template-columns: repeat(3, 1fr); }} }}
-  .cp {{ display: grid; gap: 8px; padding: 14px 14px 12px; text-decoration: none; color: var(--tinta); min-width: 0;
-    background: var(--superficie); border: 1px solid var(--linha); border-left: 3px solid var(--borda); border-radius: var(--r-md); }}
-  .cp:hover {{ background: var(--superficie-2); border-left-color: var(--tinta); }}
+  /* três números (mono 34 px), 3 colunas em >= 761 px */
+  .numeros-heroi {{ padding: 24px 0 8px; }}
+  .tres {{ display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }}
+  .tres > div {{ display: grid; align-content: start; gap: 4px; padding: 20px; background: var(--superficie);
+    border: 1px solid var(--linha); border-radius: var(--r-card); }}
+  .tres dt {{ font-weight: var(--peso-forte); }}
+  .tres dt .num {{ display: block; font-size: 34px; line-height: 1.1; font-weight: 500; white-space: nowrap; }}
+  .tres dd {{ color: var(--tinta-2); font-size: var(--t-sm); }}
+  .corpus {{ margin-top: 12px; color: var(--apagado); font-size: var(--t-sm); }}
+  @media (max-width: 760px) {{ .tres {{ grid-template-columns: minmax(0, 1fr); }} }}
+
+  /* partidas: filtros em pílula e cards de 16 px (1/2/3 colunas) */
+  .grade-topo {{ display: grid; gap: 12px; padding: 32px 0 16px; }}
+  .grade-topo h2 {{ font-size: var(--t-xl); font-weight: var(--peso-forte); letter-spacing: -0.01em; }}
+  .grade-topo h2 .num {{ color: var(--apagado); font-weight: 400; }}
+  .filtros {{ display: grid; gap: 12px; min-width: 0; }}
+  .chips {{ display: flex; flex-wrap: wrap; gap: 8px; }}
+  .filtro-mapas {{ flex-wrap: nowrap; overflow-x: auto; padding: 4px 2px 6px; scrollbar-width: thin; }}
+  @media (min-width: 761px) {{ .filtro-mapas {{ flex-wrap: wrap; overflow: visible; }} }}
+  .chip {{ display: inline-flex; align-items: center; gap: 8px; flex: none; min-height: var(--toque); padding: 0 16px;
+    border-radius: var(--r-ctl); border: 1px solid var(--borda); background: var(--superficie); color: var(--tinta);
+    font: inherit; font-size: var(--t-sm); font-weight: 500; cursor: pointer; white-space: nowrap; }}
+  .chip .num {{ color: var(--apagado); }}
+  .chip[aria-pressed="true"] {{ background: var(--acao); color: var(--acao-ink); border-color: var(--acao); }}
+  .chip[aria-pressed="true"] .num {{ color: inherit; }}
+  .grid {{ display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }}
+  @media (min-width: 640px) {{ .grid {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }} }}
+  @media (min-width: 1024px) {{ .grid {{ grid-template-columns: repeat(3, minmax(0, 1fr)); }} }}
+  .cp {{ display: grid; gap: 10px; align-content: start; min-width: 0; padding: 20px; color: var(--tinta); text-decoration: none;
+    background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--r-card); }}
+  .cp:hover {{ border-color: var(--borda); }}
   .cp[hidden] {{ display: none; }}
-  .cp-topo {{ display: flex; justify-content: space-between; gap: 8px; font-size: var(--t-sm); color: var(--tinta-2); }}
-  .cp-linha {{ display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 8px; }}
-  .cp-linha .nome {{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }}
-  .cp-linha .num {{ font-size: 1.2rem; font-weight: 600; }}
-  .cp-linha.perdeu {{ color: var(--tinta-2); }} .cp-linha.perdeu .nome, .cp-linha.perdeu .num {{ font-weight: 400; }}
-  .tag-venceu {{ font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.08em; font-size: var(--t-xs); padding: 2px 5px; margin-left: 4px; border: 1.5px solid var(--vitoria);
-    border-radius: var(--r-sm); color: var(--vitoria); vertical-align: 2px; }}
-  .cp-frase {{ font-size: var(--t-sm); color: var(--tinta-2); border-top: 1px solid var(--linha); padding-top: 8px; }}
+  .cp[data-exemplo] {{ border-color: var(--tinta); }}
+  .cp-exemplo {{ font-size: var(--t-xs); font-weight: 500; color: var(--tinta-2); }}
+  .cp-topo {{ display: flex; justify-content: space-between; gap: 8px; color: var(--apagado); font-size: var(--t-sm); }}
+  .cp-linha {{ display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; }}
+  .cp-linha .nome {{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }}
+  .cp-linha .num {{ font-size: var(--t-lg); font-weight: 500; }}
+  .cp-linha.perdeu {{ color: var(--tinta-2); }} .cp-linha.perdeu .nome {{ font-weight: 400; }}
+  .tag-venceu {{ font-size: var(--t-xs); font-weight: var(--peso-forte); text-transform: uppercase; letter-spacing: 0.06em;
+    background: var(--tinta); color: var(--fundo); border-radius: var(--r-ctl); padding: 2px 8px; margin-left: 6px; }}
+  .cp-frase {{ color: var(--tinta-2); font-size: var(--t-sm); }}
   .noradar {{ font-size: var(--t-xs); color: var(--apagado); font-style: italic; }}
-  .vazio {{ padding: 24px 16px; border: 1px dashed var(--borda); border-radius: var(--r-md); color: var(--tinta-2);
-    display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }}
+  .vazio {{ display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 24px 16px; color: var(--tinta-2);
+    border: 1px dashed var(--borda); border-radius: var(--r-card); }}
   .vazio[hidden] {{ display: none; }}
 
-  .box {{ margin-top: 34px; background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--r-md); padding: 20px 22px; }}
-  .box h2 {{ font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: 22px; letter-spacing: -0.02em; margin: 0 0 8px; }}
-  .box p {{ font-size: var(--t-sm); line-height: 1.6; color: var(--tinta-2); margin: 0 0 10px; max-width: 70ch; }}
-  .box p a {{ color: var(--tinta); }}
-  pre {{ margin: 0; padding: 13px 14px; background: var(--superficie-2); color: var(--tinta); border-radius: var(--r-md);
-    overflow-x: auto; font-family: var(--f-codigo); font-size: 12px; line-height: 1.75; }}
-  .why {{ font-size: var(--t-xs); color: var(--apagado); margin-top: 10px; }}
-  footer {{ margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--linha); font-size: var(--t-sm);
-    color: var(--tinta-2); line-height: 1.6; }}
-  footer h2 {{ font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: 1rem; text-transform: uppercase;
-    letter-spacing: 0.06em; margin: 0 0 6px; color: var(--tinta); }}
-  footer p {{ margin: 0; }}
-  footer a {{ color: var(--tinta); text-decoration: underline; text-underline-offset: 3px; }}
+  /* rodapé de terceiros */
+  .rodape {{ display: grid; gap: 8px; margin-top: 48px; padding: 32px 0 48px; border-top: 1px solid var(--linha);
+    color: var(--tinta-2); font-size: var(--t-sm); }}
+  .rodape b {{ color: var(--tinta); font-weight: var(--peso-forte); }}
+  .rodape a {{ color: inherit; text-underline-offset: 3px; }}
+
+  /* "Adicionar demo" (§5.7): diálogo honesto, "em breve" */
+  dialog {{ width: min(520px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto; padding: 0;
+    border: 1px solid var(--borda); border-radius: var(--r-card); background: var(--superficie); color: var(--tinta); }}
+  dialog::backdrop {{ background: color-mix(in srgb, var(--fundo-mapa) 60%, transparent); }}
+  .dlg {{ display: grid; gap: 16px; padding: 24px; }}
+  .dlg-cab {{ display: flex; justify-content: space-between; align-items: center; gap: 12px; }}
+  .dlg-cab h2 {{ font-size: var(--t-lg); font-weight: var(--peso-forte); }}
+  .fechar {{ min-width: var(--toque); min-height: var(--toque); border-radius: var(--r-ctl); border: 1px solid var(--borda);
+    background: transparent; color: var(--tinta); font: inherit; font-size: var(--t-lg); cursor: pointer; }}
+  .painel-honesto {{ display: grid; gap: 8px; justify-items: start; padding: 16px; border: 1px solid var(--borda);
+    border-radius: var(--r-card); background: var(--superficie-2); color: var(--tinta-2); }}
+  .painel-honesto b {{ color: var(--tinta); }}
+  .painel-honesto .acoes {{ margin-top: 8px; }}
+
+  /* laterais em pontos (>= 1440 px), decorativas, sem empurrar nada */
+  .lateral {{ display: none; }}
+  @media (min-width: 1440px) {{
+    .tem-laterais {{ position: relative; overflow-x: clip; --lw: clamp(104px, calc((100vw - 1180px) / 2 - 32px), 300px); }}
+    .lateral {{ display: grid; position: absolute; top: 96px; height: 480px; width: var(--lw); pointer-events: none;
+      justify-items: center; align-content: center; gap: 10px; }}
+    .lateral.e {{ left: 16px; }} .lateral.d {{ right: 16px; }}
+    .lateral .pts {{ position: relative; width: 100%; aspect-ratio: 1; }}
+    .lateral i, .lateral u {{ position: absolute; inset: 0; -webkit-mask: var(--m) center / 100% 100% no-repeat;
+      mask: var(--m) center / 100% 100% no-repeat; }}
+    .lateral i {{ background: var(--borda); opacity: 0.55; }}
+    .lateral u {{ background: linear-gradient(100deg, transparent 42%, var(--tinta-2) 50%, transparent 58%) 0 0 / 300% 100%;
+      animation: varre 9s linear infinite; }}
+    .lateral span {{ font-size: var(--t-xs); color: var(--apagado); }}
+  }}
+  @keyframes varre {{ from {{ background-position: 100% 0; }} to {{ background-position: -100% 0; }} }}
+  @media (prefers-reduced-motion: reduce) {{ .lateral u {{ animation: none; }} }}
 </style>
 </head>
 <body>
+<a class="pular" href="#conteudo">{e(T["pular"])}</a>
+<div class="tem-laterais">
+  {laterais}
 <div class="shell">
   {topo_do_site("partidas", prancheta_do_exemplo["file"] if prancheta_do_exemplo else None, repo_url)}
 
-  <main>
+  <main id="conteudo" tabindex="-1">
   <section class="heroi" aria-labelledby="h-heroi">
     <div class="heroi-texto">
-      <p class="rot">{e(ROTULO_DO_TOPO)}</p>
-      <h1 id="h-heroi">{e(TITULO_DO_TOPO)}</h1>
-      <p class="lead">{e(FRASE_DO_TOPO)}</p>
-      <div class="caminhos botoes">{botoes}</div>
+      <h1 id="h-heroi"><span class="sr">{e(T["titulo"])}</span>{_titulo_pixelado()}</h1>
+      <p class="sub">{e(T["subtitulo"])}</p>
+      <div class="acoes"><a class="btn prim" id="btn-explorar" href="#partidas">{e(T["explorar"])}</a><button class="btn" type="button" id="btn-demo" data-abre-demo>{e(T["adicionar"])}</button></div>
+      <p class="em-breve"><span class="tag">{e(T["em_breve"])}</span> {e(T["em_breve_frase"])}</p>
     </div>
-    <section class="numeros-heroi" aria-label="Três números validados">
-      <dl class="tres nums" id="tres-numeros">
-{tres}      </dl>
-      <p class="corpus" id="corpus">{corpus}</p>
-      <p class="corpus"><a id="link-jogadores" href="jogadores.html" title="{e(LINK_JOGADORES["aviso"])}">{e(LINK_JOGADORES["texto"])}</a> · {e(LINK_JOGADORES["aviso"])}</p>
-    </section>
-{figura}
+    <figure class="agente" id="agente" data-lado="tr" data-base="agente/" role="img" aria-label="{e(rotulos_do_agente["tr"])}">{_quadro_do_agente("tr", False)}{_quadro_do_agente("ct", True)}<canvas aria-hidden="true"></canvas><span class="corte" aria-hidden="true"></span></figure>
+    <script>
+      // sorteio do lado, antes do primeiro desenho (§6.2): ?agente=ct|tr força; sem JS fica o TR
+      (function () {{ var f = document.getElementById("agente"), q = new URLSearchParams(location.search).get("agente"),
+        l = (q === "ct" || q === "tr") ? q : (Math.random() < 0.5 ? "ct" : "tr");
+        f.dataset.lado = l;
+        if (l === "ct") {{ f.querySelector(".q-tr").style.display = "none"; f.querySelector(".q-ct").style.display = "";
+          f.setAttribute("aria-label", "{e(rotulos_do_agente["ct"])}"); }} }})();
+    </script>
+  </section>
+
+  <section class="numeros-heroi" aria-label="{e(T["numeros"])}">
+    <dl class="tres nums" id="tres-numeros">
+{tres}    </dl>
+    <p class="corpus" id="corpus">{corpus}</p>
   </section>
 
   <section aria-labelledby="h-grade">
     <div class="grade-topo">
-      <h2 id="h-grade">Partidas <span class="num" id="grade-contagem">{len(grade)}</span></h2>
+      <h2 id="h-grade">{e(T["partidas"])} <span class="num" id="grade-contagem">{len(grade)}</span></h2>
       <div class="filtros">
         <div class="chips" id="filtro-origem" role="group" aria-label="Filtrar as partidas por origem">{chips_origem}</div>
         <div class="chips filtro-mapas filtro" id="filtro" role="group" aria-label="Filtrar as partidas por mapa">{chips_mapa}</div>
@@ -399,42 +469,30 @@ def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | Non
     <div class="grid" id="partidas">
 {cards}
     </div>
-    <p class="vazio" id="vazio" hidden>Nenhuma partida com esse filtro.
-      <button type="button" class="btn" id="mostra-todos">Mostrar todos os mapas</button></p>
-  </section>
-{bloco_prancheta}
-  <section class="box" aria-labelledby="h-demo">
-    <h2 id="h-demo">Adicionar a sua própria demo</h2>
-    <p>
-      O parsing não roda no navegador — um .dem tem 200-300MB e o parser é nativo (Rust, via awpy).
-      A demo é processada na sua máquina e o que vai pro site é só o resultado: alguns KB de
-      métricas por partida.
-    </p>
-    <pre>git clone {repo_url}
-cd "01 - Parser de Replay CS2"
-pip install -r requirements.txt
-
-# jogue o .dem (ou a pasta que o FACEIT entrega) em demos/ e rode:
-python -m scripts.process_all_demos
-python -m scripts.build_site
-
-# abra docs/index.html</pre>
-    <p class="why">
-      A partida nova aparece sozinha nesta lista e no seletor do cabeçalho de cada página. É a mesma
-      razão de o site ser estático: parsear .dem a cada acesso derrubaria qualquer hospedagem
-      gratuita, e os arquivos originais expiram no FACEIT em 30 dias.
-    </p>
+    <p class="vazio" id="vazio" hidden>{e(T["vazio"])}
+      <button type="button" class="btn" id="mostra-todos">{e(T["mostrar_todos"])}</button></p>
   </section>
   </main>
 
-  <footer>
-    <h2>Como os números são conferidos</h2>
-    <p>Placar, kills, ADR e KAST batem com a estatística oficial partida a partida; o rating e o botão do arremesso
-    são medidos fora da amostra. O método inteiro, com as tabelas, está no
-    <a href="{e(repo_url)}#como-sei-que-os-números-estão-certos">README</a>. Parsing com
-    <a href="https://awpy.rtfd.io/">awpy</a> sobre demoparser2; métricas em Polars.</p>
+  <footer class="rodape">
+    <b>{e(T["rodape_marca"])}</b>
+    <p>{e(T["rodape_projeto"])} <a href="{e(repo_url)}#como-sei-que-os-números-estão-certos">{e(T["rodape_metodo"])}</a> ·
+      <a id="link-github" href="{e(repo_url)}">{e(T["rodape_github"])}</a></p>
+    <p>{e(T["rodape_terceiros"])}</p>
   </footer>
 </div>
+</div>
+<dialog id="dlg-demo" aria-labelledby="dlg-t">
+  <div class="dlg">
+    <div class="dlg-cab"><h2 id="dlg-t">{e(T["dialogo_titulo"])}</h2><button class="fechar" type="button" aria-label="{e(T["fechar"])}">×</button></div>
+    <div class="painel-honesto">
+      <span class="tag">{e(T["em_breve"])}</span>
+      <p><b>{e(T["dialogo_aviso"])}</b></p>
+      <p>{e(T["dialogo_frase"])}</p>
+      <div class="acoes"><a class="btn prim" href="#partidas" data-fecha>{e(T["explorar"])}</a><a class="btn" id="link-issue" href="{e(repo_url)}/issues">{e(T["dialogo_issue"])}</a></div>
+    </div>
+  </div>
+</dialog>
 <script>
   // filtros da grade: origem e mapa; vazio mostra o aviso e o botão que limpa o mapa
   (function () {{
@@ -468,6 +526,12 @@ python -m scripts.build_site
     }});
     aplica();
   }})();
+</script>
+<script>
+{v2_js()}
+</script>
+<script>
+{agente_js}
 </script>
 </body>
 </html>
@@ -537,24 +601,17 @@ def build(repo_url: str, preview: bool = False) -> Path:
     (saida / ARQUIVO_JOGADORES).write_text(pagina_jogadores, encoding="utf-8")
     print(f"  {ARQUIVO_JOGADORES}  ({len(pagina_jogadores) / 1024:.0f} KB)  jogadores no corpus")
 
-    # os números do topo vêm de numeros_citaveis.json; a imagem do replay é a
-    # captura versionada do README (scripts/capturas_readme.py), copiada para o site
+    # os números do topo vêm de numeros_citaveis.json; a captura versionada do README (scripts/capturas_readme.py)
+    # continua sendo a og:image (replay.png) até a v2-6, mas não aparece mais na página (v2-3)
     from scripts.numeros_citaveis import carrega as numeros_citaveis
     captura = PROJECT_ROOT / "assets" / "readme" / "replay.png"
-    imagem, tamanho, legenda = None, None, None
     if captura.exists():
-        # a PNG continua sendo a og:image; na página vai uma WebP com largura e altura declaradas (não empurra
-        # o layout, CLS) e carregada sem pressa (lazy): o que conta nos primeiros segundos são os números
         shutil.copyfile(captura, saida / "replay.png")
-        from PIL import Image
-        with Image.open(captura) as im:
-            im.convert("RGB").save(saida / "replay.webp", "WEBP", quality=82, method=6)
-            tamanho = im.size
-        imagem = "replay.webp"
-        legenda = legenda_da_captura(matches)
-    (saida / "index.html").write_text(
-        build_index(matches, repo_url, pranchetas, numeros=numeros_citaveis(), imagem=imagem,
-                    imagem_tamanho=tamanho, legenda=legenda), encoding="utf-8")
+    (saida / "replay.webp").unlink(missing_ok=True)
+    # o agente da landing (decisão 48): os dois .js em agente/, ao lado das páginas; só o sorteado é baixado
+    copia_agente(saida)
+    (saida / "index.html").write_text(build_index(matches, repo_url, pranchetas, numeros=numeros_citaveis()),
+                                      encoding="utf-8")
 
     # o GitHub Pages passa o conteúdo pelo Jekyll por padrão, que ignora arquivos
     # e pastas começando com underscore; .nojekyll desliga isso

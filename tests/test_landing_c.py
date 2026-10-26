@@ -30,8 +30,8 @@ def partidas():
 def landing(partidas):
     numeros = json.loads(SAIDA.read_text(encoding="utf-8"))
     pr = [{"mapa": m, "file": f"prancheta_{m}.html", "label": m} for m in sorted({p["map"] for p in partidas})]
-    return build_index(partidas, REPO, pr, numeros=numeros, imagem="replay.webp", imagem_tamanho=(1156, 588),
-                       legenda="Replay do round 6 de MOUZ × Falcons, em Dust II.")
+    # v2-3: a captura do replay saiu da página (continua só como og:image)
+    return build_index(partidas, REPO, pr, numeros=numeros)
 
 
 def test_titulo_descricao_e_open_graph(landing):
@@ -39,15 +39,15 @@ def test_titulo_descricao_e_open_graph(landing):
     assert f'<meta name="description" content="{FRASE_DO_TOPO}">' in landing
     for prop in ("og:title", "og:description", "og:image"):
         assert re.search(rf'<meta property="{prop}" content="[^"]+">', landing), prop
-    assert f">{TITULO_DO_TOPO}</h1>" in landing and "Uma partida,<br>round a round" not in landing
+    # v2-3: o h1 é o título pixelado (SVG, aria-hidden) com o texto para leitor de tela
+    assert f'<span class="sr">{TITULO_DO_TOPO}</span><svg class="pix"' in landing and "Uma partida,<br>round a round" not in landing
 
 
-def test_ordem_no_html_e_texto_numeros_imagem(landing):
-    i_texto, i_nums, i_img = landing.index('class="heroi-texto"'), landing.index('id="tres-numeros"'), landing.index('class="figura"')
-    assert i_texto < i_nums < i_img
-    img = re.search(r"<img [^>]*>", landing).group(0)
-    assert 'width="1156"' in img and 'height="588"' in img and 'loading="lazy"' in img
-    assert "<figcaption>Replay do round 6" in landing
+def test_ordem_no_html_e_texto_agente_numeros(landing):
+    # v2-3 (§5.2): texto e ações, o agente (caixa fixa) e os três números; a captura do replay saiu da página
+    i_texto, i_agente, i_nums = landing.index('class="heroi-texto"'), landing.index('id="agente"'), landing.index('id="tres-numeros"')
+    assert i_texto < i_agente < i_nums
+    assert "<img " not in landing and "replay.webp" not in landing
 
 
 def test_os_rotulos_curtos_dos_tres_numeros_sao_os_do_documento(landing):
@@ -108,11 +108,11 @@ def _abre(navegador, html, tmp_path, w, h):
     return ctx, pg
 
 
-def test_na_dobra_de_375x667_aparecem_o_h1_e_o_ver_uma_partida(navegador, landing, tmp_path):
+def test_na_dobra_de_375x667_aparecem_o_h1_e_o_explorar_partidas(navegador, landing, tmp_path):
     ctx, pg = _abre(navegador, landing, tmp_path, 375, 667)
     try:
         r = pg.evaluate("""() => [document.querySelector('h1').getBoundingClientRect().bottom,
-                                  document.getElementById('btn-partida').getBoundingClientRect().bottom, innerHeight]""")
+                                  document.getElementById('btn-explorar').getBoundingClientRect().bottom, innerHeight]""")
         assert r[0] <= r[2] and r[1] <= r[2], r
         assert pg.evaluate("() => document.documentElement.scrollWidth") <= 375
     finally:
