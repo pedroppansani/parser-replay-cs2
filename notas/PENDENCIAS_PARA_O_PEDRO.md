@@ -432,3 +432,17 @@ O texto original do cartão:
 - **O que preciso de você quando chegar a vez:** a regra de "empate na prática" (por exemplo: diferença menor que o
   erro típico da métrica, ou intervalos que se cruzam) e o mínimo de amostra para "sem comparação".
 - **Fora do computador:** nada.
+
+---
+
+## 15. O tamanho do mapa do Replay pela regra do protótipo (fica para depois)
+
+- **O que é:** o protótipo da v2 (§5.3) dimensiona o mapa por `min(100%, 640px, 100svh − reserva)`, quadrado. Na v2-4
+  o mapa ficou com o tamanho de hoje (sua decisão, 2026-10-26): a largura já segue a altura da tela
+  (`.mapwrap`, reserva de 500 px a partir de 1024 px e 340 px abaixo), com o canvas de 820 × 950.
+- **Por que não mudou:** trocar a regra muda o tamanho do canvas e, com ele, TODOS os pixels dos 4 quadros do
+  `compara_capturas` (os três do Replay e o da prancheta não; os do Replay sim). Seria preciso regravar as
+  referências em commit próprio e refazer `mede_radar` e `mede_granada_real`.
+- **O que preciso de você:** se quer a regra do protótipo (mapa maior em telas grandes, até 640 px) ou se o
+  tamanho de hoje fica.
+- **Fora do computador:** nada.

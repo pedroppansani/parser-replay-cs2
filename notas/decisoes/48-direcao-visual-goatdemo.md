@@ -89,6 +89,9 @@ continua `replay.png` até a v2-6.
   `--anel` é lida no `.stage`, fora da ilha). **Na v2-5, quando o bloco escuro virar o violeta, a ilha muda junto:
   conferir a moldura da partida nesse dia.** O canvas mantém o tamanho de antes (`max-width` 520 px): a regra
   `min(100%, 640px, 100svh − reserva)` do protótipo mudaria todos os pixels dos quadros do `compara_capturas`.
+  O Pedro decidiu (2026-10-26): o mapa fica no tamanho de hoje; a regra do protótipo é o cartão 15 das pendências.
+  O topo da partida ficou mais justo (só espaçamento) para o mapa inteiro e a barra de tocar caberem em 1440 x 900;
+  o "Como é conferido" do Perfil leva à Metodologia do rodapé da própria página (`#foot`), sem link externo.
 - O canvas do replay e a legenda dos glifos leem `CM` (`ct-mapa`, `tr-mapa`, `tinta-mapa`, `tinta-2-mapa`,
   `apagado-mapa`); os gráficos e a página continuam no `C` do tema.
 - Perfil: só a forma (seletor em pílulas, bloco "em validação" tracejado). A comparação por grupos com "quem está à
