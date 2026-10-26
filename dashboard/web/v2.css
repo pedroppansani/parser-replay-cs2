@@ -1,6 +1,7 @@
 /* GOAT.demo (decisão 48): CSS novo da v2, injetado pelo marcador V2 de scripts/design_head.aplica; nunca no
    template.html. Só tokens de tokens.css, nenhuma cor própria. Na v2-3: a navbar flutuante (entrega-v2-goatdemo §5.1)
-   e a folga das âncoras (§8). A marcação vem de scripts/design_head.topo_do_site. */
+   e a folga das âncoras (§8). A marcação vem de scripts/design_head.topo_do_site. Na v2-4: a página da partida
+   (§5.3, §5.4, §7) e a de jogadores (§5.6) no claro; as classes e os ids de antes ficam (os testes clicam neles). */
 html { scroll-padding-top: calc(var(--nav-h) + 16px); }   /* C2: âncora nunca embaixo da navbar */
 
 .pular { position: absolute; left: 8px; top: -80px; z-index: 60; background: var(--acao); color: var(--acao-ink);
@@ -26,3 +27,64 @@ html { scroll-padding-top: calc(var(--nav-h) + 16px); }   /* C2: âncora nunca e
   .site-nav::-webkit-scrollbar { display: none; }
   .site-nav a { padding: 0 12px; }
 }
+
+/* ================= v2-4: página da partida (entrega-v2-goatdemo §5.3) ================= */
+.shell > .site-topo { margin-bottom: 4px; }
+/* a navbar ocupa o alto da tela: o cabeçalho e os blocos ficam mais justos para o mapa e o tocar caberem (A1) */
+.top { padding-block: 20px 4px; }
+.panel { padding-top: 14px; }
+.roundstrip { margin-top: 6px; }
+@media (max-width: 640px) { .top { padding-block: 10px 2px; } .placar { margin-top: 10px; } }
+.card { border-radius: var(--r-card); }
+
+/* Abas com gooey (§7): pílula --superficie-2 e a bolha --acao por baixo dos [role=tab]; o filtro #goo só durante a
+   troca (.movendo, v2.js). Grudam logo abaixo da navbar e rolam dentro da própria caixa em 375 px. */
+.abas-moldura { position: sticky; top: calc(var(--nav-h) + 4px); z-index: 20; border-bottom: 0; padding: 8px 0;
+  background: var(--fundo); }
+.abas-moldura .goo-filtro { position: absolute; width: 0; height: 0; }
+.tabs { position: relative; isolation: isolate; padding: 4px; gap: 2px; border-radius: var(--r-ctl);
+  background: var(--superficie-2); border: 1px solid var(--linha); }
+.tabs .goo { position: absolute; top: 0; left: 0; bottom: 0; z-index: 0; pointer-events: none; }
+.tabs.movendo .goo { filter: url(#goo); }
+.tabs .bolha { position: absolute; top: 4px; bottom: 4px; left: 0; width: 0; border-radius: var(--r-ctl);
+  background: var(--acao); transition: transform 220ms var(--curva), width 220ms var(--curva); }
+.tabs [role="tab"] { position: relative; z-index: 1; border-radius: var(--r-ctl); padding: 0 16px; box-shadow: none;
+  text-transform: none; letter-spacing: 0; font-weight: 500; transition: color 220ms; }
+.tabs [role="tab"][aria-selected="true"] { color: var(--acao-ink); box-shadow: none; }
+.tabs [role="tab"][aria-selected="true"]:focus-visible { outline-color: var(--acao-ink); }
+.abas-moldura::before, .abas-moldura::after { top: 8px; bottom: 8px; }
+.abas-mais { top: 8px; height: calc(100% - 16px); border-radius: var(--r-ctl); border: 1px solid var(--linha); }
+@media (prefers-reduced-motion: reduce) { .tabs .bolha { transition: none; } .tabs.movendo .goo { filter: none; } }
+
+/* Faixa de rounds em pílulas (§5.3): barra embaixo na cor do lado que venceu, losango --decisivo, meio-tempo */
+.rchip { border-radius: var(--r-ctl); min-width: var(--toque); width: auto; padding: 0 10px; }
+.rchip::after { left: 12px; right: 12px; height: 3px; }
+.rchip[aria-pressed="true"] { background: var(--acao); color: var(--acao-ink); border-color: var(--acao); box-shadow: none; }
+.rchip.key::before { top: -3px; right: -3px; width: 10px; height: 10px; border: 2px solid var(--fundo); }
+.roundstrip { padding-top: 5px; }
+
+/* A moldura do mapa (§5.3, D2.7): ilha do tema escuro (data-tema="escuro" no #palco) em --radar, raio 20, com o
+   anel de 6 px da --superficie DA PÁGINA (lido no .stage, fora da ilha); o canvas não muda de tamanho nem de cor. */
+.stage { --anel: var(--superficie); }
+.board[data-tema="escuro"] { background: var(--radar); color: var(--tinta); border-radius: var(--r-moldura);
+  border-color: var(--linha); box-shadow: 0 0 0 6px var(--anel); padding: 0 6px 12px; }
+.board[data-tema="escuro"] canvas#map { border-radius: var(--r-mapa); }
+.board[data-tema="escuro"] .transport { background: var(--radar); border-radius: 0 0 12px 12px; }
+.board[data-tema="escuro"] .play { background: var(--tinta); color: var(--contorno); }
+@media (max-width: 1000px) { .stage { gap: 20px 14px; } }
+
+/* Perfil (§5.4): o seletor de jogador em pílulas; o estado "em validação" é um bloco tracejado, sem número */
+.pfbotoes button { border-radius: var(--r-ctl); padding: 7px 16px; }
+.pfbotoes button[aria-pressed="true"] { background: var(--acao); color: var(--acao-ink); border-color: var(--acao); }
+#pf-em-validacao { border: 1px dashed var(--borda); border-left: 1px dashed var(--borda); border-radius: var(--r-card);
+  background: var(--superficie); padding: 20px; }
+.pfcab, .pf-detalhes, [data-panel="perfil"] .ponto { border-radius: var(--r-card); }
+
+/* ================= v2-4: jogadores.html no claro (entrega-v2-goatdemo §5.6) ================= */
+/* chips e pílulas em pílula (as letras A/B/C continuam em cinza: a cor tem dono); cartões com o raio da v2 */
+#chips-mapa .chip, #chips-lado .chip, #pilulas .pilula { border-radius: var(--r-ctl); }
+select#media, select#adiciona { border-radius: var(--r-ctl); padding: 0 14px; }
+#chips-mapa .chip[aria-pressed="true"], #chips-lado .chip[aria-pressed="true"] { background: var(--acao); color: var(--acao-ink);
+  border-color: var(--acao); }
+#pilulas .pilula button { border-radius: 0 var(--r-ctl) var(--r-ctl) 0; }
+#graficos .metrica, #graficos .vazio, .shell > .aviso { border-radius: var(--r-card); }

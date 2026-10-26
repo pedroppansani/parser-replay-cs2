@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR" data-tema="escuro">
+<html lang="pt-BR" data-tema="claro">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,7 +8,7 @@
 <!--__FONTES__-->
 
 <style>
-  /* Tema escuro único (entrega-sala-de-demo §3): os tokens (cores, fontes, espaços) vêm de
+  /* Tema claro da v2 (decisão 48; o mapa continua escuro): os tokens (cores, fontes, espaços) vêm de
      dashboard/web/tokens.css, injetado aqui no build. Nenhuma cor é definida neste arquivo. */
   /*__TOKENS__*/
 
@@ -1099,11 +1099,14 @@
   @media (max-width: 640px) {
     #pf-tabela { overflow-x: auto; }
   }
+  /* o CSS da v2 (dashboard/web/v2.css) vem por último: a forma nova sobre as regras de cima */
+  /*__V2__*/
 </style>
 </head>
 <body>
 
 <div class="shell">
+  <!--__TOPO__-->
 
   <header class="top">
     <div class="crumbs">
@@ -1129,6 +1132,7 @@
 
   <div class="abas-moldura" id="abas-moldura">
     <nav class="tabs" role="tablist" aria-label="Seções">
+      <span class="goo" aria-hidden="true"><span class="bolha"></span></span>
       <button role="tab" aria-selected="true" data-tab="insights">Resumo</button>
       <button role="tab" aria-selected="false" data-tab="replay">Replay</button>
       <button role="tab" aria-selected="false" data-tab="jogadores">Jogadores</button>
@@ -1137,6 +1141,8 @@
       <button role="tab" aria-selected="false" data-tab="estilos">Estilos</button>
     </nav>
     <button class="abas-mais" id="abas-mais" type="button" aria-label="Mostrar mais abas" tabindex="-1">›</button>
+    <!-- o filtro do gooey (entrega-v2 §7): só vale durante a troca de aba (.movendo, v2.js) -->
+    <svg class="goo-filtro" width="0" height="0" aria-hidden="true" focusable="false"><filter id="goo"><feGaussianBlur in="SourceGraphic" stdDeviation="4"/><feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 28 -12"/></filter></svg>
   </div>
 
   <!-- REPLAY -->
@@ -1146,7 +1152,8 @@
     <div class="stage">
       <aside class="card squad" id="squad-ct" aria-label="Contra-terroristas"></aside>
 
-      <div class="card board" id="palco">
+      <!-- a moldura do mapa: uma ilha do tema escuro dentro da página clara (entrega-v2 §5.3) -->
+      <div class="card board" id="palco" data-tema="escuro">
         <div class="roundhead">
           <div class="big" id="rh-round">Round 1</div>
           <div class="res" id="rh-res"></div>
@@ -1334,6 +1341,8 @@
 <script>/*__ANNOTATIONS__*/</script>
 <script>window.__SITE__ = /*__SITE__*/null;</script>
 <script>window.__PRANCHETA__ = /*__PRANCHETA__*/null;</script>
+<!-- dashboard/web/v2.js (navbar, --nav-h, gooey), injetado pelo build -->
+<script>/*__V2_JS__*/</script>
 <script>
 (function () {
   "use strict";
@@ -1350,6 +1359,10 @@
             apagado: tk("apagado"), linha: tk("linha"), borda: tk("borda"), fundo: tk("fundo"),
             superficie: tk("superficie"), radar: tk("radar"), flash: tk("flash"), contorno: tk("contorno"),
             ctArea: tk("ct-area"), trArea: tk("tr-area"), fNum: tk("f-num"), fTexto: tk("f-texto") };
+  // O canvas do mapa é sempre escuro (decisão 48): peças, rastros, rótulos e a legenda dos glifos leem os *-mapa,
+  // iguais nos dois temas; os gráficos e a página leem os do tema (C).
+  var CM = { ct: tk("ct-mapa"), tr: tk("tr-mapa"), tinta: tk("tinta-mapa"), tinta2: tk("tinta-2-mapa"),
+             apagado: tk("apagado-mapa") };
   var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   function fmt(v, d) { return (v == null || isNaN(v)) ? "—" : Number(v).toFixed(d == null ? 1 : d); }
@@ -1603,8 +1616,8 @@
   // Legenda com os glifos REAIS: cada um desenhado pela mesma função do mapa (MapCore), num canvas pequeno.
   (function legenda() {
     var caixa = document.getElementById("maplegend");
-    var ITENS = [["peca", C.ct, "CT"], ["peca", C.tr, "TR"], ["smoke", null, "Smoke"], ["flash", null, "Flash"],
-                 ["he", null, "HE"], ["molotov", null, "Molotov"], ["morto", C.apagado, "morto"],
+    var ITENS = [["peca", CM.ct, "CT"], ["peca", CM.tr, "TR"], ["smoke", null, "Smoke"], ["flash", null, "Flash"],
+                 ["he", null, "HE"], ["molotov", null, "Molotov"], ["morto", CM.apagado, "morto"],
                  ["desenhada", null, "granada desenhada"]];
     var dpr = window.devicePixelRatio || 1;
     ITENS.forEach(function (it) {
@@ -1617,7 +1630,7 @@
       var g = c.getContext("2d");
       g.scale(dpr, dpr);
       if (it[0] === "peca") MapCore.desenhaJogador(g, 9, 9, { cor: it[1], estado: "vivo", hp: 100, nome: "" });
-      else if (it[0] === "morto") MapCore.desenhaJogador(g, 9, 9, { cor: C.tinta2, estado: "morto", hp: 0, nome: "" });
+      else if (it[0] === "morto") MapCore.desenhaJogador(g, 9, 9, { cor: CM.tinta2, estado: "morto", hp: 0, nome: "" });
       // a granada desenhada (fase 11, V3 da fase 15): o mesmo glifo, com o anel tracejado, o corpo a 100% e o carimbo
       else if (it[0] === "desenhada") MapCore.nadeGlyph(g, "smoke", 9, 13, 4, MapCore.NADE_COLOR.smoke, -Math.PI / 2, true);
       else MapCore.nadeGlyph(g, it[0], 9, 9, 4, MapCore.NADE_COLOR[it[0]], -Math.PI / 2);
@@ -2110,7 +2123,7 @@
       var last = n.x.length - 1;
       if (k < 0) return;
 
-      var col = NADE_COLOR[n.k] || C.apagado;
+      var col = NADE_COLOR[n.k] || CM.apagado;
       var landed = k > last;
       // depois de cair, a marca do ponto de queda ainda fica um tempo: sem isso
       // a granada some e você perde onde ela foi parar
@@ -2247,14 +2260,14 @@
           ? blinded.length + (blinded.length > 1 ? " cegos" : " cego")
           : p.dmg + " dano";
         // sem esmaecer: rótulo translúcido deixa o radar aparecer atrás da letra (A11); some quando o estouro acaba
-        MapCore.rotulo(tag, X, Y, { cor: C.tinta, prioridade: 5, dy: 16 + ease * 5 });
+        MapCore.rotulo(tag, X, Y, { cor: CM.tinta, prioridade: 5, dy: 16 + ease * 5 });
       }
       ctx.globalAlpha = 1;
     });
 
     // rastro percorrido até aqui
     cur.players.forEach(function (p) {
-      var color = p.side === "ct" ? C.ct : C.tr;
+      var color = p.side === "ct" ? CM.ct : CM.tr;
       ctx.strokeStyle = color;
       ctx.globalAlpha = 0.22;
       ctx.lineWidth = 1.8;
@@ -2279,7 +2292,7 @@
       if (e.type === "kill") {
         var a = Math.max(0.45, 1 - age / 90);
         ctx.globalAlpha = a;
-        ctx.strokeStyle = e.side === "ct" ? C.ct : C.tr;
+        ctx.strokeStyle = e.side === "ct" ? CM.ct : CM.tr;
         ctx.lineWidth = 2.6;
         ctx.lineCap = "round";
         var X = mx(e.x), Y = my(e.y), s = 6.5;
@@ -2289,7 +2302,7 @@
         ctx.stroke();
         ctx.globalAlpha = 1;
       } else if (e.type === "plant" && e.x != null) {
-        ctx.fillStyle = C.tr;
+        ctx.fillStyle = CM.tr;
         ctx.globalAlpha = 0.9;
         ctx.beginPath();
         ctx.rect(mx(e.x) - 5, my(e.y) - 5, 10, 10);
@@ -2297,10 +2310,10 @@
         ctx.globalAlpha = 0.25;
         ctx.beginPath();
         ctx.arc(mx(e.x), my(e.y), 12 + (age % 24), 0, Math.PI * 2);
-        ctx.strokeStyle = C.tr; ctx.lineWidth = 1.5; ctx.stroke();
+        ctx.strokeStyle = CM.tr; ctx.lineWidth = 1.5; ctx.stroke();
         ctx.globalAlpha = 1;
       } else if (e.type === "defuse" && e.x != null) {
-        ctx.fillStyle = C.ct;
+        ctx.fillStyle = CM.ct;
         ctx.beginPath();
         ctx.arc(mx(e.x), my(e.y), 6, 0, Math.PI * 2);
         ctx.fill();
@@ -2321,7 +2334,7 @@
       var sp = canLerp ? smoothPos(p, i0, i1, tt) : [p.x[i0], p.y[i0]];
       var X = mx(sp[0]);
       var Y = my(sp[1]);
-      var color = p.side === "ct" ? C.ct : C.tr;
+      var color = p.side === "ct" ? CM.ct : CM.tr;
       // Direção do olhar (array `d`, graus, no mesmo índice da posição).
       // Interpola pelo caminho mais curto entre i0 e i1 só quando o trecho é
       // interpolável: vivo nos dois quadros e sem salto (as guardas do

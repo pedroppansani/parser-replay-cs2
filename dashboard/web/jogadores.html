@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR" data-tema="escuro">
+<html lang="pt-BR" data-tema="claro">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,21 +13,6 @@
   body { margin: 0; background: var(--fundo); color: var(--tinta); font-family: var(--f-texto); -webkit-font-smoothing: antialiased; }
   .shell { max-width: 1280px; margin: 0 auto; padding: 0 16px 64px; }
   :where(button, a[href], select, input, textarea, summary, [tabindex]):focus-visible { outline: 2px solid var(--foco); outline-offset: 2px; }
-
-  /* topo do site: marca e quatro links (entrega-sala-de-demo §7) */
-  .site-topo { display: flex; align-items: center; justify-content: space-between; gap: 4px 16px; flex-wrap: nowrap;
-    border-bottom: 1px solid var(--linha); margin: 0 -16px; padding: 0 16px; }
-  .marca { display: inline-flex; align-items: center; min-height: var(--toque); min-width: var(--toque); flex: none; gap: 10px;
-    font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.04em; color: var(--tinta); text-decoration: none; }
-  .marca b { color: var(--tr-texto); margin-left: 0.3em; }
-  .site-nav { display: flex; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
-  .site-nav::-webkit-scrollbar { display: none; }
-  .site-nav a { display: inline-flex; align-items: center; min-height: var(--toque); padding: 0 10px; flex: none;
-    color: var(--tinta-2); text-decoration: none; font-size: var(--t-sm); }
-  .site-nav a[aria-current] { color: var(--tinta); box-shadow: inset 0 -2px 0 var(--tinta); }
-  .site-nav a:hover { color: var(--tinta); }
-  @media (max-width: 640px) { .marca .marca-longa { display: none; } .marca b { margin-left: 0; } .site-nav a { padding: 0 7px; } }
 
   h1 { font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: clamp(28px, 4.5vw, 44px); margin: 24px 0 8px; letter-spacing: -0.01em; }
   /* aviso fixo (info): esta é a visão do corpus, não de uma partida (decisão 30) */
@@ -93,6 +78,8 @@
   .legenda-media i { display: inline-block; width: 0; height: 14px; border-left: 2px dashed var(--apagado); }
   .nota { color: var(--tinta-2); font-size: var(--t-sm); margin-top: 12px; line-height: 1.55; }
   .vazio { grid-column: 1 / -1; padding: 24px 16px; border: 1px dashed var(--borda); border-radius: var(--r-md); color: var(--tinta-2); }
+  /* a navbar e a forma da v2 (dashboard/web/v2.css, decisão 48) por último */
+  /*__V2__*/
 </style>
 </head>
 <body>
@@ -123,6 +110,7 @@
 <script>
 /*__MAP_CORE__*/
 </script>
+<script>/*__V2_JS__*/</script>
 <script>
 (function () {
   var D = /*__DADOS__*/null;

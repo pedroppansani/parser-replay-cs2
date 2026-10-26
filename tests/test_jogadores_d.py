@@ -55,7 +55,7 @@ def test_letras_em_tons_de_cinza_e_no_maximo_tres(navegador, tmp_path, dados):
         cores = pg.eval_on_selector_all("#pilulas .letra", "els => els.map(e => getComputedStyle(e).backgroundColor)")
         # tons de cinza do tema (tinta, tinta-2, apagado); nunca a cor de lado nem a do decisivo
         from metrics.paleta import le_tokens
-        tk = le_tokens()
+        tk = le_tokens(tema="claro")   # v2-4: jogadores.html no claro (decisão 48)
         rgb = lambda h: f"rgb({int(h[1:3], 16)}, {int(h[3:5], 16)}, {int(h[5:7], 16)})"  # noqa: E731
         assert cores == [rgb(tk["tinta"]), rgb(tk["tinta-2"])], cores
         assert not set(cores) & {rgb(tk[n]) for n in ("ct", "tr", "decisivo")}

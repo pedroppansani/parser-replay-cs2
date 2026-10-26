@@ -84,8 +84,8 @@ def test_paginas_geradas_nao_deixam_marcador_e_carregam_so_as_duas_familias():
         baixadas = re.findall(r'font-family: "([^"]+)"; src: url\(fontes/([^)]+)\)', html)
         assert baixadas == [(f, a) for f, a in FONTES], nome
         assert html.count("src: url(") == 2, nome
-        # v2-3: a landing fica no claro; as outras páginas continuam no escuro de hoje (v2-1)
-        tema = "claro" if nome == "landing" else "escuro"
+        # v2-4: landing, partida e jogadores no claro; a prancheta segue no escuro de hoje até a v2-5
+        tema = "escuro" if nome == "prancheta" else "claro"
         assert f'<html lang="pt-BR" data-tema="{tema}">' in html and "--fundo: #0b0f14" in html, nome
         assert "Geist Fallback" in html and "Geist Mono Fallback" in html, nome
     assert {f for f, _ in FONTES} == {"Geist", "Geist Mono"}
