@@ -76,6 +76,26 @@ continua `replay.png` até a v2-6.
 - A landing sai no claro (`TEMA_DA_LANDING`); as outras páginas seguem no escuro até a v2-4 e a v2-5, que vão ao ar
   junto com a v2-3 (o site nunca fica meio claro, meio escuro no ar).
 
+**Páginas claras (v2-4).** Regras de build e de forma que a v2-4 deixou:
+- A partida (`template.html`) e `jogadores.html` saem em `data-tema="claro"`, com a navbar de `topo_do_site` (a partida
+  passa a ter o topo do site, o que a 44 não tinha; atual = "partida", sem `aria-current`). As duas têm o marcador
+  `/*__V2__*/` no FIM do `<style>` (o CSS da v2 vem por último e ganha das regras de antes) e `<script>/*__V2_JS__*/</script>`,
+  trocado pelo `build_web_page`/`build_jogadores` antes de o dado entrar. Ids e classes de antes ficam (os testes clicam neles).
+- Abas: a bolha (`.goo .bolha`) e o filtro `#goo` são estrutura do template; o `v2.js` só observa o `aria-selected`
+  (a troca de aba continua no JS da página) e liga `.movendo` por 220 ms; em repouso o `filter` é `none`; com reduzir
+  movimento, nada de filtro. As abas grudam em `top: calc(var(--nav-h) + 4px)`.
+- A moldura do mapa é o `#palco` com `data-tema="escuro"`: uma ilha do tema escuro (o texto, a legenda, o transporte e a
+  barra da anotação leem o escuro), fundo `--radar`, raio 20 e o anel de 6 px da `--superficie` DA PÁGINA (a variável
+  `--anel` é lida no `.stage`, fora da ilha). **Na v2-5, quando o bloco escuro virar o violeta, a ilha muda junto:
+  conferir a moldura da partida nesse dia.** O canvas mantém o tamanho de antes (`max-width` 520 px): a regra
+  `min(100%, 640px, 100svh − reserva)` do protótipo mudaria todos os pixels dos quadros do `compara_capturas`.
+- O canvas do replay e a legenda dos glifos leem `CM` (`ct-mapa`, `tr-mapa`, `tinta-mapa`, `tinta-2-mapa`,
+  `apagado-mapa`); os gráficos e a página continuam no `C` do tema.
+- Perfil: só a forma (seletor em pílulas, bloco "em validação" tracejado). A comparação por grupos com "quem está à
+  frente" é fase própria depois da v2 (cartão 14 das pendências); o mini-radar fica fora da v2.
+- Saiu de `map_core.js` o nome `'DM Sans'` do texto anotado (nunca carregado nem instalado; o texto já caía no
+  `system-ui`, mesmo pixel).
+
 **Medido na v2-1 (2026-10-25, Chrome no Windows, `file://`):** com a CSP do site, a Geist e a Geist Mono chegam
 a `loaded` na landing, numa partida e na prancheta, sem violação; com `font-src 'none'` (controle) as duas são
 bloqueadas e a violação aparece. Um `<script src="agente/agente-tr.js">` criado pelo JS depois da carga também
@@ -83,7 +103,5 @@ CARREGA em `file://` com `script-src 'self' 'unsafe-inline'` (a de hoje), sem vi
 precisa de CSP mais frouxa.
 
 **Ficou para as próximas fases:** a escala tipográfica, o `--dur` de 220 ms e os raios do protótipo (os tokens
-de forma novos já existem, sem uso); `--f-cond` (aponta para a Geist até a v2-4 tirar o uso); a linha do
-`'DM Sans'` em `map_core.js` (sobra antiga, conferir no A6); o `template.html` ainda lê `--tinta`, `--fundo` e
-os outros do tema para o canvas do replay e os gráficos (v2-4, junto com a página clara); `ct`/`tr` do canvas
+de forma novos já têm uso na partida e em jogadores desde a v2-4); `--f-cond` (aponta para a Geist; o template ainda o usa, sem efeito de pixel); o canvas do replay já lê os `*-mapa` (feito na v2-4); `ct`/`tr` do canvas
 da prancheta para `ct-mapa`/`tr-mapa` (v2-5); `scripts/design/aceite.py` ainda procura `JetBrains` (v2-7).

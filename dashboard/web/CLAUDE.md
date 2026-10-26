@@ -17,8 +17,8 @@ valem lá também.
   copia de `dashboard/web/fontes/`), no máximo 2 famílias; `gera_fontes`/`mede_fallback` não rodam no build (48)
 - CSS novo da v2 só em `v2.css` (marcador `/*__V2__*/`), comportamento comum em `v2.js`; agente: só o sorteado é
   baixado, sha256 no `agentes.manifesto.json`, `converte_agente` fora do build e dos testes (48)
-- Escolhas da nota 44 ("Como ficou na implementação") são deliberadas: página da partida sem o topo
-  do site, coluna Mira com o texto do Python, mínimos de `jogadores.html`; não "corrija" de volta (44)
+- Escolhas da nota 44 ("Como ficou na implementação") são deliberadas: coluna Mira com o texto do
+  Python, mínimos de `jogadores.html`; não "corrija" de volta; a partida tem a navbar desde a v2-4 (44, 48)
 - Aba Placar: "Quanto cada round pesou" tem o mesmo eixo X do gráfico de cima (viewBox de 900, pL 32,
   pR 12); a barra é depois menos antes da curva publicada, o decisivo é o do payload, e textos e rótulos
   vêm de `leitura/peso_dos_rounds.py` (19, 18)
@@ -29,7 +29,7 @@ valem lá também.
   para o lado (por round, o lado daquele round), destaque só no verde do decisivo, vitória e link
   sem matiz; `--erro` e `--aviso` nunca marcam erro de jogador (44, 46)
 - Tema por página (`<html data-tema>`); `tokens.css` tem o bloco claro, o escuro e o comum; o canvas lê só
-  `*-mapa` e as granadas, iguais nos dois temas (48)
+  `*-mapa` e as granadas, iguais nos dois temas; na partida clara a moldura do mapa é a ilha `data-tema="escuro"` (48)
 - Cor nova ou trocada passa por `py -3.12 -m metrics.paleta` contra o fundo onde aparece (texto
   4,5:1, marca 3:1, ΔE2000 ≥ 8 no pior par daltônico); o scatter de clusters segue facetado (10)
 - Mapa, peças e granadas em canvas, com UM núcleo (`map_core.js`); `desenhaJogador` não ganha
