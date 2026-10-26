@@ -176,9 +176,8 @@ TITULO_DO_TOPO = TEXTOS_DA_LANDING["titulo"]
 FRASE_DO_TOPO = TEXTOS_DA_LANDING["subtitulo"]
 TITULO_DA_PAGINA = f"Partidas lidas round a round · {MARCA}"
 ROTULO_ORIGEM = {"profissional": "Profissionais", "faceit": "FACEIT"}
-# Tema da landing (decisão 48). A especificação a põe no claro; o claro espera a autorização do Pedro para
-# tests/test_tokens.py, que hoje exige o escuro em toda página gerada (ver o relatório da v2-3).
-TEMA_DA_LANDING = "escuro"
+# Tema da landing (decisão 48, entrega-v2-goatdemo §5.2): claro; as outras páginas seguem no escuro até a v2-4/v2-5.
+TEMA_DA_LANDING = "claro"
 # Laterais em pontos a partir de 1440 px (§5.2 item 4): Mirage à esquerda, Dust II à direita (as duas do protótipo)
 LATERAIS = (("e", "de_mirage"), ("d", "de_dust2"))
 AGENTE_DIR = Path(__file__).resolve().parent.parent / "dashboard" / "web" / "agente"

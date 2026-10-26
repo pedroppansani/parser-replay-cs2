@@ -84,8 +84,9 @@ def test_paginas_geradas_nao_deixam_marcador_e_carregam_so_as_duas_familias():
         baixadas = re.findall(r'font-family: "([^"]+)"; src: url\(fontes/([^)]+)\)', html)
         assert baixadas == [(f, a) for f, a in FONTES], nome
         assert html.count("src: url(") == 2, nome
-        # a página continua no escuro de hoje (v2-1)
-        assert '<html lang="pt-BR" data-tema="escuro">' in html and "--fundo: #0b0f14" in html, nome
+        # v2-3: a landing fica no claro; as outras páginas continuam no escuro de hoje (v2-1)
+        tema = "claro" if nome == "landing" else "escuro"
+        assert f'<html lang="pt-BR" data-tema="{tema}">' in html and "--fundo: #0b0f14" in html, nome
         assert "Geist Fallback" in html and "Geist Mono Fallback" in html, nome
     assert {f for f, _ in FONTES} == {"Geist", "Geist Mono"}
     assert all((FONTES_DIR / a).stat().st_size > 0 for _, a in FONTES) and (FONTES_DIR / "OFL.txt").exists()

@@ -73,8 +73,8 @@ continua `replay.png` até a v2-6.
 - Os pontos das laterais (Mirage e Dust II) saem de `scripts/design/gera_pontos.mascara`, que lê o radar do `.json` (o PNG
   não existe no CI), no build, em `data:` dentro do CSS; determinístico (teste `test_gera_pontos.py`).
 - A captura do replay (`replay.png`) continua só como `og:image` (até a v2-6); `replay.webp` deixou de existir.
-- A landing ainda sai com `TEMA_DA_LANDING = "escuro"`: o claro depende do OK do Pedro para mudar
-  `tests/test_tokens.py::test_paginas_geradas_nao_deixam_marcador_e_carregam_so_as_duas_familias`, que exige o escuro.
+- A landing sai no claro (`TEMA_DA_LANDING`); as outras páginas seguem no escuro até a v2-4 e a v2-5, que vão ao ar
+  junto com a v2-3 (o site nunca fica meio claro, meio escuro no ar).
 
 **Medido na v2-1 (2026-10-25, Chrome no Windows, `file://`):** com a CSP do site, a Geist e a Geist Mono chegam
 a `loaded` na landing, numa partida e na prancheta, sem violação; com `font-src 'none'` (controle) as duas são
