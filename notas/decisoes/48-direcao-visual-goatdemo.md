@@ -57,6 +57,25 @@ na v2-4.
 de CS2") e o topo atual mostra o wordmark liso a 17 px. Nada de agente, Valve ou CS2 na marca. A `og:image`
 continua `replay.png` até a v2-6.
 
+**Landing e navbar (v2-3).** Regras de build que a v2-3 deixou:
+- O CSS novo da v2 mora em `dashboard/web/v2.css` e entra pelo marcador `/*__V2__*/` (`design_head.aplica`), nunca no
+  `template.html`; o comportamento comum (`--nav-h`, foco abaixo da navbar, `<dialog>`) em `dashboard/web/v2.js`, inline.
+  Na v2-3 só a landing tem o marcador; jogadores e prancheta recebem a marcação nova do `topo_do_site` (cabra C, três
+  links, sem GitHub) com o CSS delas, e a altura do topo não muda (o canvas da prancheta fica igual). A v2-4 e a v2-5
+  põem o marcador nas outras páginas.
+- Os textos da landing saem de `scripts/build_site.TEXTOS_DA_LANDING` (decisão 18); os três números e a linha do corpus,
+  do `numeros_citaveis.json` (37). A partida de exemplo (`partida_de_exemplo`, mesmo critério) é o primeiro card, em
+  destaque (`data-exemplo`); as classes dos cards ficaram as mesmas, e `impressao_da_landing` dá as mesmas linhas.
+- O agente: `dashboard/web/agente/agente-{tr,ct}.js` e os quadros fixos (`-text` no `.gitattributes`), com o sha256 em
+  `dashboard/web/agentes.manifesto.json` (teste `test_agente.py`); o build copia só os `.js` para `agente/`; o tocador
+  (`dashboard/web/agente.js`) e o sorteio vão inline; `?agente=ct|tr` força o lado. `scripts/converte_agente.py` não roda no
+  build, nenhum teste o importa e ele recusa corte de privacidade acima de y 590 (TR) e 545 (CT).
+- Os pontos das laterais (Mirage e Dust II) saem de `scripts/design/gera_pontos.mascara`, que lê o radar do `.json` (o PNG
+  não existe no CI), no build, em `data:` dentro do CSS; determinístico (teste `test_gera_pontos.py`).
+- A captura do replay (`replay.png`) continua só como `og:image` (até a v2-6); `replay.webp` deixou de existir.
+- A landing ainda sai com `TEMA_DA_LANDING = "escuro"`: o claro depende do OK do Pedro para mudar
+  `tests/test_tokens.py::test_paginas_geradas_nao_deixam_marcador_e_carregam_so_as_duas_familias`, que exige o escuro.
+
 **Medido na v2-1 (2026-10-25, Chrome no Windows, `file://`):** com a CSP do site, a Geist e a Geist Mono chegam
 a `loaded` na landing, numa partida e na prancheta, sem violação; com `font-src 'none'` (controle) as duas são
 bloqueadas e a violação aparece. Um `<script src="agente/agente-tr.js">` criado pelo JS depois da carga também

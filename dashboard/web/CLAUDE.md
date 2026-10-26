@@ -15,6 +15,8 @@ valem lá também.
   `title` (8d)
 - Páginas abrem como arquivo local, sem CDN nem Google Fonts: Geist e Geist Mono em `fontes/` (o build
   copia de `dashboard/web/fontes/`), no máximo 2 famílias; `gera_fontes`/`mede_fallback` não rodam no build (48)
+- CSS novo da v2 só em `v2.css` (marcador `/*__V2__*/`), comportamento comum em `v2.js`; agente: só o sorteado é
+  baixado, sha256 no `agentes.manifesto.json`, `converte_agente` fora do build e dos testes (48)
 - Escolhas da nota 44 ("Como ficou na implementação") são deliberadas: página da partida sem o topo
   do site, coluna Mira com o texto do Python, mínimos de `jogadores.html`; não "corrija" de volta (44)
 - Aba Placar: "Quanto cada round pesou" tem o mesmo eixo X do gráfico de cima (viewBox de 900, pL 32,
