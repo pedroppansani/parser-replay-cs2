@@ -1,0 +1,28 @@
+/* GOAT.demo (decisão 48): CSS novo da v2, injetado pelo marcador V2 de scripts/design_head.aplica; nunca no
+   template.html. Só tokens de tokens.css, nenhuma cor própria. Na v2-3: a navbar flutuante (entrega-v2-goatdemo §5.1)
+   e a folga das âncoras (§8). A marcação vem de scripts/design_head.topo_do_site. */
+html { scroll-padding-top: calc(var(--nav-h) + 16px); }   /* C2: âncora nunca embaixo da navbar */
+
+.pular { position: absolute; left: 8px; top: -80px; z-index: 60; background: var(--acao); color: var(--acao-ink);
+  padding: 10px 16px; border-radius: var(--r-ctl); text-decoration: none; }
+.pular:focus { top: 8px; }
+
+/* a navbar: pílula --superficie com borda --linha, sticky a 12 px do topo */
+.site-topo { position: sticky; top: 12px; z-index: 30; display: flex; align-items: center; gap: 8px;
+  max-width: 1180px; min-height: 56px; margin: 12px auto 0; padding: 6px 6px 6px 14px;
+  background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--r-cab); }
+.site-topo .marca { display: inline-flex; align-items: center; gap: 10px; min-height: var(--toque); flex: none;
+  color: var(--tinta); text-decoration: none; }
+.site-topo .marca svg { display: block; flex: none; }
+.site-nav { display: flex; gap: 2px; margin-left: auto; align-items: center; }
+.site-nav a { display: inline-flex; align-items: center; min-height: var(--toque); padding: 0 14px; flex: none;
+  border-radius: var(--r-ctl); color: var(--tinta-2); text-decoration: none; font-size: var(--t-sm); font-weight: 500;
+  white-space: nowrap; }
+.site-nav a:hover, .site-nav a[aria-current="page"] { background: var(--superficie-2); color: var(--tinta); }
+/* <= 640 px: a pílula vira caixa de raio 24 e os links descem para uma segunda linha que rola dentro dela */
+@media (max-width: 640px) {
+  .site-topo { top: 8px; margin-top: 8px; flex-wrap: wrap; gap: 0; border-radius: 24px; padding: 4px 6px 4px 12px; }
+  .site-nav { order: 3; width: 100%; margin: 0; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+  .site-nav::-webkit-scrollbar { display: none; }
+  .site-nav a { padding: 0 12px; }
+}

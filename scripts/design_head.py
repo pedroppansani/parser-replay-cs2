@@ -20,6 +20,9 @@ FONTES = (("Geist", "geist-latin.woff2"), ("Geist Mono", "geist-mono-latin.woff2
 
 MARCADOR_TOKENS = "/*__TOKENS__*/"
 MARCADOR_FONTES = "<!--__FONTES__-->"
+# O CSS novo da v2 (navbar flutuante) mora em dashboard/web/v2.css, nunca no template.html (plano v2-0 §4.12);
+# entra só na página que tem o marcador (na v2-3, a landing; a v2-4 e a v2-5 levam às outras)
+MARCADOR_V2 = "/*__V2__*/"
 
 
 def tokens_css() -> str:
@@ -39,9 +42,19 @@ def copia_fontes(saida: Path) -> None:
     shutil.copytree(FONTES_DIR, saida / "fontes", dirs_exist_ok=True)
 
 
+def v2_css() -> str:
+    return (WEB / "v2.css").read_text(encoding="utf-8")
+
+
+def v2_js() -> str:
+    """O comportamento comum da v2 (--nav-h, foco abaixo da navbar, diálogo), para ir inline na página."""
+    return (WEB / "v2.js").read_text(encoding="utf-8")
+
+
 def aplica(html: str) -> str:
-    """Troca os dois marcadores pelos tokens e pelas fontes."""
-    return html.replace(MARCADOR_TOKENS, tokens_css()).replace(MARCADOR_FONTES, fontes_html())
+    """Troca os marcadores pelos tokens, pelas fontes e pelo CSS da v2."""
+    return (html.replace(MARCADOR_TOKENS, tokens_css()).replace(MARCADOR_FONTES, fontes_html())
+            .replace(MARCADOR_V2, v2_css()))
 
 
 def _wordmark_liso() -> str:
@@ -51,9 +64,18 @@ def _wordmark_liso() -> str:
     return svg.replace(' role="img" aria-label="GOAT.demo"', ' width="123" height="17" aria-hidden="true" focusable="false"')
 
 
+def _cabra() -> str:
+    """A cabra C da marca a 30 px (entrega-v2-goatdemo §5.1), na cor do texto; o nome acessível fica no link."""
+    svg = (WEB / "marca" / "cabra-c.svg").read_text(encoding="utf-8").strip()
+    return svg.replace(' role="img" aria-label="Cabra Pico"', ' width="30" height="30" aria-hidden="true" focusable="false"')
+
+
 def topo_do_site(atual: str, prancheta: str | None, repo: str) -> str:
-    """O topo do site (entrega-sala-de-demo §7): marca e quatro links -- Partidas, Jogadores, Prancheta, GitHub.
-    `atual` é "partidas", "jogadores" ou "prancheta" (recebe aria-current). O CSS fica em cada página."""
+    """A navbar do site (entrega-v2-goatdemo §5.1): a marca (cabra C + wordmark, leva à landing) e três links --
+    Partidas, Jogadores, Prancheta --, sem GitHub nem botão de ação (o GitHub fica no rodapé da landing, dúvida 1
+    do plano). `atual` é "partidas", "jogadores" ou "prancheta" (recebe aria-current). Com o `v2.css` (marcador
+    /*__V2__*/) ela flutua em pílula; sem ele, cada página a desenha com o CSS dela. `repo` fica na assinatura
+    para as páginas que chamam."""
     from html import escape as e
     # fora da landing, "Partidas" desce direto para a grade (index.html#partidas)
     links = [("partidas", "index.html" if atual == "partidas" else "index.html#partidas", "Partidas"),
@@ -62,6 +84,6 @@ def topo_do_site(atual: str, prancheta: str | None, repo: str) -> str:
         links.append(("prancheta", prancheta, "Prancheta"))
     nav = "".join(f'<a href="{e(h)}"{" aria-current=\"page\"" if k == atual else ""}>{t}</a>' for k, h, t in links)
     return (f'<header class="site-topo">\n'
-            f'    <a class="marca" href="index.html" aria-label="GOAT.demo, início">{_wordmark_liso()}</a>\n'
-            f'    <nav class="site-nav" aria-label="Principal">{nav}<a href="{e(repo)}">GitHub</a></nav>\n'
+            f'    <a class="marca" href="index.html" aria-label="GOAT.demo, início">{_cabra()}{_wordmark_liso()}</a>\n'
+            f'    <nav class="site-nav" aria-label="Principal">{nav}</nav>\n'
             f'  </header>')
