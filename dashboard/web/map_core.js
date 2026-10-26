@@ -408,7 +408,7 @@ window.MapCore = (function () {
     ctx.shadowColor = corComAlfa("contorno", 0.55);
     ctx.shadowBlur = 3;
     ctx.fillStyle = col;
-    ctx.strokeStyle = corComAlfa("tinta", 0.95);
+    ctx.strokeStyle = corComAlfa("tinta-mapa", 0.95);
     ctx.lineWidth = 1.2;
     ctx.lineJoin = "round";
 
@@ -429,7 +429,7 @@ window.MapCore = (function () {
       ctx.shadowBlur = 0;
       ctx.beginPath();
       ctx.arc(0, 0, r * 0.3, 0, Math.PI * 2);
-      ctx.fillStyle = corComAlfa("tinta", 0.95);
+      ctx.fillStyle = corComAlfa("tinta-mapa", 0.95);
       ctx.fill();
     } else if (kind === "he") {
       // Anel serrilhado, VAZADO. Cheio virava uma bolota no tamanho em que ela
@@ -447,7 +447,7 @@ window.MapCore = (function () {
       ctx.stroke();
       ctx.shadowBlur = 0;
       ctx.lineWidth = 0.9;
-      ctx.strokeStyle = corComAlfa("tinta", 0.85);
+      ctx.strokeStyle = corComAlfa("tinta-mapa", 0.85);
       ctx.stroke();
     } else if (kind === "molotov") {
       // Gota com a ponta na direção do voo: é o único tipo em que a orientação
