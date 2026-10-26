@@ -25,9 +25,9 @@ from metrics.player_profile import ROTULOS_DAS_TAXAS
 from metrics.structural_roles import FUNCOES
 from metrics.tactics import relogio as relogio_do_jogo
 
-# O endereço de "como é conferido": a seção 7 do material de calibração, no repositório.
-REPO = "https://github.com/pedroppansani/parser-replay-cs2"
-COMO_E_CONFERIDO = "MATERIAL_DE_CALIBRACAO.md#7-erros-na-aba-perfil"
+# O endereço de "como é conferido": a "Metodologia" no rodapé da própria página (v2-4, pedido do Pedro: um
+# lugar DO SITE, sem link externo nem e-mail; o site não tem página de método própria).
+COMO_E_CONFERIDO = "#foot"
 
 TEXTOS = {
     "eyebrow": "Onde errou e como melhorar",
@@ -42,8 +42,10 @@ TEXTOS = {
     "uma_vez": "aconteceu uma vez, abaixo do mínimo de 2 para virar ponto a melhorar",
     "normal_funcao": "dentro do normal para a função",
     "normal_lado": "dentro do normal para os jogadores de {lado}",
-    "em_validacao": "Em validação: os tipos de erro aparecem depois de conferidos",
-    "como_e_conferido": "como é conferido",
+    # texto do estado vazio da v2 (entrega-v2-goatdemo §5.4, aceito pelo Pedro, dúvida 8 do plano v2-0)
+    "em_validacao": ("Ainda estamos conferindo estas leituras com partidas reais. Elas aparecem aqui quando "
+                     "estiverem validadas."),
+    "como_e_conferido": "Como é conferido",
     "rotulo_em_validacao": "em validação",
     "aviso_preview": ("Pré-visualização: nenhum destes tipos de erro foi conferido ainda. Todos estão em validação e "
                       "esta página não é publicada."),
@@ -352,7 +354,7 @@ def bloco(payload: dict, ocorrencias: pl.DataFrame | None, *, cabecalho: dict | 
     return {
         "textos": TEXTOS,
         "estado": estado,
-        "link_como_e_conferido": f"{(repo or REPO).rstrip('/')}/blob/main/{COMO_E_CONFERIDO}",
+        "link_como_e_conferido": COMO_E_CONFERIDO,
         "degradado": ("▲ " + "; ".join(degradado)) if degradado else "",
         "padrao": padrao,
         "tipos": [{"id": t, "titulo": E.TITULOS[t]} for t in na_tela],

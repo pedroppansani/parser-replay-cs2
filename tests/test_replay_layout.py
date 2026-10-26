@@ -159,12 +159,13 @@ def test_a_peca_do_replay_tem_o_anel_duplo(navegador, pagina_html):
         r = pg.evaluate("""() => {
             const c = document.createElement('canvas'); c.width = c.height = 60;
             const g = c.getContext('2d');
-            MapCore.desenhaJogador(g, 30, 30, {cor: getComputedStyle(document.documentElement).getPropertyValue('--ct').trim(),
+            MapCore.desenhaJogador(g, 30, 30, {cor: getComputedStyle(document.documentElement).getPropertyValue('--ct-mapa').trim(),
                                                estado: 'vivo', hp: 100, nome: ''});
             const px = x => Array.from(g.getImageData(x, 30, 1, 1).data.slice(0, 3));
             return [px(30), px(30 + 7), px(30 + 9)]; }""")
         # ±2 por canal: o Chromium do CI arredonda a borda suavizada um nível diferente do Chrome local
         perto = lambda px, cor: max(abs(a - b) for a, b in zip(px, hexa(tk[cor]))) <= 2  # noqa: E731
-        assert perto(r[0], "ct") and perto(r[1], "contorno") and perto(r[2], "tinta"), r
+        # v2-4 (OK do Pedro): a página é clara e o canvas lê os tokens do mapa (decisão 48)
+        assert perto(r[0], "ct-mapa") and perto(r[1], "contorno") and perto(r[2], "tinta-mapa"), r
     finally:
         ctx.close()

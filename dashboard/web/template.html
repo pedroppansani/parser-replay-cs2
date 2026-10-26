@@ -3785,7 +3785,7 @@
       if (PF.estado === "em_validacao") {
         mel += "<div class='aviso-bloco neutro' id='pf-em-validacao' role='note'><span class='ico' aria-hidden='true'>–</span><p>" +
           "<span class='tag neutro validacao'>" + esc(T.rotulo_em_validacao) + "</span> " + esc(T.em_validacao) +
-          " · <a href='" + esc(PF.link_como_e_conferido) + "'>" + esc(T.como_e_conferido) + "</a></p></div>";
+          " <a href='" + esc(PF.link_como_e_conferido) + "'>" + esc(T.como_e_conferido) + "</a></p></div>";
       } else {
         if (PF.estado === "preview") mel += "<p class='pfnota'>" + esc(T.aviso_preview) + "</p>";
         mel += j.melhorar.length ? "<ol class='pflista'>" + j.melhorar.map(itemMelhorar).join("") + "</ol>"
