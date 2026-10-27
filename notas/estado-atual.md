@@ -67,17 +67,27 @@ de `notas/PENDENCIAS_PARA_O_PEDRO.md` e nas notas de decisão).
 | Cartão 5: tick da soltura pelo projétil nas demos da FACEIT (piora 0, +447 botões, 2.390 comandos mudam), versão 30 | `4f1407a7` |
 | v2-1 (base da GOAT.demo): fontes Geist no site, tokens em dois temas (o site fica no escuro de hoje), CSP sem Google Fonts, nota 48 | `abe79b27` |
 | v2-2 (marca): cabra C e wordmark, favicon, títulos "· GOAT.demo · Replay de CS2", README | `d67f831e` |
+| v2-3 + v2-4 juntas (OK do Pedro após a prévia): navbar flutuante, landing no claro com agente, partida e jogadores no claro, abas gooey, moldura do mapa, Perfil em pílulas | `52bafe77` |
 | `fix-tickrate-resto`: tickrate lido da demo em todo lugar, sem mudar nenhum número (sha256 dos dados igual ao da `main`); contagem de testes 1.678 | `47c0f840` |
 
 ## Em andamento
 
-Nada.
+Nada. Pendências da v2 já anotadas nos cartões 14 e 15 de `notas/PENDENCIAS_PARA_O_PEDRO.md`:
 
-- Para a v2-4 (pedir autorização ao Pedro): `tests/test_acessibilidade.py::test_dim_tem_contraste…` lê o primeiro `--apagado` do `tokens.css`; na v2-1 o bloco escuro ficou primeiro para ele seguir intacto. O `template.html` ainda lê `--tinta`/`--fundo` do tema para o canvas do replay (v2-4); o `ct`/`tr` da prancheta ainda não usam os `-mapa` (v2-5); sobra `'DM Sans'` em `map_core.js`; `aceite.py` ainda procura "JetBrains" (v2-7).
+- Cartão 14: comparação por grupos no Perfil (fase própria depois da v2, regra de empate do Pedro). Cartão 15: regra de tamanho
+  do mapa do protótipo (muda os pixels dos 3 quadros do Replay).
+- Para a v2-5: o `ct`/`tr` do canvas da prancheta ainda não usam os `-mapa`; a moldura da partida acompanha o escuro violeta;
+  o canvas da prancheta muda de tamanho com a navbar flutuante.
+- Para a v2-7: `aceite.py`, `capturas_readme.py` e `interacao.py` ainda procuram `btn-partida`/"JetBrains"; `--f-cond` ainda no
+  template; `test_acessibilidade.py::test_dim_tem_contraste…` lê o primeiro `--apagado` do `tokens.css` (o bloco escuro está
+  primeiro); `Content-Encoding` dos `.js` dos agentes no Pages; fallback da fonte mono no macOS.
+- **Pedido do Pedro para a v2-7 (2026-10-27):** ao rolar, o conteúdo aparece POR CIMA da navbar flutuante (no Perfil a 1440 px
+  dá para ver a borda do placar; a 375 px, a pílula "começou TR"). Ver se o espaço acima da navbar deve ter o fundo da página
+  e mostrar o antes e depois na prévia da v2-7.
 
 ## Fila (na ordem; o Pedro mudou em 2026-10-24)
 
-1. A v2 (GOAT.demo), v2-1 e v2-2 FEITAS (próxima: v2-3 + v2-4, com o portão do OK do Pedro), plano aprovado em `C:/Users/User/Desktop/Claude outputs/PLANO-v2-0.md`: v2-1 base (não
+1. A v2 (GOAT.demo), v2-1, v2-2, v2-3 e v2-4 FEITAS (próxima: v2-5 prancheta, com o portão do OK do Pedro depois da prévia), plano aprovado em `C:/Users/User/Desktop/Claude outputs/PLANO-v2-0.md`: v2-1 base (não
    muda a aparência; o escuro atual vira `data-tema="escuro"`), v2-2 marca, v2-3 e v2-4 em sequência numa branch de
    integração e para a `main` no mesmo push, v2-5 e v2-6 em paralelo depois de a v2-4 mesclar o `map_core.js`, v2-7
    verificação final. Condições de cada fase: suíte verde, impressão dos números idêntica, só as capturas e os
