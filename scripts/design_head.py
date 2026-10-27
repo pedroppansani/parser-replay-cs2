@@ -21,7 +21,7 @@ FONTES = (("Geist", "geist-latin.woff2"), ("Geist Mono", "geist-mono-latin.woff2
 MARCADOR_TOKENS = "/*__TOKENS__*/"
 MARCADOR_FONTES = "<!--__FONTES__-->"
 # O CSS novo da v2 (navbar flutuante) mora em dashboard/web/v2.css, nunca no template.html (plano v2-0 §4.12);
-# entra só na página que tem o marcador (na v2-3, a landing; a v2-4 e a v2-5 levam às outras)
+# entra só na página que tem o marcador (desde a v2-5, todas: landing, partida, jogadores e prancheta)
 MARCADOR_V2 = "/*__V2__*/"
 
 

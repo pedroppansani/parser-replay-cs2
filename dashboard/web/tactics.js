@@ -3276,6 +3276,8 @@ var Prancheta = (function () {
       });
       abas.appendChild(b);
     });
+    // a bolha do gooey (entrega-v2 §7) por baixo das abas: só forma, quem a move é o v2.js pelo aria-selected
+    abas.appendChild(el("span", { class: "goo", "aria-hidden": "true" }, [el("span", { class: "bolha" })]));
     lado.appendChild(abas);
     var paineis = {};
     ABAS_DO_PAINEL.forEach(function (a) {

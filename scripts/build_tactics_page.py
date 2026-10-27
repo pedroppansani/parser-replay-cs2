@@ -96,7 +96,7 @@ def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | Non
     mapas = [{"mapa": m, "nome": rotulos.get(m, m), "arquivo": arquivo_da_pagina(m), "corpus": m in corpus}
              for m in mapas_disponiveis()]
     from scripts.build_web_page import REPO
-    from scripts.design_head import topo_do_site
+    from scripts.design_head import topo_do_site, v2_js
     from scripts.design_head import aplica  # tokens e fontes (decisão 44)
     return aplica(
         (WEB / "tactics.html").read_text(encoding="utf-8")
@@ -104,6 +104,7 @@ def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | Non
         .replace("/*__TACTICS_CSS__*/", (WEB / "tactics.css").read_text(encoding="utf-8"))
         .replace("<!--__TITULO__-->", f"Prancheta tática · {rotulos.get(mapa, mapa)} · {MARCA}")
         .replace("<!--__TOPO__-->", topo_do_site("prancheta", arquivo_da_pagina(mapa), REPO))
+        .replace("/*__V2_JS__*/", v2_js())   # antes do dado: o JS da v2 entra como texto, sem marcador sobrando
         .replace("/*__MAP_CORE__*/", (WEB / "map_core.js").read_text(encoding="utf-8"))
         .replace("/*__TACTICS_JS__*/", (WEB / "tactics.js").read_text(encoding="utf-8"))
         .replace("/*__MAPA__*/null", _js(mapa))
