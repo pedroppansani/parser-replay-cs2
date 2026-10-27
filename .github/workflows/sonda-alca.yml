@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ref: ["a6b738e0", "e94bba68"]   # main com a v2-5 | main antes da v2-5 (controle)
+        ref: ["a6b738e0da442807bb8761c2ef43ea1398db29fd", "e94bba68db9ad31eb410bbd3f1afe222a4dab2fa"]   # main com a v2-5 | main antes da v2-5 (controle)
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
