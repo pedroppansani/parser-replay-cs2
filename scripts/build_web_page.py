@@ -357,12 +357,26 @@ def build_html(match_id: str, site: dict | None = None, base: Path | None = None
             html = html.replace('<a href="jogadores.html" id="link-jogadores" hidden></a>',
                                 f'<a href="jogadores.html" id="link-jogadores" title="{_html.escape(j["aviso"])}">'
                                 f'{_html.escape(j["texto"])}</a>')
-    from scripts.meta_da_pagina import meta_tags, url_do_site
+    from scripts.meta_da_pagina import imagem_da_partida, meta_tags, url_do_site
     html = html.replace("<!--__META__-->", meta_tags(
-        titulo, descricao_da_pagina(match_id, base), url_do_site((site or {}).get("repo")), f"{match_id}.html"))
+        titulo, descricao_da_pagina(match_id, base), url_do_site((site or {}).get("repo")), f"{match_id}.html",
+        imagem=imagem_da_partida(match_id)))
+    html = html.replace("<!--__CARREGANDO__-->", carregando_html(map_name))
     html = html.replace("/*__SITE__*/", js(site) + " ||" if site else "")
     from scripts.design_head import aplica
     return aplica(html)  # tokens, fontes e o CSS da v2 (decisões 44 e 48)
+
+
+# O esqueleto do Replay enquanto a página monta (v2-6, dúvida 5 do plano v2-0, opção B): a máscara de pontos do mapa
+# da partida e esta frase, sem porcentagem (não há progresso para medir). Some pelo v2.js; `?estado=carregando` o fixa.
+TEXTO_CARREGANDO = "Carregando a partida…"
+
+
+def carregando_html(mapa: str) -> str:
+    from scripts.design.gera_pontos import RADARS, data_uri
+    m = f' style="--m:url({data_uri(mapa)})"' if (RADARS / f"{mapa}.json").exists() else ""
+    return (f'<div class="carregando" id="carregando" role="status"{m}><i aria-hidden="true"></i>'
+            f'<span>{TEXTO_CARREGANDO}</span></div>')
 
 
 def build(match_id: str) -> Path:

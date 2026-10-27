@@ -63,7 +63,7 @@ def test_paginas_tem_favicon_e_open_graph():
     landing = build_index([], "https://github.com/pedroppansani/parser-replay-cs2", [], numeros=None, imagem=None)
     for html in (landing, prancheta("de_mirage", site="https://pedroppansani.github.io/parser-replay-cs2/")):
         assert 'rel="icon"' in html and "og:title" in html and "og:description" in html
-        assert 'property="og:image" content="https://pedroppansani.github.io/parser-replay-cs2/replay.png"' in html
+        assert 'property="og:image" content="https://pedroppansani.github.io/parser-replay-cs2/og/landing.png"' in html
     assert FAVICON.startswith("data:image/svg+xml,")
 
 

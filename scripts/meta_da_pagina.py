@@ -2,9 +2,9 @@
 lugar só, usado pela landing, pelas páginas de partida e pela prancheta.
 
 O favicon é um SVG embutido (data URI): as páginas continuam autocontidas e
-abrem como arquivo local. A imagem do Open Graph é a captura do replay que o
-site já publica (`replay.png`); ela só existe no site, então sem URL do site a
-página sai sem `og:image`.
+abrem como arquivo local. A imagem do Open Graph (v2-6, decisão 48) é a de compartilhamento 1200x630 gerada no
+build (`scripts/design/gera_og.py`, em `og/`): a da partida na página da partida e a da landing nas outras. Ela só
+existe no site, então sem URL do site a página sai sem `og:image`.
 """
 from __future__ import annotations
 
@@ -19,7 +19,14 @@ from scripts.csp import meta_csp
 _FAVICON_SVG = " ".join((Path(__file__).resolve().parents[1] / "dashboard" / "web" / "marca" / "cabra-c.svg")
                         .read_text(encoding="utf-8").replace("currentColor", "#0a0a0a").split())
 FAVICON = "data:image/svg+xml," + quote(_FAVICON_SVG, safe="/:=' ")
-IMAGEM_OG = "replay.png"
+IMAGEM_OG = "og/landing.png"           # a da landing, também a de jogadores e da prancheta
+
+
+def imagem_da_partida(match_id: str) -> str:
+    return f"og/{match_id}.png"
+
+
+TAMANHO_OG = (1200, 630)
 # o nome do site no fim de todo <title> e og:title (entrega-v2-goatdemo §1: nunca "GOAT" sozinho)
 MARCA = "GOAT.demo · Replay de CS2"
 
@@ -35,9 +42,9 @@ def url_do_site(repo_url: str | None) -> str | None:
 
 
 def meta_tags(titulo: str, descricao: str, site: str | None = None, pagina: str = "",
-              hosts_de_conexao: list[str] | None = None) -> str:
+              hosts_de_conexao: list[str] | None = None, imagem: str = IMAGEM_OG) -> str:
     """As linhas do <head>: a CSP (primeiro: só vale para o que vem depois dela), favicon, descrição e Open Graph
-    (com imagem só no site). `hosts_de_conexao`: origens extras do `connect-src`, só da prancheta com grupo
+    (com imagem só no site; `imagem` é o caminho relativo dela no site). `hosts_de_conexao`: origens extras do `connect-src`, só da prancheta com grupo
     (scripts/csp.py)."""
     e = lambda s: html.escape(s, quote=True)  # noqa: E731
     linhas = [
@@ -50,6 +57,8 @@ def meta_tags(titulo: str, descricao: str, site: str | None = None, pagina: str 
     ]
     if site:
         linhas += [f'<meta property="og:url" content="{e(site + pagina)}">',
-                   f'<meta property="og:image" content="{e(site + IMAGEM_OG)}">',
+                   f'<meta property="og:image" content="{e(site + imagem)}">',
+                   f'<meta property="og:image:width" content="{TAMANHO_OG[0]}">',
+                   f'<meta property="og:image:height" content="{TAMANHO_OG[1]}">',
                    '<meta name="twitter:card" content="summary_large_image">']
     return "\n".join(linhas)
