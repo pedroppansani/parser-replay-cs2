@@ -115,6 +115,7 @@ body:has(.pr-cab) > .site-topo, .pr-cab, .grade { width: min(1156px, 100% - 44px
   body:has(.pr-cab) > .site-topo, .pr-cab, .grade { width: calc(100% - 32px); }
   .pr-cab .pr-aviso-celular { margin-inline: 0; }
   .grade .pr-tela { padding-inline: 0; }   /* o mapa continua com a largura de antes (343 px a 375) */
+  .grade .palco .pr-barra { padding-inline: 4px; }   /* o Reproduzir de largura cheia continua com 335 px ou mais a 375 */
 }
 .pr-cab h1 { font-family: var(--f-texto); font-stretch: normal; text-transform: none; letter-spacing: -.01em;
   font-weight: var(--peso-forte); }
