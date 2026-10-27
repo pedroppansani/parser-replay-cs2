@@ -161,3 +161,15 @@ body:has(.pr-cab) > .site-topo, .pr-cab, .grade { width: min(1156px, 100% - 44px
 /* pontinhos de status (§5.5), sempre com a palavra ao lado: online cheio --decisivo, offline vazio */
 .ponto-status { width: 10px; height: 10px; }
 .gr-membro .ponto-status.on { background: var(--decisivo); border-color: var(--decisivo); }
+
+/* Carregando (v2-6; plano v2-0, dúvida 5 B): o esqueleto do Replay com a máscara de pontos do mapa, sem porcentagem,
+   por cima do canvas enquanto a página monta; o v2.js o esconde (hidden) e `?estado=carregando` o fixa. Não mexe no
+   canvas: fica em cima dele, sem ocupar lugar. */
+.mapwrap .carregando { position: absolute; inset: 0; z-index: 5; background: var(--radar); pointer-events: none; }
+.mapwrap .carregando[hidden] { display: none; }
+.carregando i { position: absolute; inset: 10% 10% 18%; -webkit-mask: var(--m) center / contain no-repeat;
+  mask: var(--m) center / contain no-repeat; background: linear-gradient(100deg, var(--borda) 42%, var(--tinta-2) 50%,
+  var(--borda) 58%) 0 0 / 300% 100%; opacity: 0.6; animation: carrega 2.4s linear infinite; }
+.carregando span { position: absolute; left: 0; right: 0; bottom: 8%; text-align: center; font-size: var(--t-xs); color: var(--apagado); }
+@keyframes carrega { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+@media (prefers-reduced-motion: reduce) { .carregando i { animation: none; } }

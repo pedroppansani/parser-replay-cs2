@@ -51,6 +51,15 @@
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { posiciona(false); });
   });
 
+  /* Carregando (v2-6, dúvida 5 B): o esqueleto do Replay (#carregando, posto pelo build na partida) some quando a página
+     termina de carregar (os scripts montaram o Replay e o radar decodificou); sem porcentagem. `?estado=carregando`
+     o deixa na tela (teste e captura). */
+  var esqueleto = document.getElementById('carregando');
+  if (esqueleto && !/[?&]estado=carregando(&|$)/.test(location.search)) {
+    var some = function () { requestAnimationFrame(function () { esqueleto.hidden = true; }); };
+    if (document.readyState === 'complete') some(); else window.addEventListener('load', some);
+  }
+
   /* "Adicionar demo" (§5.7): <dialog> com foco no "Fechar"; Esc e clique fora fecham; o foco volta ao botão */
   var dlg = document.getElementById('dlg-demo'), gatilho = null;
   if (dlg && dlg.showModal) {
