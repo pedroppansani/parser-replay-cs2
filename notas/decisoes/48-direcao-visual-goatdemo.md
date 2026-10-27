@@ -115,6 +115,10 @@ continua `replay.png` até a v2-6.
 - A moldura (`.palco`) tem raio 20 e a barra de cima e a linha do tempo acompanham; o canvas mantém o raio e as cores
   (lê `ct-mapa`/`tr-mapa` desde a v2-5) e muda de tamanho só porque a navbar flutuante ocupa mais altura. O relógio
   grande vai a 42 px acima de 640 px (32 px no celular, como antes).
+- A navbar, o cabeçalho e a grade da prancheta têm a largura e a margem da partida (1156 px de conteúdo; 16 px de cada
+  lado no celular), pedido do Pedro; só a margem do lado muda, o mapa não muda de tamanho por isso. Com a navbar o mapa
+  do quadro `prancheta_fixture_p2` (janela 1300 x 950) passou de 480 a 453 px (aceito pelo Pedro: escolha A); com a
+  janela de 977 px, do mesmo tamanho, é idêntico pixel a pixel. A 1366 x 768 o mapa cabe inteiro sem rolar.
 - `.ponto-status` (o ponto de online/offline do Grupo, com a palavra ao lado): online cheio em `--decisivo`, offline vazio.
 
 **Medido na v2-1 (2026-10-25, Chrome no Windows, `file://`):** com a CSP do site, a Geist e a Geist Mono chegam

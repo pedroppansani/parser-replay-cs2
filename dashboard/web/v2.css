@@ -106,6 +106,16 @@ select#media, select#adiciona { border-radius: var(--r-ctl); padding: 0 14px; }
    antes ficam (os testes clicam neles); o canvas não muda de cor (lê os *-mapa) nem de raio. */
 .site-nav a[aria-current] { box-shadow: none; }   /* o sublinhado do topo antigo da prancheta (tactics.css) sai */
 .pr-cab { max-width: none; padding-top: 12px; }
+/* a navbar, o cabeçalho e a grade com a largura e a margem da partida (pedido do Pedro): 1156 px de conteúdo, como a
+   .shell de 1200 px com 22 px de cada lado; no celular, 16 px de cada lado, como em jogadores.html. Só a margem do
+   lado muda: a altura (e com ela o tamanho do mapa) fica a mesma. */
+body:has(.pr-cab) > .site-topo, .pr-cab, .grade { width: min(1156px, 100% - 44px); max-width: none; margin-inline: auto; }
+.pr-cab, .grade { padding-inline: 0; }
+@media (max-width: 640px) {
+  body:has(.pr-cab) > .site-topo, .pr-cab, .grade { width: calc(100% - 32px); }
+  .pr-cab .pr-aviso-celular { margin-inline: 0; }
+  .grade .pr-tela { padding-inline: 0; }   /* o mapa continua com a largura de antes (343 px a 375) */
+}
 .pr-cab h1 { font-family: var(--f-texto); font-stretch: normal; text-transform: none; letter-spacing: -.01em;
   font-weight: var(--peso-forte); }
 .pr-cab select { border-radius: var(--r-ctl); padding: 0 14px; }
