@@ -446,3 +446,37 @@ O texto original do cartão:
 - **O que preciso de você:** se quer a regra do protótipo (mapa maior em telas grandes, até 640 px) ou se o
   tamanho de hoje fica.
 - **Fora do computador:** nada.
+
+---
+
+## 16. O texto do escuro em branco `#ffffff`, como no protótipo (OPCIONAL)
+
+- **O que é:** na v2-5 o `--tinta` do escuro violeta (prancheta e moldura do mapa da partida) ficou no `#e8edf2` de antes;
+  o protótipo da v2 (§2.1) usa `#ffffff`. Sua escolha (2026-10-27): fica o `#e8edf2`; o branco é opcional.
+- **O que custa:** uma linha no tema escuro do `tokens.css` e uma linha no `tests/test_v2_paginas.py` (o teste compara o
+  `--tinta-mapa` da partida com o `--tinta` do escuro), mais as saídas fixadas da paleta. O canvas não muda (lê o
+  `--tinta-mapa`).
+- **O que preciso de você:** só se quiser o branco.
+- **Fora do computador:** nada.
+
+---
+
+## 17. Teste instável dependente da ordem: `test_grupos_convite.py` (resolver ANTES da parte B dos grupos)
+
+- **O que é:** `test_um_clique_entra_no_grupo` e `test_editar_o_nick_antes_do_clique_entra_com_o_nick_editado` às vezes
+  esperam 30 s e falham ("Nenhum grupo com esse código": a segunda página não acha a sala que a primeira criou na
+  SalaFalsa). Sozinho, o arquivo passa sempre (3 de 3 na `main`). Não bloqueia a v2 (decisão sua, 2026-10-27). Não pode
+  ser marcado para pular nem ganhar nova tentativa automática: tem de ser resolvido.
+- **Como reproduzir** (na `main`, 2026-10-27: falhou em 2 de 3 rodadas; logs `notas/logs/v2-5-instavel-main-par-*.log`):
+  `py -3.12 -m pytest tests/test_grupos_painel.py tests/test_grupos_convite.py -q -p no:cacheprovider`
+  Também falhou na `main` com `py -3.12 -m pytest tests/test_prancheta_acabamento_browser.py tests/test_prancheta_design_e.py
+  tests/test_grupos_painel.py tests/test_grupos_convite.py tests/test_grupos_browser.py tests/test_tokens.py
+  tests/test_v2_paginas.py tests/test_acessibilidade.py -q -p no:cacheprovider` (`notas/logs/v2-5-combo-main.log`; na
+  repetição passou). Na branch `v2-5-prancheta` falhou na suíte inteira (`py -3.12 -m pytest tests/`,
+  `notas/logs/v2-5-suite.log`) e nessa mesma sequência de 8 arquivos (`notas/logs/v2-5-testes-prancheta.log`); o par de
+  dois arquivos passou 3 de 3 lá. O CI da branch passou.
+- **Suspeita:** o contexto do navegador é compartilhado entre os arquivos (fixture `contexto` de `test_tactics_browser`) e a
+  SalaFalsa guarda o servidor no `localStorage` de `file://`; o estado deixado pelo `test_grupos_painel` (ou o tempo) faz a
+  sala criada não ser vista pela segunda página.
+- **O que preciso de você:** nada; é trabalho meu antes da parte B.
+- **Fora do computador:** nada.
