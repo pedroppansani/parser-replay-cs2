@@ -26,9 +26,9 @@ FONTES_DO_CSS = [WEB / "template.html", WEB / "tactics.css", WEB / "annotations.
                  RAIZ / "scripts" / "build_site.py"]
 
 
-def test_tokens_css_tem_os_valores_do_prototipo_v2_no_claro_e_os_de_hoje_no_escuro():
-    """v2-1 (decisão 48): o claro e a forma são os do protótipo v2; o escuro é o da Sala de demo (as páginas
-    ficam nele e não mudam de cor) e o canvas lê os *-mapa com os valores escuros de hoje."""
+def test_tokens_css_tem_os_valores_do_prototipo_v2_no_claro_e_no_escuro():
+    """v2-1 (decisão 48): o claro e a forma são os do protótipo v2; v2-5: o escuro é o violeta do protótipo v2
+    (menos o texto, no #e8edf2 de antes) e o canvas lê os *-mapa com os valores escuros da Sala de demo."""
     proto_v2 = RAIZ / "notas" / "design" / "prototipo-v2" / "tokens.css"
     claro_do_design, claro = le_tokens(proto_v2, "claro"), le_tokens(tema="claro")
     # a única diferença é deliberada: o texto do mapa fica no #e8edf2 de hoje (plano v2-0 §4.3), não no #ffffff
@@ -37,10 +37,12 @@ def test_tokens_css_tem_os_valores_do_prototipo_v2_no_claro_e_os_de_hoje_no_escu
     do_design, do_projeto = declaracoes(proto_v2.read_text(encoding="utf-8")), declaracoes(TOKENS.read_text(encoding="utf-8"))
     for forma in ("--f-texto", "--f-num", "--r-card", "--r-ctl", "--r-cab", "--r-moldura", "--r-mapa", "--curva", "--nav-h"):
         assert do_projeto[forma] == do_design[forma], forma
+    escuro, violeta = le_tokens(tema="escuro"), le_tokens(proto_v2, "escuro")
+    assert {k for k, v in violeta.items() if escuro.get(k) != v} == {"tinta", "tinta-mapa"}
     sala = (RAIZ / "notas" / "design" / "prototipo" / "tokens.css").read_text(encoding="utf-8")
     de_hoje = dict(re.findall(r"^\s*--([a-z0-9-]+):\s*(#[0-9a-f]{6});", sala, re.M))
-    escuro = le_tokens(tema="escuro")
-    assert {k: escuro[k] for k in de_hoje} == de_hoje
+    nomes = ("tinta", "tinta-2", "apagado", "foco", "fundo")
+    assert {k: escuro[f"{k}-mapa"] for k in nomes} == {k: de_hoje[k] for k in nomes}
 
 
 @pytest.mark.parametrize("arquivo", FONTES_DO_CSS, ids=lambda a: a.name)
@@ -84,9 +86,9 @@ def test_paginas_geradas_nao_deixam_marcador_e_carregam_so_as_duas_familias():
         baixadas = re.findall(r'font-family: "([^"]+)"; src: url\(fontes/([^)]+)\)', html)
         assert baixadas == [(f, a) for f, a in FONTES], nome
         assert html.count("src: url(") == 2, nome
-        # v2-4: landing, partida e jogadores no claro; a prancheta segue no escuro de hoje até a v2-5
+        # v2-4: landing, partida e jogadores no claro; v2-5: a prancheta no escuro violeta
         tema = "escuro" if nome == "prancheta" else "claro"
-        assert f'<html lang="pt-BR" data-tema="{tema}">' in html and "--fundo: #0b0f14" in html, nome
+        assert f'<html lang="pt-BR" data-tema="{tema}">' in html and "--fundo: #04061c" in html, nome
         assert "Geist Fallback" in html and "Geist Mono Fallback" in html, nome
     assert {f for f, _ in FONTES} == {"Geist", "Geist Mono"}
     assert all((FONTES_DIR / a).stat().st_size > 0 for _, a in FONTES) and (FONTES_DIR / "OFL.txt").exists()
@@ -111,7 +113,7 @@ def test_as_cores_das_granadas_do_canvas_vem_dos_tokens(contexto, pagina):
     tk = le_tokens()
     pg = abre(contexto, pagina)
     cores = interno(pg, "MapCore.NADE_COLOR")
-    assert cores == {"smoke": tk["smoke"], "molotov": tk["molotov"], "he": tk["he"], "flash": tk["flash"], "decoy": tk["apagado"]}
+    assert cores == {"smoke": tk["smoke"], "molotov": tk["molotov"], "he": tk["he"], "flash": tk["flash"], "decoy": tk["apagado-mapa"]}
     pg.close()
 
 
@@ -141,6 +143,6 @@ def test_a_peca_da_prancheta_tem_a_cor_do_lado_nos_tokens(contexto, pagina):
     cx, cy = caixa["x"] + px[0] * caixa["width"] / w, caixa["y"] + px[1] * caixa["height"] / w
     img = Image.open(io.BytesIO(pg.screenshot())).convert("RGB")
     rgb = img.getpixel((round(cx), round(cy)))
-    esperado = tuple(int(tk["tr"][i:i + 2], 16) for i in (1, 3, 5))
+    esperado = tuple(int(tk["tr-mapa"][i:i + 2], 16) for i in (1, 3, 5))
     assert rgb == esperado, (rgb, esperado)
     pg.close()

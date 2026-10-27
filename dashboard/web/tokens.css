@@ -3,9 +3,8 @@
    jogadores e na landing, e o validador da paleta (metrics/paleta.py) lê as linhas "--nome: #hex;" daqui, POR
    TEMA (claro, escuro e mapa). Mantenha um token por linha, com o hex de 6 dígitos.
 
-   Tema por página: <html data-tema="claro|escuro">. Na v2-1 TODA página está no escuro, que é o escuro de hoje
-   (Sala de demo) com o nome novo; o claro (notas/design/prototipo-v2/tokens.css) só entra quando uma página
-   inteira mudar (v2-4). O canvas do mapa é SEMPRE escuro e lê só os tokens *-mapa (e as granadas), iguais nos
+   Tema por página: <html data-tema="claro|escuro">. Landing, partida e jogadores no claro (v2-4); a prancheta e a
+   moldura do mapa da partida no escuro violeta (v2-5). O canvas do mapa é SEMPRE escuro e lê só os tokens *-mapa (e as granadas), iguais nos
    dois temas. Especificação: notas/design/entrega-v2-goatdemo.md §2 e §3. */
 
 /* Fallbacks medidos da Geist e da Geist Mono (scripts/design/mede_fallback.py, Chrome no Windows; entrega §3.2):
@@ -16,22 +15,23 @@
 @font-face{font-family:"Geist Mono Fallback";src:local("Consolas");font-weight:100 500;size-adjust:109.13%;ascent-override:92.09%;descent-override:27.03%;line-gap-override:0.00%}
 @font-face{font-family:"Geist Mono Fallback";src:local("Consolas Bold");font-weight:600 900;size-adjust:109.13%;ascent-override:92.09%;descent-override:27.03%;line-gap-override:0.00%}
 
-/* ---------------- ESCURO (o escuro de hoje, da Sala de demo, com o nome novo; o violeta da prancheta é a v2-5) ---------------- */
+/* ---------------- ESCURO VIOLETA (entrega §2.1, v2-5): a prancheta e a moldura do mapa da partida ---------------- */
 /* `:root[data-tema="escuro"]` pesa mais que o `:root` do claro: o escuro vale na página escura qualquer que seja
-   a ordem. Ele vem primeiro porque é o tema de todas as páginas hoje (v2-1). */
+   a ordem. Os lados, os estados e o --tinta ficam nos valores de antes (o --tinta em #e8edf2, e não no #ffffff do
+   protótipo: tests/test_v2_paginas.py o compara com o --tinta-mapa; trocar é escolha do Pedro). */
 :root[data-tema="escuro"], [data-tema="escuro"] {
   color-scheme: dark;
 
-  --fundo: #0b0f14;
-  --superficie: #121820;
-  --superficie-2: #1a222d;
-  --tl-fundo: #0e131a;
+  --fundo: #04061c;
+  --superficie: #0c0a2b;
+  --superficie-2: #15153d;
+  --tl-fundo: #080a24;
 
   --tinta: #e8edf2;
-  --tinta-2: #aab5c1;
-  --apagado: #8b97a5;
-  --linha: #222b37;
-  --borda: #66758a;
+  --tinta-2: #b4b4bb;
+  --apagado: #9b9ba4;
+  --linha: #292a4d;
+  --borda: #6a6ca0;
   --foco: #ffffff;
 
   --ct: #4a90e8;
@@ -42,8 +42,11 @@
   --decisivo: #2fae7c;
   --aviso: #ffea3d;
   --erro: #ff6b6b;
-  --acao: #ffffff;           /* novo na v2 (sem uso no escuro de hoje): o branco do --foco com o fundo por cima */
-  --acao-ink: #0b0f14;
+  --acao: #ffffff;           /* botão principal e aba ativa */
+  --acao-ink: #04061c;
+  --quente-1: #ffb4a0;       /* só o "Reproduzir" da prancheta, uma vez por tela (degradê de --quente-1 a --quente-2) */
+  --quente-2: #ff3a63;
+  --quente-ink: #04061c;     /* o texto do "Reproduzir" */
 
   --vitoria: var(--tinta);
   --link: var(--tinta);

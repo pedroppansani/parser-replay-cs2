@@ -1,4 +1,4 @@
-tokens lidos de tokens.css: 33
+tokens lidos de tokens.css: 36
 tema: mapa
 criterios: texto >= 4.5:1 e marca >= 3.0:1 contra os fundos onde a cor aparece; dE daltonico >= 8.0 no pior par de cada grupo
 fundos: radar #0f141b (canvas do mapa), fundo-mapa #0b0f14 (imagem exportada do mapa)

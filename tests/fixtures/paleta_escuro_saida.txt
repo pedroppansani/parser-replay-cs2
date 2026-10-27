@@ -1,27 +1,28 @@
-tokens lidos de tokens.css: 33
+tokens lidos de tokens.css: 36
 tema: escuro
 criterios: texto >= 4.5:1 e marca >= 3.0:1 contra os fundos onde a cor aparece; dE daltonico >= 8.0 no pior par de cada grupo
-fundos: fundo #0b0f14 (página), superficie #121820 (cards e painéis), superficie-2 #1a222d (elevado: hover, aba ativa, popover, aviso), tl-fundo #0e131a (linha do tempo (replay e prancheta))
+fundos: fundo #04061c (página), superficie #0c0a2b (cards e painéis), superficie-2 #15153d (elevado: hover, aba ativa, popover, aviso), tl-fundo #080a24 (linha do tempo (replay e prancheta))
 
 == CONTRASTE ==
-tinta        #e8edf2  texto >= 4.5  fundo 16.32  superficie 15.14  superficie-2 13.60  tl-fundo 15.82   PASSA
-tinta-2      #aab5c1  texto >= 4.5  fundo  9.23  superficie  8.57  superficie-2  7.70  tl-fundo  8.95   PASSA
-apagado      #8b97a5  texto >= 4.5  fundo  6.47  superficie  6.00  superficie-2  5.39  tl-fundo  6.27   PASSA
-borda        #66758a  marca >= 3.0  fundo  4.10  superficie  3.80  superficie-2  3.42   PASSA
-foco         #ffffff  marca >= 3.0  fundo 19.22  superficie 17.84  superficie-2 16.02  tl-fundo 18.64   PASSA
-ct           #4a90e8  marca >= 3.0  fundo  5.90  superficie  5.48  superficie-2  4.92  tl-fundo  5.72   PASSA
-ct-texto     #6ea8f2  texto >= 4.5  fundo  7.82  superficie  7.26  superficie-2  6.52   PASSA
-tr           #e0a23a  marca >= 3.0  fundo  8.60  superficie  7.98  superficie-2  7.17  tl-fundo  8.34   PASSA
-tr-texto     #e9b65a  texto >= 4.5  fundo 10.34  superficie  9.60  superficie-2  8.62   PASSA
-decisivo     #2fae7c  texto >= 4.5  fundo  6.83  superficie  6.34  superficie-2  5.70  tl-fundo  6.63   PASSA
-aviso        #ffea3d  texto >= 4.5  fundo 15.64  superficie 14.52  superficie-2 13.04  tl-fundo 15.17   PASSA
-erro         #ff6b6b  texto >= 4.5  fundo  6.93  superficie  6.43  superficie-2  5.77   PASSA
-acao-ink     #0b0f14  texto >= 4.5  acao 19.22   PASSA
-fundo        #0b0f14  texto >= 4.5  ct  5.90  tr  8.60  decisivo  6.83  aviso 15.64  tinta 16.32   PASSA
-smoke        #d1d9e0  marca >= 3.0  tl-fundo 13.06   PASSA
-flash        #f9f5b8  marca >= 3.0  tl-fundo 16.67   PASSA
-he           #ff4da6  marca >= 3.0  tl-fundo  6.09   PASSA
-molotov      #d65d00  marca >= 3.0  tl-fundo  4.81   PASSA
+tinta        #e8edf2  texto >= 4.5  fundo 17.01  superficie 16.30  superficie-2 14.78  tl-fundo 16.52   PASSA
+tinta-2      #b4b4bb  texto >= 4.5  fundo  9.72  superficie  9.31  superficie-2  8.44  tl-fundo  9.44   PASSA
+apagado      #9b9ba4  texto >= 4.5  fundo  7.27  superficie  6.96  superficie-2  6.31  tl-fundo  7.06   PASSA
+borda        #6a6ca0  marca >= 3.0  fundo  4.07  superficie  3.90  superficie-2  3.54   PASSA
+foco         #ffffff  marca >= 3.0  fundo 20.04  superficie 19.20  superficie-2 17.41  tl-fundo 19.46   PASSA
+ct           #4a90e8  marca >= 3.0  fundo  6.15  superficie  5.89  superficie-2  5.34  tl-fundo  5.97   PASSA
+ct-texto     #6ea8f2  texto >= 4.5  fundo  8.15  superficie  7.81  superficie-2  7.08   PASSA
+tr           #e0a23a  marca >= 3.0  fundo  8.97  superficie  8.59  superficie-2  7.79  tl-fundo  8.71   PASSA
+tr-texto     #e9b65a  texto >= 4.5  fundo 10.79  superficie 10.33  superficie-2  9.37   PASSA
+decisivo     #2fae7c  texto >= 4.5  fundo  7.12  superficie  6.83  superficie-2  6.19  tl-fundo  6.92   PASSA
+aviso        #ffea3d  texto >= 4.5  fundo 16.31  superficie 15.62  superficie-2 14.16  tl-fundo 15.83   PASSA
+erro         #ff6b6b  texto >= 4.5  fundo  7.22  superficie  6.92  superficie-2  6.27   PASSA
+acao-ink     #04061c  texto >= 4.5  acao 20.04   PASSA
+fundo        #04061c  texto >= 4.5  ct  6.15  tr  8.97  decisivo  7.12  aviso 16.31  tinta 17.01   PASSA
+smoke        #d1d9e0  marca >= 3.0  tl-fundo 13.63   PASSA
+flash        #f9f5b8  marca >= 3.0  tl-fundo 17.40   PASSA
+he           #ff4da6  marca >= 3.0  tl-fundo  6.36   PASSA
+molotov      #d65d00  marca >= 3.0  tl-fundo  5.03   PASSA
+quente-ink   #04061c  texto >= 4.5  quente-1 11.73  quente-2  5.76   PASSA
 
 == DALTONISMO (pior par de cada grupo) ==
 graficos (decisao 10)      dE normal  39.4 [tr x decisivo]  dE daltonico  12.3 [tr x decisivo (protanopia)]  PASSA
@@ -33,3 +34,4 @@ molotov #d65d00 x tr #e0a23a: normal  22.0  protanopia  19.1  deuteranopia  12.3
 molotov #d65d00 x decisivo #2fae7c: normal  55.4  protanopia  21.4  deuteranopia  18.7   PASSA
 
 RESULTADO: PASSA
+

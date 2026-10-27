@@ -186,6 +186,8 @@ PALETA_SO_ESCURO = [
     ("flash",      "marca", ["tl-fundo"]),
     ("he",         "marca", ["tl-fundo"]),
     ("molotov",    "marca", ["tl-fundo"]),
+    # v2-5: o texto do "Reproduzir" da prancheta sobre as duas pontas do degradê quente (entrega §2.1)
+    ("quente-ink", "texto", ["quente-1", "quente-2"]),
 ]
 GRUPOS_TEMA = {
     "graficos (decisao 10)": ["ct", "tr", "decisivo"],
