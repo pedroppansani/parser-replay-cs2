@@ -23,18 +23,11 @@ jobs:
           cache: pip
       - run: pip install -r requirements-dev.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Traz a sonda e roda
+      - name: Traz a sonda e roda 3 vezes
         run: |
           git fetch origin sonda-alca-ci
           git checkout FETCH_HEAD -- tests/test_sonda_alca.py
-          echo "=== REF ${{ matrix.ref }} ==="
-          python -m pytest -q -s -p no:cacheprovider tests/test_sonda_alca.py 2>&1 | grep -E "inicio|passo|fim|passed|failed" || true
-      - name: 20 repeticoes de cada teste
-        run: |
-          for t in test_girar_pela_alca_ate_90_aponta_para_cima test_desfazer_e_refazer_voltam_ao_estado_exato_em_cada_operacao; do
-            ok=0; falhou=0
-            for i in $(seq 1 20); do
-              if python -m pytest -q -p no:cacheprovider "tests/test_tactics_browser.py::$t" > /tmp/r.log 2>&1; then ok=$((ok+1)); else falhou=$((falhou+1)); tail -3 /tmp/r.log | head -2; fi
-            done
-            echo "RESULTADO ref=${{ matrix.ref }} teste=$t passou=$ok falhou=$falhou"
+          for i in 1 2 3; do
+            echo "=== REF ${{ matrix.ref }} rodada $i ==="
+            python -m pytest -q -s -p no:cacheprovider tests/test_sonda_alca.py 2>&1 | grep -E "SONDA|passed|failed" || true
           done
