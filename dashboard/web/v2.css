@@ -75,8 +75,9 @@ html { scroll-padding-top: calc(var(--nav-h) + 16px); }   /* C2: âncora nunca e
 .stage { --anel: var(--superficie); }
 .board[data-tema="escuro"] { background: var(--radar); color: var(--tinta); border-radius: var(--r-moldura);
   border-color: var(--linha); box-shadow: 0 0 0 6px var(--anel); padding: 0 6px 12px; }
-/* atrás dos cantos arredondados do canvas fica a --superficie do escuro, como antes: nenhum pixel do quadro muda */
-.board[data-tema="escuro"] .mapwrap { background: var(--superficie); }
+/* atrás dos cantos arredondados do canvas fica o --entorno-mapa (a --superficie do escuro de antes, que não segue o
+   violeta da v2-5): nenhum pixel do quadro muda */
+.board[data-tema="escuro"] .mapwrap { background: var(--entorno-mapa); }
 .board[data-tema="escuro"] .transport { background: var(--radar); border-radius: 0 0 12px 12px; }
 .board[data-tema="escuro"] .play { background: var(--tinta); color: var(--contorno); }
 @media (max-width: 1000px) { .stage { gap: 20px 14px; } }
@@ -99,3 +100,64 @@ select#media, select#adiciona { border-radius: var(--r-ctl); padding: 0 14px; }
   border-color: var(--acao); }
 #pilulas .pilula button { border-radius: 0 var(--r-ctl) var(--r-ctl) 0; }
 #graficos .metrica, #graficos .vazio, .shell > .aviso { border-radius: var(--r-card); }
+
+/* ================= v2-5: a prancheta no escuro violeta (entrega-v2-goatdemo §5.5) ================= */
+/* Tudo preso a .pr-cab e .grade (só a prancheta os tem): a barra de desenho da partida não muda. Ids e classes de
+   antes ficam (os testes clicam neles); o canvas não muda de cor (lê os *-mapa) nem de raio. */
+.site-nav a[aria-current] { box-shadow: none; }   /* o sublinhado do topo antigo da prancheta (tactics.css) sai */
+.pr-cab { max-width: none; padding-top: 12px; }
+/* a navbar, o cabeçalho e a grade com a largura e a margem da partida (pedido do Pedro): 1156 px de conteúdo, como a
+   .shell de 1200 px com 22 px de cada lado; no celular, 16 px de cada lado, como em jogadores.html. Só a margem do
+   lado muda: a altura (e com ela o tamanho do mapa) fica a mesma. */
+body:has(.pr-cab) > .site-topo, .pr-cab, .grade { width: min(1156px, 100% - 44px); max-width: none; margin-inline: auto; }
+.pr-cab, .grade { padding-inline: 0; }
+@media (max-width: 640px) {
+  body:has(.pr-cab) > .site-topo, .pr-cab, .grade { width: calc(100% - 32px); }
+  .pr-cab .pr-aviso-celular { margin-inline: 0; }
+  .grade .pr-tela { padding-inline: 0; }   /* o mapa continua com a largura de antes (343 px a 375) */
+  .grade .palco .pr-barra { padding-inline: 4px; }   /* o Reproduzir de largura cheia continua com 335 px ou mais a 375 */
+}
+.pr-cab h1 { font-family: var(--f-texto); font-stretch: normal; text-transform: none; letter-spacing: -.01em;
+  font-weight: var(--peso-forte); }
+.pr-cab select { border-radius: var(--r-ctl); padding: 0 14px; }
+.pr-aviso-mapa, .pr-aviso-celular { border-radius: var(--r-card); }
+
+/* o mapa na moldura (raio 20): a barra em cima e a linha do tempo embaixo acompanham a curva */
+.grade .palco { border-radius: var(--r-moldura); }
+.grade .pr-barra { border-radius: var(--r-moldura) var(--r-moldura) 0 0; padding: 8px 10px; }
+.grade .pr-linha { border-radius: 0 0 var(--r-moldura) var(--r-moldura); }
+.grade .palco:fullscreen, .grade .palco:fullscreen .pr-barra, .grade .palco:fullscreen .pr-linha { border-radius: 0; }
+/* relógio de 42 px sobre o mapa (§5.5) */
+.grade .pr-relogio-grande { border-radius: var(--r-card); }
+@media (min-width: 641px) { .grade .pr-relogio-grande { font-size: 42px; } }   /* no celular fica nos 32 px de antes */
+
+/* controles em pílula; o texto da barra sai da largura condensada (a Geist não tem) */
+.grade .pr-barra .anot-b, .grade .pr-b, .grade [data-ferramenta], .grade [data-arma], .grade .pr-passo,
+.grade [data-andar], .grade .pr-evento-hora, .grade .pr-funcao, .grade aside select,
+.grade aside input[type=text], .grade aside input[type=number], .grade .pr-evento-nota { border-radius: var(--r-ctl); }
+.grade .pr-barra .anot-b { font-family: var(--f-texto); font-stretch: normal; letter-spacing: 0; padding: 5px 12px; }
+.grade .pr-b, .grade .pr-passo, .grade [data-andar] { padding: 5px 12px; }
+/* "Reproduzir": o único degradê quente da tela (--quente-1 a --quente-2, texto --quente-ink, 5,76:1 no pior ponto) */
+.grade #pr-reproduzir { background: linear-gradient(90deg, var(--quente-1), var(--quente-2)); color: var(--quente-ink);
+  border-color: transparent; font-weight: var(--peso-forte); }
+.grade #pr-reproduzir:hover { border-color: var(--tinta); }
+
+/* painel: cards de raio 16, abas com gooey (pílula --superficie-2 e a bolha --acao, filtro só na troca, v2.js) */
+.grade .caixa, .grade .pr-granada-grande, .grade .pr-ajuda { border-radius: var(--r-card); }
+.grade .pr-abas { position: relative; isolation: isolate; padding: 4px; gap: 2px; border: 1px solid var(--linha);
+  border-radius: var(--r-ctl); background: var(--superficie-2); }
+.grade .pr-abas .goo { position: absolute; top: 0; left: 0; bottom: 0; z-index: 0; pointer-events: none; }
+.grade .pr-abas.movendo .goo { filter: url(#goo); }
+.grade .pr-abas .bolha { position: absolute; top: 4px; bottom: 4px; left: 0; width: 0; border-radius: var(--r-ctl);
+  background: var(--acao); transition: transform 220ms var(--curva), width 220ms var(--curva); }
+.grade .pr-abas [role="tab"] { position: relative; z-index: 1; border-radius: var(--r-ctl); box-shadow: none;
+  font-family: var(--f-texto); font-stretch: normal; text-transform: none; letter-spacing: 0; font-weight: 500;
+  transition: color 220ms; }
+.grade .pr-abas [role="tab"][aria-selected="true"] { color: var(--acao-ink); box-shadow: none; }
+.grade .pr-abas [role="tab"][aria-selected="true"]:focus-visible { outline-color: var(--acao-ink); }
+@media (prefers-reduced-motion: reduce) { .grade .pr-abas .bolha { transition: none; } .grade .pr-abas.movendo .goo { filter: none; } }
+.goo-filtro { position: absolute; width: 0; height: 0; }
+
+/* pontinhos de status (§5.5), sempre com a palavra ao lado: online cheio --decisivo, offline vazio */
+.ponto-status { width: 10px; height: 10px; }
+.gr-membro .ponto-status.on { background: var(--decisivo); border-color: var(--decisivo); }

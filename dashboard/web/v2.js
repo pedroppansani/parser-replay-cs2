@@ -1,4 +1,4 @@
-/* GOAT.demo (decisão 48): comportamento comum da v2, inline na página (a landing; na v2-4 também a partida e jogadores).
+/* GOAT.demo (decisão 48): comportamento comum da v2, inline na página (a landing; na v2-4 a partida e jogadores; na v2-5 a prancheta).
    Adaptado do base.js do protótipo: a navbar (C2), as abas com gooey (§7) e o diálogo "Adicionar demo" (§5.7). Nenhum texto aqui: os textos vêm do Python. */
 (function () {
   'use strict';
@@ -40,7 +40,8 @@
       bolha.style.width = sel.offsetWidth + 'px';
       bolha.style.transform = 'translateX(' + sel.offsetLeft + 'px)';
     }
-    var antes = null;
+    // a aba já escolhida quando o v2.js roda (a prancheta monta as abas antes): a primeira troca também anda
+    var antes = lista.querySelector('[role=tab][aria-selected=true]');
     new MutationObserver(function () {
       var sel = lista.querySelector('[role=tab][aria-selected=true]');
       if (sel !== antes) { posiciona(antes !== null); antes = sel; }

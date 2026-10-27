@@ -14,6 +14,7 @@
 </style>
 <style>
 /*__TACTICS_CSS__*/
+/*__V2__*/
 </style>
 </head>
 <body>
@@ -32,6 +33,8 @@
   </div>
   <aside></aside>
 </div>
+<!-- o filtro do gooey das abas do painel (entrega-v2 §7): só vale durante a troca de aba (.movendo, v2.js) -->
+<svg class="goo-filtro" width="0" height="0" aria-hidden="true" focusable="false"><filter id="goo"><feGaussianBlur in="SourceGraphic" stdDeviation="4"/><feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 28 -12"/></filter></svg>
 <script>
 /*__MAP_CORE__*/
 </script>
@@ -71,5 +74,7 @@
   Prancheta.init(cfg);
 })();
 </script>
+<!-- dashboard/web/v2.js (navbar, --nav-h, gooey), injetado pelo build: depois do init, que monta as abas do painel -->
+<script>/*__V2_JS__*/</script>
 </body>
 </html>

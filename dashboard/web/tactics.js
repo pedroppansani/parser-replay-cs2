@@ -1407,7 +1407,7 @@ var Prancheta = (function () {
       var q = f.pecas[id], c2 = jogoParaPixel(q.x, q.y);
       ctx.globalAlpha = ALFA_FANTASMA * alfaDoAndar(q.nivel);
       // fantasma (§14): sem preenchimento, contorno tracejado na cor do lado, nome em itálico "--tinta-2" + "· real"
-      MapCore.desenhaJogador(ctx, c2[0], c2[1], { cor: cssVar(q.lado === "ct" ? "--ct" : "--tr"), estado: "fantasma", hp: 100,
+      MapCore.desenhaJogador(ctx, c2[0], c2[1], { cor: cssVar(q.lado === "ct" ? "--ct-mapa" : "--tr-mapa"), estado: "fantasma", hp: 100,
                                                   cego: false, nome: rotuloDaPeca(q) + " · real", yaw: q.yaw, escala: ESCALA_PECA,
                                                   rotuloAcima: RAIO_PECA + 6 });
       n++;
@@ -1421,7 +1421,7 @@ var Prancheta = (function () {
       var m = mortos[id], c2 = jogoParaPixel(m.x, m.y);
       ctx.save();
       ctx.globalAlpha = alfaDoAndar(m.nivel);
-      MapCore.desenhaJogador(ctx, c2[0], c2[1], { cor: cssVar(m.lado === "ct" ? "--ct" : "--tr"), estado: "morto", hp: 0,
+      MapCore.desenhaJogador(ctx, c2[0], c2[1], { cor: cssVar(m.lado === "ct" ? "--ct-mapa" : "--tr-mapa"), estado: "morto", hp: 0,
                                                   cego: false, nome: "", yaw: null, escala: ESCALA_PECA });
       ctx.restore();
       S.ultimoDesenho.push({ tipo: "morto", id: id });
@@ -1724,7 +1724,7 @@ var Prancheta = (function () {
     var pos = [p.x, p.y];
     if (editando && S.arrasto && S.arrasto.tipo === "peca" && S.arrasto.id === id) pos = S.arrasto.jogo;
     var c = jogoParaPixel(pos[0], pos[1]);
-    var cor = cssVar(p.lado === "ct" ? "--ct" : "--tr");
+    var cor = cssVar(p.lado === "ct" ? "--ct-mapa" : "--tr-mapa");   // o canvas lê os *-mapa (decisão 48)
     var alfa = alfaDoAndar(p.nivel) * p.alfa, yaw = editando ? yawDaPeca(id, p) : p.yaw;
     // rastro do passo anterior: onde estava e para onde olhava
     if (anterior && (anterior.x !== pos[0] || anterior.y !== pos[1] || anterior.yaw !== yaw)) {
@@ -3276,6 +3276,8 @@ var Prancheta = (function () {
       });
       abas.appendChild(b);
     });
+    // a bolha do gooey (entrega-v2 §7) por baixo das abas: só forma, quem a move é o v2.js pelo aria-selected
+    abas.appendChild(el("span", { class: "goo", "aria-hidden": "true" }, [el("span", { class: "bolha" })]));
     lado.appendChild(abas);
     var paineis = {};
     ABAS_DO_PAINEL.forEach(function (a) {

@@ -1,4 +1,4 @@
-tokens lidos de tokens.css: 33
+tokens lidos de tokens.css: 34
 tema: claro
 criterios: texto >= 4.5:1 e marca >= 3.0:1 contra os fundos onde a cor aparece; dE daltonico >= 8.0 no pior par de cada grupo
 fundos: fundo #ffffff (página), superficie #fafafa (cards e painéis), superficie-2 #f5f5f5 (elevado: hover, aba ativa, popover, aviso), tl-fundo #fafafa (linha do tempo (replay e prancheta))

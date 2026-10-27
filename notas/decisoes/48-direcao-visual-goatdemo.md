@@ -99,6 +99,28 @@ continua `replay.png` até a v2-6.
 - Saiu de `map_core.js` o nome `'DM Sans'` do texto anotado (nunca carregado nem instalado; o texto já caía no
   `system-ui`, mesmo pixel).
 
+**Prancheta no escuro violeta (v2-5).** Regras de build e de forma que a v2-5 deixou:
+- O bloco `[data-tema="escuro"]` do `tokens.css` tem os valores do escuro violeta (entrega §2.1), menos o `--tinta`, que
+  fica no `#e8edf2` de antes (o `tests/test_v2_paginas.py` o compara com o `--tinta-mapa`; o `#ffffff` do protótipo é
+  escolha do Pedro). Os lados, os estados e todos os `*-mapa` não mudam. `--quente-1`, `--quente-2` e `--quente-ink` só
+  existem no escuro e só pintam o "Reproduzir" (`#pr-reproduzir`), uma vez por tela; o `metrics.paleta` mede o
+  `--quente-ink` contra as duas pontas do degradê.
+- A ilha `data-tema="escuro"` da partida (a moldura do mapa) ficou violeta junto (o anel continua a `--superficie` clara);
+  atrás dos cantos arredondados do canvas fica o `--entorno-mapa` (`#121820`, a superfície escura de antes), para os 3
+  quadros do Replay do `compara_capturas` seguirem idênticos (pedido do Pedro: o violeta é só da prancheta, o canvas não muda).
+- `tactics.html` tem o marcador `/*__V2__*/` no fim do CSS e `<script>/*__V2_JS__*/</script>` DEPOIS do `Prancheta.init`
+  (o `v2.js` acha as abas do painel já montadas); o filtro `#goo` é estrutura da página e a bolha (`.goo .bolha`) é posta
+  pelo `montaLateral`. Todo CSS da prancheta no `v2.css` é preso a `.grade`/`.pr-cab`: a barra de desenho da partida
+  não muda. Ids e classes de antes ficam (os testes clicam neles).
+- A moldura (`.palco`) tem raio 20 e a barra de cima e a linha do tempo acompanham; o canvas mantém o raio e as cores
+  (lê `ct-mapa`/`tr-mapa` desde a v2-5) e muda de tamanho só porque a navbar flutuante ocupa mais altura. O relógio
+  grande vai a 42 px acima de 640 px (32 px no celular, como antes).
+- A navbar, o cabeçalho e a grade da prancheta têm a largura e a margem da partida (1156 px de conteúdo; 16 px de cada
+  lado no celular), pedido do Pedro; só a margem do lado muda, o mapa não muda de tamanho por isso. Com a navbar o mapa
+  do quadro `prancheta_fixture_p2` (janela 1300 x 950) passou de 480 a 453 px (aceito pelo Pedro: escolha A); com a
+  janela de 977 px, do mesmo tamanho, é idêntico pixel a pixel. A 1366 x 768 o mapa cabe inteiro sem rolar.
+- `.ponto-status` (o ponto de online/offline do Grupo, com a palavra ao lado): online cheio em `--decisivo`, offline vazio.
+
 **Medido na v2-1 (2026-10-25, Chrome no Windows, `file://`):** com a CSP do site, a Geist e a Geist Mono chegam
 a `loaded` na landing, numa partida e na prancheta, sem violação; com `font-src 'none'` (controle) as duas são
 bloqueadas e a violação aparece. Um `<script src="agente/agente-tr.js">` criado pelo JS depois da carga também
@@ -106,5 +128,4 @@ CARREGA em `file://` com `script-src 'self' 'unsafe-inline'` (a de hoje), sem vi
 precisa de CSP mais frouxa.
 
 **Ficou para as próximas fases:** a escala tipográfica, o `--dur` de 220 ms e os raios do protótipo (os tokens
-de forma novos já têm uso na partida e em jogadores desde a v2-4); `--f-cond` (aponta para a Geist; o template ainda o usa, sem efeito de pixel); o canvas do replay já lê os `*-mapa` (feito na v2-4); `ct`/`tr` do canvas
-da prancheta para `ct-mapa`/`tr-mapa` (v2-5); `scripts/design/aceite.py` ainda procura `JetBrains` (v2-7).
+de forma novos já têm uso na partida e em jogadores desde a v2-4); `--f-cond` (aponta para a Geist; o template ainda o usa, sem efeito de pixel); o canvas do replay já lê os `*-mapa` (feito na v2-4); `scripts/design/aceite.py` ainda procura `JetBrains` (v2-7).

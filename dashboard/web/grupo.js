@@ -760,7 +760,7 @@ var Grupo = (function () {
     var h = '<li class="gr-membro' + (online ? "" : " offline") + '" data-usuario="' + esc(m.usuario) + '">' +
       '<span class="gr-ficha" aria-hidden="true">' + esc(iniciais(m.nick)) + "</span>" +
       '<span class="gr-nome"><span class="gr-quem"><b>' + esc(m.nick) + "</b>" + (souEu ? " (você)" : "") + "</span>" +
-      '<small><span class="gr-online' + (online ? " on" : "") + '" aria-hidden="true"></span>' + (online ? "online" : "offline") +
+      '<small><span class="gr-online ponto-status' + (online ? " on" : "") + '" aria-hidden="true"></span>' + (online ? "online" : "offline") +
       " · " + esc(papel) + "</small></span>";
     if (comControles && !ehLider) {
       if (G.expulsando === m.usuario) {

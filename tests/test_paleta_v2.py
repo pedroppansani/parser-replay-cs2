@@ -34,13 +34,15 @@ def test_o_claro_da_os_contrastes_da_entrega_v2():
     assert {n: pior[n] for n in da_entrega} == da_entrega
 
 
-def test_o_escuro_e_o_de_hoje_e_o_mapa_e_igual_nos_dois_temas():
-    """v2-1: o escuro é o da Sala de demo (as páginas não mudam de cor); o canvas lê os *-mapa, com os valores
-    escuros de hoje (plano v2-0 §4.3), os mesmos nos dois temas."""
+def test_o_escuro_e_o_violeta_e_o_mapa_e_igual_nos_dois_temas():
+    """v2-5: o escuro é o violeta do protótipo v2 (menos o texto, que fica no #e8edf2 de antes); o canvas lê os
+    *-mapa, com os valores escuros da Sala de demo (plano v2-0 §4.3), os mesmos nos dois temas."""
     proto = (RAIZ / "notas" / "design" / "prototipo" / "tokens.css").read_text(encoding="utf-8")
     hoje = dict(re.findall(r"^\s*--([a-z0-9-]+):\s*(#[0-9a-f]{6});", proto, re.M))
     escuro, claro = le_tokens(tema="escuro"), le_tokens(tema="claro")
-    assert {k: escuro[k] for k in hoje} == hoje
+    violeta = le_tokens(RAIZ / "notas" / "design" / "prototipo-v2" / "tokens.css", "escuro")
+    assert {k for k, v in violeta.items() if escuro.get(k) != v} == {"tinta", "tinta-mapa"}
+    assert escuro["tinta"] == hoje["tinta"]
     assert {n: escuro[n] for n in TOKENS_DO_MAPA} == {n: claro[n] for n in TOKENS_DO_MAPA}
     for mapa, de_hoje in (("tinta-mapa", "tinta"), ("tinta-2-mapa", "tinta-2"), ("apagado-mapa", "apagado"),
                           ("foco-mapa", "foco"), ("fundo-mapa", "fundo"), ("ct-mapa", "ct"), ("tr-mapa", "tr"),
