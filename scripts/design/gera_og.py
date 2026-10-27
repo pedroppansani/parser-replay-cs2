@@ -31,6 +31,8 @@ LARGURA, ALTURA = 1200, 630
 FUNDO, TINTA, TINTA_2, PONTOS = (4, 6, 28), (255, 255, 255), (180, 180, 187), (106, 108, 160)
 X, COLUNA = 72, 560            # margem e largura do texto (protótipo: left 72, width 560)
 MAPA_CAIXA = (600, 35, 560)    # x, y e lado do mapa em pontos (protótipo: right 40, top 35, 560 x 560)
+TITULO_PX = 64                 # o h1 do protótipo
+CORES_DO_PNG = 64              # paleta do PNG: fundo, pontos, texto e o antisserrilhado cabem (~25 KB por imagem)
 
 
 @lru_cache(maxsize=None)
@@ -70,7 +72,7 @@ def _base(mapa: str | None) -> tuple[Image.Image, ImageDraw.ImageDraw]:
 def _png(im: Image.Image) -> bytes:
     # paleta adaptativa: o desenho tem poucas cores (fundo, pontos, texto e o antisserrilhado); sem pnginfo nenhum
     buf = io.BytesIO()
-    im.quantize(colors=64, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE).save(buf, "PNG", optimize=True)
+    im.quantize(colors=CORES_DO_PNG, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE).save(buf, "PNG", optimize=True)
     return buf.getvalue()
 
 
@@ -105,7 +107,7 @@ def imagem_da_partida(mapa: str | None, nomes: tuple[str, str], placar: tuple, v
 def imagem_da_landing(mapa: str | None, titulo: str, subtitulo: str) -> bytes:
     """Título grande (quebra na vírgula, como o protótipo) e o subtítulo embaixo."""
     im, d = _base(mapa)
-    grande, peq = _fonte("Geist-600", 64), _fonte("Geist-400", 30)
+    grande, peq = _fonte("Geist-600", TITULO_PX), _fonte("Geist-400", 30)
     y = 160
     for parte in titulo.replace(", ", ",\n").split("\n"):
         d.text((X, y), cabe(parte, grande, COLUNA), font=grande, fill=TINTA)
