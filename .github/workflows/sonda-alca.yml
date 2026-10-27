@@ -1,0 +1,40 @@
+# TEMPORÁRIO (branch sonda-alca-ci, nunca vai para a main): diagnostica os arrastes da prancheta no Linux.
+name: Sonda da alça
+on:
+  push:
+    branches: ["sonda-alca-ci"]
+permissions:
+  contents: read
+jobs:
+  sonda:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ref: ["a6b738e0", "e94bba68"]   # main com a v2-5 | main antes da v2-5 (controle)
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ matrix.ref }}
+          fetch-depth: 0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Traz a sonda e roda
+        run: |
+          git fetch origin sonda-alca-ci
+          git checkout FETCH_HEAD -- tests/test_sonda_alca.py
+          echo "=== REF ${{ matrix.ref }} ==="
+          python -m pytest -q -s -p no:cacheprovider tests/test_sonda_alca.py 2>&1 | grep -E "inicio|passo|fim|passed|failed" || true
+      - name: 20 repeticoes de cada teste
+        run: |
+          for t in test_girar_pela_alca_ate_90_aponta_para_cima test_desfazer_e_refazer_voltam_ao_estado_exato_em_cada_operacao; do
+            ok=0; falhou=0
+            for i in $(seq 1 20); do
+              if python -m pytest -q -p no:cacheprovider "tests/test_tactics_browser.py::$t" > /tmp/r.log 2>&1; then ok=$((ok+1)); else falhou=$((falhou+1)); tail -3 /tmp/r.log | head -2; fi
+            done
+            echo "RESULTADO ref=${{ matrix.ref }} teste=$t passou=$ok falhou=$falhou"
+          done
