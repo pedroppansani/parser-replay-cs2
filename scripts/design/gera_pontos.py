@@ -3,7 +3,8 @@
 Adaptado do `gera_pontos.py` do protótipo: em vez do PNG do radar (fora do git e ausente no CI), lê a imagem em
 base64 de dentro de `assets/radars/<mapa>.json`. A saída é só uma máscara alfa (WebP, ~2 KB), usada no CSS como
 `mask-image` em `data:` (em `file://` a máscara por URL de arquivo não é garantida). Determinístico: mesma
-entrada, mesmos bytes. Na v2-3 só Dust II e Mirage (as laterais da landing); a v2-6 estende para os outros mapas.
+entrada, mesmos bytes. Na v2-3 só Dust II e Mirage (as laterais da landing); desde a v2-6, todo mapa
+com partida no corpus (o carregamento da partida e a imagem de compartilhamento).
 
     py -3.12 -m scripts.design.gera_pontos de_mirage saida.webp     # para conferir a olho
 """
@@ -13,6 +14,7 @@ import base64
 import io
 import json
 import sys
+from functools import lru_cache
 from pathlib import Path
 
 from PIL import Image, ImageDraw
@@ -24,6 +26,7 @@ ALFA_MINIMO = 40      # célula transparente do radar não vira ponto
 LUM_MINIMA = 0.13     # o fundo escuro do radar não vira ponto
 
 
+@lru_cache(maxsize=None)   # o build pede o mesmo mapa a cada página e a cada imagem
 def mascara(mapa: str) -> bytes:
     """A máscara de pontos do radar de `mapa`, em WebP só alfa."""
     radar = json.loads((RADARS / f"{mapa}.json").read_text(encoding="utf-8"))
