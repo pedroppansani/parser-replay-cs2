@@ -55,7 +55,7 @@ na v2-4.
 `goatdemo-liso.svg`, gerados por `scripts/design/gera_marca.py` (não roda no build). O favicon é a cabra C em
 `#0a0a0a` (`scripts/meta_da_pagina.FAVICON`), todo `<title>`/`og:title` termina em `MARCA` ("GOAT.demo · Replay
 de CS2") e o topo atual mostra o wordmark liso a 17 px. Nada de agente, Valve ou CS2 na marca. A `og:image`
-continua `replay.png` até a v2-6.
+foi o `replay.png` até a v2-6 (agora é a imagem de compartilhamento, ver v2-6).
 
 **Landing e navbar (v2-3).** Regras de build que a v2-3 deixou:
 - O CSS novo da v2 mora em `dashboard/web/v2.css` e entra pelo marcador `/*__V2__*/` (`design_head.aplica`), nunca no
@@ -72,7 +72,7 @@ continua `replay.png` até a v2-6.
   build, nenhum teste o importa e ele recusa corte de privacidade acima de y 590 (TR) e 545 (CT).
 - Os pontos das laterais (Mirage e Dust II) saem de `scripts/design/gera_pontos.mascara`, que lê o radar do `.json` (o PNG
   não existe no CI), no build, em `data:` dentro do CSS; determinístico (teste `test_gera_pontos.py`).
-- A captura do replay (`replay.png`) continua só como `og:image` (até a v2-6); `replay.webp` deixou de existir.
+- A captura do replay (`replay.png`) ficou só como `og:image` até a v2-6, que a trocou pela imagem de compartilhamento; `replay.webp` deixou de existir.
 - A landing sai no claro (`TEMA_DA_LANDING`); as outras páginas seguem no escuro até a v2-4 e a v2-5, que vão ao ar
   junto com a v2-3 (o site nunca fica meio claro, meio escuro no ar).
 
@@ -120,6 +120,26 @@ continua `replay.png` até a v2-6.
   do quadro `prancheta_fixture_p2` (janela 1300 x 950) passou de 480 a 453 px (aceito pelo Pedro: escolha A); com a
   janela de 977 px, do mesmo tamanho, é idêntico pixel a pixel. A 1366 x 768 o mapa cabe inteiro sem rolar.
 - `.ponto-status` (o ponto de online/offline do Grupo, com a palavra ao lado): online cheio em `--decisivo`, offline vazio.
+
+**Pontos, imagem de compartilhamento e carregamento (v2-6).** Regras de build que a v2-6 deixou:
+- Máscaras: `scripts/design/gera_pontos.mascara` serve todo mapa com partida no corpus (os 8 de hoje; teste
+  `test_gera_pontos.py` com os 8), com cache por mapa no build. As laterais da landing seguem Mirage e Dust II (`LATERAIS`).
+- Imagem de compartilhamento 1200x630 (dúvida 7: uma por partida, com o placar) e uma da landing, geradas no build por
+  `scripts/design/gera_og.py` em Pillow (sem navegador: o job de build do CI só instala o `requirements.txt`), em `og/`
+  ao lado das páginas (`build_site.gera_imagens_og`). A da partida traz os dois times e os pontos (quem perdeu em
+  `--tinta-2`, como o card da landing), o mapa e o evento (ou FACEIT) e a frase do decisor: nada que o card da landing
+  não mostre. A da landing traz o título de `TEXTOS_DA_LANDING` e a frase `og_frase`, com o Dust II (lateral direita).
+  Texto com as instâncias estáticas da Geist 600/400 e da Geist Mono 500 em `scripts/design/fontes_og/` (geradas uma vez
+  por `gera_fontes.py`, OFL junto; o `fontTools` não entra em nenhum requirements); a marca é o `marca_og.png`
+  versionado (`gera_og --marca` o refaz com o Chrome, fora do build). Determinística, sem bloco de metadado no PNG
+  (teste `test_og.py`); cerca de 25 KB cada, abaixo dos 70 a 95 KB estimados no plano por causa da paleta de 64 cores.
+- `og:image` (`scripts/meta_da_pagina`): a partida aponta para `og/<partida>.png`; a landing, jogadores e a prancheta
+  para `og/landing.png` (`IMAGEM_OG`), com `og:image:width/height`. O build não copia mais o `replay.png`.
+- Carregamento (dúvida 5, opção B): o build põe no marcador `<!--__CARREGANDO__-->` do `template.html` (logo depois do
+  `#map`) o esqueleto `#carregando` com a máscara do mapa da partida e a frase `TEXTO_CARREGANDO` do
+  `build_web_page`, sem porcentagem. Fica por cima do canvas (absoluto, sem ocupar lugar; CSS no `v2.css`) e o `v2.js`
+  o esconde quando a página termina de carregar; `?estado=carregando` o deixa na tela (teste e captura). O canvas, o
+  tamanho do mapa e os pixels dos quadros do `compara_capturas` não mudam.
 
 **Medido na v2-1 (2026-10-25, Chrome no Windows, `file://`):** com a CSP do site, a Geist e a Geist Mono chegam
 a `loaded` na landing, numa partida e na prancheta, sem violação; com `font-src 'none'` (controle) as duas são
