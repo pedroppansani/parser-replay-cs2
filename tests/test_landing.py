@@ -1,5 +1,7 @@
 """A landing: o topo diz o que é o projeto, cita três números que vêm de
-numeros_citaveis.json e dá três caminhos (uma partida, a prancheta, o GitHub)."""
+numeros_citaveis.json e dá duas ações (v2-3, entrega-v2-goatdemo §5.2): "Explorar partidas", que desce para a
+lista (a partida de exemplo é o primeiro card), e "Adicionar demo", que abre o diálogo com o link de Issues; o
+GitHub fica no rodapé."""
 from __future__ import annotations
 
 import json
@@ -53,15 +55,16 @@ def test_o_topo_nao_tem_numero_escrito_a_mao():
     assert not re.search(r"\b\d+ de \d+\b|\b0,\d{2,3}\b", cabecalho)
 
 
-def test_os_tres_botoes_existem_e_os_links_resolvem(landing):
+def test_as_duas_acoes_do_topo_e_os_links_resolvem(landing):
     partidas, _, html = landing
     hrefs = dict(re.findall(r'id="(btn-[a-z]+)" href="([^"]*)"', html))
-    assert set(hrefs) == {"btn-partida", "btn-prancheta", "btn-github"}
-    assert hrefs["btn-partida"] in {m["file"] for m in partidas}
-    assert hrefs["btn-prancheta"] in {p["file"] for p in _pranchetas(partidas)}
-    assert hrefs["btn-github"] == REPO
-    # e todo card aponta para uma partida da lista
-    assert set(re.findall(r'class="mcard cp" data-mapa="[^"]*" data-origem="[^"]*" href="([^"]*)"', html)) == {m["file"] for m in partidas}
+    assert hrefs == {"btn-explorar": "#partidas"} and 'id="partidas"' in html
+    assert re.search(r'<button class="btn" type="button" id="btn-demo" data-abre-demo>', html)
+    assert f'id="link-issue" href="{REPO}/issues"' in html and f'id="link-github" href="{REPO}"' in html
+    # e todo card aponta para uma partida da lista; o primeiro é a partida de exemplo, em destaque
+    cards = re.findall(r'class="mcard cp" data-mapa="[^"]*" data-origem="[^"]*" href="([^"]*)"', html)
+    assert set(cards) == {m["file"] for m in partidas}
+    assert cards[0] == partida_de_exemplo(partidas)["file"] and html.count('data-exemplo="1"') == 1
 
 
 def test_a_partida_de_exemplo_segue_o_criterio_declarado():

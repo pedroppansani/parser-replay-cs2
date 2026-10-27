@@ -36,8 +36,11 @@ def test_sem_tipo_validado_nenhum_erro_vai_para_o_bloco():
     b = _bloco(validados=frozenset())
     assert b["estado"] == "em_validacao" and b["tipos"] == []
     assert all(j["melhorar"] == [] and j["uma_vez"] == [] and j["contagens"] == {} for j in b["jogadores"])
-    assert b["textos"]["em_validacao"] == "Em validação: os tipos de erro aparecem depois de conferidos"
-    assert b["link_como_e_conferido"].endswith("MATERIAL_DE_CALIBRACAO.md#7-erros-na-aba-perfil")
+    # v2-4 (OK do Pedro): o texto do estado vazio da v2 e o link para a Metodologia no rodapé da própria página
+    assert b["textos"]["em_validacao"] == ("Ainda estamos conferindo estas leituras com partidas reais. "
+                                           "Elas aparecem aqui quando estiverem validadas.")
+    assert b["textos"]["como_e_conferido"] == "Como é conferido"
+    assert b["link_como_e_conferido"] == "#foot"
 
 
 def test_com_um_tipo_validado_so_ele_aparece():
@@ -247,8 +250,10 @@ def test_sem_tipo_validado_a_secao_diz_em_validacao_e_detalhes_fecha(navegador, 
     html.write_text(build_html(PARTIDA), encoding="utf-8")
     ctx, pg = _abre(navegador, html, largura=375)
     try:
-        assert "Em validação: os tipos de erro aparecem depois de conferidos" in pg.inner_text("#pf-melhorar")
-        assert pg.locator("#pf-em-validacao a").get_attribute("href").endswith("#7-erros-na-aba-perfil")
+        assert ("Ainda estamos conferindo estas leituras com partidas reais. Elas aparecem aqui quando "
+                "estiverem validadas.") in pg.inner_text("#pf-melhorar")
+        assert pg.locator("#pf-em-validacao a").get_attribute("href") == "#foot"     # do próprio site
+        assert pg.locator("#foot").count() == 1
         assert pg.locator("#pf-melhorar .ponto").count() == 0
         assert not pg.eval_on_selector("#pf-detalhes", "d => d.open")
         # a explicação nunca usa as cores de erro e de aviso para o jogador
@@ -256,8 +261,13 @@ def test_sem_tipo_validado_a_secao_diz_em_validacao_e_detalhes_fecha(navegador, 
                                         "els => els.map(e => getComputedStyle(e).color)")
         raiz = pg.evaluate("() => { const s = getComputedStyle(document.documentElement); "
                            "return [s.getPropertyValue('--erro').trim(), s.getPropertyValue('--aviso').trim()]; }")
-        assert raiz == ["#ff6b6b", "#ffea3d"]
-        assert "rgb(255, 107, 107)" not in cores and "rgb(255, 234, 61)" not in cores
+        # v2-4 (OK do Pedro): a partida é clara; as cores vêm dos tokens do CSS, nunca escritas aqui
+        from metrics.paleta import le_tokens
+        tk = le_tokens(tema="claro")
+        assert raiz == [tk["erro"], tk["aviso"]]
+        rgb = lambda h: f"rgb({int(h[1:3], 16)}, {int(h[3:5], 16)}, {int(h[5:7], 16)})"  # noqa: E731
+        proibidas = {tk["erro"], tk["aviso"], rgb(tk["erro"]), rgb(tk["aviso"])}
+        assert not proibidas & set(cores), cores
         assert pg.evaluate("() => document.documentElement.scrollWidth") <= 375       # uma coluna, sem rolar
         assert pg._erros == []
     finally:

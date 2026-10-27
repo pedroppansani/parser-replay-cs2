@@ -418,3 +418,31 @@ O texto original do cartão:
   e no `rating`, e sem um ponto de partida reproduzível não dá para provar que ela não mudou nenhum
   número. Como mexe no rating, mesmo que só no último dígito, preciso do seu OK.
 - **Fora do computador:** nada.
+
+---
+
+## 14. A comparação por grupos no Perfil, com "quem está à frente" (fica para depois da v2)
+
+- **O que é:** a especificação da v2 (§5.4) desenha uma comparação lado a lado em grupos (Impacto, Abertura,
+  Trocas, Utilidade, Situações), cada linha com o valor e o bruto, a referência anônima da função e uma frase
+  "quem está à frente" ("kairo à frente", "empate na prática", "amostra pequena · sem comparação"). Hoje o
+  "Comparar com" mostra os mesmos tipos de erro e pontos fortes dos dois jogadores, sem frase de quem está melhor.
+- **Por que não entrou na v2-4:** a frase afirma algo de jogo e precisa de uma regra de empate que é sua
+  (dúvida 3 do plano v2-0, opção A agora e B depois, aceita). A v2-4 fez só a forma nova sobre o comportamento de hoje.
+- **O que preciso de você quando chegar a vez:** a regra de "empate na prática" (por exemplo: diferença menor que o
+  erro típico da métrica, ou intervalos que se cruzam) e o mínimo de amostra para "sem comparação".
+- **Fora do computador:** nada.
+
+---
+
+## 15. O tamanho do mapa do Replay pela regra do protótipo (fica para depois)
+
+- **O que é:** o protótipo da v2 (§5.3) dimensiona o mapa por `min(100%, 640px, 100svh − reserva)`, quadrado. Na v2-4
+  o mapa ficou com o tamanho de hoje (sua decisão, 2026-10-26): a largura já segue a altura da tela
+  (`.mapwrap`, reserva de 500 px a partir de 1024 px e 340 px abaixo), com o canvas de 820 × 950.
+- **Por que não mudou:** trocar a regra muda o tamanho do canvas e, com ele, todos os pixels dos três quadros do
+  Replay no `compara_capturas` (o da prancheta não muda). Seria preciso regravar as
+  referências em commit próprio e refazer `mede_radar` e `mede_granada_real`.
+- **O que preciso de você:** se quer a regra do protótipo (mapa maior em telas grandes, até 640 px) ou se o
+  tamanho de hoje fica.
+- **Fora do computador:** nada.

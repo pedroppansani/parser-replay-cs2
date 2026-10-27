@@ -308,8 +308,17 @@ def build_html(match_id: str, site: dict | None = None, base: Path | None = None
     annotations = (TEMPLATE.parent / "annotations.js").read_text(encoding="utf-8")
     annotations_css = (TEMPLATE.parent / "annotations.css").read_text(encoding="utf-8")
 
+    map_name = json.loads((base / "match_meta.json").read_text(encoding="utf-8"))["map_name"]
+    # Botão "Criar tática" e o link Prancheta da navbar: só quando o mapa desta partida tem prancheta. O link
+    # é relativo e funciona igual em dashboard/web/ e em docs/, que têm as duas páginas lado a lado.
+    from scripts.build_tactics_page import arquivo_da_pagina, mapas_disponiveis
+    prancheta = arquivo_da_pagina(map_name) if map_name in mapas_disponiveis() else None
+    from scripts.design_head import topo_do_site, v2_js
     html = (
         TEMPLATE.read_text(encoding="utf-8")
+        # a navbar do site e o comportamento comum da v2 (decisão 48) entram antes do dado
+        .replace("<!--__TOPO__-->", topo_do_site("partida", prancheta, REPO))
+        .replace("/*__V2_JS__*/", v2_js())
         .replace("/*__DATA__*/", payload)
         .replace("/*__REPLAY__*/", replay)
         .replace("/*__BREAKDOWN__*/", breakdown)
@@ -318,7 +327,6 @@ def build_html(match_id: str, site: dict | None = None, base: Path | None = None
         .replace("/*__ANNOTATIONS_CSS__*/", annotations_css)
     )
 
-    map_name = json.loads((base / "match_meta.json").read_text(encoding="utf-8"))["map_name"]
     radar_path = PROJECT_ROOT / "assets" / "radars" / f"{map_name}.json"
     radar_js = ""
     if radar_path.exists():
@@ -332,11 +340,6 @@ def build_html(match_id: str, site: dict | None = None, base: Path | None = None
         # o `||` mantém o `null` do template como fallback quando o mapa não tem radar
         radar_js = js(radar) + " ||"
     html = html.replace("/*__RADAR__*/", radar_js)
-    # Botão "Criar tática": só quando o mapa desta partida tem prancheta. O link
-    # é relativo e funciona igual em dashboard/web/ e em docs/, que têm as duas
-    # páginas lado a lado.
-    from scripts.build_tactics_page import arquivo_da_pagina, mapas_disponiveis
-    prancheta = arquivo_da_pagina(map_name) if map_name in mapas_disponiveis() else None
     html = html.replace("/*__PRANCHETA__*/null", js(prancheta))
     import html as _html
     html = html.replace("/*__PAGINA__*/null", js(dados_da_pagina(match_id, base, (site or {}).get("repo"), preview)))
@@ -359,7 +362,7 @@ def build_html(match_id: str, site: dict | None = None, base: Path | None = None
         titulo, descricao_da_pagina(match_id, base), url_do_site((site or {}).get("repo")), f"{match_id}.html"))
     html = html.replace("/*__SITE__*/", js(site) + " ||" if site else "")
     from scripts.design_head import aplica
-    return aplica(html)  # tokens e fontes da direção "Sala de demo" (decisão 44)
+    return aplica(html)  # tokens, fontes e o CSS da v2 (decisões 44 e 48)
 
 
 def build(match_id: str) -> Path:

@@ -2,3 +2,5 @@
 dashboard/web/vendor/** -text
 # Fontes Geist e a licença OFL (decisão 48): binário e cópia sem mudança, sem conversão de fim de linha
 dashboard/web/fontes/** -text
+# Agentes da landing (decisão 48): o sha256 de cada .js está no manifesto; o git não pode trocar fim de linha
+dashboard/web/agente/** -text
