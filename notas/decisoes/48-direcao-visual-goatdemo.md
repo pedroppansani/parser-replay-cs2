@@ -105,8 +105,9 @@ continua `replay.png` até a v2-6.
   escolha do Pedro). Os lados, os estados e todos os `*-mapa` não mudam. `--quente-1`, `--quente-2` e `--quente-ink` só
   existem no escuro e só pintam o "Reproduzir" (`#pr-reproduzir`), uma vez por tela; o `metrics.paleta` mede o
   `--quente-ink` contra as duas pontas do degradê.
-- A ilha `data-tema="escuro"` da partida (a moldura do mapa) ficou violeta junto: o anel continua a `--superficie` clara,
-  e o canto atrás do canvas arredondado passa do `#121820` ao `#0c0a2b` (os 3 quadros do Replay mudam só nesses cantos).
+- A ilha `data-tema="escuro"` da partida (a moldura do mapa) ficou violeta junto (o anel continua a `--superficie` clara);
+  atrás dos cantos arredondados do canvas fica o `--entorno-mapa` (`#121820`, a superfície escura de antes), para os 3
+  quadros do Replay do `compara_capturas` seguirem idênticos (pedido do Pedro: o violeta é só da prancheta, o canvas não muda).
 - `tactics.html` tem o marcador `/*__V2__*/` no fim do CSS e `<script>/*__V2_JS__*/</script>` DEPOIS do `Prancheta.init`
   (o `v2.js` acha as abas do painel já montadas); o filtro `#goo` é estrutura da página e a bolha (`.goo .bolha`) é posta
   pelo `montaLateral`. Todo CSS da prancheta no `v2.css` é preso a `.grade`/`.pr-cab`: a barra de desenho da partida

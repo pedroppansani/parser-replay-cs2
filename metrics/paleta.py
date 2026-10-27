@@ -208,7 +208,7 @@ PALETA_MAPA = [
     ("tinta-mapa",   "texto", ["radar", "fundo-mapa"]),
     ("tinta-2-mapa", "texto", ["radar"]),
     ("apagado-mapa", "texto", ["radar"]),
-    ("foco-mapa",    "marca", ["radar"]),
+    ("foco-mapa",    "marca", ["radar", "entorno-mapa"]),   # o anel de foco do canvas cai no entorno
 ]
 GRUPOS_MAPA = {"no mapa": ["ct-mapa", "tr-mapa", "smoke", "flash", "he", "molotov", "aviso-mapa"]}
 PARES_MAPA = [("molotov", "tr-mapa")]
@@ -265,7 +265,8 @@ def avalia(tk: dict[str, str], rotulo_da_origem: str, tema: str = TEMA_DAS_PAGIN
     """O relatório completo de um tema (as linhas) e quantas verificações falharam. No "mapa", `outro` são os
     tokens do outro tema: cada token do canvas tem de ter o mesmo valor nos dois."""
     paleta, grupos, pares = regras(tema)
-    fundos = {"radar": "canvas do mapa", "fundo-mapa": "imagem exportada do mapa"} if tema == "mapa" else FUNDOS
+    fundos = {"radar": "canvas do mapa", "fundo-mapa": "imagem exportada do mapa",
+              "entorno-mapa": "atrás dos cantos do canvas, na moldura da partida"} if tema == "mapa" else FUNDOS
     linhas = [f"tokens lidos de {rotulo_da_origem}: {len(tk)}",
               f"tema: {tema}",
               f"criterios: texto >= {LIMIAR['texto']}:1 e marca >= {LIMIAR['marca']}:1 contra os fundos onde a cor aparece; "

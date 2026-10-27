@@ -75,8 +75,9 @@ html { scroll-padding-top: calc(var(--nav-h) + 16px); }   /* C2: âncora nunca e
 .stage { --anel: var(--superficie); }
 .board[data-tema="escuro"] { background: var(--radar); color: var(--tinta); border-radius: var(--r-moldura);
   border-color: var(--linha); box-shadow: 0 0 0 6px var(--anel); padding: 0 6px 12px; }
-/* atrás dos cantos arredondados do canvas fica a --superficie do escuro, como antes: nenhum pixel do quadro muda */
-.board[data-tema="escuro"] .mapwrap { background: var(--superficie); }
+/* atrás dos cantos arredondados do canvas fica o --entorno-mapa (a --superficie do escuro de antes, que não segue o
+   violeta da v2-5): nenhum pixel do quadro muda */
+.board[data-tema="escuro"] .mapwrap { background: var(--entorno-mapa); }
 .board[data-tema="escuro"] .transport { background: var(--radar); border-radius: 0 0 12px 12px; }
 .board[data-tema="escuro"] .play { background: var(--tinta); color: var(--contorno); }
 @media (max-width: 1000px) { .stage { gap: 20px 14px; } }

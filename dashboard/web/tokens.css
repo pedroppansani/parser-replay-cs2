@@ -114,6 +114,7 @@
      fundo são os valores escuros de hoje, para o canvas não mudar de pixel. ---- */
   --radar: #0f141b;          /* fundo do canvas do mapa (peças e granadas) */
   --fundo-mapa: #0b0f14;     /* fundo da imagem exportada do mapa (o carimbo embaixo) */
+  --entorno-mapa: #121820;   /* atrás dos cantos arredondados do canvas do replay (v2-5: não segue o violeta) */
   --tinta-mapa: #e8edf2;     /* rótulos, nomes, relógio e traços no mapa */
   --tinta-2-mapa: #aab5c1;   /* secundário no mapa */
   --apagado-mapa: #8b97a5;   /* rótulo apagado e a granada isca (decoy) */

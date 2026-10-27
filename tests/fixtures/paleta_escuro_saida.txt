@@ -1,4 +1,4 @@
-tokens lidos de tokens.css: 36
+tokens lidos de tokens.css: 37
 tema: escuro
 criterios: texto >= 4.5:1 e marca >= 3.0:1 contra os fundos onde a cor aparece; dE daltonico >= 8.0 no pior par de cada grupo
 fundos: fundo #04061c (página), superficie #0c0a2b (cards e painéis), superficie-2 #15153d (elevado: hover, aba ativa, popover, aviso), tl-fundo #080a24 (linha do tempo (replay e prancheta))
@@ -34,4 +34,3 @@ molotov #d65d00 x tr #e0a23a: normal  22.0  protanopia  19.1  deuteranopia  12.3
 molotov #d65d00 x decisivo #2fae7c: normal  55.4  protanopia  21.4  deuteranopia  18.7   PASSA
 
 RESULTADO: PASSA
-
