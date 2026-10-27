@@ -454,7 +454,8 @@ O texto original do cartão:
 - **O que é:** na v2-5 o `--tinta` do escuro violeta (prancheta e moldura do mapa da partida) ficou no `#e8edf2` de antes;
   o protótipo da v2 (§2.1) usa `#ffffff`. Sua escolha (2026-10-27): fica o `#e8edf2`; o branco é opcional.
 - **O que custa:** uma linha no tema escuro do `tokens.css` e uma linha no `tests/test_v2_paginas.py` (o teste compara o
-  `--tinta-mapa` da partida com o `--tinta` do escuro), mais as saídas fixadas da paleta. O canvas não muda (lê o
+  `--tinta-mapa` da partida com o `--tinta` do escuro), mais as saídas fixadas da paleta e a exceção `tinta` nas
+  comparações com o protótipo de `test_tokens.py` e `test_paleta_v2.py`. O canvas não muda (lê o
   `--tinta-mapa`).
 - **O que preciso de você:** só se quiser o branco.
 - **Fora do computador:** nada.
