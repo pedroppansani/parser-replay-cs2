@@ -1540,7 +1540,26 @@ var Prancheta = (function () {
      --------------------------------------------------------------------- */
   function emTelaCheia() { return MapCore.emTelaCheia($("pr-palco")); }
 
+  /** O mapa não muda de tamanho nem de lugar durante o uso (v2-5b): a barra de cima reserva a altura da maior das
+      suas variantes (o contexto do pincel e o da granada desenhada aparecem e somem com a ferramenta). Medido aqui,
+      na largura de agora, porque o número de linhas da barra depende dela. */
+  function reservaAlturaDaBarra() {
+    var barra = $("pr-barra");
+    if (!barra) return;
+    var grupos = ["pr-contexto-desenho", "pr-contexto-granada"].map($).filter(Boolean);
+    var antes = grupos.map(function (g) { return g.hidden; });
+    barra.style.minHeight = "";
+    var maior = barra.offsetHeight;
+    grupos.forEach(function (g, i) {
+      grupos.forEach(function (o, j) { o.hidden = i !== j; });
+      maior = Math.max(maior, barra.offsetHeight);
+    });
+    grupos.forEach(function (g, i) { g.hidden = antes[i]; });
+    barra.style.minHeight = maior + "px";
+  }
+
   function reprojeta() {
+    reservaAlturaDaBarra();
     var tela = $("pr-tela"), est = getComputedStyle(tela);
     var util = tela.clientWidth - parseFloat(est.paddingLeft) - parseFloat(est.paddingRight);
     // fora da tela cheia, o mapa e a linha do tempo cabem na janela a partir de onde o mapa COMEÇA (§14:
@@ -1550,9 +1569,11 @@ var Prancheta = (function () {
     var alto = emTelaCheia()
       ? tela.clientHeight - parseFloat(est.paddingTop) - parseFloat(est.paddingBottom)
       : window.innerHeight - topo - parseFloat(est.paddingTop) - parseFloat(est.paddingBottom) - 8;
-    // a linha do tempo (8.5) divide a altura com o mapa: os dois cabem juntos
+    // a linha do tempo (8.5) divide a altura com o mapa: os dois cabem juntos. Desconta a altura RESERVADA dela (o
+    // min-height do CSS, a altura com a primeira peça), e não a de agora: criar, desfazer ou refazer uma peça não
+    // muda o mapa (v2-5b); com mais jogadores ela cresce para baixo do mapa
     var linha = $("pr-linha");
-    if (linha && !linha.hidden) alto -= linha.offsetHeight;
+    if (linha) alto -= parseFloat(getComputedStyle(linha).minHeight) || linha.offsetHeight;
     // celular (<= 640 px, §14): o mapa ocupa a largura toda e a página rola até o painel e a linha do tempo
     if (!emTelaCheia() && window.innerWidth <= LARGURA_DO_CELULAR_PX) alto = util;
     if (util <= 0 || alto <= 0) return;
@@ -3364,6 +3385,7 @@ var Prancheta = (function () {
      lugar quando a tabela do mapa sabe (data/lugares, metrics/lugares.py).
      --------------------------------------------------------------------- */
   var LUGARES = null;   // preenchido no init com cfg.lugares (ou null: sem nome)
+  var TEXTOS = {};      // frases de interface que vêm do Python (build_tactics_page.TEXTOS_DA_PRANCHETA)
 
   /** O nome do lugar no ponto (unidades do jogo), ou null. Espelho de
       metrics/lugares.lugar. */
@@ -3569,6 +3591,8 @@ var Prancheta = (function () {
     var atrasos = atrasosDosPontos(e3, S.doc);
     var linhas = ids.map(function (pid) { return [pid, rotuloDaPeca(e3.pecas[pid]), e3.pecas[pid].lado]; });
     if (porJogador[""]) linhas.push(["", "Sem jogador", ""]);
+    // sem jogador nenhum, o lugar reservado da primeira faixa diz o que vai aparecer ali (v2-5b)
+    if (!linhas.length && TEXTOS.linha_vazia) faixas.appendChild(el("p", { class: "pr-faixas-vazio", texto: TEXTOS.linha_vazia }));
     linhas.forEach(function (l) {
       var pid = l[0], funcao = pid && e3.pecas[pid].funcao ? e3.pecas[pid].funcao : "";
       var faixa = el("div", { class: "pr-faixa pr-faixa-jogador", "data-faixa": pid },
@@ -4136,6 +4160,7 @@ var Prancheta = (function () {
     cfg = opcoes;
     M3 = cfg.modelo3;
     LUGARES = cfg.lugares || null;
+    TEXTOS = cfg.textos || {};
     Armazem = opcoes.armazem || ArmazemDoNavegador("prancheta:");
     ANDARES = andaresDoRadar(cfg.radar);
     CENTRO = centroDoRadar(cfg.radar);
@@ -4308,7 +4333,14 @@ var Prancheta = (function () {
     document.addEventListener("fullscreenchange", function () { pedeReprojecao(); atualizaBarra(); });
     document.addEventListener("webkitfullscreenchange", function () { pedeReprojecao(); atualizaBarra(); });
     MapCore.vigiaDensidade(pedeReprojecao);
-    if (window.ResizeObserver) new ResizeObserver(pedeReprojecao).observe($("pr-tela"));
+    // o que fica acima do mapa também é vigiado: se mudar de altura por outro motivo (fonte que chega tarde, o aviso do
+    // mapa), o mapa se reajusta uma vez, no quadro seguinte
+    if (window.ResizeObserver) {
+      var vigia = new ResizeObserver(pedeReprojecao);
+      ["pr-tela", "pr-barra", "pr-dica-estado"].forEach(function (id) { if ($(id)) vigia.observe($(id)); });
+      [".pr-cab", ".site-topo"].forEach(function (s) { var n = document.querySelector(s); if (n) vigia.observe(n); });
+    }
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { pedeReprojecao(); });
     window.addEventListener("pagehide", function () { confirmaGiro(); gravaAgora(); });
 
     // Abre LIMPA ("Criar tática" chega com ?nova), ou a tática aberta nesta aba.
