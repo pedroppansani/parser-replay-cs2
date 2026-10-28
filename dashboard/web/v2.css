@@ -177,6 +177,8 @@ body:has(.pr-cab) > .site-topo, .pr-cab, .grade { width: min(1156px, 100% - 44px
 /* a linha do tempo reserva desde o carregamento a altura que tem com a primeira peça; o tactics.js desconta este
    min-height (e não a altura de agora) do espaço do mapa */
 .grade .pr-linha { min-height: 117px; }
+/* a altura reservada da barra fica embaixo das linhas de botões, e não espalhada entre elas */
+.grade .pr-barra { align-content: flex-start; }
 .pr-faixas-vazio { margin: 0 0 0 138px; min-height: var(--toque); display: flex; align-items: center; padding: 0 14px;
   border: 1px dashed var(--linha); border-radius: var(--r-card); color: var(--apagado); font-size: var(--t-xs); }
 @media (max-width: 640px) {
