@@ -168,7 +168,7 @@ body:has(.pr-cab) > .site-topo, .pr-cab, .grade { width: min(1156px, 100% - 44px
    cabe inteira de 600 px para cima, e o que passar (só em telas estreitas) termina em reticências -- o leitor de tela
    continua lendo tudo (role=status). Antes ela tinha uma linha e quebrava em duas com a seleção (no Linux, sem a Geist),
    e o mapa descia 15 px no meio do arrasto. */
-.grade .palco .pr-dica-estado { line-height: 1.4; height: calc(2 * 1.4em + 13px); overflow: hidden;
+.grade .palco .pr-dica-estado { line-height: 18px; height: 49px; overflow: hidden;   /* 2 x 18 + 12 de folga + 1 de borda: pixel inteiro, o mapa não cai em meio pixel */
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .grade .palco .pr-dica-estado.com-grupo { display: flex; -webkit-line-clamp: unset; }
 .grade .palco .pr-dica-estado.com-grupo .dica-texto { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
@@ -180,8 +180,8 @@ body:has(.pr-cab) > .site-topo, .pr-cab, .grade { width: min(1156px, 100% - 44px
 .pr-faixas-vazio { margin: 0 0 0 138px; min-height: var(--toque); display: flex; align-items: center; padding: 0 14px;
   border: 1px dashed var(--linha); border-radius: var(--r-card); color: var(--apagado); font-size: var(--t-xs); }
 @media (max-width: 640px) {
-  .grade .palco .pr-dica-estado { height: calc(3 * 1.4em + 13px); -webkit-line-clamp: 3; }
-  .grade .palco .pr-dica-estado.com-grupo { height: 6.8rem; }
+  .grade .palco .pr-dica-estado { height: 67px; -webkit-line-clamp: 3; }
+  .grade .palco .pr-dica-estado.com-grupo { height: 109px; }   /* a reserva do grupo.css (6,8rem) em pixel inteiro */
   .grade .palco .pr-dica-estado.com-grupo .dica-texto { -webkit-line-clamp: 4; }
   .pr-faixas-vazio { margin-left: 102px; }
 }

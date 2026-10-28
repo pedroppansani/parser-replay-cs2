@@ -121,6 +121,20 @@ continua `replay.png` até a v2-6.
   janela de 977 px, do mesmo tamanho, é idêntico pixel a pixel. A 1366 x 768 o mapa cabe inteiro sem rolar.
 - `.ponto-status` (o ponto de online/offline do Grupo, com a palavra ao lado): online cheio em `--decisivo`, offline vazio.
 
+**O mapa da prancheta parado durante o uso (v2-5b, pedido do Pedro).** Na `main` da v2-5 o CI Linux falhava no desfazer/refazer
+e no giro pela alça: entre o `mouse.move` e o `mouse.down` a seleção trocava o texto da linha de dica, que sem a Geist (Linux)
+quebrava em duas linhas e descia o mapa 15 px sem reprojetar; a linha do tempo crescia 50 px a cada jogador (o mapa encolhia a
+cada criar, desfazer e refazer) e as ferramentas de desenho punham uma linha a mais na barra (+50 px). Regras:
+- Nada acima do mapa muda de altura com seleção, ferramenta ou peça: a dica tem altura fixa (duas linhas; três no celular;
+  o excesso em reticências, o `role=status` lê tudo); a barra reserva a altura da maior variante (`reservaAlturaDaBarra`,
+  medida na largura atual, a cada reprojeção).
+- A linha do tempo reserva desde o carregamento a altura com a primeira peça (`min-height` de 117 px no `v2.css`), com a
+  frase de `build_tactics_page.TEXTOS_DA_PRANCHETA` ("Os passos aparecem aqui") no lugar da primeira faixa; `reprojeta()`
+  desconta a reserva, nunca a altura de agora; com mais jogadores ela cresce para baixo do mapa.
+- O `ResizeObserver` vigia a tela, a barra, a dica, o cabeçalho e a navbar, e `document.fonts.ready` pede uma reprojeção.
+- Fica de fora: Reproduzir troca a dica pela barra do player (mais alta), e o mapa desce e muda um pouco de tamanho até
+  "Editar" (nada é editável nesse tempo).
+
 **Medido na v2-1 (2026-10-25, Chrome no Windows, `file://`):** com a CSP do site, a Geist e a Geist Mono chegam
 a `loaded` na landing, numa partida e na prancheta, sem violação; com `font-src 'none'` (controle) as duas são
 bloqueadas e a violação aparece. Um `<script src="agente/agente-tr.js">` criado pelo JS depois da carga também
