@@ -125,15 +125,20 @@ continua `replay.png` até a v2-6.
 e no giro pela alça: entre o `mouse.move` e o `mouse.down` a seleção trocava o texto da linha de dica, que sem a Geist (Linux)
 quebrava em duas linhas e descia o mapa 15 px sem reprojetar; a linha do tempo crescia 50 px a cada jogador (o mapa encolhia a
 cada criar, desfazer e refazer) e as ferramentas de desenho punham uma linha a mais na barra (+50 px). Regras:
-- Nada acima do mapa muda de altura com seleção, ferramenta ou peça: a dica tem altura fixa (duas linhas; três no celular;
-  o excesso em reticências, o `role=status` lê tudo); a barra reserva a altura da maior variante (`reservaAlturaDaBarra`,
-  medida na largura atual, a cada reprojeção).
+- Nada acima do mapa muda de altura com seleção, ferramenta ou peça (decisão 2 = C do Pedro, 2026-10-28): a dica tem UMA
+  linha no computador (31 px; três no celular), o excesso em reticências, com o texto inteiro no `title` só quando corta
+  (`tituloDaDica`; o `role=status` lê tudo); a barra não reserva nada: as opções do pincel (cor, espessura) e da granada
+  desenhada (o tipo) saíram dela para a coluna `#pr-opcoes`, na borda direita da tela, ao lado do mapa (espelho do relógio,
+  à esquerda). A coluna tem largura fixa no `v2.css` e existe mesmo invisível (`.vazia`); `reprojeta()` deixa a folga dela
+  (`FOLGA_DAS_OPCOES_PX`) e o mapa nunca passa por baixo: centrado, e só anda para a esquerda quando a sobra de cada lado é
+  menor que a folga. No celular não há desenho à mão: ela não aparece e não reserva nada. No Tab, ela vem logo depois da
+  barra. Mapa a 1366 x 768: 343 px (era 275 com a faixa reservada; 329 na `main` da v2-5, que mudava a cada clique).
 - A linha do tempo reserva desde o carregamento a altura com a primeira peça (`min-height` de 117 px no `v2.css`), com a
   frase de `build_tactics_page.TEXTOS_DA_PRANCHETA` ("Os passos aparecem aqui") no lugar da primeira faixa; `reprojeta()`
   desconta a reserva, nunca a altura de agora; com mais jogadores ela cresce para baixo do mapa.
 - O `ResizeObserver` vigia a tela, a barra, a dica, o cabeçalho e a navbar, e `document.fonts.ready` pede uma reprojeção.
-- Fica de fora: Reproduzir troca a dica pela barra do player (mais alta), e o mapa desce e muda um pouco de tamanho até
-  "Editar" (nada é editável nesse tempo).
+- Fica de fora: Reproduzir troca a dica (31 px) pela barra do player (61 px), e o mapa desce 30 px e fica 30 px menor até
+  "Editar", quando volta ao mesmo tamanho e lugar (nada é editável nesse tempo; na `main` da v2-5 ia de 329 a 430 px).
 
 **Medido na v2-1 (2026-10-25, Chrome no Windows, `file://`):** com a CSP do site, a Geist e a Geist Mono chegam
 a `loaded` na landing, numa partida e na prancheta, sem violação; com `font-src 'none'` (controle) as duas são

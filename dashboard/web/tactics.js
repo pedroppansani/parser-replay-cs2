@@ -90,6 +90,7 @@ var Prancheta = (function () {
   var ALFA_OUTRO_ANDAR = 0.35;  // elemento de outro andar: esmaecido, como no replay
   // duração do efeito, para a faixa listrada da linha do tempo (§14: smoke 18 s, molotov 7 s; convenção do jogo)
   var LARGURA_DO_CELULAR_PX = 640;   // fonte: entrega-sala-de-demo §14 ("Celular (≤ 640 px)")
+  var FOLGA_DAS_OPCOES_PX = 8;       // entre o mapa e a coluna de opções do pincel (v2-5b): o mesmo padding da tela
   var DURACAO_SMOKE_S = 18, DURACAO_MOLOTOV_S = 7;
   var ALFA_FANTASMA = 0.9;      // o fantasma do round real é só o anel tracejado: precisa ler (entrega-sala-de-demo §14)
   var ALFA_RASTRO = 0.3;        // posição e direção do passo anterior
@@ -1540,28 +1541,13 @@ var Prancheta = (function () {
      --------------------------------------------------------------------- */
   function emTelaCheia() { return MapCore.emTelaCheia($("pr-palco")); }
 
-  /** O mapa não muda de tamanho nem de lugar durante o uso (v2-5b): a barra de cima reserva a altura da maior das
-      suas variantes (o contexto do pincel e o da granada desenhada aparecem e somem com a ferramenta). Medido aqui,
-      na largura de agora, porque o número de linhas da barra depende dela. */
-  function reservaAlturaDaBarra() {
-    var barra = $("pr-barra");
-    if (!barra) return;
-    var grupos = ["pr-contexto-desenho", "pr-contexto-granada"].map($).filter(Boolean);
-    var antes = grupos.map(function (g) { return g.hidden; });
-    barra.style.minHeight = "";
-    var maior = barra.offsetHeight;
-    grupos.forEach(function (g, i) {
-      grupos.forEach(function (o, j) { o.hidden = i !== j; });
-      maior = Math.max(maior, barra.offsetHeight);
-    });
-    grupos.forEach(function (g, i) { g.hidden = antes[i]; });
-    barra.style.minHeight = maior + "px";
-  }
-
   function reprojeta() {
-    reservaAlturaDaBarra();
     var tela = $("pr-tela"), est = getComputedStyle(tela);
     var util = tela.clientWidth - parseFloat(est.paddingLeft) - parseFloat(est.paddingRight);
+    // as opções do pincel e da granada desenhada ficam numa coluna na borda direita da tela (v2-5b, decisão 2 do
+    // Pedro): o mapa nunca passa por baixo dela. A coluna tem largura fixa no CSS e existe mesmo vazia (só fica
+    // invisível), então a folga não depende da ferramenta de agora; no celular ela não aparece e não reserva nada
+    var opcoes = $("pr-opcoes"), folga = opcoes && opcoes.offsetWidth ? opcoes.offsetWidth + FOLGA_DAS_OPCOES_PX : 0;
     // fora da tela cheia, o mapa e a linha do tempo cabem na janela a partir de onde o mapa COMEÇA (§14:
     // min(100%, 100svh - reserva)); com o topo do site e a barra de 44 px, "janela - 40" passava da tela e o
     // navegador rolava até a linha do tempo no meio do gesto
@@ -1578,13 +1564,16 @@ var Prancheta = (function () {
     if (!emTelaCheia() && window.innerWidth <= LARGURA_DO_CELULAR_PX) alto = util;
     if (util <= 0 || alto <= 0) return;
     // a proporção é a do radar, nunca a do espaço disponível: nada de mapa esticado
-    var cx = MapCore.caixaDoMapa(cfg.radar, util, Math.max(200, alto));
+    var cx = MapCore.caixaDoMapa(cfg.radar, util - folga, Math.max(200, alto));
     var largura = Math.max(200, Math.floor(cx.largura));
     var altura = Math.round(largura * cfg.radar.height / cfg.radar.width);
     cv.style.width = largura + "px"; cv.style.height = altura + "px";
+    // centrado na tela; só quando a sobra de cada lado é menor que a folga ele anda para a esquerda o que falta
+    cv.style.marginRight = Math.max(0, 2 * folga - (util - largura)) + "px";
     var tam = MapCore.tamanhoInterno(cfg.radar, largura, window.devicePixelRatio || 1);
     if (cv.width !== tam.w || cv.height !== tam.h) { cv.width = tam.w; cv.height = tam.h; }
     S.reprojecoes++;
+    tituloDaDica();   // com outra largura, outra dica pode passar a caber (ou não)
     desenha();
   }
   var pedeReprojecao = null;
@@ -1976,10 +1965,22 @@ var Prancheta = (function () {
     if (g.etiqueta) { var e = el("span", { class: "dica-espaco" }); e.innerHTML = g.etiqueta; d.appendChild(e); }
   }
 
+  /** No computador a dica tem UMA linha e o que não cabe termina em reticências (v2-5b, decisão 2 do Pedro): o texto
+      inteiro fica no `title` (aparece ao passar o mouse), só quando foi cortado; o leitor de tela lê tudo pelo
+      role=status, e um `title` igual ao texto o faria ler duas vezes. */
+  function tituloDaDica() {
+    var d = $("pr-dica-estado");
+    if (!d) return;
+    var t = d.querySelector(".dica-texto") || d;
+    var cortada = t.scrollWidth > t.clientWidth || t.scrollHeight > t.clientHeight;
+    if (cortada) d.title = t.textContent; else d.removeAttribute("title");
+  }
+
   function atualizaDica() {
     var d = $("pr-dica-estado");
     if (d && !ganchos.dica) d.textContent = dicaAtual();
     else if (d) pintaDicaDoGrupo(d);
+    tituloDaDica();
     if (!cv) return;
     var e = estadoDaInteracao();
     cv.style.cursor = (e === "colocando_peca" || e === "granada_origem" || e === "granada_destino" ||
@@ -2797,6 +2798,9 @@ var Prancheta = (function () {
     if (ctxDesenho) ctxDesenho.hidden = !desenho;
     var ctxGranada = $("pr-contexto-granada");
     if (ctxGranada) ctxGranada.hidden = S.ferramenta !== "granada_desenho";
+    // a coluna continua no lugar (a folga do mapa é medida nela), só fica invisível sem opção nenhuma
+    var opcoes = $("pr-opcoes");
+    if (opcoes) opcoes.classList.toggle("vazia", !desenho && S.ferramenta !== "granada_desenho");
     Array.prototype.forEach.call(document.querySelectorAll("[data-arma-desenho]"), function (b) {
       var on = b.getAttribute("data-arma-desenho") === S.armaDesenho;
       b.classList.toggle("ativo", on); b.setAttribute("aria-pressed", String(on));
@@ -3199,7 +3203,14 @@ var Prancheta = (function () {
     });
     barra.appendChild(desenho);
 
-    var contexto = el("div", { class: "anot-grupo sempre", id: "pr-contexto-desenho" });
+    // As opções do pincel (cor e espessura) e da granada desenhada (o tipo) não ficam na barra: aparecer e sumir com a
+    // ferramenta mudava a altura dela e empurrava o mapa. Ficam numa coluna na borda direita da tela, ao lado do mapa
+    // (espelho do relógio grande, à esquerda); reprojeta() deixa a folga dela, e o mapa nunca passa por baixo (v2-5b,
+    // decisão 2 do Pedro). Vem antes do canvas: no Tab, logo depois da barra.
+    var opcoes = $("pr-opcoes") || el("div", { id: "pr-opcoes", class: "pr-opcoes vazia" });
+    if (!opcoes.parentNode) $("pr-tela").insertBefore(opcoes, $("pr-mapa"));
+    limpa(opcoes);
+    var contexto = el("div", { class: "anot-grupo sempre", id: "pr-contexto-desenho", role: "group", "aria-label": "Cor e espessura" });
     cores = MapCore.seletorDeCor({
       estado: S, armazem: MapCore.criaArmazem(), chaveRecentes: CHAVE_RECENTES, maxRecentes: MAX_RECENTES,
       palco: function () { return $("pr-palco"); }, aoMudar: function () { atualizaBarra(); }
@@ -3210,15 +3221,16 @@ var Prancheta = (function () {
         title: "Espessura " + ROTULOS_ESPESSURA[i], onclick: function () { S.espessura = v; atualizaFerramentas(); } }));
     });
     contexto.hidden = true;
-    barra.appendChild(contexto);
-    var contextoGranada = el("div", { class: "anot-grupo sempre", id: "pr-contexto-granada" });
+    opcoes.appendChild(contexto);
+    var contextoGranada = el("div", { class: "anot-grupo sempre", id: "pr-contexto-granada", role: "group",
+                                      "aria-label": "Tipo da granada desenhada" });
     ARMAS_DESENHADAS.forEach(function (a, i) {
       contextoGranada.appendChild(el("button", { "data-arma-desenho": a, class: "pr-b", texto: NOME_ARMA[a],
         title: NOME_ARMA[a] + " desenhada (" + (i + 1) + ")", "aria-pressed": "false",
         onclick: function () { S.armaDesenho = a; atualizaTudo(); } }));
     });
     contextoGranada.hidden = true;
-    barra.appendChild(contextoGranada);
+    opcoes.appendChild(contextoGranada);
 
     barra.appendChild(el("span", { class: "pr-separador", "aria-hidden": "true" }));
 
@@ -3836,6 +3848,7 @@ var Prancheta = (function () {
     S.reproducao = { t: 0, tocando: false, velocidade: 1, cena: null, ultimo: 0, modo: relogio ? "relogio" : "passos" };
     // a barra de edição e o painel ficam à vista a 45% e inertes (§14); o controle é o do player ("Pausar e editar")
     $("pr-barra").setAttribute("inert", ""); $("pr-player").hidden = false;
+    if ($("pr-opcoes")) $("pr-opcoes").setAttribute("inert", "");   // as opções do pincel são parte da barra de edição
     if ($("pr-dica-estado")) $("pr-dica-estado").hidden = true;
     // durante a reprodução nada é editável
     document.querySelector("aside").setAttribute("inert", "");
@@ -3858,6 +3871,7 @@ var Prancheta = (function () {
     if (r.modo === "relogio") S.t = Math.round(r.t * 100) / 100;
     S.reproducao = null;
     $("pr-barra").removeAttribute("inert"); $("pr-player").hidden = true;
+    if ($("pr-opcoes")) $("pr-opcoes").removeAttribute("inert");
     S.ultimoBalao = null;
     if ($("pr-dica-estado")) $("pr-dica-estado").hidden = false;
     document.querySelector("aside").removeAttribute("inert");
