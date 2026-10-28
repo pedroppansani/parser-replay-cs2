@@ -187,6 +187,9 @@ body:has(.pr-cab) > .site-topo, .pr-cab, .grade { width: min(1156px, 100% - 44px
 .grade .pr-opcoes.vazia { visibility: hidden; }
 .grade .pr-opcoes[inert] { opacity: 0.45; }
 .grade .pr-opcoes .anot-grupo { display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
+/* a cor (bolinha, seta e recentes) é o grupo `.anot-cor` do MapCore, que fora da barra ATIVA do Replay (`.anot-barra.ativo`,
+   annotations.css) fica a 45% e sem ponteiro: na prancheta o seletor de cor nunca abria (medido de abe79b2 à main da v2-5) */
+.grade .pr-opcoes .anot-cor { opacity: 1; pointer-events: auto; }
 .grade .pr-opcoes .anot-grupo[hidden] { display: none; }
 .grade .pr-opcoes .anot-cor { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center; }
 .grade .pr-opcoes .anot-recentes { flex: 1 1 100%; flex-wrap: wrap; justify-content: center; margin: 0; }
