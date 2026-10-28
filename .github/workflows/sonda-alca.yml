@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ref: ["a6b738e0da442807bb8761c2ef43ea1398db29fd", "e94bba68db9ad31eb410bbd3f1afe222a4dab2fa"]   # main com a v2-5 | main antes da v2-5 (controle)
+        ref: ["7bdb61493ee0c4155911338cf2856f5c75c77269", "e94bba68db9ad31eb410bbd3f1afe222a4dab2fa"]   # correção v2-5b | main antes da v2-5 (controle)
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
@@ -31,3 +31,16 @@ jobs:
             echo "=== REF ${{ matrix.ref }} rodada $i ==="
             python -m pytest -q -s -p no:cacheprovider tests/test_sonda_alca.py 2>&1 | grep -E "SONDA|passed|failed" || true
           done
+      - name: 20 repeticoes de cada teste
+        run: |
+          for t in test_girar_pela_alca_ate_90_aponta_para_cima test_desfazer_e_refazer_voltam_ao_estado_exato_em_cada_operacao; do
+            ok=0; falhou=0
+            for i in $(seq 1 20); do
+              if python -m pytest -q -p no:cacheprovider "tests/test_tactics_browser.py::$t" > /tmp/r.log 2>&1; then ok=$((ok+1)); else falhou=$((falhou+1)); tail -3 /tmp/r.log | head -2; fi
+            done
+            echo "RESULTADO ref=${{ matrix.ref }} teste=$t passou=$ok falhou=$falhou"
+          done
+      - name: Uma rodada do test_tactics_browser.py inteiro
+        run: |
+          python -m pytest -q -p no:cacheprovider tests/test_tactics_browser.py 2>&1 | tail -15
+          echo "SUITE_TACTICS ref=${{ matrix.ref }} rc=${PIPESTATUS[0]}"

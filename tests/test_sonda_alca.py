@@ -5,7 +5,7 @@ from tests.test_tactics_browser import abre, arrasta_do_banco, interno, no_mapa,
 MEDE = """() => { const c = document.getElementById('pr-mapa'), b = c.getBoundingClientRect(), L = document.getElementById('pr-linha'),
   I = Prancheta._interno, S = I.S, q = I.quadroDoPasso(S.estado, 0, I.centro()), W = I.radar().width, d = Object.keys(q.pecas).map(k => { const m = I.jogoParaPixel(q.pecas[k].x, q.pecas[k].y); return [Math.round(b.x + m[0] * b.width / W), Math.round(b.y + m[1] * b.height / W)]; });
   return {t_ms: Math.round(performance.now()), mapa: [Math.round(b.x), Math.round(b.y), Math.round(b.width), Math.round(b.height)], canvasPx: [c.width, c.height],
-    linha_h: L ? L.offsetHeight : null, reprojecoes: S.reprojecoes, fontes: document.fonts.status, pecas_desenhadas_na_tela: d,
+    linha_h: L ? L.offsetHeight : null, dica: [document.getElementById('pr-dica-estado').offsetHeight, document.getElementById('pr-dica-estado').textContent], barra_h: document.getElementById('pr-barra').offsetHeight, tela_top: Math.round(document.getElementById('pr-tela').getBoundingClientRect().top), reprojecoes: S.reprojecoes, fontes: document.fonts.status, pecas_desenhadas_na_tela: d,
     pecas_no_estado: Object.keys(S.estado.pecas).length, reproducao: !!S.reproducao, sel: S.sel, arrasto: S.arrasto && S.arrasto.tipo}; }"""
 
 
