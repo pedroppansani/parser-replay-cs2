@@ -26,13 +26,28 @@ def pagina(tmp_path_factory):
     return html
 
 
+def grava_nick_salvo(ctx, pagina, nick):
+    """O nick salvo (o de quem já usou grupo antes) é gravado por uma página do mesmo contexto JÁ ABERTA, antes de abrir
+    o link, e não por um script de início (add_init_script): numa página file://, tocar o localStorage no começo do
+    carregamento às vezes faz o Chromium dar à aba um armazenamento SEPARADO das outras abas do contexto. A aba nova não
+    via a sala que a líder gravou (o servidor falso vive no localStorage) e o teste falhava sem defeito no site (cartão 17:
+    numa página de uma linha, 7 e 8 em 100 abas separadas com o script de início; 0 em 100 sem ele)."""
+    abertas = [p for p in ctx.pages if not p.is_closed()]
+    if abertas:
+        semente = abertas[0]                # a página da líder
+    else:
+        semente = ctx.new_page()            # sem líder: a mesma página, sem link de sala (não faz pedido nenhum)
+        semente.goto(pagina.as_uri())
+    semente.evaluate("([chave, nick]) => localStorage.setItem(chave, nick)", [CHAVE_DO_NICK, nick])
+
+
 def abre(ctx, pagina, hash_="", nick_salvo=None):
+    if nick_salvo is not None:
+        grava_nick_salvo(ctx, pagina, nick_salvo)
     pg = ctx.new_page()
     erros = []
     pg.on("pageerror", lambda e: erros.append(str(e)))
     pg.add_init_script(CLIENTES_JS)
-    if nick_salvo is not None:
-        pg.add_init_script(f"try {{ localStorage.setItem({CHAVE_DO_NICK!r}, {nick_salvo!r}); }} catch (e) {{}}")
     pg.goto(pagina.as_uri() + hash_)
     pg.wait_for_function("() => Prancheta._interno.S.estado !== null && !!document.getElementById('pr-painel-grupo')")
     pg._erros = erros
