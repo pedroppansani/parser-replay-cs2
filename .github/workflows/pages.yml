@@ -4,10 +4,10 @@
 # Aqui ele é reconstruído do zero a cada push e vai para o Pages como artefato,
 # que não entra no histórico do git -- quem clona o repositório não baixa HTML.
 #
-# Os TESTES rodam antes: o site só é gerado e publicado com a suíte verde. O
-# workflow roda em toda branch (para a branch de trabalho ter CI antes do
-# merge); a publicação acontece só no main. As actions ficam fixadas por SHA,
-# conferido no repositório oficial de cada uma (Node 24).
+# Os TESTES e o BUILD rodam em paralelo; o deploy espera os dois: o site só é
+# publicado com a suíte verde. O workflow roda em toda branch (para a branch de
+# trabalho ter CI antes do merge); a publicação acontece só no main. As actions
+# ficam fixadas por SHA, conferido no repositório oficial de cada uma (Node 24).
 name: Testa e publica o site
 
 on:
@@ -47,8 +47,9 @@ jobs:
       - name: Testes
         run: python -m pytest -q
 
+  # O site é gerado JUNTO com os testes (ci-optimizer, escolha do Pedro): o deploy espera os dois, então nada é
+  # publicado sem a suíte verde.
   build:
-    needs: test
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -72,7 +73,7 @@ jobs:
           path: docs
 
   deploy:
-    needs: build
+    needs: [test, build]
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
