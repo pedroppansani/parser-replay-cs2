@@ -20,9 +20,15 @@ html { scroll-padding-top: calc(var(--nav-h) + 16px); }   /* C2: âncora nunca e
   border-radius: var(--r-ctl); color: var(--tinta-2); text-decoration: none; font-size: var(--t-sm); font-weight: 500;
   white-space: nowrap; }
 .site-nav a:hover, .site-nav a[aria-current="page"] { background: var(--superficie-2); color: var(--tinta); }
+/* v2-7 (pedido do Pedro): ao rolar, o conteúdo não aparece na folga ACIMA da navbar flutuante: uma faixa fixa com o fundo
+   da página, do topo da janela até a navbar (a altura do `top` dela). Não ocupa lugar nem cria rolagem lateral (fixa
+   na janela, de 0 a 100% da largura); nos lados da pílula o conteúdo continua passando, como numa navbar flutuante. */
+.site-topo::before { content: ""; position: fixed; top: 0; left: 0; right: 0; height: 12px; background: var(--fundo);
+  pointer-events: none; }
 /* <= 640 px: a pílula vira caixa de raio 24 e os links descem para uma segunda linha que rola dentro dela */
 @media (max-width: 640px) {
   .site-topo { top: 8px; margin-top: 8px; flex-wrap: wrap; gap: 0; border-radius: 24px; padding: 4px 6px 4px 12px; }
+  .site-topo::before { height: 8px; }
   .site-nav { order: 3; width: 100%; margin: 0; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
   .site-nav::-webkit-scrollbar { display: none; }
   .site-nav a { padding: 0 12px; }
