@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import os
 import shutil
 import subprocess
 import sys
@@ -140,10 +141,13 @@ def prova_das_paginas(base: str, saida: Path, log) -> bool:
 
 def prova_da_suite(saida: Path, log) -> bool:
     log_suite = saida / "suite.log"
+    # o pytest em UTF-8 (no Windows a saída ia na codificação antiga e o resumo caía com UnicodeDecodeError, no PC do
+    # Pedro em 2026-10-29), e a leitura troca qualquer byte estranho em vez de cair
     with open(log_suite, "w", encoding="utf-8") as f:
-        r = subprocess.run([sys.executable, "-B", "-m", "pytest", "tests/", "-q", "-p", "no:cacheprovider"],
-                           cwd=RAIZ, stdout=f, stderr=subprocess.STDOUT, timeout=LIMITE_SUITE_S)
-    resumo = [l for l in log_suite.read_text(encoding="utf-8").splitlines() if l.strip()][-1:]
+        r = subprocess.run([sys.executable, "-X", "utf8", "-B", "-m", "pytest", "tests/", "-q", "-p", "no:cacheprovider"],
+                           cwd=RAIZ, stdout=f, stderr=subprocess.STDOUT, timeout=LIMITE_SUITE_S,
+                           env={**os.environ, "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8"})
+    resumo = [l for l in log_suite.read_text(encoding="utf-8", errors="replace").splitlines() if l.strip()][-1:]
     log(f"5. suíte: {resumo[0] if resumo else '(sem saída)'} (log em {log_suite})")
     return r.returncode == 0
 
