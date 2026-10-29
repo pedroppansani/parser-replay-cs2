@@ -81,7 +81,7 @@ com um resto de 0,0003 no cabeçalho da partida (Linux sem Arial); a fonte embut
 passos 0, 1 e 2 na `main` (`9be9db37`, `eb704893`, `2641c91b`, cada um com a prova byte a byte verde); o passo 3 está PRONTO na
 branch `cartao-9-passo-3` e NÃO é mesclado sem a sessão do PC (abaixo). O passo 4 (quebrar a função de 88 KB que monta HTML) fica
 para depois, e o `tests/test_fontes_web.py` (o sha256 das fontes de antes) sai com o OK do Pedro quando o cartão fechar. A contagem
-de testes continua como está (decisão do Pedro). (3) No PC do Pedro: **primeiro o passo 3 do cartão 9** (abaixo); cartão 6 (histograma da força da
+de testes continua como está (decisão do Pedro). Depois do passo 3 na `main`: o `tests/test_fontes_web.py` sai num commit próprio (OK do Pedro, com o CI verde), e então a **Fase T** (tema claro e escuro, escolhido na home) e a **Fase M** (melhora do mapa), cada uma numa branch, com portão de capturas. As PROPOSTAS das duas (capturas, contraste, variações) foram entregues em 2026-10-29 e esperam a escolha do Pedro; a implementação só começa depois do passo 3 mesclado (pedido dele, para não brigar com a divisão do `template.html`). (3) No PC do Pedro: **primeiro o passo 3 do cartão 9** (abaixo); cartão 6 (histograma da força da
 rota B), cartão 7 (os `.rar`: disco com 12 GB ou mais, conferir `demos/entrada/_extraido/`, sha256 de cada `.dem`, regra 36) e toda
 tarefa de métrica, dado ou parsing (os testes pulados na nuvem rodam lá). (4) Parte B dos grupos: só depois de o Pedro reativar o
 Supabase e dar o OK (`GRUPOS_ATIVOS` fica `False` até o LIBERADO do agente `seguranca` e o OK do Pedro; decidir o pause do plano
@@ -196,6 +196,7 @@ foram feitos na v2-7; o `--f-cond` ficou (trocar mexe na fonte dos símbolos no 
 | Cartão 9, passo 0 (a prova byte a byte, `scripts.design.prova_refatoracao`) | `9be9db37` |
 | Cartão 9, passo 1 (as fontes lidas por `le_fonte`; 13 testes leem por ele, com o OK do Pedro) | `eb704893` |
 | Cartão 9, passo 2 (o `tactics.js` em 20 partes em `dashboard/web/prancheta/`) | `2641c91b` |
+| Cartão 19 (capturas com o canvas em software; referências em `notas/design/referencias/c19-software/`) | `e738a968` |
 | `fix-tickrate-resto`: tickrate lido da demo em todo lugar, sem mudar nenhum número (sha256 dos dados igual ao da `main`); contagem de testes 1.678 | `47c0f840` |
 
 ## Em andamento
