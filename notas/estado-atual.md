@@ -51,13 +51,14 @@ WIP da v2-5b) corrigido no site: o Perfil grava o aberto/fechado pelo `MutationO
 4 quadros idênticos; `docs/` +1,5 MB (184,9 para 186,4 MB; o previsto era +4 MB); build de 29,4 s para 41,2 s (39,7 s com o cache).
 Prévia em `preview-v2/` (fora do git).
 
-**PRÓXIMA SESSÃO (2026-10-29): fechar a v2-7 e depois o cartão 20.** A sessão anterior não alcançava o Pages (a rede do ambiente
-só passou a liberar `pedroppansani.github.io` para sessões novas). Respostas do Pedro: fontes embutidas NÃO (o CLS de 0,0002 a
-0,0003 está aceito: a meta de 0 era na prática; `data:` no `font-src` afrouxaria a CSP); o `test_dim_tem_contraste…` foi
-reescrito com o OK dele (feito, `29e66fd9`); a ordem é: medir o Pages de hoje como "antes" (`MEDE_URL=https://pedroppansani.github.io/parser-replay-cs2
-py -3.12 -m scripts.design.mede_lcp_cls`, 375 e 1440, Fast 4G, CPU 4x), rodar a suíte no merge com a `main`, mesclar, esperar CI e deploy,
-medir o "depois" e levar a tabela antes x depois; se algum CLS passar de 0,01 ou o LCP da landing passar de 2,5 s, PARAR e levar.
-Depois, o cartão 20 (opção 1, decidida) numa branch, com o LCP da prancheta antes e depois ao Pedro antes do merge.
+**v2-7 FEITA (2026-10-29), merge `73fc57d0`, CI e deploy verdes.** Medida no Pages (Fast 4G, CPU 4x, 5 medidas, cache limpo;
+`notas/logs/nuvem-pages-antes.log` e `-depois.log`), antes (`165f0d00`) x depois (`73fc57d0`), LCP mediana e CLS pior:
+landing 375: 0,48 s / 0,085 -> 0,78 s / 0; landing 1440: 0,63 s / 0,0004 -> 0,80 s / 0; partida 375: 0,56 s / 0,0095 -> 0,74 s / 0,0003;
+partida 1440: 0,61 s / 0,082 -> 0,68 s / 0,0003; Perfil 375: 0,52 s / 0,0095 -> 0,70 s / 0,0003; Perfil 1440: 0,53 s / 0,009 -> 0,75 s / 0,0003;
+prancheta 375: 2,79 s / 0,029 -> 2,02 s / 0; prancheta 1440: 2,59 s / 0,033 -> 2,04 s / 0. O LCP da landing e da partida subiu
+0,15 a 0,3 s: o `font-display: fallback` espera até 100 ms pela fonte (a troca pelo CLS 0). Nenhum CLS acima de 0,01; LCP da
+landing abaixo de 2,5 s. **Próximo: o cartão 20** (a biblioteca de arremessos num arquivo próprio, carregado depois), numa branch;
+antes do merge, o LCP da prancheta antes e depois vai ao Pedro.
 **Cartão 17 FECHADO** (merge `165f0d00` na `main`; já mesclado nesta branch): o nick salvo do `test_grupos_convite` gravado por uma
 página já aberta (script de início que toca o `localStorage` em `file://` separava o armazenamento da aba). A parte B dos grupos
 continua esperando o Pedro reativar o Supabase. Cartões 6, 7 e as tarefas de dado rodam no PC do Pedro.
@@ -74,7 +75,7 @@ com um resto de 0,0003 no cabeçalho da partida (Linux sem Arial); a fonte embut
 2 testes (escolha do Pedro). Não mudou: `--f-cond` (trocar mexe na fonte dos símbolos no Linux) e o
 `test_acessibilidade::test_dim_tem_contraste…` (lê o primeiro `--apagado`, o do escuro; mudar o teste precisa do OK do Pedro).
 
-**Fila que falta, nesta ordem:** (1) ~~fechar a v2-5b~~ (feito); (2) ~~v2-6~~ (feito); (2b) ~~cartão 17~~ (feito, `165f0d00`); (3) v2-7 (verificação final: LCP/CLS da landing no
+**Fila que falta, nesta ordem:** (1) ~~fechar a v2-5b~~ (feito); (2) ~~v2-6~~ (feito); (2b) ~~cartão 17~~ (feito, `165f0d00`); (3) ~~v2-7~~ (feito, `73fc57d0`; verificação final: LCP/CLS da landing no
 Pages, critérios A1 a A26 e N1 a N9 do plano seção 4.8, capturas de todas as páginas em 375 e 1440 px, `README` e `assets/readme/*.png`,
 `numeros_citaveis`); (3b) cartão 20 (a biblioteca de arremessos num arquivo próprio, carregado depois; decidido pelo Pedro); (4) cartão 6 (histograma da força da rota B), cartão 7 (os `.rar`: disco com 12 GB ou mais, conferir
 `demos/entrada/_extraido/`, sha256 de cada `.dem`, regra 36) e cartão 9 (refatoração, com a proposta, só propor, de gerar a contagem de
@@ -177,6 +178,8 @@ já foi conferido no Pages (gzip); (d) ~~a faixa vazia da barra de cima da pranc
 | v2-5 (prancheta no escuro violeta; mapa da prancheta 27 px menor por causa da navbar, só tamanho) | `c3f63a73` |
 | v2-5b (mapa da prancheta com um tamanho só na edição; decisões 1 = A e 2 = C; seletor de cor; CI da `main` verde de novo) | `b21c7732`, `dfd942d7` |
 | v2-6 (pontos de todos os mapas, imagem de compartilhamento por partida, esqueleto de carregamento; Perfil sem o teste instável) | `7a118673` |
+| Cartão 17 (o `test_grupos_convite` sem falha ao acaso) | `165f0d00` |
+| v2-7 (verificação final: navbar, Replay, fontes, CLS 0, conferência, cartões 16 a 20) | `73fc57d0` |
 | `fix-tickrate-resto`: tickrate lido da demo em todo lugar, sem mudar nenhum número (sha256 dos dados igual ao da `main`); contagem de testes 1.678 | `47c0f840` |
 
 ## Em andamento
