@@ -146,7 +146,9 @@ def simula_dicromacia(cor: str, tipo: str):
 
 # --- Avaliação ---------------------------------------------------------------
 
-TEMAS = ("claro", "escuro")
+# Fase T: "escuro" é o escuro de antes da v2-5 (landing, partida e jogadores, quando quem lê escolhe; e a moldura do
+# Replay); "violeta" é o da prancheta (v2-5). Os dois pintam texto e são medidos.
+TEMAS = ("claro", "escuro", "violeta")
 # Em que tema as páginas estão (decisão 48): na v2-1 todas no escuro de hoje; é o tema que `le_tokens()` lê
 # sem argumento, e o das cores dos gráficos (`paleta_em_uso`). Muda quando uma página trocar de tema (v2-4).
 TEMA_DAS_PAGINAS = "escuro"
@@ -252,11 +254,14 @@ def _labs(cor: str) -> dict:
 
 
 def regras(tema: str) -> tuple[list, dict, list]:
-    """(paleta, grupos, pares nomeados) de "claro", "escuro" ou "mapa"."""
+    """(paleta, grupos, pares nomeados) de "claro", "escuro", "violeta" ou "mapa"."""
     if tema == "mapa":
         return PALETA_MAPA, GRUPOS_MAPA, PARES_MAPA
-    if tema == "escuro":
+    if tema == "violeta":
         return PALETA_TEMA + PALETA_SO_ESCURO, {**GRUPOS_TEMA, **GRUPOS_SO_ESCURO}, PARES_SO_ESCURO
+    if tema == "escuro":     # sem o degradê quente, que é só da prancheta
+        return ([*PALETA_TEMA, *(x for x in PALETA_SO_ESCURO if x[0] != "quente-ink")],
+                {**GRUPOS_TEMA, **GRUPOS_SO_ESCURO}, PARES_SO_ESCURO)
     return PALETA_TEMA, GRUPOS_TEMA, []
 
 
@@ -322,7 +327,7 @@ def avalia(tk: dict[str, str], rotulo_da_origem: str, tema: str = TEMA_DAS_PAGIN
 
 
 def relatorio(tema: str, caminho: Path = TOKENS) -> tuple[list[str], int]:
-    """A saída de "claro", "escuro" ou "mapa", lida do arquivo de tokens."""
+    """A saída de "claro", "escuro", "violeta" ou "mapa", lida do arquivo de tokens."""
     origem = caminho.relative_to(RAIZ).as_posix() if caminho.is_relative_to(RAIZ) else caminho.name
     if tema == "mapa":
         return avalia(le_tokens(caminho, "escuro"), origem, "mapa", outro=le_tokens(caminho, "claro"))

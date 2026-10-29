@@ -3,9 +3,11 @@
    jogadores e na landing, e o validador da paleta (metrics/paleta.py) lê as linhas "--nome: #hex;" daqui, POR
    TEMA (claro, escuro e mapa). Mantenha um token por linha, com o hex de 6 dígitos.
 
-   Tema por página: <html data-tema="claro|escuro">. Landing, partida e jogadores no claro (v2-4); a prancheta e a
-   moldura do mapa da partida no escuro violeta (v2-5). O canvas do mapa é SEMPRE escuro e lê só os tokens *-mapa (e as granadas), iguais nos
-   dois temas. Especificação: notas/design/entrega-v2-goatdemo.md §2 e §3. */
+   Tema por página: <html data-tema="claro|escuro|violeta">. Landing, partida e jogadores no claro ou no escuro, o que
+   quem lê escolheu na landing (Fase T: `tema.js`, antes da primeira pintura; na primeira visita, o tema do aparelho); a
+   prancheta sempre no violeta (v2-5); a moldura do mapa da partida sempre no escuro. O canvas do mapa é SEMPRE escuro
+   e lê só os tokens *-mapa (e as granadas), iguais em todos os temas. Especificação: notas/design/entrega-v2-goatdemo.md
+   §2 e §3. */
 
 /* Fallbacks medidos da Geist e da Geist Mono (scripts/design/mede_fallback.py, Chrome no Windows; entrega §3.2):
    quando a fonte chega (display=swap) o texto não muda de número de linhas. São fontes do sistema (local()), sem
@@ -15,11 +17,11 @@
 @font-face{font-family:"Geist Mono Fallback";src:local("Consolas");font-weight:100 500;size-adjust:109.13%;ascent-override:92.09%;descent-override:27.03%;line-gap-override:0.00%}
 @font-face{font-family:"Geist Mono Fallback";src:local("Consolas Bold");font-weight:600 900;size-adjust:109.13%;ascent-override:92.09%;descent-override:27.03%;line-gap-override:0.00%}
 
-/* ---------------- ESCURO VIOLETA (entrega §2.1, v2-5): a prancheta e a moldura do mapa da partida ---------------- */
-/* `:root[data-tema="escuro"]` pesa mais que o `:root` do claro: o escuro vale na página escura qualquer que seja
-   a ordem. Os lados, os estados e o --tinta ficam nos valores de antes (o --tinta em #e8edf2, e não no #ffffff do
+/* ---------------- VIOLETA (entrega §2.1, v2-5): a prancheta, nos dois temas do site (escolha do Pedro, Fase T) ----- */
+/* `:root[data-tema="violeta"]` pesa mais que o `:root` do claro: o violeta vale na página dele qualquer que seja a
+   ordem. Os lados, os estados e o --tinta ficam nos valores de antes (o --tinta em #e8edf2, e não no #ffffff do
    protótipo: tests/test_v2_paginas.py o compara com o --tinta-mapa; trocar é escolha do Pedro). */
-:root[data-tema="escuro"], [data-tema="escuro"] {
+:root[data-tema="violeta"], [data-tema="violeta"] {
   color-scheme: dark;
 
   --fundo: #04061c;
@@ -61,21 +63,47 @@
   --sombra-pop: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
-/* ---------------- A MOLDURA DO REPLAY: o escuro de antes da v2-5 (pedido do Pedro, v2-7) ----------------
-   A ilha escura do Replay na página da partida (#palco, data-tema="escuro") herdou o violeta da v2-5 nos botões, no
-   "1×", nas linhas e no texto secundário. Ela volta ao escuro da v2-4 (os valores do bloco escuro de antes da v2-5,
-   validados pelo metrics/paleta naquela época). Só a moldura: a prancheta segue no violeta. O seletor composto não
-   entra na leitura do metrics/paleta (que lê só `:root` e `[data-tema="..."]`); o canvas não muda (lê os *-mapa). */
-.board[data-tema="escuro"] {
+/* ---------------- ESCURO (Fase T): o escuro de antes da v2-5, na landing, na partida e em jogadores ---------------- */
+/* O tema escuro que quem lê escolhe na landing, e sempre a moldura do Replay (#palco). São os valores do bloco escuro
+   de antes da v2-5, que a moldura já usava desde a v2-7; os lados, os estados e o texto são os do violeta.
+   O degradê quente do "Reproduzir" é só da prancheta (violeta). */
+:root[data-tema="escuro"], [data-tema="escuro"] {
+  color-scheme: dark;
+
   --fundo: #0b0f14;
   --superficie: #121820;
   --superficie-2: #1a222d;
   --tl-fundo: #0e131a;
+
+  --tinta: #e8edf2;
   --tinta-2: #aab5c1;
   --apagado: #8b97a5;
   --linha: #222b37;
   --borda: #66758a;
+  --foco: #ffffff;
+
+  --ct: #4a90e8;
+  --ct-texto: #6ea8f2;
+  --tr: #e0a23a;
+  --tr-texto: #e9b65a;
+
+  --decisivo: #2fae7c;
+  --aviso: #ffea3d;
+  --erro: #ff6b6b;
+  --acao: #ffffff;           /* botão principal e aba ativa */
   --acao-ink: #0b0f14;
+
+  --vitoria: var(--tinta);
+  --link: var(--tinta);
+  --neutro: var(--apagado);
+
+  --ct-area: rgba(74, 144, 232, 0.22);
+  --tr-area: rgba(224, 162, 58, 0.22);
+  --decisivo-area: rgba(47, 174, 124, 0.16);
+  --aviso-area: rgba(255, 234, 61, 0.10);
+  --erro-area: rgba(255, 107, 107, 0.10);
+
+  --sombra-pop: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
 /* ---------------- CLARO (entrega §2.1; valores do protótipo v2) ---------------- */

@@ -13,7 +13,7 @@ RAIZ = Path(__file__).resolve().parent.parent
 FIXTURES = RAIZ / "tests" / "fixtures"
 
 
-@pytest.mark.parametrize("tema", ["claro", "escuro", "mapa"])
+@pytest.mark.parametrize("tema", ["claro", "escuro", "violeta", "mapa"])
 def test_a_saida_de_cada_tema_e_a_fixada_caractere_por_caractere(tema):
     linhas, falhas = relatorio(tema)
     esperado = (FIXTURES / f"paleta_{tema}_saida.txt").read_text(encoding="utf-8").rstrip("\n").split("\n")
@@ -39,7 +39,7 @@ def test_o_escuro_e_o_violeta_e_o_mapa_e_igual_nos_dois_temas():
     *-mapa, com os valores escuros da Sala de demo (plano v2-0 §4.3), os mesmos nos dois temas."""
     proto = (RAIZ / "notas" / "design" / "prototipo" / "tokens.css").read_text(encoding="utf-8")
     hoje = dict(re.findall(r"^\s*--([a-z0-9-]+):\s*(#[0-9a-f]{6});", proto, re.M))
-    escuro, claro = le_tokens(tema="escuro"), le_tokens(tema="claro")
+    escuro, claro = le_tokens(tema="violeta"), le_tokens(tema="claro")   # Fase T: o violeta da prancheta tem nome próprio
     violeta = le_tokens(RAIZ / "notas" / "design" / "prototipo-v2" / "tokens.css", "escuro")
     assert {k for k, v in violeta.items() if escuro.get(k) != v} == {"tinta", "tinta-mapa"}
     assert escuro["tinta"] == hoje["tinta"]
