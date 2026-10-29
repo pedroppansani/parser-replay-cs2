@@ -4,3 +4,5 @@ dashboard/web/vendor/** -text
 dashboard/web/fontes/** -text
 # Agentes da landing (decisão 48): o sha256 de cada .js está no manifesto; o git não pode trocar fim de linha
 dashboard/web/agente/** -text
+# Fontes estáticas da imagem de compartilhamento e a licença OFL (decisão 48, v2-6): cópia sem mudança
+scripts/design/fontes_og/** -text

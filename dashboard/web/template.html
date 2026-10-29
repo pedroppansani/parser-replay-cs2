@@ -1163,6 +1163,7 @@
              Os canvas de anotacao e de rascunho entram logo depois do mapa. -->
         <div class="mapwrap" id="mapwrap">
           <canvas id="map" width="820" height="950" role="img" aria-label="Mapa do round"></canvas>
+          <!--__CARREGANDO__-->
         </div>
 
         <div class="transport">
@@ -3840,9 +3841,11 @@
       // §19.4: fechado por padrão; aberto/fechado em localStorage ("1"/"0"), em try/catch (sem armazenamento: fechado)
       var detalhes = document.getElementById("pf-detalhes"), CHAVE_DETALHES = "parser-cs2:perfil-detalhes";
       try { if (localStorage.getItem(CHAVE_DETALHES) === "1") detalhes.open = true; } catch (e) { /* fechado */ }
-      detalhes.addEventListener("toggle", function () {
+      // grava quando o atributo `open` muda (MutationObserver: ainda na tarefa do clique), e não no evento `toggle`, que o
+      // navegador dispara numa tarefa depois: quem lesse logo depois do clique podia achar o valor antigo (CI, 2026-10-28)
+      new MutationObserver(function () {
         try { localStorage.setItem(CHAVE_DETALHES, detalhes.open ? "1" : "0"); } catch (e) { /* abre fechado, funciona igual */ }
-      });
+      }).observe(detalhes, { attributes: true, attributeFilter: ["open"] });
       var aviso = document.getElementById("pf-aviso");
       if (PF.degradado) { aviso.textContent = PF.degradado; aviso.hidden = false; }
     }

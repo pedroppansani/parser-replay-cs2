@@ -145,6 +145,7 @@ def partida_de_exemplo(matches: list[dict]) -> dict | None:
 # três números e a linha do corpus vêm de numeros_citaveis.json.
 TEXTOS_DA_LANDING = {
     "titulo": "Cada round, explicado.",
+    "og_frase": "Replay de partidas de CS2",        # a linha de baixo da imagem de compartilhamento (protótipo)
     "subtitulo": ("Veja a partida de CS2 como uma jogada: onde cada um estava, o que cada granada fez e por que o "
                   "round virou."),
     "explorar": "Explorar partidas",
@@ -240,11 +241,33 @@ def _card(m: dict, exemplo: bool = False) -> str:
             + "      </a>")
 
 
+def gera_imagens_og(saida: Path, matches: list[dict]) -> None:
+    """As imagens de compartilhamento 1200x630 em `<saida>/og/` (v2-6, decisão 48): uma por partida (os times e o
+    placar do cabeçalho, o mapa, o evento e a linha do decisor: só o que o card da landing já mostra) e a da landing
+    (título e frase de TEXTOS_DA_LANDING, mapa da lateral direita). Pillow, sem navegador; mesmos bytes a cada build."""
+    from scripts.design.gera_og import imagem_da_landing, imagem_da_partida
+    from scripts.meta_da_pagina import IMAGEM_OG, imagem_da_partida as caminho
+    pasta = saida / "og"
+    pasta.mkdir(exist_ok=True)
+    for velha in pasta.glob("*.png"):
+        velha.unlink()
+    for m in matches:
+        lados = m.get("lados") or {}
+        nomes = tuple((lados.get(k) or {}).get("nome") or f"Lado {k}" for k in "AB")
+        local = m.get("evento") or ("FACEIT" if m.get("origem") == "faceit" else "")
+        linhas = [" · ".join(x for x in (str(m["map_label"]), local) if x), m.get("decisor") or ""]
+        (saida / caminho(m["id"])).write_bytes(
+            imagem_da_partida(m.get("map"), nomes, (m["score_a"], m["score_b"]), m.get("venceu"), linhas))
+    T = TEXTOS_DA_LANDING
+    (saida / IMAGEM_OG).write_bytes(imagem_da_landing(LATERAIS[-1][1], T["titulo"], T["og_frase"]))
+    print(f"  og/  ({len(matches) + 1} imagens de compartilhamento)")
+
+
 def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | None = None,
                 numeros: dict | None = None, imagem: str | None = None) -> str:
     """A landing (entrega-v2-goatdemo §5.2). `numeros` é o documento de numeros_citaveis.json (os três números e a
-    linha do corpus vêm dele, nunca escritos aqui). `imagem` não é mais usada na página desde a v2-3 (a captura
-    do replay continua só como og:image, até a v2-6). Ordem no HTML = ordem do celular: título, botões, agente,
+    linha do corpus vêm dele, nunca escritos aqui). `imagem` não é mais usada (a og:image é a da landing,
+    `scripts/meta_da_pagina.IMAGEM_OG`, desde a v2-6). Ordem no HTML = ordem do celular: título, botões, agente,
     números, partidas, rodapé."""
     from collections import Counter
     from html import escape as e
@@ -600,13 +623,12 @@ def build(repo_url: str, preview: bool = False) -> Path:
     (saida / ARQUIVO_JOGADORES).write_text(pagina_jogadores, encoding="utf-8")
     print(f"  {ARQUIVO_JOGADORES}  ({len(pagina_jogadores) / 1024:.0f} KB)  jogadores no corpus")
 
-    # os números do topo vêm de numeros_citaveis.json; a captura versionada do README (scripts/capturas_readme.py)
-    # continua sendo a og:image (replay.png) até a v2-6, mas não aparece mais na página (v2-3)
+    # os números do topo vêm de numeros_citaveis.json; a og:image é a imagem de compartilhamento (v2-6), não mais a
+    # captura do replay
     from scripts.numeros_citaveis import carrega as numeros_citaveis
-    captura = PROJECT_ROOT / "assets" / "readme" / "replay.png"
-    if captura.exists():
-        shutil.copyfile(captura, saida / "replay.png")
-    (saida / "replay.webp").unlink(missing_ok=True)
+    for velha in ("replay.png", "replay.webp"):
+        (saida / velha).unlink(missing_ok=True)
+    gera_imagens_og(saida, matches)
     # o agente da landing (decisão 48): os dois .js em agente/, ao lado das páginas; só o sorteado é baixado
     copia_agente(saida)
     (saida / "index.html").write_text(build_index(matches, repo_url, pranchetas, numeros=numeros_citaveis()),

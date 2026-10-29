@@ -10,11 +10,13 @@ from PIL import Image
 from scripts.design.gera_pontos import RADARS, mascara
 
 
-@pytest.mark.parametrize("mapa", ["de_dust2", "de_mirage"])
+# os mapas com partida no corpus (v2-6: o carregamento e a imagem de compartilhamento usam todos)
+@pytest.mark.parametrize("mapa", ["de_ancient", "de_anubis", "de_dust2", "de_inferno", "de_mirage", "de_nuke",
+                                  "de_overpass", "de_train"])
 def test_a_mascara_e_deterministica_pequena_e_so_alfa(mapa):
     if not (RADARS / f"{mapa}.json").exists():
         pytest.skip("sem o radar")
-    a, b = mascara(mapa), mascara(mapa)
+    a, b = mascara.__wrapped__(mapa), mascara.__wrapped__(mapa)    # sem o cache: gera de novo
     assert a == b and len(a) < 4000
     im = Image.open(io.BytesIO(a))
     assert im.size == (512, 512) and im.mode == "RGBA"
