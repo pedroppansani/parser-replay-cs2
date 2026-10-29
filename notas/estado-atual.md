@@ -104,7 +104,7 @@ qualquer diferença, parar e levar o relatório (nada de "quase igual"). Na nuve
 `main`, deu PASSA.
 
 **Pendências abertas (cartões em `notas/PENDENCIAS_PARA_O_PEDRO.md`):** 14 (comparação por grupos no Perfil, fase própria depois da
-v2, regra de empate do Pedro), 15 (regra de tamanho do mapa do protótipo), 16 (texto branco do protótipo no escuro, opcional), 18 (fonte mono no macOS, precisa de um Mac), 19 (a `compara_capturas` em software: sim ou não). Os itens que o Pedro pediu para a v2-7 (navbar, botões do Replay, o "1×", `aceite.py`, `--apagado`, imagens do README)
+v2, regra de empate do Pedro), 15 (regra de tamanho do mapa do protótipo), 16 (texto branco do protótipo no escuro, opcional), 18 (fonte mono no macOS, precisa de um Mac), 19 FECHADO (canvas em software; referências em `notas/design/referencias/c19-software/`). Os itens que o Pedro pediu para a v2-7 (navbar, botões do Replay, o "1×", `aceite.py`, `--apagado`, imagens do README)
 foram feitos na v2-7; o `--f-cond` ficou (trocar mexe na fonte dos símbolos no Linux; nota 48).
 
 **Regras combinadas que ainda não estão num CLAUDE.md:**

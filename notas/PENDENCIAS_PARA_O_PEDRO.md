@@ -527,7 +527,13 @@ O texto original do cartão:
 
 ---
 
-## 19. A `compara_capturas` só roda no Chrome do Windows (no Linux e no CI, só com adaptação)
+## 19. A `compara_capturas` só roda no Chrome do Windows (no Linux e no CI, só com adaptação) -- FECHADO
+
+- **Fechado em 2026-10-29 (sim do Pedro):** as ferramentas de captura caem no Chromium sem Chrome e abrem SEMPRE com o canvas
+  em software, num fio de rasterização e sem raster parcial (`scripts/design/_comum.ARGS_DETERMINISTICOS`). Prova: 5 rodadas da
+  `main` contra ela mesma, 4 de 4 quadros idênticos, um sha256 só por quadro. Referências regravadas em
+  `notas/design/referencias/c19-software/` (a da prancheta igual à da v2-5b; as 3 do Replay diferem das da v2-1, que eram
+  do Chrome do Windows na GPU, em 16.662 a 25.793 pixels). O texto original do cartão:
 
 - **O que é:** a ferramenta que prova "nenhum pixel do mapa mudou" (`scripts/compara_capturas.py`) abre o navegador com
   `channel="chrome"`. Na nuvem e no CI só há o Chromium do Playwright: na v2-5b, v2-6 e v2-7 eu rodei as funções dela com o
