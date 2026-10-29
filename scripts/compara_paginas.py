@@ -5,7 +5,8 @@ página (resumo, placar, jogadores, perfil, estilos), em desktop e em celular,
 para mudanças que mexem no layout (doctype, CSS, textos).
 
 A página "antes" usa o template, o JS e o CSS de `dashboard/web/` na revisão
-`--antes`; a "depois", os da árvore de trabalho. Os DADOS são os do disco nas
+`--antes` (a pasta inteira, com as partes que o template inclui); a "depois", os da
+árvore de trabalho. Os DADOS são os do disco nas
 duas (a comparação é de apresentação, não de número).
 
 Uso:
@@ -14,6 +15,7 @@ Uso:
 from __future__ import annotations
 
 import argparse
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -22,24 +24,31 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ))
 WEB = RAIZ / "dashboard" / "web"
-ARQUIVOS = ("template.html", "map_core.js", "annotations.js", "annotations.css")
 TAMANHOS = {"desktop": (1300, 950), "celular": (390, 844)}
 
 
 def _pagina(partida: str, rev: str | None, pasta: Path) -> Path:
     import scripts.build_web_page as b
     original = b.TEMPLATE
+    temp = None
     try:
         if rev is not None:
-            origem = pasta / f"web_{rev.replace('/', '_')}"
-            origem.mkdir(parents=True, exist_ok=True)
-            for nome in ARQUIVOS:
-                r = subprocess.run(["git", "show", f"{rev}:dashboard/web/{nome}"], capture_output=True, cwd=RAIZ, check=True)
-                (origem / nome).write_bytes(r.stdout)
+            # fora do repositório: a pasta copiada tem o CLAUDE.md da revisão, que os testes do CLAUDE.md achariam
+            temp = tempfile.mkdtemp(prefix="compara_paginas_web_")
+            origem = Path(temp)
+            nomes = subprocess.run(["git", "ls-tree", "-r", "--name-only", rev, "--", "dashboard/web"],
+                                   capture_output=True, text=True, cwd=RAIZ, check=True).stdout.split()
+            for nome in nomes:
+                r = subprocess.run(["git", "show", f"{rev}:{nome}"], capture_output=True, cwd=RAIZ, check=True)
+                destino = origem / Path(nome).relative_to("dashboard/web")
+                destino.parent.mkdir(parents=True, exist_ok=True)
+                destino.write_bytes(r.stdout)
             b.TEMPLATE = origem / "template.html"
         html = b.build_html(partida)
     finally:
         b.TEMPLATE = original
+        if temp:
+            shutil.rmtree(temp, ignore_errors=True)
     arq = pasta / f"{partida}_{'depois' if rev is None else 'antes'}.html"
     arq.write_text(html, encoding="utf-8")
     return arq
@@ -52,7 +61,8 @@ def compara(partidas: list[str], antes: str, saida: Path, tamanhos: list[str]) -
     saida.mkdir(parents=True, exist_ok=True)
     linhas = []
     with sync_playwright() as p:
-        nav = p.chromium.launch(channel="chrome")
+        from scripts.design._comum import ARGS_DETERMINISTICOS, chrome
+        nav = chrome(p, ARGS_DETERMINISTICOS)
         for partida in partidas:
             paginas = {"antes": _pagina(partida, antes, saida), "depois": _pagina(partida, None, saida)}
             for tam in tamanhos:
@@ -72,7 +82,7 @@ def compara(partidas: list[str], antes: str, saida: Path, tamanhos: list[str]) -
                         pg.click(f'[role=tab][data-tab="{aba}"]')
                         pg.wait_for_timeout(350)
                         f = saida / f"{partida}_{tam}_{aba}_{lado}.png"
-                        pg.screenshot(path=str(f), full_page=True)
+                        pg.screenshot(path=str(f), full_page=True, animations="disabled", caret="hide")
                         fotos.setdefault(aba, {})[lado] = f
                     pg.close()
                 for aba, par in fotos.items():
