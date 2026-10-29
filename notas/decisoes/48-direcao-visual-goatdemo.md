@@ -160,6 +160,23 @@ cada criar, desfazer e refazer) e as ferramentas de desenho punham uma linha a m
 - Fica de fora: Reproduzir troca a dica (31 px) pela barra do player (61 px), e o mapa desce 30 px e fica 30 px menor até
   "Editar", quando volta ao mesmo tamanho e lugar (nada é editável nesse tempo; na `main` da v2-5 ia de 329 a 430 px).
 
+**Verificação final (v2-7, pedidos do Pedro, 2026-10-29).** Regras que ficam:
+- Acima da navbar flutuante, a folga do `top` tem o fundo da página (`.site-topo::before`, fixo na janela): ao rolar, o
+  conteúdo não aparece ali; nos lados e nos cantos da pílula ele continua passando.
+- A moldura do Replay (`.board[data-tema="escuro"]`) usa o escuro de ANTES da v2-5 (bloco próprio no `tokens.css`, fora da
+  leitura do `metrics/paleta`); o violeta é só da prancheta. Os botões da barra do Replay são pílulas, como os da prancheta.
+- Fontes: `preload` da Geist e da Geist Mono por um script mínimo no `<head>` SÓ por HTTP (em `file://` o preload com
+  crossorigin é barrado e daria erro no console) e `font-display: fallback` (`design_head.FONT_DISPLAY`); `optional` foi
+  descartado (na partida a página ficava a visita inteira no substituto).
+- CLS 0: o que o JS monta depois do HTML não empurra o que já está na tela. Até ele montar, o que seria empurrado fica
+  invisível (`visibility: hidden` por `:has(... :empty)` no `v2.css`: os cards e o rodapé da partida até o decisivo, a grade
+  da prancheta até a barra, o conteúdo de jogadores até o título) e aparece já no lugar. Medido (HTTP local, Fast 4G, CPU 4x,
+  Chromium no Linux): landing, partida, Perfil, prancheta e jogadores com CLS 0,000 a 375 e 1440; sobra 0,0003 no cabeçalho
+  da partida (no Linux não há o Arial do substituto medido; com a fonte embutida em data URI dá 0 exato, mas muda a regra das
+  fontes em `fontes/` e dois testes: escolha do Pedro).
+- `--f-cond` continua (aponta para a Geist): trocar os 60 usos por `--f-texto` mudou a fonte do sistema que o Chromium no
+  Linux escolhe para os símbolos que a Geist não tem (○ ▲ da autópsia do round), então ficou como está.
+
 **Medido na v2-1 (2026-10-25, Chrome no Windows, `file://`):** com a CSP do site, a Geist e a Geist Mono chegam
 a `loaded` na landing, numa partida e na prancheta, sem violação; com `font-src 'none'` (controle) as duas são
 bloqueadas e a violação aparece. Um `<script src="agente/agente-tr.js">` criado pelo JS depois da carga também
@@ -167,4 +184,4 @@ CARREGA em `file://` com `script-src 'self' 'unsafe-inline'` (a de hoje), sem vi
 precisa de CSP mais frouxa.
 
 **Ficou para as próximas fases:** a escala tipográfica, o `--dur` de 220 ms e os raios do protótipo (os tokens
-de forma novos já têm uso na partida e em jogadores desde a v2-4); `--f-cond` (aponta para a Geist; o template ainda o usa, sem efeito de pixel); o canvas do replay já lê os `*-mapa` (feito na v2-4); `scripts/design/aceite.py` ainda procura `JetBrains` (v2-7).
+de forma novos já têm uso na partida e em jogadores desde a v2-4); o canvas do replay já lê os `*-mapa` (feito na v2-4); `scripts/design/aceite.py` ainda procura `JetBrains` (v2-7).
