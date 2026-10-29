@@ -82,7 +82,7 @@ JS = r"""
     const r=el.getBoundingClientRect(); if(r.width<43.5||r.height<43.5) res.toque.push((el.tagName+"."+el.className+" '"+(el.textContent||el.getAttribute("aria-label")||"").trim().slice(0,18)+"' ").slice(0,70)+Math.round(r.width)+"x"+Math.round(r.height)); });
   // 6. mono só em número
   document.querySelectorAll("body *").forEach(el=>{ if(!visivel(el)||el.closest("svg")) return; const s=getComputedStyle(el);
-    if(!/JetBrains/.test(s.fontFamily.split(",")[0])) return;
+    if(!/Geist Mono/.test(s.fontFamily.split(",")[0])) return;   /* a mono da v2 (era a JetBrains Mono) */
     const proprio=[...el.childNodes].filter(n=>n.nodeType===3).map(n=>n.nodeValue).join(" ");
     const palavras=(proprio.replace(/\{[a-z_]+\}/g,"").match(/[A-Za-zÀ-ú]{3,}/g)||[]); /* {erro_rating} é marcador de número */ if(palavras.length) res.mono.push(el.tagName+"."+el.className+" '"+proprio.trim().slice(0,30)+"'"); });
   res.timeAB=/\bTime [AB]\b/.test(document.body.innerText);
