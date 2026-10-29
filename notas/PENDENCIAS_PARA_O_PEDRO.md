@@ -464,6 +464,18 @@ O texto original do cartão:
 
 ## 17. Teste instável dependente da ordem: `test_grupos_convite.py` (resolver ANTES da parte B dos grupos)
 
+- **Causa achada (2026-10-29, nuvem, Linux, Chromium 153):** não é dependência de ordem. O teste simula o "nick salvo"
+  gravando no `localStorage` por um script de INÍCIO de carregamento (`pg.add_init_script`). Numa página `file://`, tocar
+  o `localStorage` nesse momento faz o Chromium, às vezes, dar à página um armazenamento SEPARADO das outras abas do mesmo
+  contexto: a página que entra não vê a sala que a líder gravou (o servidor falso vive no `localStorage`) e responde
+  "Nenhum grupo com esse código". Provas: (1) na falha, uma terceira página aberta no mesmo contexto vê a sala da líder,
+  e líder e terceira se enxergam, mas nada do que a página que entra grava chega a elas, nem o contrário; (2) numa página
+  de uma linha, sem nada do projeto: com o script de início gravando no `localStorage`, 7 e 8 de 100 páginas ficaram
+  separadas; com um script de início que não toca o armazenamento, 0 de 100; (3) o arquivo sozinho também falha (2 de 20),
+  e o par painel + convite falhou 1 em 10, 1 em 17 e 1 em 2 rodadas (a ordem só muda a sorte).
+- **Proposta (muda o teste, espera o OK do Pedro):** gravar o nick salvo por uma página do mesmo contexto já aberta (a
+  da líder) ou aberta só para isso, ANTES de abrir o link, em vez do script de início. O que o teste confere não muda.
+
 - **O que é:** `test_um_clique_entra_no_grupo` e `test_editar_o_nick_antes_do_clique_entra_com_o_nick_editado` às vezes
   esperam 30 s e falham ("Nenhum grupo com esse código": a segunda página não acha a sala que a primeira criou na
   SalaFalsa). Sozinho, o arquivo passa sempre (3 de 3 na `main`). Não bloqueia a v2 (decisão sua, 2026-10-27). Não pode
