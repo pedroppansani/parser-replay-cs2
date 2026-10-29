@@ -152,6 +152,9 @@ entram aqui quando uma decisão depende delas.
 - **Custo de deixar como está:** cada mudança de tela continua acontecendo dentro de arquivos de
   milhares de linhas, com conflitos entre fases.
 - **Fora do computador:** nada.
+- **Andamento (2026-10-29, decisão 50):** aprovado nos passos 0 a 3. Passos 0, 1 e 2 na `main` (a prova byte a byte, as
+  fontes lidas por `le_fonte`, o `tactics.js` em 20 partes); o passo 3 (o script da partida por aba) está pronto na branch
+  `cartao-9-passo-3` e espera o comando do `notas/estado-atual.md` no PC. O passo 4 (a função de 88 KB) fica para depois.
 
 ## 10. Grupos na prancheta: os passos no Supabase (fases 13 e 16)
 
@@ -537,6 +540,10 @@ O texto original do cartão:
   testes já fazem) e abrir SEMPRE com o canvas em software, para a mesma revisão dar o mesmo PNG em qualquer máquina; regravar
   as referências uma vez, em commit próprio, com a prova de que só o navegador mudou.
 - **O que preciso de você:** sim ou não para a proposta.
+- **Andamento (2026-10-29, cartão 9):** a primeira metade entrou no passo 0, porque a prova do cartão 9 roda os quadros na nuvem: a
+  `compara_capturas` e a `compara_paginas` caem no Chromium sem Chrome e abrem com rasterização num fio só e sem raster parcial
+  (o mesmo arquivo dava pixels diferentes sem isso). O canvas em software e a regravação das referências continuam esperando o
+  seu sim ou não; nenhuma referência foi regravada.
 - **Fora do computador:** nada.
 
 ---
