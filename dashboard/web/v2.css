@@ -80,6 +80,10 @@ html { scroll-padding-top: calc(var(--nav-h) + 16px); }   /* C2: âncora nunca e
 .board[data-tema="escuro"] .mapwrap { background: var(--entorno-mapa); }
 .board[data-tema="escuro"] .transport { background: var(--radar); border-radius: 0 0 12px 12px; }
 .board[data-tema="escuro"] .play { background: var(--tinta); color: var(--contorno); }
+/* v2-7 (pedido do Pedro): os botões do Replay (Desenhar, Direção, Abrir round na prancheta, Tela cheia, ? e as
+   ferramentas que abrem com o Desenhar) em pílula, com o texto da Geist sem condensar, como a barra da prancheta */
+.board .anot-b { border-radius: var(--r-ctl); font-family: var(--f-texto); font-stretch: normal; letter-spacing: 0;
+  padding: 5px 12px; }
 @media (max-width: 1000px) { .stage { gap: 20px 14px; } }
 
 /* Perfil (§5.4): o seletor de jogador em pílulas; o estado "em validação" é um bloco tracejado, sem número */
