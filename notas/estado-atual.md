@@ -93,7 +93,7 @@ Free; gitleaks, npm audit, pip-audit e `.claude/worktrees/` no `.gitignore`); o 
 py -3.12 -m scripts.design.prova_refatoracao --branch cartao-9-passo-3 --suite
 ```
 
-O script busca e abre a branch, gera o site da `main` (o ponto de saída, `2641c91b`) e o da branch em worktrees limpos, compara e
+O script busca e abre a branch, gera o site da `main` (no ponto de onde a branch saiu) e o da branch em worktrees limpos, compara e
 roda a suíte inteira na pasta (com o `data/interim`). Leva uns 4 min mais a suíte; o relatório e o `suite.log` ficam em
 `logs/prova_refatoracao/<data-hora>/`. **Resultado esperado** (o mesmo da nuvem, mais os testes que só rodam no PC):
 `1. site: 131 arquivos na base, 131 no alvo; TODOS IGUAIS byte a byte (sha256)` ·
