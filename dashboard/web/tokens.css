@@ -61,6 +61,23 @@
   --sombra-pop: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
+/* ---------------- A MOLDURA DO REPLAY: o escuro de antes da v2-5 (pedido do Pedro, v2-7) ----------------
+   A ilha escura do Replay na página da partida (#palco, data-tema="escuro") herdou o violeta da v2-5 nos botões, no
+   "1×", nas linhas e no texto secundário. Ela volta ao escuro da v2-4 (os valores do bloco escuro de antes da v2-5,
+   validados pelo metrics/paleta naquela época). Só a moldura: a prancheta segue no violeta. O seletor composto não
+   entra na leitura do metrics/paleta (que lê só `:root` e `[data-tema="..."]`); o canvas não muda (lê os *-mapa). */
+.board[data-tema="escuro"] {
+  --fundo: #0b0f14;
+  --superficie: #121820;
+  --superficie-2: #1a222d;
+  --tl-fundo: #0e131a;
+  --tinta-2: #aab5c1;
+  --apagado: #8b97a5;
+  --linha: #222b37;
+  --borda: #66758a;
+  --acao-ink: #0b0f14;
+}
+
 /* ---------------- CLARO (entrega §2.1; valores do protótipo v2) ---------------- */
 :root, [data-tema="claro"] {
   color-scheme: light;

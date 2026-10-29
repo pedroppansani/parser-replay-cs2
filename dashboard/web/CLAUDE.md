@@ -15,6 +15,8 @@ valem lá também.
   `title` (8d)
 - Páginas abrem como arquivo local, sem CDN nem Google Fonts: Geist e Geist Mono em `fontes/` (o build
   copia de `dashboard/web/fontes/`), no máximo 2 famílias; `gera_fontes`/`mede_fallback` não rodam no build (48)
+- Nada que o JS monte depois do HTML empurra o que já está na tela (CLS 0): o que seria empurrado fica invisível até
+  montar (`:has(... :empty)` no `v2.css`); fontes com `preload` só por HTTP e `font-display: fallback` (48)
 - CSS novo da v2 só em `v2.css` (marcador `/*__V2__*/`), comportamento comum em `v2.js`; agente: só o sorteado é
   baixado, sha256 no `agentes.manifesto.json`, `converte_agente` fora do build e dos testes (48)
 - Escolhas da nota 44 ("Como ficou na implementação") são deliberadas: coluna Mira com o texto do

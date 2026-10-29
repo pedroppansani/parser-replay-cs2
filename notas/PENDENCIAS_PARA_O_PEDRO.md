@@ -451,8 +451,9 @@ O texto original do cartão:
 
 ## 16. O texto do escuro em branco `#ffffff`, como no protótipo (OPCIONAL)
 
-- **O que é:** na v2-5 o `--tinta` do escuro violeta (prancheta e moldura do mapa da partida) ficou no `#e8edf2` de antes;
-  o protótipo da v2 (§2.1) usa `#ffffff`. Sua escolha (2026-10-27): fica o `#e8edf2`; o branco é opcional.
+- **O que é:** na v2-5 o `--tinta` do escuro violeta (hoje só a prancheta: a moldura do Replay voltou ao escuro de antes
+  na v2-7) ficou no `#e8edf2` de antes; o protótipo da v2 (§2.1) usa `#ffffff`. Sua escolha (2026-10-27): fica o
+  `#e8edf2`; o branco é opcional (reconfirmado na v2-7, 2026-10-29).
 - **O que custa:** uma linha no tema escuro do `tokens.css` e uma linha no `tests/test_v2_paginas.py` (o teste compara o
   `--tinta-mapa` da partida com o `--tinta` do escuro), mais as saídas fixadas da paleta e a exceção `tinta` nas
   comparações com o protótipo de `test_tokens.py` e `test_paleta_v2.py`. O canvas não muda (lê o
@@ -499,5 +500,65 @@ O texto original do cartão:
 - **Suspeita:** o contexto do navegador é compartilhado entre os arquivos (fixture `contexto` de `test_tactics_browser`) e a
   SalaFalsa guarda o servidor no `localStorage` de `file://`; o estado deixado pelo `test_grupos_painel` (ou o tempo) faz a
   sala criada não ser vista pela segunda página.
-- **O que preciso de você:** nada; é trabalho meu antes da parte B.
+- **Na nuvem (Linux, 2026-10-28):** a suíte inteira falhou uma vez em `test_um_clique_entra_no_grupo` (espera de 30 s); o par
+  painel + convite falhou 1 de 3 na `main` e passou 3 de 3 na v2-5b. Continua aberto.
+- **O que preciso de você:** nada; é trabalho meu antes da parte B (que também espera você reativar o Supabase).
+- **Fora do computador:** nada.
+
+---
+
+## 18. A fonte mono no macOS cai num substituto sem medida (só pode ser conferido num Mac)
+
+- **O que é:** enquanto a Geist Mono (números, relógio, placar) não carrega, o navegador desenha com um substituto. No Windows
+  ele é o Consolas ajustado para ter a largura e a altura da Geist Mono (`scripts/design/mede_fallback.py`, os `@font-face`
+  "Geist Mono Fallback" do `tokens.css`): quando a fonte chega, nada pula. No macOS não existe Consolas: a pilha cai em
+  `ui-monospace` (SF Mono) ou Menlo SEM ajuste, e os números podem mudar de largura quando a Geist Mono chega. A Geist (texto)
+  não tem o problema: o substituto é o Arial, que o macOS tem.
+- **O efeito possível:** um salto pequeno (CLS) nos números no primeiro carregamento, só no macOS e só com rede lenta (a fonte
+  vem do próprio site, em cache depois da primeira visita).
+- **Opções:** (1) medir num Mac (rodar o `mede_fallback` com SF Mono/Menlo no lugar do Consolas) e acrescentar um `@font-face`
+  por fonte; (2) deixar como está.
+- **Recomendação:** a 2 por enquanto: não tenho um Mac, e o efeito só existe na primeira visita. Se você tiver um Mac à mão, a 1
+  leva poucos minutos.
+- **Fora do computador:** precisa de um Mac (fica por último).
+
+---
+
+## 19. A `compara_capturas` só roda no Chrome do Windows (no Linux e no CI, só com adaptação)
+
+- **O que é:** a ferramenta que prova "nenhum pixel do mapa mudou" (`scripts/compara_capturas.py`) abre o navegador com
+  `channel="chrome"`. Na nuvem e no CI só há o Chromium do Playwright: na v2-5b, v2-6 e v2-7 eu rodei as funções dela com o
+  Chromium por um script fora do repositório. As referências gravadas antes (até a v2-5) eram do Chrome no Windows, com o canvas
+  na GPU; a da v2-5b já é do Linux.
+- **O que foi medido (2026-10-28):** no Windows, com o mapa do mesmo tamanho, a GPU dava 20.416 pixels diferentes só nas bordas do
+  radar entre duas revisões com o mesmo desenho; com o canvas em software (`--disable-accelerated-2d-canvas`) ficavam idênticas.
+  No Chromium do Linux, com o canvas padrão e em software, as capturas saem idênticas byte a byte.
+- **Proposta (só mexe na ferramenta, não em teste):** a `compara_capturas` cair no Chromium quando não houver Chrome (como os
+  testes já fazem) e abrir SEMPRE com o canvas em software, para a mesma revisão dar o mesmo PNG em qualquer máquina; regravar
+  as referências uma vez, em commit próprio, com a prova de que só o navegador mudou.
+- **O que preciso de você:** sim ou não para a proposta.
+- **Fora do computador:** nada.
+
+---
+
+## 20. O LCP da prancheta (4,9 s): a biblioteca de arremessos embutida atrasa a tela inteira
+
+- **Decisão do Pedro (2026-10-29): opção 1.** A biblioteca de arremessos vai num arquivo próprio, carregado depois. Fica na
+  fila logo depois da v2-7, numa branch; mexe só no site; antes do merge, o LCP da prancheta antes e depois vai ao Pedro.
+
+- **O que é:** com Fast 4G e CPU 4x o maior texto da prancheta só aparece aos ~4,9 s (a 1440, o parágrafo "Nada
+  selecionado…" do painel; a 375, o aviso do celular). A página tem 4,1 MB, e 3,5 MB são a biblioteca de arremessos
+  (`biblioteca` no `cfg` do `tactics.html`, a do mapa inteiro). O HTML só termina de chegar aos ~3,9 s, e a barra, a dica e o
+  painel são montados pelo JS no fim (medido na v2-7, servidor local; o primeiro desenho é aos 0,4 s, só a navbar e o título).
+- **Por que não entrou na v2-7:** pôr no HTML só o título "Prancheta · Mirage" e a dica não muda o LCP: o parágrafo do
+  painel, maior, aparece depois e passa a ser o LCP. E a grade fica invisível até o JS montar (é o que deixa o CLS em 0).
+- **Opções:**
+  1. **Carregar a biblioteca depois:** a página abre sem ela (cerca de 0,6 MB) e a biblioteca entra por um
+     `<script src="lineups_de_mirage.js">` próprio, só para a busca de arremesso real (funciona em `file://`, onde `fetch` não
+     funciona). A tela montaria em ~1 s; a busca mostraria "carregando" nos primeiros segundos. Mexe no build e no
+     `tactics.js`; precisa provar que nenhum arremesso muda (a biblioteca é a mesma, só muda o lugar).
+  2. **Montar a parte fixa da tela no HTML (Python):** título, barra, dica e painel vazios já no HTML. Mais trabalho (o
+     `tactics.js` monta tudo hoje) e não diminui os 3,5 MB.
+  3. **Deixar como está:** a prancheta é ferramenta de quem já entrou no site; o LCP não tem meta para ela.
+- **Recomendação:** a 1, numa fase própria. É o que tira os 3,5 MB do caminho de quem só quer desenhar.
 - **Fora do computador:** nada.

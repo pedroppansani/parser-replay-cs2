@@ -4,8 +4,9 @@ Um lugar só, usado pela página da partida, pela prancheta, pela página de jog
 landing. Os tokens (cores, fontes, espaços, raios) moram em `dashboard/web/tokens.css`; as fontes
 são duas famílias, Geist e Geist Mono, hospedadas no próprio site (entrega-v2-goatdemo §3.1): os
 woff2 ficam em `dashboard/web/fontes/` e o build os copia para `fontes/`, ao lado das páginas.
-Nenhum pedido ao Google Fonts. Sem `<link rel=preload crossorigin>`: em `file://` o preload com
-crossorigin é bloqueado por CORS (medido no protótipo).
+Nenhum pedido ao Google Fonts. O `preload` das duas fontes entra por um script mínimo no <head>, SÓ quando a página vem
+por HTTP (o Pages): em `file://` o preload com crossorigin é bloqueado por CORS e vira erro no console (medido no
+protótipo), e a página continua abrindo como arquivo local sem ele (v2-7, medido no Pages).
 """
 from __future__ import annotations
 
@@ -29,12 +30,23 @@ def tokens_css() -> str:
     return (WEB / "tokens.css").read_text(encoding="utf-8")
 
 
+# `fallback` (e não `swap`): o texto espera até ~100 ms pela fonte antes de usar o substituto; com o preload a fonte
+# costuma já estar baixada nessa hora e o texto não troca de fonte na frente de quem lê (CLS). Medido na v2-7 (Fast 4G,
+# CPU 4x, Linux sem Arial): a landing a 375 px foi de CLS 0,085 para 0. `optional` foi descartado: na partida e na
+# prancheta a página ficava a visita inteira no substituto.
+FONT_DISPLAY = "fallback"
+
+
 def fontes_html() -> str:
-    """Os dois @font-face: eixo wght de 400 a 600 (o que o gera_fontes deixou), display=swap. Os fallbacks
-    medidos estão no tokens.css."""
+    """O preload das duas fontes (só por HTTP) e os dois @font-face: eixo wght de 400 a 600 (o que o gera_fontes
+    deixou). Os fallbacks medidos estão no tokens.css."""
+    arquivos = ",".join(f'"{arquivo}"' for _, arquivo in FONTES)
+    preload = ('<script>if (location.protocol !== "file:") [' + arquivos + '].forEach(function (a) { '
+               'var l = document.createElement("link"); l.rel = "preload"; l.as = "font"; l.type = "font/woff2"; '
+               'l.crossOrigin = "anonymous"; l.href = "fontes/" + a; document.head.appendChild(l); });</script>')
     faces = "\n".join(f'@font-face {{ font-family: "{familia}"; src: url(fontes/{arquivo}) format("woff2"); '
-                      f'font-weight: 400 600; font-display: swap; }}' for familia, arquivo in FONTES)
-    return f"<style>\n{faces}\n</style>"
+                      f'font-weight: 400 600; font-display: {FONT_DISPLAY}; }}' for familia, arquivo in FONTES)
+    return f"{preload}\n<style>\n{faces}\n</style>"
 
 
 def copia_fontes(saida: Path) -> None:
