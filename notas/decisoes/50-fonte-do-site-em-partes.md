@@ -25,4 +25,6 @@ script do `template.html` 2.680, num arquivo só. Regras:
   guarda do cartão 9 e sai, com o OK do Pedro, quando o cartão fechar.
 - As ferramentas de captura abrem o navegador com rasterização num fio só e sem raster parcial
   (`_comum.ARGS_DETERMINISTICOS`): sem isso, o mesmo arquivo dava de 3 a 132 pixels diferentes em cerca de 1 de cada 3
-  aberturas.
+  aberturas. A `compara_paginas` troca de aba pelo clique da própria página e espera 10 quadros parados antes de capturar:
+  o clique do Playwright rolava a barra de abas, o `scroll-snap` terminava depois, e o mesmo HTML (sha256 igual) saía com a
+  barra do celular em posições diferentes (achado no passo 3; depois da correção, 10 rodadas x 24 capturas iguais).

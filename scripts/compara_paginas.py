@@ -25,6 +25,15 @@ RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ))
 WEB = RAIZ / "dashboard" / "web"
 TAMANHOS = {"desktop": (1300, 950), "celular": (390, 844)}
+# Espera a tela parar: 10 quadros seguidos com a mesma rolagem (página e barra de abas) e sem a bolha da aba andando
+QUIETA_JS = """() => new Promise(pronto => {
+  const barra = document.querySelector('.tabs'); let antes = null, iguais = 0;
+  (function quadro() {
+    const agora = [window.scrollX, window.scrollY, barra ? barra.scrollLeft : 0].join();
+    iguais = agora === antes && !document.querySelector('.movendo') ? iguais + 1 : 0; antes = agora;
+    if (iguais >= 10) pronto(); else requestAnimationFrame(quadro);
+  })();
+})"""
 
 
 def _pagina(partida: str, rev: str | None, pasta: Path) -> Path:
@@ -79,8 +88,11 @@ def compara(partidas: list[str], antes: str, saida: Path, tamanhos: list[str]) -
                                   "largura": pg.evaluate("() => document.documentElement.scrollWidth"),
                                   "titulo": pg.title()}
                     for aba in abas:
-                        pg.click(f'[role=tab][data-tab="{aba}"]')
+                        # o clique pela própria página: o do Playwright rola a barra de abas até a aba, o scroll-snap
+                        # ajusta a posição depois, e a mesma página saía com a barra em posições diferentes (cartão 9)
+                        pg.evaluate(f"() => document.querySelector('[role=tab][data-tab=\"{aba}\"]').click()")
                         pg.wait_for_timeout(350)
+                        pg.evaluate(QUIETA_JS)
                         f = saida / f"{partida}_{tam}_{aba}_{lado}.png"
                         pg.screenshot(path=str(f), full_page=True, animations="disabled", caret="hide")
                         fotos.setdefault(aba, {})[lado] = f
