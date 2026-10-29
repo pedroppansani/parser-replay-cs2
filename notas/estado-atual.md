@@ -43,15 +43,15 @@ cor da prancheta, que nunca abria, voltou a abrir (OK do Pedro); os 30 px do Rep
 Pedro). 20 de 20 nos dois testes de arrasto. **Falta só:** o Pedro apagar a branch temporária `sonda-alca-ci` no GitHub (a local já
 não existe).
 
-**v2-6, branch `v2-6-pontos-og` (fase SEM portão do Pedro), em andamento na nuvem:** feito antes: máscaras de pontos de todos os
-mapas, imagem de compartilhamento 1200x630 por partida e para a landing (Pillow, fontes estáticas em `scripts/design/fontes_og/`),
-`og:image` por página, esqueleto de carregamento (`?estado=carregando`, sem porcentagem), nota 48, contagem 1.714. Na nuvem: a `main`
-nova mesclada na branch; o teste instável `test_perfil_erros::test_detalhes_fecha_por_padrao_lembra_e_nao_estoura_375` (caiu no CI do
+**v2-6 FEITA (2026-10-29), merge `7a118673`:** máscaras de pontos dos 8 mapas, imagem de compartilhamento 1200x630 por partida e da
+landing (53 PNG, 16 a 32 KB; `og:image:width/height` batem nas 64 páginas), esqueleto de carregamento (`?estado=carregando`, sem
+porcentagem). Na nuvem: o teste instável `test_perfil_erros::test_detalhes_fecha_por_padrao_lembra_e_nao_estoura_375` (caiu no CI do
 WIP da v2-5b) corrigido no site: o Perfil grava o aberto/fechado pelo `MutationObserver` do atributo `open`, e não pelo evento
-`toggle`, que o navegador dispara numa tarefa depois do clique. **Falta:** suíte, impressão, capturas, `docs/` antes e depois, tempo do
-build, `og:image:width/height` contra os PNG, CI, mesclar.
+`toggle`, que o navegador dispara numa tarefa depois do clique. Medido: suíte 1469 passed; impressão main x branch com 0 diferenças;
+4 quadros idênticos; `docs/` +1,5 MB (184,9 para 186,4 MB; o previsto era +4 MB); build de 29,4 s para 41,2 s (39,7 s com o cache).
+Prévia em `preview-v2/` (fora do git).
 
-**Fila que falta, nesta ordem:** (1) ~~fechar a v2-5b~~ (feito); (2) v2-6; (3) v2-7 (verificação final: LCP/CLS da landing no
+**Fila que falta, nesta ordem:** (1) ~~fechar a v2-5b~~ (feito); (2) ~~v2-6~~ (feito); (3) v2-7 (verificação final: LCP/CLS da landing no
 Pages, critérios A1 a A26 e N1 a N9 do plano seção 4.8, capturas de todas as páginas em 375 e 1440 px, `README` e `assets/readme/*.png`,
 `numeros_citaveis`); (4) cartão 6 (histograma da força da rota B), cartão 7 (os `.rar`: disco com 12 GB ou mais, conferir
 `demos/entrada/_extraido/`, sha256 de cada `.dem`, regra 36) e cartão 9 (refatoração, com a proposta, só propor, de gerar a contagem de
@@ -153,6 +153,7 @@ já foi conferido no Pages (gzip); (d) ~~a faixa vazia da barra de cima da pranc
 | v2-3 + v2-4 juntas (OK do Pedro após a prévia): navbar flutuante, landing no claro com agente, partida e jogadores no claro, abas gooey, moldura do mapa, Perfil em pílulas | `52bafe77` |
 | v2-5 (prancheta no escuro violeta; mapa da prancheta 27 px menor por causa da navbar, só tamanho) | `c3f63a73` |
 | v2-5b (mapa da prancheta com um tamanho só na edição; decisões 1 = A e 2 = C; seletor de cor; CI da `main` verde de novo) | `b21c7732`, `dfd942d7` |
+| v2-6 (pontos de todos os mapas, imagem de compartilhamento por partida, esqueleto de carregamento; Perfil sem o teste instável) | `7a118673` |
 | `fix-tickrate-resto`: tickrate lido da demo em todo lugar, sem mudar nenhum número (sha256 dos dados igual ao da `main`); contagem de testes 1.678 | `47c0f840` |
 
 ## Em andamento
