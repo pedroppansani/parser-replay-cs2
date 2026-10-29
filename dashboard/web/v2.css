@@ -173,3 +173,49 @@ body:has(.pr-cab) > .site-topo, .pr-cab, .grade { width: min(1156px, 100% - 44px
 .carregando span { position: absolute; left: 0; right: 0; bottom: 8%; text-align: center; font-size: var(--t-xs); color: var(--apagado); }
 @keyframes carrega { from { background-position: 100% 0; } to { background-position: -100% 0; } }
 @media (prefers-reduced-motion: reduce) { .carregando i { animation: none; } }
+/* ================= v2-5b: o mapa da prancheta não muda de tamanho nem de lugar durante o uso ================= */
+/* A linha de dica (acima do mapa) tem altura fixa (decisão 2 do Pedro): UMA linha no computador, e o que não couber
+   termina em reticências -- o texto inteiro aparece ao passar o mouse (`title`, posto pelo tactics.js só quando corta)
+   e o leitor de tela lê tudo (role=status); três linhas no celular. Antes ela tinha uma linha sem limite e quebrava em
+   duas com a seleção (no Linux, sem a Geist), e o mapa descia 15 px no meio do arrasto. */
+.grade .palco .pr-dica-estado { line-height: 18px; height: 31px;   /* 18 + 12 de folga + 1 de borda: pixel inteiro */
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.grade .palco .pr-dica-estado.com-grupo { display: flex; flex-wrap: nowrap; line-height: 18px; }
+.grade .palco .pr-dica-estado.com-grupo .dica-texto { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.grade .palco .pr-dica-estado.com-grupo .dica-espaco { flex: none; white-space: nowrap; }
+.grade .palco .pr-dica-estado[hidden] { display: none; }
+/* a linha do tempo reserva desde o carregamento a altura que tem com a primeira peça; o tactics.js desconta este
+   min-height (e não a altura de agora) do espaço do mapa */
+.grade .pr-linha { min-height: 117px; }
+/* As opções do pincel (cor e espessura) e da granada desenhada (o tipo) saíram da barra de cima (decisão 2 do Pedro):
+   aparecer com a ferramenta punha uma linha a mais na barra e empurrava o mapa. Ficam numa coluna na borda direita da
+   tela, ao lado do mapa (o relógio grande fica na esquerda), com o fundo e os botões da barra. A largura é fixa: o
+   tactics.js a mede e deixa a folga, e o mapa nunca passa por baixo dela; sem ferramenta que use opção, ela só fica
+   invisível (continua medindo). No celular não há desenho à mão: ela não aparece e não reserva nada. */
+.grade .pr-opcoes { position: absolute; top: 8px; right: 8px; z-index: 4; width: 100px; padding: 6px;
+  display: flex; flex-direction: column; gap: 6px; background: var(--superficie); border: 1px solid var(--linha);
+  border-radius: var(--r-card); }
+.grade .pr-opcoes.vazia { visibility: hidden; }
+.grade .pr-opcoes[inert] { opacity: 0.45; }
+.grade .pr-opcoes .anot-grupo { display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
+/* a cor (bolinha, seta e recentes) é o grupo `.anot-cor` do MapCore, que fora da barra ATIVA do Replay (`.anot-barra.ativo`,
+   annotations.css) fica a 45% e sem ponteiro: na prancheta o seletor de cor nunca abria (medido de abe79b2 à main da v2-5) */
+.grade .pr-opcoes .anot-cor { opacity: 1; pointer-events: auto; }
+.grade .pr-opcoes .anot-grupo[hidden] { display: none; }
+.grade .pr-opcoes .anot-cor { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center; }
+.grade .pr-opcoes .anot-recentes { flex: 1 1 100%; flex-wrap: wrap; justify-content: center; margin: 0; }
+.grade .pr-opcoes .anot-b { min-height: var(--toque); min-width: var(--toque); font-size: var(--t-xs);
+  font-family: var(--f-texto); font-stretch: normal; letter-spacing: 0; border-radius: var(--r-ctl); }
+.grade .pr-opcoes .pr-b { padding: 5px 8px; }
+.pr-faixas-vazio { margin: 0 0 0 138px; min-height: var(--toque); display: flex; align-items: center; padding: 0 14px;
+  border: 1px dashed var(--linha); border-radius: var(--r-card); color: var(--apagado); font-size: var(--t-xs); }
+@media (max-width: 640px) {
+  .grade .palco .pr-dica-estado { height: 67px; white-space: normal; text-overflow: clip;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+  .grade .palco .pr-dica-estado.com-grupo { display: flex; flex-wrap: wrap; height: 109px; }   /* a reserva do grupo.css (6,8rem) em pixel inteiro */
+  .grade .palco .pr-dica-estado.com-grupo .dica-texto { white-space: normal; text-overflow: clip;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; }
+  .grade .palco .pr-dica-estado.com-grupo .dica-espaco { white-space: normal; }
+  .grade .pr-opcoes { display: none; }
+  .pr-faixas-vazio { margin-left: 102px; }
+}
