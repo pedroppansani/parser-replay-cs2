@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from metrics.paleta import (DICROMACIAS, contraste, delta_e_2000, hex_para_rgb, paleta_em_uso,
+from metrics.paleta import (DICROMACIAS, contraste, delta_e_2000, hex_para_rgb, le_tokens, paleta_em_uso,
                                    rgb_para_lab, simula_dicromacia)
 
 RAIZ = Path(__file__).resolve().parent.parent
@@ -21,17 +21,33 @@ def _var(texto: str, nome: str) -> str:
     return re.search(rf"--{nome}:\s*(#[0-9a-fA-F]{{6}})", texto).group(1)
 
 
+def _tokens_dos_temas() -> dict[str, dict[str, str]]:
+    """Os tokens de cor de cada tema que pinta texto: o claro (landing, partida, jogadores), o escuro violeta (prancheta)
+    e o escuro de antes da v2-5 (a moldura do Replay: o violeta com o bloco `.board[data-tema="escuro"]` por cima)."""
+    claro, violeta = le_tokens(tema="claro"), le_tokens(tema="escuro")
+    css = re.sub(r"/\*.*?\*/", "", TOKENS.read_text(encoding="utf-8"), flags=re.S)
+    moldura = re.search(r'\.board\[data-tema="escuro"\]\s*\{([^}]*)\}', css).group(1)
+    escuro = {**violeta, **{k: v.lower() for k, v in re.findall(r"--([a-z0-9-]+):\s*(#[0-9a-fA-F]{6})\s*;", moldura)}}
+    return {"claro": claro, "violeta": violeta, "escuro da moldura do Replay": escuro}
+
+
+# os fundos onde o --apagado aparece em cada tema; o --radar (o mapa) só existe dentro das ilhas escuras
+FUNDOS_DO_TEMA = {"claro": ("fundo", "superficie", "superficie-2", "tl-fundo"),
+                  "violeta": ("fundo", "superficie", "superficie-2", "tl-fundo", "radar"),
+                  "escuro da moldura do Replay": ("fundo", "superficie", "superficie-2", "tl-fundo", "radar")}
+
+
 @pytest.mark.parametrize("pagina", sorted(FONTES))
 def test_dim_tem_contraste_de_4_5_em_todo_fundo_claro(pagina):
-    # Migrado na design-A (decisão 44): o tema é escuro e a cor secundária é o token --apagado, medido
-    # contra TODOS os fundos do tema (antes: --dim contra o card e os dois papéis claros). Cada página
-    # recebe o MESMO token pelo marcador e não define o dela.
+    # Migrado na design-A (decisão 44): a cor secundária é o token --apagado. Desde a v2 há três temas que pintam
+    # texto (claro, escuro violeta e o escuro de antes na moldura do Replay); cada --apagado é medido contra os fundos
+    # do SEU tema (v2-7, OK do Pedro: antes o teste lia o primeiro --apagado do tokens.css, o do escuro). Cada página
+    # recebe os MESMOS tokens pelo marcador e não define os dela.
     texto = FONTES[pagina].read_text(encoding="utf-8")
     assert "/*__TOKENS__*/" in texto and not re.search(r"--apagado:", texto), pagina
-    apagado = _var(TOKENS.read_text(encoding="utf-8"), "apagado")
-    for fundo in ("fundo", "superficie", "superficie-2", "radar", "tl-fundo"):
-        cor = _var(TOKENS.read_text(encoding="utf-8"), fundo)
-        assert contraste(apagado, cor) >= 4.5, (pagina, apagado, fundo, contraste(apagado, cor))
+    for tema, tk in _tokens_dos_temas().items():
+        for fundo in FUNDOS_DO_TEMA[tema]:
+            assert contraste(tk["apagado"], tk[fundo]) >= 4.5, (pagina, tema, tk["apagado"], fundo, contraste(tk["apagado"], tk[fundo]))
 
 
 def test_o_dim_novo_nao_quebra_a_paleta_validada_da_decisao_10():
