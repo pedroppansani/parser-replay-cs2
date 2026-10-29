@@ -57,8 +57,11 @@ landing 375: 0,48 s / 0,085 -> 0,78 s / 0; landing 1440: 0,63 s / 0,0004 -> 0,80
 partida 1440: 0,61 s / 0,082 -> 0,68 s / 0,0003; Perfil 375: 0,52 s / 0,0095 -> 0,70 s / 0,0003; Perfil 1440: 0,53 s / 0,009 -> 0,75 s / 0,0003;
 prancheta 375: 2,79 s / 0,029 -> 2,02 s / 0; prancheta 1440: 2,59 s / 0,033 -> 2,04 s / 0. O LCP da landing e da partida subiu
 0,15 a 0,3 s: o `font-display: fallback` espera até 100 ms pela fonte (a troca pelo CLS 0). Nenhum CLS acima de 0,01; LCP da
-landing abaixo de 2,5 s. **Próximo: o cartão 20** (a biblioteca de arremessos num arquivo próprio, carregado depois), numa branch;
-antes do merge, o LCP da prancheta antes e depois vai ao Pedro.
+landing abaixo de 2,5 s. **Cartão 20 PRONTO na branch `cartao-20-biblioteca-externa` (decisão 49), esperando o OK do Pedro para o merge** (ele pediu o
+LCP da prancheta antes e depois antes do merge). Medido localmente com gzip como o Pages (a `main` local reproduz o Pages: 2,06 /
+2,01 s contra 2,02 / 2,04 s), Fast 4G e CPU 4x: LCP da prancheta de 2,06 / 2,01 s para 0,78 / 0,87 s (375 / 1440), CLS 0; a busca
+de arremesso real pronta em 1,4 a 1,55 s (antes 2,2 a 2,3 s). Suíte 1474 passed; impressão com 0 diferenças; 4 quadros idênticos;
+pranchetas sem erro no console nem rolagem lateral; CI verde. Contagem de testes 1.717.
 **Cartão 17 FECHADO** (merge `165f0d00` na `main`; já mesclado nesta branch): o nick salvo do `test_grupos_convite` gravado por uma
 página já aberta (script de início que toca o `localStorage` em `file://` separava o armazenamento da aba). A parte B dos grupos
 continua esperando o Pedro reativar o Supabase. Cartões 6, 7 e as tarefas de dado rodam no PC do Pedro.
