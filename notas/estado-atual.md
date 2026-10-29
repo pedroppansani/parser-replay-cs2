@@ -51,6 +51,18 @@ WIP da v2-5b) corrigido no site: o Perfil grava o aberto/fechado pelo `MutationO
 4 quadros idênticos; `docs/` +1,5 MB (184,9 para 186,4 MB; o previsto era +4 MB); build de 29,4 s para 41,2 s (39,7 s com o cache).
 Prévia em `preview-v2/` (fora do git).
 
+**v2-7, branch `v2-7-verificacao` (sem portão; o Pedro pediu as capturas dos itens 1 a 3 e a tabela do item 5 antes do merge), em
+2026-10-29:** feito e com CI verde: (1) faixa com o fundo da página acima da navbar; (2) botões do Replay em pílula; (3) a moldura
+do Replay (o "1×" incluído) com o escuro de antes da v2-5; (4) `preload` das fontes só por HTTP e `font-display: fallback`;
+(5) CLS: o que o JS monta não empurra mais nada (invisível até montar); (6) 64 páginas x 3 larguras x cada aba sem rolagem lateral,
+sem erro no console e sem e-mail, e o agente sem o cartão do jogador; (7) cartões 16 a 19 no PENDENCIAS; `aceite.py` com a Geist
+Mono; imagens do README regeradas; nota 48. Impressão main x branch com 0 diferenças; 4 quadros idênticos. **Bloqueio:** a medição
+no Pages (itens 4 e 5) não roda nesta sessão: a rede do ambiente nega `pedroppansani.github.io` (o Pedro libera em Network access do
+ambiente). Medido por HTTP local (Fast 4G, CPU 4x): CLS 0,000 em landing, partida, Perfil, prancheta e jogadores a 375 e 1440,
+com um resto de 0,0003 no cabeçalho da partida (Linux sem Arial); a fonte embutida em data URI zera, mas muda a regra das fontes e
+2 testes (escolha do Pedro). Não mudou: `--f-cond` (trocar mexe na fonte dos símbolos no Linux) e o
+`test_acessibilidade::test_dim_tem_contraste…` (lê o primeiro `--apagado`, o do escuro; mudar o teste precisa do OK do Pedro).
+
 **Fila que falta, nesta ordem:** (1) ~~fechar a v2-5b~~ (feito); (2) ~~v2-6~~ (feito); (3) v2-7 (verificação final: LCP/CLS da landing no
 Pages, critérios A1 a A26 e N1 a N9 do plano seção 4.8, capturas de todas as páginas em 375 e 1440 px, `README` e `assets/readme/*.png`,
 `numeros_citaveis`); (4) cartão 6 (histograma da força da rota B), cartão 7 (os `.rar`: disco com 12 GB ou mais, conferir
