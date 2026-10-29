@@ -24,8 +24,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Limites (ci-optimizer, escolha do Pedro): um passo travado para no limite em vez de rodar as 6 horas do padrão.
+  # Medido nas 15 últimas execuções verdes: testes ~9 min (máx. 9,4), build ~1,2 min (máx. 1,5), deploy ~0,4 min (máx. 0,8).
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
@@ -46,6 +49,7 @@ jobs:
   build:
     needs: test
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
@@ -70,6 +74,7 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

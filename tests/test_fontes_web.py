@@ -1,31 +1,13 @@
 """
-As fontes do site lidas com as partes incluídas (cartão 9, decisão 50).
-
-A guarda do cartão 9: o `le_fonte` do `template.html` e do `tactics.js` devolve EXATAMENTE o texto de antes da
-divisão (o sha256 do arquivo na main `f7bc788a`, lido como o build lê). Enquanto as fontes são divididas em partes,
-este teste não muda; quando o cartão fechar, ele sai com o OK do Pedro (a partir daí, mudar a fonte de propósito muda o
-hash). E o mecanismo: a linha `//@inclui` vira o conteúdo da parte, tal como está; parte que falta ou que inclui outra
-para o build.
+As fontes do site lidas com as partes incluídas (decisão 50): a linha `//@inclui` vira o conteúdo da parte, tal como
+está; arquivo sem inclusão fica igual; parte que falta ou que inclui outra para o build. (A guarda do cartão 9, o
+sha256 do `template.html` e do `tactics.js` de antes da divisão, saiu com o cartão fechado, OK do Pedro.)
 """
 from __future__ import annotations
-
-import hashlib
-from pathlib import Path
 
 import pytest
 
 from scripts.fontes_web import le_fonte
-
-WEB = Path(__file__).resolve().parents[1] / "dashboard" / "web"
-SHA256_ANTES_DA_DIVISAO = {   # main f7bc788a, o texto lido com read_text(encoding="utf-8"), em UTF-8
-    "template.html": "f08957c85d1b3afccf8db9f9abd1a30347372cff48a9cd659a3f166c6a56966a",
-    "tactics.js": "44326be6adde67c4c18b9e661924d7b253c4217be05293cfab224d505a49f39a",
-}
-
-
-@pytest.mark.parametrize("nome", sorted(SHA256_ANTES_DA_DIVISAO))
-def test_le_fonte_devolve_o_texto_de_antes_da_divisao(nome):
-    assert hashlib.sha256(le_fonte(WEB / nome).encode("utf-8")).hexdigest() == SHA256_ANTES_DA_DIVISAO[nome]
 
 
 def test_a_linha_de_inclusao_vira_a_parte_tal_como_esta(tmp_path):
