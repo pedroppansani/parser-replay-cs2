@@ -11,6 +11,7 @@ import numpy as np
 import polars as pl
 
 from metrics import player_roles as pr
+from scripts.fontes_web import le_fonte
 
 
 def _sinais(linhas: list[dict]) -> pl.DataFrame:
@@ -111,5 +112,5 @@ def test_empate_de_margem_desempata_pela_prioridade():
 def test_o_cartao_ordena_os_rotulos_pela_ordem_da_tela():
     """O template monta o título e as características na ordem que vem do Python."""
     from pathlib import Path
-    tpl = (Path(__file__).resolve().parents[1] / "dashboard" / "web" / "template.html").read_text(encoding="utf-8")
+    tpl = le_fonte(Path(__file__).resolve().parents[1] / "dashboard" / "web" / "template.html")
     assert "a.ordem != null ? a.ordem - b.ordem" in tpl

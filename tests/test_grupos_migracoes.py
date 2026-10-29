@@ -15,6 +15,8 @@ from pathlib import Path
 
 import pytest
 
+from scripts.fontes_web import le_fonte
+
 RAIZ = Path(__file__).resolve().parents[1]
 MIGRACOES = RAIZ / "supabase" / "migrations"
 
@@ -125,7 +127,7 @@ def test_a_lista_de_tipos_do_servidor_e_a_do_javascript_e_a_do_python():
 
     corpo = _funcao("grupos.tipos_de_operacao")
     no_sql = re.findall(r"'([a-z_]+)'", corpo[corpo.index("array["):corpo.index("]::text[]")])
-    js = (RAIZ / "dashboard" / "web" / "tactics.js").read_text(encoding="utf-8")
+    js = le_fonte(RAIZ / "dashboard" / "web" / "tactics.js")
     inicio = js.index("var OPERACOES = {")
     bloco = js[inicio:js.index("};", inicio)]
     bloco = " ".join(l for l in bloco.splitlines() if not l.strip().startswith("//"))

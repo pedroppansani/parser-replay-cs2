@@ -9,8 +9,10 @@ from pathlib import Path
 
 import pytest
 
+from scripts.fontes_web import le_fonte
+
 RAIZ = Path(__file__).resolve().parent.parent
-TEMPLATE = (RAIZ / "dashboard" / "web" / "template.html").read_text(encoding="utf-8")
+TEMPLATE = le_fonte(RAIZ / "dashboard" / "web" / "template.html")
 PARTIDA = "match_02"
 
 

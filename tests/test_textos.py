@@ -8,10 +8,11 @@ from pathlib import Path
 import pytest
 
 from metrics.formatting import format_pct_par
+from scripts.fontes_web import le_fonte
 
 RAIZ = Path(__file__).resolve().parent.parent
 PROCESSED = RAIZ / "data" / "processed"
-TEMPLATE = (RAIZ / "dashboard" / "web" / "template.html").read_text(encoding="utf-8")
+TEMPLATE = le_fonte(RAIZ / "dashboard" / "web" / "template.html")
 
 
 def test_porcentagens_comparadas_que_o_arredondamento_iguala_ganham_uma_casa():

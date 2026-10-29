@@ -91,3 +91,4 @@ Uma nota por decisão. O `CLAUDE.md` traz a lista curta das que estão em vigor.
 | [38](38-times-canonicos.md) | vigente | Todo agregado por time usa `metrics/times.nome_canonico`. |
 | [48](48-direcao-visual-goatdemo.md) | vigente | Direção v2 "GOAT.demo": tema por página, mapa sempre escuro (`*-mapa`), Geist no próprio site, CSP sem origem externa; revê a 44. |
 | [49](49-biblioteca-de-arremessos-externa.md) | vigente | No site, a biblioteca de arremessos em `arremessos/<mapa>.js`, carregada depois da tela; o que liga ao arremesso real espera por ela. |
+| [50](50-fonte-do-site-em-partes.md) | vigente | `tactics.js` e o script do `template.html` em partes (`//@inclui`), lidos só por `le_fonte`; dividir é só mudar de lugar, provado byte a byte. |

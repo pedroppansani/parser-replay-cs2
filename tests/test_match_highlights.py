@@ -23,6 +23,7 @@ from metrics.match_highlights import (
     outro_destaque,
 )
 from leitura.narrativa import historia_destaque, historia_mvp
+from scripts.fontes_web import le_fonte
 
 PROCESSED = Path("data/processed")
 
@@ -226,7 +227,7 @@ def test_duas_partidas_nao_geram_nenhuma_frase_identica():
 
 def test_o_grafico_de_probabilidade_saiu_da_leitura_e_esta_no_placar():
     """A mesma informação duas vezes na mesma página só gasta espaço."""
-    html = Path("dashboard/web/template.html").read_text(encoding="utf-8")
+    html = le_fonte(Path("dashboard/web/template.html"))
 
     leitura = html[html.index('data-panel="insights"'):html.index('data-panel="rounds"')]
     placar = html[html.index('data-panel="rounds"'):html.index('data-panel="jogadores"')]

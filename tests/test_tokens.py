@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from metrics.paleta import le_tokens
+from scripts.fontes_web import le_fonte
 
 RAIZ = Path(__file__).resolve().parent.parent
 WEB = RAIZ / "dashboard" / "web"
@@ -15,7 +16,7 @@ TOKENS = WEB / "tokens.css"
 
 def _css(arquivo: Path) -> str:
     """O CSS de um arquivo: ele todo, ou o que está dentro do <style> (HTML e landing)."""
-    t = arquivo.read_text(encoding="utf-8")
+    t = le_fonte(arquivo)
     if arquivo.suffix == ".css":
         return t
     i = t.index("<style>")
@@ -59,7 +60,7 @@ def test_nenhum_arquivo_define_cor_por_conta_propria(arquivo):
 @pytest.mark.parametrize("hospedeira", [WEB / "template.html", WEB / "tactics.html", WEB / "jogadores.html", RAIZ / "scripts" / "build_site.py"],
                          ids=lambda a: a.name)
 def test_toda_pagina_recebe_os_tokens_e_as_fontes_pelos_marcadores(hospedeira):
-    texto = hospedeira.read_text(encoding="utf-8")
+    texto = le_fonte(hospedeira)
     assert texto.count("/*__TOKENS__*/") == 1 and texto.count("<!--__FONTES__-->") == 1
 
 

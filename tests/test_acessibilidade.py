@@ -8,6 +8,7 @@ import pytest
 
 from metrics.paleta import (DICROMACIAS, contraste, delta_e_2000, hex_para_rgb, le_tokens, paleta_em_uso,
                                    rgb_para_lab, simula_dicromacia)
+from scripts.fontes_web import le_fonte
 
 RAIZ = Path(__file__).resolve().parent.parent
 WEB = RAIZ / "dashboard" / "web"
@@ -43,7 +44,7 @@ def test_dim_tem_contraste_de_4_5_em_todo_fundo_claro(pagina):
     # texto (claro, escuro violeta e o escuro de antes na moldura do Replay); cada --apagado é medido contra os fundos
     # do SEU tema (v2-7, OK do Pedro: antes o teste lia o primeiro --apagado do tokens.css, o do escuro). Cada página
     # recebe os MESMOS tokens pelo marcador e não define os dela.
-    texto = FONTES[pagina].read_text(encoding="utf-8")
+    texto = le_fonte(FONTES[pagina])
     assert "/*__TOKENS__*/" in texto and not re.search(r"--apagado:", texto), pagina
     for tema, tk in _tokens_dos_temas().items():
         for fundo in FUNDOS_DO_TEMA[tema]:
@@ -56,18 +57,18 @@ def test_o_dim_novo_nao_quebra_a_paleta_validada_da_decisao_10():
         for tipo in DICROMACIAS:
             de = delta_e_2000(rgb_para_lab(simula_dicromacia(apagado, tipo)), rgb_para_lab(simula_dicromacia(cor, tipo)))
             assert de >= 8.0, (apagado, cor, tipo, de)
-    assert 'apagado: tk("apagado")' in FONTES["template"].read_text(encoding="utf-8")   # o C.apagado dos gráficos
+    assert 'apagado: tk("apagado")' in le_fonte(FONTES["template"])   # o C.apagado dos gráficos
 
 
 @pytest.mark.parametrize("arquivo", [WEB / "template.html", WEB / "tactics.css", RAIZ / "scripts" / "build_site.py"])
 def test_todo_controle_tem_foco_visivel(arquivo):
     assert re.search(r":where\(button, a\[href\], select, input, textarea, summary, \[tabindex\]\):focus-visible",
-                     arquivo.read_text(encoding="utf-8"))
+                     le_fonte(arquivo))
 
 
 def test_canvas_com_rotulo_tem_papel_de_imagem():
     for arq in (WEB / "template.html", WEB / "tactics.html"):
-        for tag in re.findall(r"<canvas[^>]*>", arq.read_text(encoding="utf-8")):
+        for tag in re.findall(r"<canvas[^>]*>", le_fonte(arq)):
             if "aria-label" in tag:
                 assert 'role="img"' in tag, (arq.name, tag)
 
