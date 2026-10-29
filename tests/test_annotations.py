@@ -34,6 +34,7 @@ from metrics.annotations import (
     tracos_do_round,
     valida,
 )
+from scripts.fontes_web import le_fonte
 
 JS = Path("dashboard/web/annotations.js")
 CORE = Path("dashboard/web/map_core.js")
@@ -273,14 +274,14 @@ def test_estrutural_o_traco_em_andamento_vive_na_camada_de_rascunho():
 def test_estrutural_a_camada_vive_em_arquivo_separado():
     """O template já está grande demais."""
     assert JS.exists()
-    tpl = TEMPLATE.read_text(encoding="utf-8")
+    tpl = le_fonte(TEMPLATE)
     assert "/*__ANNOTATIONS__*/" in tpl
     assert "window.MapAnnotations = (function" not in tpl
 
 
 def test_estrutural_o_mapa_e_a_camada_usam_a_mesma_transformacao():
     """Se as duas divergirem, a seta aponta pro lugar errado no primeiro zoom."""
-    tpl = TEMPLATE.read_text(encoding="utf-8")
+    tpl = le_fonte(TEMPLATE)
     assert "MapAnnotations.applyView(ctx)" in tpl
     js = JS.read_text(encoding="utf-8")
     assert "function applyView(ctx)" in js
@@ -288,7 +289,7 @@ def test_estrutural_o_mapa_e_a_camada_usam_a_mesma_transformacao():
 
 
 def test_estrutural_trocar_de_round_avisa_a_camada():
-    tpl = TEMPLATE.read_text(encoding="utf-8")
+    tpl = le_fonte(TEMPLATE)
     inicio = tpl.index("function selectRound(r) {")
     assert "MapAnnotations.setRound(r.round)" in tpl[inicio:inicio + 700]
 
@@ -311,6 +312,6 @@ def test_estrutural_a_pagina_construida_leva_a_camada_junto():
 
 def test_estrutural_a_camada_nao_tem_texto_nem_estilo_no_template():
     """Tudo da camada vive nos arquivos dela, não no template."""
-    tpl = TEMPLATE.read_text(encoding="utf-8")
+    tpl = le_fonte(TEMPLATE)
     for resto in (".anot-", "tela-cheia", "Desenhar", "Tela cheia"):
         assert resto not in tpl, f"'{resto}' ainda está no template"

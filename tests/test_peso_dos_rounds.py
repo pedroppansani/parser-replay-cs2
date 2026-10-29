@@ -15,10 +15,11 @@ import pytest
 from leitura.peso_dos_rounds import bloco, placar_antes_e_depois, variacao
 from metrics.formatting import format_pp
 from metrics.paleta import contraste, le_tokens
+from scripts.fontes_web import le_fonte
 
 RAIZ = Path(__file__).resolve().parent.parent
 PROCESSED = RAIZ / "data" / "processed"
-TEMPLATE = (RAIZ / "dashboard" / "web" / "template.html").read_text(encoding="utf-8")
+TEMPLATE = le_fonte(RAIZ / "dashboard" / "web" / "template.html")
 NOMES = {"A": "Alfa", "B": "Bravo"}
 
 

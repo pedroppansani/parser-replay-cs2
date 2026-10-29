@@ -17,6 +17,7 @@ import pytest
 from metrics.tactics import (
     FORMATO, IDENTIFICADOR, TaticaInvalida, aplica, mescla, posicao_no_passo, valida,
 )
+from scripts.fontes_web import le_fonte
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
@@ -359,7 +360,7 @@ def test_ordem_de_criacao_segue_o_log():
 
 def test_as_listas_do_traco_na_prancheta_batem_com_as_da_anotacao():
     from metrics.annotations import ESPESSURAS, FERRAMENTAS
-    js = (PROJECT_ROOT / "dashboard" / "web" / "tactics.js").read_text(encoding="utf-8")
+    js = le_fonte(PROJECT_ROOT / "dashboard" / "web" / "tactics.js")
     assert f"var ESPESSURAS = {list(ESPESSURAS)};" in js
     ini = js.index("var FERRAMENTAS_TRACO = ")
     lista = json.loads(js[ini:js.index("];", ini) + 1].split("=", 1)[1])

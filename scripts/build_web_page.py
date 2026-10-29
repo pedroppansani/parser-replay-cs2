@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 
 from metrics.annotations import impressao_da_calibracao
+from scripts.fontes_web import le_fonte
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE = PROJECT_ROOT / "dashboard" / "web" / "template.html"
@@ -315,7 +316,7 @@ def build_html(match_id: str, site: dict | None = None, base: Path | None = None
     prancheta = arquivo_da_pagina(map_name) if map_name in mapas_disponiveis() else None
     from scripts.design_head import topo_do_site, v2_js
     html = (
-        TEMPLATE.read_text(encoding="utf-8")
+        le_fonte(TEMPLATE)   # o template com as partes incluídas (decisão 50)
         # a navbar do site e o comportamento comum da v2 (decisão 48) entram antes do dado
         .replace("<!--__TOPO__-->", topo_do_site("partida", prancheta, REPO))
         .replace("/*__V2_JS__*/", v2_js())

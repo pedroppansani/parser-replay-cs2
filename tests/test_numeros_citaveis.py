@@ -10,6 +10,8 @@ import json
 import re
 from pathlib import Path
 
+from scripts.fontes_web import le_fonte
+
 RAIZ = Path(__file__).resolve().parent.parent
 TEMPLATE = RAIZ / "dashboard" / "web" / "template.html"
 
@@ -35,7 +37,7 @@ EXCECOES = [
 
 
 def _texto_visivel() -> list[tuple[int, str]]:
-    bruto = TEMPLATE.read_text(encoding="utf-8")
+    bruto = le_fonte(TEMPLATE)
     corpo = bruto[bruto.index("</style>"):]
     base = bruto[:bruto.index("</style>")].count("\n") + 1
     out = []

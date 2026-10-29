@@ -24,6 +24,7 @@ from metrics.formatting import format_clock, format_money
 from metrics.round_breakdown import CAUDA_POS_ROUND_S, analyze_round
 from metrics.sides import REGULATION_HALF as HALFTIME_ROUND
 from parsing.parser import kills_do_round_jogado
+from scripts.fontes_web import le_fonte
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 PROCESSED = PROJECT_ROOT / "data" / "processed"
@@ -477,6 +478,6 @@ def test_frase_da_morte_no_replay_nunca_usa_a_vitima_como_matador():
 def test_template_nao_monta_frase_de_morte():
     from pathlib import Path
 
-    tpl = Path("dashboard/web/template.html").read_text(encoding="utf-8")
+    tpl = le_fonte(Path("dashboard/web/template.html"))
     assert '+ e.attacker + "</b> matou "' not in tpl
     assert 'm.by + " matou "' not in tpl

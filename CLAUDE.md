@@ -134,6 +134,8 @@ Uma regra por linha; o número entre parênteses é a nota em `notas/decisoes/`.
 - O documento de design dá a FORMA; onde ele pedir mudar um comportamento que o main já tem, vale o
   do main e o conflito vai para o relatório; mudança de forma deixa zero diferença numérica
   (`scripts/design/impressao_numeros.py`) (44)
+- Fonte do site em partes (`//@inclui`) só se lê por `scripts.fontes_web.le_fonte` (build, testes,
+  ferramentas); dividir é só mudar de lugar: `scripts.design.prova_refatoracao` igual byte a byte (50)
 
 ## Índice
 

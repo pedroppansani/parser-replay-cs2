@@ -17,6 +17,7 @@ import json
 from pathlib import Path
 
 from metrics.annotations import impressao_da_calibracao
+from scripts.fontes_web import le_fonte
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 WEB = PROJECT_ROOT / "dashboard" / "web"
@@ -134,7 +135,7 @@ def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | Non
         .replace("<!--__TOPO__-->", topo_do_site("prancheta", arquivo_da_pagina(mapa), REPO))
         .replace("/*__V2_JS__*/", v2_js())   # antes do dado: o JS da v2 entra como texto, sem marcador sobrando
         .replace("/*__MAP_CORE__*/", (WEB / "map_core.js").read_text(encoding="utf-8"))
-        .replace("/*__TACTICS_JS__*/", (WEB / "tactics.js").read_text(encoding="utf-8"))
+        .replace("/*__TACTICS_JS__*/", le_fonte(WEB / "tactics.js"))   # com as partes incluídas (decisão 50)
         .replace("/*__MAPA__*/null", _js(mapa))
         .replace("/*__RADAR__*/null", _js(radar))
         .replace("/*__LINEUPS__*/null", _js(biblioteca))

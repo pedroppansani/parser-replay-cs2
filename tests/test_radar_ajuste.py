@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+from scripts.fontes_web import le_fonte
 from scripts.radar_ajuste import aviso, avisa, padrao, tabela
 
 RAIZ = Path(__file__).resolve().parent.parent
@@ -46,10 +47,10 @@ def test_mapa_sem_entrada_usa_o_padrao_e_o_build_avisa(capsys):
 def test_nada_de_filtro_por_quadro():
     """O processamento é uma vez na carga (getImageData/putImageData); ctx.filter por quadro está proibido."""
     for arq in ("map_core.js", "tactics.js", "template.html"):
-        texto = (WEB / arq).read_text(encoding="utf-8")
+        texto = le_fonte(WEB / arq)
         assert not re.search(r"\.filter\s*=", texto), arq
-    assert "MapCore.radarProcessado(im, RAD.map)" in (WEB / "template.html").read_text(encoding="utf-8")
-    assert "MapCore.radarProcessado(im, cfg.radar.map)" in (WEB / "tactics.js").read_text(encoding="utf-8")
+    assert "MapCore.radarProcessado(im, RAD.map)" in le_fonte(WEB / "template.html")
+    assert "MapCore.radarProcessado(im, cfg.radar.map)" in le_fonte(WEB / "tactics.js")
 
 
 # ------------------------------------------------------------------ no navegador
