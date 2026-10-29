@@ -541,7 +541,12 @@ O texto original do cartão:
 
 ---
 
-## 20. O LCP da prancheta (4,9 s): a biblioteca de arremessos embutida atrasa a tela inteira
+## 20. O LCP da prancheta (4,9 s): a biblioteca de arremessos embutida atrasa a tela inteira -- FECHADO
+
+- **Fechado (2026-10-29), merge `24eea71e`, decisão 49.** A biblioteca de arremessos foi para `arremessos/<mapa>.js`,
+  carregada depois da tela; o round e o instante do Replay esperam por ela e nascem iguais. No Pages, o LCP da prancheta
+  da Mirage foi de 2,02 / 2,04 s para 0,89 / 0,78 s (375 / 1440), com CLS 0; a tabela está na nota 49. O texto abaixo é o
+  cartão como foi aberto.
 
 - **Decisão do Pedro (2026-10-29): opção 1.** A biblioteca de arremessos vai num arquivo próprio, carregado depois. Fica na
   fila logo depois da v2-7, numa branch; mexe só no site; antes do merge, o LCP da prancheta antes e depois vai ao Pedro.

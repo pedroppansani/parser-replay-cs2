@@ -22,5 +22,14 @@ montava depois de o navegador analisar tudo. Regras:
   Replay nascem iguais aos do modo embutido, mesmo com a biblioteca atrasada. Enquanto ela não chega, "Buscar arremesso
   real" fica desligado com o motivo; se o arquivo não carregar, a prancheta segue sem arremesso real e diz por quê.
 - A impressão dos números lê o arquivo e registra a biblioteca com o mesmo nome de antes (`<página>::biblioteca`).
-- Medido (local, gzip como o Pages, Fast 4G, CPU 4x): LCP da prancheta de 2,06 / 2,01 s para 0,78 / 0,87 s (375 / 1440);
-  a busca de arremesso real fica pronta em 1,4 a 1,55 s (antes, 2,2 a 2,3 s).
+
+**Medidas da prancheta da Mirage** (Fast 4G, CPU 4x, 5 medidas por largura, cache limpo; LCP mediano, o pior entre parênteses):
+
+| onde | versão | LCP a 375 | LCP a 1440 | CLS | busca de arremesso real pronta |
+|---|---|---|---|---|---|
+| local, gzip como o Pages | antes (`b54a5240`) | 2,06 s (2,31) | 2,01 s (2,20) | 0 | 2,2 a 2,3 s |
+| local, gzip como o Pages | depois (branch do cartão 20) | 0,78 s (0,83) | 0,87 s (0,92) | 0 | 1,4 a 1,55 s |
+| Pages | antes (`73fc57d0`, v2-7) | 2,02 s (2,44) | 2,04 s (2,47) | 0 | -- |
+| Pages | depois (`24eea71e`, 2026-10-29) | 0,89 s (2,41) | 0,78 s (0,80) | 0 | -- |
+
+No Pages, uma das 5 medidas a 375 deu 2,41 s (provavelmente o primeiro pedido do arquivo novo ao CDN); a mediana não muda.

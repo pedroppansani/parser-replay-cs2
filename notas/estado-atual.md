@@ -57,11 +57,9 @@ landing 375: 0,48 s / 0,085 -> 0,78 s / 0; landing 1440: 0,63 s / 0,0004 -> 0,80
 partida 1440: 0,61 s / 0,082 -> 0,68 s / 0,0003; Perfil 375: 0,52 s / 0,0095 -> 0,70 s / 0,0003; Perfil 1440: 0,53 s / 0,009 -> 0,75 s / 0,0003;
 prancheta 375: 2,79 s / 0,029 -> 2,02 s / 0; prancheta 1440: 2,59 s / 0,033 -> 2,04 s / 0. O LCP da landing e da partida subiu
 0,15 a 0,3 s: o `font-display: fallback` espera até 100 ms pela fonte (a troca pelo CLS 0). Nenhum CLS acima de 0,01; LCP da
-landing abaixo de 2,5 s. **Cartão 20 PRONTO na branch `cartao-20-biblioteca-externa` (decisão 49), esperando o OK do Pedro para o merge** (ele pediu o
-LCP da prancheta antes e depois antes do merge). Medido localmente com gzip como o Pages (a `main` local reproduz o Pages: 2,06 /
-2,01 s contra 2,02 / 2,04 s), Fast 4G e CPU 4x: LCP da prancheta de 2,06 / 2,01 s para 0,78 / 0,87 s (375 / 1440), CLS 0; a busca
-de arremesso real pronta em 1,4 a 1,55 s (antes 2,2 a 2,3 s). Suíte 1474 passed; impressão com 0 diferenças; 4 quadros idênticos;
-pranchetas sem erro no console nem rolagem lateral; CI verde. Contagem de testes 1.717.
+landing abaixo de 2,5 s. **Cartão 20 FEITO (2026-10-29), merge `24eea71e`, CI e deploy verdes (decisão 49):** a biblioteca de arremessos em
+`arremessos/<mapa>.js`, carregada depois da tela. No Pages, LCP da prancheta da Mirage de 2,02 / 2,04 s para 0,89 / 0,78 s
+(375 / 1440), CLS 0 (tabela na nota 49). O LCP da v2-7 fica como está, com `font-display: fallback` (decisão do Pedro).
 **Cartão 17 FECHADO** (merge `165f0d00` na `main`; já mesclado nesta branch): o nick salvo do `test_grupos_convite` gravado por uma
 página já aberta (script de início que toca o `localStorage` em `file://` separava o armazenamento da aba). A parte B dos grupos
 continua esperando o Pedro reativar o Supabase. Cartões 6, 7 e as tarefas de dado rodam no PC do Pedro.
@@ -78,25 +76,17 @@ com um resto de 0,0003 no cabeçalho da partida (Linux sem Arial); a fonte embut
 2 testes (escolha do Pedro). Não mudou: `--f-cond` (trocar mexe na fonte dos símbolos no Linux) e o
 `test_acessibilidade::test_dim_tem_contraste…` (lê o primeiro `--apagado`, o do escuro; mudar o teste precisa do OK do Pedro).
 
-**Fila que falta, nesta ordem:** (1) ~~fechar a v2-5b~~ (feito); (2) ~~v2-6~~ (feito); (2b) ~~cartão 17~~ (feito, `165f0d00`); (3) ~~v2-7~~ (feito, `73fc57d0`; verificação final: LCP/CLS da landing no
-Pages, critérios A1 a A26 e N1 a N9 do plano seção 4.8, capturas de todas as páginas em 375 e 1440 px, `README` e `assets/readme/*.png`,
-`numeros_citaveis`); (3b) cartão 20 (a biblioteca de arremessos num arquivo próprio, carregado depois; decidido pelo Pedro); (4) cartão 6 (histograma da força da rota B), cartão 7 (os `.rar`: disco com 12 GB ou mais, conferir
-`demos/entrada/_extraido/`, sha256 de cada `.dem`, regra 36) e cartão 9 (refatoração, com a proposta, só propor, de gerar a contagem de
-testes no build); (5) parte B dos grupos (antes: pedir ao Pedro para REATIVAR o projeto Supabase e esperar a confirmação; `GRUPOS_ATIVOS`
-fica `False` até o LIBERADO do agente `seguranca` e o OK do Pedro; decidir o pause do plano Free; gitleaks, npm audit, pip-audit e
-`.claude/worktrees/` no `.gitignore`).
+**Fila que falta, nesta ordem:** (1) ~~v2-5b~~, ~~v2-6~~, ~~cartão 17~~ (`165f0d00`), ~~v2-7~~ (`73fc57d0`) e ~~cartão 20~~
+(`24eea71e`): feitos. (2) Cartão 9 (a refatoração dos arquivos grandes): o plano foi PROPOSTO ao Pedro em 2026-10-29 e espera a
+resposta; nada mudou. Junto, a proposta de gerar a contagem de testes no build. (3) No PC do Pedro: cartão 6 (histograma da força da
+rota B), cartão 7 (os `.rar`: disco com 12 GB ou mais, conferir `demos/entrada/_extraido/`, sha256 de cada `.dem`, regra 36) e toda
+tarefa de métrica, dado ou parsing (os testes pulados na nuvem rodam lá). (4) Parte B dos grupos: só depois de o Pedro reativar o
+Supabase e dar o OK (`GRUPOS_ATIVOS` fica `False` até o LIBERADO do agente `seguranca` e o OK do Pedro; decidir o pause do plano
+Free; gitleaks, npm audit, pip-audit e `.claude/worktrees/` no `.gitignore`); o cartão 17, que a travava, está resolvido.
 
 **Pendências abertas (cartões em `notas/PENDENCIAS_PARA_O_PEDRO.md`):** 14 (comparação por grupos no Perfil, fase própria depois da
-v2, regra de empate do Pedro), 15 (regra de tamanho do mapa do protótipo), 16 (texto branco do protótipo no escuro, opcional), 17
-(`test_grupos_convite::test_um_clique_entra_no_grupo` instável e dependente da ordem; reproduz na `main` com
-`py -3.12 -m pytest tests/test_grupos_painel.py tests/test_grupos_convite.py -q -p no:cacheprovider`; resolver antes da parte B; NÃO
-marcar para pular nem repetir). **Itens da v2-7 (do Pedro):** (a) ao rolar, o conteúdo aparece POR CIMA da navbar flutuante (no Perfil a
-1440 px a borda do placar; a 375 px a pílula "começou TR"): ver se o espaço acima da navbar deve ter o fundo da página e mostrar antes e
-depois na prévia; (b) botões do Replay (Desenhar, Direção, Abrir round na prancheta, Tela cheia, ?) em pílula, e o "1x" do Replay, que
-ficou com fundo violeta: a moldura do Replay deve ficar com o escuro de antes; (c) `aceite.py`, `capturas_readme.py` e `interacao.py`
-ainda procuram `btn-partida` e "JetBrains"; `--f-cond` ainda no template; `test_acessibilidade.py::test_dim_tem_contraste…` lê o primeiro
-`--apagado` do `tokens.css` (o bloco escuro está primeiro); fallback da fonte mono no macOS; o `Content-Encoding` dos `.js` dos agentes
-já foi conferido no Pages (gzip); (d) ~~a faixa vazia da barra de cima da prancheta~~: resolvida pela decisão 2 = C (v2-5b).
+v2, regra de empate do Pedro), 15 (regra de tamanho do mapa do protótipo), 16 (texto branco do protótipo no escuro, opcional), 18 (fonte mono no macOS, precisa de um Mac), 19 (a `compara_capturas` em software: sim ou não). Os itens que o Pedro pediu para a v2-7 (navbar, botões do Replay, o "1×", `aceite.py`, `--apagado`, imagens do README)
+foram feitos na v2-7; o `--f-cond` ficou (trocar mexe na fonte dos símbolos no Linux; nota 48).
 
 **Regras combinadas que ainda não estão num CLAUDE.md:**
 - Todo comando longo (suíte, reprocesso, build, capturas, espera de CI) roda com `timeout` e saída em `notas/logs/` (fora do git), um
@@ -183,6 +173,7 @@ já foi conferido no Pages (gzip); (d) ~~a faixa vazia da barra de cima da pranc
 | v2-6 (pontos de todos os mapas, imagem de compartilhamento por partida, esqueleto de carregamento; Perfil sem o teste instável) | `7a118673` |
 | Cartão 17 (o `test_grupos_convite` sem falha ao acaso) | `165f0d00` |
 | v2-7 (verificação final: navbar, Replay, fontes, CLS 0, conferência, cartões 16 a 20) | `73fc57d0` |
+| Cartão 20 (a biblioteca de arremessos num arquivo próprio, carregado depois; LCP da prancheta ~2 s -> ~0,8 s) | `24eea71e` |
 | `fix-tickrate-resto`: tickrate lido da demo em todo lugar, sem mudar nenhum número (sha256 dos dados igual ao da `main`); contagem de testes 1.678 | `47c0f840` |
 
 ## Em andamento
