@@ -81,7 +81,7 @@ já foi conferido no Pages (gzip); (d) a faixa vazia da barra de cima da pranche
 - Windows: criar a junction do `data/interim` com PowerShell `New-Item -ItemType Junction` (o `mklink` do Bash falha) e removê-la com
   `cmd /c rmdir` (nunca `rm -rf`); conferir `data/interim` com 1071 arquivos. Browser dos testes: `channel="chrome"` (o Chromium do
   Playwright não está instalado na máquina do Pedro). O `rm` de pasta pode ser barrado: sobrescrever e conferir com `diff -rq`.
-- Versão das métricas na `main`: 30. `GRUPOS_ATIVOS = False`. A chave `service_role` ou `sb_secret_` nunca vai ao repositório. O e-mail do
+- Versão das métricas na `main`: 30. `GRUPOS_ATIVOS = False`. A chave do papel de serviço ou a `sb_secret_` nunca vai ao repositório (e a palavra do papel nem é escrita: `test_grupos_config` a procura em todo arquivo). O e-mail do
   Pedro nunca aparece no site nem no README. A pasta Iriun (`C:/Users/User/Desktop/TimeIA/Iriun/`) é só leitura.
 
 ## Regras temporárias em vigor

@@ -168,7 +168,7 @@ Cada fase é uma branch `v2-N-nome`. Merge quando:
 </item>
 
 <item n="7" titulo="Parte B dos grupos (Supabase): TRAVADA">
-**Não comece até o Pedro escrever, nesta sessão, "Supabase pronto".** Quando ele escrever, termine o item em andamento, faça o merge e vá para a parte B, como combinado nas mensagens anteriores (B1 a B20, `npx supabase`, nunca a chave `sb_secret_`/`service_role` e nunca a senha do banco).
+**Não comece até o Pedro escrever, nesta sessão, "Supabase pronto".** Quando ele escrever, termine o item em andamento, faça o merge e vá para a parte B, como combinado nas mensagens anteriores (B1 a B20, `npx supabase`, nunca a chave `sb_secret_` nem a do papel de serviço e nunca a senha do banco).
 
 **Junto da parte B, responda as perguntas que o agente de segurança deixou abertas:**
 
