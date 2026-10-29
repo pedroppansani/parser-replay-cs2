@@ -63,9 +63,23 @@ def v2_js() -> str:
     return (WEB / "v2.js").read_text(encoding="utf-8")
 
 
+# O tema escolhido na landing (Fase T): um arquivo pequeno, ao lado das páginas, carregado no <head> antes de qualquer
+# pintura (sem script inline: a CSP não muda). A prancheta é sempre violeta e não o carrega.
+TEMA_JS = "tema.js"
+
+
+def tema_html(html: str) -> str:
+    return "" if 'data-tema="violeta"' in html else f'<script src="{TEMA_JS}"></script>\n'
+
+
+def copia_tema(saida: Path) -> None:
+    """O `tema.js` em `<saida>/`, ao lado das páginas (docs/ e preview/)."""
+    shutil.copyfile(WEB / TEMA_JS, saida / TEMA_JS)
+
+
 def aplica(html: str) -> str:
-    """Troca os marcadores pelos tokens, pelas fontes e pelo CSS da v2."""
-    return (html.replace(MARCADOR_TOKENS, tokens_css()).replace(MARCADOR_FONTES, fontes_html())
+    """Troca os marcadores pelos tokens, pelo tema, pelas fontes e pelo CSS da v2."""
+    return (html.replace(MARCADOR_TOKENS, tokens_css()).replace(MARCADOR_FONTES, tema_html(html) + fontes_html())
             .replace(MARCADOR_V2, v2_css()))
 
 
@@ -82,10 +96,23 @@ def _cabra() -> str:
     return svg.replace(' role="img" aria-label="Cabra Pico"', ' width="30" height="30" aria-hidden="true" focusable="false"')
 
 
+# O botão de tema (Fase T), só na navbar da landing: o nome é "Escuro" e o aria-pressed diz se o escuro está ligado
+TEXTO_DO_TEMA = "Escuro"
+_LUA = ('<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" '
+        'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
+        '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>')
+
+
+def botao_do_tema() -> str:
+    return (f'<button class="tema-botao" type="button" aria-pressed="false">{_LUA}'
+            f'<span>{TEXTO_DO_TEMA}</span></button>')
+
+
 def topo_do_site(atual: str, prancheta: str | None, repo: str) -> str:
     """A navbar do site (entrega-v2-goatdemo §5.1): a marca (cabra C + wordmark, leva à landing) e três links --
     Partidas, Jogadores, Prancheta --, sem GitHub nem botão de ação (o GitHub fica no rodapé da landing, dúvida 1
-    do plano). `atual` é "partidas", "jogadores" ou "prancheta" (recebe aria-current). Com o `v2.css` (marcador
+    do plano). `atual` é "partidas", "jogadores" ou "prancheta" (recebe aria-current); na landing ("partidas") entra o
+    botão de tema (Fase T). Com o `v2.css` (marcador
     /*__V2__*/) ela flutua em pílula; sem ele, cada página a desenha com o CSS dela. `repo` fica na assinatura
     para as páginas que chamam."""
     from html import escape as e
@@ -97,5 +124,5 @@ def topo_do_site(atual: str, prancheta: str | None, repo: str) -> str:
     nav = "".join(f'<a href="{e(h)}"{" aria-current=\"page\"" if k == atual else ""}>{t}</a>' for k, h, t in links)
     return (f'<header class="site-topo">\n'
             f'    <a class="marca" href="index.html" aria-label="GOAT.demo, início">{_cabra()}{_wordmark_liso()}</a>\n'
-            f'    <nav class="site-nav" aria-label="Principal">{nav}</nav>\n'
+            f'    <nav class="site-nav" aria-label="Principal">{nav}</nav>{botao_do_tema() if atual == "partidas" else ""}\n'
             f'  </header>')

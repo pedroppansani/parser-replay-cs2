@@ -20,6 +20,20 @@
     if (n.bottom > 0 && r.top < n.bottom + 8 && r.bottom > 0) window.scrollBy({ top: r.top - n.bottom - 16, behavior: 'instant' });
   });
 
+  /* Tema (Fase T): o botão da landing troca claro e escuro na hora e guarda a escolha (o tema.js a aplica antes da
+     primeira pintura em toda página). Sem armazenamento, a troca vale só nesta página. */
+  var botaoTema = document.querySelector('.tema-botao');
+  if (botaoTema) {
+    var marcaTema = function () { botaoTema.setAttribute('aria-pressed', html.getAttribute('data-tema') === 'escuro' ? 'true' : 'false'); };
+    marcaTema();
+    botaoTema.addEventListener('click', function () {
+      var novo = html.getAttribute('data-tema') === 'escuro' ? 'claro' : 'escuro';
+      html.setAttribute('data-tema', novo);
+      try { localStorage.setItem('goatdemo:tema', novo); } catch (e) { /* sem armazenamento: só nesta página */ }
+      marcaTema();
+    });
+  }
+
   /* Abas com gooey (§7, C1): a bolha (.goo .bolha) segue a aba com aria-selected; o filtro SVG (#goo) só existe
      enquanto ela anda (.movendo, 220 ms) e em repouso a pílula é nítida. A troca de aba continua sendo do JS da
      página: aqui só se observa o aria-selected. Com reduzir movimento, troca seca e nada de filtro. */
