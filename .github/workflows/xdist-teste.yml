@@ -1,0 +1,31 @@
+# TESTE do CI 4 (ci-optimizer, pedido do Pedro): a suíte em 4 processos (pytest-xdist), 20 vezes, cada rodada num
+# runner. Só nesta branch, que não é mesclada: o resultado decide se o xdist entra no pages.yml.
+name: Teste do pytest-xdist (20 rodadas)
+
+on:
+  push:
+    branches: ["ci-xdist-teste"]
+
+permissions:
+  contents: read
+
+jobs:
+  rodada:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        rodada: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Dependências (versões fixadas) e o xdist
+        run: pip install -r requirements-dev.txt pytest-xdist==3.8.0 execnet==2.1.2
+      - name: Chromium do Playwright
+        run: python -m playwright install --with-deps chromium
+      - name: Testes em 4 processos
+        run: python -m pytest -q -n 4 -p no:cacheprovider -rf
