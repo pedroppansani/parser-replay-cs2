@@ -136,7 +136,7 @@ entram aqui quando uma decisão depende delas.
 - **Custo de deixar como está:** nenhum, só a lista longa.
 - **Fora do computador:** nada.
 
-## 9. O item 5.8 da auditoria: arquivos grandes
+## 9. O item 5.8 da auditoria: arquivos grandes -- FECHADO (passos 0 a 3; o passo 4 fica para depois)
 
 - **Origem:** auditoria, "Arquivos grandes". O template tem uma função de cerca de 88 KB que monta
   HTML por concatenação, e o `tactics.js` passou de 2.449 para cerca de 3.900 linhas com as fases 8

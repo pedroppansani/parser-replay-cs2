@@ -77,31 +77,19 @@ com um resto de 0,0003 no cabeçalho da partida (Linux sem Arial); a fonte embut
 `test_acessibilidade::test_dim_tem_contraste…` (lê o primeiro `--apagado`, o do escuro; mudar o teste precisa do OK do Pedro).
 
 **Fila que falta, nesta ordem:** (1) ~~v2-5b~~, ~~v2-6~~, ~~cartão 17~~ (`165f0d00`), ~~v2-7~~ (`73fc57d0`) e ~~cartão 20~~
-(`24eea71e`): feitos. (2) Cartão 9 (a refatoração dos arquivos grandes, decisão 50), aprovado em 2026-10-29 nos passos 0 a 3:
-passos 0, 1 e 2 na `main` (`9be9db37`, `eb704893`, `2641c91b`, cada um com a prova byte a byte verde); o passo 3 está PRONTO na
-branch `cartao-9-passo-3` e NÃO é mesclado sem a sessão do PC (abaixo). O passo 4 (quebrar a função de 88 KB que monta HTML) fica
-para depois, e o `tests/test_fontes_web.py` (o sha256 das fontes de antes) sai com o OK do Pedro quando o cartão fechar. A contagem
-de testes continua como está (decisão do Pedro). Depois do passo 3 na `main`: o `tests/test_fontes_web.py` sai num commit próprio (OK do Pedro, com o CI verde), e então a **Fase T** (tema claro e escuro, escolhido na home) e a **Fase M** (melhora do mapa), cada uma numa branch, com portão de capturas. As PROPOSTAS das duas (capturas, contraste, variações) foram entregues em 2026-10-29 e esperam a escolha do Pedro; a implementação só começa depois do passo 3 mesclado (pedido dele, para não brigar com a divisão do `template.html`). (3) No PC do Pedro: **primeiro o passo 3 do cartão 9** (abaixo); cartão 6 (histograma da força da
+(`24eea71e`): feitos. (2) ~~Cartão 9~~ (a refatoração, decisão 50): FECHADO em 2026-10-29 nos passos 0 a 3 (`9be9db37`, `eb704893`, `2641c91b`, `00f49756`; o passo 3 provado no PC do Pedro: site, impressão, quadros e capturas iguais, suíte com o `data/interim` 1.651 passaram, 71 pulados, 0 falharam). A guarda do sha256 saiu; o passo 4 (a função de 88 KB que monta HTML) fica para depois. Agora: **Fase T** (tema claro e escuro na home; escolhas do Pedro: agentes no cartão claro no escuro, prancheta no violeta nos dois temas) e **Fase M** (mapa; escolha: variação A mais o nome em itálico das peças do outro andar), cada uma numa branch, com portão de capturas antes do merge; e, do ci-optimizer, só os `timeout-minutes`. (3) No PC do Pedro: cartão 6 (histograma da força da
 rota B), cartão 7 (os `.rar`: disco com 12 GB ou mais, conferir `demos/entrada/_extraido/`, sha256 de cada `.dem`, regra 36) e toda
 tarefa de métrica, dado ou parsing (os testes pulados na nuvem rodam lá). (4) Parte B dos grupos: só depois de o Pedro reativar o
 Supabase e dar o OK (`GRUPOS_ATIVOS` fica `False` até o LIBERADO do agente `seguranca` e o OK do Pedro; decidir o pause do plano
 Free; gitleaks, npm audit, pip-audit e `.claude/worktrees/` no `.gitignore`); o cartão 17, que a travava, está resolvido.
 
-**Cartão 9, passo 3, no PC do Pedro (um comando só).** Com a `main` atualizada (`git pull`) e sem mudança não commitada, na raiz:
+**Prova de refatoração no PC (o comando usado no passo 3 do cartão 9, decisão 50).** Com a `main` atualizada e sem mudança não commitada, na raiz (troque a branch):
 
 ```
 py -3.12 -m scripts.design.prova_refatoracao --branch cartao-9-passo-3 --suite
 ```
 
-O script busca e abre a branch, gera o site da `main` (no ponto de onde a branch saiu) e o da branch em worktrees limpos, compara e
-roda a suíte inteira na pasta (com o `data/interim`). Leva uns 4 min mais a suíte; o relatório e o `suite.log` ficam em
-`logs/prova_refatoracao/<data-hora>/`. **Resultado esperado** (o mesmo da nuvem, mais os testes que só rodam no PC):
-`1. site: 131 arquivos na base, 131 no alvo; TODOS IGUAIS byte a byte (sha256)` ·
-`2. impressão dos números: 11357 linhas contra 11357; nenhuma diferença` · os 4 quadros `idêntico` · as 24 capturas da
-`compara_paginas` `idêntico` · `5. suíte:` sem nenhum `failed` (1.722 coletados; os 142 que a nuvem pula rodam aqui) ·
-`RESULTADO: PASSA (site, impressão, quadros, páginas, suíte)`. Se der PASSA, o passo 3 pode ir para a `main` com o OK do Pedro;
-qualquer diferença, parar e levar o relatório (nada de "quase igual"). Na nuvem (2026-10-29) este mesmo comando, partindo da
-`main`, deu PASSA.
+Resultado do passo 3 no PC (2026-10-29): PASSA (131 arquivos iguais, impressão sem diferença, 4 quadros e 24 capturas idênticos; suíte 1.651 passaram, 71 pulados, 0 falharam). O resumo da suíte caiu por codificação no Windows; corrigido depois (`-X utf8`, leitura com `errors="replace"`).
 
 **Pendências abertas (cartões em `notas/PENDENCIAS_PARA_O_PEDRO.md`):** 14 (comparação por grupos no Perfil, fase própria depois da
 v2, regra de empate do Pedro), 15 (regra de tamanho do mapa do protótipo), 16 (texto branco do protótipo no escuro, opcional), 18 (fonte mono no macOS, precisa de um Mac), 19 FECHADO (canvas em software; referências em `notas/design/referencias/c19-software/`). Os itens que o Pedro pediu para a v2-7 (navbar, botões do Replay, o "1×", `aceite.py`, `--apagado`, imagens do README)
@@ -196,6 +184,7 @@ foram feitos na v2-7; o `--f-cond` ficou (trocar mexe na fonte dos símbolos no 
 | Cartão 9, passo 0 (a prova byte a byte, `scripts.design.prova_refatoracao`) | `9be9db37` |
 | Cartão 9, passo 1 (as fontes lidas por `le_fonte`; 13 testes leem por ele, com o OK do Pedro) | `eb704893` |
 | Cartão 9, passo 2 (o `tactics.js` em 20 partes em `dashboard/web/prancheta/`) | `2641c91b` |
+| Cartão 9, passo 3 (o script da partida em 9 partes por aba em `dashboard/web/partida/`; prova no PC do Pedro) | `00f49756` |
 | Cartão 19 (capturas com o canvas em software; referências em `notas/design/referencias/c19-software/`) | `e738a968` |
 | `fix-tickrate-resto`: tickrate lido da demo em todo lugar, sem mudar nenhum número (sha256 dos dados igual ao da `main`); contagem de testes 1.678 | `47c0f840` |
 
