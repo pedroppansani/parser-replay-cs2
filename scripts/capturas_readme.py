@@ -48,9 +48,13 @@ def gera() -> list[Path]:
     partida.write_text(build_html(PARTIDA), encoding="utf-8")
     prancheta = pasta / f"prancheta_{mapa}.html"
     prancheta.write_text(prancheta_html(mapa), encoding="utf-8")
+    # as fontes ao lado das páginas, como o build faz em docs/ (sem elas a captura sairia com o substituto)
+    from scripts.design_head import copia_fontes
+    copia_fontes(pasta)
     feitas = []
     with sync_playwright() as p:
-        nav = p.chromium.launch(channel="chrome")
+        from scripts.design._comum import chrome
+        nav = chrome(p)   # o Chrome do sistema; sem ele (Linux, CI), o Chromium do Playwright
         ctx = nav.new_context(viewport={"width": LARGURA, "height": ALTURA}, device_scale_factor=1)
         ctx.add_init_script("try { localStorage.setItem('replay:direcao', '1'); } catch (e) {}")
         pg = ctx.new_page()
