@@ -51,6 +51,17 @@ WIP da v2-5b) corrigido no site: o Perfil grava o aberto/fechado pelo `MutationO
 4 quadros idênticos; `docs/` +1,5 MB (184,9 para 186,4 MB; o previsto era +4 MB); build de 29,4 s para 41,2 s (39,7 s com o cache).
 Prévia em `preview-v2/` (fora do git).
 
+**PRÓXIMA SESSÃO (2026-10-29): fechar a v2-7 e depois o cartão 20.** A sessão anterior não alcançava o Pages (a rede do ambiente
+só passou a liberar `pedroppansani.github.io` para sessões novas). Respostas do Pedro: fontes embutidas NÃO (o CLS de 0,0002 a
+0,0003 está aceito: a meta de 0 era na prática; `data:` no `font-src` afrouxaria a CSP); o `test_dim_tem_contraste…` foi
+reescrito com o OK dele (feito, `29e66fd9`); a ordem é: medir o Pages de hoje como "antes" (`MEDE_URL=https://pedroppansani.github.io/parser-replay-cs2
+py -3.12 -m scripts.design.mede_lcp_cls`, 375 e 1440, Fast 4G, CPU 4x), rodar a suíte no merge com a `main`, mesclar, esperar CI e deploy,
+medir o "depois" e levar a tabela antes x depois; se algum CLS passar de 0,01 ou o LCP da landing passar de 2,5 s, PARAR e levar.
+Depois, o cartão 20 (opção 1, decidida) numa branch, com o LCP da prancheta antes e depois ao Pedro antes do merge.
+**Cartão 17 FECHADO** (merge `165f0d00` na `main`; já mesclado nesta branch): o nick salvo do `test_grupos_convite` gravado por uma
+página já aberta (script de início que toca o `localStorage` em `file://` separava o armazenamento da aba). A parte B dos grupos
+continua esperando o Pedro reativar o Supabase. Cartões 6, 7 e as tarefas de dado rodam no PC do Pedro.
+
 **v2-7, branch `v2-7-verificacao` (sem portão; o Pedro pediu as capturas dos itens 1 a 3 e a tabela do item 5 antes do merge), em
 2026-10-29:** feito e com CI verde: (1) faixa com o fundo da página acima da navbar; (2) botões do Replay em pílula; (3) a moldura
 do Replay (o "1×" incluído) com o escuro de antes da v2-5; (4) `preload` das fontes só por HTTP e `font-display: fallback`;
@@ -63,9 +74,9 @@ com um resto de 0,0003 no cabeçalho da partida (Linux sem Arial); a fonte embut
 2 testes (escolha do Pedro). Não mudou: `--f-cond` (trocar mexe na fonte dos símbolos no Linux) e o
 `test_acessibilidade::test_dim_tem_contraste…` (lê o primeiro `--apagado`, o do escuro; mudar o teste precisa do OK do Pedro).
 
-**Fila que falta, nesta ordem:** (1) ~~fechar a v2-5b~~ (feito); (2) ~~v2-6~~ (feito); (3) v2-7 (verificação final: LCP/CLS da landing no
+**Fila que falta, nesta ordem:** (1) ~~fechar a v2-5b~~ (feito); (2) ~~v2-6~~ (feito); (2b) ~~cartão 17~~ (feito, `165f0d00`); (3) v2-7 (verificação final: LCP/CLS da landing no
 Pages, critérios A1 a A26 e N1 a N9 do plano seção 4.8, capturas de todas as páginas em 375 e 1440 px, `README` e `assets/readme/*.png`,
-`numeros_citaveis`); (4) cartão 6 (histograma da força da rota B), cartão 7 (os `.rar`: disco com 12 GB ou mais, conferir
+`numeros_citaveis`); (3b) cartão 20 (a biblioteca de arremessos num arquivo próprio, carregado depois; decidido pelo Pedro); (4) cartão 6 (histograma da força da rota B), cartão 7 (os `.rar`: disco com 12 GB ou mais, conferir
 `demos/entrada/_extraido/`, sha256 de cada `.dem`, regra 36) e cartão 9 (refatoração, com a proposta, só propor, de gerar a contagem de
 testes no build); (5) parte B dos grupos (antes: pedir ao Pedro para REATIVAR o projeto Supabase e esperar a confirmação; `GRUPOS_ATIVOS`
 fica `False` até o LIBERADO do agente `seguranca` e o OK do Pedro; decidir o pause do plano Free; gitleaks, npm audit, pip-audit e

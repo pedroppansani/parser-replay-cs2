@@ -543,6 +543,9 @@ O texto original do cartão:
 
 ## 20. O LCP da prancheta (4,9 s): a biblioteca de arremessos embutida atrasa a tela inteira
 
+- **Decisão do Pedro (2026-10-29): opção 1.** A biblioteca de arremessos vai num arquivo próprio, carregado depois. Fica na
+  fila logo depois da v2-7, numa branch; mexe só no site; antes do merge, o LCP da prancheta antes e depois vai ao Pedro.
+
 - **O que é:** com Fast 4G e CPU 4x o maior texto da prancheta só aparece aos ~4,9 s (a 1440, o parágrafo "Nada
   selecionado…" do painel; a 375, o aviso do celular). A página tem 4,1 MB, e 3,5 MB são a biblioteca de arremessos
   (`biblioteca` no `cfg` do `tactics.html`, a do mapa inteiro). O HTML só termina de chegar aos ~3,9 s, e a barra, a dica e o
