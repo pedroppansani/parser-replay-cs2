@@ -229,3 +229,18 @@ body:has(.pr-cab) > .site-topo, .pr-cab, .grade { width: min(1156px, 100% - 44px
   .grade .pr-opcoes { display: none; }
   .pr-faixas-vazio { margin-left: 102px; }
 }
+
+/* ================= v2-7: CLS 0 (pedido do Pedro) ================= */
+/* O que o JS monta depois de o HTML chegar (a partida tem ~2,5 MB de dado embutido) empurrava o que já estava na tela:
+   o card do round decisivo (~180 px) descia os cards de baixo e o rodapé na partida a 1440 (CLS 0,081, Fast 4G e CPU
+   4x); na prancheta, a barra e a dica (de 142 a 290 px, conforme a largura) desciam o mapa (0,03). Até o JS montar,
+   o que seria empurrado fica INVISÍVEL (ocupa o lugar de antes, mas elemento invisível que se move não é deslocamento)
+   e aparece já no lugar. Sem round decisivo o card recebe a frase própria (decisão 19b): ele nunca fica vazio depois
+   do JS. */
+.panel[data-panel="insights"]:has(> #decisive:empty) > .cards-jogador,
+.panel[data-panel="insights"]:has(> #decisive:empty) > #spectacle,
+body:has(#decisive:empty) #foot { visibility: hidden; }
+.grade:has(#pr-barra:empty) { visibility: hidden; }
+/* jogadores.html é montada inteira pelo JS (título, aviso, filtros, cards): até o título entrar, o que vem depois da
+   navbar fica invisível (a 375 px o aviso e os filtros desciam tudo: CLS 0,451) */
+.shell:has(> #titulo:empty) > :not(.site-topo):not(.pular) { visibility: hidden; }
