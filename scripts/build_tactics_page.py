@@ -23,6 +23,11 @@ WEB = PROJECT_ROOT / "dashboard" / "web"
 LINEUPS_DIR = PROJECT_ROOT / "data" / "lineups"
 LUGARES_DIR = PROJECT_ROOT / "data" / "lugares"
 RADARS_DIR = PROJECT_ROOT / "assets" / "radars"
+# Frases de interface da prancheta que saem do Python (decisão 18), lidas pelo tactics.js em `cfg.textos`
+TEXTOS_DA_PRANCHETA = {
+    # o lugar reservado da linha do tempo antes da primeira peça (v2-5b: o mapa não muda de tamanho quando ela entra)
+    "linha_vazia": "Os passos aparecem aqui",
+}
 
 
 def arquivo_da_pagina(mapa: str) -> str:
@@ -113,6 +118,7 @@ def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | Non
         .replace("/*__MAPAS__*/[]", _js(mapas))
         .replace("/*__MODELO3__*/null", _js(modelo3_para_a_pagina()))
         .replace("/*__LUGARES__*/null", _js(lugares))
+        .replace("/*__TEXTOS__*/null", _js(TEXTOS_DA_PRANCHETA))
         .replace("<!--__GRUPO__-->", bloco_do_grupo(grupo))
         .replace("<!--__META__-->", meta_tags(
             f"Prancheta tática · {rotulos.get(mapa, mapa)} · {MARCA}",
