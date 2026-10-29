@@ -27,8 +27,10 @@ if str(RAIZ) not in sys.path:
 
 
 # Rasterização num fio só e sem raster parcial: sem isso, a captura da página inteira às vezes pega um ladrilho em outro
-# estado e o MESMO arquivo sai com 3 a 132 pixels diferentes (cartão 9: ~1 em 3 aberturas; com elas, 0 em 32 x 6 abas)
-ARGS_DETERMINISTICOS = ["--disable-partial-raster", "--num-raster-threads=1"]
+# estado e o MESMO arquivo sai com 3 a 132 pixels diferentes (cartão 9: ~1 em 3 aberturas; com elas, 0 em 32 x 6 abas).
+# Canvas em software (cartão 19, sim do Pedro): na GPU do Windows a mesma revisão dava 20.416 pixels diferentes nas bordas
+# do radar; em software, o mesmo PNG em qualquer máquina.
+ARGS_DETERMINISTICOS = ["--disable-partial-raster", "--num-raster-threads=1", "--disable-accelerated-2d-canvas"]
 
 
 def chrome(playwright, args: list[str] | None = None):
