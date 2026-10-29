@@ -21,8 +21,8 @@ script do `template.html` 2.680, num arquivo só. Regras:
   `py -3.12 -m scripts.design.prova_refatoracao`: o site da base e o do HEAD, gerados em worktrees limpos, iguais em sha256
   arquivo a arquivo, mais a impressão dos números, os 4 quadros do canvas, a `compara_paginas` e a suíte. Qualquer
   diferença reprova.
-- `tests/test_fontes_web.py` fixa o sha256 do texto das duas fontes como estava antes da divisão (main `f7bc788a`): é a
-  guarda do cartão 9 e sai, com o OK do Pedro, quando o cartão fechar.
+- `tests/test_fontes_web.py` fixou o sha256 do texto das duas fontes de antes da divisão (main `f7bc788a`) durante o cartão 9;
+  essa guarda saiu com o cartão fechado (OK do Pedro, 2026-10-29). Ficam os testes do mecanismo do `le_fonte`.
 - As ferramentas de captura abrem o navegador com rasterização num fio só e sem raster parcial
   (`_comum.ARGS_DETERMINISTICOS`): sem isso, o mesmo arquivo dava de 3 a 132 pixels diferentes em cerca de 1 de cada 3
   aberturas. A `compara_paginas` troca de aba pelo clique da própria página e espera 10 quadros parados antes de capturar:
