@@ -23,6 +23,10 @@ WEB = PROJECT_ROOT / "dashboard" / "web"
 LINEUPS_DIR = PROJECT_ROOT / "data" / "lineups"
 LUGARES_DIR = PROJECT_ROOT / "data" / "lugares"
 RADARS_DIR = PROJECT_ROOT / "assets" / "radars"
+# A biblioteca de arremessos (3,5 MB na Mirage) num arquivo próprio ao lado das páginas, carregado DEPOIS de a tela montar
+# (cartão 20, decisão 49): o site a grava em docs/arremessos/<mapa>.js; o build_html continua embutindo por padrão
+# (a página gerada sozinha, sem pasta ao lado, como nos testes).
+PASTA_DA_BIBLIOTECA = "arremessos"
 # Frases de interface da prancheta que saem do Python (decisão 18), lidas pelo tactics.js em `cfg.textos`
 TEXTOS_DA_PRANCHETA = {
     # o lugar reservado da linha do tempo antes da primeira peça (v2-5b: o mapa não muda de tamanho quando ela entra)
@@ -79,10 +83,26 @@ def bloco_do_grupo(grupo: dict | None) -> str:
             + "<script>Grupo.prepara(" + _js(grupo) + ");</script>\n")
 
 
+def arquivo_da_biblioteca(mapa: str) -> str:
+    """O caminho, relativo à página, do arquivo com a biblioteca de arremessos do mapa (cartão 20)."""
+    return f"{PASTA_DA_BIBLIOTECA}/{mapa}.js"
+
+
+def biblioteca_js(mapa: str) -> str | None:
+    """O conteúdo do arquivo da biblioteca: a mesma biblioteca que o modo embutido põe no `cfg`, pelo mesmo serializador,
+    entregue à prancheta por `Prancheta.recebeBiblioteca`. None quando o mapa não tem biblioteca (sem partida no corpus)."""
+    caminho = LINEUPS_DIR / f"{mapa}.json"
+    if not caminho.exists():
+        return None
+    return "Prancheta.recebeBiblioteca(" + _js(json.loads(caminho.read_text(encoding="utf-8"))) + ");\n"
+
+
 def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | None = None,
-               grupo: dict | None = None) -> str:
+               grupo: dict | None = None, biblioteca_externa: bool = False) -> str:
     """`grupo`: a configuração da aba Grupo (fase 13), ou None para a prancheta sem grupo. Os testes passam
-    {"modo": "falsa", ...} (a SalaFalsa em memória)."""
+    {"modo": "falsa", ...} (a SalaFalsa em memória). `biblioteca_externa`: a biblioteca de arremessos fica fora da
+    página, em `arquivo_da_biblioteca(mapa)` (o build do site grava o arquivo com `biblioteca_js`); a página só leva o
+    caminho e a carrega depois de montar a tela (cartão 20)."""
     radar = json.loads((RADARS_DIR / f"{mapa}.json").read_text(encoding="utf-8"))
     from scripts.radar_ajuste import avisa
     avisa(mapa)   # mapa sem par em RADAR_AJUSTE (§4.1): a página usa o padrão, o build avisa
@@ -91,6 +111,9 @@ def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | Non
     radar["calibracao"] = impressao_da_calibracao(radar)
     caminho_bib = LINEUPS_DIR / f"{mapa}.json"
     biblioteca = json.loads(caminho_bib.read_text(encoding="utf-8")) if caminho_bib.exists() else None
+    arquivo_bib = arquivo_da_biblioteca(mapa) if biblioteca_externa and biblioteca is not None else None
+    if arquivo_bib:
+        biblioteca = None   # vem do arquivo, depois
     # nomes de lugar do roteiro (scripts/build_lugares.py); sem tabela, sem nome
     caminho_lug = LUGARES_DIR / f"{mapa}.json"
     lugares = json.loads(caminho_lug.read_text(encoding="utf-8")) if caminho_lug.exists() else None
@@ -115,6 +138,7 @@ def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | Non
         .replace("/*__MAPA__*/null", _js(mapa))
         .replace("/*__RADAR__*/null", _js(radar))
         .replace("/*__LINEUPS__*/null", _js(biblioteca))
+        .replace("/*__LINEUPS_ARQUIVO__*/null", _js(arquivo_bib))
         .replace("/*__MAPAS__*/[]", _js(mapas))
         .replace("/*__MODELO3__*/null", _js(modelo3_para_a_pagina()))
         .replace("/*__LUGARES__*/null", _js(lugares))

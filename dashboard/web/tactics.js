@@ -1024,7 +1024,16 @@ var Prancheta = (function () {
   /* ---------------------------------------------------------------------
      Estado da página
      --------------------------------------------------------------------- */
-  var cfg = null;             // {radar, biblioteca, mapa, mapas}
+  var cfg = null;             // {radar, biblioteca, bibliotecaArquivo, mapa, mapas}
+
+  /* A biblioteca de arremessos pode chegar DEPOIS de a tela montar (cartão 20): no site ela vem de um arquivo próprio ao
+     lado da página (`cfg.bibliotecaArquivo`, 3,5 MB na Mirage), carregado ao fim do init (decisão 49). `temBiblioteca`: o mapa tem
+     biblioteca (já chegou ou vai chegar); `quandoBiblioteca`: roda agora, ou quando ela chegar, o que precisa dela -- o
+     round e o instante do replay ligam cada granada ao arremesso real, e sem esperar a tática nasceria diferente. */
+  var esperandoBiblioteca = [];
+  function temBiblioteca() { return !!(cfg.biblioteca || cfg.bibliotecaArquivo); }
+  function bibliotecaPronta() { return !!cfg.biblioteca || !cfg.bibliotecaArquivo; }
+  function quandoBiblioteca(fn) { if (bibliotecaPronta()) fn(); else esperandoBiblioteca.push(fn); }
   var Armazem = null;
   var ANDARES = [];           // nomes das camadas do radar: "default" primeiro
   var CENTRO = null;
@@ -2029,8 +2038,10 @@ var Prancheta = (function () {
     if (cfg.biblioteca && !a.legado) {
       S.sugestao = { granada: op.granada, de: a.de ? nomePeca(a.de) : "o ponto escolhido", peca: a.de || null };
       busca(destino, a.arma);
-    } else if (!cfg.biblioteca && !a.legado) {
+    } else if (!temBiblioteca() && !a.legado) {
       S.aviso = "Sem arremessos reais neste mapa: não há partidas dele no corpus, então a granada fica desenhada à mão.";
+    } else if (!a.legado) {
+      S.aviso = "Os arremessos reais ainda estão carregando: a granada fica desenhada à mão.";
     }
     atualizaTudo();
   }
@@ -4206,7 +4217,7 @@ var Prancheta = (function () {
     cv.addEventListener("pointercancel", function () { S.arrasto = null; S.tracando = null; S.pan = null; S.toque = null; desenha(); });
     cv.addEventListener("wheel", roda, { passive: false });
 
-    if (!cfg.biblioteca) {
+    if (!temBiblioteca()) {
       // sem partida deste mapa no corpus, não há arremesso real para buscar
       var buscar = document.querySelector('aside [data-ferramenta="buscar"]');
       buscar.disabled = true;
@@ -4223,6 +4234,8 @@ var Prancheta = (function () {
         aviso.hidden = false;
       }
       $("pr-raio").disabled = true; $("pr-so-parado").disabled = true;
+    } else if (!bibliotecaPronta()) {
+      buscaEsperando(true);
     }
     $("pr-raio").value = String(S.raioBusca);
     $("pr-raio").addEventListener("input", function () {
@@ -4373,14 +4386,61 @@ var Prancheta = (function () {
     if (round !== null) {
       novaTatica();
       S.carregandoRound = true;
-      MapCore.descompactaDaUrl(round).then(function (r) { S.carregandoRound = false; criaDoRound(r); reprojeta(); },
-        function () { S.carregandoRound = false; S.aviso = "O round do replay não pôde ser lido."; atualizaAviso(); });
+      // o round liga cada granada ao arremesso real: espera a biblioteca, se ela ainda não chegou (cartão 20)
+      MapCore.descompactaDaUrl(round).then(function (r) {
+        quandoBiblioteca(function () { S.carregandoRound = false; criaDoRound(r); reprojeta(); });
+      }, function () { S.carregandoRound = false; S.aviso = "O round do replay não pôde ser lido."; atualizaAviso(); });
     } else if (instante !== null) {
-      if (retrato) criaDoInstante(retrato);
-      else { novaTatica(); S.aviso = "O instante do replay não pôde ser lido."; atualizaAviso(); }
+      if (retrato && bibliotecaPronta()) criaDoInstante(retrato);
+      else if (retrato) {
+        // como o round: uma tática vazia (não é gravada) até a biblioteca chegar, e então a do instante
+        novaTatica();
+        quandoBiblioteca(function () { criaDoInstante(retrato); reprojeta(); });
+      } else { novaTatica(); S.aviso = "O instante do replay não pôde ser lido."; atualizaAviso(); }
     } else if (nova || !(aberta && abre(aberta))) novaTatica();
     reprojeta();
     if (ganchos.aoIniciar) ganchos.aoIniciar();
+    if (!bibliotecaPronta()) carregaBiblioteca();
+  }
+
+  /** Enquanto a biblioteca carrega, "Buscar arremesso real" e os filtros da busca ficam desligados, com o motivo. */
+  function buscaEsperando(sim) {
+    var buscar = document.querySelector('aside [data-ferramenta="buscar"]');
+    if (buscar) {
+      if (sim) { buscar.dataset.titulo = buscar.title; buscar.title = "Carregando os arremessos reais deste mapa\u2026"; }
+      else if (buscar.dataset.titulo !== undefined) buscar.title = buscar.dataset.titulo;   // o title de sempre volta
+      buscar.disabled = sim;
+    }
+    $("pr-raio").disabled = sim; $("pr-so-parado").disabled = sim;
+  }
+
+  /** O arquivo da biblioteca (cartão 20): um <script> próprio, que funciona também com a página aberta como arquivo
+      (file://, onde fetch não funciona); ele chama Prancheta.recebeBiblioteca. Se não carregar, a prancheta segue sem
+      arremesso real, como num mapa sem corpus, e diz por quê. */
+  function carregaBiblioteca() {
+    var s = document.createElement("script");
+    s.src = cfg.bibliotecaArquivo;
+    s.onerror = function () {
+      cfg.bibliotecaArquivo = null;
+      var motivo = "Os arremessos reais não carregaram: recarregue a página para buscar arremesso real.";
+      var buscar = document.querySelector('aside [data-ferramenta="buscar"]');
+      if (buscar) { buscar.disabled = true; buscar.title = motivo; }
+      $("pr-sem-biblioteca").textContent = motivo;
+      $("pr-sem-biblioteca").hidden = false;
+      var fila = esperandoBiblioteca; esperandoBiblioteca = [];
+      fila.forEach(function (fn) { fn(); });
+    };
+    document.body.appendChild(s);
+  }
+
+  /** A biblioteca chegou (o arquivo chama esta função): entra no cfg, a busca liga e o que esperava por ela roda. */
+  function recebeBiblioteca(b) {
+    if (!cfg || cfg.biblioteca || !b) return;
+    cfg.biblioteca = b;
+    buscaEsperando(false);
+    var fila = esperandoBiblioteca; esperandoBiblioteca = [];
+    fila.forEach(function (fn) { fn(); });
+    atualizaTudo();
   }
 
   /* ---------------------------------------------------------------------
@@ -4493,6 +4553,7 @@ var Prancheta = (function () {
 
   return {
     init: init,
+    recebeBiblioteca: recebeBiblioteca,
     ganchos: ganchos,
     grupo: {
       recebe: recebeDeFora, retira: retiraRecusadas,
