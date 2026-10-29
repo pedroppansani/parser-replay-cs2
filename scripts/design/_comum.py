@@ -26,12 +26,17 @@ if str(RAIZ) not in sys.path:
     sys.path.insert(0, str(RAIZ))
 
 
-def chrome(playwright):
+# Rasterização num fio só e sem raster parcial: sem isso, a captura da página inteira às vezes pega um ladrilho em outro
+# estado e o MESMO arquivo sai com 3 a 132 pixels diferentes (cartão 9: ~1 em 3 aberturas; com elas, 0 em 32 x 6 abas)
+ARGS_DETERMINISTICOS = ["--disable-partial-raster", "--num-raster-threads=1"]
+
+
+def chrome(playwright, args: list[str] | None = None):
     """O Chrome do sistema, como nos testes de navegador; sem ele, o Chromium do Playwright."""
     try:
-        return playwright.chromium.launch(channel="chrome")
+        return playwright.chromium.launch(channel="chrome", args=args or [])
     except Exception:
-        return playwright.chromium.launch()
+        return playwright.chromium.launch(args=args or [])
 
 
 def url_de(pagina: str) -> str:

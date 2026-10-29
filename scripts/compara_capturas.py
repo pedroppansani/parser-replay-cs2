@@ -140,7 +140,8 @@ def _captura(paginas: Path, saida: Path, sufixo: str, direcao: str) -> dict:
 
     registros = {}
     with sync_playwright() as p:
-        b = p.chromium.launch(channel="chrome")
+        from scripts.design._comum import ARGS_DETERMINISTICOS, chrome
+        b = chrome(p, ARGS_DETERMINISTICOS)
         for nome, mid, rnd, frac, andar in QUADROS_REPLAY:
             ctx = b.new_context(viewport={"width": 1400, "height": 1000}, device_scale_factor=1)
             if direcao in VALOR_DIRECAO:
