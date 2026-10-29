@@ -84,7 +84,7 @@ def main(paginas: list[str] | None = None) -> int:
                 ok = max(clss) <= CLS_MAXIMO and (lim is None or statistics.median(lcps) < lim)
                 falhou = falhou or not ok
                 print(f"| {pag} | {largura} | {statistics.median(lcps):.2f} s ({max(lcps):.2f}) | "
-                      f"{statistics.median(clss):.3f} ({max(clss):.3f}) | {max(set(els), key=els.count)} | "
+                      f"{statistics.median(clss):.4f} ({max(clss):.4f}) | {max(set(els), key=els.count)} | "
                       f"{', '.join(f'{f} {ms}' for f, ms in fontes.items()) or '-'} | {'PASSA' if ok else 'FALHA'} |", flush=True)
         b.close(); p.stop()
     finally:
