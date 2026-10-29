@@ -186,6 +186,14 @@ def impressao(docs: Path = DOCS, fina: bool = False) -> dict[str, str]:
             vistos[nome] = vistos.get(nome, 0) + 1
             rotulo = nome if vistos[nome] == 1 else f"{nome}#{vistos[nome]}"
             achata(obj, f"{f.name}::{rotulo}", saida, fina)
+        # cartão 20: a biblioteca de arremessos da prancheta saiu da página para um arquivo próprio; ela entra com o
+        # MESMO nome de antes (<página>::biblioteca), e a impressão não muda por causa da mudança de lugar
+        externo = re.search(r'bibliotecaArquivo: "([^"]+)"', texto)
+        if externo:
+            js = (docs / externo.group(1)).read_text(encoding="utf-8")
+            inicio = js.index("recebeBiblioteca(") + len("recebeBiblioteca(")
+            obj, _ = json.JSONDecoder().raw_decode(js, inicio)
+            achata(obj, f"{f.name}::biblioteca", saida, fina)
     if NUMEROS.exists():
         achata(json.loads(NUMEROS.read_text(encoding="utf-8")), "numeros_citaveis.json", saida, fina)
     # A contagem de testes do repositório não é dado das páginas: cresce a cada teste novo.
