@@ -518,3 +518,24 @@ O texto original do cartão:
   as referências uma vez, em commit próprio, com a prova de que só o navegador mudou.
 - **O que preciso de você:** sim ou não para a proposta.
 - **Fora do computador:** nada.
+
+---
+
+## 20. O LCP da prancheta (4,9 s): a biblioteca de arremessos embutida atrasa a tela inteira
+
+- **O que é:** com Fast 4G e CPU 4x o maior texto da prancheta só aparece aos ~4,9 s (a 1440, o parágrafo "Nada
+  selecionado…" do painel; a 375, o aviso do celular). A página tem 4,1 MB, e 3,5 MB são a biblioteca de arremessos
+  (`biblioteca` no `cfg` do `tactics.html`, a do mapa inteiro). O HTML só termina de chegar aos ~3,9 s, e a barra, a dica e o
+  painel são montados pelo JS no fim (medido na v2-7, servidor local; o primeiro desenho é aos 0,4 s, só a navbar e o título).
+- **Por que não entrou na v2-7:** pôr no HTML só o título "Prancheta · Mirage" e a dica não muda o LCP: o parágrafo do
+  painel, maior, aparece depois e passa a ser o LCP. E a grade fica invisível até o JS montar (é o que deixa o CLS em 0).
+- **Opções:**
+  1. **Carregar a biblioteca depois:** a página abre sem ela (cerca de 0,6 MB) e a biblioteca entra por um
+     `<script src="lineups_de_mirage.js">` próprio, só para a busca de arremesso real (funciona em `file://`, onde `fetch` não
+     funciona). A tela montaria em ~1 s; a busca mostraria "carregando" nos primeiros segundos. Mexe no build e no
+     `tactics.js`; precisa provar que nenhum arremesso muda (a biblioteca é a mesma, só muda o lugar).
+  2. **Montar a parte fixa da tela no HTML (Python):** título, barra, dica e painel vazios já no HTML. Mais trabalho (o
+     `tactics.js` monta tudo hoje) e não diminui os 3,5 MB.
+  3. **Deixar como está:** a prancheta é ferramenta de quem já entrou no site; o LCP não tem meta para ela.
+- **Recomendação:** a 1, numa fase própria. É o que tira os 3,5 MB do caminho de quem só quer desenhar.
+- **Fora do computador:** nada.
