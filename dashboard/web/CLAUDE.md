@@ -30,8 +30,8 @@ valem lá também.
 - CT azul, TR dourado; cada granada mantém a forma do `nadeGlyph`; uma cor, um papel: cor de lado só
   para o lado (por round, o lado daquele round), destaque só no verde do decisivo, vitória e link
   sem matiz; `--erro` e `--aviso` nunca marcam erro de jogador (44, 46)
-- Tema por página (`<html data-tema>`); `tokens.css` tem o bloco claro, o escuro e o comum; o canvas lê só
-  `*-mapa` e as granadas, iguais nos dois temas; na partida clara a moldura do mapa é a ilha `data-tema="escuro"` (48)
+- Tema: claro ou escuro escolhido na landing (`tema.js` no `<head>`, sem inline); prancheta sempre `violeta`; o
+  canvas lê só `*-mapa` e granadas, iguais em todo tema; a moldura do mapa é a ilha `data-tema="escuro"` (48, 51)
 - Cor nova ou trocada passa por `py -3.12 -m metrics.paleta` contra o fundo onde aparece (texto
   4,5:1, marca 3:1, ΔE2000 ≥ 8 no pior par daltônico); o scatter de clusters segue facetado (10)
 - Mapa, peças e granadas em canvas, com UM núcleo (`map_core.js`); `desenhaJogador` não ganha

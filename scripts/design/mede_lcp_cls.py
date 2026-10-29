@@ -11,6 +11,7 @@ elemento do LCP e quando cada fonte (Geist, Geist Mono) terminou de chegar, que 
 
     py -3.12 -m scripts.design.mede_lcp_cls
     MEDE_URL=https://pedroppansani.github.io/parser-replay-cs2 py -3.12 -m scripts.design.mede_lcp_cls
+    MEDE_ESQUEMA=dark py -3.12 -m scripts.design.mede_lcp_cls        # no tema escuro (Fase T)
 
 Critérios (v2-7, pedido do Pedro): CLS 0 em todas; LCP da landing < 2,5 s. A landing é medida com `?agente=tr`
 (o sorteio do agente é aleatório e deixaria a medida instável; plano v2-0 §4.8).
@@ -28,6 +29,7 @@ from scripts.design._comum import DOCS, chrome
 
 PASTA = os.environ.get("MEDE_PASTA") or str(DOCS)
 BASE = (os.environ.get("MEDE_URL") or "").rstrip("/")
+ESQUEMA = os.environ.get("MEDE_ESQUEMA") or "light"   # o tema do aparelho (Fase T): "dark" mede as páginas no escuro
 PORTA = 8765
 MEDIDAS = 5
 LARGURAS = [(375, 667), (1440, 900)]
@@ -47,7 +49,8 @@ FONTES_JS = """() => Object.fromEntries(performance.getEntriesByType("resource")
 
 
 def mede(b, url: str, largura: int, altura: int) -> dict:
-    ctx = b.new_context(viewport={"width": largura, "height": altura}, device_scale_factor=2 if largura < 641 else 1)
+    ctx = b.new_context(viewport={"width": largura, "height": altura}, device_scale_factor=2 if largura < 641 else 1,
+                        color_scheme=ESQUEMA)
     pg = ctx.new_page(); cdp = ctx.new_cdp_session(pg)
     cdp.send("Network.enable"); cdp.send("Network.setCacheDisabled", {"cacheDisabled": True})
     cdp.send("Network.emulateNetworkConditions", REDE)
@@ -71,7 +74,8 @@ def main(paginas: list[str] | None = None) -> int:
     falhou = False
     try:
         p = sync_playwright().start(); b = chrome(p)
-        print(f"{base} · Fast 4G (9/1,5 Mbit/s, 165 ms) · CPU 4x · {MEDIDAS} medidas por página e largura, cache limpo\n")
+        print(f"{base} · Fast 4G (9/1,5 Mbit/s, 165 ms) · CPU 4x · {MEDIDAS} medidas por página e largura, cache limpo"
+              f" · tema do aparelho: {ESQUEMA}\n")
         print("| página | largura | LCP mediana (pior) | CLS mediana (pior) | elemento do LCP | fontes prontas (mediana, ms) | |")
         print("|---|---|---|---|---|---|---|")
         for pag in (paginas or PAGINAS):

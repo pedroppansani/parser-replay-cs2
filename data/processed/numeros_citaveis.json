@@ -190,6 +190,6 @@
   },
   "testes": {
     "fonte": "pytest --collect-only",
-    "coletados": 1720
+    "coletados": 1735
   }
 }
