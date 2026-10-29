@@ -462,7 +462,15 @@ O texto original do cartão:
 
 ---
 
-## 17. Teste instável dependente da ordem: `test_grupos_convite.py` (resolver ANTES da parte B dos grupos)
+## 17. Teste instável dependente da ordem: `test_grupos_convite.py` (resolver ANTES da parte B dos grupos) -- FECHADO
+
+- **Fechado (2026-10-29), branch `cartao-17-grupos-convite`, com o OK do Pedro para mudar o teste.** O nick salvo passa a
+  ser gravado por uma página do mesmo contexto já aberta (a da líder; sem líder, a mesma página sem link de sala), antes de
+  abrir o link, e não por script de início; o comentário no teste diz por quê. Tudo o que o teste confere ficou igual; sem
+  espera fixa, sem nova tentativa e sem pular. Depois: par painel + convite 20 de 20; `test_grupos_convite.py` sozinho
+  20 de 20; a sequência de 8 arquivos do cartão, 3 de 3. Os outros testes com script de início que toca o armazenamento
+  não têm o padrão (uma página só por contexto, ou o armazenamento bloqueado de propósito) e não mudaram. O texto abaixo é
+  o cartão como estava.
 
 - **Causa achada (2026-10-29, nuvem, Linux, Chromium 153):** não é dependência de ordem. O teste simula o "nick salvo"
   gravando no `localStorage` por um script de INÍCIO de carregamento (`pg.add_init_script`). Numa página `file://`, tocar
