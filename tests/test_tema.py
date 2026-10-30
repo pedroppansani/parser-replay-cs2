@@ -197,3 +197,29 @@ def test_no_escuro_o_agente_e_desenhado_com_as_cores_do_claro_num_cartao(navegad
         assert fundo == "rgb(250, 250, 250)"                          # o cartão: --superficie do claro
     finally:
         ctx.close()
+
+
+def test_a_pagina_que_volta_da_memoria_com_a_escolha_mudada_recarrega(navegador, site):
+    """Voltar e avançar: a página restaurada da memória do navegador (pageshow com persisted) depois de a escolha mudar
+    em outra página recarrega com o tema novo (os gráficos leem as cores uma vez só)."""
+    ctx = navegador.new_context(color_scheme="light")
+    try:
+        pg = ctx.new_page()
+        pg.goto(f"{site}/partida.html")
+        assert _tema(pg) == "claro"
+        pg.evaluate("(c) => localStorage.setItem(c, 'escuro')", CHAVE)
+        with pg.expect_navigation():
+            pg.evaluate("() => window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }))")
+        assert _tema(pg) == "escuro"
+        # sem mudança, nada recarrega
+        pg.evaluate("() => { window.__fica = 1; window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })); }")
+        pg.wait_for_timeout(300)
+        assert pg.evaluate("() => window.__fica") == 1
+    finally:
+        ctx.close()
+
+
+def test_o_mapa_e_igual_nos_tres_temas():
+    from metrics.paleta import TOKENS_DO_MAPA, le_tokens
+    claro, escuro, violeta = (le_tokens(tema=t) for t in ("claro", "escuro", "violeta"))
+    assert {n: escuro[n] for n in TOKENS_DO_MAPA} == {n: claro[n] for n in TOKENS_DO_MAPA} == {n: violeta[n] for n in TOKENS_DO_MAPA}

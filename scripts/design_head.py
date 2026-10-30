@@ -10,6 +10,7 @@ protótipo), e a página continua abrindo como arquivo local sem ele (v2-7, medi
 """
 from __future__ import annotations
 
+import re
 import shutil
 from pathlib import Path
 
@@ -69,7 +70,8 @@ TEMA_JS = "tema.js"
 
 
 def tema_html(html: str) -> str:
-    return "" if 'data-tema="violeta"' in html else f'<script src="{TEMA_JS}"></script>\n'
+    """A tag do tema.js; vazia na página violeta (a prancheta), lida só na tag <html>."""
+    return "" if re.search(r'<html[^>]*\sdata-tema="violeta"', html) else f'<script src="{TEMA_JS}"></script>\n'
 
 
 def copia_tema(saida: Path) -> None:
@@ -79,7 +81,8 @@ def copia_tema(saida: Path) -> None:
 
 def aplica(html: str) -> str:
     """Troca os marcadores pelos tokens, pelo tema, pelas fontes e pelo CSS da v2."""
-    return (html.replace(MARCADOR_TOKENS, tokens_css()).replace(MARCADOR_FONTES, tema_html(html) + fontes_html())
+    # o tema.js depois do preload das fontes: o pedido dele não atrasa a descoberta das fontes
+    return (html.replace(MARCADOR_TOKENS, tokens_css()).replace(MARCADOR_FONTES, fontes_html() + "\n" + tema_html(html))
             .replace(MARCADOR_V2, v2_css()))
 
 

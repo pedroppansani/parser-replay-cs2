@@ -26,3 +26,9 @@ Regras:
 - Os agentes da landing foram aprovados sobre o claro: no escuro eles continuam desenhados com as cores do claro
   (`data-tema="claro"` no próprio agente), num cartão claro arredondado (opção B do Pedro). O desenho não muda.
 - A imagem de compartilhamento e o favicon não mudam com o tema.
+- Testes que mudaram, com o OK do Pedro (2026-10-29, ao escolher "escuro = o de antes; violeta"): só o nome do tema que
+  leem (`test_paleta_v2`, `test_tokens`, `test_acessibilidade`, `test_v2_prancheta`) e as saídas fixadas do
+  `metrics.paleta` (escuro regravado, mapa só na contagem de tokens, violeta nova, igual à do escuro de antes).
+- Os lados, os estados e o texto dos dois escuros moram num bloco só do `tokens.css` (`escuro` e `violeta` no mesmo
+  seletor); cada tema tem só os seus fundos. A conferência do mapa (`metrics.paleta --tema mapa`) cobre o violeta.
+- O `tema.js` vem depois do preload das fontes; a página que volta da memória do navegador com a escolha mudada recarrega.

@@ -114,10 +114,10 @@ select#media, select#adiciona { border-radius: var(--r-ctl); padding: 0 14px; }
 /* ================= v2-5: a prancheta no escuro violeta (entrega-v2-goatdemo §5.5) ================= */
 /* Tudo preso a .pr-cab e .grade (só a prancheta os tem): a barra de desenho da partida não muda. Ids e classes de
    antes ficam (os testes clicam neles); o canvas não muda de cor (lê os *-mapa) nem de raio. */
-.site-nav a[aria-current] { box-shadow: none; }
+.site-nav a[aria-current] { box-shadow: none; }   /* o sublinhado do topo antigo da prancheta (tactics.css) sai */
 /* O botão de tema da landing (Fase T): pílula discreta no fim da navbar; ligado (escuro), cheio. No celular, só o
    ícone, ao lado da marca (o nome continua lido pelo leitor de tela). */
-.tema-botao { display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex: none;
+.tema-botao { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex: none;
   min-height: var(--toque); min-width: var(--toque); padding: 0 12px; margin-left: 6px; border-radius: 999px;
   border: 1px solid var(--borda); background: transparent; color: var(--tinta); font: inherit; font-size: var(--t-sm);
   cursor: pointer; }
@@ -127,7 +127,7 @@ select#media, select#adiciona { border-radius: var(--r-ctl); padding: 0 14px; }
 @media (max-width: 640px) {
   .tema-botao { order: 2; margin-left: auto; padding: 0; }
   .tema-botao span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-}   /* o sublinhado do topo antigo da prancheta (tactics.css) sai */
+}
 .pr-cab { max-width: none; padding-top: 12px; }
 /* a navbar, o cabeçalho e a grade com a largura e a margem da partida (pedido do Pedro): 1156 px de conteúdo, como a
    .shell de 1200 px com 22 px de cada lado; no celular, 16 px de cada lado, como em jogadores.html. Só a margem do

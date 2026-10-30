@@ -17,23 +17,15 @@
 @font-face{font-family:"Geist Mono Fallback";src:local("Consolas");font-weight:100 500;size-adjust:109.13%;ascent-override:92.09%;descent-override:27.03%;line-gap-override:0.00%}
 @font-face{font-family:"Geist Mono Fallback";src:local("Consolas Bold");font-weight:600 900;size-adjust:109.13%;ascent-override:92.09%;descent-override:27.03%;line-gap-override:0.00%}
 
-/* ---------------- VIOLETA (entrega §2.1, v2-5): a prancheta, nos dois temas do site (escolha do Pedro, Fase T) ----- */
-/* `:root[data-tema="violeta"]` pesa mais que o `:root` do claro: o violeta vale na página dele qualquer que seja a
-   ordem. Os lados, os estados e o --tinta ficam nos valores de antes (o --tinta em #e8edf2, e não no #ffffff do
-   protótipo: tests/test_v2_paginas.py o compara com o --tinta-mapa; trocar é escolha do Pedro). */
-:root[data-tema="violeta"], [data-tema="violeta"] {
+/* ---------------- OS DOIS ESCUROS (Fase T, decisão 51): o escuro do site e o violeta da prancheta ---------------- */
+/* `:root[data-tema="..."]` pesa mais que o `:root` do claro: vale na página escura qualquer que seja a ordem. Os lados,
+   os estados e o texto são os MESMOS nos dois escuros (um bloco só, para não divergirem); cada um tem os seus fundos.
+   O --tinta fica em #e8edf2, e não no #ffffff do protótipo: tests/test_v2_paginas.py o compara com o --tinta-mapa;
+   trocar é escolha do Pedro. */
+:root[data-tema="escuro"], [data-tema="escuro"], :root[data-tema="violeta"], [data-tema="violeta"] {
   color-scheme: dark;
 
-  --fundo: #04061c;
-  --superficie: #0c0a2b;
-  --superficie-2: #15153d;
-  --tl-fundo: #080a24;
-
   --tinta: #e8edf2;
-  --tinta-2: #b4b4bb;
-  --apagado: #9b9ba4;
-  --linha: #292a4d;
-  --borda: #6a6ca0;
   --foco: #ffffff;
 
   --ct: #4a90e8;
@@ -45,10 +37,6 @@
   --aviso: #ffea3d;
   --erro: #ff6b6b;
   --acao: #ffffff;           /* botão principal e aba ativa */
-  --acao-ink: #04061c;
-  --quente-1: #ffb4a0;       /* só o "Reproduzir" da prancheta, uma vez por tela (degradê de --quente-1 a --quente-2) */
-  --quente-2: #ff3a63;
-  --quente-ink: #04061c;     /* o texto do "Reproduzir" */
 
   --vitoria: var(--tinta);
   --link: var(--tinta);
@@ -63,47 +51,37 @@
   --sombra-pop: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
-/* ---------------- ESCURO (Fase T): o escuro de antes da v2-5, na landing, na partida e em jogadores ---------------- */
-/* O tema escuro que quem lê escolhe na landing, e sempre a moldura do Replay (#palco). São os valores do bloco escuro
-   de antes da v2-5, que a moldura já usava desde a v2-7; os lados, os estados e o texto são os do violeta.
-   O degradê quente do "Reproduzir" é só da prancheta (violeta). */
-:root[data-tema="escuro"], [data-tema="escuro"] {
-  color-scheme: dark;
+/* ---------------- VIOLETA (entrega §2.1, v2-5): a prancheta, sempre (escolha do Pedro na Fase T) ---------------- */
+:root[data-tema="violeta"], [data-tema="violeta"] {
+  --fundo: #04061c;
+  --superficie: #0c0a2b;
+  --superficie-2: #15153d;
+  --tl-fundo: #080a24;
 
+  --tinta-2: #b4b4bb;
+  --apagado: #9b9ba4;
+  --linha: #292a4d;
+  --borda: #6a6ca0;
+  --acao-ink: #04061c;
+  --quente-1: #ffb4a0;       /* só o "Reproduzir" da prancheta, uma vez por tela (degradê de --quente-1 a --quente-2) */
+  --quente-2: #ff3a63;
+  --quente-ink: #04061c;     /* o texto do "Reproduzir" */
+}
+
+/* ---------------- ESCURO (Fase T): o escuro de antes da v2-5, na landing, na partida e em jogadores ---------------- */
+/* O tema escuro que quem lê escolhe na landing, e sempre a moldura do Replay (#palco): os valores do bloco escuro de
+   antes da v2-5, que a moldura já usava desde a v2-7. O degradê quente do "Reproduzir" é só da prancheta. */
+:root[data-tema="escuro"], [data-tema="escuro"] {
   --fundo: #0b0f14;
   --superficie: #121820;
   --superficie-2: #1a222d;
   --tl-fundo: #0e131a;
 
-  --tinta: #e8edf2;
   --tinta-2: #aab5c1;
   --apagado: #8b97a5;
   --linha: #222b37;
   --borda: #66758a;
-  --foco: #ffffff;
-
-  --ct: #4a90e8;
-  --ct-texto: #6ea8f2;
-  --tr: #e0a23a;
-  --tr-texto: #e9b65a;
-
-  --decisivo: #2fae7c;
-  --aviso: #ffea3d;
-  --erro: #ff6b6b;
-  --acao: #ffffff;           /* botão principal e aba ativa */
   --acao-ink: #0b0f14;
-
-  --vitoria: var(--tinta);
-  --link: var(--tinta);
-  --neutro: var(--apagado);
-
-  --ct-area: rgba(74, 144, 232, 0.22);
-  --tr-area: rgba(224, 162, 58, 0.22);
-  --decisivo-area: rgba(47, 174, 124, 0.16);
-  --aviso-area: rgba(255, 234, 61, 0.10);
-  --erro-area: rgba(255, 107, 107, 0.10);
-
-  --sombra-pop: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
 /* ---------------- CLARO (entrega §2.1; valores do protótipo v2) ---------------- */

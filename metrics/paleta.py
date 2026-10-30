@@ -149,8 +149,9 @@ def simula_dicromacia(cor: str, tipo: str):
 # Fase T: "escuro" é o escuro de antes da v2-5 (landing, partida e jogadores, quando quem lê escolhe; e a moldura do
 # Replay); "violeta" é o da prancheta (v2-5). Os dois pintam texto e são medidos.
 TEMAS = ("claro", "escuro", "violeta")
-# Em que tema as páginas estão (decisão 48): na v2-1 todas no escuro de hoje; é o tema que `le_tokens()` lê
-# sem argumento, e o das cores dos gráficos (`paleta_em_uso`). Muda quando uma página trocar de tema (v2-4).
+# O tema que `le_tokens()` lê sem argumento e o das cores dos gráficos (`paleta_em_uso`). Fase T: o escuro e o
+# violeta têm os MESMOS lados, estados e texto (um bloco só no tokens.css), então ler um ou outro dá as mesmas cores
+# de gráfico; os fundos de cada tema são medidos pelo tema certo (`relatorio`, test_acessibilidade).
 TEMA_DAS_PAGINAS = "escuro"
 
 # Fundos do tema: token -> onde aparece (fonte: entrega-v2-goatdemo §2.1).
@@ -330,7 +331,13 @@ def relatorio(tema: str, caminho: Path = TOKENS) -> tuple[list[str], int]:
     """A saída de "claro", "escuro", "violeta" ou "mapa", lida do arquivo de tokens."""
     origem = caminho.relative_to(RAIZ).as_posix() if caminho.is_relative_to(RAIZ) else caminho.name
     if tema == "mapa":
-        return avalia(le_tokens(caminho, "escuro"), origem, "mapa", outro=le_tokens(caminho, "claro"))
+        # o canvas é igual em todo tema: o escuro contra o claro aqui, e o violeta contra o escuro na conferência abaixo
+        escuro, violeta = le_tokens(caminho, "escuro"), le_tokens(caminho, "violeta")
+        diferentes = [n for n in TOKENS_DO_MAPA if escuro.get(n) != violeta.get(n)]
+        linhas, falhas = avalia(escuro, origem, "mapa", outro=le_tokens(caminho, "claro"))
+        if diferentes:
+            linhas.append(f"MAPA DIFERENTE NO VIOLETA: {', '.join(diferentes)}   FALHA")
+        return linhas, falhas + len(diferentes)
     return avalia(le_tokens(caminho, tema), origem, tema)
 
 
@@ -338,7 +345,7 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="Valida a paleta dos tokens, por tema (decisões 10, 44 e 48).")
     ap.add_argument("candidatos", nargs="*", help="cores candidatas para --decisivo (substituem só ela)")
     ap.add_argument("--tema", choices=[*TEMAS, "mapa"], action="append",
-                    help="o tema a validar (repetível); sem ele, claro, escuro e mapa")
+                    help="o tema a validar (repetível); sem ele, claro, escuro, violeta e mapa")
     args = ap.parse_args(sys.argv[1:] if argv is None else argv)
     total = 0
     if not args.candidatos:
