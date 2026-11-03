@@ -603,3 +603,17 @@ O texto original do cartão:
   grupos já mostraram dependência de ordem, cartão 17) e de mais uma dependência fixada em `requirements-dev.txt`.
 - **Se for retomado:** a medida e o resultado de 20 de 20 acima são o ponto de partida; a branch foi apagada do GitHub em 2026-11-03
   (o commit era `1950eff0`).
+
+---
+
+## 22. A peça do outro andar na prancheta: um visual único, no design do "Reescrever"
+
+- **O que é:** na Fase M (decisão 52) a peça do jogador que está em outro andar ganhou, no REPLAY, o disco cinza com anel na cor do
+  lado, a seta (▲ acima, ▼ abaixo) e o nome em itálico. Na PRANCHETA as peças de outro andar continuam como estavam: a mesma peça
+  esmaecida (pelo alfa do andar) e editável.
+- **Decisão do Pedro (2026-11-03):** a prancheta fica como está agora.
+- **O que fica para depois:** o design do "Reescrever" vai juntar as peças do round real (fantasmas) e as peças editáveis; ele precisa
+  de UM visual para o outro andar, que valha para o replay e para a prancheta. Quando esse design começar, partir do disco cinza com
+  anel do lado e seta da decisão 52, e decidir como a peça editável de outro andar (que se arrasta e se gira) mostra isso sem perder
+  o acerto do mouse.
+- **Fora do computador:** nada.

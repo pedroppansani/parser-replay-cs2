@@ -88,6 +88,14 @@ claro e escuro, mais o code-review mostrado só na conversa, antes do OK do Pedr
 bombsite; nome do jogador perto da peça, com linha fina se sair de cima; nenhum nome some; mapa escuro; anel duplo inalterado). Ordem do Pedro (2026-11-03): esperar o CI e o deploy da Fase T e conferir o site publicado; conferir o cartão 19 no Windows; só depois
 implementar a Fase M.
 
+**Fase M (2026-11-03, no PC), branch `fase-m-mapa`, decisão 52:** implementada (radar com `imageSmoothingQuality = "high"`; nomes de
+lugar em caixa alta com as palavras separadas, que só aparecem onde não cobrem nada, com o botão "Lugares" na legenda do mapa do
+replay e na barra da prancheta, desligado no celular; letras A e B nos bombsites; peça do outro andar em disco cinza, anel do lado e
+seta, com o nome em itálico; nenhum nome de jogador some e ganha uma linha fina quando sai de cima da peça). Portão do Pedro: prévia em
+`preview-v2/index.html`, capturas da Mirage e da Nuke (Replay e prancheta, 1440 e 375 px, claro e escuro), o code-review mostrado só na
+conversa, as referências do canvas regravadas num commit próprio (`notas/design/referencias/pc-windows/`, com `origem.json`) e a
+impressão dos números idêntica. NÃO mesclar antes do OK do Pedro. O cartão 22 guarda a pendência do visual do outro andar na prancheta.
+
 **Fila que falta, nesta ordem:** (1) ~~v2-5b~~, ~~v2-6~~, ~~cartão 17~~ (`165f0d00`), ~~v2-7~~ (`73fc57d0`) e ~~cartão 20~~
 (`24eea71e`): feitos. (2) ~~Cartão 9~~ (a refatoração, decisão 50): FECHADO em 2026-10-29 nos passos 0 a 3 (`9be9db37`, `eb704893`, `2641c91b`, `00f49756`; o passo 3 provado no PC do Pedro: site, impressão, quadros e capturas iguais, suíte com o `data/interim` 1.651 passaram, 71 pulados, 0 falharam). A guarda do sha256 saiu; o passo 4 (a função de 88 KB que monta HTML) fica para depois. Agora: **Fase T** (tema claro e escuro na home; escolhas do Pedro: agentes no cartão claro no escuro, prancheta no violeta nos dois temas) e **Fase M** (mapa; escolha: variação A mais o nome em itálico das peças do outro andar), cada uma numa branch, com portão de capturas antes do merge; e, do ci-optimizer, só os `timeout-minutes`. (3) No PC do Pedro: cartão 6 (histograma da força da
 rota B), cartão 7 (os `.rar`: disco com 12 GB ou mais, conferir `demos/entrada/_extraido/`, sha256 de cada `.dem`, regra 36) e toda
