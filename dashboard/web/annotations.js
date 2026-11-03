@@ -934,6 +934,14 @@ window.MapAnnotations = (function () {
     });
     dir.id = "anot-direcao";
     ver.appendChild(dir);
+    if (opts.lugares) {   // Fase M (decisão 52): os nomes de lugar, ligados ou desligados (lembrado no navegador)
+      var lug = botao("Lugares", "Mostrar ou esconder os nomes de lugar do mapa", function () {
+        MapCore.defineLugares(!MapCore.lugaresLigados());
+        atualizaBotoes();
+      });
+      lug.id = "anot-lugares";
+      ver.appendChild(lug);
+    }
     // "Criar tática": abre a prancheta do mesmo mapa com uma tática nova
     // (`?nova`), não a última que ficou aberta.
     if (opts.prancheta) {
@@ -1064,6 +1072,11 @@ window.MapAnnotations = (function () {
 
     var sd = document.getElementById("anot-sodepois");
     if (sd) sd.classList.toggle("on", S.soDepois);
+    var lug = document.getElementById("anot-lugares");
+    if (lug && window.MapCore) {
+      lug.classList.toggle("on", MapCore.lugaresLigados());
+      lug.setAttribute("aria-pressed", MapCore.lugaresLigados() ? "true" : "false");
+    }
     var dir = document.getElementById("anot-direcao");
     if (dir) {
       dir.classList.toggle("on", S.direcao);

@@ -58,6 +58,7 @@
       pending++;
       var im = new Image();
       im.onload = function () {
+        p.imageSmoothingQuality = "high";   // Fase M (decisão 52): o radar de 1.024 px reduzido com a suavização alta
         p.drawImage(MapCore.radarProcessado(im, RAD.map), 0, 0, c.width, c.height);   // dessaturado por mapa (§4.1)
         if (--pending === 0) { plateReady = true; draw(); }
       };
@@ -653,9 +654,11 @@
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, cv.width, cv.height);
     if (window.MapAnnotations) MapAnnotations.applyView(ctx);
+    ctx.imageSmoothingQuality = "high";   // com zoom a placa é redimensionada: mesma suavização
     ctx.drawImage(plates[lvNow] || plates[0], 0, 0);
     // nomes e etiquetas vão para a camada de rótulos (px de tela, por cima de tudo; §4.2)
     MapCore.rotulosInicia(ctx, cv, draw);
+    MapCore.lugaresRegistra(RAD.lugares, lvNow);   // Fase M: nomes de lugar e letras dos bombsites (mapa sem tabela: nada)
 
     // Smoke e Molotov ocupam área, então são desenhados como zona e não como
     // ponto. O raio segue o raio real de efeito no jogo (constantes do
@@ -1027,6 +1030,7 @@
       palco: document.getElementById("palco"),
       barraNoFim: true,
       radar: RAD,
+      lugares: !!(RAD.lugares && RAD.lugares.rotulos),   // Fase M: o botão "Lugares" só existe com tabela
       // Identidade da PARTIDA. Cair no nome do mapa faria duas partidas na
       // mesma Mirage dividirem a mesma chave de anotacao.
       matchId: (M && M.match_id) || "partida",

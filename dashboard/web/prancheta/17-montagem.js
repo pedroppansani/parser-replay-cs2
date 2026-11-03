@@ -129,6 +129,17 @@
     var fs = MapCore.botao("Tela cheia", comAtalho("Mapa em tela cheia", "Tela cheia"), function () { MapCore.alternaTelaCheia($("pr-palco")); });
     fs.id = "pr-tela-cheia";
     vista.appendChild(fs);
+    if (cfg.lugares && cfg.lugares.rotulos) {   // Fase M (decisão 52): os nomes de lugar, ligados ou desligados
+      var lug = MapCore.botao("Lugares", "Mostrar ou esconder os nomes de lugar do mapa", function () {
+        MapCore.defineLugares(!MapCore.lugaresLigados());
+        lug.classList.toggle("on", MapCore.lugaresLigados());
+        lug.setAttribute("aria-pressed", MapCore.lugaresLigados() ? "true" : "false");
+      });
+      lug.id = "pr-lugares";
+      lug.classList.toggle("on", MapCore.lugaresLigados());
+      lug.setAttribute("aria-pressed", MapCore.lugaresLigados() ? "true" : "false");
+      vista.appendChild(lug);
+    }
     vista.appendChild(MapCore.botao("?", comAtalho("Atalhos", "Ajuda: esta lista"), function () { alternaAjuda(); }));
     barra.appendChild(vista);
 
