@@ -23,25 +23,22 @@ def _var(texto: str, nome: str) -> str:
 
 
 def _tokens_dos_temas() -> dict[str, dict[str, str]]:
-    """Os tokens de cor de cada tema que pinta texto: o claro (landing, partida, jogadores), o escuro violeta (prancheta)
-    e o escuro de antes da v2-5 (a moldura do Replay: o violeta com o bloco `.board[data-tema="escuro"]` por cima)."""
-    claro, violeta = le_tokens(tema="claro"), le_tokens(tema="escuro")
-    css = re.sub(r"/\*.*?\*/", "", TOKENS.read_text(encoding="utf-8"), flags=re.S)
-    moldura = re.search(r'\.board\[data-tema="escuro"\]\s*\{([^}]*)\}', css).group(1)
-    escuro = {**violeta, **{k: v.lower() for k, v in re.findall(r"--([a-z0-9-]+):\s*(#[0-9a-fA-F]{6})\s*;", moldura)}}
-    return {"claro": claro, "violeta": violeta, "escuro da moldura do Replay": escuro}
+    """Os tokens de cor de cada tema que pinta texto: o claro e o escuro (landing, partida e jogadores, o que quem lê
+    escolhe; o escuro também é a moldura do Replay) e o violeta (prancheta). Fase T: o escuro de antes da v2-5 deixou de
+    ser um bloco `.board` por cima do violeta e virou o tema `escuro`."""
+    return {tema: le_tokens(tema=tema) for tema in ("claro", "escuro", "violeta")}
 
 
 # os fundos onde o --apagado aparece em cada tema; o --radar (o mapa) só existe dentro das ilhas escuras
 FUNDOS_DO_TEMA = {"claro": ("fundo", "superficie", "superficie-2", "tl-fundo"),
-                  "violeta": ("fundo", "superficie", "superficie-2", "tl-fundo", "radar"),
-                  "escuro da moldura do Replay": ("fundo", "superficie", "superficie-2", "tl-fundo", "radar")}
+                  "escuro": ("fundo", "superficie", "superficie-2", "tl-fundo", "radar"),
+                  "violeta": ("fundo", "superficie", "superficie-2", "tl-fundo", "radar")}
 
 
 @pytest.mark.parametrize("pagina", sorted(FONTES))
 def test_dim_tem_contraste_de_4_5_em_todo_fundo_claro(pagina):
     # Migrado na design-A (decisão 44): a cor secundária é o token --apagado. Desde a v2 há três temas que pintam
-    # texto (claro, escuro violeta e o escuro de antes na moldura do Replay); cada --apagado é medido contra os fundos
+    # texto (claro, escuro e violeta; Fase T: o escuro é o de antes da v2-5); cada --apagado é medido contra os fundos
     # do SEU tema (v2-7, OK do Pedro: antes o teste lia o primeiro --apagado do tokens.css, o do escuro). Cada página
     # recebe os MESMOS tokens pelo marcador e não define os dela.
     texto = le_fonte(FONTES[pagina])

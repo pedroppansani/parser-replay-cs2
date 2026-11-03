@@ -9,7 +9,7 @@ MAPA = "de_mirage"
 def test_a_prancheta_sai_no_escuro_com_a_navbar_e_sem_marcador():
     from scripts.build_tactics_page import build_html
     html = build_html(MAPA)
-    assert '<html lang="pt-BR" data-tema="escuro">' in html and '<header class="site-topo">' in html
+    assert '<html lang="pt-BR" data-tema="violeta">' in html and '<header class="site-topo">' in html   # Fase T: nome próprio
     assert '<filter id="goo">' in html
     for marcador in ("/*__V2__*/", "/*__V2_JS__*/", "<!--__TOPO__-->"):
         assert marcador not in html, marcador

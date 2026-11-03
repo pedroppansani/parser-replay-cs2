@@ -357,6 +357,11 @@ def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | Non
   .agente.pronto canvas {{ opacity: 1; }} .agente.pronto svg {{ opacity: 0; }}
   .agente .corte {{ position: absolute; left: 4%; right: 4%; bottom: -6px; height: 3px; border-radius: 2px; background: var(--ct); }}
   .agente[data-lado="tr"] .corte {{ background: var(--tr); }}
+  /* Fase T (escolha do Pedro, opção B): o agente foi aprovado sobre o claro; no tema escuro ele continua desenhado com
+     as cores do claro (data-tema="claro" no próprio agente), num cartão claro arredondado atrás dele */
+  .agente {{ isolation: isolate; }}
+  :root[data-tema="escuro"] .agente::before {{ content: ""; position: absolute; inset: -20px -20px -26px; z-index: -1;
+    border-radius: 24px; background: var(--superficie); }}
   @media (max-width: 760px) {{
     .heroi {{ grid-template-columns: minmax(0, 1fr); padding-top: 24px; }}
     .agente {{ width: min(70%, 240px); }}
@@ -463,7 +468,7 @@ def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | Non
       <div class="acoes"><a class="btn prim" id="btn-explorar" href="#partidas">{e(T["explorar"])}</a><button class="btn" type="button" id="btn-demo" data-abre-demo>{e(T["adicionar"])}</button></div>
       <p class="em-breve"><span class="tag">{e(T["em_breve"])}</span> {e(T["em_breve_frase"])}</p>
     </div>
-    <figure class="agente" id="agente" data-lado="tr" data-base="agente/" role="img" aria-label="{e(rotulos_do_agente["tr"])}">{_quadro_do_agente("tr", False)}{_quadro_do_agente("ct", True)}<canvas aria-hidden="true"></canvas><span class="corte" aria-hidden="true"></span></figure>
+    <figure class="agente" id="agente" data-tema="claro" data-lado="tr" data-base="agente/" role="img" aria-label="{e(rotulos_do_agente["tr"])}">{_quadro_do_agente("tr", False)}{_quadro_do_agente("ct", True)}<canvas aria-hidden="true"></canvas><span class="corte" aria-hidden="true"></span></figure>
     <script>
       // sorteio do lado, antes do primeiro desenho (§6.2): ?agente=ct|tr força; sem JS fica o TR
       (function () {{ var f = document.getElementById("agente"), q = new URLSearchParams(location.search).get("agente"),
@@ -581,8 +586,9 @@ def build(repo_url: str, preview: bool = False) -> Path:
 
     saida.mkdir(parents=True, exist_ok=True)
     # as fontes Geist e Geist Mono (decisão 48) ficam em fontes/, ao lado das páginas
-    from scripts.design_head import copia_fontes
+    from scripts.design_head import copia_fontes, copia_tema
     copia_fontes(saida)
+    copia_tema(saida)
     for old in saida.glob("*.html"):
         old.unlink()
 

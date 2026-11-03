@@ -38,7 +38,7 @@ def test_tokens_css_tem_os_valores_do_prototipo_v2_no_claro_e_no_escuro():
     do_design, do_projeto = declaracoes(proto_v2.read_text(encoding="utf-8")), declaracoes(TOKENS.read_text(encoding="utf-8"))
     for forma in ("--f-texto", "--f-num", "--r-card", "--r-ctl", "--r-cab", "--r-moldura", "--r-mapa", "--curva", "--nav-h"):
         assert do_projeto[forma] == do_design[forma], forma
-    escuro, violeta = le_tokens(tema="escuro"), le_tokens(proto_v2, "escuro")
+    escuro, violeta = le_tokens(tema="violeta"), le_tokens(proto_v2, "escuro")   # Fase T: o violeta tem nome próprio
     assert {k for k, v in violeta.items() if escuro.get(k) != v} == {"tinta", "tinta-mapa"}
     sala = (RAIZ / "notas" / "design" / "prototipo" / "tokens.css").read_text(encoding="utf-8")
     de_hoje = dict(re.findall(r"^\s*--([a-z0-9-]+):\s*(#[0-9a-f]{6});", sala, re.M))
@@ -87,8 +87,8 @@ def test_paginas_geradas_nao_deixam_marcador_e_carregam_so_as_duas_familias():
         baixadas = re.findall(r'font-family: "([^"]+)"; src: url\(fontes/([^)]+)\)', html)
         assert baixadas == [(f, a) for f, a in FONTES], nome
         assert html.count("src: url(") == 2, nome
-        # v2-4: landing, partida e jogadores no claro; v2-5: a prancheta no escuro violeta
-        tema = "escuro" if nome == "prancheta" else "claro"
+        # v2-4: landing, partida e jogadores no claro (Fase T: o tema.js troca na hora); v2-5: a prancheta no violeta
+        tema = "violeta" if nome == "prancheta" else "claro"
         assert f'<html lang="pt-BR" data-tema="{tema}">' in html and "--fundo: #04061c" in html, nome
         assert "Geist Fallback" in html and "Geist Mono Fallback" in html, nome
     assert {f for f, _ in FONTES} == {"Geist", "Geist Mono"}
