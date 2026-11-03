@@ -2,11 +2,12 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import pytest
 
-from metrics.lugares import ANCORAS_POR_LUGAR, lugar, para_a_prancheta, para_o_replay, rotulos
+from metrics.lugares import ANCORAS_POR_LUGAR, lugar, para_a_prancheta, para_o_replay, rotulos, texto_do_lugar
 
 RAIZ = Path(__file__).resolve().parents[1]
 MAPAS = sorted(p.stem for p in (RAIZ / "data" / "lugares").glob("de_*.json"))
@@ -62,6 +63,45 @@ def test_sem_tabela_nao_ha_nada_a_desenhar():
 def test_o_replay_leva_so_os_nomes_e_a_prancheta_a_tabela_inteira():
     tab = _tabela("de_mirage")
     rep, pr = para_o_replay(tab), para_a_prancheta(tab)
-    assert set(rep) == {"nomes", "rotulos"} and rep["nomes"] == tab["nomes"]
+    assert set(rep) == {"nomes", "textos", "rotulos"} and rep["nomes"] == tab["nomes"]
     assert pr["andares"] == tab["andares"] and pr["rotulos"] == rep["rotulos"]
     assert len(json.dumps(rep)) < 4_000          # cabe folgado na página
+
+
+def _todos_os_nomes():
+    return sorted({n for m in MAPAS for n in _tabela(m)["nomes"]})
+
+
+def test_o_texto_do_lugar_separa_as_palavras_pelas_maiusculas_do_dado_e_o_of_colado():
+    esperado = {
+        "CTSpawn": "CT SPAWN", "TSpawn": "T SPAWN", "SnipersNest": "SNIPERS NEST", "TSideLower": "T SIDE LOWER",
+        "ARamp": "A RAMP", "BDoors": "B DOORS", "BombsiteA": "BOMBSITE A", "MIDDLE": "MIDDLE", "Truck": "TRUCK",
+        "Roof": "ROOF", "HutRoof": "HUT ROOF",
+        # o "of" minúsculo colado entre uma minúscula e uma maiúscula (escolha do Pedro, 2026-11-03): só estes três nomes
+        "TopofMid": "TOP OF MID", "BackofB": "BACK OF B", "BackofA": "BACK OF A",
+    }
+    for nome, texto in esperado.items():
+        assert texto_do_lugar(nome) == texto, nome
+
+
+def test_o_texto_so_acrescenta_espaco_as_letras_sao_as_do_dado():
+    for nome in _todos_os_nomes():
+        texto = texto_do_lugar(nome)
+        assert texto.replace(" ", "") == nome.upper(), (nome, texto)       # nada traduzido, inventado nem trocado
+        assert "  " not in texto and texto == texto.strip()
+
+
+def test_a_regra_do_of_muda_so_esses_tres_nomes_e_nenhum_por_engano():
+    def so_maiusculas(n):
+        n = re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", n)
+        n = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1 \2", n)
+        return n.upper()
+    mudados = {n for n in _todos_os_nomes() if texto_do_lugar(n) != so_maiusculas(n)}
+    assert mudados == {"TopofMid", "BackofB", "BackofA"}, mudados
+
+
+@pytest.mark.parametrize("mapa", MAPAS)
+def test_as_paginas_levam_o_texto_de_cada_nome(mapa):
+    tab = _tabela(mapa)
+    for pagina in (para_o_replay(tab), para_a_prancheta(tab)):
+        assert pagina["textos"] == [texto_do_lugar(n) for n in tab["nomes"]] and len(pagina["textos"]) == len(pagina["nomes"])

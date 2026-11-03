@@ -90,8 +90,9 @@ def _bate(a, b):
 
 
 def _nomes_da_tabela(mapa):
+    from metrics.lugares import texto_do_lugar
     tab = json.loads((RAIZ / "data" / "lugares" / f"{mapa}.json").read_text(encoding="utf-8"))
-    return {n.upper() for n in tab["nomes"]}
+    return {texto_do_lugar(n) for n in tab["nomes"]}
 
 
 # --- o radar ---------------------------------------------------------------------------------------------------------------
@@ -124,6 +125,7 @@ def test_nomes_de_lugar_e_bombsites_aparecem_sem_cobrir_nada(navegador, paginas)
     for l in c["lugares"]:
         assert l["txt"] in permitido and l["txt"] == l["txt"].upper()      # o nome do dado, em caixa alta, nada inventado
         assert not l["txt"].startswith("BOMBSITE")                          # o bombsite é só a letra
+    assert all("CTSPAWN" != l["txt"] and "TSPAWN" != l["txt"] and "SNIPERSNEST" != l["txt"] for l in c["lugares"])
     todos = c["pecas"] + c["nomes"] + c["sitios"]
     for i, l in enumerate(c["lugares"]):
         assert not any(_bate(l, o) for o in todos), ("nome de lugar cobre peça, nome ou bombsite", l)
@@ -133,7 +135,7 @@ def test_nomes_de_lugar_e_bombsites_aparecem_sem_cobrir_nada(navegador, paginas)
 
 def test_o_botao_lugares_liga_e_desliga_so_os_nomes_e_lembra_a_escolha(navegador, paginas):
     ctx, pg = _abre_replay(navegador, paginas, MIRAGE)
-    botao = pg.locator("#anot-lugares")
+    botao = pg.locator("#lugares-botao")
     assert botao.get_attribute("aria-pressed") == "true" and len(_caixas(pg)["lugares"]) >= 5
     botao.click(); pg.wait_for_timeout(300)
     c = _caixas(pg)
@@ -143,9 +145,9 @@ def test_o_botao_lugares_liga_e_desliga_so_os_nomes_e_lembra_a_escolha(navegador
     pg.reload(); pg.locator('[data-tab="replay"]').first.click()
     pg.wait_for_function("() => window.MapAnnotations && MapAnnotations._interno.S.reprojecoes > 0")
     pg.wait_for_timeout(400)
-    assert pg.locator("#anot-lugares").get_attribute("aria-pressed") == "false"
+    assert pg.locator("#lugares-botao").get_attribute("aria-pressed") == "false"
     assert _caixas(pg)["lugares"] == []
-    pg.locator("#anot-lugares").click(); pg.wait_for_timeout(300)
+    pg.locator("#lugares-botao").click(); pg.wait_for_timeout(300)
     assert len(_caixas(pg)["lugares"]) >= 5
     ctx.close()
 
@@ -167,7 +169,7 @@ def test_a_prancheta_tem_os_nomes_de_lugar_e_o_botao(navegador, paginas):
 def test_mapa_sem_tabela_nao_tem_nome_de_lugar_nem_botao(navegador, paginas):
     ctx, pg = _abre_replay(navegador, paginas, TRAIN, rnd=3)
     c = _caixas(pg)
-    assert c["lugares"] == [] and c["sitios"] == [] and pg.locator("#anot-lugares").count() == 0
+    assert c["lugares"] == [] and c["sitios"] == [] and pg.locator("#lugares-botao").count() == 0
     ctx.close()
     ctx = navegador.new_context(viewport={"width": 1300, "height": 950})
     pg = ctx.new_page()
@@ -267,4 +269,29 @@ def test_a_peca_do_outro_andar_e_um_disco_cinza_com_anel_do_lado_e_seta(navegado
     assert max(cinza) - min(cinza) < 40 and 100 < sum(cinza) / 3 < 190, cinza                 # o disco é cinza (apagado-mapa)
     assert anel[2] > anel[0] + 40, anel                                                       # o anel é azul (a cor do lado)
     assert px["escuro"]                                                                       # a seta escura no meio
+    ctx.close()
+
+
+# --- o celular -------------------------------------------------------------------------------------------------------------
+
+def test_no_celular_os_lugares_comecam_desligados_e_a_escolha_e_lembrada_so_ali(navegador, paginas):
+    ctx, pg = _abre_replay(navegador, paginas, MIRAGE, w=375, h=800)
+    botao = pg.locator("#lugares-botao")
+    c = _caixas(pg)
+    assert botao.get_attribute("aria-pressed") == "false" and c["lugares"] == []
+    assert {s["txt"] for s in c["sitios"]} == {"A", "B"}                  # as letras dos bombsites ficam
+    botao.click(); pg.wait_for_timeout(300)
+    assert botao.get_attribute("aria-pressed") == "true"
+    assert pg.evaluate("() => [localStorage.getItem('mapa:lugares:celular'), localStorage.getItem('mapa:lugares')]") == ["1", None]
+    pg.reload(); pg.locator('[data-tab="replay"]').first.click()
+    pg.wait_for_function("() => window.MapAnnotations && MapAnnotations._interno.S.reprojecoes > 0")
+    pg.wait_for_timeout(400)
+    assert pg.locator("#lugares-botao").get_attribute("aria-pressed") == "true"      # lembrado
+    ctx.close()
+
+
+def test_no_computador_os_lugares_continuam_comecando_ligados(navegador, paginas):
+    ctx, pg = _abre_replay(navegador, paginas, MIRAGE, w=1440, h=900)
+    assert pg.locator("#lugares-botao").get_attribute("aria-pressed") == "true"
+    assert pg.evaluate("() => [localStorage.getItem('mapa:lugares:celular'), localStorage.getItem('mapa:lugares')]") == [None, None]
     ctx.close()

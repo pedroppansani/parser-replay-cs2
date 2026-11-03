@@ -97,6 +97,22 @@
     }
   }
 
+  // Fase M (decisão 52): o botão "Lugares" liga e desliga os nomes de lugar; fica na legenda do mapa, junto do andar, e
+  // só existe no mapa que tem tabela de lugares (no celular a escolha começa desligada: ver MapCore.lugaresLigados)
+  if (RAD.lugares && RAD.lugares.rotulos) {
+    var lgL = document.querySelector(".maplegend");
+    if (lgL) {
+      var botaoL = document.createElement("button");
+      botaoL.type = "button"; botaoL.id = "lugares-botao"; botaoL.className = "lugares-botao";
+      botaoL.textContent = "Lugares";
+      botaoL.title = "Mostrar ou esconder os nomes de lugar do mapa";
+      var sincL = function () { botaoL.setAttribute("aria-pressed", MapCore.lugaresLigados() ? "true" : "false"); };
+      botaoL.addEventListener("click", function () { MapCore.defineLugares(!MapCore.lugaresLigados()); sincL(); });
+      sincL();
+      lgL.appendChild(botaoL);
+    }
+  }
+
   // Controle de andar: só aparece em mapa que tem mais de um (Nuke, Vertigo,
   // Train). "Auto" segue a maioria dos vivos, que é como o observador do jogo
   // se comporta; travar serve pra acompanhar o que acontece no outro andar.
@@ -1030,7 +1046,6 @@
       palco: document.getElementById("palco"),
       barraNoFim: true,
       radar: RAD,
-      lugares: !!(RAD.lugares && RAD.lugares.rotulos),   // Fase M: o botão "Lugares" só existe com tabela
       // Identidade da PARTIDA. Cair no nome do mapa faria duas partidas na
       // mesma Mirage dividirem a mesma chave de anotacao.
       matchId: (M && M.match_id) || "partida",

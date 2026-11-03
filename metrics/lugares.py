@@ -15,6 +15,7 @@ Ver notas/investigacoes/2026-10-04-nome-do-lugar.md.
 """
 from __future__ import annotations
 
+import re
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -164,11 +165,23 @@ def rotulos(tabela: dict | None, por_lugar: int = ANCORAS_POR_LUGAR) -> list:
     return saida
 
 
+def texto_do_lugar(nome: str) -> str:
+    """Como o nome vai escrito no mapa (Fase M, decisão 52): em caixa alta, com as palavras separadas pelas maiúsculas que o
+    PRÓPRIO dado usa ("CTSpawn" vira "CT SPAWN", "SnipersNest" vira "SNIPERS NEST") e o "of" minúsculo colado entre uma
+    minúscula e uma maiúscula ("TopofMid" vira "TOP OF MID"). As letras são exatamente as do dado, só com espaço: nada é
+    traduzido, inventado nem tem exceção escrita à mão."""
+    n = re.sub(r"(?<=[a-z])of(?=[A-Z])", " of ", nome)
+    n = re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", n)
+    n = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1 \2", n)
+    return re.sub(r" +", " ", n).strip().upper()
+
+
 def para_a_prancheta(tabela: dict | None) -> dict | None:
-    """A tabela inteira (o roteiro precisa dela) mais as âncoras dos nomes no mapa."""
-    return None if not tabela else {**tabela, "rotulos": rotulos(tabela)}
+    """A tabela inteira (o roteiro precisa dela) mais as âncoras e o texto dos nomes no mapa."""
+    return None if not tabela else {**tabela, "rotulos": rotulos(tabela), "textos": [texto_do_lugar(n) for n in tabela["nomes"]]}
 
 
 def para_o_replay(tabela: dict | None) -> dict | None:
-    """O replay só desenha os nomes: nomes e âncoras, sem a grade."""
-    return None if not tabela else {"nomes": tabela["nomes"], "rotulos": rotulos(tabela)}
+    """O replay só desenha os nomes: nomes, textos e âncoras, sem a grade."""
+    return None if not tabela else {"nomes": tabela["nomes"], "textos": [texto_do_lugar(n) for n in tabela["nomes"]],
+                                    "rotulos": rotulos(tabela)}

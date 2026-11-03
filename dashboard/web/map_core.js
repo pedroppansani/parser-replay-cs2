@@ -678,15 +678,28 @@ window.MapCore = (function () {
   var ROT_TAM = 12.5, ROT_FOLGA_X = 4, ROT_FOLGA_Y = 3, ROT_CONTORNO = 6;
   var LUGAR_TAM = 10, LUGAR_ESPACO = 0.12, LUGAR_FOLGA = 4, SITIO_TAM = 15;
   var RAIO_DA_PECA_NO_ROTULO = 11, RAIO_DO_MORTO_NO_ROTULO = 5.5;   // px do radar, ao redor do centro da peça
-  var CHAVE_LUGARES = "mapa:lugares";
-  var LUGARES_LIGADOS = true;
-  try { LUGARES_LIGADOS = window.localStorage.getItem(CHAVE_LUGARES) !== "0"; } catch (e) { /* sem armazenamento: ligados */ }
+  // Os nomes de lugar ligados ou desligados, lembrado no navegador POR TIPO DE TELA: no computador começam ligados; no
+  // celular (até 640 px), desligados (a tela é pequena e a regra "não cobre nada" tira quase todos). Quem liga ou desliga
+  // numa delas só muda a escolha dela. Os bombsites (as letras A e B) não dependem disto.
+  var CHAVES_LUGARES = { computador: "mapa:lugares", celular: "mapa:lugares:celular" };
+  var CELULAR_MQ = (typeof window !== "undefined" && window.matchMedia) ? window.matchMedia("(max-width: 640px)") : null;
+  var LUGARES_ESCOLHA = { computador: null, celular: null };   // true, false ou null (nunca escolheu)
+  try {
+    ["computador", "celular"].forEach(function (t) {
+      var v = window.localStorage.getItem(CHAVES_LUGARES[t]);
+      LUGARES_ESCOLHA[t] = v === "1" ? true : v === "0" ? false : null;
+    });
+  } catch (e) { /* sem armazenamento: o padrão de cada tela */ }
+  function tipoDeTela() { return CELULAR_MQ && CELULAR_MQ.matches ? "celular" : "computador"; }
 
-  /** Os nomes de lugar ligados ou desligados (lembrado no navegador). Os bombsites não dependem disto. */
-  function lugaresLigados() { return LUGARES_LIGADOS; }
+  function lugaresLigados() {
+    var t = tipoDeTela(), v = LUGARES_ESCOLHA[t];
+    return v === null ? t === "computador" : v;
+  }
   function defineLugares(ligado) {
-    LUGARES_LIGADOS = !!ligado;
-    try { window.localStorage.setItem(CHAVE_LUGARES, LUGARES_LIGADOS ? "1" : "0"); } catch (e) { /* tudo bem */ }
+    var t = tipoDeTela();
+    LUGARES_ESCOLHA[t] = !!ligado;
+    try { window.localStorage.setItem(CHAVES_LUGARES[t], ligado ? "1" : "0"); } catch (e) { /* tudo bem */ }
     if (ROT.redesenha) ROT.redesenha();
   }
 
@@ -753,12 +766,13 @@ window.MapCore = (function () {
     var cv = ROT.canvas, k = pxPorPxDeTela(), m = ROT.ctx.getTransform();
     lugares.rotulos[andar].forEach(function (par) {
       var nome = lugares.nomes[par[0]];
+      var texto = (lugares.textos && lugares.textos[par[0]]) || nome.toUpperCase();   // as palavras separadas e em caixa alta, do Python
       var cands = par[1].map(function (p) { return [m.a * p[0] + m.c * p[1] + m.e, m.b * p[0] + m.d * p[1] + m.f]; })
         .filter(function (c) { return c[0] >= 0 && c[1] >= 0 && c[0] <= cv.width && c[1] <= cv.height; });
       if (!cands.length) return;
       var sitio = /^Bombsite([A-Z])$/.exec(nome);
       if (sitio) desenhaSitio(sitio[1], cands[0], k);
-      else if (LUGARES_LIGADOS) ROT.lugares.push({ txt: nome.toUpperCase(), cands: cands });
+      else if (lugaresLigados()) ROT.lugares.push({ txt: texto, cands: cands });
     });
   }
 

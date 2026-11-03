@@ -257,3 +257,13 @@ body:has(#decisive:empty) #foot { visibility: hidden; }
 /* jogadores.html é montada inteira pelo JS (título, aviso, filtros, cards): até o título entrar, o que vem depois da
    navbar fica invisível (a 375 px o aviso e os filtros desciam tudo: CLS 0,451) */
 .shell:has(> #titulo:empty) > :not(.site-topo):not(.pular) { visibility: hidden; }
+
+/* Fase M (decisão 52): o botão "Lugares" na legenda do mapa, no mesmo desenho do seletor de andar */
+.maplegend .lugares-botao {
+  font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: 10.5px; color: var(--tinta-2);
+  background: var(--superficie-2); border: 1px solid transparent; border-radius: var(--r-sm);
+  padding: 3px 7px; cursor: pointer; font-weight: 600;
+}
+.maplegend .lugares-botao:hover { border-color: var(--apagado); }
+.maplegend .lugares-botao[aria-pressed="true"] { background: var(--tinta); color: var(--fundo); }
+@media (pointer: coarse) { .maplegend .lugares-botao { min-height: 44px; padding: 3px 14px; } }
