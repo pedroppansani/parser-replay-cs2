@@ -104,3 +104,71 @@ def acerto(treino, teste, lado: int) -> float:
     g = grade(treino, lado)
     ok = sum(1 for x, y, n, p in teste if g.get((n, int(x // lado), int(y // lado))) == p)
     return ok / len(teste)
+
+
+# --- Âncoras dos nomes de lugar no mapa (Fase M, decisão 52) ------------------------------------
+ANCORAS_POR_LUGAR = 5          # posições candidatas por nome e andar: o desenho usa a primeira que não cobre nada
+SEPARACAO_MINIMA_CELULAS = 6   # candidatas da mesma região ficam a pelo menos 6 células uma da outra
+
+
+def _celulas_por_nome(tabela: dict, andar: int) -> dict[int, set]:
+    por_nome: dict[int, set] = defaultdict(set)
+    for cy, rle in tabela["andares"][andar].items():
+        for i in range(0, len(rle), 3):
+            for cx in range(rle[i], rle[i] + rle[i + 2]):
+                por_nome[rle[i + 1]].add((cx, int(cy)))
+    return por_nome
+
+
+def _profundidade(celulas: set) -> dict:
+    """Distância de cada célula até a borda da região (em células, 4 vizinhos): a borda vale 1. A âncora do nome fica
+    onde a região é mais funda, nunca na beirada."""
+    prof = {c: 1 for c in celulas if any((c[0] + dx, c[1] + dy) not in celulas for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))}
+    fronteira = sorted(prof)
+    while fronteira:
+        proxima = []
+        for cx, cy in fronteira:
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                v = (cx + dx, cy + dy)
+                if v in celulas and v not in prof:
+                    prof[v] = prof[(cx, cy)] + 1
+                    proxima.append(v)
+        fronteira = sorted(proxima)
+    return prof
+
+
+def rotulos(tabela: dict | None, por_lugar: int = ANCORAS_POR_LUGAR) -> list:
+    """Onde pôr o nome de cada lugar: por andar, `[[índice do nome, [[x, y], ...]], ...]` em pixels do radar, ordenado pelo
+    índice. As posições candidatas vêm da mais funda da região para as outras (desempate: mais perto do centro, depois linha
+    e coluna), separadas por `SEPARACAO_MINIMA_CELULAS`; o nome é o da tabela (o que o jogo escreve), nada é inventado.
+    Determinístico. Sem tabela, lista vazia."""
+    if not tabela:
+        return []
+    lado = tabela["lado"]
+    saida = []
+    for andar in range(len(tabela["andares"])):
+        lugares = []
+        for ix, celulas in sorted(_celulas_por_nome(tabela, andar).items()):
+            prof = _profundidade(celulas)
+            cx0 = sum(c[0] for c in celulas) / len(celulas)
+            cy0 = sum(c[1] for c in celulas) / len(celulas)
+            ordem = sorted(celulas, key=lambda c: (-prof[c], (c[0] - cx0) ** 2 + (c[1] - cy0) ** 2, c[1], c[0]))
+            escolhidas: list = []
+            for c in ordem:
+                if all(max(abs(c[0] - o[0]), abs(c[1] - o[1])) >= SEPARACAO_MINIMA_CELULAS for o in escolhidas):
+                    escolhidas.append(c)
+                    if len(escolhidas) == por_lugar:
+                        break
+            lugares.append([ix, [[(c[0] + 0.5) * lado, (c[1] + 0.5) * lado] for c in escolhidas]])
+        saida.append(lugares)
+    return saida
+
+
+def para_a_prancheta(tabela: dict | None) -> dict | None:
+    """A tabela inteira (o roteiro precisa dela) mais as âncoras dos nomes no mapa."""
+    return None if not tabela else {**tabela, "rotulos": rotulos(tabela)}
+
+
+def para_o_replay(tabela: dict | None) -> dict | None:
+    """O replay só desenha os nomes: nomes e âncoras, sem a grade."""
+    return None if not tabela else {"nomes": tabela["nomes"], "rotulos": rotulos(tabela)}

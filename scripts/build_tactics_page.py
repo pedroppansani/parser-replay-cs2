@@ -118,6 +118,9 @@ def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | Non
     # nomes de lugar do roteiro (scripts/build_lugares.py); sem tabela, sem nome
     caminho_lug = LUGARES_DIR / f"{mapa}.json"
     lugares = json.loads(caminho_lug.read_text(encoding="utf-8")) if caminho_lug.exists() else None
+    # e as âncoras dos nomes no mapa (Fase M, decisão 52): o desenho só põe o que não cobre nada
+    from metrics.lugares import para_a_prancheta
+    lugares = para_a_prancheta(lugares)
     if rotulos is None:
         from metrics.constantes import NOME_DO_MAPA
         rotulos = NOME_DO_MAPA
