@@ -180,7 +180,7 @@
     b.title = "Round " + r.round + " — " + nomeLado(r.winner_team);
     b.setAttribute("aria-label", "Round " + r.round + ", " + nomeLado(r.winner_team) + " venceu" +
                    (r.round === decRound ? ", round decisivo" : ""));
-    b.addEventListener("click", function () { selectRound(r); });
+    b.addEventListener("click", function () { selectRound(r); rolaAtePalco(); });
     strip.appendChild(b);
     // separador no fim de cada meio-tempo (12, 24) e de cada metade da prorrogação (MR3: 27, 30, ...)
     var meio = M.halftime || 12, n = r.round;
@@ -306,6 +306,18 @@
     return worst;
   }
 
+  // Modo palco (cartão 15): ao abrir o Replay ou trocar de round a página rola até o palco (a margem vem do
+  // scroll-margin-top do CSS). Nunca briga com a rolagem da pessoa: se ela rolou há menos de meio segundo, não rola.
+  var MODO_PALCO = window.matchMedia("(min-width: 1024px) and (min-height: 700px)");
+  var ultimaRolagemDaPessoa = -1e9;
+  ["wheel", "touchmove", "keydown"].forEach(function (ev) {
+    window.addEventListener(ev, function () { ultimaRolagemDaPessoa = performance.now(); }, { passive: true });
+  });
+  function rolaAtePalco() {
+    if (!MODO_PALCO.matches || performance.now() - ultimaRolagemDaPessoa < 500) return;
+    document.getElementById("palco").scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+  }
+
   function selectRound(r) {
     cur = r;
     frame = 0;
@@ -411,9 +423,8 @@
         var alvo = frameDoTick(m.tick);
         if (alvo === null) return;
         seekToEvent(alvo);
-        document.querySelector(".board").scrollIntoView({
-          behavior: reduced ? "auto" : "smooth", block: "center"
-        });
+        if (MODO_PALCO.matches) rolaAtePalco();
+        else document.querySelector(".board").scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
       });
     });
   }
