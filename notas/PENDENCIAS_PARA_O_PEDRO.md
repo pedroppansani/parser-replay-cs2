@@ -438,17 +438,12 @@ O texto original do cartão:
 
 ---
 
-## 15. O tamanho do mapa do Replay pela regra do protótipo (fica para depois)
+## 15. O tamanho do mapa do Replay pela regra do protótipo -- FEITO NA FASE B (decisão 53), AGUARDA O MERGE
 
-- **O que é:** o protótipo da v2 (§5.3) dimensiona o mapa por `min(100%, 640px, 100svh − reserva)`, quadrado. Na v2-4
-  o mapa ficou com o tamanho de hoje (sua decisão, 2026-10-26): a largura já segue a altura da tela
-  (`.mapwrap`, reserva de 500 px a partir de 1024 px e 340 px abaixo), com o canvas de 820 × 950.
-- **Por que não mudou:** trocar a regra muda o tamanho do canvas e, com ele, todos os pixels dos três quadros do
-  Replay no `compara_capturas` (o da prancheta não muda). Seria preciso regravar as
-  referências em commit próprio e refazer `mede_radar` e `mede_granada_real`.
-- **O que preciso de você:** se quer a regra do protótipo (mapa maior em telas grandes, até 640 px) ou se o
-  tamanho de hoje fica.
-- **Fora do computador:** nada.
+- **Escolha do Pedro (2026-11-04):** opção B (o palco sobe até logo abaixo da faixa de rounds, que fica grudada sob as abas).
+  A 1440 x 900 o mapa passa de 345 para 579 px; a 1366 x 768, de 231 para 447 px. Celular igual.
+- **Fica para depois:** o enquadramento da Nuke (B+), fase separada: o enquadramento nunca esconde jogador vivo nem granada.
+  Se o cabeçalho do round (55 px) for para dentro da faixa, o mapa ganha mais 55 px (634 e 502); não foi pedido.
 
 ---
 
