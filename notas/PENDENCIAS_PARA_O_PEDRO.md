@@ -580,3 +580,15 @@ O texto original do cartão:
   3. **Deixar como está:** a prancheta é ferramenta de quem já entrou no site; o LCP não tem meta para ela.
 - **Recomendação:** a 1, numa fase própria. É o que tira os 3,5 MB do caminho de quem só quer desenhar.
 - **Fora do computador:** nada.
+
+---
+
+## 21. CI 4: a suíte em 4 processos com o pytest-xdist -- AVALIADO E RECUSADO POR ORA
+
+- **Decisão do Pedro (2026-11-02): não adotar o `pytest-xdist`.** Fica "avaliado e recusado por ora".
+- **O que foi medido (nuvem, 2026-10-29, branch `ci-xdist-teste`, só de teste):** a suíte em 4 processos com o `pytest-xdist` 3.8.0 deu
+  **20 de 20 rodadas verdes** nos runners do GitHub, e o job de testes caiu de **331 s para 282 s** (cerca de 49 s, 15%).
+- **Por que fica de fora por ora:** o ganho é pequeno diante do risco de reordenar a suíte (os testes de navegador da prancheta e dos
+  grupos já mostraram dependência de ordem, cartão 17) e de mais uma dependência fixada em `requirements-dev.txt`.
+- **Se for retomado:** a medida e o resultado de 20 de 20 acima são o ponto de partida; a branch foi apagada do GitHub em 2026-11-03
+  (o commit era `1950eff0`).

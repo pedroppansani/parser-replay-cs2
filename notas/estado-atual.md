@@ -40,8 +40,7 @@ local. **Regra do Pedro (2026-10-29): tarefa que mexe em MÉTRICA, DADO ou PARSI
 momentos); decisão 2 = C (dica de 1 linha; as opções do pincel e da granada numa coluna ao lado do mapa; 343 px a 1366x768);
 decisão 1 = A (referência `notas/design/referencias/v2-5b/`, idêntica byte a byte à `main` com o mapa do mesmo tamanho); o seletor de
 cor da prancheta, que nunca abria, voltou a abrir (OK do Pedro); os 30 px do Reproduzir ficam como exceção da nota 48 (OK do
-Pedro). 20 de 20 nos dois testes de arrasto. **Falta só:** o Pedro apagar a branch temporária `sonda-alca-ci` no GitHub (a local já
-não existe).
+Pedro). 20 de 20 nos dois testes de arrasto. A branch temporária `sonda-alca-ci` foi apagada do GitHub em 2026-11-03 (a local já não existia).
 
 **v2-6 FEITA (2026-10-29), merge `7a118673`:** máscaras de pontos dos 8 mapas, imagem de compartilhamento 1200x630 por partida e da
 landing (53 PNG, 16 a 32 KB; `og:image:width/height` batem nas 64 páginas), esqueleto de carregamento (`?estado=carregando`, sem
@@ -75,6 +74,19 @@ ambiente). Medido por HTTP local (Fast 4G, CPU 4x): CLS 0,000 em landing, partid
 com um resto de 0,0003 no cabeçalho da partida (Linux sem Arial); a fonte embutida em data URI zera, mas muda a regra das fontes e
 2 testes (escolha do Pedro). Não mudou: `--f-cond` (trocar mexe na fonte dos símbolos no Linux) e o
 `test_acessibilidade::test_dim_tem_contraste…` (lê o primeiro `--apagado`, o do escuro; mudar o teste precisa do OK do Pedro).
+
+**No PC do Pedro (2026-11-03):** (1) **Fase T FEITA:** a `fase-t-tema` (decisão 51; o botão da landing com o texto fixo "Escuro" e
+`aria-pressed`, OK do Pedro em 2026-11-02) foi mesclada na `main` no commit `46a5baaa`, depois de a suíte inteira rodar no resultado
+do merge, com o `data/interim`: 1.666 passaram, 71 pulados, 0 falharam (`notas/logs/fase-t-suite-merge-2026-11-02.log`). (2) **CI 4
+(`pytest-xdist`) recusado por ora** (cartão 21; 20 de 20 e 331 s para 282 s); a branch `ci-xdist-teste` foi apagada do GitHub. (3) Os
+PRs do dependabot #2, #3, #4 e #11 já estavam fechados (o próprio dependabot, 2026-10-29); receberam o comentário "substituído pelas
+mesmas versões já na main, commit 5c4589fe". (4) **Próximo:** conferir se a `compara_capturas` do Windows reproduz as referências do
+cartão 19 (`notas/design/referencias/c19-software/`) na `main` atual; se não reproduzir, parar e levar as opções ao Pedro (nada de
+regravar para "fazer passar"). (5) **Fase M** (variação A mais o nome do jogador do outro andar em itálico, com
+`imageSmoothingQuality = "high"`; referências do canvas regravadas num commit próprio com a lista do que mudou; impressão dos números
+idêntica; portão: prévia em `preview-v2\index.html`, capturas da Mirage e da Nuke, no Replay e na prancheta, a 1440 e 375 px, nos temas
+claro e escuro, mais o code-review mostrado só na conversa, antes do OK do Pedro). A descrição da "variação A" NÃO está no repositório
+(foi entregue no chat da nuvem): pedir ao Pedro antes de implementar.
 
 **Fila que falta, nesta ordem:** (1) ~~v2-5b~~, ~~v2-6~~, ~~cartão 17~~ (`165f0d00`), ~~v2-7~~ (`73fc57d0`) e ~~cartão 20~~
 (`24eea71e`): feitos. (2) ~~Cartão 9~~ (a refatoração, decisão 50): FECHADO em 2026-10-29 nos passos 0 a 3 (`9be9db37`, `eb704893`, `2641c91b`, `00f49756`; o passo 3 provado no PC do Pedro: site, impressão, quadros e capturas iguais, suíte com o `data/interim` 1.651 passaram, 71 pulados, 0 falharam). A guarda do sha256 saiu; o passo 4 (a função de 88 KB que monta HTML) fica para depois. Agora: **Fase T** (tema claro e escuro na home; escolhas do Pedro: agentes no cartão claro no escuro, prancheta no violeta nos dois temas) e **Fase M** (mapa; escolha: variação A mais o nome em itálico das peças do outro andar), cada uma numa branch, com portão de capturas antes do merge; e, do ci-optimizer, só os `timeout-minutes`. (3) No PC do Pedro: cartão 6 (histograma da força da
