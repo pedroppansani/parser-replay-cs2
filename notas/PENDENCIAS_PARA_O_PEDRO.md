@@ -612,3 +612,33 @@ O texto original do cartão:
   anel do lado e seta da decisão 52, e decidir como a peça editável de outro andar (que se arrasta e se gira) mostra isso sem perder
   o acerto do mouse.
 - **Fora do computador:** nada.
+
+---
+
+## 23. Modo palco do Replay: as medidas fixas em pixel (62, 55, 8, 55, 57, 10)
+
+- **O que é:** a reserva do mapa (`--palco-reserva`, `v2.css`) soma as alturas de hoje das abas (62), da faixa (55), da folga (8), do
+  cabeçalho do round (55), do transporte (57) e do respiro (10). Com uma fonte maior que o padrão, ou o texto do resultado do round
+  quebrando em duas linhas (a 1024 px o quadro tem ~532 px), o cabeçalho passa de 55 px e o transporte grudado cobre o pé do mapa.
+- **O que existe:** `tests/test_replay_palco.py` acusa se as medidas mudarem nos tamanhos testados (1024 x 700 a 1440 x 900).
+- **Se virar problema:** medir as alturas em JS e gravar `--palco-reserva`, como o `v2.js` já faz com `--nav-h`.
+- **Fora do computador:** nada. (Anotado em 2026-11-04, decisão do Pedro.)
+
+---
+
+## 24. Modo palco: o mapa sem radar fica 820 x 950, não quadrado
+
+- **O que é:** a largura do mapa no modo palco é `100svh - reserva`, o que só vale com o canvas quadrado. Sem radar, o `fitBounds` do
+  `02-replay.js` usa 820 x 950 e o mapa ficaria ~16% mais alto (~90 px a 900 de altura), com o transporte grudado cobrindo o pé.
+- **Medido em 2026-11-04:** as 52 partidas do corpus têm radar 1.024 x 1.024. Nenhuma cai nesse caso hoje; só um mapa novo, sem
+  radar calibrado, cairia.
+- **Conserto, quando precisar:** gravar a proporção W/H do canvas numa variável e usar `(100svh - reserva) * W / H`.
+- **Fora do computador:** nada. (Decisão do Pedro, 2026-11-04.)
+
+---
+
+## 25. IDEIA: o "Round N" do cabeçalho do palco dentro da faixa de rounds
+
+- **O que é:** levar o cabeçalho do round (55 px) para dentro da faixa grudada daria mais 55 px ao mapa (634 e 502 px a 1440 x 900 e
+  1366 x 768). Fora desta fase por ora (Pedro, 2026-11-04); só ideia.
+- **Fora do computador:** nada.

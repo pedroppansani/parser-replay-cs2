@@ -308,7 +308,7 @@
 
   // Modo palco (cartão 15): ao abrir o Replay ou trocar de round a página rola até o palco (a margem vem do
   // scroll-margin-top do CSS). Nunca briga com a rolagem da pessoa: se ela rolou há menos de meio segundo, não rola.
-  var MODO_PALCO = window.matchMedia("(min-width: 1024px) and (min-height: 700px)");
+  var MODO_PALCO = window.matchMedia("(min-width: 1024px) and (min-height: 600px)");
   var ultimaRolagemDaPessoa = -1e9;
   ["wheel", "touchmove"].forEach(function (ev) {
     window.addEventListener(ev, function () { ultimaRolagemDaPessoa = performance.now(); }, { passive: true });

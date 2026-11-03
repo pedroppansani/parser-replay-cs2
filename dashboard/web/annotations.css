@@ -9,7 +9,7 @@
 @media (min-width: 1024px) { .mapwrap { --reserva-replay: 500px; } }
 /* modo palco (cartão 15, opção B): a faixa de rounds gruda sob as abas e o palco para logo abaixo dela (v2.css); o mapa é
    quadrado e usa a tela menos o que vem antes dele (--palco-reserva, v2.css) e o transporte: um tamanho só no Replay */
-@media (min-width: 1024px) and (min-height: 700px) { .mapwrap { width: min(100%, 640px, calc(100svh - var(--palco-reserva))); } }
+@media (min-width: 1024px) and (min-height: 600px) { .mapwrap { width: min(100%, 640px, calc(100svh - var(--palco-reserva))); } }
 .mapwrap canvas { margin: 0 !important; max-width: none !important; }
 
 /* Os dois canvas de anotação ficam EXATAMENTE sobre o mapa; posição e tamanho

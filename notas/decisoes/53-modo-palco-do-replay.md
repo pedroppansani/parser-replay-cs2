@@ -3,7 +3,7 @@
 - **ID:** 53
 - **Status:** vigente
 - **Data:** 2026-11-04
-- **Resumo:** A partir de 1024 x 700, a faixa de rounds do Replay gruda sob as abas, a página rola até o palco ao abrir o Replay ou
+- **Resumo:** A partir de 1024 x 600, a faixa de rounds do Replay gruda sob as abas, a página rola até o palco ao abrir o Replay ou
   trocar de round, e o mapa passa a ser quadrado com `min(100%, 640 px, 100svh - reserva)`: um tamanho só enquanto se está no Replay.
   O celular não muda.
 
@@ -22,7 +22,11 @@
   ligar os Lugares, trocar de andar e rolar não a mudam. Medidas: 579 px a 1440 x 900 (era 345) e 447 px a 1366 x 768 (era 231).
 - **Reserva:** nav-h + 4 + abas 62 + faixa 55 + folga 8 + cabeçalho do round 55 + transporte 57 + respiro 10. As alturas são as
   medidas de hoje; `tests/test_replay_palco.py` acusa se mudarem.
-- **Fora do modo palco** (celular e telas baixas, menos de 1024 x 700): como antes (regra de 820/950 com reserva de 340 ou 500 px).
+- **Limite 1024 x 600** (era 700): a altura útil do Chrome num notebook 1366 x 768 é ~657 px e num 1440 x 900 é ~789 px; medidas:
+  1366 x 657 = 336 px de lado, 1440 x 789 = 468 px (a conta é altura - 321).
+- **Foco do teclado** (`v2.js`, `fimDasBarras`): nunca fica atrás da navbar, das abas nem da faixa de rounds, quando grudadas; o foco
+  dentro de uma das barras é dela e não rola. Teste com Shift+Tab em `test_replay_palco.py`.
+- **Fora do modo palco** (celular e telas baixas, menos de 1024 x 600): como antes (regra de 820/950 com reserva de 340 ou 500 px).
 - **Enquadramento da Nuke (B+):** aprovado como fase SEPARADA, depois desta. Regra: o enquadramento nunca esconde jogador vivo nem
   granada; se alguém sair do quadro, o zoom abre até caber todos. (Na prévia, o "chiefkeef" aparecia cortado na borda: a fase corrige.)
 - **Custo:** os 3 quadros do Replay do `compara_capturas` mudam de tamanho (520 para 640 px a 1400 x 1000); referências do PC

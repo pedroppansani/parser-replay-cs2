@@ -69,10 +69,10 @@ html { scroll-padding-top: calc(var(--nav-h) + 16px); }   /* C2: âncora nunca e
 .abas-mais { top: 4px; height: calc(100% - 8px); border-radius: var(--r-ctl); border: 1px solid var(--linha); }
 @media (prefers-reduced-motion: reduce) { .tabs .bolha { transition: none; } .tabs.movendo .goo { filter: none; } }
 
-/* Modo palco (cartão 15, opção B; a partir de 1024 x 700): a faixa de rounds gruda sob as abas, o palco para logo abaixo dela
+/* Modo palco (cartão 15, opção B; a partir de 1024 x 600): a faixa de rounds gruda sob as abas, o palco para logo abaixo dela
    (scroll-margin-top) e o mapa usa a altura que sobra. As alturas (abas 62, faixa 55, folga 8, cabeçalho do round 55,
    transporte 57, respiro 10) são as medidas de hoje; a sonda de tests/test_replay_palco.py acusa se mudarem. */
-@media (min-width: 1024px) and (min-height: 700px) {
+@media (min-width: 1024px) and (min-height: 600px) {
   :root { --palco-topo: calc(var(--nav-h) + 4px + 62px + 55px + 8px); --palco-reserva: calc(var(--palco-topo) + 55px + 57px + 10px); }
   /* sem a barra de rolagem (que somaria ~10 px aos 55 e deixaria o palco por baixo da faixa) */
   .roundstrip { position: sticky; top: calc(var(--nav-h) + 4px + 62px); z-index: 19; background: var(--fundo); scrollbar-width: none; }

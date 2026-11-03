@@ -11,7 +11,7 @@ sync_api = pytest.importorskip("playwright.sync_api")
 from tests.test_replay_layout import _abre, pagina_html  # noqa: E402,F401  (fixture)
 from tests.test_tactics_browser import navegador  # noqa: E402,F401  (fixture)
 
-TELAS = [(1440, 900), (1366, 768), (1024, 700)]
+TELAS = [(1440, 900), (1440, 789), (1366, 768), (1366, 657), (1024, 700)]   # 789 e 657: a altura útil real do Chrome num notebook
 SONDA = """() => { const r = s => document.querySelector(s).getBoundingClientRect(), m = r('#map');
   return { mapa: Math.round(m.width * 100) / 100, altura: Math.round(m.height * 100) / 100, abasFim: r('#abas-moldura').bottom,
            faixaTopo: r('#strip').top, faixaFim: r('#strip').bottom, palco: r('#palco').top, squadCt: r('#squad-ct').top,
@@ -49,7 +49,7 @@ def test_o_mapa_tem_um_tamanho_so_no_replay(navegador, pagina_html, w, h):
         pg.click('[data-tab="replay"]')
         _assenta(pg)
         base = pg.evaluate(SONDA)["mapa"]
-        assert base > {900: 560, 768: 430, 700: 360}[h]                    # bem acima dos 345 e 231 de antes
+        assert base > {900: 560, 789: 440, 768: 430, 657: 320, 700: 360}[h]                    # bem acima dos 345 e 231 de antes
         for passo in ("round", "tocar", "lugares", "rolar"):
             if passo == "round":
                 pg.locator("#strip .rchip", has_text="15").first.click()
@@ -136,5 +136,28 @@ def test_enter_num_chip_com_o_teclado_leva_ao_palco(navegador, pagina_html):
         pg.keyboard.press("Enter")
         _assenta(pg)
         assert abs(pg.evaluate(SONDA)["rolagem"] - palco) <= 1
+    finally:
+        ctx.close()
+
+
+def test_o_foco_do_teclado_nunca_fica_atras_das_barras_grudadas(navegador, pagina_html):
+    ctx, pg = _abre(navegador, pagina_html, 1366, 657, "")
+    try:
+        pg.click('[data-tab="replay"]')
+        _assenta(pg)
+        pg.mouse.wheel(0, 3000)
+        pg.wait_for_timeout(700)
+        pg.locator("#log button").last.focus()
+        fim = pg.evaluate("document.getElementById('strip').getBoundingClientRect().bottom")
+        assert fim > 150                                         # a faixa está grudada sob as abas
+        visto = 0
+        for _ in range(45):
+            pg.keyboard.press("Shift+Tab")
+            r = pg.evaluate("""() => { const a = document.activeElement, b = a.getBoundingClientRect(), faixa = document.getElementById('strip');
+                return { top: b.top, dentro: faixa.contains(a) || document.querySelector('.site-topo').contains(a) || document.getElementById('abas-moldura').contains(a) }; }""")
+            if not r["dentro"]:
+                visto += 1
+                assert r["top"] >= fim - 1, r
+        assert visto >= 10
     finally:
         ctx.close()
