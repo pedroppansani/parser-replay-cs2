@@ -74,7 +74,8 @@ html { scroll-padding-top: calc(var(--nav-h) + 16px); }   /* C2: âncora nunca e
    transporte 57, respiro 10) são as medidas de hoje; a sonda de tests/test_replay_palco.py acusa se mudarem. */
 @media (min-width: 1024px) and (min-height: 700px) {
   :root { --palco-topo: calc(var(--nav-h) + 4px + 62px + 55px + 8px); --palco-reserva: calc(var(--palco-topo) + 55px + 57px + 10px); }
-  .roundstrip { position: sticky; top: calc(var(--nav-h) + 4px + 62px); z-index: 19; background: var(--fundo); }
+  /* sem a barra de rolagem (que somaria ~10 px aos 55 e deixaria o palco por baixo da faixa) */
+  .roundstrip { position: sticky; top: calc(var(--nav-h) + 4px + 62px); z-index: 19; background: var(--fundo); scrollbar-width: none; }
   /* o scroll-padding-top do html (--nav-h + 16 px) soma à margem: tira-se dela */
   .stage #palco { scroll-margin-top: calc(var(--palco-topo) - var(--nav-h) - 16px); }
 }

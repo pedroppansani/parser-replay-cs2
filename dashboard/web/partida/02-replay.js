@@ -310,12 +310,17 @@
   // scroll-margin-top do CSS). Nunca briga com a rolagem da pessoa: se ela rolou há menos de meio segundo, não rola.
   var MODO_PALCO = window.matchMedia("(min-width: 1024px) and (min-height: 700px)");
   var ultimaRolagemDaPessoa = -1e9;
-  ["wheel", "touchmove", "keydown"].forEach(function (ev) {
+  ["wheel", "touchmove"].forEach(function (ev) {
     window.addEventListener(ev, function () { ultimaRolagemDaPessoa = performance.now(); }, { passive: true });
   });
-  function rolaAtePalco() {
+  // teclado: só as teclas que rolam, e não Enter/Espaço num botão (que dispara o clique que pede a rolagem)
+  window.addEventListener("keydown", function (e) {
+    if (/^(PageUp|PageDown|Home|End|Arrow(Up|Down))$/.test(e.key) && !e.target.closest("button, a, input, select, textarea, [role=tab]"))
+      ultimaRolagemDaPessoa = performance.now();
+  }, { passive: true });
+  function rolaAtePalco(instante) {
     if (!MODO_PALCO.matches || performance.now() - ultimaRolagemDaPessoa < 500) return;
-    document.getElementById("palco").scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+    document.getElementById("palco").scrollIntoView({ behavior: reduced || instante ? "auto" : "smooth", block: "start" });
   }
 
   function selectRound(r) {
@@ -539,7 +544,7 @@
         (it.pop ? " util " + it.pop.k : "");
       b.dataset.i = i;
       b.innerHTML = "<span class='tm'>" + br(it.t) + "s</span><span>" + logText(it) + "</span>";
-      b.addEventListener("click", function () { seekToEvent(it.f); });
+      b.addEventListener("click", function () { seekToEvent(it.f); rolaAtePalco(); });
       log.appendChild(b);
     });
   }

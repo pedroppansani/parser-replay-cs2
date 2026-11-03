@@ -62,7 +62,7 @@
   var hashInicial = (location.hash || "").replace("#", "").split("?");
   var inicial = HASH_DA_ABA[hashInicial[0]] || "insights";
   selectTab(inicial, true);
-  if (inicial === "replay") rolaAtePalco();   // abrir pelo endereço também leva ao palco (modo palco)
+  if (inicial === "replay") rolaAtePalco(true);   // abrir pelo endereço também leva ao palco (modo palco)
   if (inicial === "replay" && hashInicial[1]) {
     var q = {};
     hashInicial[1].split("&").forEach(function (par) { var kv = par.split("="); q[kv[0]] = decodeURIComponent(kv[1] || ""); });
