@@ -93,3 +93,4 @@ Uma nota por decisão. O `CLAUDE.md` traz a lista curta das que estão em vigor.
 | [49](49-biblioteca-de-arremessos-externa.md) | vigente | No site, a biblioteca de arremessos em `arremessos/<mapa>.js`, carregada depois da tela; o que liga ao arremesso real espera por ela. |
 | [50](50-fonte-do-site-em-partes.md) | vigente | `tactics.js` e o script do `template.html` em partes (`//@inclui`), lidos só por `le_fonte`; dividir é só mudar de lugar, provado byte a byte. |
 | [51](51-tema-claro-e-escuro.md) | vigente | Claro ou escuro escolhido na landing (`tema.js` no `<head>`, sem inline); o escuro é o de antes da v2-5; a prancheta sempre violeta; agente no cartão claro. |
+| [52](52-radar-nitido-e-nomes-de-lugar.md) | vigente | Mapa mais nítido (`imageSmoothingQuality = "high"`), nomes de lugar ligáveis, letras A e B nos bombsites e peça de outro andar com disco cinza, seta e nome em itálico (Fase M). |

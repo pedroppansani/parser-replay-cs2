@@ -85,8 +85,10 @@ cartão 19 (`notas/design/referencias/c19-software/`) na `main` atual; se não r
 regravar para "fazer passar"). (5) **Fase M** (variação A mais o nome do jogador do outro andar em itálico, com
 `imageSmoothingQuality = "high"`; referências do canvas regravadas num commit próprio com a lista do que mudou; impressão dos números
 idêntica; portão: prévia em `preview-v2\index.html`, capturas da Mirage e da Nuke, no Replay e na prancheta, a 1440 e 375 px, nos temas
-claro e escuro, mais o code-review mostrado só na conversa, antes do OK do Pedro). A descrição da "variação A" NÃO está no repositório
-(foi entregue no chat da nuvem): pedir ao Pedro antes de implementar.
+claro e escuro, mais o code-review mostrado só na conversa, antes do OK do Pedro). A "variação A" (com o item do nome em itálico da B) está REGISTRADA na nota 52
+(`notas/decisoes/52-radar-nitido-e-nomes-de-lugar.md`, com as regras: nome de lugar só onde não cobre peça, nome de jogador nem
+bombsite; nome do jogador perto da peça, com linha fina se sair de cima; nenhum nome some; mapa escuro; anel duplo inalterado). Ordem do Pedro (2026-11-03): esperar o CI e o deploy da Fase T e conferir o site publicado; conferir o cartão 19 no Windows; só depois
+implementar a Fase M.
 
 **Fila que falta, nesta ordem:** (1) ~~v2-5b~~, ~~v2-6~~, ~~cartão 17~~ (`165f0d00`), ~~v2-7~~ (`73fc57d0`) e ~~cartão 20~~
 (`24eea71e`): feitos. (2) ~~Cartão 9~~ (a refatoração, decisão 50): FECHADO em 2026-10-29 nos passos 0 a 3 (`9be9db37`, `eb704893`, `2641c91b`, `00f49756`; o passo 3 provado no PC do Pedro: site, impressão, quadros e capturas iguais, suíte com o `data/interim` 1.651 passaram, 71 pulados, 0 falharam). A guarda do sha256 saiu; o passo 4 (a função de 88 KB que monta HTML) fica para depois. Agora: **Fase T** (tema claro e escuro na home; escolhas do Pedro: agentes no cartão claro no escuro, prancheta no violeta nos dois temas) e **Fase M** (mapa; escolha: variação A mais o nome em itálico das peças do outro andar), cada uma numa branch, com portão de capturas antes do merge; e, do ci-optimizer, só os `timeout-minutes`. (3) No PC do Pedro: cartão 6 (histograma da força da
