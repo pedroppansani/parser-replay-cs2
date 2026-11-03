@@ -503,12 +503,14 @@ window.MapCore = (function () {
       semitransparente (arte do jogo; os outros mapas têm a borda transparente). Com a suavização baixa ela se perdia na
       redução; com a alta (`imageSmoothingQuality = "high"`) ela vira uma linha clara na última coluna e na última linha do
       mapa. Quando a borda de 2 px da imagem tem algum pixel visível, a imagem passa a ser uma CÓPIA com essa borda apagada;
-      imagem de borda transparente segue exatamente como está. Guardado na imagem. */
+      imagem de borda transparente (ou com menos de 64 px de lado) segue exatamente como está. Guardado na imagem. */
   var BORDA_DO_RADAR_PX = 2;
   function radarSemBorda(imagem) {
     if (!imagem || !imagem.naturalWidth) return imagem;
     if (imagem.__semBorda !== undefined) return imagem.__semBorda || imagem;
     var w = imagem.naturalWidth, h = imagem.naturalHeight, n = BORDA_DO_RADAR_PX;
+    // uma moldura de 2 px só existe numa imagem grande (os radares têm 1.024 px); numa imagem miúda a "borda" seria a imagem inteira
+    if (Math.min(w, h) < 32 * n) { imagem.__semBorda = null; return imagem; }
     var c = document.createElement("canvas");
     c.width = w; c.height = h;
     var g = c.getContext("2d");

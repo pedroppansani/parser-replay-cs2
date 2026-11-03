@@ -304,16 +304,17 @@ def test_a_borda_visivel_do_radar_e_apagada_numa_copia_e_a_transparente_fica_com
     ctx, pg = _abre_replay(navegador, paginas, MIRAGE)
     r = pg.evaluate("""async () => {
       const carrega = (fn) => new Promise(ok => {
-        const c = document.createElement('canvas'); c.width = 16; c.height = 16; fn(c.getContext('2d'));
+        const c = document.createElement('canvas'); c.width = 128; c.height = 128; fn(c.getContext('2d'));
         const im = new Image(); im.onload = () => ok(im); im.src = c.toDataURL();
       });
-      const comMoldura = await carrega(g => { g.fillStyle = 'rgba(200,200,200,0.4)'; g.fillRect(15, 0, 1, 16); g.fillStyle = '#fff'; g.fillRect(6, 6, 4, 4); });
-      const limpa = await carrega(g => { g.fillStyle = '#fff'; g.fillRect(6, 6, 4, 4); });
+      const comMoldura = await carrega(g => { g.fillStyle = 'rgba(200,200,200,0.4)'; g.fillRect(127, 0, 1, 128); g.fillStyle = '#fff'; g.fillRect(60, 60, 8, 8); });
+      const limpa = await carrega(g => { g.fillStyle = '#fff'; g.fillRect(60, 60, 8, 8); });
+      const miuda = await new Promise(ok => { const c = document.createElement('canvas'); c.width = 4; c.height = 1; c.getContext('2d').fillRect(0, 0, 4, 1); const im = new Image(); im.onload = () => ok(im); im.src = c.toDataURL(); });
       const a = MapCore.radarSemBorda(comMoldura), b = MapCore.radarSemBorda(limpa);
       const alfa = (cv, x, y) => cv.getContext('2d').getImageData(x, y, 1, 1).data[3];
-      return { copia: a !== comMoldura, moldura: alfa(a, 15, 5), miolo: alfa(a, 7, 7), mesmaImagem: b === limpa, de_novo: MapCore.radarSemBorda(comMoldura) === a };
+      return { copia: a !== comMoldura, moldura: alfa(a, 127, 5), miolo: alfa(a, 63, 63), mesmaImagem: b === limpa, miudaIntacta: MapCore.radarSemBorda(miuda) === miuda, de_novo: MapCore.radarSemBorda(comMoldura) === a };
     }""")
-    assert r == {"copia": True, "moldura": 0, "miolo": 255, "mesmaImagem": True, "de_novo": True}, r
+    assert r == {"copia": True, "moldura": 0, "miolo": 255, "mesmaImagem": True, "miudaIntacta": True, "de_novo": True}, r
     ctx.close()
 
 
