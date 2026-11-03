@@ -132,12 +132,14 @@
     if (cfg.lugares && cfg.lugares.rotulos) {   // Fase M (decisão 52): os nomes de lugar, ligados ou desligados
       var lug = MapCore.botao("Lugares", "Mostrar ou esconder os nomes de lugar do mapa", function () {
         MapCore.defineLugares(!MapCore.lugaresLigados());
-        lug.classList.toggle("on", MapCore.lugaresLigados());
-        lug.setAttribute("aria-pressed", MapCore.lugaresLigados() ? "true" : "false");
       });
       lug.id = "pr-lugares";
-      lug.classList.toggle("on", MapCore.lugaresLigados());
-      lug.setAttribute("aria-pressed", MapCore.lugaresLigados() ? "true" : "false");
+      var sincLug = function () {   // a escolha ou o tipo de tela mudou: o botão acompanha
+        lug.classList.toggle("on", MapCore.lugaresLigados());
+        lug.setAttribute("aria-pressed", MapCore.lugaresLigados() ? "true" : "false");
+      };
+      MapCore.aoMudarLugares(sincLug);
+      sincLug();
       vista.appendChild(lug);
     }
     vista.appendChild(MapCore.botao("?", comAtalho("Atalhos", "Ajuda: esta lista"), function () { alternaAjuda(); }));

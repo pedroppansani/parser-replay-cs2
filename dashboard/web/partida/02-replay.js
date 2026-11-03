@@ -107,7 +107,8 @@
       botaoL.textContent = "Lugares";
       botaoL.title = "Mostrar ou esconder os nomes de lugar do mapa";
       var sincL = function () { botaoL.setAttribute("aria-pressed", MapCore.lugaresLigados() ? "true" : "false"); };
-      botaoL.addEventListener("click", function () { MapCore.defineLugares(!MapCore.lugaresLigados()); sincL(); });
+      botaoL.addEventListener("click", function () { MapCore.defineLugares(!MapCore.lugaresLigados()); });
+      MapCore.aoMudarLugares(sincL);   // a escolha ou o tipo de tela mudou: o botão acompanha
       sincL();
       lgL.appendChild(botaoL);
     }

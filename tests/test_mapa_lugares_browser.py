@@ -329,3 +329,70 @@ def test_o_mapa_de_baixo_da_nuke_nao_ganha_linha_clara_na_borda_com_a_suavizacao
     soma = lambda x: sum(sum(img.getpixel((x, y))) for y in range(y0, y1)) / (y1 - y0)
     assert soma(x1) - soma(x1 - 3) < 6, (soma(x1), soma(x1 - 3))      # antes da correção: +42
     ctx.close()
+
+
+# --- correções do code-review da Fase M -----------------------------------------------------------------------------------
+
+def test_a_letra_do_bombsite_nao_pula_para_outra_ancora_quando_a_primeira_sai_da_vista(navegador, paginas):
+    ctx, pg = _abre_replay(navegador, paginas, MIRAGE)
+    r = pg.evaluate("""() => {
+      const rad = window.__RADAR__, cv = document.getElementById('map'), g = cv.getContext('2d');
+      const a = rad.lugares.rotulos[0].find(p => rad.lugares.nomes[p[0]] === 'BombsiteA')[1][0];
+      const s = cv.width / rad.width;
+      const roda = (tx) => { g.setTransform(s, 0, 0, s, tx, 0); MapCore.rotulosInicia(g, cv, () => {});
+        MapCore.lugaresRegistra(rad.lugares, 0); MapCore.rotulosDesenha(); return window.__medicaoRotulos.sitios().map(c => c.txt).sort(); };
+      return { visivel: roda(0), foraDaVista: roda(-(a[0] * s) - 40) };   // empurra a 1ª âncora do A para fora, à esquerda
+    }""")
+    assert r["visivel"] == ["A", "B"]
+    assert "A" not in r["foraDaVista"], r          # sai da vista e some; não reaparece em outra âncora da região
+    ctx.close()
+
+
+def test_o_nome_de_outro_canvas_nao_se_liga_a_peca_do_mapa(navegador, paginas):
+    ctx, pg = _abre_replay(navegador, paginas, MIRAGE)
+    r = pg.evaluate("""() => {
+      const cv = document.createElement('canvas'); cv.width = 600; cv.height = 400; cv.style.cssText = 'position:fixed;left:0;top:0;width:600px;height:400px';
+      document.body.appendChild(cv);
+      const g = cv.getContext('2d'), outro = document.createElement('canvas').getContext('2d');
+      g.setTransform(1, 0, 0, 1, 0, 0); MapCore.rotulosInicia(g, cv, () => {});
+      MapCore.desenhaJogador(g, 300, 200, { cor: '#4a90e2', estado: 'vivo', hp: 100, nome: 'doMapa' });
+      MapCore.desenhaJogador(outro, 5, 5, { cor: '#e2a04a', estado: 'outro_andar', hp: 100, nome: 'deFora', acima: true });
+      MapCore.rotulosDesenha();
+      const caixas = window.__medicaoRotulos.caixas(); cv.remove();
+      return caixas.map(c => [c.txt, c.linha]);
+    }""")
+    assert sorted(t for t, _ in r) == ["deFora", "doMapa"]
+    assert not any(linha for t, linha in r if t == "deFora"), r      # sem peça no mapa, sem linha até a peça de outro
+    ctx.close()
+
+
+@pytest.mark.parametrize("pagina_do_botao,botao", [(MIRAGE, "#lugares-botao"), ("prancheta", "#pr-lugares")])
+def test_o_botao_acompanha_quando_a_tela_passa_de_computador_para_celular(navegador, paginas, pagina_do_botao, botao):
+    if pagina_do_botao == "prancheta":
+        ctx = navegador.new_context(viewport={"width": 1300, "height": 950})
+        pg = ctx.new_page()
+        pg.goto((paginas / "prancheta_de_mirage.html").as_uri())
+        pg.wait_for_function("() => Prancheta._interno.S.estado !== null")
+    else:
+        ctx, pg = _abre_replay(navegador, paginas, pagina_do_botao)
+    pg.wait_for_timeout(300)
+    assert pg.locator(botao).get_attribute("aria-pressed") == "true"                 # computador: ligado
+    pg.set_viewport_size({"width": 500, "height": 900}); pg.wait_for_timeout(500)
+    assert pg.locator(botao).get_attribute("aria-pressed") == "false"                # celular: o padrão é desligado, e o botão diz isso
+    assert _caixas(pg)["lugares"] == []
+    pg.set_viewport_size({"width": 1300, "height": 950}); pg.wait_for_timeout(500)
+    assert pg.locator(botao).get_attribute("aria-pressed") == "true"
+    ctx.close()
+
+
+def test_a_borda_de_alfa_invisivel_nao_conta_como_moldura(navegador, paginas):
+    """O Overpass tem alfa 2 a 4 nas bordas: invisível, a imagem fica como está."""
+    ctx, pg = _abre_replay(navegador, paginas, MIRAGE)
+    r = pg.evaluate("""async () => {
+      const c = document.createElement('canvas'); c.width = 128; c.height = 128; const g = c.getContext('2d');
+      g.fillStyle = 'rgba(255,255,255,0.016)'; g.fillRect(0, 126, 128, 2); g.fillStyle = '#fff'; g.fillRect(60, 60, 8, 8);
+      const im = new Image(); await new Promise(ok => { im.onload = ok; im.src = c.toDataURL(); });
+      return MapCore.radarSemBorda(im) === im;
+    }""")
+    assert r is True
+    ctx.close()

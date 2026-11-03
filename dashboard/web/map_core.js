@@ -505,12 +505,15 @@ window.MapCore = (function () {
       mapa. Quando a borda de 2 px da imagem tem algum pixel visível, a imagem passa a ser uma CÓPIA com essa borda apagada;
       imagem de borda transparente (ou com menos de 64 px de lado) segue exatamente como está. Guardado na imagem. */
   var BORDA_DO_RADAR_PX = 2;
+  // alfa mínimo (de 0 a 255) para um pixel da borda contar como moldura visível: o Overpass tem alfa 2 a 4 (invisível, intocado);
+  // o da Nuke vai de ~60 a 190. E o lado mínimo: numa imagem de menos de 64 px a "borda" seria a imagem inteira.
+  var RADAR_ALFA_DA_MOLDURA = 16, RADAR_LADO_MINIMO_PARA_BORDA = 64;
   function radarSemBorda(imagem) {
     if (!imagem || !imagem.naturalWidth) return imagem;
     if (imagem.__semBorda !== undefined) return imagem.__semBorda || imagem;
     var w = imagem.naturalWidth, h = imagem.naturalHeight, n = BORDA_DO_RADAR_PX;
     // uma moldura de 2 px só existe numa imagem grande (os radares têm 1.024 px); numa imagem miúda a "borda" seria a imagem inteira
-    if (Math.min(w, h) < 32 * n) { imagem.__semBorda = null; return imagem; }
+    if (Math.min(w, h) < RADAR_LADO_MINIMO_PARA_BORDA) { imagem.__semBorda = null; return imagem; }
     var c = document.createElement("canvas");
     c.width = w; c.height = h;
     var g = c.getContext("2d");
@@ -518,15 +521,18 @@ window.MapCore = (function () {
     var dados;
     try { dados = g.getImageData(0, 0, w, h); } catch (e) { imagem.__semBorda = null; return imagem; }
     var d = dados.data, suja = false;
-    for (var y = 0; y < h; y++) {
-      var linhaDeBorda = y < n || y >= h - n;
-      for (var x = 0; x < w; x++) {
-        if (!linhaDeBorda && x >= n && x < w - n) { x = w - n - 1; continue; }   // o miolo não se toca
-        var i = (y * w + x) * 4 + 3;
-        if (d[i] > 0) { d[i] = 0; suja = true; }
+    var daBorda = function (acao) {
+      for (var y = 0; y < h; y++) {
+        var linhaDeBorda = y < n || y >= h - n;
+        for (var x = 0; x < w; x++) {
+          if (!linhaDeBorda && x >= n && x < w - n) { x = w - n - 1; continue; }   // o miolo não se toca
+          acao((y * w + x) * 4 + 3);
+        }
       }
-    }
+    };
+    daBorda(function (i) { if (d[i] >= RADAR_ALFA_DA_MOLDURA) suja = true; });
     if (!suja) { imagem.__semBorda = null; return imagem; }
+    daBorda(function (i) { d[i] = 0; });
     g.putImageData(dados, 0, 0);
     imagem.__semBorda = c;
     return c;
@@ -712,6 +718,10 @@ window.MapCore = (function () {
   var ROT_TAM = 12.5, ROT_FOLGA_X = 4, ROT_FOLGA_Y = 3, ROT_CONTORNO = 6;
   var LUGAR_TAM = 10, LUGAR_ESPACO = 0.12, LUGAR_FOLGA = 4, SITIO_TAM = 15;
   var RAIO_DA_PECA_NO_ROTULO = 11, RAIO_DO_MORTO_NO_ROTULO = 5.5;   // px do radar, ao redor do centro da peça
+  // Posições do nome ao redor da peça, depois das cinco na vertical (decisão 52; medidas na Fase M, a olho nas capturas da Mirage
+  // e da Nuke): três anéis, cada um a esta fração do 1º; as diagonais ficam a 75 % do lado e do alto; 3 px de tela de folga
+  // entre a peça e o nome; a linha fina até a peça some se tiver menos de 1,5 px de tela (o nome encostou na peça).
+  var ROT_ANEIS = [1, 1.7, 2.6], ROT_DIAGONAL = 0.75, ROT_FOLGA_DA_PECA = 3, ROT_LINHA_MINIMA = 1.5;
   // Os nomes de lugar ligados ou desligados, lembrado no navegador POR TIPO DE TELA: no computador começam ligados; no
   // celular (até 640 px), desligados (a tela é pequena e a regra "não cobre nada" tira quase todos). Quem liga ou desliga
   // numa delas só muda a escolha dela. Os bombsites (as letras A e B) não dependem disto.
@@ -725,6 +735,15 @@ window.MapCore = (function () {
     });
   } catch (e) { /* sem armazenamento: o padrão de cada tela */ }
   function tipoDeTela() { return CELULAR_MQ && CELULAR_MQ.matches ? "celular" : "computador"; }
+  var OUVINTES_DE_LUGARES = [];
+  /** `fn` é chamada quando os nomes de lugar ligam ou desligam: pela escolha ou porque a tela passou de computador para celular
+      (ou o contrário) e o padrão do outro tipo vale. É onde o botão acerta o aria-pressed. */
+  function aoMudarLugares(fn) { OUVINTES_DE_LUGARES.push(fn); }
+  function avisaLugares() { OUVINTES_DE_LUGARES.forEach(function (fn) { fn(); }); }
+  if (CELULAR_MQ && CELULAR_MQ.addEventListener) CELULAR_MQ.addEventListener("change", function () {
+    avisaLugares();
+    if (ROT.redesenha) ROT.redesenha();
+  });
 
   function lugaresLigados() {
     var t = tipoDeTela(), v = LUGARES_ESCOLHA[t];
@@ -734,6 +753,7 @@ window.MapCore = (function () {
     var t = tipoDeTela();
     LUGARES_ESCOLHA[t] = !!ligado;
     try { window.localStorage.setItem(CHAVES_LUGARES[t], ligado ? "1" : "0"); } catch (e) { /* tudo bem */ }
+    avisaLugares();
     if (ROT.redesenha) ROT.redesenha();
   }
 
@@ -751,10 +771,12 @@ window.MapCore = (function () {
 
   /** Cada peça desenhada na camada vira um obstáculo para os nomes (um círculo, em px do canvas). */
   function registraPeca(ctx, X, Y, o) {
+    ROT.ultimaPeca = null;   // o nome desta chamada só se liga a uma peça que entrou na camada (outro canvas, nenhuma)
     if (!ROT.ativo || ctx !== ROT.ctx) return;
     var m = ctx.getTransform(), e = o.escala || 1;
     ROT.pecas.push({ x: m.a * X + m.c * Y + m.e, y: m.b * X + m.d * Y + m.f,
                      r: (o.estado === "morto" ? RAIO_DO_MORTO_NO_ROTULO : RAIO_DA_PECA_NO_ROTULO) * e * Math.hypot(m.a, m.b) });
+    ROT.ultimaPeca = ROT.pecas.length - 1;
   }
 
   /** Registra um rótulo centrado acima de (X, Y) do contexto atual. o: {cor, fonte ("texto"|"num"),
@@ -767,7 +789,7 @@ window.MapCore = (function () {
     ROT.lista.push({ txt: String(texto), x: m.a * X + m.c * Y + m.e, y: m.b * X + m.d * Y + m.f,
                      cor: o.cor || token("tinta-mapa"), fonte: o.fonte || "texto", italico: !!o.italico,
                      prioridade: o.prioridade || 0, dy: o.dy || 0, alfa: o.alfa == null ? 1 : o.alfa,
-                     peca: o.daPeca && ROT.pecas.length ? ROT.pecas.length - 1 : null });
+                     peca: o.daPeca ? ROT.ultimaPeca : null });
   }
 
   function corHex(c) {
@@ -801,12 +823,13 @@ window.MapCore = (function () {
     lugares.rotulos[andar].forEach(function (par) {
       var nome = lugares.nomes[par[0]];
       var texto = (lugares.textos && lugares.textos[par[0]]) || nome.toUpperCase();   // as palavras separadas e em caixa alta, do Python
-      var cands = par[1].map(function (p) { return [m.a * p[0] + m.c * p[1] + m.e, m.b * p[0] + m.d * p[1] + m.f]; })
-        .filter(function (c) { return c[0] >= 0 && c[1] >= 0 && c[0] <= cv.width && c[1] <= cv.height; });
-      if (!cands.length) return;
+      var todas = par[1].map(function (p) { return [m.a * p[0] + m.c * p[1] + m.e, m.b * p[0] + m.d * p[1] + m.f]; });
+      var naTela = function (c) { return c[0] >= 0 && c[1] >= 0 && c[0] <= cv.width && c[1] <= cv.height; };
       var sitio = /^Bombsite([A-Z])$/.exec(nome);
-      if (sitio) desenhaSitio(sitio[1], cands[0], k);
-      else if (lugaresLigados()) ROT.lugares.push({ txt: texto, cands: cands });
+      // a letra do bombsite fica SEMPRE na primeira âncora: com zoom ou pan que a tire da vista, some (não pula para outra)
+      if (sitio) { if (naTela(todas[0])) desenhaSitio(sitio[1], todas[0], k); return; }
+      var cands = todas.filter(naTela);
+      if (cands.length && lugaresLigados()) ROT.lugares.push({ txt: texto, cands: cands });
     });
   }
 
@@ -860,10 +883,10 @@ window.MapCore = (function () {
       var cands = [];
       [0, -hh, hh, -2 * hh, 2 * hh].forEach(function (d) { cands.push({ cx: r.x, topo: base + d - asc - ROT_FOLGA_Y * k }); });
       var ax = propria ? propria.cx : r.x, ay = propria ? propria.cy : r.y, rp = propria ? propria.raio : RAIO_DA_PECA_NO_ROTULO * k;
-      [1, 1.7, 2.6].forEach(function (s) {
-        var lado = (w / 2 + rp + 3 * k) * s, alto = (hh / 2 + rp + 3 * k) * s;
-        [[lado, 0], [-lado, 0], [lado * 0.75, -alto * 0.75], [-lado * 0.75, -alto * 0.75],
-         [lado * 0.75, alto * 0.75], [-lado * 0.75, alto * 0.75], [0, alto], [0, -alto]].forEach(function (d) {
+      ROT_ANEIS.forEach(function (s) {
+        var lado = (w / 2 + rp + ROT_FOLGA_DA_PECA * k) * s, alto = (hh / 2 + rp + ROT_FOLGA_DA_PECA * k) * s, dg = ROT_DIAGONAL;
+        [[lado, 0], [-lado, 0], [lado * dg, -alto * dg], [-lado * dg, -alto * dg],
+         [lado * dg, alto * dg], [-lado * dg, alto * dg], [0, alto], [0, -alto]].forEach(function (d) {
           cands.push({ cx: ax + d[0], topo: ay + d[1] - hh / 2 });
         });
       });
@@ -917,7 +940,7 @@ window.MapCore = (function () {
       var c = p.caixa, pc = p.propria;
       var px = Math.max(c.x, Math.min(pc.cx, c.x + c.w)), py = Math.max(c.y, Math.min(pc.cy, c.y + c.h));
       var dx = px - pc.cx, dy = py - pc.cy, d = Math.hypot(dx, dy);
-      if (d - pc.raio < 1.5 * k) return;
+      if (d - pc.raio < ROT_LINHA_MINIMA * k) return;
       var x0 = pc.cx + dx / d * pc.raio, y0 = pc.cy + dy / d * pc.raio;
       ctx.globalAlpha = p.r.alfa;
       ctx.lineCap = "round";
@@ -1718,6 +1741,7 @@ window.MapCore = (function () {
     lugaresRegistra: lugaresRegistra,
     lugaresLigados: lugaresLigados,
     defineLugares: defineLugares,
+    aoMudarLugares: aoMudarLugares,
     normalizaCor: normalizaCor,
     botao: botao,
     seletorDeCor: seletorDeCor

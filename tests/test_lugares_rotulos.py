@@ -105,3 +105,9 @@ def test_as_paginas_levam_o_texto_de_cada_nome(mapa):
     tab = _tabela(mapa)
     for pagina in (para_o_replay(tab), para_a_prancheta(tab)):
         assert pagina["textos"] == [texto_do_lugar(n) for n in tab["nomes"]] and len(pagina["textos"]) == len(pagina["nomes"])
+
+
+def test_a_tabela_do_mapa_e_lida_uma_vez_e_mapa_sem_tabela_e_none():
+    from metrics.lugares import tabela_do_mapa
+    assert tabela_do_mapa("de_mirage") is tabela_do_mapa("de_mirage") and tabela_do_mapa("de_mirage")["lado"]
+    assert tabela_do_mapa("de_train") is None and tabela_do_mapa("de_cache") is None

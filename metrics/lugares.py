@@ -15,6 +15,8 @@ Ver notas/investigacoes/2026-10-04-nome-do-lugar.md.
 """
 from __future__ import annotations
 
+import functools
+import json
 import re
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -174,6 +176,17 @@ def texto_do_lugar(nome: str) -> str:
     n = re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", n)
     n = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1 \2", n)
     return re.sub(r" +", " ", n).strip().upper()
+
+
+PASTA_DAS_TABELAS = Path(__file__).resolve().parent.parent / "data" / "lugares"
+
+
+@functools.lru_cache(maxsize=None)
+def tabela_do_mapa(mapa: str) -> dict | None:
+    """A tabela de lugares gravada do mapa (`data/lugares/<mapa>.json`), ou None se o mapa não tem. As duas páginas (replay e
+    prancheta) leem por aqui; quem altera o resultado não deve mexer nele (é compartilhado)."""
+    caminho = PASTA_DAS_TABELAS / f"{mapa}.json"
+    return json.loads(caminho.read_text(encoding="utf-8")) if caminho.exists() else None
 
 
 def para_a_prancheta(tabela: dict | None) -> dict | None:

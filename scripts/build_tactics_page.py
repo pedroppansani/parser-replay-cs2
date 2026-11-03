@@ -22,7 +22,6 @@ from scripts.fontes_web import le_fonte
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 WEB = PROJECT_ROOT / "dashboard" / "web"
 LINEUPS_DIR = PROJECT_ROOT / "data" / "lineups"
-LUGARES_DIR = PROJECT_ROOT / "data" / "lugares"
 RADARS_DIR = PROJECT_ROOT / "assets" / "radars"
 # A biblioteca de arremessos (3,5 MB na Mirage) num arquivo próprio ao lado das páginas, carregado DEPOIS de a tela montar
 # (cartão 20, decisão 49): o site a grava em docs/arremessos/<mapa>.js; o build_html continua embutindo por padrão
@@ -116,11 +115,9 @@ def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | Non
     if arquivo_bib:
         biblioteca = None   # vem do arquivo, depois
     # nomes de lugar do roteiro (scripts/build_lugares.py); sem tabela, sem nome
-    caminho_lug = LUGARES_DIR / f"{mapa}.json"
-    lugares = json.loads(caminho_lug.read_text(encoding="utf-8")) if caminho_lug.exists() else None
     # e as âncoras dos nomes no mapa (Fase M, decisão 52): o desenho só põe o que não cobre nada
-    from metrics.lugares import para_a_prancheta
-    lugares = para_a_prancheta(lugares)
+    from metrics.lugares import para_a_prancheta, tabela_do_mapa
+    lugares = para_a_prancheta(tabela_do_mapa(mapa))
     if rotulos is None:
         from metrics.constantes import NOME_DO_MAPA
         rotulos = NOME_DO_MAPA

@@ -339,10 +339,9 @@ def build_html(match_id: str, site: dict | None = None, base: Path | None = None
         # discordam sobre qual calibração um traço usou.
         radar["calibracao"] = impressao_da_calibracao(radar)
         # os nomes de lugar no mapa (Fase M, decisão 52): só os nomes e as âncoras; mapa sem tabela, sem nome
-        from metrics.lugares import para_o_replay
-        caminho_lug = PROJECT_ROOT / "data" / "lugares" / f"{map_name}.json"
-        if caminho_lug.exists():
-            radar["lugares"] = para_o_replay(json.loads(caminho_lug.read_text(encoding="utf-8")))
+        from metrics.lugares import para_o_replay, tabela_do_mapa
+        if tabela_do_mapa(map_name):
+            radar["lugares"] = para_o_replay(tabela_do_mapa(map_name))
         # o `||` mantém o `null` do template como fallback quando o mapa não tem radar
         radar_js = js(radar) + " ||"
     html = html.replace("/*__RADAR__*/", radar_js)
