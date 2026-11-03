@@ -19,6 +19,8 @@ USO
     py -3.12 -m scripts.compara_capturas --depois TRABALHO          # árvore atual, sem commit
     py -3.12 -m scripts.compara_capturas --direcao desligada        # replay:direcao = 0
     py -3.12 -m scripts.compara_capturas --saida C:/tmp/comparacao
+    py -3.12 -m scripts.compara_capturas --antes main --depois HEAD --contra-referencias notas/design/referencias/pc-windows
+    py -3.12 -m scripts.compara_capturas --antes main --depois HEAD --grava-referencias notas/design/referencias/pc-windows
 
 `--antes` e `--depois` aceitam qualquer revisão do git; `TRABALHO` é a pasta do
 projeto como está (inclusive sem commit). Cada revisão gera as páginas no
@@ -50,7 +52,9 @@ VIVO no andar ativo -- é o critério de "a mudança ficou restrita ao jogador".
 from __future__ import annotations
 
 import argparse
+import datetime
 import json
+import platform
 import shutil
 import subprocess
 import sys
@@ -78,6 +82,88 @@ FIXTURE = PROJECT_ROOT / "tests" / "fixtures" / "tatica_v1.json"
 RAIO_VIZINHANCA_PADRAO = 48
 
 VALOR_DIRECAO = {"ligada": "1", "desligada": "0"}
+
+# De onde vieram as capturas guardadas (cartão 19, regra do Pedro de 2026-11-03): o MESMO código dá o mesmo PNG na mesma máquina,
+# mas o texto e as bordas do radar mudam entre Windows e Linux. Por isso, ao lado das referências fica um `origem.json`, e a
+# ferramenta AVISA quando elas são de outra máquina, em vez de só acusar diferença.
+ARQUIVO_DE_ORIGEM = "origem.json"
+NAVEGADOR_ATUAL: dict = {}   # preenchido por `_captura`: {"nome", "versao"}
+
+
+def origem_desta_maquina(navegador: dict | None = None) -> dict:
+    """Sistema, navegador e versão desta máquina (o que vai no `origem.json` e o que se compara com ele)."""
+    nav = navegador or NAVEGADOR_ATUAL
+    return {
+        "sistema": f"{platform.system()} {platform.release()} ({platform.machine()})",
+        "familia": platform.system(),
+        "navegador": nav.get("nome") or "desconhecido",
+        "versao": nav.get("versao") or "desconhecida",
+        "gerado_em": datetime.date.today().isoformat(),
+    }
+
+
+def motivos_de_outra_maquina(referencia: dict | None, atual: dict) -> list[str]:
+    """O que separa a origem das referências desta máquina; lista vazia = a mesma máquina (família do sistema, navegador e
+    versão MAIOR do navegador). Sem origem gravada, não dá para saber: conta como outra máquina."""
+    if not referencia:
+        return ["as referências não têm `origem.json`: não dá para saber de onde vieram"]
+    motivos = []
+    if referencia.get("familia") != atual.get("familia"):
+        motivos.append(f"sistema: referências {referencia.get('sistema')}, esta máquina {atual.get('sistema')}")
+    if referencia.get("navegador") != atual.get("navegador"):
+        motivos.append(f"navegador: referências {referencia.get('navegador')}, esta máquina {atual.get('navegador')}")
+    maior = lambda v: str(v).split(".")[0]
+    if maior(referencia.get("versao")) != maior(atual.get("versao")):
+        motivos.append(f"versão do navegador: referências {referencia.get('versao')}, esta máquina {atual.get('versao')}")
+    return motivos
+
+
+def mascara_de_diferenca(a, b):
+    """Imagem "L": 255 onde o pixel difere em QUALQUER canal. A conversão da diferença para cinza arredondava para zero um
+    degrau só no vermelho ou no azul e a ferramenta dizia "idêntico" com PNG diferentes."""
+    from PIL import ImageChops
+
+    r, g, azul = ImageChops.difference(a, b).split()
+    return ImageChops.lighter(ImageChops.lighter(r, g), azul).point(lambda v: 255 if v > 0 else 0)
+
+
+def le_origem(pasta: Path) -> dict | None:
+    f = pasta / ARQUIVO_DE_ORIGEM
+    return json.loads(f.read_text(encoding="utf-8")) if f.is_file() else None
+
+
+def grava_referencias(saida: Path, pasta: Path, quadros: list[str]) -> None:
+    """Copia os quadros "depois" para `pasta` como referências e grava de onde vieram."""
+    pasta.mkdir(parents=True, exist_ok=True)
+    for q in quadros:
+        shutil.copyfile(saida / f"{q}_depois.png", pasta / f"{q}_depois.png")
+    (pasta / ARQUIVO_DE_ORIGEM).write_text(
+        json.dumps(origem_desta_maquina(), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def compara_com_referencias(saida: Path, pasta: Path, quadros: list[str]) -> list[str]:
+    """Linhas do relatório contra as referências guardadas. De OUTRA máquina: só o aviso, sem acusar diferença."""
+    from PIL import Image
+
+    atual = origem_desta_maquina()
+    motivos = motivos_de_outra_maquina(le_origem(pasta), atual)
+    if motivos:
+        return [
+            f"AVISO: as referências de {pasta} são de OUTRA máquina e NÃO são comparáveis com estas capturas:",
+            *[f"  - {m}" for m in motivos],
+            "  Texto (nomes) e bordas do radar variam entre máquinas; a diferença NÃO indica erro. Gere a base da `main` NESTA",
+            "  máquina (use --antes main) e só compare capturas geradas aqui. Nada foi comparado com as referências.",
+        ]
+    linhas = [f"referências de {pasta} (mesma máquina: {atual['sistema']}, {atual['navegador']} {atual['versao']}):"]
+    for q in quadros:
+        ref = Image.open(pasta / f"{q}_depois.png").convert("RGB")
+        novo = Image.open(saida / f"{q}_depois.png").convert("RGB")
+        if ref.size != novo.size:
+            linhas.append(f"  {q:24s} TAMANHO DIFERENTE {ref.size} x {novo.size}")
+            continue
+        caixa = mascara_de_diferenca(ref, novo).getbbox()
+        linhas.append(f"  {q:24s} {'idêntico às referências' if caixa is None else 'DIFERENTE das referências, na caixa ' + str(caixa)}")
+    return linhas
 
 GERA_PAGINAS = r"""
 import json, sys
@@ -142,6 +228,8 @@ def _captura(paginas: Path, saida: Path, sufixo: str, direcao: str) -> dict:
     with sync_playwright() as p:
         from scripts.design._comum import ARGS_DETERMINISTICOS, chrome
         b = chrome(p, ARGS_DETERMINISTICOS)
+        from scripts.design._comum import NAVEGADOR_USADO
+        NAVEGADOR_ATUAL.update({"nome": NAVEGADOR_USADO["nome"], "versao": b.version})
         for nome, mid, rnd, frac, andar in QUADROS_REPLAY:
             ctx = b.new_context(viewport={"width": 1400, "height": 1000}, device_scale_factor=1)
             if direcao in VALOR_DIRECAO:
@@ -211,13 +299,13 @@ def _captura(paginas: Path, saida: Path, sufixo: str, direcao: str) -> dict:
 
 
 def _compara(saida: Path, nome: str, jogadores: list, raio: float) -> str:
-    from PIL import Image, ImageChops
+    from PIL import Image
 
     a = Image.open(saida / f"{nome}_antes.png").convert("RGB")
     d = Image.open(saida / f"{nome}_depois.png").convert("RGB")
     if a.size != d.size:
         return f"TAMANHO DIFERENTE {a.size} x {d.size}"
-    dif = ImageChops.difference(a, d).convert("L").point(lambda v: 255 if v > 0 else 0)
+    dif = mascara_de_diferenca(a, d)
     caixa = dif.getbbox()
     realce = Image.blend(d, Image.new("RGB", d.size, (0, 0, 0)), 0.6)
     realce.paste((255, 40, 40), mask=dif)
@@ -243,6 +331,10 @@ def main() -> None:
     ap.add_argument("--direcao", choices=["padrao", "ligada", "desligada"], default="padrao")
     ap.add_argument("--raio", type=float, default=RAIO_VIZINHANCA_PADRAO)
     ap.add_argument("--saida", type=Path, default=None)
+    ap.add_argument("--contra-referencias", type=Path, default=None, metavar="PASTA",
+                    help="compara os quadros \"depois\" com as referências guardadas em PASTA (avisa se são de outra máquina)")
+    ap.add_argument("--grava-referencias", type=Path, default=None, metavar="PASTA",
+                    help="grava os quadros \"depois\" em PASTA como referências, com o `origem.json` desta máquina")
     args = ap.parse_args()
 
     temp = Path(tempfile.mkdtemp(prefix="compara_capturas_"))
@@ -256,6 +348,13 @@ def main() -> None:
         print(f"{args.antes}  x  {args.depois}   (direção: {args.direcao})")
         for nome in [q[0] for q in QUADROS_REPLAY] + [QUADRO_PRANCHETA]:
             print(f"  {nome:24s} {_compara(saida, nome, reg.get(nome, []), args.raio)}")
+        nomes = [q[0] for q in QUADROS_REPLAY] + [QUADRO_PRANCHETA]
+        if args.contra_referencias:
+            print("\n".join(compara_com_referencias(saida, args.contra_referencias, nomes)))
+        if args.grava_referencias:
+            grava_referencias(saida, args.grava_referencias, nomes)
+            print(f"referências gravadas em {args.grava_referencias} (origem: {origem_desta_maquina()['sistema']}, "
+                  f"{NAVEGADOR_ATUAL.get('nome')} {NAVEGADOR_ATUAL.get('versao')})")
         print(f"imagens em {saida}")
     finally:
         shutil.rmtree(temp / "paginas_antes", ignore_errors=True)

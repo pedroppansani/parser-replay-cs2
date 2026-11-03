@@ -529,6 +529,17 @@ O texto original do cartão:
 
 ## 19. A `compara_capturas` só roda no Chrome do Windows (no Linux e no CI, só com adaptação) -- FECHADO
 
+- **Correção e regra (2026-11-03, decisão do Pedro): as capturas são iguais POR MÁQUINA, não entre máquinas.** Conferido no PC
+  (Windows, Chrome, canvas em software, os mesmos argumentos): os 4 quadros saem idênticos entre si, mas diferem das referências do
+  Linux em 6.152 a 20.785 pixels (os nomes dos jogadores, com diferença até 231/255, e as bordas do radar, quase tudo até 16/255);
+  peças, granadas e traços ficam iguais. Nada foi regravado para "fazer passar". **As referências passam a ser as do PC (Windows),
+  regravadas na Fase M**, em `notas/design/referencias/pc-windows/`; `c19-software/` fica como histórico do Linux. **Regra: antes de
+  qualquer fase visual, a base da `main` é gerada na MESMA máquina em que a fase vai ser provada** (`--antes main --depois <fase>`
+  já faz isso); se o trabalho voltar para a nuvem, a primeira coisa é gerar a base lá, SEM comparar com as referências do PC. Ao
+  lado das referências fica o `origem.json` (sistema, navegador e versão), e `compara_capturas --contra-referencias PASTA` avisa,
+  com clareza, quando elas são de outra máquina, em vez de só acusar diferença (`--grava-referencias PASTA` as grava com a origem).
+  A comparação também deixou de converter a diferença para cinza (um degrau só no vermelho ou no azul passava por "idêntico"):
+  agora vale qualquer canal. Onde abaixo se lê "o mesmo PNG em qualquer máquina", leia "na mesma máquina".
 - **Fechado em 2026-10-29 (sim do Pedro):** as ferramentas de captura caem no Chromium sem Chrome e abrem SEMPRE com o canvas
   em software, num fio de rasterização e sem raster parcial (`scripts/design/_comum.ARGS_DETERMINISTICOS`). Prova: 5 rodadas da
   `main` contra ela mesma, 4 de 4 quadros idênticos, um sha256 só por quadro. Referências regravadas em

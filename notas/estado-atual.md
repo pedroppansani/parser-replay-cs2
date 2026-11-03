@@ -80,9 +80,7 @@ com um resto de 0,0003 no cabeçalho da partida (Linux sem Arial); a fonte embut
 do merge, com o `data/interim`: 1.666 passaram, 71 pulados, 0 falharam (`notas/logs/fase-t-suite-merge-2026-11-02.log`). (2) **CI 4
 (`pytest-xdist`) recusado por ora** (cartão 21; 20 de 20 e 331 s para 282 s); a branch `ci-xdist-teste` foi apagada do GitHub. (3) Os
 PRs do dependabot #2, #3, #4 e #11 já estavam fechados (o próprio dependabot, 2026-10-29); receberam o comentário "substituído pelas
-mesmas versões já na main, commit 5c4589fe". (4) **Próximo:** conferir se a `compara_capturas` do Windows reproduz as referências do
-cartão 19 (`notas/design/referencias/c19-software/`) na `main` atual; se não reproduzir, parar e levar as opções ao Pedro (nada de
-regravar para "fazer passar"). (5) **Fase M** (variação A mais o nome do jogador do outro andar em itálico, com
+mesmas versões já na main, commit 5c4589fe". (4) **Cartão 19 conferido no Windows (2026-11-03): NÃO reproduz** as referências do Linux (6.152 a 20.785 pixels, no texto dos nomes e nas bordas do radar). **Decisão do Pedro (opção 1):** as referências passam a ser as do PC, regravadas na Fase M (`notas/design/referencias/pc-windows/`, com `origem.json`); `c19-software/` é histórico do Linux; o texto do cartão 19 diz "iguais por máquina, não entre máquinas". Nada foi regravado antes. (5) **Fase M** (variação A mais o nome do jogador do outro andar em itálico, com
 `imageSmoothingQuality = "high"`; referências do canvas regravadas num commit próprio com a lista do que mudou; impressão dos números
 idêntica; portão: prévia em `preview-v2\index.html`, capturas da Mirage e da Nuke, no Replay e na prancheta, a 1440 e 375 px, nos temas
 claro e escuro, mais o code-review mostrado só na conversa, antes do OK do Pedro). A "variação A" (com o item do nome em itálico da B) está REGISTRADA na nota 52
@@ -110,6 +108,10 @@ v2, regra de empate do Pedro), 15 (regra de tamanho do mapa do protótipo), 16 (
 foram feitos na v2-7; o `--f-cond` ficou (trocar mexe na fonte dos símbolos no Linux; nota 48).
 
 **Regras combinadas que ainda não estão num CLAUDE.md:**
+- **Capturas (cartão 19, 2026-11-03):** antes de qualquer fase visual, a base da `main` é gerada na MESMA máquina em que a fase
+  vai ser provada; capturas de máquinas diferentes (Windows x Linux) nunca se comparam. Se o trabalho voltar para a nuvem, a primeira
+  coisa é gerar a base lá, sem comparar com as referências do PC. As referências guardadas têm `origem.json` ao lado, e a
+  `compara_capturas --contra-referencias` avisa quando são de outra máquina.
 - Todo comando longo (suíte, reprocesso, build, capturas, espera de CI) roda com `timeout` e saída em `notas/logs/` (fora do git), um
   comando por chamada; se passar do limite, parar e dizer qual foi. Vale também no prompt de todo agente. O CI da v2 leva até ~19 min;
   `gh run watch` pode sair com erro sem falha real: confirmar com `gh run list --branch <b>`; um push novo CANCELA o CI em andamento.

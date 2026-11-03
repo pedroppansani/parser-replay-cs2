@@ -29,15 +29,22 @@ if str(RAIZ) not in sys.path:
 # Rasterização num fio só e sem raster parcial: sem isso, a captura da página inteira às vezes pega um ladrilho em outro
 # estado e o MESMO arquivo sai com 3 a 132 pixels diferentes (cartão 9: ~1 em 3 aberturas; com elas, 0 em 32 x 6 abas).
 # Canvas em software (cartão 19, sim do Pedro): na GPU do Windows a mesma revisão dava 20.416 pixels diferentes nas bordas
-# do radar; em software, o mesmo PNG em qualquer máquina.
+# do radar; em software, o mesmo PNG NA MESMA MÁQUINA. Entre máquinas não: o texto (nomes) e as bordas do radar variam entre
+# Windows e Linux (conferido em 2026-11-03: 6 a 21 mil pixels). Por isso a ferramenta registra de onde vêm as capturas.
 ARGS_DETERMINISTICOS = ["--disable-partial-raster", "--num-raster-threads=1", "--disable-accelerated-2d-canvas"]
+
+
+NAVEGADOR_USADO = {"nome": None}   # "Chrome do sistema" ou "Chromium do Playwright": quem abriu por último
 
 
 def chrome(playwright, args: list[str] | None = None):
     """O Chrome do sistema, como nos testes de navegador; sem ele, o Chromium do Playwright."""
     try:
-        return playwright.chromium.launch(channel="chrome", args=args or [])
+        b = playwright.chromium.launch(channel="chrome", args=args or [])
+        NAVEGADOR_USADO["nome"] = "Chrome do sistema"
+        return b
     except Exception:
+        NAVEGADOR_USADO["nome"] = "Chromium do Playwright"
         return playwright.chromium.launch(args=args or [])
 
 
