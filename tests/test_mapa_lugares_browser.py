@@ -32,7 +32,8 @@ REGISTRA_SUAVIZACAO = """
 (() => { window.__suavizacao = []; const f = CanvasRenderingContext2D.prototype.drawImage;
   CanvasRenderingContext2D.prototype.drawImage = function (img) {
     const w = img.naturalWidth || img.width || 0;
-    if (w >= 512) window.__suavizacao.push(this.imageSmoothingQuality);
+    // só a redução do radar (com tamanho de destino); a cópia 1:1 que detecta a moldura não redimensiona nada
+    if (w >= 512 && arguments.length >= 5) window.__suavizacao.push(this.imageSmoothingQuality);
     return f.apply(this, arguments);
   }; })();
 """
@@ -294,4 +295,36 @@ def test_no_computador_os_lugares_continuam_comecando_ligados(navegador, paginas
     ctx, pg = _abre_replay(navegador, paginas, MIRAGE, w=1440, h=900)
     assert pg.locator("#lugares-botao").get_attribute("aria-pressed") == "true"
     assert pg.evaluate("() => [localStorage.getItem('mapa:lugares:celular'), localStorage.getItem('mapa:lugares')]") == [None, None]
+    ctx.close()
+
+
+# --- a moldura do radar da Nuke ------------------------------------------------------------------------------------------
+
+def test_a_borda_visivel_do_radar_e_apagada_numa_copia_e_a_transparente_fica_como_esta(navegador, paginas):
+    ctx, pg = _abre_replay(navegador, paginas, MIRAGE)
+    r = pg.evaluate("""async () => {
+      const carrega = (fn) => new Promise(ok => {
+        const c = document.createElement('canvas'); c.width = 16; c.height = 16; fn(c.getContext('2d'));
+        const im = new Image(); im.onload = () => ok(im); im.src = c.toDataURL();
+      });
+      const comMoldura = await carrega(g => { g.fillStyle = 'rgba(200,200,200,0.4)'; g.fillRect(15, 0, 1, 16); g.fillStyle = '#fff'; g.fillRect(6, 6, 4, 4); });
+      const limpa = await carrega(g => { g.fillStyle = '#fff'; g.fillRect(6, 6, 4, 4); });
+      const a = MapCore.radarSemBorda(comMoldura), b = MapCore.radarSemBorda(limpa);
+      const alfa = (cv, x, y) => cv.getContext('2d').getImageData(x, y, 1, 1).data[3];
+      return { copia: a !== comMoldura, moldura: alfa(a, 15, 5), miolo: alfa(a, 7, 7), mesmaImagem: b === limpa, de_novo: MapCore.radarSemBorda(comMoldura) === a };
+    }""")
+    assert r == {"copia": True, "moldura": 0, "miolo": 255, "mesmaImagem": True, "de_novo": True}, r
+    ctx.close()
+
+
+def test_o_mapa_de_baixo_da_nuke_nao_ganha_linha_clara_na_borda_com_a_suavizacao_alta(navegador, paginas):
+    """REGRESSÃO da Fase M: a moldura de 1 px da arte do Nuke aparecia como uma linha clara na última coluna do mapa."""
+    import io
+    from PIL import Image
+    ctx, pg = _abre_replay(navegador, paginas, NUKE, rnd=9, frac=0.40, andar=1)
+    box = pg.locator("#map").bounding_box()
+    img = Image.open(io.BytesIO(pg.screenshot())).convert("RGB")
+    x1, y0, y1 = int(round(box["x"] + box["width"])), int(box["y"]) + 5, int(box["y"] + box["height"]) - 5
+    soma = lambda x: sum(sum(img.getpixel((x, y))) for y in range(y0, y1)) / (y1 - y0)
+    assert soma(x1) - soma(x1 - 3) < 6, (soma(x1), soma(x1 - 3))      # antes da correção: +42
     ctx.close()

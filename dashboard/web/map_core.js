@@ -499,21 +499,53 @@ window.MapCore = (function () {
     return RADAR_AJUSTE[chave] || RADAR_AJUSTE_PADRAO;
   }
 
+  /** A moldura do radar (Fase M, decisão 52). O radar da Nuke traz, nas bordas da própria imagem, uma linha de 1 px cinza
+      semitransparente (arte do jogo; os outros mapas têm a borda transparente). Com a suavização baixa ela se perdia na
+      redução; com a alta (`imageSmoothingQuality = "high"`) ela vira uma linha clara na última coluna e na última linha do
+      mapa. Quando a borda de 2 px da imagem tem algum pixel visível, a imagem passa a ser uma CÓPIA com essa borda apagada;
+      imagem de borda transparente segue exatamente como está. Guardado na imagem. */
+  var BORDA_DO_RADAR_PX = 2;
+  function radarSemBorda(imagem) {
+    if (!imagem || !imagem.naturalWidth) return imagem;
+    if (imagem.__semBorda !== undefined) return imagem.__semBorda || imagem;
+    var w = imagem.naturalWidth, h = imagem.naturalHeight, n = BORDA_DO_RADAR_PX;
+    var c = document.createElement("canvas");
+    c.width = w; c.height = h;
+    var g = c.getContext("2d");
+    g.drawImage(imagem, 0, 0);
+    var dados;
+    try { dados = g.getImageData(0, 0, w, h); } catch (e) { imagem.__semBorda = null; return imagem; }
+    var d = dados.data, suja = false;
+    for (var y = 0; y < h; y++) {
+      var linhaDeBorda = y < n || y >= h - n;
+      for (var x = 0; x < w; x++) {
+        if (!linhaDeBorda && x >= n && x < w - n) { x = w - n - 1; continue; }   // o miolo não se toca
+        var i = (y * w + x) * 4 + 3;
+        if (d[i] > 0) { d[i] = 0; suja = true; }
+      }
+    }
+    if (!suja) { imagem.__semBorda = null; return imagem; }
+    g.putImageData(dados, 0, 0);
+    imagem.__semBorda = c;
+    return c;
+  }
+
   /** O radar já processado: um canvas do tamanho natural da imagem (ou a própria imagem, quando o par é
       1,00/1,00 ou o navegador não deixa ler os pixels). Guardado na imagem, por mapa. */
   function radarProcessado(imagem, mapa) {
     if (!imagem || !imagem.naturalWidth) return imagem;
     var par = ajusteDoRadar(mapa), s = par[0], b = par[1];
-    if (s === 1 && b === 1) return imagem;
+    var origem = radarSemBorda(imagem);
+    if (s === 1 && b === 1) return origem;
     var guardados = imagem.__radarProcessado || (imagem.__radarProcessado = {});
     var chave = s + "/" + b;
     if (guardados[chave]) return guardados[chave];
     var c = document.createElement("canvas");
     c.width = imagem.naturalWidth; c.height = imagem.naturalHeight;
     var g = c.getContext("2d");
-    g.drawImage(imagem, 0, 0);
+    g.drawImage(origem, 0, 0);
     var dados;
-    try { dados = g.getImageData(0, 0, c.width, c.height); } catch (e) { return imagem; }
+    try { dados = g.getImageData(0, 0, c.width, c.height); } catch (e) { return origem; }
     var d = dados.data;
     for (var i = 0; i < d.length; i += 4) {
       var L = 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
@@ -1677,6 +1709,7 @@ window.MapCore = (function () {
     RADAR_AJUSTE_PADRAO: RADAR_AJUSTE_PADRAO,
     ajusteDoRadar: ajusteDoRadar,
     radarProcessado: radarProcessado,
+    radarSemBorda: radarSemBorda,
     rotulosInicia: rotulosInicia,
     rotulo: rotulo,
     rotulosDesenha: rotulosDesenha,
