@@ -15,6 +15,9 @@ Ver notas/investigacoes/2026-10-04-nome-do-lugar.md.
 """
 from __future__ import annotations
 
+import functools
+import json
+import re
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -104,3 +107,94 @@ def acerto(treino, teste, lado: int) -> float:
     g = grade(treino, lado)
     ok = sum(1 for x, y, n, p in teste if g.get((n, int(x // lado), int(y // lado))) == p)
     return ok / len(teste)
+
+
+# --- Âncoras dos nomes de lugar no mapa (Fase M, decisão 52) ------------------------------------
+ANCORAS_POR_LUGAR = 5          # posições candidatas por nome e andar: o desenho usa a primeira que não cobre nada
+SEPARACAO_MINIMA_CELULAS = 6   # candidatas da mesma região ficam a pelo menos 6 células uma da outra
+
+
+def _celulas_por_nome(tabela: dict, andar: int) -> dict[int, set]:
+    por_nome: dict[int, set] = defaultdict(set)
+    for cy, rle in tabela["andares"][andar].items():
+        for i in range(0, len(rle), 3):
+            for cx in range(rle[i], rle[i] + rle[i + 2]):
+                por_nome[rle[i + 1]].add((cx, int(cy)))
+    return por_nome
+
+
+def _profundidade(celulas: set) -> dict:
+    """Distância de cada célula até a borda da região (em células, 4 vizinhos): a borda vale 1. A âncora do nome fica
+    onde a região é mais funda, nunca na beirada."""
+    prof = {c: 1 for c in celulas if any((c[0] + dx, c[1] + dy) not in celulas for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))}
+    fronteira = sorted(prof)
+    while fronteira:
+        proxima = []
+        for cx, cy in fronteira:
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                v = (cx + dx, cy + dy)
+                if v in celulas and v not in prof:
+                    prof[v] = prof[(cx, cy)] + 1
+                    proxima.append(v)
+        fronteira = sorted(proxima)
+    return prof
+
+
+def rotulos(tabela: dict | None, por_lugar: int = ANCORAS_POR_LUGAR) -> list:
+    """Onde pôr o nome de cada lugar: por andar, `[[índice do nome, [[x, y], ...]], ...]` em pixels do radar, ordenado pelo
+    índice. As posições candidatas vêm da mais funda da região para as outras (desempate: mais perto do centro, depois linha
+    e coluna), separadas por `SEPARACAO_MINIMA_CELULAS`; o nome é o da tabela (o que o jogo escreve), nada é inventado.
+    Determinístico. Sem tabela, lista vazia."""
+    if not tabela:
+        return []
+    lado = tabela["lado"]
+    saida = []
+    for andar in range(len(tabela["andares"])):
+        lugares = []
+        for ix, celulas in sorted(_celulas_por_nome(tabela, andar).items()):
+            prof = _profundidade(celulas)
+            cx0 = sum(c[0] for c in celulas) / len(celulas)
+            cy0 = sum(c[1] for c in celulas) / len(celulas)
+            ordem = sorted(celulas, key=lambda c: (-prof[c], (c[0] - cx0) ** 2 + (c[1] - cy0) ** 2, c[1], c[0]))
+            escolhidas: list = []
+            for c in ordem:
+                if all(max(abs(c[0] - o[0]), abs(c[1] - o[1])) >= SEPARACAO_MINIMA_CELULAS for o in escolhidas):
+                    escolhidas.append(c)
+                    if len(escolhidas) == por_lugar:
+                        break
+            lugares.append([ix, [[(c[0] + 0.5) * lado, (c[1] + 0.5) * lado] for c in escolhidas]])
+        saida.append(lugares)
+    return saida
+
+
+def texto_do_lugar(nome: str) -> str:
+    """Como o nome vai escrito no mapa (Fase M, decisão 52): em caixa alta, com as palavras separadas pelas maiúsculas que o
+    PRÓPRIO dado usa ("CTSpawn" vira "CT SPAWN", "SnipersNest" vira "SNIPERS NEST") e o "of" minúsculo colado entre uma
+    minúscula e uma maiúscula ("TopofMid" vira "TOP OF MID"). As letras são exatamente as do dado, só com espaço: nada é
+    traduzido, inventado nem tem exceção escrita à mão."""
+    n = re.sub(r"(?<=[a-z])of(?=[A-Z])", " of ", nome)
+    n = re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", n)
+    n = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1 \2", n)
+    return re.sub(r" +", " ", n).strip().upper()
+
+
+PASTA_DAS_TABELAS = Path(__file__).resolve().parent.parent / "data" / "lugares"
+
+
+@functools.lru_cache(maxsize=None)
+def tabela_do_mapa(mapa: str) -> dict | None:
+    """A tabela de lugares gravada do mapa (`data/lugares/<mapa>.json`), ou None se o mapa não tem. As duas páginas (replay e
+    prancheta) leem por aqui; quem altera o resultado não deve mexer nele (é compartilhado)."""
+    caminho = PASTA_DAS_TABELAS / f"{mapa}.json"
+    return json.loads(caminho.read_text(encoding="utf-8")) if caminho.exists() else None
+
+
+def para_a_prancheta(tabela: dict | None) -> dict | None:
+    """A tabela inteira (o roteiro precisa dela) mais as âncoras e o texto dos nomes no mapa."""
+    return None if not tabela else {**tabela, "rotulos": rotulos(tabela), "textos": [texto_do_lugar(n) for n in tabela["nomes"]]}
+
+
+def para_o_replay(tabela: dict | None) -> dict | None:
+    """O replay só desenha os nomes: nomes, textos e âncoras, sem a grade."""
+    return None if not tabela else {"nomes": tabela["nomes"], "textos": [texto_do_lugar(n) for n in tabela["nomes"]],
+                                    "rotulos": rotulos(tabela)}

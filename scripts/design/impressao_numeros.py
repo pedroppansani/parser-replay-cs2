@@ -58,8 +58,9 @@ LIMITE_DE_ITENS = 12
 
 # Blocos de dado NOVOS, que não existiam na impressão de antes: aparecer neles é dado novo, não
 # número antigo mudando, e a comparação os lista à parte sem falhar. Um número que já existia
-# continua tendo de ficar igual. Fase 12 (decisão 46): o bloco da aba Perfil nova.
-BLOCOS_NOVOS = ("::PAGINA.perfil",)
+# continua tendo de ficar igual. Fase 12 (decisão 46): o bloco da aba Perfil nova. Fase M (decisão 52): as âncoras e os textos dos
+# nomes de lugar no mapa (`lugares.rotulos`, `lugares.textos`), só coordenadas e texto de desenho, nenhum número do jogo.
+BLOCOS_NOVOS = ("::PAGINA.perfil", "lugares.rotulos", "lugares.textos")
 
 _ATRIBUICAO = re.compile(r"([A-Za-z_$][\w$]*)\s*[:=]\s*(?=[\[{])")
 _SCRIPT_JSON = re.compile(r'<script[^>]*type="application/json"[^>]*id="([^"]+)"[^>]*>', re.I)

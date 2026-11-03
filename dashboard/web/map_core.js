@@ -499,21 +499,61 @@ window.MapCore = (function () {
     return RADAR_AJUSTE[chave] || RADAR_AJUSTE_PADRAO;
   }
 
+  /** A moldura do radar (Fase M, decisão 52). O radar da Nuke traz, nas bordas da própria imagem, uma linha de 1 px cinza
+      semitransparente (arte do jogo; os outros mapas têm a borda transparente). Com a suavização baixa ela se perdia na
+      redução; com a alta (`imageSmoothingQuality = "high"`) ela vira uma linha clara na última coluna e na última linha do
+      mapa. Quando a borda de 2 px da imagem tem algum pixel visível, a imagem passa a ser uma CÓPIA com essa borda apagada;
+      imagem de borda transparente (ou com menos de 64 px de lado) segue exatamente como está. Guardado na imagem. */
+  var BORDA_DO_RADAR_PX = 2;
+  // alfa mínimo (de 0 a 255) para um pixel da borda contar como moldura visível: o Overpass tem alfa 2 a 4 (invisível, intocado);
+  // o da Nuke vai de ~60 a 190. E o lado mínimo: numa imagem de menos de 64 px a "borda" seria a imagem inteira.
+  var RADAR_ALFA_DA_MOLDURA = 16, RADAR_LADO_MINIMO_PARA_BORDA = 64;
+  function radarSemBorda(imagem) {
+    if (!imagem || !imagem.naturalWidth) return imagem;
+    if (imagem.__semBorda !== undefined) return imagem.__semBorda || imagem;
+    var w = imagem.naturalWidth, h = imagem.naturalHeight, n = BORDA_DO_RADAR_PX;
+    // uma moldura de 2 px só existe numa imagem grande (os radares têm 1.024 px); numa imagem miúda a "borda" seria a imagem inteira
+    if (Math.min(w, h) < RADAR_LADO_MINIMO_PARA_BORDA) { imagem.__semBorda = null; return imagem; }
+    var c = document.createElement("canvas");
+    c.width = w; c.height = h;
+    var g = c.getContext("2d");
+    g.drawImage(imagem, 0, 0);
+    var dados;
+    try { dados = g.getImageData(0, 0, w, h); } catch (e) { imagem.__semBorda = null; return imagem; }
+    var d = dados.data, suja = false;
+    var daBorda = function (acao) {
+      for (var y = 0; y < h; y++) {
+        var linhaDeBorda = y < n || y >= h - n;
+        for (var x = 0; x < w; x++) {
+          if (!linhaDeBorda && x >= n && x < w - n) { x = w - n - 1; continue; }   // o miolo não se toca
+          acao((y * w + x) * 4 + 3);
+        }
+      }
+    };
+    daBorda(function (i) { if (d[i] >= RADAR_ALFA_DA_MOLDURA) suja = true; });
+    if (!suja) { imagem.__semBorda = null; return imagem; }
+    daBorda(function (i) { d[i] = 0; });
+    g.putImageData(dados, 0, 0);
+    imagem.__semBorda = c;
+    return c;
+  }
+
   /** O radar já processado: um canvas do tamanho natural da imagem (ou a própria imagem, quando o par é
       1,00/1,00 ou o navegador não deixa ler os pixels). Guardado na imagem, por mapa. */
   function radarProcessado(imagem, mapa) {
     if (!imagem || !imagem.naturalWidth) return imagem;
     var par = ajusteDoRadar(mapa), s = par[0], b = par[1];
-    if (s === 1 && b === 1) return imagem;
+    var origem = radarSemBorda(imagem);
+    if (s === 1 && b === 1) return origem;
     var guardados = imagem.__radarProcessado || (imagem.__radarProcessado = {});
     var chave = s + "/" + b;
     if (guardados[chave]) return guardados[chave];
     var c = document.createElement("canvas");
     c.width = imagem.naturalWidth; c.height = imagem.naturalHeight;
     var g = c.getContext("2d");
-    g.drawImage(imagem, 0, 0);
+    g.drawImage(origem, 0, 0);
     var dados;
-    try { dados = g.getImageData(0, 0, c.width, c.height); } catch (e) { return imagem; }
+    try { dados = g.getImageData(0, 0, c.width, c.height); } catch (e) { return origem; }
     var d = dados.data;
     for (var i = 0; i < d.length; i += 4) {
       var L = 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
@@ -662,28 +702,94 @@ window.MapCore = (function () {
   }
 
   /* ---------------------------------------------------------------------
-     Rótulos do mapa (entrega-sala-de-demo §4.2): em px de TELA (12,5 px, peso 600), contorno escuro de
-     6 px, placa --contorno a 88 % atrás, numa camada própria por cima de tudo e com desvio de colisão.
-     Quem desenha um quadro chama `rotulosInicia(ctx, canvas)`, registra cada rótulo com `rotulo(...)`
-     (no ponto do mapa, já com o zoom do contexto) e no fim `rotulosDesenha()`.
+     Rótulos do mapa (entrega-sala-de-demo §4.2; Fase M, decisão 52): em px de TELA (12,5 px, peso 600), contorno
+     escuro de 6 px, placa --contorno a 88 % atrás, numa camada própria por cima de tudo.
+     Quem desenha um quadro chama `rotulosInicia(ctx, canvas)`, registra cada rótulo com `rotulo(...)` (no ponto do
+     mapa, já com o zoom do contexto) e no fim `rotulosDesenha()`.
+     Regras da Fase M:
+       - NENHUM nome de jogador some: ele procura lugar perto da própria peça (em cima, depois dos lados e mais longe)
+         e, se não achar um lugar livre, fica onde cobre menos; se sai de cima da peça, ganha uma linha fina até ela;
+       - o nome de lugar (caixa alta, sem placa) só aparece onde não cobre peça, nome de jogador, bombsite nem outro
+         nome de lugar; sem lugar livre, ele some (não é dado, é decoração);
+       - o bombsite é só a letra (A ou B), desenhada junto do mapa, por baixo das peças.
      --------------------------------------------------------------------- */
-  var ROT = { ativo: false, ctx: null, canvas: null, lista: [], caixas: [], modo: "normal", redesenha: null };
+  var ROT = { ativo: false, ctx: null, canvas: null, lista: [], pecas: [], sitios: [], lugares: [], caixas: [],
+              caixasDeLugar: [], caixasDeSitio: [], caixasDePeca: [], modo: "normal", redesenha: null };
   var ROT_TAM = 12.5, ROT_FOLGA_X = 4, ROT_FOLGA_Y = 3, ROT_CONTORNO = 6;
+  var LUGAR_TAM = 10, LUGAR_ESPACO = 0.12, LUGAR_FOLGA = 4, SITIO_TAM = 15;
+  var RAIO_DA_PECA_NO_ROTULO = 11, RAIO_DO_MORTO_NO_ROTULO = 5.5;   // px do radar, ao redor do centro da peça
+  // Posições do nome ao redor da peça, depois das cinco na vertical (decisão 52; medidas na Fase M, a olho nas capturas da Mirage
+  // e da Nuke): três anéis, cada um a esta fração do 1º; as diagonais ficam a 75 % do lado e do alto; 3 px de tela de folga
+  // entre a peça e o nome; a linha fina até a peça some se tiver menos de 1,5 px de tela (o nome encostou na peça).
+  var ROT_ANEIS = [1, 1.7, 2.6], ROT_DIAGONAL = 0.75, ROT_FOLGA_DA_PECA = 3, ROT_LINHA_MINIMA = 1.5;
+  // Os nomes de lugar ligados ou desligados, lembrado no navegador POR TIPO DE TELA: no computador começam ligados; no
+  // celular (até 640 px), desligados (a tela é pequena e a regra "não cobre nada" tira quase todos). Quem liga ou desliga
+  // numa delas só muda a escolha dela. Os bombsites (as letras A e B) não dependem disto.
+  var CHAVES_LUGARES = { computador: "mapa:lugares", celular: "mapa:lugares:celular" };
+  var CELULAR_MQ = (typeof window !== "undefined" && window.matchMedia) ? window.matchMedia("(max-width: 640px)") : null;
+  var LUGARES_ESCOLHA = { computador: null, celular: null };   // true, false ou null (nunca escolheu)
+  try {
+    ["computador", "celular"].forEach(function (t) {
+      var v = window.localStorage.getItem(CHAVES_LUGARES[t]);
+      LUGARES_ESCOLHA[t] = v === "1" ? true : v === "0" ? false : null;
+    });
+  } catch (e) { /* sem armazenamento: o padrão de cada tela */ }
+  function tipoDeTela() { return CELULAR_MQ && CELULAR_MQ.matches ? "celular" : "computador"; }
+  var OUVINTES_DE_LUGARES = [];
+  /** `fn` é chamada quando os nomes de lugar ligam ou desligam: pela escolha ou porque a tela passou de computador para celular
+      (ou o contrário) e o padrão do outro tipo vale. É onde o botão acerta o aria-pressed. */
+  function aoMudarLugares(fn) { OUVINTES_DE_LUGARES.push(fn); }
+  function avisaLugares() { OUVINTES_DE_LUGARES.forEach(function (fn) { fn(); }); }
+  if (CELULAR_MQ && CELULAR_MQ.addEventListener) CELULAR_MQ.addEventListener("change", function () {
+    avisaLugares();
+    if (ROT.redesenha) ROT.redesenha();
+  });
+
+  function lugaresLigados() {
+    var t = tipoDeTela(), v = LUGARES_ESCOLHA[t];
+    return v === null ? t === "computador" : v;
+  }
+  function defineLugares(ligado) {
+    var t = tipoDeTela();
+    LUGARES_ESCOLHA[t] = !!ligado;
+    try { window.localStorage.setItem(CHAVES_LUGARES[t], ligado ? "1" : "0"); } catch (e) { /* tudo bem */ }
+    avisaLugares();
+    if (ROT.redesenha) ROT.redesenha();
+  }
 
   function rotulosInicia(ctx, canvas, redesenha) {
     ROT.ativo = true; ROT.ctx = ctx; ROT.canvas = canvas; ROT.lista = [];
+    ROT.pecas = []; ROT.sitios = []; ROT.lugares = [];
     if (redesenha) ROT.redesenha = redesenha;
   }
 
+  /** Px do canvas por px de tela (CSS). */
+  function pxPorPxDeTela() {
+    var cv = ROT.canvas;
+    return cv.width / (cv.getBoundingClientRect().width || cv.width);
+  }
+
+  /** Cada peça desenhada na camada vira um obstáculo para os nomes (um círculo, em px do canvas). */
+  function registraPeca(ctx, X, Y, o) {
+    ROT.ultimaPeca = null;   // o nome desta chamada só se liga a uma peça que entrou na camada (outro canvas, nenhuma)
+    if (!ROT.ativo || ctx !== ROT.ctx) return;
+    var m = ctx.getTransform(), e = o.escala || 1;
+    ROT.pecas.push({ x: m.a * X + m.c * Y + m.e, y: m.b * X + m.d * Y + m.f,
+                     r: (o.estado === "morto" ? RAIO_DO_MORTO_NO_ROTULO : RAIO_DA_PECA_NO_ROTULO) * e * Math.hypot(m.a, m.b) });
+    ROT.ultimaPeca = ROT.pecas.length - 1;
+  }
+
   /** Registra um rótulo centrado acima de (X, Y) do contexto atual. o: {cor, fonte ("texto"|"num"),
-      italico, prioridade (maior desenha primeiro), dy (deslocamento para cima, em px de tela)}. */
+      italico, prioridade (maior desenha primeiro), dy (deslocamento para cima, em px de tela),
+      daPeca (true: é o nome da peça que acabou de ser desenhada; é ela que ganha a linha fina)}. */
   function rotulo(texto, X, Y, o) {
     if (!ROT.ativo || !texto) return;
     o = o || {};
     var m = ROT.ctx.getTransform();
     ROT.lista.push({ txt: String(texto), x: m.a * X + m.c * Y + m.e, y: m.b * X + m.d * Y + m.f,
                      cor: o.cor || token("tinta-mapa"), fonte: o.fonte || "texto", italico: !!o.italico,
-                     prioridade: o.prioridade || 0, dy: o.dy || 0, alfa: o.alfa == null ? 1 : o.alfa });
+                     prioridade: o.prioridade || 0, dy: o.dy || 0, alfa: o.alfa == null ? 1 : o.alfa,
+                     peca: o.daPeca ? ROT.ultimaPeca : null });
   }
 
   function corHex(c) {
@@ -691,22 +797,76 @@ window.MapCore = (function () {
     return x || c;
   }
 
+  /** A letra do bombsite, desenhada na hora (por baixo das peças e das granadas) e guardada como obstáculo. */
+  function desenhaSitio(letra, c, k) {
+    var ctx = ROT.ctx;
+    var h = SITIO_TAM * k, w = SITIO_TAM * 0.8 * k, pad = 4 * k;
+    ROT.sitios.push({ x: c[0] - w / 2 - pad, y: c[1] - h / 2 - pad, w: w + 2 * pad, h: h + 2 * pad, txt: letra });
+    if (ROT.modo === "sem_texto") return;
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.font = "700 " + h + "px " + token("f-texto");
+    ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
+    ctx.globalAlpha = 0.72;
+    ctx.lineWidth = 3 * k; ctx.strokeStyle = corComAlfa("contorno", 0.7);
+    ctx.strokeText(letra, c[0], c[1]);
+    if (ROT.modo !== "sem_preenchimento") { ctx.fillStyle = token("tinta-2-mapa"); ctx.fillText(letra, c[0], c[1]); }
+    ctx.restore();
+  }
+
+  /** Registra os nomes de lugar e as letras dos bombsites do andar `andar`. `lugares` = {nomes, rotulos} que o Python
+      leva à página (metrics/lugares.rotulos): as âncoras vêm em px do radar e entram pela transformação atual (zoom
+      incluído). Chamar logo depois de `rotulosInicia`, antes de desenhar peças e granadas. Mapa sem tabela: nada. */
+  function lugaresRegistra(lugares, andar) {
+    if (!ROT.ativo || !lugares || !lugares.rotulos || !lugares.rotulos[andar]) return;
+    var cv = ROT.canvas, k = pxPorPxDeTela(), m = ROT.ctx.getTransform();
+    lugares.rotulos[andar].forEach(function (par) {
+      var nome = lugares.nomes[par[0]];
+      var texto = (lugares.textos && lugares.textos[par[0]]) || nome.toUpperCase();   // as palavras separadas e em caixa alta, do Python
+      var todas = par[1].map(function (p) { return [m.a * p[0] + m.c * p[1] + m.e, m.b * p[0] + m.d * p[1] + m.f]; });
+      var naTela = function (c) { return c[0] >= 0 && c[1] >= 0 && c[0] <= cv.width && c[1] <= cv.height; };
+      var sitio = /^Bombsite([A-Z])$/.exec(nome);
+      // a letra do bombsite fica SEMPRE na primeira âncora: com zoom ou pan que a tire da vista, some (não pula para outra)
+      if (sitio) { if (naTela(todas[0])) desenhaSitio(sitio[1], todas[0], k); return; }
+      var cands = todas.filter(naTela);
+      if (cands.length && lugaresLigados()) ROT.lugares.push({ txt: texto, cands: cands });
+    });
+  }
+
+  function intersecao(a, b) {
+    var w = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x), h = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
+    return w > 0 && h > 0 ? w * h : 0;
+  }
+  function sobreposicao(c, ocupadas, ignora) {
+    var s = 0;
+    for (var i = 0; i < ocupadas.length; i++) if (ocupadas[i] !== ignora) s += intersecao(c, ocupadas[i]);
+    return s;
+  }
+  function dentro(c, cv) { return c.x >= 0 && c.y >= 0 && c.x + c.w <= cv.width && c.y + c.h <= cv.height; }
+
   function rotulosDesenha() {
     if (!ROT.ativo) return;
     ROT.ativo = false;
     var ctx = ROT.ctx, cv = ROT.canvas;
-    var largura = cv.getBoundingClientRect().width || cv.width;
-    var k = cv.width / largura;                 // px do canvas por px de tela
-    ROT.caixas = [];
+    var k = pxPorPxDeTela();                    // px do canvas por px de tela
+    ROT.caixas = []; ROT.caixasDeLugar = []; ROT.caixasDeSitio = []; ROT.caixasDePeca = [];
+    var emTela = function (c) { return { x: c.x / k, y: c.y / k, w: c.w / k, h: c.h / k }; };
+    var pecas = ROT.pecas.map(function (p) {
+      return { x: p.x - p.r, y: p.y - p.r, w: 2 * p.r, h: 2 * p.r, cx: p.x, cy: p.y, raio: p.r };
+    });
+    ROT.caixasDePeca = pecas.map(emTela);
+    ROT.caixasDeSitio = ROT.sitios.map(function (s) { var c = emTela(s); c.txt = s.txt; return c; });
     if (ROT.modo === "sem_texto") return;
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.textAlign = "center";
     ctx.textBaseline = "alphabetic";
     ctx.lineJoin = "round";
-    var ocupadas = [];
+    var ocupadas = pecas.concat(ROT.sitios);
+
+    // 1) os nomes dos jogadores: nenhum some
     var ordem = ROT.lista.slice().sort(function (a, b) { return b.prioridade - a.prioridade; });
-    ordem.forEach(function (r) {
+    var colocados = ordem.map(function (r) {
       ctx.font = (r.italico ? "italic " : "") + "600 " + (ROT_TAM * k) + "px " + token(r.fonte === "num" ? "f-num" : "f-texto");
       var med = ctx.measureText(r.txt);
       // a placa usa a altura da FONTE (maiúscula e descendente: "Hg"), não a do texto: "zecco" sem
@@ -716,35 +876,101 @@ window.MapCore = (function () {
       var desc = Math.max(ref.actualBoundingBoxDescent || ROT_TAM * 0.2 * k, med.actualBoundingBoxDescent || 0);
       var ascT = med.actualBoundingBoxAscent || asc, descT = med.actualBoundingBoxDescent || desc;
       var w = med.width + 2 * ROT_FOLGA_X * k, hh = asc + desc + 2 * ROT_FOLGA_Y * k;
+      var propria = r.peca != null ? pecas[r.peca] : null;
       var base = r.y - r.dy * k;
-      // acima, abaixo, mais acima, mais abaixo (§4.2); sem lugar, o rótulo some (aparece no hover/seleção)
-      var tentativas = [0, -hh, hh, -2 * hh, 2 * hh];
-      var caixa = null;
-      for (var i = 0; i < tentativas.length && !caixa; i++) {
-        var y0 = base + tentativas[i] - asc - ROT_FOLGA_Y * k;
-        var c = { x: r.x - w / 2, y: y0, w: w, h: hh };
-        if (c.x < 0 || c.y < 0 || c.x + c.w > cv.width || c.y + c.h > cv.height) continue;
-        var bate = ocupadas.some(function (o) {
-          return c.x < o.x + o.w && o.x < c.x + c.w && c.y < o.y + o.h && o.y < c.y + c.h;
+      // as posições, da mais natural para a mais longe: em cima da peça (e as vizinhas na vertical, como sempre foi),
+      // depois dos lados e das diagonais, em anéis cada vez mais afastados da peça
+      var cands = [];
+      [0, -hh, hh, -2 * hh, 2 * hh].forEach(function (d) { cands.push({ cx: r.x, topo: base + d - asc - ROT_FOLGA_Y * k }); });
+      var ax = propria ? propria.cx : r.x, ay = propria ? propria.cy : r.y, rp = propria ? propria.raio : RAIO_DA_PECA_NO_ROTULO * k;
+      ROT_ANEIS.forEach(function (s) {
+        var lado = (w / 2 + rp + ROT_FOLGA_DA_PECA * k) * s, alto = (hh / 2 + rp + ROT_FOLGA_DA_PECA * k) * s, dg = ROT_DIAGONAL;
+        [[lado, 0], [-lado, 0], [lado * dg, -alto * dg], [-lado * dg, -alto * dg],
+         [lado * dg, alto * dg], [-lado * dg, alto * dg], [0, alto], [0, -alto]].forEach(function (d) {
+          cands.push({ cx: ax + d[0], topo: ay + d[1] - hh / 2 });
         });
-        if (!bate) caixa = c;
+      });
+      var melhor = null, menor = Infinity, escolhida = 0;
+      for (var i = 0; i < cands.length; i++) {
+        var c = { x: cands[i].cx - w / 2, y: cands[i].topo, w: w, h: hh };
+        if (!dentro(c, cv)) continue;
+        // na posição natural a própria peça não conta (a placa fica encostada nela)
+        var s = sobreposicao(c, ocupadas, i === 0 ? propria : null);
+        if (s < menor) { menor = s; melhor = c; escolhida = i; }
+        if (s === 0) break;
       }
-      if (!caixa) return;
-      ocupadas.push(caixa);
-      var yTexto = caixa.y + ROT_FOLGA_Y * k + asc;
+      if (!melhor) {   // nenhuma posição cabe na tela: a natural, empurrada para dentro (o nome não some)
+        melhor = { x: Math.max(0, Math.min(cv.width - w, cands[0].cx - w / 2)), y: Math.max(0, Math.min(cv.height - hh, cands[0].topo)), w: w, h: hh };
+        escolhida = 0;
+      }
+      ocupadas.push(melhor);
+      return { r: r, caixa: melhor, nivel: escolhida, propria: propria, asc: asc, ascT: ascT, descT: descT, med: med };
+    });
+
+    // 2) os nomes de lugar: caixa alta, sem placa, só onde não cobrem nada
+    var lugaresColocados = [];
+    if (ROT.lugares.length) {
+      ctx.font = "600 " + (LUGAR_TAM * k) + "px " + token("f-texto");
+      if ("letterSpacing" in ctx) ctx.letterSpacing = (LUGAR_ESPACO * LUGAR_TAM * k) + "px";
+      ROT.lugares.forEach(function (l) {
+        var w = ctx.measureText(l.txt).width + 2 * LUGAR_FOLGA * k, h = (LUGAR_TAM + 2 * LUGAR_FOLGA) * k;
+        for (var i = 0; i < l.cands.length; i++) {
+          var c = { x: l.cands[i][0] - w / 2, y: l.cands[i][1] - h / 2, w: w, h: h };
+          if (!dentro(c, cv) || sobreposicao(c, ocupadas.concat(lugaresColocados), null) > 0) continue;
+          lugaresColocados.push(c); c.txt = l.txt; c.cx = l.cands[i][0]; c.cy = l.cands[i][1];
+          ROT.caixasDeLugar.push(emTela(c)); ROT.caixasDeLugar[ROT.caixasDeLugar.length - 1].txt = l.txt;
+          return;
+        }
+      });
+      ctx.textBaseline = "middle";
+      ctx.globalAlpha = 0.82;
+      lugaresColocados.forEach(function (c) {
+        ctx.lineWidth = 3 * k; ctx.strokeStyle = corComAlfa("contorno", 0.65);
+        ctx.strokeText(c.txt, c.cx, c.cy);
+        if (ROT.modo !== "sem_preenchimento") { ctx.fillStyle = token("tinta-2-mapa"); ctx.fillText(c.txt, c.cx, c.cy); }
+      });
+      ctx.globalAlpha = 1;
+      ctx.textBaseline = "alphabetic";
+      if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
+    }
+
+    // 3) a linha fina do nome que saiu de cima da peça até a peça
+    colocados.forEach(function (p) {
+      if (!p.propria || p.nivel === 0) return;
+      var c = p.caixa, pc = p.propria;
+      var px = Math.max(c.x, Math.min(pc.cx, c.x + c.w)), py = Math.max(c.y, Math.min(pc.cy, c.y + c.h));
+      var dx = px - pc.cx, dy = py - pc.cy, d = Math.hypot(dx, dy);
+      if (d - pc.raio < ROT_LINHA_MINIMA * k) return;
+      var x0 = pc.cx + dx / d * pc.raio, y0 = pc.cy + dy / d * pc.raio;
+      ctx.globalAlpha = p.r.alfa;
+      ctx.lineCap = "round";
+      ctx.lineWidth = 3 * k; ctx.strokeStyle = corComAlfa("contorno", 0.55);
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(px, py); ctx.stroke();
+      ctx.lineWidth = 1.2 * k; ctx.strokeStyle = p.r.cor;
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(px, py); ctx.stroke();
+      ctx.globalAlpha = 1;
+    });
+
+    // 4) os nomes dos jogadores
+    colocados.forEach(function (p) {
+      var r = p.r, caixa = p.caixa;
+      ctx.font = (r.italico ? "italic " : "") + "600 " + (ROT_TAM * k) + "px " + token(r.fonte === "num" ? "f-num" : "f-texto");
+      var cx = caixa.x + caixa.w / 2;
+      var yTexto = caixa.y + ROT_FOLGA_Y * k + p.asc;
       ctx.globalAlpha = r.alfa;
       ctx.fillStyle = corComAlfa("contorno", 0.88);
       ctx.fillRect(caixa.x, caixa.y, caixa.w, caixa.h);
       ctx.lineWidth = ROT_CONTORNO * k;
       ctx.strokeStyle = token("contorno");
-      ctx.strokeText(r.txt, r.x, yTexto);
+      ctx.strokeText(r.txt, cx, yTexto);
       if (ROT.modo !== "sem_preenchimento") {
         ctx.fillStyle = r.cor;
-        ctx.fillText(r.txt, r.x, yTexto);
+        ctx.fillText(r.txt, cx, yTexto);
       }
       ctx.globalAlpha = 1;
-      ROT.caixas.push({ x: (r.x - med.width / 2) / k, y: (yTexto - ascT) / k, w: med.width / k, h: (ascT + descT) / k,
-                        txt: r.txt, cor: corHex(r.cor), peso: 600, alt: (ascT + descT) / k });
+      ROT.caixas.push({ x: (cx - p.med.width / 2) / k, y: (yTexto - p.ascT) / k, w: p.med.width / k, h: (p.ascT + p.descT) / k,
+                        txt: r.txt, cor: corHex(r.cor), peso: 600, alt: (p.ascT + p.descT) / k, italico: r.italico,
+                        linha: !!(p.propria && p.nivel > 0) });
     });
     ctx.restore();
   }
@@ -754,7 +980,10 @@ window.MapCore = (function () {
     window.__medicaoRotulos = {
       get modo() { return ROT.modo; },
       define: function (m) { ROT.modo = m; if (ROT.redesenha) ROT.redesenha(); },
-      caixas: function () { return ROT.caixas.slice(); }
+      caixas: function () { return ROT.caixas.slice(); },
+      lugares: function () { return ROT.caixasDeLugar.slice(); },    // Fase M: os nomes de lugar colocados (px de tela)
+      sitios: function () { return ROT.caixasDeSitio.slice(); },     // as letras dos bombsites
+      pecas: function () { return ROT.caixasDePeca.slice(); }        // os obstáculos: uma caixa por peça
     };
   }
 
@@ -803,6 +1032,7 @@ window.MapCore = (function () {
       desenhado depois passaria a herdar outro estado, e o replay mudaria sem
       ninguém perceber. Quem chamar e depender do estado anterior, salve antes. */
   function desenhaJogador(ctx, X, Y, o) {
+    registraPeca(ctx, X, Y, o);
     if (ESTILO.anelDuplo) return desenhaJogadorComAnel(ctx, X, Y, o);
     var color = o.cor;
     var e = o.escala || 1;
@@ -924,28 +1154,24 @@ window.MapCore = (function () {
       ctx.beginPath(); ctx.arc(X, Y, rf, 0, Math.PI * 2); ctx.stroke();
       ctx.setLineDash([]);
       ctx.restore();
-      if (o.nome && ROT.ativo) rotulo(o.nome, X, Y - (o.rotuloAcima != null ? o.rotuloAcima : NOME_ACIMA), { cor: token("tinta-2-mapa"), italico: true, prioridade: -1, dy: 2 });
+      if (o.nome && ROT.ativo) rotulo(o.nome, X, Y - (o.rotuloAcima != null ? o.rotuloAcima : NOME_ACIMA), { cor: token("tinta-2-mapa"), italico: true, prioridade: -1, dy: 2, daPeca: true });
       return;
     }
 
     if (o.estado === "outro_andar") {
-      // anel vazado sobre o anel duplo inteiro; a seta ▲/▼ com o mesmo contorno escuro
-      var rr = 5.5 * e;
-      ctx.lineWidth = 2 * e + 2 * (ANEL_CONTORNO + ANEL_HALO); ctx.strokeStyle = token("tinta-mapa");
-      ctx.beginPath(); ctx.arc(X, Y, rr, 0, Math.PI * 2); ctx.stroke();
-      ctx.lineWidth = 2 * e + 2 * ANEL_CONTORNO; ctx.strokeStyle = token("contorno");
-      ctx.beginPath(); ctx.arc(X, Y, rr, 0, Math.PI * 2); ctx.stroke();
-      ctx.globalAlpha = 0.5;
+      // Fase M (decisão 52): o MESMO tamanho e o mesmo anel duplo de toda peça, mas o disco é cinza, com um anel interno
+      // na cor do lado, e a seta (▲ acima do andar mostrado, ▼ abaixo) escura no meio; o nome vai em itálico
+      var rd = 6 * e;
+      discoComAnel(ctx, X, Y, rd, token("apagado-mapa"), function (r) { ctx.arc(X, Y, r, 0, Math.PI * 2); });
       ctx.lineWidth = 2 * e; ctx.strokeStyle = color;
-      ctx.beginPath(); ctx.arc(X, Y, rr, 0, Math.PI * 2); ctx.stroke();
-      ctx.globalAlpha = 1;
-      ctx.font = "700 " + (9 * e) + "px " + token("f-num");
-      ctx.textAlign = "center";
-      ctx.lineWidth = ANEL_CONTORNO * 1.6; ctx.strokeStyle = token("contorno");
-      ctx.strokeText(o.acima ? "▼" : "▲", X, Y + 3 * e);
-      ctx.fillStyle = color;
-      ctx.fillText(o.acima ? "▼" : "▲", X, Y + 3 * e);
+      ctx.beginPath(); ctx.arc(X, Y, rd - e, 0, Math.PI * 2); ctx.stroke();
+      ctx.font = "700 " + (7.5 * e) + "px " + token("f-num");
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillStyle = token("contorno");
+      ctx.fillText(o.acima ? "▼" : "▲", X, Y + 0.4 * e);
       ctx.restore();
+      if (o.nome && ROT.ativo) rotulo(o.nome.slice(0, 9), X, Y, { cor: token("tinta-2-mapa"), italico: true, prioridade: -1,
+                                                                   dy: NOME_ACIMA - 4, daPeca: true });
       return;
     }
 
@@ -977,9 +1203,9 @@ window.MapCore = (function () {
 
     if (o.nome && ROT.ativo) {
       // `rotuloAcima` (px do contexto): quem desenha a peça maior (prancheta) diz onde o nome começa
-      if (o.rotuloAcima != null) rotulo(o.nome.slice(0, 9), X, Y - o.rotuloAcima, { cor: token("tinta-mapa"), prioridade: o.selecionado ? 10 : 1, dy: 2 });
+      if (o.rotuloAcima != null) rotulo(o.nome.slice(0, 9), X, Y - o.rotuloAcima, { cor: token("tinta-mapa"), prioridade: o.selecionado ? 10 : 1, dy: 2, daPeca: true });
       else rotulo(o.nome.slice(0, 9), X, Y, { cor: token("tinta-mapa"), prioridade: o.selecionado ? 10 : 0,
-                                              dy: (comDirecao ? NOME_ACIMA_COM_DIRECAO : NOME_ACIMA) - 4 });
+                                              dy: (comDirecao ? NOME_ACIMA_COM_DIRECAO : NOME_ACIMA) - 4, daPeca: true });
     }
   }
 
@@ -1508,9 +1734,14 @@ window.MapCore = (function () {
     RADAR_AJUSTE_PADRAO: RADAR_AJUSTE_PADRAO,
     ajusteDoRadar: ajusteDoRadar,
     radarProcessado: radarProcessado,
+    radarSemBorda: radarSemBorda,
     rotulosInicia: rotulosInicia,
     rotulo: rotulo,
     rotulosDesenha: rotulosDesenha,
+    lugaresRegistra: lugaresRegistra,
+    lugaresLigados: lugaresLigados,
+    defineLugares: defineLugares,
+    aoMudarLugares: aoMudarLugares,
     normalizaCor: normalizaCor,
     botao: botao,
     seletorDeCor: seletorDeCor

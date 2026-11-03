@@ -12,6 +12,7 @@
     MapCore.applyView(ctx, cfg.radar, S.view);
     var im = imgs[S.andar] || imgs[0];
     // radar dessaturado por mapa (§4.1): processado uma vez e guardado na imagem; aqui só o drawImage
+    ctx.imageSmoothingQuality = "high";   // Fase M (decisão 52): o radar de 1.024 px reduzido com a suavização alta
     if (im && im.complete && im.naturalWidth) ctx.drawImage(MapCore.radarProcessado(im, cfg.radar.map), 0, 0, cfg.radar.width, cfg.radar.height);
 
     // O editor e a reprodução desenham a mesma CENA; só o editor põe por cima
@@ -20,6 +21,7 @@
     var cena = editando ? cenaDoEditor() : S.reproducao.cena;
     // nomes, funções e horários vão para a camada de rótulos (px de tela, por cima de tudo; §4.2)
     MapCore.rotulosInicia(ctx, cv, desenha);
+    MapCore.lugaresRegistra(cfg.lugares, S.andar);   // Fase M: nomes de lugar e letras dos bombsites (mapa sem tabela: nada)
     desenhaFantasma(tempoMostrado());
     if (editando) desenhaBusca();
     Object.keys(cena.granadas).forEach(function (id) { desenhaGranada(id, cena.granadas[id], editando); });
