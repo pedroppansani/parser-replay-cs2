@@ -438,17 +438,12 @@ O texto original do cartão:
 
 ---
 
-## 15. O tamanho do mapa do Replay pela regra do protótipo (fica para depois)
+## 15. O tamanho do mapa do Replay pela regra do protótipo -- FEITO NA FASE B (decisão 53), AGUARDA O MERGE
 
-- **O que é:** o protótipo da v2 (§5.3) dimensiona o mapa por `min(100%, 640px, 100svh − reserva)`, quadrado. Na v2-4
-  o mapa ficou com o tamanho de hoje (sua decisão, 2026-10-26): a largura já segue a altura da tela
-  (`.mapwrap`, reserva de 500 px a partir de 1024 px e 340 px abaixo), com o canvas de 820 × 950.
-- **Por que não mudou:** trocar a regra muda o tamanho do canvas e, com ele, todos os pixels dos três quadros do
-  Replay no `compara_capturas` (o da prancheta não muda). Seria preciso regravar as
-  referências em commit próprio e refazer `mede_radar` e `mede_granada_real`.
-- **O que preciso de você:** se quer a regra do protótipo (mapa maior em telas grandes, até 640 px) ou se o
-  tamanho de hoje fica.
-- **Fora do computador:** nada.
+- **Escolha do Pedro (2026-11-04):** opção B (o palco sobe até logo abaixo da faixa de rounds, que fica grudada sob as abas).
+  A 1440 x 900 o mapa passa de 345 para 579 px; a 1366 x 768, de 231 para 447 px. Celular igual.
+- **Fica para depois:** o enquadramento da Nuke (B+), fase separada: o enquadramento nunca esconde jogador vivo nem granada.
+  Se o cabeçalho do round (55 px) for para dentro da faixa, o mapa ganha mais 55 px (634 e 502); não foi pedido.
 
 ---
 
@@ -616,4 +611,37 @@ O texto original do cartão:
   de UM visual para o outro andar, que valha para o replay e para a prancheta. Quando esse design começar, partir do disco cinza com
   anel do lado e seta da decisão 52, e decidir como a peça editável de outro andar (que se arrasta e se gira) mostra isso sem perder
   o acerto do mouse.
+- **Fora do computador:** nada.
+
+---
+
+## 23. Modo palco do Replay: as medidas fixas em pixel (62, 55, 8, 55, 57, 10)
+
+- **O que é:** a reserva do mapa (`--palco-reserva`, `v2.css`) soma as alturas de hoje das abas (62), da faixa (55), da folga (8), do
+  cabeçalho do round (55), do transporte (57) e do respiro (10). Com uma fonte maior que o padrão, ou o texto do resultado do round
+  quebrando em duas linhas (a 1024 px o quadro tem ~532 px), o cabeçalho passa de 55 px e o transporte grudado cobre o pé do mapa.
+- **O que existe:** `tests/test_replay_palco.py` acusa se as medidas mudarem nos tamanhos testados (1024 x 700 a 1440 x 900).
+- **Se virar problema:** medir as alturas em JS e gravar `--palco-reserva`, como o `v2.js` já faz com `--nav-h`.
+- **Fora do computador:** nada. (Anotado em 2026-11-04, decisão do Pedro.)
+
+---
+
+## 24. Modo palco: o mapa sem radar fica 820 x 950, não quadrado
+
+- **O que é:** a largura do mapa no modo palco é `100svh - reserva`, o que só vale com o canvas quadrado. Sem radar, o `fitBounds` do
+  `02-replay.js` usa 820 x 950 e o mapa ficaria ~16% mais alto (~90 px a 900 de altura), com o transporte grudado cobrindo o pé.
+- **Medido em 2026-11-04:** as 52 partidas do corpus têm radar 1.024 x 1.024. Nenhuma cai nesse caso hoje; só um mapa novo, sem
+  radar calibrado, cairia.
+- **Conserto, quando precisar:** gravar a proporção W/H do canvas numa variável e usar `(100svh - reserva) * W / H`.
+- **Fora do computador:** nada. (Decisão do Pedro, 2026-11-04.)
+
+---
+
+## 25. IDEIA: o "Round N" do cabeçalho do palco dentro da faixa de rounds -- AVALIADA, NÃO ENTRA POR ENQUANTO
+
+- **O que é:** levar o cabeçalho do round (55 px) para dentro da faixa grudada daria mais 55 px ao mapa (634 e 502 px a 1440 x 900 e
+  1366 x 768; 391 px a 1366 x 657).
+- **Decisão do Pedro (2026-11-04):** avaliada e não entra por enquanto. Em partidas com 24 rounds ou mais o título não cabe na faixa,
+  e o resumo do round (quem venceu, motivo, duração) é útil onde está. O mapa fica em 336 px a 1366 x 657 (era 148), sem encolher os
+  chips (44 px, a regra do alvo de toque não muda) nem o respiro.
 - **Fora do computador:** nada.

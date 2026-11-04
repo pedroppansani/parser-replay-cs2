@@ -94,3 +94,4 @@ Uma nota por decisão. O `CLAUDE.md` traz a lista curta das que estão em vigor.
 | [50](50-fonte-do-site-em-partes.md) | vigente | `tactics.js` e o script do `template.html` em partes (`//@inclui`), lidos só por `le_fonte`; dividir é só mudar de lugar, provado byte a byte. |
 | [51](51-tema-claro-e-escuro.md) | vigente | Claro ou escuro escolhido na landing (`tema.js` no `<head>`, sem inline); o escuro é o de antes da v2-5; a prancheta sempre violeta; agente no cartão claro. |
 | [52](52-radar-nitido-e-nomes-de-lugar.md) | vigente | Mapa mais nítido (`imageSmoothingQuality = "high"`), nomes de lugar ligáveis, letras A e B nos bombsites e peça de outro andar com disco cinza, seta e nome em itálico (Fase M). |
+| [53](53-modo-palco-do-replay.md) | vigente | Replay a partir de 1024 x 700: faixa de rounds grudada sob as abas, rolagem ao palco ao abrir ou trocar de round, mapa de um tamanho só (579 px a 1440 x 900, 447 a 1366 x 768); celular igual. |

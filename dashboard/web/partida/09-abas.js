@@ -22,7 +22,7 @@
     if (!semHash && !jaEstava) {   // §19.3: só quando a aba muda de fato; `#replay?round=&t=` não é apagado
       try { history.replaceState(null, "", "#" + ABA_NO_HASH[name]); } catch (e) { /* arquivo local: sem hash */ }
     }
-    if (name === "replay") draw();
+    if (name === "replay") { draw(); if (!semHash && !jaEstava) rolaAtePalco(); }
   }
 
   Array.prototype.forEach.call(tabs, function (b, i) {
@@ -62,6 +62,7 @@
   var hashInicial = (location.hash || "").replace("#", "").split("?");
   var inicial = HASH_DA_ABA[hashInicial[0]] || "insights";
   selectTab(inicial, true);
+  if (inicial === "replay") rolaAtePalco(true);   // abrir pelo endereço também leva ao palco (modo palco)
   if (inicial === "replay" && hashInicial[1]) {
     var q = {};
     hashInicial[1].split("&").forEach(function (par) { var kv = par.split("="); q[kv[0]] = decodeURIComponent(kv[1] || ""); });

@@ -48,7 +48,7 @@
     if (!target) return;
     selectTab("replay");
     selectRound(target);
-    document.querySelector(".board").scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
+    if (!MODO_PALCO.matches) document.querySelector(".board").scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
   }
 
   // Cada gráfico registra aqui, por round, a função que acende (on = true) ou apaga o round.

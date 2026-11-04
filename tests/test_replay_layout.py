@@ -54,7 +54,8 @@ def test_o_tocar_aparece_sem_rolar_abrindo_pelo_hash_e_pela_aba(navegador, pagin
                 const el = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2);
                 return {dentro: b.top >= 0 && b.bottom <= innerHeight, eleMesmo: el === t || t.contains(el),
                         rolagem: scrollY, w: b.width, h: b.height}; }""")
-            assert r["dentro"] and r["eleMesmo"] and r["rolagem"] == 0, (w, h, hash_, r)
+            # a partir de 1024 x 700 (modo palco, cartão 15) abrir o Replay rola até o palco; no celular a página não rola
+            assert r["dentro"] and r["eleMesmo"] and ((r["rolagem"] > 0) == (w >= 1024)), (w, h, hash_, r)
             assert r["w"] >= 44 and r["h"] >= 44
             assert pg._erros == []
         finally:

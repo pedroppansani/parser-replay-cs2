@@ -28,11 +28,22 @@
   }
   medeNav();
   if (window.ResizeObserver && nav) new ResizeObserver(medeNav).observe(nav);
-  /* C2: o foco por Tab nunca fica embaixo da navbar (o scroll-padding cobre âncoras; isto cobre o foco em qualquer rolagem) */
+  /* C2: o foco por Tab nunca fica embaixo das barras grudadas: a navbar, as abas e (modo palco do Replay) a faixa de rounds.
+     O scroll-padding cobre âncoras; isto cobre o foco em qualquer rolagem. Só conta a barra que está de fato grudada. */
+  function fimDasBarras(alvo) {
+    var fim = 0, barras = ['.site-topo', '#abas-moldura', '#strip'].map(function (s) { return document.querySelector(s); });
+    if (barras.some(function (b) { return b && b.contains(alvo); })) return 0;   // o foco numa das barras (um chip, uma aba) é dela
+    barras.forEach(function (b) {
+      if (!b || !b.offsetParent && getComputedStyle(b).position !== 'fixed') return;
+      var cs = getComputedStyle(b), r = b.getBoundingClientRect();
+      if ((cs.position === 'sticky' || cs.position === 'fixed') && r.top <= (parseFloat(cs.top) || 0) + 1) fim = Math.max(fim, r.bottom);
+    });
+    return fim;
+  }
   document.addEventListener('focusin', function (e) {
     if (!nav || !e.target.getBoundingClientRect || nav.contains(e.target)) return;
-    var r = e.target.getBoundingClientRect(), n = nav.getBoundingClientRect();
-    if (n.bottom > 0 && r.top < n.bottom + 8 && r.bottom > 0) window.scrollBy({ top: r.top - n.bottom - 16, behavior: 'instant' });
+    var r = e.target.getBoundingClientRect(), fim = fimDasBarras(e.target);
+    if (fim > 0 && r.top < fim + 8 && r.bottom > 0) window.scrollBy({ top: r.top - fim - 16, behavior: 'instant' });
   });
 
   /* Abas com gooey (§7, C1): a bolha (.goo .bolha) segue a aba com aria-selected; o filtro SVG (#goo) só existe
