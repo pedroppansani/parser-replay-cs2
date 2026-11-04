@@ -323,25 +323,74 @@
     document.getElementById("palco").scrollIntoView({ behavior: reduced || instante ? "auto" : "smooth", block: "start" });
   }
 
-  // Fase B+ (decisão 54): na Nuke a arte ocupa só o miolo do quadrado; a vista de cada round enquadra TUDO o que o round mostra
-  // (jogadores, granadas, áreas de smoke e molotov, dos dois andares, em todos os quadros), então ninguém sai do quadro e a vista não
-  // pula durante o replay. Trocar de round refaz o enquadramento; o zoom manual vale até lá.
+  // Fase B+ (decisão 54): na Nuke a arte ocupa só o miolo do quadrado, e os dois andares se espalham de jeitos diferentes. Cada
+  // andar tem o seu quadro, calculado uma vez por round sobre tudo o que acontece NAQUELE andar (jogadores, granadas, áreas,
+  // detonações, kills e bomba, em todos os quadros do round); a vista não pula durante o replay, só muda quando o andar mostrado
+  // muda. Granada, área, detonação e kill não trazem andar no dado: valem o andar de quem as fez, no instante em que as fez.
+  // Jogador vivo do outro andar fora do quadro ganha uma marca na borda (ver marcasDeBorda). O zoom manual vale até trocar de round ou de andar.
   var MAPAS_COM_ENQUADRAMENTO = { de_nuke: true };
-  function pontosDoRound(r) {
+  var quadros = null, andarEnquadrado = -1;
+  function pontosDoRound(r, andar) {
     var pts = [], fogo = MapCore.RAIO_MOLOTOV_UNIDADES * RAD.scale_px_per_unit, fumaca = MapCore.RAIO_SMOKE_UNIDADES * RAD.scale_px_per_unit;
     function ponto(x, y, raio) { if (x != null && y != null && isFinite(x) && isFinite(y)) pts.push([mx(x), my(y), raio]); }
-    r.players.forEach(function (p) { for (var i = 0; i < p.x.length; i++) ponto(p.x[i], p.y[i], 0); });
-    r.nades.forEach(function (n) { for (var i = 0; i < n.x.length; i++) ponto(n.x[i], n.y[i], 0); });
-    r.smokes.forEach(function (z) { ponto(z.x, z.y, fumaca); });
-    r.fires.forEach(function (z) { ponto(z.x, z.y, fogo); });
-    r.pops.forEach(function (q) { ponto(q.x, q.y, 0); });                       // onde a granada detonou
-    r.events.forEach(function (e) { ponto(e.x, e.y, 0); ponto(e.ax, e.ay, 0); });   // kills, bomba: vítima e autor
+    function andarDe(nome, f) {
+      for (var i = 0; i < r.players.length; i++) {
+        var p = r.players[i];
+        if (p.name === nome) return p.lv ? p.lv[Math.max(0, Math.min(p.lv.length - 1, Math.floor(f)))] : 0;
+      }
+      return null;
+    }
+    function dele(nome, f) { return andarDe(nome, f) === andar; }
+    r.players.forEach(function (p) { for (var i = 0; i < p.x.length; i++) if ((p.lv ? p.lv[i] : 0) === andar) ponto(p.x[i], p.y[i], 0); });
+    r.nades.forEach(function (n) { if (dele(n.by, n.f0)) for (var i = 0; i < n.x.length; i++) ponto(n.x[i], n.y[i], 0); });
+    r.smokes.forEach(function (z) { if (dele(z.by, z.f0)) ponto(z.x, z.y, fumaca); });
+    r.fires.forEach(function (z) { if (dele(z.by, z.f0)) ponto(z.x, z.y, fogo); });
+    r.pops.forEach(function (q) { if (dele(q.by, q.f)) ponto(q.x, q.y, 0); });
+    r.events.forEach(function (e) {      // kill: a vítima onde morreu, o autor onde atirou; bomba: quem plantou ou desarmou
+      var vitima = e.victim || e.attacker, autor = e.attacker || e.victim;
+      if (dele(vitima, e.f)) ponto(e.x, e.y, 0);
+      if (dele(autor, e.f)) ponto(e.ax, e.ay, 0);
+    });
     return pts;
   }
-  function enquadraORound(r) {
-    if (!MAPAS_COM_ENQUADRAMENTO[RAD.map] || !window.MapAnnotations || !MapAnnotations.defineVista) return;
-    var e = MapCore.enquadramento(pontosDoRound(r), RAD);
-    MapAnnotations.defineVista(e.zoom, e.cx, e.cy);
+  function calculaQuadros(r) {
+    quadros = null; andarEnquadrado = -1;
+    if (!MAPAS_COM_ENQUADRAMENTO[RAD.map] || LEVELS.length < 2) return;
+    quadros = LEVELS.map(function (_, andar) { return MapCore.enquadramento(pontosDoRound(r, andar), RAD); });
+  }
+  // true se mudou a vista (e o redesenho já foi feito por ela)
+  function aplicaQuadro(andar) {
+    if (!quadros || andarEnquadrado === andar || !window.MapAnnotations || !MapAnnotations.defineVista) return false;
+    andarEnquadrado = andar;
+    var e = quadros[andar];
+    return MapAnnotations.defineVista(e.zoom, e.cx, e.cy);
+  }
+
+  // Jogador vivo do outro andar que o quadro deixou fora da tela: triângulo na borda, com a cor do lado, apontando para onde ele está
+  var marcasDeBorda = [];
+  window.__marcasDeBorda = function () { return marcasDeBorda; };   // gancho de teste (como __medicaoRotulos)
+  function desenhaMarcasDeBorda(ctx, pendentes) {
+    marcasDeBorda = [];
+    if (!pendentes.length) return;
+    var m = ctx.getTransform(), W = cv.width, H = cv.height, k = W / (cv.getBoundingClientRect().width || W), s = 6 * k, pad = 9 * k;
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    pendentes.forEach(function (q) {
+      var sx = m.a * q.X + m.c * q.Y + m.e, sy = m.b * q.X + m.d * q.Y + m.f;
+      if (sx >= 0 && sx <= W && sy >= 0 && sy <= H) return;
+      var dx = sx - W / 2, dy = sy - H / 2, t = Math.min((W / 2 - pad) / Math.abs(dx || 1e-9), (H / 2 - pad) / Math.abs(dy || 1e-9));
+      var bx = W / 2 + dx * t, by = H / 2 + dy * t, a = Math.atan2(dy, dx);
+      ctx.beginPath();
+      ctx.moveTo(bx + Math.cos(a) * s, by + Math.sin(a) * s);
+      ctx.lineTo(bx + Math.cos(a + 2.4) * s, by + Math.sin(a + 2.4) * s);
+      ctx.lineTo(bx + Math.cos(a - 2.4) * s, by + Math.sin(a - 2.4) * s);
+      ctx.closePath();
+      ctx.fillStyle = q.cor; ctx.globalAlpha = 0.95; ctx.fill();
+      ctx.strokeStyle = "rgba(0,0,0,.65)"; ctx.lineWidth = 1.2 * k; ctx.stroke();
+      ctx.globalAlpha = 1;
+      marcasDeBorda.push({ nome: q.nome, x: bx / k, y: by / k, lado: q.lado });
+    });
+    ctx.restore();
   }
 
   function selectRound(r) {
@@ -366,7 +415,7 @@
     buildMarks();
     buildSquads();
     buildAutopsy();
-    enquadraORound(r);   // com o estado do round novo já montado: o redesenho de defineVista não usa o do anterior
+    calculaQuadros(r);   // o draw() abaixo aplica o quadro do andar mostrado (e, ao mudar a vista, redesenha por ela)
     draw();
   }
 
@@ -702,6 +751,7 @@
     frame = i0;
 
     var lvNow = activeLevel(i0);
+    if (aplicaQuadro(lvNow)) return;   // a vista mudou: o redesenho dela já pintou este quadro
     // O clear tem que acontecer em coordenada de tela; a transformacao de zoom
     // entra depois dele e vale para tudo que o round desenha. E a MESMA
     // transformacao da camada de anotacao -- se as duas divergirem, a seta
@@ -943,6 +993,7 @@
     // movimento fica em saltos de 250ms
     var comDirecao = !window.MapAnnotations || !MapAnnotations.direcaoLigada ||
       MapAnnotations.direcaoLigada();
+    var foraDoAndar = [];
     cur.players.forEach(function (p) {
       var alive = p.alive[i0];
       // Suaviza em coordenada de JOGO e só depois converte pra pixel: a
@@ -967,6 +1018,7 @@
       // Morto, em outro andar ou vivo: o desenho de cada caso está em
       // MapCore.desenhaJogador (a prancheta usa o mesmo).
       var pLv = p.lv ? p.lv[i0] : 0;
+      if (alive && pLv !== lvNow) foraDoAndar.push({ X: X, Y: Y, cor: color, nome: p.name, lado: p.side });
       MapCore.desenhaJogador(ctx, X, Y, {
         cor: color,
         estado: !alive ? "morto" : (pLv !== lvNow ? "outro_andar" : "vivo"),
@@ -977,6 +1029,7 @@
         yaw: yaw
       });
     });
+    desenhaMarcasDeBorda(ctx, foraDoAndar);
     MapCore.rotulosDesenha();
 
     // estado da interface

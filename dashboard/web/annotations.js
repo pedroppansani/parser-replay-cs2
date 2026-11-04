@@ -1245,9 +1245,10 @@ window.MapAnnotations = (function () {
     },
     /** Fase B+: a vista do round (zoom e centro em pixels do radar), sem mexer nos desenhos. */
     defineVista: function (zoom, cx, cy) {
-      if (!opts) return;
+      if (!opts) return false;
       MapCore.vistaCentrada(S.view, opts.radar, zoom, cx, cy);
       pedeRedesenho();
+      return true;
     },
     /** Trocar de round troca o conjunto de desenhos. Nada de rabisco de um
         round vazando no outro -- e nada se perde: o modelo guarda todos. */

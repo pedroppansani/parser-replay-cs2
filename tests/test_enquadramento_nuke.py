@@ -61,48 +61,111 @@ def test_a_conta_do_enquadramento_cobre_todos_os_pontos_com_margem(navegador, nu
         ctx.close()
 
 
-def _pontos_do_round(r, radar, raio_smoke, raio_fogo):
-    """Todos os pontos que o round mostra, em pixels do radar: [x, y, raio]."""
+def _pontos_do_round(r, radar, raio_smoke, raio_fogo, andar):
+    """Os pontos que o round mostra NAQUELE andar, em pixels do radar: [x, y, raio]. Granada, área, detonação e kill não trazem
+    andar no dado: valem o de quem as fez, no instante em que as fez."""
     mx = lambda x: (x - radar["origin_x"]) * radar["scale_px_per_unit"]   # noqa: E731
     my = lambda y: (radar["origin_y"] - y) * radar["scale_px_per_unit"]   # noqa: E731
+    por_nome = {p["name"]: p for p in r["players"]}
+
+    def dele(nome, f):
+        p = por_nome.get(nome)
+        return p is not None and p["lv"][max(0, min(len(p["lv"]) - 1, int(f)))] == andar
+
+    ok = lambda x, y: x is not None and y is not None   # noqa: E731
     pts = []
     for p in r["players"]:
-        pts += [(mx(x), my(y), 0) for x, y in zip(p["x"], p["y"]) if x is not None and y is not None]
+        pts += [(mx(x), my(y), 0) for x, y, lv in zip(p["x"], p["y"], p["lv"]) if ok(x, y) and lv == andar]
     for n in r["nades"]:
-        pts += [(mx(x), my(y), 0) for x, y in zip(n["x"], n["y"]) if x is not None and y is not None]
-    pts += [(mx(q["x"]), my(q["y"]), 0) for q in r["pops"]]                    # onde a granada detonou
+        if dele(n["by"], n["f0"]):
+            pts += [(mx(x), my(y), 0) for x, y in zip(n["x"], n["y"]) if ok(x, y)]
+    pts += [(mx(q["x"]), my(q["y"]), 0) for q in r["pops"] if dele(q["by"], q["f"])]
     for e in r["events"]:                                                      # kills e bomba: vítima e autor
-        pts += [(mx(e[a]), my(e[b]), 0) for a, b in (("x", "y"), ("ax", "ay")) if e.get(a) is not None and e.get(b) is not None]
-    pts += [(mx(z["x"]), my(z["y"]), raio_smoke) for z in r["smokes"]]
-    pts += [(mx(z["x"]), my(z["y"]), raio_fogo) for z in r["fires"]]
+        vitima, autor = e.get("victim") or e.get("attacker"), e.get("attacker") or e.get("victim")
+        if dele(vitima, e["f"]) and ok(e.get("x"), e.get("y")):
+            pts.append((mx(e["x"]), my(e["y"]), 0))
+        if dele(autor, e["f"]) and ok(e.get("ax"), e.get("ay")):
+            pts.append((mx(e["ax"]), my(e["ay"]), 0))
+    pts += [(mx(z["x"]), my(z["y"]), raio_smoke) for z in r["smokes"] if dele(z["by"], z["f0"])]
+    pts += [(mx(z["x"]), my(z["y"]), raio_fogo) for z in r["fires"] if dele(z["by"], z["f0"])]
     return pts
 
 
-def test_na_nuke_nada_sai_do_quadro_em_nenhum_round(navegador, nuke):
+def _rounds():
     import json
-    rounds = json.loads((RAIZ / "data" / "processed" / NUKE / "replay.json").read_text(encoding="utf-8"))["rounds"]
+    return json.loads((RAIZ / "data" / "processed" / NUKE / "replay.json").read_text(encoding="utf-8"))["rounds"]
+
+
+def _radar(pg):
+    return pg.evaluate("() => ({ origin_x: __RADAR__.origin_x, origin_y: __RADAR__.origin_y, scale_px_per_unit: __RADAR__.scale_px_per_unit, "
+                       "width: __RADAR__.width, height: __RADAR__.height, smoke: MapCore.RAIO_SMOKE_UNIDADES, fogo: MapCore.RAIO_MOLOTOV_UNIDADES })")
+
+
+def _trava_andar(pg, andar):
+    pg.locator(f'.levelpick button[data-lv="{andar}"]').click()
+    pg.wait_for_timeout(60)
+
+
+def test_na_nuke_nada_sai_do_quadro_em_nenhum_round_nem_em_nenhum_andar(navegador, nuke):
+    rounds = _rounds()
     ctx, pg = _abre(navegador, nuke)
     try:
-        radar = pg.evaluate("() => ({ origin_x: __RADAR__.origin_x, origin_y: __RADAR__.origin_y, scale_px_per_unit: __RADAR__.scale_px_per_unit, "
-                            "width: __RADAR__.width, height: __RADAR__.height, smoke: MapCore.RAIO_SMOKE_UNIDADES, fogo: MapCore.RAIO_MOLOTOV_UNIDADES })")
+        radar = _radar(pg)
         escala = radar["scale_px_per_unit"]
-        enquadrados = 0
+        zooms = {0: [], 1: []}
         for r in rounds:
             pg.locator("#strip .rchip", has_text=str(r["round"])).first.click()
-            pg.wait_for_timeout(120)
-            zoom, px, py = pg.evaluate(VISTA)
-            enquadrados += zoom > 1.1
-            for x, y, raio in _pontos_do_round(r, radar, radar["smoke"] * escala, radar["fogo"] * escala):
-                for cx, cy in ((x - raio, y - raio), (x + raio, y + raio)):
-                    sx, sy = cx * zoom + px, cy * zoom + py
-                    assert 0 <= sx <= radar["width"] and 0 <= sy <= radar["height"], (r["round"], zoom, (x, y, raio), (sx, sy))
-        assert enquadrados >= len(rounds) // 2                      # a Nuke ganhou enquadramento na maioria dos rounds
+            pg.wait_for_timeout(100)
+            for andar in (0, 1):
+                _trava_andar(pg, andar)
+                zoom, px, py = pg.evaluate(VISTA)
+                zooms[andar].append(zoom)
+                for x, y, raio in _pontos_do_round(r, radar, radar["smoke"] * escala, radar["fogo"] * escala, andar):
+                    for cx, cy in ((x - raio, y - raio), (x + raio, y + raio)):
+                        sx, sy = cx * zoom + px, cy * zoom + py
+                        assert 0 <= sx <= radar["width"] and 0 <= sy <= radar["height"], (r["round"], andar, zoom, (x, y, raio), (sx, sy))
+        assert sum(z > 1.1 for z in zooms[0]) >= len(rounds) // 2
+        assert sum(z > 1.1 for z in zooms[1]) >= len(rounds) // 2
+        # o andar de baixo é onde o quadro por andar ganha: bem maior que o de cima na maioria dos rounds
+        assert sum(b > 1.3 * a for a, b in zip(zooms[0], zooms[1])) >= len(rounds) // 2
     finally:
         ctx.close()
 
 
-def test_o_nome_do_jogador_nao_fica_cortado_na_borda_da_nuke(navegador, nuke):
-    ctx, pg = _abre(navegador, nuke, 1366, 657)
+def test_todo_jogador_vivo_do_outro_andar_fora_do_quadro_tem_a_sua_marca_na_borda(navegador, nuke):
+    rounds = _rounds()
+    ctx, pg = _abre(navegador, nuke)
+    try:
+        radar = _radar(pg)
+        vistos = 0
+        for r in rounds[::2]:
+            pg.locator("#strip .rchip", has_text=str(r["round"])).first.click()
+            pg.wait_for_timeout(100)
+            for andar in (0, 1):
+                _trava_andar(pg, andar)
+                zoom, px, py = pg.evaluate(VISTA)
+                for f in range(0, r["frames"], max(1, r["frames"] // 6)):
+                    pg.evaluate("""f => { const s = document.getElementById('scrub'); s.value = f; s.dispatchEvent(new Event('input')); }""", f)
+                    pg.wait_for_timeout(40)
+                    esperados = set()
+                    for p in r["players"]:
+                        if not p["alive"][f] or p["lv"][f] == andar:
+                            continue
+                        sx = ((p["x"][f] - radar["origin_x"]) * radar["scale_px_per_unit"]) * zoom + px
+                        sy = ((radar["origin_y"] - p["y"][f]) * radar["scale_px_per_unit"]) * zoom + py
+                        if not (0 <= sx <= radar["width"] and 0 <= sy <= radar["height"]):
+                            esperados.add(p["name"])
+                    marcas = pg.evaluate("window.__marcasDeBorda()")
+                    assert esperados == {m["nome"] for m in marcas}, (r["round"], andar, f, esperados, marcas)
+                    vistos += len(esperados)
+        assert vistos > 0                                  # o caso existe de verdade na partida
+    finally:
+        ctx.close()
+
+
+@pytest.mark.parametrize("w,h", [(1366, 657), (375, 812)])
+def test_o_nome_do_jogador_nao_fica_cortado_na_borda_da_nuke(navegador, nuke, w, h):
+    ctx, pg = _abre(navegador, nuke, w, h)
     try:
         for rnd in (9, 3, 14):
             pg.locator("#strip .rchip", has_text=str(rnd)).first.click()
@@ -140,6 +203,10 @@ def test_as_outras_partidas_nao_mudam_e_o_zoom_manual_vale_ate_trocar_de_round(n
         assert pg.evaluate(VISTA) == [1, 0, 0]                      # tocar não reenquadra
         pg.locator("#strip .rchip", has_text="9").first.click()     # trocar de round (mesmo o 9) enquadra de novo
         pg.wait_for_timeout(150)
+        assert pg.evaluate(VISTA)[0] == z9
+        _trava_andar(pg, 1)                                         # trocar de andar passa para o quadro daquele andar
+        assert pg.evaluate(VISTA)[0] != z9
+        _trava_andar(pg, 0)
         assert pg.evaluate(VISTA)[0] == z9
     finally:
         ctx.close()
