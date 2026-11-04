@@ -124,10 +124,9 @@ def test_na_nuke_nada_sai_do_quadro_em_nenhum_round_nem_em_nenhum_andar(navegado
                     for cx, cy in ((x - raio, y - raio), (x + raio, y + raio)):
                         sx, sy = cx * zoom + px, cy * zoom + py
                         assert 0 <= sx <= radar["width"] and 0 <= sy <= radar["height"], (r["round"], andar, zoom, (x, y, raio), (sx, sy))
-        assert sum(z > 1.1 for z in zooms[0]) >= len(rounds) // 2
-        assert sum(z > 1.1 for z in zooms[1]) >= len(rounds) // 2
-        # o andar de baixo é onde o quadro por andar ganha: bem maior que o de cima na maioria dos rounds
-        assert sum(b > 1.3 * a for a, b in zip(zooms[0], zooms[1])) >= len(rounds) // 2
+        # o quadro é a área do andar: o mesmo zoom em todos os rounds, com a trava de 2,5
+        assert len(set(zooms[0])) == 1 and len(set(zooms[1])) == 1, zooms
+        assert 1.1 < zooms[0][0] < zooms[1][0] <= 2.5, zooms
     finally:
         ctx.close()
 
@@ -158,27 +157,43 @@ def test_todo_jogador_vivo_do_outro_andar_fora_do_quadro_tem_a_sua_marca_na_bord
                     marcas = pg.evaluate("window.__marcasDeBorda()")
                     assert esperados == {m["nome"] for m in marcas}, (r["round"], andar, f, esperados, marcas)
                     vistos += len(esperados)
+                    lado = pg.evaluate("document.getElementById('map').getBoundingClientRect().width")
+                    for m in marcas:                                       # a marca fica dentro do mapa, nunca na barra de tocar
+                        assert 0 < m["x"] < lado and 0 < m["y"] < lado, (m, lado)
+                    for i, a in enumerate(marcas):                          # e duas marcas nunca se sobrepõem
+                        for b in marcas[i + 1:]:
+                            assert max(abs(a["x"] - b["x"]), abs(a["y"] - b["y"])) >= 12, (r["round"], andar, f, a, b)
         assert vistos > 0                                  # o caso existe de verdade na partida
     finally:
         ctx.close()
 
 
-@pytest.mark.parametrize("w,h", [(1366, 657), (375, 812)])
-def test_o_nome_do_jogador_nao_fica_cortado_na_borda_da_nuke(navegador, nuke, w, h):
+@pytest.mark.parametrize("w,h", [(1440, 900), (1366, 657), (375, 812)])
+def test_nenhum_nome_se_sobrepoe_nem_sai_do_quadro_nem_vai_para_baixo_da_barra_de_tocar(navegador, nuke, w, h):
     ctx, pg = _abre(navegador, nuke, w, h)
     try:
         for rnd in (9, 3, 14):
             pg.locator("#strip .rchip", has_text=str(rnd)).first.click()
             pg.wait_for_timeout(200)
-            lado = pg.evaluate("document.getElementById('map').getBoundingClientRect().width")
-            for fracao in (0.1, 0.4, 0.7, 0.95):
-                pg.evaluate("""f => { const s = document.getElementById('scrub'); s.value = Math.round(+s.max * f);
-                    s.dispatchEvent(new Event('input')); }""", fracao)
-                pg.wait_for_timeout(150)
-                caixas = pg.evaluate("window.__medicaoRotulos.caixas()")
-                assert caixas
-                for c in caixas:
-                    assert c["x"] >= 0 and c["y"] >= 0 and c["x"] + c["w"] <= lado + 0.5 and c["y"] + c["h"] <= lado + 0.5, (rnd, fracao, c, lado)
+            for andar in (0, 1):
+                _trava_andar(pg, andar)
+                pg.evaluate("document.getElementById('map').scrollIntoView({block: 'center'})") if w < 1024 else None
+                geo = pg.evaluate("""() => { const m = document.getElementById('map').getBoundingClientRect(),
+                    t = document.querySelector('.transport').getBoundingClientRect(); return { lado: m.width, fundo: m.bottom, barra: t.top }; }""")
+                if w >= 1024:
+                    assert geo["fundo"] <= geo["barra"] + 0.5, geo      # o mapa termina antes da barra de tocar
+                lado = geo["lado"]
+                for fracao in (0.1, 0.4, 0.7, 0.95):
+                    pg.evaluate("""f => { const s = document.getElementById('scrub'); s.value = Math.round(+s.max * f);
+                        s.dispatchEvent(new Event('input')); }""", fracao)
+                    pg.wait_for_timeout(150)
+                    caixas = pg.evaluate("window.__medicaoRotulos.caixas()")
+                    for c in caixas:
+                        assert c["x"] >= 0 and c["y"] >= 0 and c["x"] + c["w"] <= lado + 0.5 and c["y"] + c["h"] <= lado + 0.5, (rnd, andar, fracao, c, lado)
+                    for i, a in enumerate(caixas):
+                        for b in caixas[i + 1:]:
+                            dentro = a["x"] < b["x"] + b["w"] and b["x"] < a["x"] + a["w"] and a["y"] < b["y"] + b["h"] and b["y"] < a["y"] + a["h"]
+                            assert not dentro, (rnd, andar, fracao, a, b)
     finally:
         ctx.close()
 
