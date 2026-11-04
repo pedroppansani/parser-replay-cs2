@@ -100,8 +100,17 @@ resultado do merge: 1.725 passaram, 71 pulados, 0 falharam. Impressão dos núme
 `origem.json`); `c19-software/` é o histórico do Linux. Code-review mostrado ao Pedro na conversa (nenhum achado grave; corrigidos os
 simples). **Aberto:** (a) olhar na prévia se os nomes de lugar e de jogador piscam durante o replay (eles são recolocados a cada
 quadro; se piscarem, uma fase com memória da posição, cuidando da reprodutibilidade das capturas); (b) o cartão 22 (visual do outro
-andar na prancheta, no design do "Reescrever"); (c) o cartão 15 (tamanho do mapa do Replay): duas opções de layout em capturas, sem
-implementar.
+andar na prancheta, no design do "Reescrever"); (c) ~~o cartão 15~~ (feito na Fase B, abaixo).
+
+**Fase B FEITA (2026-11-04, no PC), merge `74047972`, decisão 53 (branch `fase-b-mapa`), cartão 15 opção B:** modo palco do Replay a partir de
+1024 x 600: a faixa de rounds gruda sob as abas (sem barra de rolagem), a página rola até o palco ao abrir o Replay ou trocar de round
+(nunca briga com a rolagem da pessoa; instantânea com reduzir movimento; CLS 0) e o mapa tem um tamanho só, dado pelo CSS (`--palco-reserva`):
+579 px a 1440 x 900 (era 345), 468 a 1440 x 789, 447 a 1366 x 768 (era 231), 336 a 1366 x 657 (era 148); celular igual. O foco do teclado
+nunca fica atrás da navbar, das abas nem da faixa (`v2.js`, teste com Shift+Tab). Referências do canvas do PC regravadas (os 3 quadros do
+Replay, 520 para 640 px; prancheta idêntica). Suíte do resultado do merge: 1.740 passaram, 71 pulados, 0 falharam; impressão dos números
+idêntica (11.755 linhas). Pendências anotadas: cartões 23 (medidas fixas em px), 24 (mapa sem radar, nenhum no corpus) e 25 (ideia do "Round"
+dentro da faixa: avaliada e fora). **Próxima fase: B+ (enquadramento da Nuke)**, com portão: o enquadramento nunca esconde jogador vivo
+nem granada (se alguém sair do quadro, o zoom abre até caber todos); o "chiefkeef" cortado na borda tem de sumir.
 
 **Fila que falta, nesta ordem:** (1) ~~v2-5b~~, ~~v2-6~~, ~~cartão 17~~ (`165f0d00`), ~~v2-7~~ (`73fc57d0`) e ~~cartão 20~~
 (`24eea71e`): feitos. (2) ~~Cartão 9~~ (a refatoração, decisão 50): FECHADO em 2026-10-29 nos passos 0 a 3 (`9be9db37`, `eb704893`, `2641c91b`, `00f49756`; o passo 3 provado no PC do Pedro: site, impressão, quadros e capturas iguais, suíte com o `data/interim` 1.651 passaram, 71 pulados, 0 falharam). A guarda do sha256 saiu; o passo 4 (a função de 88 KB que monta HTML) fica para depois. Agora: **Fase T** (tema claro e escuro na home; escolhas do Pedro: agentes no cartão claro no escuro, prancheta no violeta nos dois temas) e **Fase M** (mapa; escolha: variação A mais o nome em itálico das peças do outro andar), cada uma numa branch, com portão de capturas antes do merge; e, do ci-optimizer, só os `timeout-minutes`. (3) No PC do Pedro: cartão 6 (histograma da força da
@@ -219,6 +228,7 @@ foram feitos na v2-7; o `--f-cond` ficou (trocar mexe na fonte dos símbolos no 
 | Cartão 19 (capturas com o canvas em software; referências em `notas/design/referencias/c19-software/`) | `e738a968` |
 | `fix-tickrate-resto`: tickrate lido da demo em todo lugar, sem mudar nenhum número (sha256 dos dados igual ao da `main`); contagem de testes 1.678 | `47c0f840` |
 | Fase M: radar nítido, nomes de lugar, bombsites e peça do outro andar (decisão 52; referências do canvas do PC) | `442bd272` |
+| Fase B: modo palco do Replay, mapa maior (cartão 15, decisão 53) | `74047972` |
 
 ## Em andamento
 
