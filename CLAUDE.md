@@ -123,6 +123,8 @@ Uma regra por linha; o número entre parênteses é a nota em `notas/decisoes/`.
   suíte inteira e o CI verdes, e sem confirmação só quando o prompt da fase autoriza por escrito;
   sem essa autorização, pare antes do merge e traga o relatório ao Pedro. Depois do merge, push e
   relatório com o hash do merge.
+- Fase visual só mescla com o OK do Pedro depois de ele ver as capturas; nunca há liberação antecipada.
+- A suíte roda no resultado do merge ANTES do push para a main, sempre, mesmo com a árvore igual à da branch testada.
 - Teste existente não muda sem o Pedro aprovar.
 - Ponto de calibração é do Pedro: não resolva nenhum sozinho, pergunte. Cada `CLAUDE.md` de pasta
   lista os seus; o histórico está em `notas/calibracao.md`.
