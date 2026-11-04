@@ -175,6 +175,32 @@ window.MapCore = (function () {
     view.panY = Math.min(0, Math.max(H - H * view.zoom, view.panY));
   }
 
+  /* Enquadramento da arte (Fase B+, decisão 54). `pontos` = [x, y, raio] em pixels do radar: tudo o que o round mostra (jogadores,
+     granadas, áreas de smoke e molotov). Devolve o zoom e o centro que mostram TODOS, com margem de ENQ_MARGEM do lado (no mínimo
+     ENQ_MARGEM_MIN px, para o nome do jogador e a linha fina caberem); abaixo de ENQ_ZOOM_MINIMO não vale mexer na vista e fica no 1.
+     Quem chama calcula uma vez por round (todos os quadros), então nada sai do quadro durante o replay e a vista não pula. */
+  var ENQ_MARGEM = 0.12, ENQ_MARGEM_MIN = 90, ENQ_ZOOM_MINIMO = 1.1;
+  function enquadramento(pontos, radar) {
+    var W = radar.width, H = radar.height, x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    pontos.forEach(function (p) {
+      var r = p[2] || 0;
+      x0 = Math.min(x0, p[0] - r); x1 = Math.max(x1, p[0] + r); y0 = Math.min(y0, p[1] - r); y1 = Math.max(y1, p[1] + r);
+    });
+    if (!isFinite(x0)) return { zoom: 1, cx: W / 2, cy: H / 2 };
+    var m = Math.max(ENQ_MARGEM_MIN, ENQ_MARGEM * Math.max(x1 - x0, y1 - y0));
+    var z = Math.min(W / (x1 - x0 + 2 * m), H / (y1 - y0 + 2 * m));
+    if (z < ENQ_ZOOM_MINIMO) return { zoom: 1, cx: W / 2, cy: H / 2 };
+    return { zoom: Math.min(ZOOM_MAX, z), cx: (x0 + x1) / 2, cy: (y0 + y1) / 2 };
+  }
+
+  /** Põe o centro (cx, cy) do radar no centro da tela, no zoom dado (o pan segue limitado à arte). */
+  function vistaCentrada(view, radar, zoom, cx, cy) {
+    view.zoom = zoom;
+    view.panX = radar.width / 2 - cx * zoom;
+    view.panY = radar.height / 2 - cy * zoom;
+    limitaPan(view, radar);
+  }
+
   /* ---------------------------------------------------------------------
      Tamanho. Quem muda tamanho de canvas é a função única de reprojeção de
      cada página; as contas dela vivem aqui.
@@ -1707,6 +1733,8 @@ window.MapCore = (function () {
     applyView: applyView,
     aplicaZoom: aplicaZoom,
     limitaPan: limitaPan,
+    enquadramento: enquadramento,
+    vistaCentrada: vistaCentrada,
     caixaDoMapa: caixaDoMapa,
     tamanhoInterno: tamanhoInterno,
     agrupaPorQuadro: agrupaPorQuadro,

@@ -323,6 +323,25 @@
     document.getElementById("palco").scrollIntoView({ behavior: reduced || instante ? "auto" : "smooth", block: "start" });
   }
 
+  // Fase B+ (decisão 54): na Nuke a arte ocupa só o miolo do quadrado; a vista de cada round enquadra TUDO o que o round mostra
+  // (jogadores, granadas, áreas de smoke e molotov, dos dois andares, em todos os quadros), então ninguém sai do quadro e a vista não
+  // pula durante o replay. Trocar de round refaz o enquadramento; o zoom manual vale até lá.
+  var MAPAS_COM_ENQUADRAMENTO = { de_nuke: true };
+  function pontosDoRound(r) {
+    var pts = [], fogo = MapCore.RAIO_MOLOTOV_UNIDADES * RAD.scale_px_per_unit, fumaca = MapCore.RAIO_SMOKE_UNIDADES * RAD.scale_px_per_unit;
+    function ponto(x, y, raio) { if (x != null && y != null && isFinite(x) && isFinite(y)) pts.push([mx(x), my(y), raio]); }
+    r.players.forEach(function (p) { for (var i = 0; i < p.x.length; i++) ponto(p.x[i], p.y[i], 0); });
+    r.nades.forEach(function (n) { for (var i = 0; i < n.x.length; i++) ponto(n.x[i], n.y[i], 0); });
+    r.smokes.forEach(function (z) { ponto(z.x, z.y, fumaca); });
+    r.fires.forEach(function (z) { ponto(z.x, z.y, fogo); });
+    return pts;
+  }
+  function enquadraORound(r) {
+    if (!MAPAS_COM_ENQUADRAMENTO[RAD.map] || !window.MapAnnotations || !MapAnnotations.defineVista) return;
+    var e = MapCore.enquadramento(pontosDoRound(r), RAD);
+    MapAnnotations.defineVista(e.zoom, e.cx, e.cy);
+  }
+
   function selectRound(r) {
     cur = r;
     frame = 0;
@@ -330,6 +349,7 @@
     // Trocar de round troca o conjunto de desenhos: nada de rabisco de um
     // round vazando no outro.
     if (window.MapAnnotations && MapAnnotations.setRound) MapAnnotations.setRound(r.round);
+    enquadraORound(r);
     indexBlinds(r);
     setPlaying(false);
     // só os chips (a faixa também tem os separadores de meio-tempo)
