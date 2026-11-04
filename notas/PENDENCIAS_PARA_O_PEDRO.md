@@ -637,8 +637,11 @@ O texto original do cartão:
 
 ---
 
-## 25. IDEIA: o "Round N" do cabeçalho do palco dentro da faixa de rounds
+## 25. IDEIA: o "Round N" do cabeçalho do palco dentro da faixa de rounds -- AVALIADA, NÃO ENTRA POR ENQUANTO
 
 - **O que é:** levar o cabeçalho do round (55 px) para dentro da faixa grudada daria mais 55 px ao mapa (634 e 502 px a 1440 x 900 e
-  1366 x 768). Fora desta fase por ora (Pedro, 2026-11-04); só ideia.
+  1366 x 768; 391 px a 1366 x 657).
+- **Decisão do Pedro (2026-11-04):** avaliada e não entra por enquanto. Em partidas com 24 rounds ou mais o título não cabe na faixa,
+  e o resumo do round (quem venceu, motivo, duração) é útil onde está. O mapa fica em 336 px a 1366 x 657 (era 148), sem encolher os
+  chips (44 px, a regra do alvo de toque não muda) nem o respiro.
 - **Fora do computador:** nada.
