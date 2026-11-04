@@ -334,6 +334,8 @@
     r.nades.forEach(function (n) { for (var i = 0; i < n.x.length; i++) ponto(n.x[i], n.y[i], 0); });
     r.smokes.forEach(function (z) { ponto(z.x, z.y, fumaca); });
     r.fires.forEach(function (z) { ponto(z.x, z.y, fogo); });
+    r.pops.forEach(function (q) { ponto(q.x, q.y, 0); });                       // onde a granada detonou
+    r.events.forEach(function (e) { ponto(e.x, e.y, 0); ponto(e.ax, e.ay, 0); });   // kills, bomba: vítima e autor
     return pts;
   }
   function enquadraORound(r) {
@@ -349,7 +351,6 @@
     // Trocar de round troca o conjunto de desenhos: nada de rabisco de um
     // round vazando no outro.
     if (window.MapAnnotations && MapAnnotations.setRound) MapAnnotations.setRound(r.round);
-    enquadraORound(r);
     indexBlinds(r);
     setPlaying(false);
     // só os chips (a faixa também tem os separadores de meio-tempo)
@@ -365,6 +366,7 @@
     buildMarks();
     buildSquads();
     buildAutopsy();
+    enquadraORound(r);   // com o estado do round novo já montado: o redesenho de defineVista não usa o do anterior
     draw();
   }
 

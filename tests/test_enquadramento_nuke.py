@@ -70,6 +70,9 @@ def _pontos_do_round(r, radar, raio_smoke, raio_fogo):
         pts += [(mx(x), my(y), 0) for x, y in zip(p["x"], p["y"]) if x is not None and y is not None]
     for n in r["nades"]:
         pts += [(mx(x), my(y), 0) for x, y in zip(n["x"], n["y"]) if x is not None and y is not None]
+    pts += [(mx(q["x"]), my(q["y"]), 0) for q in r["pops"]]                    # onde a granada detonou
+    for e in r["events"]:                                                      # kills e bomba: vítima e autor
+        pts += [(mx(e[a]), my(e[b]), 0) for a, b in (("x", "y"), ("ax", "ay")) if e.get(a) is not None and e.get(b) is not None]
     pts += [(mx(z["x"]), my(z["y"]), raio_smoke) for z in r["smokes"]]
     pts += [(mx(z["x"]), my(z["y"]), raio_fogo) for z in r["fires"]]
     return pts
