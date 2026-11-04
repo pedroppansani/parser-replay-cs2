@@ -323,40 +323,24 @@
     document.getElementById("palco").scrollIntoView({ behavior: reduced || instante ? "auto" : "smooth", block: "start" });
   }
 
-  // Fase B+ (decisão 54): na Nuke a arte ocupa só o miolo do quadrado, e os dois andares se espalham de jeitos diferentes. Cada
-  // andar tem o seu quadro, calculado uma vez por round sobre tudo o que acontece NAQUELE andar (jogadores, granadas, áreas,
-  // detonações, kills e bomba, em todos os quadros do round); a vista não pula durante o replay, só muda quando o andar mostrado
-  // muda. Granada, área, detonação e kill não trazem andar no dado: valem o andar de quem as fez, no instante em que as fez.
-  // Jogador vivo do outro andar fora do quadro ganha uma marca na borda (ver marcasDeBorda). O zoom manual vale até trocar de round ou de andar.
+  // Fase B+ (decisão 54): na Nuke a arte ocupa só o miolo do quadrado, e cada andar ocupa uma parte diferente dele. A vista de cada andar
+  // enquadra a ÁREA do andar (o retângulo das âncoras dos nomes de lugar daquele andar, com a margem de MapCore.enquadramento), não
+  // os pontos do round: o zoom é fixo por andar, igual em todos os rounds, e nada pula durante o replay. A vista só muda ao trocar de
+  // round ou de andar (o zoom manual vale até lá). Jogador vivo do outro andar fora do quadro vira um triângulo na borda (marcasDeBorda).
   var MAPAS_COM_ENQUADRAMENTO = { de_nuke: true };
+  var ENQ_ZOOM_MAXIMO = 2.5;   // trava: acima disso o quadro mostra pouco contexto (o pedido do Pedro, 2026-11-04)
   var quadros = null, andarEnquadrado = -1;
-  function pontosDoRound(r, andar) {
-    var pts = [], fogo = MapCore.RAIO_MOLOTOV_UNIDADES * RAD.scale_px_per_unit, fumaca = MapCore.RAIO_SMOKE_UNIDADES * RAD.scale_px_per_unit;
-    function ponto(x, y, raio) { if (x != null && y != null && isFinite(x) && isFinite(y)) pts.push([mx(x), my(y), raio]); }
-    function andarDe(nome, f) {
-      for (var i = 0; i < r.players.length; i++) {
-        var p = r.players[i];
-        if (p.name === nome) return p.lv ? p.lv[Math.max(0, Math.min(p.lv.length - 1, Math.floor(f)))] : 0;
-      }
-      return null;
-    }
-    function dele(nome, f) { return andarDe(nome, f) === andar; }
-    r.players.forEach(function (p) { for (var i = 0; i < p.x.length; i++) if ((p.lv ? p.lv[i] : 0) === andar) ponto(p.x[i], p.y[i], 0); });
-    r.nades.forEach(function (n) { if (dele(n.by, n.f0)) for (var i = 0; i < n.x.length; i++) ponto(n.x[i], n.y[i], 0); });
-    r.smokes.forEach(function (z) { if (dele(z.by, z.f0)) ponto(z.x, z.y, fumaca); });
-    r.fires.forEach(function (z) { if (dele(z.by, z.f0)) ponto(z.x, z.y, fogo); });
-    r.pops.forEach(function (q) { if (dele(q.by, q.f)) ponto(q.x, q.y, 0); });
-    r.events.forEach(function (e) {      // kill: a vítima onde morreu, o autor onde atirou; bomba: quem plantou ou desarmou
-      var vitima = e.victim || e.attacker, autor = e.attacker || e.victim;
-      if (dele(vitima, e.f)) ponto(e.x, e.y, 0);
-      if (dele(autor, e.f)) ponto(e.ax, e.ay, 0);
-    });
-    return pts;
+  function quadroDaArea(andar) {
+    var lista = RAD.lugares && RAD.lugares.rotulos && RAD.lugares.rotulos[andar], pts = [];
+    (lista || []).forEach(function (par) { par[1].forEach(function (q) { pts.push([q[0], q[1], 0]); }); });
+    var e = MapCore.enquadramento(pts, RAD);
+    e.zoom = Math.min(e.zoom, ENQ_ZOOM_MAXIMO);
+    return e;
   }
-  function calculaQuadros(r) {
-    quadros = null; andarEnquadrado = -1;
-    if (!MAPAS_COM_ENQUADRAMENTO[RAD.map] || LEVELS.length < 2) return;
-    quadros = LEVELS.map(function (_, andar) { return MapCore.enquadramento(pontosDoRound(r, andar), RAD); });
+  function calculaQuadros() {
+    andarEnquadrado = -1;                              // trocar de round devolve a vista ao quadro do andar
+    if (quadros || !MAPAS_COM_ENQUADRAMENTO[RAD.map] || LEVELS.length < 2) return;
+    quadros = LEVELS.map(function (_, andar) { return quadroDaArea(andar); });
   }
   // true se mudou a vista (e o redesenho já foi feito por ela)
   function aplicaQuadro(andar) {
@@ -366,29 +350,49 @@
     return MapAnnotations.defineVista(e.zoom, e.cx, e.cy);
   }
 
-  // Jogador vivo do outro andar que o quadro deixou fora da tela: triângulo na borda, com a cor do lado, apontando para onde ele está
+  // Jogador vivo do outro andar que o quadro deixou fora da tela: só um triângulo na borda, com a cor do lado, apontando para onde ele
+  // está (o nome já está nas colunas). Dois perto um do outro se afastam ao longo da borda, sem se sobrepor.
   var marcasDeBorda = [];
   window.__marcasDeBorda = function () { return marcasDeBorda; };   // gancho de teste (como __medicaoRotulos)
+  var MARCA_LADO = 6, MARCA_FOLGA = 12;   // px de tela: meia largura do triângulo e distância da borda
   function desenhaMarcasDeBorda(ctx, pendentes) {
     marcasDeBorda = [];
     if (!pendentes.length) return;
-    var m = ctx.getTransform(), W = cv.width, H = cv.height, k = W / (cv.getBoundingClientRect().width || W), s = 6 * k, pad = 9 * k;
+    var W = cv.width, H = cv.height, k = W / (cv.getBoundingClientRect().width || W);
+    var s = MARCA_LADO * k, pad = MARCA_FOLGA * k, w = W - 2 * pad, h = H - 2 * pad, per = 2 * (w + h), gap = 2.6 * s;
+    // posição ao longo do retângulo recuado (sentido horário a partir do canto de cima à esquerda) e o caminho de volta
+    function aoLongo(px, py) {
+      var dx = px - W / 2, dy = py - H / 2, t = Math.min((W / 2 - pad) / Math.abs(dx || 1e-9), (H / 2 - pad) / Math.abs(dy || 1e-9));
+      var x = W / 2 + dx * t - pad, y = H / 2 + dy * t - pad;
+      if (y <= 1e-6) return x;
+      if (x >= w - 1e-6) return w + y;
+      if (y >= h - 1e-6) return w + h + (w - x);
+      return 2 * w + h + (h - y);
+    }
+    function ponto(d) {
+      d = ((d % per) + per) % per;
+      if (d <= w) return [pad + d, pad];
+      if (d <= w + h) return [pad + w, pad + d - w];
+      if (d <= 2 * w + h) return [pad + w - (d - w - h), pad + h];
+      return [pad, pad + h - (d - 2 * w - h)];
+    }
+    var fora = [];
+    pendentes.forEach(function (q) { if (q.sx < 0 || q.sx > W || q.sy < 0 || q.sy > H) fora.push({ q: q, d: aoLongo(q.sx, q.sy) }); });
+    fora.sort(function (a, b) { return a.d - b.d; });
+    for (var i = 1; i < fora.length; i++) if (fora[i].d < fora[i - 1].d + gap) fora[i].d = fora[i - 1].d + gap;
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    pendentes.forEach(function (q) {
-      var sx = m.a * q.X + m.c * q.Y + m.e, sy = m.b * q.X + m.d * q.Y + m.f;
-      if (sx >= 0 && sx <= W && sy >= 0 && sy <= H) return;
-      var dx = sx - W / 2, dy = sy - H / 2, t = Math.min((W / 2 - pad) / Math.abs(dx || 1e-9), (H / 2 - pad) / Math.abs(dy || 1e-9));
-      var bx = W / 2 + dx * t, by = H / 2 + dy * t, a = Math.atan2(dy, dx);
+    fora.forEach(function (o) {
+      var q = o.q, p = ponto(o.d), a = Math.atan2(q.sy - H / 2, q.sx - W / 2);
       ctx.beginPath();
-      ctx.moveTo(bx + Math.cos(a) * s, by + Math.sin(a) * s);
-      ctx.lineTo(bx + Math.cos(a + 2.4) * s, by + Math.sin(a + 2.4) * s);
-      ctx.lineTo(bx + Math.cos(a - 2.4) * s, by + Math.sin(a - 2.4) * s);
+      ctx.moveTo(p[0] + Math.cos(a) * s, p[1] + Math.sin(a) * s);
+      ctx.lineTo(p[0] + Math.cos(a + 2.4) * s, p[1] + Math.sin(a + 2.4) * s);
+      ctx.lineTo(p[0] + Math.cos(a - 2.4) * s, p[1] + Math.sin(a - 2.4) * s);
       ctx.closePath();
       ctx.fillStyle = q.cor; ctx.globalAlpha = 0.95; ctx.fill();
       ctx.strokeStyle = "rgba(0,0,0,.65)"; ctx.lineWidth = 1.2 * k; ctx.stroke();
       ctx.globalAlpha = 1;
-      marcasDeBorda.push({ nome: q.nome, x: bx / k, y: by / k, lado: q.lado });
+      marcasDeBorda.push({ nome: q.nome, x: p[0] / k, y: p[1] / k, lado: q.lado });
     });
     ctx.restore();
   }
@@ -415,7 +419,7 @@
     buildMarks();
     buildSquads();
     buildAutopsy();
-    calculaQuadros(r);   // o draw() abaixo aplica o quadro do andar mostrado (e, ao mudar a vista, redesenha por ela)
+    calculaQuadros();   // o draw() abaixo aplica o quadro do andar mostrado (e, ao mudar a vista, redesenha por ela)
     draw();
   }
 
@@ -1018,14 +1022,16 @@
       // Morto, em outro andar ou vivo: o desenho de cada caso está em
       // MapCore.desenhaJogador (a prancheta usa o mesmo).
       var pLv = p.lv ? p.lv[i0] : 0;
-      if (alive && pLv !== lvNow) foraDoAndar.push({ X: X, Y: Y, cor: color, nome: p.name, lado: p.side });
+      var tm = ctx.getTransform(), sx = tm.a * X + tm.c * Y + tm.e, sy = tm.b * X + tm.d * Y + tm.f;
+      var marcado = alive && pLv !== lvNow && (sx < 0 || sx > cv.width || sy < 0 || sy > cv.height);   // fora do quadro: só o triângulo
+      if (marcado) foraDoAndar.push({ sx: sx, sy: sy, cor: color, nome: p.name, lado: p.side });
       MapCore.desenhaJogador(ctx, X, Y, {
         cor: color,
         estado: !alive ? "morto" : (pLv !== lvNow ? "outro_andar" : "vivo"),
         acima: pLv > lvNow,
         cego: alive && pLv === lvNow && blindLeft(p.name, i0) > 0,
         hp: p.hp[i0],
-        nome: p.name,
+        nome: marcado ? null : p.name,
         yaw: yaw
       });
     });
