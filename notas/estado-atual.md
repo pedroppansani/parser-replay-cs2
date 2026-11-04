@@ -109,8 +109,12 @@ andar na prancheta, no design do "Reescrever"); (c) ~~o cartão 15~~ (feito na F
 nunca fica atrás da navbar, das abas nem da faixa (`v2.js`, teste com Shift+Tab). Referências do canvas do PC regravadas (os 3 quadros do
 Replay, 520 para 640 px; prancheta idêntica). Suíte do resultado do merge: 1.740 passaram, 71 pulados, 0 falharam; impressão dos números
 idêntica (11.755 linhas). Pendências anotadas: cartões 23 (medidas fixas em px), 24 (mapa sem radar, nenhum no corpus) e 25 (ideia do "Round"
-dentro da faixa: avaliada e fora). **Próxima fase: B+ (enquadramento da Nuke)**, com portão: o enquadramento nunca esconde jogador vivo
-nem granada (se alguém sair do quadro, o zoom abre até caber todos); o "chiefkeef" cortado na borda tem de sumir.
+dentro da faixa: avaliada e fora). **Fase B+ FEITA (2026-11-04, no PC), merge `d4eab53d`, decisão 54 (branch `fase-b-mais`):** na Nuke, um quadro por andar, calculado uma vez
+por round sobre tudo o que acontece naquele andar (jogadores, granadas, áreas, detonações, kills, bomba); a troca de andar passa para o
+quadro daquele andar; jogador vivo do outro andar fora do quadro ganha uma marca na borda. Zoom de cima 1,24 nos 17 rounds; o de baixo
+de 1 a 5,7 (primeira versão, um quadro só: 1,24 nos dois). O "chiefkeef" não fica mais cortado. Mirage e as outras partidas não mudam.
+Suíte: 1.746 passaram, 71 pulados, 0 falharam; impressão dos números idêntica (11.755 linhas). Pendência 26: reclicar o chip reenquadra
+e a exportação sai com o que se vê.
 
 **Fila que falta, nesta ordem:** (1) ~~v2-5b~~, ~~v2-6~~, ~~cartão 17~~ (`165f0d00`), ~~v2-7~~ (`73fc57d0`) e ~~cartão 20~~
 (`24eea71e`): feitos. (2) ~~Cartão 9~~ (a refatoração, decisão 50): FECHADO em 2026-10-29 nos passos 0 a 3 (`9be9db37`, `eb704893`, `2641c91b`, `00f49756`; o passo 3 provado no PC do Pedro: site, impressão, quadros e capturas iguais, suíte com o `data/interim` 1.651 passaram, 71 pulados, 0 falharam). A guarda do sha256 saiu; o passo 4 (a função de 88 KB que monta HTML) fica para depois. Agora: **Fase T** (tema claro e escuro na home; escolhas do Pedro: agentes no cartão claro no escuro, prancheta no violeta nos dois temas) e **Fase M** (mapa; escolha: variação A mais o nome em itálico das peças do outro andar), cada uma numa branch, com portão de capturas antes do merge; e, do ci-optimizer, só os `timeout-minutes`. (3) No PC do Pedro: cartão 6 (histograma da força da
@@ -229,6 +233,7 @@ foram feitos na v2-7; o `--f-cond` ficou (trocar mexe na fonte dos símbolos no 
 | `fix-tickrate-resto`: tickrate lido da demo em todo lugar, sem mudar nenhum número (sha256 dos dados igual ao da `main`); contagem de testes 1.678 | `47c0f840` |
 | Fase M: radar nítido, nomes de lugar, bombsites e peça do outro andar (decisão 52; referências do canvas do PC) | `442bd272` |
 | Fase B: modo palco do Replay, mapa maior (cartão 15, decisão 53) | `74047972` |
+| Fase B+: enquadramento da Nuke, um quadro por andar (decisão 54) | `d4eab53d` |
 
 ## Em andamento
 
