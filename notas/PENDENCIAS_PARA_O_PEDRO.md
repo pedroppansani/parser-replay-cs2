@@ -654,3 +654,20 @@ O texto original do cartão:
   depois do "100%"; (b) desenhos e nomes de lugar fora do quadro ficam escondidos até o "100%", e a exportação de imagem sai com o corte.
 - **Decisão do Pedro (2026-11-04):** ficam como estão. Se um dia incomodar: um botão "Enquadrar" para (a); exportar o mapa inteiro para (b).
 - **Fora do computador:** nada.
+
+---
+
+## 27. O nome do evento sem acento ("IEM Krakw 2026")
+
+- **O que é:** o site mostra "IEM Krakw 2026" (sem o "ó") na landing, nas migalhas e no título, porque o nome do evento vem da pasta da demo.
+- **Conserto, quando for feito:** uma tabela pequena de nomes de evento, versionada e com teste (nome da pasta -> nome de exibição), e não uma
+  exceção espalhada no código. Aberto em 2026-11-04 (pedido do Pedro, para depois).
+- **Fora do computador:** nada.
+
+---
+
+## 28. Duas bases de tempo no Replay (decorrido x relógio do round)
+
+- **O que é:** o bloco "Por que perdeu" usa o tempo decorrido (0:12), e o resto do Replay usa o relógio do round (1:42).
+- **Proposta:** unificar no relógio do round. Aberto em 2026-11-04 (pedido do Pedro, para depois); relevante para o Reescrever, que mostra os dois lado a lado.
+- **Fora do computador:** nada.
