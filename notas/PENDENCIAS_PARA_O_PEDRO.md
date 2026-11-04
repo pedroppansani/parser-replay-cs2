@@ -645,3 +645,12 @@ O texto original do cartão:
   e o resumo do round (quem venceu, motivo, duração) é útil onde está. O mapa fica em 336 px a 1366 x 657 (era 148), sem encolher os
   chips (44 px, a regra do alvo de toque não muda) nem o respiro.
 - **Fora do computador:** nada.
+
+---
+
+## 26. Enquadramento da Nuke: reclicar o chip reenquadra, e a exportação sai com o que se vê
+
+- **O que é:** (a) clicar de novo no chip do round aberto apaga o zoom manual e reenquadra; é também o único caminho de volta ao quadro
+  depois do "100%"; (b) desenhos e nomes de lugar fora do quadro ficam escondidos até o "100%", e a exportação de imagem sai com o corte.
+- **Decisão do Pedro (2026-11-04):** ficam como estão. Se um dia incomodar: um botão "Enquadrar" para (a); exportar o mapa inteiro para (b).
+- **Fora do computador:** nada.
