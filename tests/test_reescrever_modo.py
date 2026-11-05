@@ -218,3 +218,29 @@ def test_a_peca_da_sua_versao_tem_contraste_de_3_para_1_contra_o_radar_nos_mapas
             assert r and r["pior"] >= MINIMO and r["abaixo"] == 0, (mapa, r)
     finally:
         ctx.close()
+
+
+def test_no_modo_as_setas_o_esc_do_popover_e_a_troca_de_aba_se_comportam(navegador, pagina):
+    ctx, pg, _ = _abre(navegador, pagina, 1440, 900)
+    try:
+        rot_ct, rot_t = pg.get_attribute("#squad-ct", "aria-label"), pg.get_attribute("#squad-t", "aria-label")
+        pg.click("#rw-entrar")
+        assert pg.get_attribute("#squad-ct", "aria-label") == "Peças" and pg.get_attribute("#squad-t", "aria-label") == "Reescrever este round"
+        valor = pg.input_value("#scrub")
+        pg.evaluate("document.activeElement.blur()")
+        for tecla in ("ArrowRight", "ArrowLeft", "]", "["):
+            pg.keyboard.press(tecla)
+        assert pg.input_value("#scrub") == valor                                          # o real não anda por teclado
+        pg.click("#b-atalhos")                                                            # o popover "?" aberto: o Esc fecha ele, não o modo
+        pg.keyboard.press("Escape")
+        assert _estado(pg)["ativo"]
+        pg.keyboard.press("Escape")
+        assert not _estado(pg)["ativo"]
+        assert pg.get_attribute("#squad-ct", "aria-label") == rot_ct and pg.get_attribute("#squad-t", "aria-label") == rot_t
+        pg.click("#rw-entrar")
+        pg.locator('[data-tab="insights"]').first.click()                                 # outra aba: sai do modo
+        assert not _estado(pg)["ativo"]
+        pg.locator('[data-tab="replay"]').first.click()
+        assert pg.get_attribute("#palco", "data-tema") == "escuro" and pg.locator("#squad-ct .plr").count() == 5
+    finally:
+        ctx.close()

@@ -29,3 +29,12 @@
 - **Fica para as próximas fases:** "Levar o X até" (teclado) e as setas na peça (R6), o fantasma e "O que mudou" (R3), trocar a granada (R4), as portas do "Por que
   perdeu" e do Perfil (R5), o celular com o alternador Real/Sua versão (R6). O botão "Abrir round na prancheta" continua na barra até o Pedro dizer que sai (o
   design o renomeia para "Reescrever este round"; manter os dois não quebra nenhum teste existente).
+- **Teclado e saída (code-review do R2):** no modo, setas, espaço, `[` `]` e os cliques no log e nas marcas não mexem no real (que está parado no instante);
+  Esc sai, menos quando ele fecha o popover "?" (o Esc de outro dono não descarta as edições) ou com o foco num campo; trocar de round ou de aba também sai;
+  as duas colunas trocam o `aria-label` ("Peças" e "Reescrever este round") e o devolvem ao sair. A dica não promete mover pela lista: o teclado é do R6.
+- **O que o Assistir ganha (por desenho do Iriun):** o ▶ passa a morar numa caixa de largura fixa (244 px; 136 px no celular) que reserva o lugar do
+  "Reescrever daqui", então a linha do tempo fica cerca de 200 px mais curta no computador (90 px no celular) em TODOS os estados, e o cabeçalho do palco ganha o
+  botão (o resumo desce para a linha de baixo no celular). Fora disso o Assistir não muda.
+- **Limites conhecidos:** abaixo de 1024 x 600 as colunas não têm `contain: size` (o mapa não se mexe, mas o que está abaixo pode descer); no celular o mapa tem
+  `touch-action: none` enquanto o modo está ligado (arrastar a peça não rola a página, e o resto do mapa também não); o nome do jogador é a chave da edição.
+- **Teste existente alterado (precisa do OK do Pedro):** `test_replay_limpo_browser.py` lista os botões à vista da barra; entrou "Reescrever este round" (`anot-reescrever`).

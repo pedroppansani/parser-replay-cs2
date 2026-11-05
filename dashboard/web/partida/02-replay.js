@@ -258,6 +258,7 @@
   }
 
   function seekToEvent(f) {
+    if (reescrever.ativo) return;   // no modo Reescrever o real fica parado no instante
     // O preroll pode encostar no começo do round: aí ele encurta, e o replay
     // ainda começa no quadro 0. Isso NÃO é clamp de erro — o quadro de destino
     // já foi validado em frameDoTick, que devolve null quando o tick cai fora.
@@ -1058,7 +1059,7 @@
     });
 
     updateSquads();
-    if (reescrever.aoDesenhar) reescrever.aoDesenhar();
+    if (reescrever.aoQuadro) reescrever.aoQuadro();
   }
 
   function setPlaying(v) {
@@ -1067,7 +1068,7 @@
     document.getElementById("play").textContent = v ? "❚❚" : "▶";
     document.getElementById("play").setAttribute("aria-label", v ? "Pausar" : "Reproduzir");
     if (v) { lastT = performance.now(); requestAnimationFrame(tick); }
-    if (reescrever.aoDesenhar) reescrever.aoDesenhar();   // o "Reescrever daqui" só aparece com o Replay parado
+    if (reescrever.aoQuadro) reescrever.aoQuadro();   // o "Reescrever daqui" só aparece com o Replay parado
   }
 
   // Avança em tempo contínuo e redesenha a cada quadro da tela: o replay foi
@@ -1100,6 +1101,7 @@
   }
 
   function togglePlay() {
+    if (reescrever.ativo) return;
     if (pos >= cur.frames - 1) { pos = 0; document.getElementById("scrub").value = 0; }
     setPlaying(!playing);
   }
@@ -1132,6 +1134,7 @@
     // atalho de replay não faz sentido com a aba de replay escondida
     if (document.querySelector("[data-panel='replay']").hidden) return;
 
+    if (reescrever.ativo) return;   // setas, espaço e [ ] não mexem no real parado do modo Reescrever
     var step = e.shiftKey ? Math.round(R.sample_hz) : 1;  // Shift = 1 segundo
     if (e.key === " " || e.key === "Spacebar") { e.preventDefault(); togglePlay(); }
     else if (e.key === "ArrowRight") { e.preventDefault(); stepFrame(step); }

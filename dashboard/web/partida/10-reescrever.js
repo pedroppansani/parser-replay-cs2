@@ -19,6 +19,7 @@
     var pecas = [];           // {p, vivo, morreuEm}
     var arrasto = null;
     var t0 = 0;
+    var rotulos = null;       // os aria-label dos elencos, de volta ao sair
 
     reescrever.escala = 1.25;
     reescrever.sel = null;
@@ -209,7 +210,7 @@
     trEsq.appendChild(daqui);
 
     // "Reescrever daqui · 0:55": só com o Replay parado e fora do modo; o espaço fica reservado (visibility), então nada se mexe
-    reescrever.aoDesenhar = function () {
+    reescrever.aoQuadro = function () {
       var vivo = !reescrever.ativo && !playing;
       daqui.style.visibility = vivo ? "visible" : "hidden";
       daqui.disabled = !vivo;
@@ -232,6 +233,8 @@
       palco.setAttribute("data-tema", "violeta");
       hosts.ct.setAttribute("data-tema", "violeta"); hosts.t.setAttribute("data-tema", "violeta");
       stage.classList.add("reescrevendo");
+      rotulos = { ct: hosts.ct.getAttribute("aria-label"), t: hosts.t.getAttribute("aria-label") };
+      hosts.ct.setAttribute("aria-label", TX.banco); hosts.t.setAttribute("aria-label", TX.titulo);   // as colunas deixam de ser os elencos
       playBtn.disabled = true; playBtn.title = TX.toca_desligado;
       scrubEl.disabled = true; speedBtn.disabled = true;
       montaBanco(); montaPainel(); montaAcoes();
@@ -245,14 +248,23 @@
       palco.setAttribute("data-tema", "escuro");
       hosts.ct.removeAttribute("data-tema"); hosts.t.removeAttribute("data-tema");
       stage.classList.remove("reescrevendo");
+      if (rotulos) { hosts.ct.setAttribute("aria-label", rotulos.ct); hosts.t.setAttribute("aria-label", rotulos.t); rotulos = null; }
       playBtn.disabled = false; playBtn.removeAttribute("title");
       scrubEl.disabled = false; speedBtn.disabled = false;
       buildSquads(); montaAcoes();
       draw();
       if (!semFoco) { var e = document.getElementById("rw-entrar"); if (e) e.focus({ preventScroll: true }); }
     };
+    // o Esc que fecha o "?" dos atalhos (ou outra caixa aberta) não deve descartar as edições: a captura vê o "?" ANTES de ele se fechar
+    var escJaTinhaDono = false;
     document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && reescrever.ativo) { e.preventDefault(); reescrever.sai(); }
+      var pop = document.getElementById("atalhos");
+      escJaTinhaDono = e.key === "Escape" && !!(pop && !pop.hidden);
+    }, true);
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape" || !reescrever.ativo || e.defaultPrevented || escJaTinhaDono) return;
+      if (document.querySelector("[data-panel='replay']").hidden || (e.target.closest && e.target.closest("input, select, textarea"))) return;
+      e.preventDefault(); reescrever.sai();
     });
 
     // o estado para os testes (como `__medicaoRotulos` e `__marcasDeBorda`): quem está editável e onde cada peça está
@@ -268,5 +280,5 @@
     };
 
     montaAcoes();
-    reescrever.aoDesenhar();
+    reescrever.aoQuadro();
   })();

@@ -19,8 +19,8 @@ TEXTOS_DO_MODO = {
     "pilula": "Reescrever",
     "titulo": "Reescrever este round",
     "comeca_em": "Sua versão começa em {relogio}",
-    "dica": ("Arraste uma peça, ou escolha-a na lista, até onde ela iria. As peças mortas antes deste instante ficam onde morreram. "
-             "Tocar a sua versão chega na próxima fase."),
+    "dica": ("Arraste uma peça até onde ela iria; a lista à esquerda a seleciona. As peças mortas antes deste instante ficam onde "
+             "morreram. Mover pelo teclado e tocar a sua versão chegam nas próximas fases."),
     "voltar": "Voltar ao real",
     "banco": "Peças",
     "editado": "editado",
