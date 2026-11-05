@@ -198,3 +198,9 @@ def para_o_replay(tabela: dict | None) -> dict | None:
     """O replay só desenha os nomes: nomes, textos e âncoras, sem a grade."""
     return None if not tabela else {"nomes": tabela["nomes"], "textos": [texto_do_lugar(n) for n in tabela["nomes"]],
                                     "rotulos": rotulos(tabela)}
+
+
+def grade_do_replay(tabela: dict) -> dict:
+    """A grade (célula e andares) para a página da partida achar o nome do lugar de um ponto: o destino de uma granada trocada no Reescrever (R4).
+    Espelho de `lugar` em `11-reescrever-granada.js`."""
+    return {"lado": tabela["lado"], "andares": tabela["andares"]}
