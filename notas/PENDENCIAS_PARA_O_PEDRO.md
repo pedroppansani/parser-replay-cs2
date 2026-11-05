@@ -671,3 +671,13 @@ O texto original do cartão:
 - **O que é:** o bloco "Por que perdeu" usa o tempo decorrido (0:12), e o resto do Replay usa o relógio do round (1:42).
 - **Proposta:** unificar no relógio do round. Aberto em 2026-11-04 (pedido do Pedro, para depois); relevante para o Reescrever, que mostra os dois lado a lado.
 - **Fora do computador:** nada.
+
+---
+
+## 29. Molotovs da biblioteca sem voo (148) e sem efeito (162)
+
+- **O que é:** na biblioteca de arremessos (decisão 55), 148 molotovs de 5.694 ficam sem `voo_s` e 162 sem `efeito_s`: o casamento com o fogo da
+  demo (`infernos`, por quem lançou, round e o primeiro fogo depois de soltar) não achou um fogo, ou o achado voou mais de 15 s. Ninguém investigou por quê
+  (suspeita: molotov apagado por smoke antes de queimar, ou fogo que a demo não registrou).
+- **Efeito hoje:** nenhum; o R4 só usa arremesso com voo conhecido. Investigar depois, sem bloquear nada. Aberto em 2026-11-04.
+- **Fora do computador:** nada.
