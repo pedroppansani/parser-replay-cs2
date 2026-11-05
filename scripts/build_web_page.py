@@ -81,7 +81,7 @@ def com_os_nomes_dos_lados(payload_texto: str, cabecalho: dict | None) -> str:
     """
     if not cabecalho:
         return payload_texto
-    import re
+    from leitura.narrativa import com_os_nomes_dos_times
     dados = json.loads(payload_texto)
     nomes = {k: v["nome"] for k, v in cabecalho["lados"].items()}
     narrativa = dados.get("narrative")
@@ -89,7 +89,7 @@ def com_os_nomes_dos_lados(payload_texto: str, cabecalho: dict | None) -> str:
         return payload_texto
     for chave, valor in narrativa.items():
         if isinstance(valor, str):
-            narrativa[chave] = re.sub(r"(?<!\w)Time ([AB])(?!\w)", lambda m: nomes[m.group(1)], valor)
+            narrativa[chave] = com_os_nomes_dos_times(valor, nomes)
     return json.dumps(dados, ensure_ascii=False, separators=(",", ":"))
 
 
@@ -310,7 +310,7 @@ def build_html(match_id: str, site: dict | None = None, base: Path | None = None
     annotations_css = (TEMPLATE.parent / "annotations.css").read_text(encoding="utf-8")
 
     map_name = json.loads((base / "match_meta.json").read_text(encoding="utf-8"))["map_name"]
-    # Botão "Criar tática" e o link Prancheta da navbar: só quando o mapa desta partida tem prancheta. O link
+    # Botão "Criar tática": só quando o mapa desta partida tem prancheta (a prancheta saiu da navbar, decisão 56). O link
     # é relativo e funciona igual em dashboard/web/ e em docs/, que têm as duas páginas lado a lado.
     from scripts.build_tactics_page import arquivo_da_pagina, mapas_disponiveis
     prancheta = arquivo_da_pagina(map_name) if map_name in mapas_disponiveis() else None
@@ -318,7 +318,7 @@ def build_html(match_id: str, site: dict | None = None, base: Path | None = None
     html = (
         le_fonte(TEMPLATE)   # o template com as partes incluídas (decisão 50)
         # a navbar do site e o comportamento comum da v2 (decisão 48) entram antes do dado
-        .replace("<!--__TOPO__-->", topo_do_site("partida", prancheta, REPO))
+        .replace("<!--__TOPO__-->", topo_do_site("partida", REPO))
         .replace("/*__V2_JS__*/", v2_js())
         .replace("/*__DATA__*/", payload)
         .replace("/*__REPLAY__*/", replay)

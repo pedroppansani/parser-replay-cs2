@@ -681,3 +681,32 @@ O texto original do cartão:
   (suspeita: molotov apagado por smoke antes de queimar, ou fogo que a demo não registrou).
 - **Efeito hoje:** nenhum; o R4 só usa arremesso com voo conhecido. Investigar depois, sem bloquear nada. Aberto em 2026-11-04.
 - **Fora do computador:** nada.
+
+---
+
+## 30. O aceite de contraste e alvos falha no Replay da match_02 e nas pranchetas (antigo, igual na main)
+
+- **O que é:** `py -3.12 -m scripts.design.aceite` (rodado em 2026-11-05 na main e na branch do R1, nos temas claro e escuro: as falhas são IGUAIS, então
+  não vêm do R1). Em `match_02.html` (todas as abas) e nas pranchetas de Mirage e Nuke:
+  - **A3, texto abaixo de 4,5:1:** a aba ativa (`Replay`, `Resumo`, `Placar`, `Jogadores`, `Perfil` ou `Estilos`, conforme a aba aberta) com 1,09:1 no claro e
+    1,20:1 no escuro; nas pranchetas, `Reproduzir` (1,04:1) e `Jogadores` (1,15:1, o botão da navbar).
+  - **A4, borda de controle abaixo de 3:1:** `abas-mais` (1,26:1 claro, 1,34:1 escuro, o botão de rolar as abas); `lugares-botao` (1,00:1, no Replay);
+    `anot-b principal` (1,00:1, o botão "Reproduzir" das pranchetas).
+  - **A5, alvo abaixo de 44 px:** `lugares-botao` "Lugares" com 56 x 22 px, só na aba Replay.
+- **Suspeita (não confirmada):** a aba ativa é uma pílula escura com texto claro e o "Reproduzir" tem fundo em degradê: o método mede o texto contra o fundo
+  geométrico e pode ler o fundo errado (falso positivo). O botão "Lugares" de 22 px de altura é real e fere a regra dos 44 px da v2.
+- **Fora do computador:** nada. Aberto em 2026-11-05 (pedido do Pedro).
+
+---
+
+## 31. CLS de 0,0054 que apareceu uma vez na landing a 1440 px
+
+- **O que é:** na primeira medição do R1 (`scripts.design.mede_lcp_cls`, Fast 4G, CPU 4x), `index.html?agente=tr` a 1440 px deu CLS 0,0054 nas 5 medidas.
+  Repetida, a mesma página deu 0,0000 nas três medições seguintes (duas rodadas completas e uma isolada), a 375 e a 1440 px, nos temas claro e escuro. O
+  valor idêntico nas 5 medidas da primeira rodada indica um deslocamento determinístico, e não ruído.
+- **O que já se sabe:** (a) numa cópia da landing sem o bloco "Monte uma tática do zero" a mediana foi 0,0000, mas o pior caso também foi 0,0054, então o bloco não é
+  a causa única; (b) fora do `file://` não consegui reproduzir (um script com observador de `layout-shift` e as mesmas condições de rede deu 0); (c) o
+  deslocamento aparece como 0,0054 sempre com o mesmo valor, o que lembra uma troca de fonte ou o filtro da grade escondendo cards depois de carregar.
+- **Próximo passo:** repetir a medição várias vezes e gravar as fontes do `layout-shift` (elemento e retângulos) no relatório da própria `mede_lcp_cls`.
+  Meta do Pedro: CLS 0. Aberto em 2026-11-05.
+- **Fora do computador:** nada.

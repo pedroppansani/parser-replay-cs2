@@ -14,7 +14,8 @@ from tests.test_tactics_browser import (abre, arrasta_do_banco, contexto, intern
 def test_cabecalho_com_topo_do_site_e_o_mapa_em_dois_grupos(contexto, pagina):
     pg = abre(contexto, pagina)
     try:
-        assert pg.get_attribute('.site-nav a[aria-current="page"]', "href").startswith("prancheta_")
+        assert pg.eval_on_selector_all(".site-nav a", "as => as.map(a => a.textContent)") == ["Partidas", "Jogadores", "Reescrever"]  # a prancheta saiu da navbar (decisão 56)
+        assert pg.locator('.site-nav a[aria-current="page"]').count() == 0
         grupos = pg.eval_on_selector_all("#pr-mapa-sel optgroup", "gs => gs.map(g => [g.label, g.children.length])")
         assert [g[0] for g in grupos] == ["Com partidas no corpus", "Sem partidas no corpus"]
         sem = pg.eval_on_selector_all('#pr-mapa-sel optgroup[label="Sem partidas no corpus"] option', "os => os.map(o => o.textContent)")

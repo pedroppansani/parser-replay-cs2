@@ -53,6 +53,10 @@ def _paginas() -> dict[str, str]:
                                      [{"mapa": p["map"], "file": f"prancheta_{p['map']}.html", "label": p["map"]} for p in partidas[:1]],
                                      numeros=numeros, imagem="replay.png")
     out["jogadores"] = jogadores()
+    if partidas:   # a escolha do Reescrever (R1)
+        from scripts.build_reescrever import build_html as reescrever
+        from scripts.build_site import indice_de_sugeridos
+        out["reescrever"] = reescrever(partidas, indice_de_sugeridos(partidas))
     return out
 
 
@@ -142,7 +146,7 @@ def _sem_violacao(pg, consoles, erros, nome):
 
 def test_a_prancheta_a_partida_e_a_landing_abrem_em_file_sem_violacao_de_csp(contexto, paginas, tmp_path):
     destino = {"prancheta": ("[role=tabpanel]", "#pr-mapa"), "partida": ("[role=tab][data-tab]", "#play"),
-               "landing": ("#partidas", None), "jogadores": ("body", None)}
+               "landing": ("#partidas", None), "jogadores": ("body", None), "reescrever": ("#sugeridos", None)}
     visitadas = []
     for nome, html in paginas.items():
         arq = tmp_path / f"{nome}.html"

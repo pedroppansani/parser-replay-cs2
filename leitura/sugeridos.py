@@ -9,7 +9,7 @@ já foi calculado (nada novo é medido), os rounds que merecem ser reescritos e 
 - `erro`: os erros do Perfil de tipo VALIDADO (`TIPOS_DE_ERRO_VALIDADOS`, decisão 46), no máximo `MAX_ERROS`, os de maior perda de
   chance de vitória (`dwpa`) primeiro. Tipo não validado nunca entra.
 
-O instante (`tick`) e o relógio do round (`relogio`, o mesmo que o Replay mostra) vão junto, para o Reescrever abrir naquele instante.
+O instante (`tick`; `t` em segundos desde o fim do freeze, o do endereço `#replay?round=&t=`) e o relógio do round (`relogio`, o mesmo que o Replay mostra) vão junto, para o Reescrever abrir naquele instante.
 """
 from __future__ import annotations
 
@@ -41,7 +41,7 @@ def sugeridos_da_partida(decisivo: dict | None, frase_decisiva: str | None, brea
     saida: list[dict] = []
     if decisivo and decisivo.get("round") is not None:
         saida.append({"round": int(decisivo["round"]), "motivo": "decisivo", "texto": frase_decisiva or "", "jogador": None,
-                      "tick": None, "relogio": None, "tipo": None})
+                      "tick": None, "t": None, "relogio": None, "tipo": None})
 
     melhores: dict[int, tuple] = {}
     for b in breakdown:
@@ -52,7 +52,7 @@ def sugeridos_da_partida(decisivo: dict | None, frase_decisiva: str | None, brea
             if b["round"] not in melhores or chave < melhores[b["round"]][0]:
                 melhores[b["round"]] = (chave, b["round"], m)
     for _, rn, m in sorted(melhores.values(), key=lambda x: x[0])[:MAX_MOMENTOS]:
-        saida.append({"round": int(rn), "motivo": "momento", "texto": m.get("text") or "", "jogador": m["who"], "tick": int(m["tick"]),
+        saida.append({"round": int(rn), "motivo": "momento", "texto": m.get("text") or "", "jogador": m["who"], "tick": int(m["tick"]), "t": round(float(m["t"]), 2),
                       "relogio": _relogio(m["tick"], rounds.get(rn, {}), tickrate), "tipo": m["kind"]})
 
     validos = [e for e in erros if e["tipo"] in TIPOS_DE_ERRO_VALIDADOS and e.get("tick") is not None]
@@ -65,7 +65,7 @@ def sugeridos_da_partida(decisivo: dict | None, frase_decisiva: str | None, brea
             continue
         vistos.add(int(e["round_num"]))
         nivel = ROTULO_DO_NIVEL.get(e.get("nivel") or "", "")
-        saida.append({"round": int(e["round_num"]), "motivo": "erro", "jogador": e["name"], "tick": int(e["tick"]),
+        saida.append({"round": int(e["round_num"]), "motivo": "erro", "jogador": e["name"], "tick": int(e["tick"]), "t": round(float(e["segundos"]), 2),
                       "relogio": e.get("relogio") or _relogio(e["tick"], rounds.get(int(e["round_num"]), {}), tickrate), "tipo": e["tipo"],
                       "texto": f"{TITULOS.get(e['tipo'], e['tipo'])}" + (f" · erro validado, {nivel}" if nivel else " · erro validado")})
     return saida

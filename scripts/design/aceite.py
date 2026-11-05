@@ -19,6 +19,7 @@ Mede, em 375x667, 375x812 e 1440x900:
   6. famílias de fonte carregadas (máximo 2) e mono só em número
   7. nenhum "Time A" / "Time B"
 """
+import os
 import re
 import sys
 sys.dont_write_bytecode = True
@@ -35,7 +36,8 @@ PARTIDA = "match_02.html"                # Mirage, profissional: o exemplo das m
 ABAS = ["replay", "insights", "rounds", "jogadores", "perfil", "estilos"]   # data-tab de cada aba
 # cada item é (página, aba ou None)
 PAGINAS = [("index.html", None)] + [(PARTIDA, a) for a in ABAS] + [
-    ("prancheta_de_mirage.html", None), ("prancheta_de_nuke.html", None), ("jogadores.html", None)]
+    ("prancheta_de_mirage.html", None), ("prancheta_de_nuke.html", None), ("jogadores.html", None), ("reescrever.html", None)]
+ESQUEMA = os.environ.get("MEDE_ESQUEMA") or "light"   # o tema do aparelho: "dark" mede as páginas no escuro (Fase T)
 TELAS = [(375, 667), (375, 812), (1440, 900)]
 LISTA = 8   # quantos itens de cada falha entram no relatório
 
@@ -144,7 +146,7 @@ def main():
         print(f"== {w}x{h} ==")
         for pagina, aba in PAGINAS:
             pag = pagina + (f"::{aba}" if aba else "")
-            pg = b.new_page(viewport={"width": w, "height": h})
+            pg = b.new_page(viewport={"width": w, "height": h}, color_scheme=ESQUEMA)
             pg.goto(url_de(pagina)); pg.wait_for_timeout(1100)
             if aba:
                 pg.click(f'[data-tab="{aba}"]'); pg.wait_for_timeout(400)

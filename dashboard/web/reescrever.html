@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="claro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><!--__TITULO__--></title>
+<!--__META__-->
+<!--__FONTES__-->
+<style>
+  /* Os tokens (cores, fontes, espaços) vêm de dashboard/web/tokens.css, injetado no build. */
+  /*__TOKENS__*/
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--fundo); color: var(--tinta); font-family: var(--f-texto); -webkit-font-smoothing: antialiased; }
+  .shell { max-width: 960px; margin: 0 auto; padding: 0 16px 64px; }
+  :where(button, a[href], select, input, textarea, summary, [tabindex]):focus-visible { outline: 2px solid var(--foco); outline-offset: 2px; }
+  h1 { font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: clamp(28px, 4.5vw, 44px); margin: 24px 0 8px; letter-spacing: -0.01em; }
+  h2 { font-size: var(--t-xl); font-weight: var(--peso-forte); letter-spacing: -0.01em; margin: 32px 0 12px; }
+  .lead { color: var(--tinta-2); max-width: 62ch; margin: 0 0 16px; }
+  .aviso { background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--r-md); padding: 12px 16px; margin: 0 0 8px;
+    color: var(--tinta-2); font-size: var(--t-sm); }
+  .aviso b { color: var(--tinta); }
+  .btn { display: inline-flex; align-items: center; justify-content: center; min-height: var(--toque); padding: 0 18px; border-radius: var(--r-ctl);
+    border: 1px solid var(--borda); background: var(--superficie); color: var(--tinta); font: inherit; font-size: var(--t-sm); font-weight: 600;
+    text-decoration: none; cursor: pointer; white-space: nowrap; }
+  .btn:hover { background: var(--superficie-2); }
+  .btn.prim { background: var(--acao); color: var(--acao-ink); border-color: var(--acao); }
+  .btn.prim:hover { opacity: 0.88; }
+
+  /* sugeridos: uma linha por round, com o motivo escrito */
+  .lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .sug { display: grid; gap: 12px; padding: 16px; background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--r-card); }
+  @media (min-width: 761px) { .sug { grid-template-columns: minmax(0, 220px) minmax(0, 1fr) auto; align-items: center; } }
+  .sug-ctx { display: grid; gap: 2px; min-width: 0; }
+  .sug-ctx small { color: var(--apagado); font-size: var(--t-xs); }
+  .sug-ctx b { font-size: var(--t-base); }
+  .sug-ctx .rnd { font-family: var(--f-cond); font-stretch: var(--larg-condensada); font-size: var(--t-lg); }
+  .motivos { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; color: var(--tinta-2); font-size: var(--t-sm); min-width: 0; }
+  .motivos li { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: baseline; }
+  .motivos .g { color: var(--tinta); }
+  .motivos .rot { color: var(--tinta); font-weight: 600; }
+
+  /* buscar */
+  .busca { display: grid; gap: 8px; max-width: 520px; }
+  .busca label { font-weight: 600; font-size: var(--t-sm); }
+  .busca input { min-height: var(--toque); font: inherit; font-size: var(--t-base); padding: 0 12px; border: 1px solid var(--borda);
+    border-radius: var(--r-ctl); background: var(--fundo); color: var(--tinta); width: 100%; }
+  .contagem { color: var(--apagado); font-size: var(--t-sm); margin: 10px 0; min-height: 1.4em; }
+  .resultados { max-height: 340px; overflow-y: auto; }
+  .partida-btn { display: grid; gap: 2px; width: 100%; text-align: left; min-height: var(--toque); padding: 10px 14px; border-radius: var(--r-ctl);
+    border: 1px solid var(--borda); background: var(--superficie); color: var(--tinta); font: inherit; cursor: pointer; }
+  .partida-btn:hover { border-color: var(--tinta-2); }
+  .partida-btn[aria-pressed="true"] { border-color: var(--tinta); box-shadow: inset 4px 0 0 var(--tinta); background: var(--superficie-2); }
+  .partida-btn small { color: var(--apagado); font-size: var(--t-xs); }
+  .vazio { padding: 16px; border: 1px dashed var(--borda); border-radius: var(--r-md); color: var(--tinta-2); display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .vazio[hidden] { display: none; }
+  .faixa { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+  .faixa .chip { min-width: var(--toque); min-height: var(--toque); border-radius: var(--r-ctl); border: 1px solid var(--borda); background: var(--superficie);
+    color: var(--tinta); font: inherit; font-size: var(--t-sm); cursor: pointer; }
+  .faixa .chip[aria-pressed="true"] { background: var(--acao); color: var(--acao-ink); border-color: var(--acao); }
+  .escolhida[hidden], .btn[hidden] { display: none; }
+  /* a navbar e a forma da v2 (dashboard/web/v2.css, decisão 48) por último */
+  /*__V2__*/
+</style>
+</head>
+<body>
+<div class="shell">
+  <!--__TOPO__-->
+  <h1 id="titulo"></h1>
+  <p class="lead" id="lead"></p>
+  <p class="aviso" role="note" id="aviso"></p>
+
+  <section aria-labelledby="h-sug">
+    <h2 id="h-sug"></h2>
+    <ul class="lista" id="sugeridos"></ul>
+  </section>
+
+  <section aria-labelledby="h-busca">
+    <h2 id="h-busca"></h2>
+    <div class="busca">
+      <label for="busca" id="rot-busca"></label>
+      <input type="search" id="busca" autocomplete="off">
+    </div>
+    <p class="contagem" id="contagem" role="status" aria-live="polite"></p>
+    <p class="vazio" id="vazio" hidden><span id="vazio-texto"></span> <button type="button" class="btn" id="limpa"></button></p>
+    <ul class="lista resultados" id="resultados"></ul>
+    <div class="escolhida" id="escolhida" hidden>
+      <p class="contagem" id="escolhida-titulo"></p>
+      <div class="faixa" id="faixa" role="group"></div>
+      <a class="btn prim" id="abrir" href="#" hidden></a>
+    </div>
+  </section>
+</div>
+<script>/*__V2_JS__*/</script>
+<script>
+(function () {
+  var D = /*__DADOS__*/null;
+  var T = /*__TEXTOS__*/null;
+  if (!D || !T) return;
+  var $ = function (id) { return document.getElementById(id); };
+  function el(tag, cls, texto) { var n = document.createElement(tag); if (cls) n.className = cls; if (texto != null) n.textContent = texto; return n; }
+  function semAcento(s) { return String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(); }
+
+  $("titulo").textContent = T.titulo;
+  $("lead").textContent = T.frase;
+  $("aviso").appendChild(el("b", null, T.fixa_forte));
+  $("aviso").appendChild(document.createTextNode(" " + T.fixa_resto));
+  $("h-sug").textContent = T.sugeridos;
+  $("h-busca").textContent = T.buscar;
+  $("rot-busca").textContent = T.rotulo_busca;
+  $("limpa").textContent = T.limpar;
+  $("faixa").setAttribute("aria-label", T.rotulo_faixa);
+
+  function titulo(p) { return p.lados[0].nome + " × " + p.lados[1].nome; }
+  function placar(p) { return p.lados[0].nome + " " + p.lados[0].pontos + " × " + p.lados[1].pontos + " " + p.lados[1].nome; }
+  function contexto(p) { return p.map_label + (p.evento ? " · " + p.evento : ""); }
+  function endereco(p, round, t) { return p.file + "#replay?round=" + round + (t == null ? "" : "&t=" + t); }
+
+  // sugeridos: uma linha por (partida, round), com todos os motivos daquele round
+  var linhas = [];
+  D.partidas.forEach(function (p) {
+    var por = {};
+    p.sugeridos.forEach(function (s) { (por[s.round] = por[s.round] || []).push(s); });
+    Object.keys(por).forEach(function (r) { linhas.push({ p: p, round: Number(r), motivos: por[r] }); });
+  });
+  var ORDEM = { decisivo: 0, momento: 1, erro: 2 };
+  function melhor(l) { return Math.min.apply(null, l.motivos.map(function (m) { return ORDEM[m.motivo]; })); }
+  // uma linha por partida (a de motivo mais forte)
+  var melhores = {};
+  linhas.forEach(function (l) { var m = melhores[l.p.id]; if (!m || melhor(l) < melhor(m) || (melhor(l) === melhor(m) && l.round < m.round)) melhores[l.p.id] = l; });
+  // a ordem: a partida de exemplo, depois as profissionais, depois as da FACEIT; em cada grupo, pelo id da partida
+  linhas = Object.keys(melhores).map(function (id) { return melhores[id]; });
+  linhas.sort(function (a, b) { return a.p.grupo - b.p.grupo || (a.p.id < b.p.id ? -1 : a.p.id > b.p.id ? 1 : 0); });
+  var lista = $("sugeridos");
+  linhas.slice(0, T.max_linhas).forEach(function (l) {
+    var li = el("li", "sug");
+    var ctx = el("div", "sug-ctx");
+    ctx.appendChild(el("small", null, contexto(l.p)));
+    ctx.appendChild(el("b", null, placar(l.p)));
+    ctx.appendChild(el("span", "rnd", T.round + " " + l.round));
+    var ul = el("ul", "motivos");
+    l.motivos.forEach(function (m) {
+      var item = el("li");
+      item.appendChild(el("span", "g", m.motivo === "decisivo" ? "◆" : m.motivo === "momento" ? "◇" : "□"));
+      var txt = el("span");
+      txt.appendChild(el("span", "rot", T.motivo[m.motivo]));
+      txt.appendChild(document.createTextNode(" · " + (m.jogador ? m.jogador + " · " : "") + m.texto + (m.relogio ? " · " + m.relogio : "")));
+      item.appendChild(txt);
+      ul.appendChild(item);
+    });
+    var com = l.motivos.filter(function (m) { return m.t != null; })[0];
+    var a = el("a", "btn prim", T.botao.replace("{n}", l.round));
+    a.href = endereco(l.p, l.round, com ? com.t : null);
+    li.appendChild(ctx); li.appendChild(ul); li.appendChild(a);
+    lista.appendChild(li);
+  });
+
+  // buscar: time, mapa ou evento; escolher a partida abre a faixa de rounds
+  var campo = $("busca"), resultados = $("resultados"), escolhida = null, botoes = {};
+  function mostra() {
+    var q = semAcento(campo.value.trim());
+    var achadas = D.partidas.filter(function (p) {
+      return !q || semAcento([titulo(p), p.map_label, p.evento, p.id].join(" ")).indexOf(q) >= 0;
+    });
+    resultados.textContent = "";
+    if (escolhida && achadas.indexOf(escolhida) < 0) { escolhida = null; $("escolhida").hidden = true; }   // saiu do filtro: a faixa não fica solta
+    achadas.forEach(function (p) {
+      var li = el("li");
+      var b = el("button", "partida-btn"); b.type = "button";
+      botoes[p.id] = b;
+      b.setAttribute("aria-pressed", String(escolhida === p));
+      b.appendChild(el("b", null, placar(p)));
+      b.appendChild(el("small", null, contexto(p) + " · " + p.rounds + " " + T.rounds));
+      b.addEventListener("click", function () { escolhe(p); });
+      li.appendChild(b); resultados.appendChild(li);
+    });
+    $("contagem").textContent = q ? T.contagem.replace("{n}", achadas.length) : "";
+    $("vazio").hidden = achadas.length > 0;
+    $("vazio-texto").textContent = T.vazio.replace("{q}", campo.value.trim());
+  }
+  function escolhe(p) {
+    escolhida = p;
+    Object.keys(botoes).forEach(function (id) { botoes[id].setAttribute("aria-pressed", String(id === p.id)); });   // sem recriar a lista: o foco fica no botão
+    $("escolhida").hidden = false;
+    $("escolhida-titulo").textContent = placar(p) + " · " + contexto(p);
+    var faixa = $("faixa"); faixa.textContent = "";
+    $("abrir").hidden = true;
+    // a faixa é UMA parada do Tab (a do round escolhido, ou o primeiro); as setas, Home e End andam entre os rounds
+    function paraAParada(c) {
+      Array.prototype.forEach.call(faixa.children, function (o) { o.tabIndex = o === c ? 0 : -1; });
+    }
+    for (var n = 1; n <= p.rounds; n++) (function (n) {
+      var c = el("button", "chip", String(n)); c.type = "button";
+      c.setAttribute("aria-pressed", "false");
+      c.tabIndex = n === 1 ? 0 : -1;
+      c.addEventListener("click", function () {
+        Array.prototype.forEach.call(faixa.children, function (o) { o.setAttribute("aria-pressed", String(o === c)); });
+        paraAParada(c);
+        var a = $("abrir"); a.hidden = false; a.textContent = T.botao.replace("{n}", n); a.href = endereco(p, n, null);
+      });
+      faixa.appendChild(c);
+    })(n);
+    faixa.onkeydown = function (e) {
+      var cs = Array.prototype.slice.call(faixa.children), i = cs.indexOf(document.activeElement);
+      var alvo = e.key === "ArrowRight" || e.key === "ArrowDown" ? cs[Math.min(cs.length - 1, i + 1)] : e.key === "ArrowLeft" || e.key === "ArrowUp" ? cs[Math.max(0, i - 1)]
+        : e.key === "Home" ? cs[0] : e.key === "End" ? cs[cs.length - 1] : null;
+      if (!alvo || i < 0) return;
+      e.preventDefault(); paraAParada(alvo); alvo.focus();
+    };
+    faixa.firstChild.focus();   // quem escolheu a partida pelo teclado cai nos rounds, não no fim da lista
+  }
+  campo.addEventListener("input", mostra);
+  $("limpa").addEventListener("click", function () { campo.value = ""; mostra(); campo.focus(); });
+  mostra();
+})();
+</script>
+</body>
+</html>

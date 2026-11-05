@@ -132,7 +132,7 @@ def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | Non
         .replace("/*__ANNOTATIONS_CSS__*/", (WEB / "annotations.css").read_text(encoding="utf-8"))
         .replace("/*__TACTICS_CSS__*/", (WEB / "tactics.css").read_text(encoding="utf-8"))
         .replace("<!--__TITULO__-->", f"Prancheta tática · {rotulos.get(mapa, mapa)} · {MARCA}")
-        .replace("<!--__TOPO__-->", topo_do_site("prancheta", arquivo_da_pagina(mapa), REPO))
+        .replace("<!--__TOPO__-->", topo_do_site("prancheta", REPO))
         .replace("/*__V2_JS__*/", v2_js())   # antes do dado: o JS da v2 entra como texto, sem marcador sobrando
         .replace("/*__MAP_CORE__*/", (WEB / "map_core.js").read_text(encoding="utf-8"))
         .replace("/*__TACTICS_JS__*/", le_fonte(WEB / "tactics.js"))   # com as partes incluídas (decisão 50)

@@ -172,6 +172,13 @@ TEXTOS_DA_LANDING = {
                          "Fontes Geist e Geist Mono (SIL OFL 1.1)."),
     "agente": {"tr": "Agente TR com fuzil", "ct": "Agente CT com fuzil"},
     "pular": "Pular para o conteúdo",
+    # o bloco da prancheta livre (Reescrever, decisão 56): a prancheta saiu da navbar e mora aqui
+    "tatica_titulo": "Monte uma tática do zero",
+    "tatica_frase": ("A prancheta é o mapa livre: posicione os jogadores, lance granadas reais da biblioteca e toque a tática "
+                     "passo a passo, sem precisar de uma partida."),
+    "tatica_mapas": "Escolher o mapa da prancheta",
+    "tatica_abrir": "Abrir a prancheta da {mapa}",
+    "tatica_endereco": "O endereço de sempre continua valendo:",
 }
 TITULO_DO_TOPO = TEXTOS_DA_LANDING["titulo"]
 FRASE_DO_TOPO = TEXTOS_DA_LANDING["subtitulo"]
@@ -287,8 +294,24 @@ def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | Non
         f"""        <div class="num-item"><dt><b class="num">{e(n['valor'])}</b>{e(n['rotulo'])}</dt><dd>{e(n['contexto'])}</dd></div>\n"""
         for n in (tres_numeros(numeros) if numeros else []))
     corpus = e(blocos_de_texto(numeros)["corpus"]) if numeros else ""
-    prancheta_do_exemplo = next((p for p in (pranchetas or []) if exemplo and p.get("mapa") == exemplo.get("map")),
-                                (pranchetas or [None])[0])
+    # o bloco da prancheta livre (Reescrever): começa na Mirage, se ela tem prancheta, ou na primeira
+    pranchetas = list(pranchetas or [])
+    inicial = next((p for p in pranchetas if p["mapa"] == "de_mirage"), pranchetas[0] if pranchetas else None)
+    chips_prancheta = "".join(
+        f'<button type="button" class="chip" data-arquivo="{e(p["file"])}" data-rotulo="{e(p["label"])}" data-abrir="{e(T["tatica_abrir"].format(mapa=p["label"]))}" '
+        f'aria-pressed="{str(p is inicial).lower()}">{e(p["label"])}</button>' for p in pranchetas)
+    bloco_tatica = "" if not inicial else f"""
+  <section class="tatica" aria-labelledby="h-tatica">
+    <div class="tatica-texto">
+      <h2 id="h-tatica">{e(T["tatica_titulo"])}</h2>
+      <p>{e(T["tatica_frase"])}</p>
+      <div class="chips" id="tatica-mapas" role="group" aria-label="{e(T["tatica_mapas"])}">{chips_prancheta}</div>
+      <div class="acoes"><a class="btn prim" id="tatica-abrir" href="{e(inicial["file"])}">{e(T["tatica_abrir"].format(mapa=inicial["label"]))}</a></div>
+      <p class="tatica-endereco">{e(T["tatica_endereco"])} <code id="tatica-endereco">{e(inicial["file"])}</code></p>
+    </div>
+    <div class="tatica-mini" data-tema="violeta" aria-hidden="true"><b id="tatica-mini-mapa">{e(inicial["label"])}</b><i class="p ct"></i><i class="p tr"></i><i class="p ct"></i><i class="rastro"></i></div>
+  </section>
+"""
 
     # filtros: origem (Profissionais por padrão) e mapa, com a contagem de cada um
     por_origem = Counter(m.get("origem") for m in grade)
@@ -429,6 +452,21 @@ def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | Non
   .dlg-cab h2 {{ font-size: var(--t-lg); font-weight: var(--peso-forte); }}
   .fechar {{ min-width: var(--toque); min-height: var(--toque); border-radius: var(--r-ctl); border: 1px solid var(--borda);
     background: transparent; color: var(--tinta); font: inherit; font-size: var(--t-lg); cursor: pointer; }}
+  /* a prancheta livre como bloco da landing (Reescrever, decisão 56): o texto à esquerda e a miniatura violeta (a cor da prancheta) à direita */
+  .tatica {{ display: grid; gap: 20px; margin: 48px 0 8px; padding: 24px; border: 1px solid var(--linha); border-radius: var(--r-card);
+    background: var(--superficie); }}
+  @media (min-width: 761px) {{ .tatica {{ grid-template-columns: minmax(0, 1fr) minmax(220px, 300px); align-items: center; padding: 32px; }} }}
+  .tatica-texto {{ display: grid; gap: 14px; justify-items: start; min-width: 0; }}
+  .tatica-texto h2 {{ font-size: var(--t-xl); font-weight: var(--peso-forte); letter-spacing: -0.01em; }}
+  .tatica-texto p {{ color: var(--tinta-2); max-width: 56ch; }}
+  .tatica-endereco code {{ font-family: var(--f-mono); color: var(--tinta); overflow-wrap: anywhere; }}
+  .tatica-mini {{ position: relative; aspect-ratio: 4 / 3; border-radius: var(--r-card); background: var(--fundo); border: 1px solid var(--borda);
+    overflow: hidden; }}
+  .tatica-mini b {{ position: absolute; left: 14px; top: 12px; color: var(--tinta-2); font-size: var(--t-sm); font-weight: 600; }}
+  .tatica-mini .p {{ position: absolute; width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--tinta); }}
+  .tatica-mini .p.ct {{ background: var(--ct-mapa); }} .tatica-mini .p.tr {{ background: var(--tr-mapa); }}
+  .tatica-mini .p:nth-of-type(1) {{ left: 22%; top: 58%; }} .tatica-mini .p:nth-of-type(2) {{ left: 50%; top: 40%; }} .tatica-mini .p:nth-of-type(3) {{ left: 74%; top: 64%; }}
+  .tatica-mini .rastro {{ position: absolute; left: 24%; top: 60%; width: 52%; height: 0; border-top: 2px dashed var(--tinta-2); transform: rotate(-12deg); transform-origin: left; }}
   .painel-honesto {{ display: grid; gap: 8px; justify-items: start; padding: 16px; border: 1px solid var(--borda);
     border-radius: var(--r-card); background: var(--superficie-2); color: var(--tinta-2); }}
   .painel-honesto b {{ color: var(--tinta); }}
@@ -458,7 +496,7 @@ def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | Non
 <div class="tem-laterais">
   {laterais}
 <div class="shell">
-  {topo_do_site("partidas", prancheta_do_exemplo["file"] if prancheta_do_exemplo else None, repo_url)}
+  {topo_do_site("partidas", repo_url)}
 
   <main id="conteudo" tabindex="-1">
   <section class="heroi" aria-labelledby="h-heroi">
@@ -499,7 +537,7 @@ def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | Non
     <p class="vazio" id="vazio" hidden>{e(T["vazio"])}
       <button type="button" class="btn" id="mostra-todos">{e(T["mostrar_todos"])}</button></p>
   </section>
-  </main>
+{bloco_tatica}  </main>
 
   <footer class="rodape">
     <b>{e(T["rodape_marca"])}</b>
@@ -520,6 +558,21 @@ def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | Non
     </div>
   </div>
 </dialog>
+<script>
+  // o bloco da prancheta livre: o chip troca o mapa do botão, do endereço e da miniatura
+  (function () {{
+    var chips = document.querySelectorAll("#tatica-mapas .chip"), abrir = document.getElementById("tatica-abrir");
+    Array.prototype.forEach.call(chips, function (c) {{
+      c.addEventListener("click", function () {{
+        Array.prototype.forEach.call(chips, function (o) {{ o.setAttribute("aria-pressed", String(o === c)); }});
+        abrir.href = c.dataset.arquivo;
+        abrir.textContent = c.dataset.abrir;
+        document.getElementById("tatica-endereco").textContent = c.dataset.arquivo;
+        document.getElementById("tatica-mini-mapa").textContent = c.dataset.rotulo;
+      }});
+    }});
+  }})();
+</script>
 <script>
   // filtros da grade: origem e mapa; vazio mostra o aviso e o botão que limpa o mapa
   (function () {{
@@ -570,6 +623,7 @@ def indice_de_sugeridos(matches: list[dict]) -> dict:
     não baixar as páginas das partidas (de 2,4 a 5,2 MB). Só entra partida com sugerido; tipo de erro não validado nunca entra."""
     import polars as pl
 
+    from leitura.narrativa import com_os_nomes_dos_times
     from leitura.sugeridos import FORMATO_SUGERIDOS, sugeridos_da_partida
     partidas = {}
     for m in matches:
@@ -581,7 +635,11 @@ def indice_de_sugeridos(matches: list[dict]) -> dict:
         rounds = {int(r["round_num"]): r for r in pl.read_parquet(base / "rounds.parquet").to_dicts()}
         tickrate = int(json.loads((base / "replay.json").read_text(encoding="utf-8"))["tickrate"])
         erros = pl.read_parquet(arq_erros).to_dicts() if arq_erros.exists() else []
-        lista = sugeridos_da_partida(insights.get("decisive_round"), (insights.get("narrative") or {}).get("decisive"),
+        nomes = {k: v["nome"] for k, v in (m.get("lados") or {}).items()}
+        frase = (insights.get("narrative") or {}).get("decisive")
+        if frase and nomes:   # o nome do time, como no resto do site: o "Time A" é interno
+            frase = com_os_nomes_dos_times(frase, nomes)
+        lista = sugeridos_da_partida(insights.get("decisive_round"), frase,
                                      json.loads(arq_breakdown.read_text(encoding="utf-8")), erros, rounds, tickrate)
         if lista:
             partidas[m["id"]] = {"file": m["file"], "map": m["map"], "map_label": m["map_label"], "score_a": m["score_a"],
@@ -670,7 +728,12 @@ def build(repo_url: str, preview: bool = False) -> Path:
                                       encoding="utf-8")
 
     # os rounds sugeridos do Reescrever (R0): um arquivo pequeno ao lado das páginas, sem mudar nenhuma delas
-    (saida / "sugeridos.json").write_text(json.dumps(indice_de_sugeridos(matches), ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    sugeridos = indice_de_sugeridos(matches)
+    (saida / "sugeridos.json").write_text(json.dumps(sugeridos, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    # a página de escolha do Reescrever (R1): os sugeridos e a busca, com os dados embutidos
+    from scripts.build_reescrever import ARQUIVO as ARQUIVO_REESCREVER, build_html as build_reescrever
+    (saida / ARQUIVO_REESCREVER).write_text(build_reescrever(matches, sugeridos, url_do_site(repo_url)), encoding="utf-8")
+    print(f"  {ARQUIVO_REESCREVER}  (escolha do round a reescrever)")
 
     # o GitHub Pages passa o conteúdo pelo Jekyll por padrão, que ignora arquivos
     # e pastas começando com underscore; .nojekyll desliga isso

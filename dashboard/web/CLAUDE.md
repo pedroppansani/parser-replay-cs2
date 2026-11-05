@@ -8,19 +8,20 @@ valem lá também.
 
 - Nenhum texto nem estilo novo no `template.html` além da estrutura e dos pontos de injeção:
   rótulo de interface sai do JS da camada, frase de card sai do Python (18, 23)
-- Texto do dado em `innerHTML` só por `MapCore.esc()` (a única função de escape) ou `textContent`;
+- Texto do dado em `innerHTML` só por `MapCore.esc()` (o único escape) ou `textContent`;
   as regras do começo do CSS não saem sem `py -3.12 -m scripts.compara_paginas` (37)
-- Aviso de régua montado no JS só a partir de `regua_origem` e dos números que viajam no perfil (30)
+- Aviso de régua no JS só de `regua_origem` e dos números do perfil (30)
 - O replay navega por TICK; fora da janela exportada, a entrada não é clicável e o motivo vai no
   `title` (8d)
-- Páginas abrem como arquivo local, sem CDN nem Google Fonts: Geist e Geist Mono em `fontes/` (o build
-  copia de `dashboard/web/fontes/`), no máximo 2 famílias; `gera_fontes`/`mede_fallback` não rodam no build (48)
+- Páginas abrem como arquivo local, sem CDN nem Google Fonts: Geist e Geist Mono em `fontes/` (copiadas de
+  `dashboard/web/fontes/`), no máximo 2 famílias; `gera_fontes`/`mede_fallback` não rodam no build (48)
 - CLS 0: o que o JS monta depois não empurra a tela (invisível até montar, `:has(... :empty)` no `v2.css`); fontes
   com `preload` só por HTTP e `font-display: fallback` (48)
 - CSS novo da v2 só em `v2.css` (marcador `/*__V2__*/`), comportamento comum em `v2.js`; agente: só o sorteado é
   baixado, sha256 no `agentes.manifesto.json`, `converte_agente` fora do build e dos testes (48)
-- Escolhas da nota 44 ("Como ficou na implementação") são deliberadas: coluna Mira com o texto do
-  Python, mínimos de `jogadores.html`; não "corrija" de volta; a partida tem a navbar desde a v2-4 (44, 48)
+- Escolhas da nota 44 ("Como ficou na implementação") são deliberadas (coluna Mira com o texto do
+  Python, mínimos de `jogadores.html`): não "corrija" de volta (44, 48)
+- Navbar: Partidas, Jogadores, Reescrever; a prancheta livre é bloco da landing (56)
 - Aba Placar: "Quanto cada round pesou" tem o mesmo eixo X do gráfico de cima (viewBox de 900, pL 32,
   pR 12); a barra é depois menos antes da curva publicada, o decisivo é o do payload, e textos e rótulos
   vêm de `leitura/peso_dos_rounds.py` (19, 18)
@@ -28,11 +29,11 @@ valem lá também.
 ## Cor e mapa
 
 - CT azul, TR dourado; cada granada mantém a forma do `nadeGlyph`; uma cor, um papel: cor de lado só
-  para o lado (por round, o lado daquele round), destaque só no verde do decisivo, vitória e link
+  para o lado (o do round), destaque só no verde do decisivo, vitória e link
   sem matiz; `--erro` e `--aviso` nunca marcam erro de jogador (44, 46)
 - Tema: claro ou escuro escolhido na landing (`tema.js` no `<head>`, sem inline); prancheta sempre `violeta`; o
   canvas lê só `*-mapa` e granadas, iguais em todo tema; a moldura do mapa é a ilha `data-tema="escuro"` (48, 51)
-- Cor nova ou trocada passa por `py -3.12 -m metrics.paleta` contra o fundo onde aparece (texto
+- Cor nova ou trocada passa por `py -3.12 -m metrics.paleta` contra o fundo dela (texto
   4,5:1, marca 3:1, ΔE2000 ≥ 8 no pior par daltônico); o scatter de clusters segue facetado (10)
 - Mapa, peças e granadas em canvas, com UM núcleo (`map_core.js`); `desenhaJogador` não ganha
   save/restore; lugares, outro andar, palco (33, 52, 53, 54)
@@ -67,7 +68,7 @@ valem lá também.
 - A interação é UMA máquina de estados (`ESTADOS`); atalhos num mapa único `ATALHOS`, sem tecla
   repetida (32)
 - Ponto atrasado é CALCULADO do log (`atrasosDosPontos`) e nunca guardado; desenha-se em `--aviso` com
-  "+N s" e texto equivalente; o contador de operações só aparece em "Detalhes técnicos" aberto (35, 43)
+  "+N s" e texto equivalente; o contador de operações só em "Detalhes técnicos" aberto (35, 43)
 - O round real é base travada (`origem.base_real`); editar um jogador em t corta o real dele depois
   de t e ancora o estado real em t; mover num round anda na velocidade medida; "Voltar ao real" anula
   pelo `anula` (43)
