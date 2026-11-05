@@ -253,6 +253,7 @@ def _nomes_dos_lados(c: dict | None) -> dict[str, str]:
 def dados_da_pagina(match_id: str, base: Path | None = None, repo: str | None = None, preview: bool = False) -> dict:
     from leitura import marca_da_funcao, perfil_erros, peso_dos_rounds
     from leitura.reescrever import TEXTOS_DO_MODO
+    from metrics.tactics import VELOCIDADE_U_S
     from metrics.impacto import resumo_dos_grupos
     from scripts.numeros_citaveis import carrega
     base = base or PROJECT_ROOT / "data" / "processed" / match_id
@@ -270,7 +271,7 @@ def dados_da_pagina(match_id: str, base: Path | None = None, repo: str | None = 
             # "Abrir round na prancheta" (fase 9): a tolerância medida do caminho
             "round_na_prancheta": {"tolerancia_u": TOLERANCIA_U},
             # o modo Reescrever (R2, decisão 57): os rótulos e a frase fixa de honestidade, prontos
-            "reescrever": TEXTOS_DO_MODO,
+            "reescrever": {**TEXTOS_DO_MODO, "velocidade": {a: VELOCIDADE_U_S[(a, "correndo")] for a in ("AWP", "rifle")}},   # a mesma conta da prancheta (decisão 43)
             # "Quanto cada round pesou" (aba Placar): só texto, pronto; a barra o JS lê da curva do payload
             "peso_dos_rounds": peso_dos_rounds.bloco(payload, _nomes_dos_lados(cabecalho_da_partida(match_id, base))),
             # aba Perfil (fase 12): pontos a melhorar, pontos fortes e comparação, com as frases prontas.

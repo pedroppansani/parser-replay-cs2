@@ -154,6 +154,17 @@ html { scroll-padding-top: calc(var(--nav-h) + 16px); }   /* C2: âncora nunca e
 .painel-rw p { margin: 0; color: var(--tinta-2); font-size: var(--t-sm); }
 .painel-rw .rw-fixa b { color: var(--tinta); }
 .painel-rw .rw-comeca { color: var(--tinta); font-weight: 600; }
+.painel-rw .rw-leg { margin-top: -4px; font-size: var(--t-xs); }
+.painel-rw .rw-btn[aria-pressed="true"] { border-color: var(--tinta); }
+.painel-rw .rw-mudou { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--tinta-2); font-size: var(--t-sm); }
+.painel-rw .rw-mudou .rw-nada { list-style: none; margin-left: -18px; }
+/* a confirmação de sair com edições (R3): o <dialog> prende o foco; o violeta é o da ilha */
+.rw-dialogo[data-tema="violeta"] { background: var(--superficie); color: var(--tinta); border: 1px solid var(--borda); border-radius: 16px; padding: 20px;
+  max-width: min(92vw, 380px); }
+.rw-dialogo::backdrop { background: rgba(0, 0, 0, 0.55); }
+.rw-dialogo h3 { margin: 0 0 8px; font-size: var(--t-md, 17px); }
+.rw-dialogo p { margin: 0 0 16px; color: var(--tinta-2); font-size: var(--t-sm); }
+.rw-dlg-linhas { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 
 
 /* Perfil (§5.4): o seletor de jogador em pílulas; o estado "em validação" é um bloco tracejado, sem número */
@@ -331,3 +342,4 @@ body:has(#decisive:empty) #foot { visibility: hidden; }
 .maplegend .lugares-botao:hover { border-color: var(--apagado); }
 .maplegend .lugares-botao[aria-pressed="true"] { background: var(--tinta); color: var(--fundo); }
 @media (pointer: coarse) { .maplegend .lugares-botao { min-height: 44px; padding: 3px 14px; } }
+.painel-rw .rw-btn { white-space: normal; padding-block: 6px; line-height: 1.25; }
