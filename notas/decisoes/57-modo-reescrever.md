@@ -3,7 +3,7 @@
 - **ID:** 57
 - **Status:** vigente
 - **Data:** 2026-11-05
-- **Resumo:** O Reescrever é um modo da aba Replay (D1): entra-se pelo cabeçalho do palco, pela barra ou por "Reescrever daqui", a moldura e as duas colunas
+- **Resumo:** O Reescrever é um modo da aba Replay (D1): entra-se pelo cabeçalho do palco, ou por "Reescrever daqui", a moldura e as duas colunas
   viram o violeta da prancheta (D2), as peças vivas do instante ficam editáveis (arrastar) e "Sair" descarta tudo. O mapa não muda de tamanho nem de lugar.
 
 ## Texto
@@ -33,8 +33,12 @@
 - **Teclado e saída (code-review do R2):** no modo, setas, espaço, `[` `]` e os cliques no log e nas marcas não mexem no real (que está parado no instante);
   Esc sai, menos quando ele fecha o popover "?" (o Esc de outro dono não descarta as edições) ou com o foco num campo; trocar de round ou de aba também sai;
   as duas colunas trocam o `aria-label` ("Peças" e "Reescrever este round") e o devolvem ao sair. A dica não promete mover pela lista: o teclado é do R6.
-- **O que o Assistir ganha (por desenho do Iriun):** o ▶ passa a morar numa caixa de largura fixa (244 px; 136 px no celular) que reserva o lugar do
-  "Reescrever daqui", então a linha do tempo fica cerca de 200 px mais curta no computador (90 px no celular) em TODOS os estados, e o cabeçalho do palco ganha o
-  botão (o resumo desce para a linha de baixo no celular). Fora disso o Assistir não muda.
+- **O que o Assistir ganha (por desenho do Iriun, aceito pelo Pedro só para o computador):** o ▶ passa a morar numa caixa de largura fixa de 244 px que reserva o
+  lugar do "Reescrever daqui", então a linha do tempo fica cerca de 200 px mais curta no computador em todos os estados, e o cabeçalho do palco ganha o botão.
+  **No celular (até 560 px) não há "Reescrever daqui"** (o botão do cabeçalho já entra no instante parado): a linha do tempo tem a largura de antes, no Replay e
+  dentro do modo (desligada, mas inteira), e o botão do cabeçalho cabe na linha de "Round N" nos dois estados (teste). O resumo desce para a linha de baixo.
+- **Banco das peças:** o cartão tem 12 px de raio (a pílula cortava os cantos), linhas com altura própria e colunas `minmax(0, 1fr)`; a marca de "editado" é um ponto
+  na linha do nome (texto para leitor de tela e `title`), para não mudar a altura do cartão (CLS 0) nem cortar o nome; "morto às…" quebra a linha. Teste nos 3 tamanhos:
+  nenhum texto do banco fica cortado nem com reticências.
 - **Limites conhecidos:** abaixo de 1024 x 600 as colunas não têm `contain: size` (o mapa não se mexe, mas o que está abaixo pode descer); no celular o mapa tem
   `touch-action: none` enquanto o modo está ligado (arrastar a peça não rola a página, e o resto do mapa também não); o nome do jogador é a chave da edição.

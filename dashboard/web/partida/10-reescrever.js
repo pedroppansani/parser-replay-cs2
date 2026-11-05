@@ -149,6 +149,8 @@
           b.setAttribute("aria-pressed", "false");
           var topo = novo("span", "pr-topo");
           topo.appendChild(novo("b", "pr-nome", it.p.name));
+          var tag = novo("span", "pr-tag", TX.editado); tag.title = TX.editado;   // um ponto na linha do nome: aparece sem mudar a altura do cartão (CLS 0) nem cortar o nome
+          topo.appendChild(tag);
           topo.appendChild(novo("span", "pr-hp", it.vivo ? String(it.p.hp[t0]) : "0"));
           b.appendChild(topo);
           var w = it.vivo ? it.p.w[t0] : -1;
@@ -156,7 +158,6 @@
           var meio = it.vivo ? [(w >= 0 ? cur.weapons[w] : ""), (pi >= 0 ? cur.places[pi] : "")].filter(Boolean).join(" · ")
             : formata(TX.morto, { relogio: relogioNo(it.morreuEm), inicio: relogioNo(t0) });
           b.appendChild(novo("span", "pr-meio", meio));
-          b.appendChild(novo("span", "pr-tag", TX.editado));
           if (it.vivo) b.addEventListener("click", function () { seleciona(it.p.name); });
           else b.setAttribute("aria-disabled", "true");
           host.appendChild(b);

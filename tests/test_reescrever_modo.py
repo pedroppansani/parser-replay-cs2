@@ -244,3 +244,65 @@ def test_no_modo_as_setas_o_esc_do_popover_e_a_troca_de_aba_se_comportam(navegad
         assert pg.get_attribute("#palco", "data-tema") == "escuro" and pg.locator("#squad-ct .plr").count() == 5
     finally:
         ctx.close()
+
+
+@pytest.mark.parametrize("largura,altura", [(1440, 900), (1366, 657), (375, 812)])
+def test_nenhum_texto_do_banco_fica_cortado_e_a_linha_do_tempo_inteira(navegador, pagina, largura, altura):
+    ctx, pg, _ = _abre(navegador, pagina, largura, altura)
+    try:
+        linha = lambda: pg.evaluate("(() => { const r = document.getElementById('scrub').getBoundingClientRect(); return r.width; })()")
+        antes = linha()
+        assert antes > 75, antes                                                             # no Replay normal a linha do tempo não vira ponto
+        if largura < 560:
+            assert pg.evaluate("getComputedStyle(document.getElementById('rw-daqui')).display") == "none"
+        pg.click("#rw-entrar")
+        assert linha() > 75 and abs(linha() - antes) < 1                                    # desligada, mas inteira e do mesmo tamanho
+        vivas = [p for p in _estado(pg)["pecas"] if p["editavel"]]
+        xy = pg.evaluate("""n => { const e = window.__reescrever().pecas.find(p => p.nome === n), R = window.__RADAR__, r = document.getElementById('map').getBoundingClientRect();
+            return [r.left + (e.x - R.origin_x) * R.scale_px_per_unit * r.width / R.width, r.top + (R.origin_y - e.y) * R.scale_px_per_unit * r.height / R.height]; }""", vivas[0]["nome"])
+        pg.mouse.move(*xy); pg.mouse.down(); pg.mouse.move(xy[0] + 30, xy[1] - 20, steps=4); pg.mouse.up()   # edita uma: o cartão ganha a etiqueta "editado"
+        assert pg.locator(".banco .peca-rw.editada").count() == 1
+        assert pg.evaluate("(() => { const s = document.getElementById('squad-ct'); return s.scrollWidth <= s.clientWidth + 1; })()")
+        cortados = pg.evaluate("""() => [...document.querySelectorAll('.banco .peca-rw')].flatMap(card => {
+            const c = card.getBoundingClientRect(), raio = parseFloat(getComputedStyle(card).borderTopLeftRadius) || 0, ruim = [];
+            for (const f of card.querySelectorAll('.pr-nome, .pr-meio, .pr-hp, .pr-tag')) {
+              const r = f.getBoundingClientRect(); if (!r.width) continue;
+              if (f.scrollHeight > f.clientHeight + 1) ruim.push(f.className + ': altura cortada');
+              if (f.scrollWidth > f.clientWidth + 1) ruim.push(f.className + ': texto com reticências ' + f.textContent + ' ' + f.scrollWidth + '>' + f.clientWidth);
+              if (r.bottom > c.bottom - 3 || r.top < c.top + 3) ruim.push(f.className + ': encosta na borda de cima/baixo');
+              if (r.left < c.left + Math.min(raio, 12) * 0.5 || r.right > c.right - 6 || c.right > document.getElementById('squad-ct').getBoundingClientRect().right - 4) ruim.push(f.className + ': encosta na borda do lado');
+            }
+            return ruim; })""")
+        assert not cortados, cortados
+        assert vivas
+    finally:
+        ctx.close()
+
+
+def test_no_celular_o_cabecalho_tem_a_mesma_altura_nos_dois_estados_com_folga(navegador, pagina):
+    ctx, pg, _ = _abre(navegador, pagina, 375, 812)
+    try:
+        medir = "() => { const h = document.querySelector('.roundhead'), a = document.getElementById('rh-acoes').getBoundingClientRect(), g = document.querySelector('.roundhead .big').getBoundingClientRect(); return [h.getBoundingClientRect().height, a.top - g.top, document.getElementById('rh-acoes').getBoundingClientRect().left - g.right]; }"
+        antes = pg.evaluate(medir)
+        pg.click("#rw-entrar")
+        depois = pg.evaluate(medir)
+        assert antes[0] == depois[0], (antes, depois)
+        assert abs(antes[1]) < 20 and antes[2] >= 24, antes                        # botão na mesma linha de "Round N", com 24 px de folga
+    finally:
+        ctx.close()
+
+
+def test_editar_uma_peca_nao_mexe_em_nada_da_pagina_cls_zero(navegador, pagina):
+    ctx, pg, _ = _abre(navegador, pagina, 1366, 657)
+    try:
+        pg.evaluate("window.__ls = 0; new PerformanceObserver(l => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__ls += e.value; }).observe({type: 'layout-shift', buffered: false});")
+        pg.click("#rw-entrar")
+        alvo = next(p for p in _estado(pg)["pecas"] if p["editavel"])
+        xy = pg.evaluate("""n => { const e = window.__reescrever().pecas.find(p => p.nome === n), R = window.__RADAR__, r = document.getElementById('map').getBoundingClientRect();
+            return [r.left + (e.x - R.origin_x) * R.scale_px_per_unit * r.width / R.width, r.top + (R.origin_y - e.y) * R.scale_px_per_unit * r.height / R.height]; }""", alvo["nome"])
+        pg.mouse.move(*xy); pg.mouse.down(); pg.mouse.move(xy[0] + 40, xy[1] - 30, steps=5); pg.mouse.up(); pg.wait_for_timeout(300)
+        assert pg.locator(".banco .peca-rw.editada").count() == 1
+        pg.click("#rw-sair"); pg.wait_for_timeout(300)
+        assert pg.evaluate("window.__ls") == 0
+    finally:
+        ctx.close()
