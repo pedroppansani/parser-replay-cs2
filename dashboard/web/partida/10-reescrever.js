@@ -88,6 +88,10 @@
     }
     reescrever.soNoReal = function (it) { return !!it.by && editada(it.by) && lancouEm(it) > t0; };
     reescrever.podeTocar = function () { return algumaEditada(); };
+    reescrever.esmaecida = function (nome) {     // depois da morte do real a peça editada fica esmaecida (o ✕ do fantasma mostra onde ele morreu)
+      var it = pecas.filter(function (q) { return q.p.name === nome; })[0];
+      return !!(reescrever.sua && it && !it.p.alive[Math.floor(pos)]);
+    };
     reescrever.preparaTocar = function () {
       if (!algumaEditada()) return false;
       if (!reescrever.sua || pos >= cur.frames - 1) { pos = t0; frame = t0; scrubEl.value = t0; }
@@ -160,7 +164,7 @@
           c.strokeStyle = par[0]; c.lineWidth = par[1]; c.beginPath(); c.moveTo(mx(sp[0]), my(sp[1])); c.lineTo(mx(q.x), my(q.y)); c.stroke();
         });
         c.restore();
-        MapCore.desenhaJogador(c, mx(sp[0]), my(sp[1]), { cor: cor, estado: vivo ? "fantasma" : "morto", escala: reescrever.escala,
+        MapCore.desenhaJogador(c, mx(sp[0]), my(sp[1]), { cor: cor, estado: vivo ? "fantasma" : "morto", escala: vivo ? 1.5 : reescrever.escala, raio: 12,
           yaw: vivo && p.d ? p.d[i0] : null, hp: p.hp[i0] });
       });
       var SMOKE_R = MapCore.RAIO_SMOKE_UNIDADES * RAD.scale_px_per_unit, FIRE_R = MapCore.RAIO_MOLOTOV_UNIDADES * RAD.scale_px_per_unit;
@@ -322,6 +326,16 @@
           if (e.victim === nome) itens.push(formata(e.attacker ? TX.mudou_morreu : TX.mudou_morreu_sem_matador, { nome: nome, matador: e.attacker, relogio: relogioNo(e.f) }));
           else if (e.attacker === nome && !editada(e.victim)) itens.push(formata(TX.mudou_d3, { nome: nome, vitima: e.victim, relogio: relogioNo(e.f) }));
         });
+        cur.events.forEach(function (e) {
+          if (e.player !== nome || e.f <= t0) return;
+          if (e.type === "plant") itens.push(formata(TX.mudou_plantou, { nome: nome, relogio: relogioNo(e.f) }));
+          if (e.type === "defuse") itens.push(formata(TX.mudou_desarmou, { nome: nome, relogio: relogioNo(e.f) }));
+        });
+        (cur.pops || []).forEach(function (q) {
+          if (q.k !== "flash" || q.by !== nome || q.f <= t0) return;
+          var n = (q.hit || []).filter(function (v) { return v.e && v.s >= R.effective_blind_s; }).length;
+          if (n) itens.push(formata(TX.mudou_cegou, { nome: nome, relogio: relogioNo(q.f), n: formata(n === 1 ? TX.cegos.um : TX.cegos.varios, { n: n }) }));
+        });
         cur.nades.forEach(function (n) {
           if (n.by === nome && n.f0 > t0) itens.push(formata(TX.mudou_granada, { tipo: TX.granadas[n.k] || n.k, nome: nome, relogio: relogioNo(n.f0) }));
         });
@@ -449,9 +463,13 @@
       dlg = novo("dialog", "rw-dialogo"); dlg.setAttribute("data-tema", "violeta"); dlg.setAttribute("aria-labelledby", "rw-dlg-t");
       var t = novo("h3", null, TX.descartar_titulo); t.id = "rw-dlg-t";
       var linhas = novo("div", "rw-dlg-linhas");
-      var cont = botao(TX.continuar, "rw-btn prim", function () { dlg.close(); });
+      var cont = botao(TX.continuar, "rw-btn prim", function () { depoisDeDescartar = null; dlg.close(); });
       cont.autofocus = true; cont.id = "rw-continuar";
-      var desc = botao(TX.descartar, "rw-btn", function () { dlg.close(); reescrever.sai(); });
+      var desc = botao(TX.descartar, "rw-btn", function () {
+        var seguir = depoisDeDescartar; depoisDeDescartar = null;
+        dlg.close(); reescrever.sai(!!seguir);
+        if (seguir) seguir();
+      });
       desc.id = "rw-descartar";
       linhas.appendChild(cont); linhas.appendChild(desc);
       dlg.addEventListener("keydown", function (e) {      // o Tab dá a volta dentro do aviso (a página atrás fica inerte)
@@ -460,9 +478,17 @@
         if (document.activeElement === alvo) { e.preventDefault(); outro.focus(); }
       });
       dlg.appendChild(t); dlg.appendChild(novo("p", null, TX.descartar_texto)); dlg.appendChild(linhas);
+      dlg.addEventListener("close", function () { depoisDeDescartar = null; });   // Esc ou Continuar: nada a seguir
       document.body.appendChild(dlg);
       return dlg;
     }
+    var depoisDeDescartar = null;      // o que fazer se descartar (trocar de round ou de aba)
+    reescrever.pedeDescartar = function (seguir) {     // true: abriu o aviso (quem chamou espera); false: sem edição, pode seguir
+      if (!reescrever.ativo || !algumaEditada()) return false;
+      depoisDeDescartar = seguir;
+      pedeSair();
+      return true;
+    };
     function pedeSair() {
       if (!algumaEditada()) { reescrever.sai(); return; }
       setPlaying(false);       // a sua versão não segue tocando por trás do aviso
@@ -486,6 +512,7 @@
       return {
         ativo: reescrever.ativo, sua: reescrever.sua, fantasma: reescrever.fantasma, instante: t0, quadro: pos,
         fantasmas: reescrever.ativo && reescrever.sua ? fantasmasAgora().map(function (g) { return { nome: g.it.p.name, vivo: g.vivo, x: g.sp[0], y: g.sp[1] }; }) : [],
+        esmaecidas: reescrever.ativo ? pecas.filter(function (it) { return editada(it.p.name) && reescrever.esmaecida(it.p.name); }).map(function (it) { return it.p.name; }) : [],
         soNoReal: reescrever.ativo ? [].concat(cur.nades, cur.smokes, cur.fires, cur.pops || []).filter(function (it) { return reescrever.soNoReal(it); }).length : 0, relogio: relogioNo(t0), selecionada: reescrever.sel,
         pecas: pecas.map(function (it) {
           var e = edicoes[it.p.name], o = origem[it.p.name];

@@ -223,6 +223,7 @@ def test_a_peca_da_sua_versao_tem_contraste_de_3_para_1_contra_o_radar_nos_mapas
             r = pg.evaluate(JS)
             pg.close()
             assert r and r["pior"] >= MINIMO and r["abaixo"] == 0, (mapa, r)
+            assert r["piorG"] >= MINIMO and r["abaixoG"] == 0, (mapa, "fantasma", r)      # o anel tracejado do real (R3) também lê no radar
     finally:
         ctx.close()
 

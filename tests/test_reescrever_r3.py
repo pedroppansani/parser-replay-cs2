@@ -126,13 +126,13 @@ def test_o_que_mudou_conta_o_movimento_a_morte_do_real_e_avisa_do_duelo_sem_prom
         assert itens[0].startswith("molodoy sai de CTSpawn às 1:21 e vai até o ponto marcado: chega às ")
         texto = " ".join(itens)
         assert "No real, molodoy matou ZywOo às 0:52. Na sua versão molodoy saiu do lugar, mas a morte acontece como no real" in texto   # D3 (a)
-        assert "No real, molodoy morreu para apEX" in texto and "na sua versão ele não morre" in texto
+        assert "No real, molodoy morreu para apEX às 0:47. Na sua versão, o site não refaz esse duelo." in texto
         assert "fica só no real" in texto                                                  # a granada que ele jogaria depois
         assert pg.get_attribute("#rw-mudou", "aria-live") == "polite"
         # honestidade: o site nunca diz nem sugere que a sua versão ganharia
         painel = pg.inner_text("#squad-t").lower()
         fora_da_frase = painel.replace("o site não simula o cs2 e não diz quem venceria os duelos", "")
-        assert not re.search(r"ganh|venc|vit[óo]ria|placar|melhor|pior|resultado|prever|previs[ãa]o\b(?!\.)", fora_da_frase.replace("não é uma previsão", "")), fora_da_frase
+        assert not re.search(r"ganh|venc|vit[óo]ria|placar|melhor|pior|resultado|prever|previs[ãa]o\b(?!\.)|n[ãa]o morre|sobreviv|salv", fora_da_frase.replace("não é uma previsão", "")), fora_da_frase
         pg.click("#rw-voltar")
         assert "Nada ainda" in pg.inner_text("#rw-mudou")
     finally:
@@ -186,5 +186,55 @@ def test_movida_por_menos_de_8_u_volta_ao_real_e_o_foco_nao_se_perde_ao_voltar_a
         pg.click("#rw-continuar")
         pg.focus("#rw-editar"); pg.keyboard.press("Enter")
         assert pg.evaluate("document.activeElement !== document.body")                     # o botão que se desligou não deixa o foco cair no vazio
+    finally:
+        ctx.close()
+
+
+def test_depois_da_morte_do_real_a_peca_editada_fica_esmaecida_e_o_fantasma_vira_x(navegador, pagina):
+    ctx, pg, _ = _abre(navegador, pagina, 1440, 900)
+    try:
+        pg.click("#rw-entrar"); _arrasta(pg, "molodoy")
+        pg.click("#play"); pg.wait_for_timeout(300); pg.click("#play")
+        assert _estado(pg)["esmaecidas"] == []                                             # no começo ele está vivo nos dois
+        pg.evaluate("() => { const s = document.getElementById('scrub'); s.value = s.max; s.dispatchEvent(new Event('input')); }")
+        est = _estado(pg)
+        assert est["esmaecidas"] == ["molodoy"]                                           # o real já o matou: a peça da sua versão não parece viva e bem
+        assert [f for f in est["fantasmas"] if f["nome"] == "molodoy" and not f["vivo"]]  # e o ✕ do real fica onde ele morreu
+    finally:
+        ctx.close()
+
+
+def test_a_flash_o_plant_e_o_desarme_do_editado_entram_em_o_que_mudou_com_a_mesma_frase(navegador, pagina):
+    ctx, pg, _ = _abre(navegador, pagina, 1440, 900, round_=13, frac=0.1)             # round 13: apEX flasha e planta, YEKINDAR desarma
+    try:
+        pg.click("#rw-entrar")
+        _arrasta(pg, "apEX", 40, 20); _arrasta(pg, "YEKINDAR", -40, 20)
+        texto = " ".join(pg.locator("#rw-mudou li").all_inner_texts())
+        assert "No real, apEX plantou a bomba às " in texto
+        assert "No real, YEKINDAR desarmou a bomba às " in texto
+        assert "No real, a flash de apEX das " in texto and " cegou " in texto
+        assert texto.count("Na sua versão, o site mantém o que aconteceu no real.") >= 3
+    finally:
+        ctx.close()
+
+
+def test_trocar_de_round_ou_de_aba_com_edicao_pergunta_antes_de_descartar(navegador, pagina):
+    ctx, pg, _ = _abre(navegador, pagina, 1440, 900)
+    try:
+        pg.click("#rw-entrar")
+        pg.locator("#strip .rchip", has_text="22").first.click()                           # sem edição: troca direto
+        assert not _estado(pg)["ativo"]
+        pg.click("#rw-entrar"); _arrasta(pg)
+        for destino in (lambda: pg.locator("#strip .rchip", has_text="21").first.click(), lambda: pg.locator("[data-tab='jogadores']").first.click()):
+            destino()
+            assert pg.evaluate("document.querySelector('.rw-dialogo').open") and _estado(pg)["ativo"]       # perguntou e ainda não saiu
+            pg.click("#rw-continuar")
+            assert _estado(pg)["ativo"] and any(p["editada"] for p in _estado(pg)["pecas"])                  # Continuar editando: nada muda
+            assert pg.evaluate("document.querySelector('[data-tab=replay]').getAttribute('aria-selected')") == "true"
+        pg.locator("#strip .rchip", has_text="21").first.click(); pg.click("#rw-descartar")
+        assert not _estado(pg)["ativo"] and "21" in pg.evaluate("document.querySelector('.roundhead .big').textContent")   # descartou e foi para o round 21
+        pg.click("#rw-entrar"); _arrasta(pg)
+        pg.locator("[data-tab='jogadores']").first.click(); pg.click("#rw-descartar")
+        assert not _estado(pg)["ativo"] and pg.evaluate("document.querySelector('[data-tab=jogadores]').getAttribute('aria-selected')") == "true"
     finally:
         ctx.close()

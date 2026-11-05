@@ -401,6 +401,7 @@
   }
 
   function selectRound(r) {
+    if (reescrever.ativo && reescrever.pedeDescartar(function () { selectRound(r); })) return;   // com edições, pergunta antes de descartar
     if (reescrever.ativo) reescrever.sai(true);   // trocar de round sai do modo: as edições são deste round
     cur = r;
     frame = 0;
@@ -1035,6 +1036,8 @@
       var tm = ctx.getTransform(), sx = tm.a * X + tm.c * Y + tm.e, sy = tm.b * X + tm.d * Y + tm.f;
       var marcado = alive && pLv !== lvNow && (sx < 0 || sx > cv.width || sy < 0 || sy > cv.height);   // fora do quadro: só o triângulo
       if (marcado) foraDoAndar.push({ sx: sx, sy: sy, cor: color, nome: p.name, lado: p.side });
+      var esmaecida = editada && reescrever.esmaecida(p.name);   // depois da morte do real a peça editada não pode parecer viva e bem
+      if (esmaecida) ctx.globalAlpha = 0.4;
       MapCore.desenhaJogador(ctx, X, Y, {
         cor: color,
         estado: !alive ? "morto" : (pLv !== lvNow ? "outro_andar" : "vivo"),
@@ -1046,6 +1049,7 @@
         escala: reescrever.ativo && alive ? reescrever.escala : undefined,   // a peça editável é 25% maior
         selecionado: reescrever.ativo && reescrever.sel === p.name
       });
+      if (esmaecida) ctx.globalAlpha = 1;
     });
     if (reescrever.ativo) reescrever.desenhaSobre(ctx);
     desenhaMarcasDeBorda(ctx, foraDoAndar);

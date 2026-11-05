@@ -1170,7 +1170,7 @@ window.MapCore = (function () {
     if (o.estado === "fantasma") {
       // fantasma do round real (§4.1): sem preenchimento; halo claro e contorno escuro TAMBÉM tracejados, no mesmo
       // passo (5/4), e o traço na cor do lado por cima -- o anel duplo vale com o disco vazado
-      var rf = 6 * e;
+      var rf = o.raio != null ? o.raio : 6 * e;     // `raio` (px): o fantasma do Reescrever é maior que a peça, para se ler no radar claro
       ctx.setLineDash([5, 4]);
       ctx.lineWidth = 7 * e; ctx.strokeStyle = token("tinta-mapa");
       ctx.beginPath(); ctx.arc(X, Y, rf, 0, Math.PI * 2); ctx.stroke();
