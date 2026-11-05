@@ -123,8 +123,12 @@ de 23.706 conferem com o `replay.json`), o tempo de voo (99,9% em smoke, he e fl
 smoke não tem fim na demo (usa a constante de 20 s, que não vem da demo). Índice `docs/sugeridos.json` (58 KB) com o decisivo, até 3 momentos e
 até 2 erros validados por partida (limites escolhidos pelo Claude, ajustáveis). Suíte do resultado do merge: 1.756 passaram, 71 pulados, 0
 falharam. Impressão dos números idêntica, salvo o hash de `biblioteca.arremessos` das 8 pranchetas (aceito). Pendências novas: 27 (nome do
-evento sem acento), 28 (duas bases de tempo; entra no R5), 29 (molotovs sem voo ou efeito). **Próxima: R1** (navbar com Reescrever, prancheta
-livre como bloco na landing, página de escolha), com portão: prévia, capturas, code-review na conversa e o OK do Pedro.
+evento sem acento), 28 (duas bases de tempo; entra no R5), 29 (molotovs sem voo ou efeito). **R1 FEITA (2026-11-05, no PC), merge `bce70d46`, decisão 56:** a navbar é Partidas, Jogadores, Reescrever (a prancheta livre saiu dela e é o bloco
+"Monte uma tática do zero" da landing, com o endereço `prancheta_de_<mapa>.html` igual); a página `reescrever.html` mostra os rounds sugeridos (a
+partida de exemplo, depois as profissionais, depois as da FACEIT; o nome do time em vez de "Time A/B") e a busca, com o teclado inteiro. CLS 0 nas duas páginas;
+o aceite de contraste e alvos passa nelas e as falhas dele em match_02 e nas pranchetas são as mesmas da main (pendência 30). Suíte do resultado do merge: 1.763
+passaram, 71 pulados, 0 falharam. Pendências novas: 30 (falhas antigas do aceite), 31 (CLS de 0,0054 que apareceu uma vez na landing). **Próxima: R2** (o modo
+Reescrever em si), com portão: prévia, capturas, code-review na conversa e o OK do Pedro.
 
 **Fila que falta, nesta ordem:** (1) ~~v2-5b~~, ~~v2-6~~, ~~cartão 17~~ (`165f0d00`), ~~v2-7~~ (`73fc57d0`) e ~~cartão 20~~
 (`24eea71e`): feitos. (2) ~~Cartão 9~~ (a refatoração, decisão 50): FECHADO em 2026-10-29 nos passos 0 a 3 (`9be9db37`, `eb704893`, `2641c91b`, `00f49756`; o passo 3 provado no PC do Pedro: site, impressão, quadros e capturas iguais, suíte com o `data/interim` 1.651 passaram, 71 pulados, 0 falharam). A guarda do sha256 saiu; o passo 4 (a função de 88 KB que monta HTML) fica para depois. Agora: **Fase T** (tema claro e escuro na home; escolhas do Pedro: agentes no cartão claro no escuro, prancheta no violeta nos dois temas) e **Fase M** (mapa; escolha: variação A mais o nome em itálico das peças do outro andar), cada uma numa branch, com portão de capturas antes do merge; e, do ci-optimizer, só os `timeout-minutes`. (3) No PC do Pedro: cartão 6 (histograma da força da
@@ -245,6 +249,7 @@ foram feitos na v2-7; o `--f-cond` ficou (trocar mexe na fonte dos símbolos no 
 | Fase B: modo palco do Replay, mapa maior (cartão 15, decisão 53) | `74047972` |
 | Fase B+: enquadramento da Nuke pela área do andar (decisão 54) | `d34aad6e` |
 | Reescrever R0: lado e tempos reais na biblioteca de arremessos, índice dos sugeridos (decisão 55) | `a2e1e806` |
+| Reescrever R1: navbar, prancheta livre na landing, página de escolha (decisão 56) | `bce70d46` |
 
 ## Em andamento
 
