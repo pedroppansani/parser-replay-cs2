@@ -28,7 +28,7 @@ Complementa o `CLAUDE.md` da raiz e não o substitui. Uma regra por linha; (N) =
 
 - `data/lineups/` é gerada LOCALMENTE por `scripts.build_lineups` (depende do interim, que não vai
   ao git nem ao CI); só entra arremesso com reprodução exata; regerar depois de mudar
-  `metrics/grenade_throws.py` (32)
+  `metrics/grenade_throws.py` (32, 55)
 - Nome de lugar só do campo `place` dos ticks, em inglês como o jogo escreve (sem tradução); célula
   sem tick não tem nome; o mapa só ganha tabela com `MIN_PARTIDAS` (2) e `MIN_ACERTO` (93%) fora da
   amostra, e abaixo disso a tela fica sem nome (42)

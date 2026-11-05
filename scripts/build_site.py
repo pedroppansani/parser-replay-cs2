@@ -565,6 +565,30 @@ def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | Non
 """)
 
 
+def indice_de_sugeridos(matches: list[dict]) -> dict:
+    """Reescrever (R0): o índice pequeno dos rounds sugeridos de cada partida (`leitura/sugeridos.py`), para a página de escolha
+    não baixar as páginas das partidas (de 2,4 a 5,2 MB). Só entra partida com sugerido; tipo de erro não validado nunca entra."""
+    import polars as pl
+
+    from leitura.sugeridos import FORMATO_SUGERIDOS, sugeridos_da_partida
+    partidas = {}
+    for m in matches:
+        base = PROCESSED_DIR / m["id"]
+        arq_breakdown, arq_erros = base / "breakdown.json", base / "erros_do_jogador.parquet"
+        if not arq_breakdown.exists() or not (base / "rounds.parquet").exists() or not (base / "replay.json").exists():
+            continue
+        insights = json.loads((base / "insights.json").read_text(encoding="utf-8"))
+        rounds = {int(r["round_num"]): r for r in pl.read_parquet(base / "rounds.parquet").to_dicts()}
+        tickrate = int(json.loads((base / "replay.json").read_text(encoding="utf-8"))["tickrate"])
+        erros = pl.read_parquet(arq_erros).to_dicts() if arq_erros.exists() else []
+        lista = sugeridos_da_partida(insights.get("decisive_round"), (insights.get("narrative") or {}).get("decisive"),
+                                     json.loads(arq_breakdown.read_text(encoding="utf-8")), erros, rounds, tickrate)
+        if lista:
+            partidas[m["id"]] = {"file": m["file"], "map": m["map"], "map_label": m["map_label"], "score_a": m["score_a"],
+                                 "score_b": m["score_b"], "lados": m.get("lados"), "evento": m.get("evento"), "sugeridos": lista}
+    return {"formato": "sugeridos-do-reescrever", "versao": FORMATO_SUGERIDOS, "partidas": partidas}
+
+
 def build(repo_url: str, preview: bool = False) -> Path:
     """Gera o site em docs/; com `preview`, em preview/, com os tipos de erro não validados à mostra."""
     saida = PREVIEW_DIR if preview else DOCS_DIR
@@ -644,6 +668,9 @@ def build(repo_url: str, preview: bool = False) -> Path:
     copia_agente(saida)
     (saida / "index.html").write_text(build_index(matches, repo_url, pranchetas, numeros=numeros_citaveis()),
                                       encoding="utf-8")
+
+    # os rounds sugeridos do Reescrever (R0): um arquivo pequeno ao lado das páginas, sem mudar nenhuma delas
+    (saida / "sugeridos.json").write_text(json.dumps(indice_de_sugeridos(matches), ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
     # o GitHub Pages passa o conteúdo pelo Jekyll por padrão, que ignora arquivos
     # e pastas começando com underscore; .nojekyll desliga isso
