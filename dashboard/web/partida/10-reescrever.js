@@ -164,7 +164,7 @@
           c.strokeStyle = par[0]; c.lineWidth = par[1]; c.beginPath(); c.moveTo(mx(sp[0]), my(sp[1])); c.lineTo(mx(q.x), my(q.y)); c.stroke();
         });
         c.restore();
-        MapCore.desenhaJogador(c, mx(sp[0]), my(sp[1]), { cor: cor, estado: vivo ? "fantasma" : "morto", escala: vivo ? 1.5 : reescrever.escala, raio: 12,
+        MapCore.desenhaJogador(c, mx(sp[0]), my(sp[1]), { cor: cor, estado: vivo ? "fantasma" : "morto", escala: vivo ? 1.8 : reescrever.escala, raio: 12,
           yaw: vivo && p.d ? p.d[i0] : null, hp: p.hp[i0] });
       });
       var SMOKE_R = MapCore.RAIO_SMOKE_UNIDADES * RAD.scale_px_per_unit, FIRE_R = MapCore.RAIO_MOLOTOV_UNIDADES * RAD.scale_px_per_unit;

@@ -238,3 +238,12 @@ def test_trocar_de_round_ou_de_aba_com_edicao_pergunta_antes_de_descartar(navega
         assert not _estado(pg)["ativo"] and pg.evaluate("document.querySelector('[data-tab=jogadores]').getAttribute('aria-selected')") == "true"
     finally:
         ctx.close()
+
+
+def test_o_fantasma_medido_e_o_desenhado_tem_o_mesmo_tamanho():
+    from pathlib import Path
+    from scripts.design.mede_peca_reescrever import JS
+    js = (Path(__file__).resolve().parent.parent / "dashboard" / "web" / "partida" / "10-reescrever.js").read_text(encoding="utf-8")
+    desenhado = re.search(r'estado: vivo \? "fantasma" : "morto", escala: vivo \? ([\d.]+) :.*?raio: (\d+)', js)
+    medido = re.search(r"RF = (\d+), ESC = ([\d.]+)", JS)
+    assert desenhado and medido and (desenhado.group(1), desenhado.group(2)) == (medido.group(2), medido.group(1))

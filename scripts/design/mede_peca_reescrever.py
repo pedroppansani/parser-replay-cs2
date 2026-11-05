@@ -33,14 +33,14 @@ JS = """async () => {
   // compara o pixel do halo (fora) e o do contorno (dentro) com o pixel do radar no mesmo lugar, e vale o melhor dos dois
   const g = document.createElement('canvas'); g.width = proc.width; g.height = proc.height;
   const gx = g.getContext('2d'); gx.drawImage(proc, 0, 0);
-  const base = gx.getImageData(0, 0, g.width, g.height), RF = 12, tracos = [];
+  const base = gx.getImageData(0, 0, g.width, g.height), RF = 12, ESC = 1.8, tracos = [];
   const lado = css('--ct-mapa');
   for (let i = 0; i < 20; i++) for (let j = 0; j < 20; j++) {
     const X = Math.round(proc.width * (0.1 + 0.8 * i / 19)), Y = Math.round(proc.height * (0.1 + 0.8 * j / 19));
     const c = document.createElement('canvas'); c.width = 80; c.height = 80;
     const cx = c.getContext('2d'); cx.drawImage(proc, X - 40, Y - 40, 80, 80, 0, 0, 80, 80);
     const antes = cx.getImageData(0, 0, 80, 80);
-    MapCore.desenhaJogador(cx, 40, 40, { cor: lado, estado: 'fantasma', escala: 1.5, raio: RF, nome: null });
+    MapCore.desenhaJogador(cx, 40, 40, { cor: lado, estado: 'fantasma', escala: ESC, raio: RF, nome: null });
     const depois = cx.getImageData(0, 0, 80, 80);
     // 12 tracinhos: a cada 2π/ (perímetro / 9) rad; a metade "ligada" de cada passo 5/4 começa em 0 e vai a 5/9 do passo
     const passo = 9 / RF, k = Math.floor(2 * Math.PI * RF / 9);
@@ -48,7 +48,8 @@ JS = """async () => {
       const ang = (t + 2.5 / 9) * passo;
       const pix = (r) => { const px = Math.round(40 + Math.cos(ang) * r), py = Math.round(40 + Math.sin(ang) * r), o = (py * 80 + px) * 4; return [[depois.data[o], depois.data[o + 1], depois.data[o + 2]], [antes.data[o], antes.data[o + 1], antes.data[o + 2]]]; };
       let cc = 0;                                  // o melhor contraste do tracinho (halo ou contorno) contra o radar no mesmo pixel, ao longo do raio
-      for (let r = RF - 4; r <= RF + 4.01; r += 0.5) { const q = pix(r); cc = Math.max(cc, cr(q[0], q[1])); }
+      const meia = 3.5 * ESC + 0.5;                 // a meia-largura do halo (7 × escala): a janela cobre halo, contorno e cor
+      for (let r = RF - meia; r <= RF + meia + 0.01; r += 0.5) { const q = pix(r); cc = Math.max(cc, cr(q[0], q[1])); }
       tracos.push(cc);
     }
   }
