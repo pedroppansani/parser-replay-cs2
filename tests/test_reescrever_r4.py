@@ -22,7 +22,9 @@ PRONTA = "() => window.__reescrever().trocas.biblioteca === 'pronta'"
 def pagina_com_biblioteca(pagina):
     """A página do teste com `arremessos/<mapa>.js` ao lado, como no site."""
     from scripts.build_tactics_page import arquivo_da_biblioteca, biblioteca_js
-    bib = biblioteca_js(MAPA)
+    from scripts.build_site import match_summary, times_das_partidas
+    ids = {a["partida"] for a in json.loads((RAIZ / "data" / "lineups" / f"{MAPA}.json").read_text(encoding="utf-8"))["arremessos"]}
+    bib = biblioteca_js(MAPA, times_das_partidas([s for s in (match_summary(i) for i in sorted(ids)) if s]))
     if bib is None:
         pytest.skip("sem a biblioteca do mapa")
     destino = pagina.parent / arquivo_da_biblioteca(MAPA)
@@ -266,5 +268,129 @@ def test_flash_trocada_vira_um_estouro_sem_efeito_afirmado(navegador, pagina_com
         from leitura.reescrever import TEXTOS_DO_MODO
         assert TEXTOS_DO_MODO["sem_efeito"] == "sem efeito calculado"
         assert erros == []
+    finally:
+        ctx.close()
+
+
+POSICAO = """() => { const r = document.getElementById('palco').getBoundingClientRect(), m = document.getElementById('map').getBoundingClientRect();
+    const d = x => Math.round(x * 10) / 10;
+    return { palco: [d(r.left), d(r.top), d(r.width), d(r.height)], mapa: [d(m.left), d(m.top), d(m.width), d(m.height)], rolagem: [scrollX, scrollY], altura: document.documentElement.scrollHeight }; }"""
+
+
+def _clica(pg, seletor, nth=0):
+    """Clique por script: o do Playwright rola a página até o botão, e o que se mede aqui é o que o MODO faz com o palco."""
+    pg.evaluate("([s, i]) => document.querySelectorAll(s)[i].click()", [seletor, nth])
+    pg.wait_for_timeout(120)
+
+
+@pytest.mark.parametrize("tam", [(1440, 900), (1366, 657), (375, 812)])
+def test_o_palco_nao_sai_do_lugar_na_tela_em_nenhum_estado_do_r4(navegador, pagina_com_biblioteca, pagina, tmp_path, tam):
+    """A posição do palco NA TELA (e a rolagem da página) fica igual em escolhendo, alternativa, trocada, tocando, carregando e erro;
+    no computador a lista longa do painel rola por dentro e a página não cresce."""
+    desktop = tam[0] >= 1024
+    ctx = navegador.new_context(viewport={"width": tam[0], "height": tam[1]})
+    pg = ctx.new_page(); erros = []
+    pg.on("pageerror", lambda e: erros.append(str(e)))
+    pg.add_init_script(r"""(() => { const o = Node.prototype.appendChild; window.__presos = []; window.__segura = false;
+        Node.prototype.appendChild = function (n) { if (n && n.tagName === 'SCRIPT' && /arremessos\//.test(n.src || '') && window.__segura) { window.__presos.push([this, n]); return n; } return o.call(this, n); };
+        window.__solta = () => { window.__segura = false; window.__presos.splice(0).forEach(([p, n]) => o.call(p, n)); }; })()""")
+    try:
+        def abre(arq):
+            pg.goto(arq.as_uri() + "#replay")
+            pg.wait_for_function("() => window.MapAnnotations && MapAnnotations._interno.S.reprojecoes > 0")
+            pg.wait_for_timeout(400)
+            pg.locator("#strip .rchip", has_text="23").first.click(); pg.wait_for_timeout(200)
+            pg.evaluate("() => { const s = document.getElementById('scrub'); s.value = Math.floor(s.max * 0.35); s.dispatchEvent(new Event('input')); }")
+            if not desktop:
+                pg.evaluate("document.getElementById('map').scrollIntoView({block: 'center'})")
+            pg.wait_for_timeout(300)
+
+        medidas = {}
+
+        def mede(estado, base):
+            m = pg.evaluate(POSICAO)
+            medidas[estado] = m
+            assert m["palco"] == base["palco"] and m["mapa"] == base["mapa"] and m["rolagem"] == base["rolagem"], (estado, m, base)
+            if desktop:
+                assert m["altura"] == base["altura"], (estado, "a página cresceu", m["altura"], base["altura"])
+
+        abre(pagina_com_biblioteca)
+        _clica(pg, "#rw-entrar")
+        base = pg.evaluate(POSICAO)
+        pg.evaluate("window.__segura = true")
+        _clica(pg, "#rw-ferr-granada")
+        assert _estado(pg)["trocas"]["biblioteca"] == "carregando"; mede("carregando", base)
+        pg.evaluate("window.__solta()"); pg.wait_for_function(PRONTA); pg.wait_for_timeout(100)
+        mede("escolhendo", base)
+        est = _estado(pg)["trocas"]
+        i = next(i for i, c in enumerate(est["candidatas"]) if c["k"] == "smoke")
+        _clica(pg, ".rw-gr", i); mede("selecionada", base)
+        _clica(pg, ".rw-alt", 0); mede("alternativa", base)
+        if desktop:      # como a pessoa usa: rola o painel por dentro até as alternativas e só então troca (o painel encolhe ao trocar)
+            pg.evaluate("() => { const p = document.getElementById('squad-t'), e = document.querySelector('.rw-gr-det'); p.scrollTop = e.getBoundingClientRect().top - p.getBoundingClientRect().top + p.scrollTop - 12; }")
+            mede("painel rolado por dentro", base)
+        _clica(pg, '[data-foco="trocar"]'); mede("trocada", base)
+        _clica(pg, "#play"); pg.wait_for_timeout(500); _clica(pg, "#play"); mede("tocando", base)
+        _clica(pg, "#rw-editar"); mede("voltou a editar", base)
+        if desktop:       # a lista longa rola por dentro do painel
+            assert pg.evaluate("(() => { const p = document.getElementById('squad-t'); return p.scrollHeight > p.clientHeight; })()")
+
+        erro = tmp_path / pagina.name                                                     # a mesma página sem o arquivo da biblioteca ao lado
+        erro.write_text(pagina.read_text(encoding="utf-8"), encoding="utf-8")
+        abre(erro)
+        _clica(pg, "#rw-entrar")
+        base = pg.evaluate(POSICAO)
+        _clica(pg, "#rw-ferr-granada")
+        pg.wait_for_function("() => window.__reescrever().trocas.biblioteca === 'erro'")
+        mede("erro", base)
+        assert erros == []
+    finally:
+        ctx.close()
+
+
+def test_as_outras_granadas_sao_um_ponto_e_o_traco_so_na_selecionada_e_na_que_esta_sob_o_foco(navegador, pagina_com_biblioteca):
+    ctx, pg, erros = _abre(navegador, pagina_com_biblioteca, 1440, 900)
+    try:
+        _clica(pg, "#rw-entrar"); _clica(pg, "#rw-ferr-granada"); pg.wait_for_function(PRONTA)
+        assert _estado(pg)["trocas"]["hover"] is None and _estado(pg)["trocas"]["selecionada"] is None     # nenhum traço: só os pontos
+        pg.locator(".rw-gr").nth(1).focus()                                                    # o foco (ou o mouse) na lista mostra o traço dela
+        assert _estado(pg)["trocas"]["hover"] == {k: _estado(pg)["trocas"]["candidatas"][1][k] for k in ("k", "by", "f0")}
+        pg.evaluate("document.activeElement.blur()")
+        assert _estado(pg)["trocas"]["hover"] is None
+        # o mouse no ponto de queda no mapa
+        c = _estado(pg)["trocas"]["candidatas"][0]
+        xy = pg.evaluate("""f => { const R = window.__RADAR__, r = document.getElementById('map').getBoundingClientRect();
+            return [r.left + (f[0] - R.origin_x) * R.scale_px_per_unit * r.width / R.width, r.top + (R.origin_y - f[1]) * R.scale_px_per_unit * r.height / R.height]; }""", c["fim"])
+        pg.mouse.move(*xy); pg.wait_for_timeout(100)
+        assert _estado(pg)["trocas"]["hover"]["f0"] == c["f0"]
+        pg.mouse.move(2, 2); pg.wait_for_timeout(100)
+        assert _estado(pg)["trocas"]["hover"] is None and erros == []
+    finally:
+        ctx.close()
+
+
+def test_a_linha_da_alternativa_mostra_os_times_e_nao_o_id_da_partida(navegador, pagina_com_biblioteca):
+    ctx, pg, _ = _abre(navegador, pagina_com_biblioteca, 1440, 900)
+    try:
+        _clica(pg, "#rw-entrar"); _clica(pg, "#rw-ferr-granada"); pg.wait_for_function(PRONTA)
+        est = _estado(pg)["trocas"]
+        i = next(i for i, c in enumerate(est["candidatas"]) if c["k"] == "smoke")
+        _clica(pg, ".rw-gr", i)
+        linhas = pg.evaluate("[...document.querySelectorAll('.rw-alt')].map(b => b.querySelectorAll('.rw-alt-l')[0].textContent)")
+        assert linhas and all("×" in t and "match_" not in t and re.search(r"· round \d+ · a \d+ u$", t) for t in linhas), linhas
+    finally:
+        ctx.close()
+
+
+def test_peca_movida_e_troca_da_mesma_granada_viram_uma_frase_so(navegador, pagina_com_biblioteca):
+    ctx, pg, _ = _abre(navegador, pagina_com_biblioteca, 1440, 900)
+    try:
+        pg.click("#rw-entrar"); _granada(pg)
+        tr = _troca_a_primeira(pg, por="ZywOo")["trocas"][0]
+        pg.click("#rw-ferr-mover"); _arrasta(pg, "ZywOo")
+        itens = pg.locator("#rw-mudou li").all_inner_texts()
+        relogio = [t for t in itens if "não vale" in t]
+        assert len(relogio) == 1 and "fica só no real" in relogio[0]
+        assert not any(t.startswith("A smoke de ZywOo") and "fica só no real" in t and "não vale" not in t for t in itens)      # a outra frase não repete a granada
     finally:
         ctx.close()

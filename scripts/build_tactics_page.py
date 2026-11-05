@@ -88,13 +88,16 @@ def arquivo_da_biblioteca(mapa: str) -> str:
     return f"{PASTA_DA_BIBLIOTECA}/{mapa}.js"
 
 
-def biblioteca_js(mapa: str) -> str | None:
+def biblioteca_js(mapa: str, partidas: dict[str, str] | None = None) -> str | None:
     """O conteúdo do arquivo da biblioteca: a mesma biblioteca que o modo embutido põe no `cfg`, pelo mesmo serializador,
     entregue à prancheta por `Prancheta.recebeBiblioteca`. None quando o mapa não tem biblioteca (sem partida no corpus)."""
     caminho = LINEUPS_DIR / f"{mapa}.json"
     if not caminho.exists():
         return None
-    return "Prancheta.recebeBiblioteca(" + _js(json.loads(caminho.read_text(encoding="utf-8"))) + ");\n"
+    dados = json.loads(caminho.read_text(encoding="utf-8"))
+    if partidas:      # os times de cada partida da biblioteca ("Spirit × NAVI"), para a linha da alternativa do Reescrever (R4); a prancheta ignora
+        dados["partidas_times"] = {p: partidas[p] for p in sorted({a["partida"] for a in dados["arremessos"]}) if p in partidas}
+    return "Prancheta.recebeBiblioteca(" + _js(dados) + ");\n"
 
 
 def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | None = None,

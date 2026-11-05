@@ -351,7 +351,7 @@
           if (n) itens.push(formata(TX.mudou_cegou, { nome: nome, relogio: relogioNo(q.f), n: formata(n === 1 ? TX.cegos.um : TX.cegos.varios, { n: n }) }));
         });
         cur.nades.forEach(function (n) {
-          if (n.by === nome && n.f0 > t0) itens.push(formata(TX.mudou_granada, { tipo: TX.granadas[n.k] || n.k, nome: nome, relogio: relogioNo(n.f0) }));
+          if (n.by === nome && n.f0 > t0 && !(reescrever.granada && reescrever.granada.temTrocaDe(n))) itens.push(formata(TX.mudou_granada, { tipo: TX.granadas[n.k] || n.k, nome: nome, relogio: relogioNo(n.f0) }));
         });
       });
       host.textContent = "";

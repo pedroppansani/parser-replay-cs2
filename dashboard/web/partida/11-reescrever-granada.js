@@ -10,7 +10,7 @@
     var RAIO_U = 150, MAX_GRUPOS = 6;
     var bib = { estado: "nao", dados: null };   // nao | carregando | pronta | erro | sem
     var trocas = [];       // {n, alt}: n é a granada do real (objeto de cur.nades), alt a linha da biblioteca
-    var sel = null, escolha = null;
+    var sel = null, escolha = null, hover = null;
     var secao = null, ferr = {};
     var mapwrap = document.getElementById("mapwrap");
     reescrever.ferramenta = "mover";
@@ -96,23 +96,24 @@
           if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].indexOf(e.key) < 0 || reescrever.sua) return;
           e.preventDefault();
           var f = reescrever.ferramenta === "mover" ? "granada" : "mover";
-          defineFerramenta(f); ferr[f].focus();
+          defineFerramenta(f); focaNoPainel(ferr[f]);
         });
         host.appendChild(grupo);
         secao = el("div", "rw-granada"); secao.id = "rw-granada";
         host.appendChild(secao);
         render();
       },
-      entra: function () { trocas = []; sel = null; escolha = null; reescrever.ferramenta = "mover"; recalcula(); },
-      sai: function () { trocas = []; sel = null; escolha = null; reescrever.ferramenta = "mover"; secao = null; recalcula(); },
-      limpa: function () { trocas = []; sel = null; escolha = null; reescrever.ferramenta = "mover"; recalcula(); render(); },
+      entra: function () { trocas = []; hover = null; sel = null; escolha = null; reescrever.ferramenta = "mover"; recalcula(); },
+      sai: function () { trocas = []; hover = null; sel = null; escolha = null; reescrever.ferramenta = "mover"; secao = null; recalcula(); },
+      limpa: function () { trocas = []; hover = null; sel = null; escolha = null; reescrever.ferramenta = "mover"; recalcula(); render(); },
       temTroca: function () { return efetivas().length > 0; },
       trocada: trocada,
+      temTrocaDe: function (n) { return !!trocaDe(n); },
       atualiza: function () { recalcula(); render(); },
       desenha: desenha,
       frases: frases,
       estado: function () {
-        return { ferramenta: reescrever.ferramenta, biblioteca: bib.estado, selecionada: sel ? { k: sel.k, by: sel.by, f0: sel.f0 } : null,
+        return { hover: hover ? { k: hover.k, by: hover.by, f0: hover.f0 } : null, ferramenta: reescrever.ferramenta, biblioteca: bib.estado, selecionada: sel ? { k: sel.k, by: sel.by, f0: sel.f0 } : null,
                  escolhida: escolha ? escolha.id : null,
                  trocas: trocas.map(function (t) { return { k: t.n.k, by: t.n.by, f0: t.n.f0, alt: t.alt.id, voo_s: t.alt.voo_s, cai: queda(t.n, t.alt), valida: !N.editada(t.n.by) }; }),
                  candidatas: candidatas().map(function (n) { return { k: n.k, by: n.by, f0: n.f0, lid: n.l ? n.l.id : null, fim: fimDe(n), origem: origemDe(n) }; }),
@@ -122,6 +123,17 @@
       escolheNoMapa: function (k, by, f0) { var n = candidatas().filter(function (q) { return q.k === k && q.by === by && q.f0 === f0; })[0]; if (n) seleciona(n); }
     };
 
+    // Foco sem mexer na página: o painel rola por dentro (no computador), então o item é trazido para a vista DENTRO do painel antes de receber o foco.
+    // Um foco atrás das faixas grudadas faria o `focusin` do v2.js rolar a PÁGINA (decisão 53) e o palco sairia do lugar.
+    function focaNoPainel(el) {
+      var p = document.getElementById("squad-t");
+      if (p && p.scrollHeight > p.clientHeight) {
+        var r = el.getBoundingClientRect(), pr = p.getBoundingClientRect();
+        if (r.top < pr.top + 8) p.scrollTop += r.top - pr.top - 12;
+        else if (r.bottom > pr.bottom - 8) p.scrollTop += r.bottom - pr.bottom + 12;
+      }
+      el.focus({ preventScroll: true });
+    }
     function render() {
       if (!secao) return;
       var foco = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.foco : null;
@@ -141,7 +153,7 @@
       var t0 = N.t0();
       if (bib.estado === "carregando" || bib.estado === "nao") {
         var c = el("p", "rw-gr-carrega", TX.carregando); c.setAttribute("role", "status"); c.tabIndex = -1;
-        if (foco === "tentar") setTimeout(function () { c.focus({ preventScroll: true }); }, 0);     // o botão "Tentar de novo" some: o foco vai para o aviso
+        if (foco === "tentar") setTimeout(function () { focaNoPainel(c); }, 0);     // o botão "Tentar de novo" some: o foco vai para o aviso
         secao.appendChild(c);
         var esq = el("div", "rw-esqueleto"); esq.setAttribute("aria-hidden", "true");
         for (var i = 0; i < 3; i++) esq.appendChild(el("span"));
@@ -165,12 +177,14 @@
         var b = el("button", "rw-gr", N.formata(TX.granada_item, { tipo: tipoDe(n.k), nome: nome1(n), relogio: N.relogioNo(n.f0) }) + (tr ? " · " + TX.trocada : ""));
         b.type = "button"; b.dataset.foco = "gr:" + i; b.setAttribute("aria-pressed", String(sel === n));
         b.addEventListener("click", function () { seleciona(n); });
+        ["mouseenter", "focus"].forEach(function (ev) { b.addEventListener(ev, function () { defineHover(n); }); });
+        ["mouseleave", "blur"].forEach(function (ev) { b.addEventListener(ev, function () { defineHover(null); }); });
         li.appendChild(b); ul.appendChild(li);
       });
       secao.appendChild(ul);
       if (sel) detalhe();
       var alvo = foco ? secao.querySelector('[data-foco="' + foco + '"]') : null;
-      if (alvo) alvo.focus({ preventScroll: true });
+      if (alvo) focaNoPainel(alvo);
     }
     function detalhe() {
       var n = sel, o = fimDe(n), nivel = nivelDe(n), de = origemDe(n), nomeDe = lugarDe(de[0], de[1], nivel), nomePara = lugarDe(o[0], o[1], nivel);
@@ -187,7 +201,8 @@
           var topo = el("span", "rw-alt-topo"); topo.appendChild(el("b", null, g.lugar || TX.sem_nome)); topo.appendChild(el("span", "rw-alt-n", String(g.n)));
           b.appendChild(topo);
           if (g.mesmo) b.appendChild(el("span", "rw-alt-mesmo", TX.mesmo_do_real));
-          b.appendChild(el("span", "rw-alt-l", N.formata(TX.alt_quem, { jogador: a.jogador, partida: a.partida, round: a.round, dist: Math.round(g.d) })));
+          var times = bib.dados.partidas_times && bib.dados.partidas_times[a.partida];
+          b.appendChild(el("span", "rw-alt-l", N.formata(times ? TX.alt_quem : TX.alt_quem_sem_times, { jogador: a.jogador, times: times, round: a.round, dist: Math.round(g.d) })));
           b.appendChild(el("span", "rw-alt-l", descreve(a)));
           b.addEventListener("click", function () { escolha = a; render(); draw(); });
           cx.appendChild(b);
@@ -210,7 +225,7 @@
     }
     function focoNaLista(n) {      // o foco volta à granada que acabou de ser mexida (ou ao topo da lista)
       var i = n ? candidatas().indexOf(n) : -1, b = secao && (secao.querySelector('[data-foco="gr:' + i + '"]') || secao.querySelector(".rw-gr"));
-      if (b) b.focus({ preventScroll: true });
+      if (b) focaNoPainel(b);
     }
     // postura, movimento e se estava no ar, mais de onde veio cada afirmação (decisão 21a): "lido da demo" ou "inferido"
     function descreve(a) {
@@ -227,7 +242,7 @@
       return achada ? N.formata(TX.fato_real, { nome: achada.by, tipo: tipoDe(n.k), lugar: lugar, relogio: N.relogioNo(achada.f0) }) : "";
     }
     function seleciona(n) {
-      sel = n; escolha = trocaDe(n) ? trocaDe(n).alt : null;
+      hover = null; sel = n; escolha = trocaDe(n) ? trocaDe(n).alt : null;
       render(); draw();
     }
     function aplica() {
@@ -281,10 +296,9 @@
         candidatas().forEach(function (n) {
           if (n === sel || trocaDe(n)) return;
           var u = n.x.length - 1, cor = NADE_COLOR[n.k] || CM.apagado;
-          c.globalAlpha = 0.5;
-          N.tracejado(c, function () { trajeto(c, n); }, cor, 1.2);
-          c.globalAlpha = 1;
-          MapCore.nadeGlyph(c, n.k, mx(n.x[u]), my(n.y[u]), 5, cor, 0);
+          if (n === hover) N.tracejado(c, function () { trajeto(c, n); }, cor, 1.4);       // o traço só aparece na que está sob o mouse ou o foco (e na selecionada)
+          c.beginPath(); c.arc(mx(n.x[u]), my(n.y[u]), n === hover ? 7 : 5, 0, Math.PI * 2);       // as outras: um ponto pequeno no lugar onde cai
+          c.fillStyle = cor; c.fill(); c.strokeStyle = C.contorno; c.lineWidth = 1.6; c.stroke();
         });
       }
       var mostrar = trocas.map(function (t) { return t.n; });
@@ -313,16 +327,25 @@
       c.restore();
     }
 
+    // a granada cujo ponto de queda está mais perto do ponteiro (até `alvo` px de tela)
+    function sobOPonteiro(e, alvo) {
+      var m = N.matrizDaVista(), q = N.doPonteiro(e), melhor = null, dist = alvo;
+      candidatas().forEach(function (n) {
+        var u = n.x.length - 1, pt = new DOMPoint(mx(n.x[u]), my(n.y[u])).matrixTransform(m), d = Math.hypot(pt.x - q.cx, pt.y - q.cy) / q.k;
+        if (d <= dist) { dist = d; melhor = n; }
+      });
+      return melhor;
+    }
+    function defineHover(n) { if (hover !== n) { hover = n; draw(); } }
+    mapwrap.addEventListener("pointermove", function (e) {
+      if (!reescrever.ativo || reescrever.sua || reescrever.ferramenta !== "granada" || e.buttons) return;
+      defineHover(sobOPonteiro(e, 18));
+    });
+    mapwrap.addEventListener("pointerleave", function () { defineHover(null); });
     // clicar numa granada do real no mapa (a ferramenta Granada): a que passa mais perto do ponto, até o alvo de 24 px
     mapwrap.addEventListener("pointerdown", function (e) {
       if (!reescrever.ativo || reescrever.sua || reescrever.ferramenta !== "granada" || bib.estado !== "pronta" || (e.button && e.button > 0)) return;
-      var m = N.matrizDaVista(), q = N.doPonteiro(e), melhor = null, dist = 24;
-      candidatas().forEach(function (n) {
-        for (var j = 0; j < n.x.length; j++) {
-          var pt = new DOMPoint(mx(n.x[j]), my(n.y[j])).matrixTransform(m), d = Math.hypot(pt.x - q.cx, pt.y - q.cy) / q.k;
-          if (d <= dist) { dist = d; melhor = n; }
-        }
-      });
+      var melhor = sobOPonteiro(e, 24);
       if (!melhor) return;
       e.preventDefault(); e.stopPropagation();
       seleciona(melhor);
