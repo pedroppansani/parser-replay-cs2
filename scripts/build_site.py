@@ -298,7 +298,7 @@ def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | Non
     pranchetas = list(pranchetas or [])
     inicial = next((p for p in pranchetas if p["mapa"] == "de_mirage"), pranchetas[0] if pranchetas else None)
     chips_prancheta = "".join(
-        f'<button type="button" class="chip" data-arquivo="{e(p["file"])}" data-rotulo="{e(p["label"])}" '
+        f'<button type="button" class="chip" data-arquivo="{e(p["file"])}" data-rotulo="{e(p["label"])}" data-abrir="{e(T["tatica_abrir"].format(mapa=p["label"]))}" '
         f'aria-pressed="{str(p is inicial).lower()}">{e(p["label"])}</button>' for p in pranchetas)
     bloco_tatica = "" if not inicial else f"""
   <section class="tatica" aria-labelledby="h-tatica">
@@ -566,7 +566,7 @@ def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | Non
       c.addEventListener("click", function () {{
         Array.prototype.forEach.call(chips, function (o) {{ o.setAttribute("aria-pressed", String(o === c)); }});
         abrir.href = c.dataset.arquivo;
-        abrir.textContent = "Abrir a prancheta da " + c.dataset.rotulo;
+        abrir.textContent = c.dataset.abrir;
         document.getElementById("tatica-endereco").textContent = c.dataset.arquivo;
         document.getElementById("tatica-mini-mapa").textContent = c.dataset.rotulo;
       }});

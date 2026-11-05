@@ -310,7 +310,7 @@ def build_html(match_id: str, site: dict | None = None, base: Path | None = None
     annotations_css = (TEMPLATE.parent / "annotations.css").read_text(encoding="utf-8")
 
     map_name = json.loads((base / "match_meta.json").read_text(encoding="utf-8"))["map_name"]
-    # Botão "Criar tática" e o link Prancheta da navbar: só quando o mapa desta partida tem prancheta. O link
+    # Botão "Criar tática": só quando o mapa desta partida tem prancheta (a prancheta saiu da navbar, decisão 56). O link
     # é relativo e funciona igual em dashboard/web/ e em docs/, que têm as duas páginas lado a lado.
     from scripts.build_tactics_page import arquivo_da_pagina, mapas_disponiveis
     prancheta = arquivo_da_pagina(map_name) if map_name in mapas_disponiveis() else None

@@ -57,10 +57,11 @@ def dados_da_pagina(matches: list[dict], sugeridos: dict) -> dict:
 def build_html(matches: list[dict], sugeridos: dict, site: str | None = None) -> str:
     from scripts.build_web_page import REPO
     from scripts.design_head import aplica, topo_do_site, v2_js
-    return aplica((WEB / "reescrever.html").read_text(encoding="utf-8")
-                  .replace("<!--__TOPO__-->", topo_do_site("reescrever", REPO))
-                  .replace("/*__V2_JS__*/", v2_js())
-                  .replace("<!--__TITULO__-->", html.escape(f"{TITULO} · {MARCA}"))
-                  .replace("<!--__META__-->", meta_tags(f"{TITULO} · {MARCA}", TEXTOS["frase"], site, ARQUIVO))
-                  .replace("/*__DADOS__*/null", js(dados_da_pagina(matches, sugeridos)))
-                  .replace("/*__TEXTOS__*/null", js(TEXTOS)))
+    pagina = aplica((WEB / "reescrever.html").read_text(encoding="utf-8")
+                    .replace("<!--__TOPO__-->", topo_do_site("reescrever", REPO))
+                    .replace("/*__V2_JS__*/", v2_js())
+                    .replace("<!--__TITULO__-->", html.escape(f"{TITULO} · {MARCA}"))
+                    .replace("<!--__META__-->", meta_tags(f"{TITULO} · {MARCA}", TEXTOS["frase"], site, ARQUIVO))
+                    .replace("/*__TEXTOS__*/null", js(TEXTOS)))
+    # o dado do corpus por último: um nome de time com cara de marcador não é reescrito por nenhuma substituição
+    return pagina.replace("/*__DADOS__*/null", js(dados_da_pagina(matches, sugeridos)))

@@ -49,7 +49,7 @@
   .partida-btn { display: grid; gap: 2px; width: 100%; text-align: left; min-height: var(--toque); padding: 10px 14px; border-radius: var(--r-ctl);
     border: 1px solid var(--linha); background: var(--superficie); color: var(--tinta); font: inherit; cursor: pointer; }
   .partida-btn:hover { border-color: var(--borda); }
-  .partida-btn[aria-pressed="true"] { border-color: var(--tinta); }
+  .partida-btn[aria-pressed="true"] { border-color: var(--tinta); box-shadow: inset 4px 0 0 var(--tinta); background: var(--superficie-2); }
   .partida-btn small { color: var(--apagado); font-size: var(--t-xs); }
   .vazio { padding: 16px; border: 1px dashed var(--borda); border-radius: var(--r-md); color: var(--tinta-2); display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
   .vazio[hidden] { display: none; }
@@ -124,9 +124,10 @@
   });
   var ORDEM = { decisivo: 0, momento: 1, erro: 2 };
   function melhor(l) { return Math.min.apply(null, l.motivos.map(function (m) { return ORDEM[m.motivo]; })); }
-  linhas.sort(function (a, b) {
-    return melhor(a) - melhor(b) || (a.p.id < b.p.id ? -1 : a.p.id > b.p.id ? 1 : a.round - b.round);
-  });
+  // uma linha por partida (a de motivo mais forte), na ordem das partidas: decisivo, momento e erro se misturam na lista curta
+  var melhores = {};
+  linhas.forEach(function (l) { var m = melhores[l.p.id]; if (!m || melhor(l) < melhor(m) || (melhor(l) === melhor(m) && l.round < m.round)) melhores[l.p.id] = l; });
+  linhas = Object.keys(melhores).sort().map(function (id) { return melhores[id]; });
   var lista = $("sugeridos");
   linhas.slice(0, T.max_linhas).forEach(function (l) {
     var li = el("li", "sug");
@@ -152,16 +153,18 @@
   });
 
   // buscar: time, mapa ou evento; escolher a partida abre a faixa de rounds
-  var campo = $("busca"), resultados = $("resultados"), escolhida = null;
+  var campo = $("busca"), resultados = $("resultados"), escolhida = null, botoes = {};
   function mostra() {
     var q = semAcento(campo.value.trim());
     var achadas = D.partidas.filter(function (p) {
       return !q || semAcento([titulo(p), p.map_label, p.evento, p.id].join(" ")).indexOf(q) >= 0;
     });
     resultados.textContent = "";
+    if (escolhida && achadas.indexOf(escolhida) < 0) { escolhida = null; $("escolhida").hidden = true; }   // saiu do filtro: a faixa não fica solta
     achadas.forEach(function (p) {
       var li = el("li");
       var b = el("button", "partida-btn"); b.type = "button";
+      botoes[p.id] = b;
       b.setAttribute("aria-pressed", String(escolhida === p));
       b.appendChild(el("b", null, placar(p)));
       b.appendChild(el("small", null, contexto(p) + " · " + p.rounds + " " + T.rounds));
@@ -174,7 +177,7 @@
   }
   function escolhe(p) {
     escolhida = p;
-    mostra();
+    Object.keys(botoes).forEach(function (id) { botoes[id].setAttribute("aria-pressed", String(id === p.id)); });   // sem recriar a lista: o foco fica no botão
     $("escolhida").hidden = false;
     $("escolhida-titulo").textContent = placar(p) + " · " + contexto(p);
     var faixa = $("faixa"); faixa.textContent = "";

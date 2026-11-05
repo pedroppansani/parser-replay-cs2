@@ -73,6 +73,8 @@ def test_o_bloco_da_prancheta_livre_na_landing_troca_o_mapa_do_botao_e_o_enderec
         assert "prancheta_de_nuke.html" in pg.inner_text(".tatica-endereco")                    # o endereço de sempre continua valendo
         assert pg.get_attribute('#tatica-mapas .chip:has-text("Nuke")', "aria-pressed") == "true"
         assert pg.get_attribute('#tatica-mapas .chip:has-text("Mirage")', "aria-pressed") == "false"
+        from scripts.build_site import TEXTOS_DA_LANDING
+        assert pg.inner_text("#tatica-abrir") == TEXTOS_DA_LANDING["tatica_abrir"].format(mapa="Nuke")   # a frase vem do Python
         assert pg.get_attribute(".tatica-mini", "data-tema") == "violeta"                       # a miniatura no violeta da prancheta
     finally:
         ctx.close()
@@ -90,6 +92,10 @@ def test_a_pagina_de_escolha_mostra_os_sugeridos_com_motivo_e_leva_ao_replay_no_
         assert "Não é uma previsão." in pg.inner_text("#aviso")                                 # a frase fixa
         n = pg.locator("#sugeridos .sug").count()
         assert 1 <= n <= 12
+        hrefs = [pg.locator("#sugeridos .sug").nth(i).locator("a").get_attribute("href").split("#")[0] for i in range(n)]
+        assert len(set(hrefs)) == n                                                             # uma linha por partida
+        motivos = {pg.locator("#sugeridos .sug").nth(i).locator(".motivos .rot").first.inner_text() for i in range(n)}
+        assert len(motivos) >= 2, motivos                                                       # decisivo, momento e erro se misturam
         for i in range(n):
             linha = pg.locator("#sugeridos .sug").nth(i)
             assert linha.locator(".motivos li").count() >= 1                                    # o motivo escrito
@@ -121,12 +127,17 @@ def test_a_busca_filtra_sem_acento_mostra_o_vazio_e_abre_a_faixa_de_rounds(naveg
         assert pg.locator("#resultados .partida-btn").count() >= 1
         pg.fill("#busca", alvo["lados"]["A"]["nome"][:5])
         assert pg.locator("#resultados .partida-btn").count() >= 1
-        pg.locator("#resultados .partida-btn").first.click()
+        pg.locator("#resultados .partida-btn").first.focus()
+        pg.keyboard.press("Enter")                                                              # pelo teclado: o foco fica no botão
+        assert pg.evaluate("document.activeElement.classList.contains('partida-btn')")
+        assert pg.get_attribute("#resultados .partida-btn >> nth=0", "aria-pressed") == "true"
         assert pg.is_visible("#faixa") and pg.locator("#faixa .chip").count() >= 10
         assert pg.is_hidden("#abrir")                                                           # só aparece depois de escolher o round
         pg.locator("#faixa .chip").nth(4).click()
         assert pg.is_visible("#abrir") and pg.inner_text("#abrir") == "Reescrever o round 5"
         assert re.fullmatch(r"match_\d+\.html#replay\?round=5", pg.get_attribute("#abrir", "href"))
+        pg.fill("#busca", "xyzxyz")                                                             # a partida escolhida saiu do filtro
+        assert pg.is_hidden("#faixa") and pg.is_hidden("#abrir")
         assert pg.evaluate("document.documentElement.scrollWidth - innerWidth") == 0
         assert erros == []
     finally:
