@@ -117,6 +117,15 @@ corrigida a pedido do Pedro: zoom errático e nomes amontoados.) Suíte do resul
 impressão dos números idêntica (11.755 linhas); CI e deploy verdes. Pendência 26: reclicar o chip reenquadra e a exportação sai com o que
 se vê. **Regra daqui em diante:** fase visual só mescla com o OK do Pedro depois das capturas.
 
+**Reescrever (design do Iriun em `notas/design/reescrever/`; fases R0 a R6, cada uma em branch própria; fase visual só mescla com o OK do Pedro).
+R0 FEITA (2026-11-04, no PC), merge `a2e1e806`, decisão 55:** cada arremesso da biblioteca (`data/lineups/`) grava o lado de quem lançou (23.706
+de 23.706 conferem com o `replay.json`), o tempo de voo (99,9% em smoke, he e flash; 97,4% no molotov) e o efeito do molotov, tudo lido da demo; a
+smoke não tem fim na demo (usa a constante de 20 s, que não vem da demo). Índice `docs/sugeridos.json` (58 KB) com o decisivo, até 3 momentos e
+até 2 erros validados por partida (limites escolhidos pelo Claude, ajustáveis). Suíte do resultado do merge: 1.756 passaram, 71 pulados, 0
+falharam. Impressão dos números idêntica, salvo o hash de `biblioteca.arremessos` das 8 pranchetas (aceito). Pendências novas: 27 (nome do
+evento sem acento), 28 (duas bases de tempo; entra no R5), 29 (molotovs sem voo ou efeito). **Próxima: R1** (navbar com Reescrever, prancheta
+livre como bloco na landing, página de escolha), com portão: prévia, capturas, code-review na conversa e o OK do Pedro.
+
 **Fila que falta, nesta ordem:** (1) ~~v2-5b~~, ~~v2-6~~, ~~cartão 17~~ (`165f0d00`), ~~v2-7~~ (`73fc57d0`) e ~~cartão 20~~
 (`24eea71e`): feitos. (2) ~~Cartão 9~~ (a refatoração, decisão 50): FECHADO em 2026-10-29 nos passos 0 a 3 (`9be9db37`, `eb704893`, `2641c91b`, `00f49756`; o passo 3 provado no PC do Pedro: site, impressão, quadros e capturas iguais, suíte com o `data/interim` 1.651 passaram, 71 pulados, 0 falharam). A guarda do sha256 saiu; o passo 4 (a função de 88 KB que monta HTML) fica para depois. Agora: **Fase T** (tema claro e escuro na home; escolhas do Pedro: agentes no cartão claro no escuro, prancheta no violeta nos dois temas) e **Fase M** (mapa; escolha: variação A mais o nome em itálico das peças do outro andar), cada uma numa branch, com portão de capturas antes do merge; e, do ci-optimizer, só os `timeout-minutes`. (3) No PC do Pedro: cartão 6 (histograma da força da
 rota B), cartão 7 (os `.rar`: disco com 12 GB ou mais, conferir `demos/entrada/_extraido/`, sha256 de cada `.dem`, regra 36) e toda
@@ -235,6 +244,7 @@ foram feitos na v2-7; o `--f-cond` ficou (trocar mexe na fonte dos símbolos no 
 | Fase M: radar nítido, nomes de lugar, bombsites e peça do outro andar (decisão 52; referências do canvas do PC) | `442bd272` |
 | Fase B: modo palco do Replay, mapa maior (cartão 15, decisão 53) | `74047972` |
 | Fase B+: enquadramento da Nuke pela área do andar (decisão 54) | `d34aad6e` |
+| Reescrever R0: lado e tempos reais na biblioteca de arremessos, índice dos sugeridos (decisão 55) | `a2e1e806` |
 
 ## Em andamento
 
