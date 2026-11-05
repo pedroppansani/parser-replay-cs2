@@ -10,6 +10,7 @@ from __future__ import annotations
 import html
 from pathlib import Path
 
+from leitura.reescrever import FRASE_FIXA_FORTE, FRASE_FIXA_RESTO
 from scripts.json_em_script import js
 from scripts.meta_da_pagina import MARCA, meta_tags
 
@@ -22,8 +23,8 @@ TEXTOS = {
     "titulo": TITULO,
     "frase": "Escolha um round, volte a um instante e mude o caminho de quem quiser: o site mostra o seu plano ao lado do que aconteceu de verdade.",
     # a frase fixa de honestidade (design, §5): negrito e resto
-    "fixa_forte": "Não é uma previsão.",
-    "fixa_resto": "A sua versão é um plano desenhado sobre o round real: o site não simula o CS2 e não diz quem venceria os duelos.",
+    "fixa_forte": FRASE_FIXA_FORTE,
+    "fixa_resto": FRASE_FIXA_RESTO,
     "sugeridos": "Rounds sugeridos",
     "buscar": "Buscar uma partida",
     "rotulo_busca": "Partida: time, mapa ou evento",
