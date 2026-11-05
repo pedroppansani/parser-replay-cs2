@@ -29,7 +29,32 @@ JS = """async () => {
   x.fillStyle = css('--radar'); x.fillRect(0, 0, W, H); x.drawImage(proc, 0, 0, W, H);
   const d = x.getImageData(0, 0, W, H).data; let pior = 99, abaixo = 0, n = 0;
   for (let i = 0; i < d.length; i += 4) { const p = [d[i], d[i + 1], d[i + 2]]; const v = Math.max(cr(p, halo), cr(p, contorno)); n++; if (v < pior) pior = v; if (v < 3) abaixo++; }
-  return { pior, abaixo, n, halo, contorno, fundo };
+  // o FANTASMA (R3): o anel tracejado de raio 12, desenhado de verdade pelo MapCore sobre o radar processado, em 400 posições; em cada tracinho
+  // compara o pixel do halo (fora) e o do contorno (dentro) com o pixel do radar no mesmo lugar, e vale o melhor dos dois
+  const g = document.createElement('canvas'); g.width = proc.width; g.height = proc.height;
+  const gx = g.getContext('2d'); gx.drawImage(proc, 0, 0);
+  const base = gx.getImageData(0, 0, g.width, g.height), RF = 12, ESC = 1.8, tracos = [];
+  const lado = css('--ct-mapa');
+  for (let i = 0; i < 20; i++) for (let j = 0; j < 20; j++) {
+    const X = Math.round(proc.width * (0.1 + 0.8 * i / 19)), Y = Math.round(proc.height * (0.1 + 0.8 * j / 19));
+    const c = document.createElement('canvas'); c.width = 80; c.height = 80;
+    const cx = c.getContext('2d'); cx.drawImage(proc, X - 40, Y - 40, 80, 80, 0, 0, 80, 80);
+    const antes = cx.getImageData(0, 0, 80, 80);
+    MapCore.desenhaJogador(cx, 40, 40, { cor: lado, estado: 'fantasma', escala: ESC, raio: RF, nome: null });
+    const depois = cx.getImageData(0, 0, 80, 80);
+    // 12 tracinhos: a cada 2π/ (perímetro / 9) rad; a metade "ligada" de cada passo 5/4 começa em 0 e vai a 5/9 do passo
+    const passo = 9 / RF, k = Math.floor(2 * Math.PI * RF / 9);
+    for (let t = 0; t < k; t++) {
+      const ang = (t + 2.5 / 9) * passo;
+      const pix = (r) => { const px = Math.round(40 + Math.cos(ang) * r), py = Math.round(40 + Math.sin(ang) * r), o = (py * 80 + px) * 4; return [[depois.data[o], depois.data[o + 1], depois.data[o + 2]], [antes.data[o], antes.data[o + 1], antes.data[o + 2]]]; };
+      let cc = 0;                                  // o melhor contraste do tracinho (halo ou contorno) contra o radar no mesmo pixel, ao longo do raio
+      const meia = 3.5 * ESC + 0.5;                 // a meia-largura do halo (7 × escala): a janela cobre halo, contorno e cor
+      for (let r = RF - meia; r <= RF + meia + 0.01; r += 0.5) { const q = pix(r); cc = Math.max(cc, cr(q[0], q[1])); }
+      tracos.push(cc);
+    }
+  }
+  const piorG = Math.min.apply(null, tracos), abaixoG = tracos.filter(v => v < 3).length;
+  return { pior, abaixo, n, halo, contorno, fundo, piorG, abaixoG, nG: tracos.length };
 }"""
 
 
@@ -44,7 +69,7 @@ def main() -> int:
     falhou = 0
     p = sync_playwright().start()
     b = chrome(p)
-    print(f"{'mapa':<12}{'pior pixel':>12}{'abaixo de 3:1':>18}")
+    print(f"{'mapa':<12}{'peça':>10}{'fantasma':>12}{'tracinhos abaixo de 3:1':>28}")
     for mapa, arq in sorted(mapas.items()):
         pg = b.new_page(viewport={"width": 1440, "height": 900})
         pg.goto(url_de(arq + "#replay"))
@@ -54,9 +79,9 @@ def main() -> int:
         if not r:
             print(f"{mapa:<12}{'sem radar':>12}")
             continue
-        ok = r["pior"] >= MINIMO
+        ok = r["pior"] >= MINIMO and r["piorG"] >= MINIMO
         falhou += not ok
-        print(f"{mapa:<12}{r['pior']:>11.2f}:1{r['abaixo']:>11} de {r['n']}  {'PASSA' if ok else 'FALHA'}")
+        print(f"{mapa:<12}{r['pior']:>9.2f}:1{r['piorG']:>10.2f}:1{r['abaixoG']:>14} de {r['nG']}  {'PASSA' if ok else 'FALHA'}")
     b.close()
     p.stop()
     return 1 if falhou else 0

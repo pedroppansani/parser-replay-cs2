@@ -48,6 +48,13 @@ def _estado(pg):
     return pg.evaluate("window.__reescrever()")
 
 
+def _sai(pg):
+    """Sair do modo: com edições o "Sair" pede confirmação (R3), então confirma o descarte."""
+    pg.click("#rw-sair")
+    if pg.locator("#rw-descartar").is_visible():
+        pg.click("#rw-descartar")
+
+
 def test_as_duas_portas_entram_no_instante_parado_e_a_saida_devolve_o_replay(navegador, pagina):
     ctx, pg, erros = _abre(navegador, pagina, 1440, 900)
     try:
@@ -111,7 +118,7 @@ def test_o_mapa_fica_do_mesmo_tamanho_e_no_mesmo_lugar_em_todo_estado_e_sem_desl
         pg.mouse.move(*xy); pg.mouse.down(); pg.mouse.move(xy[0] + 40, xy[1] + 30, steps=4); pg.mouse.up()
         pg.wait_for_timeout(200)
         rects.append(pg.evaluate(RECT)); feed.append(pg.evaluate("document.querySelector('.feed').getBoundingClientRect().top + scrollY"))
-        pg.click("#rw-sair"); pg.wait_for_timeout(200)
+        _sai(pg); pg.wait_for_timeout(200)
         rects.append(pg.evaluate(RECT)); feed.append(pg.evaluate("document.querySelector('.feed').getBoundingClientRect().top + scrollY"))
         assert len({tuple(r) for r in rects}) == 1, rects                                  # Assistir, editando, depois de arrastar e depois de sair
         if w >= 1024:                                                                       # no celular as colunas descem para baixo do mapa e podem crescer
@@ -216,6 +223,7 @@ def test_a_peca_da_sua_versao_tem_contraste_de_3_para_1_contra_o_radar_nos_mapas
             r = pg.evaluate(JS)
             pg.close()
             assert r and r["pior"] >= MINIMO and r["abaixo"] == 0, (mapa, r)
+            assert r["piorG"] >= MINIMO and r["abaixoG"] == 0, (mapa, "fantasma", r)      # o anel tracejado do real (R3) também lê no radar
     finally:
         ctx.close()
 
@@ -302,7 +310,7 @@ def test_editar_uma_peca_nao_mexe_em_nada_da_pagina_cls_zero(navegador, pagina):
             return [r.left + (e.x - R.origin_x) * R.scale_px_per_unit * r.width / R.width, r.top + (R.origin_y - e.y) * R.scale_px_per_unit * r.height / R.height]; }""", alvo["nome"])
         pg.mouse.move(*xy); pg.mouse.down(); pg.mouse.move(xy[0] + 40, xy[1] - 30, steps=5); pg.mouse.up(); pg.wait_for_timeout(300)
         assert pg.locator(".banco .peca-rw.editada").count() == 1
-        pg.click("#rw-sair"); pg.wait_for_timeout(300)
+        _sai(pg); pg.wait_for_timeout(300)
         assert pg.evaluate("window.__ls") == 0
     finally:
         ctx.close()

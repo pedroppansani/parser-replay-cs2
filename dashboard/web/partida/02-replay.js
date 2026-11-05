@@ -401,6 +401,7 @@
   }
 
   function selectRound(r) {
+    if (reescrever.ativo && reescrever.pedeDescartar(function () { selectRound(r); })) return;   // com edições, pergunta antes de descartar
     if (reescrever.ativo) reescrever.sai(true);   // trocar de round sai do modo: as edições são deste round
     cur = r;
     frame = 0;
@@ -781,11 +782,11 @@
     var FIRE_R = MapCore.RAIO_MOLOTOV_UNIDADES * RAD.scale_px_per_unit;
 
     cur.smokes.forEach(function (z) {
-      if (pos < z.f0 || pos > z.f1) return;
+      if (pos < z.f0 || pos > z.f1 || (reescrever.ativo && reescrever.soNoReal(z))) return;
       MapCore.desenhaArea(ctx, "smoke", mx(z.x), my(z.y), SMOKE_R);
     });
     cur.fires.forEach(function (z) {
-      if (pos < z.f0 || pos > z.f1) return;
+      if (pos < z.f0 || pos > z.f1 || (reescrever.ativo && reescrever.soNoReal(z))) return;
       MapCore.desenhaArea(ctx, "molotov", mx(z.x), my(z.y), FIRE_R);
     });
 
@@ -793,6 +794,7 @@
     // alfa decrescente em vez de uma linha só): uma linha inteira e opaca
     // riscava o mapa e competia com o rastro dos jogadores.
     cur.nades.forEach(function (n) {
+      if (reescrever.ativo && reescrever.soNoReal(n)) return;
       // Índice CONTÍNUO, não o quadro inteiro. O replay é amostrado a 4 Hz e os
       // jogadores já eram interpolados; a granada não era, então ela andava aos
       // saltos de 250ms enquanto todo o resto deslizava — e granada é justamente
@@ -891,7 +893,7 @@
     // rótulo — a granada existiu, o efeito não, e o mapa mostra a diferença.
     (cur.pops || []).forEach(function (p) {
       var age = pos - p.f;
-      if (age < 0 || age > POP_TOTAL) return;
+      if (age < 0 || age > POP_TOTAL || (reescrever.ativo && reescrever.soNoReal(p))) return;
 
       var X = mx(p.x), Y = my(p.y);
       var flash = p.k === "flash";
@@ -966,6 +968,7 @@
     // até 0,25s que o timeline denunciava.
     cur.events.forEach(function (e) {
       if (e.f > pos) return;
+      if (reescrever.ativo && reescrever.semAMorte(e)) return;   // a morte de quem foi editado só existe no real (o fantasma mostra o ✕)
       var age = pos - e.f;
       if (e.type === "kill") {
         var a = Math.max(0.45, 1 - age / 90);
@@ -1004,13 +1007,13 @@
       MapAnnotations.direcaoLigada();
     var foraDoAndar = [];
     cur.players.forEach(function (p) {
-      var alive = p.alive[i0];
+      var editada = reescrever.ativo ? reescrever.posicaoEditada(p.name) : null;   // peça movida na "Sua versão": no lugar dela
+      var alive = editada ? true : p.alive[i0];   // na sua versão quem foi editado não morre (D3: a morte do real fica no fantasma)
       // Suaviza em coordenada de JOGO e só depois converte pra pixel: a
       // conversão é linear, então tanto faz matematicamente, mas assim as
       // guardas de distância ficam em unidades do jogo (onde o limite de
       // velocidade faz sentido) em vez de pixels do radar.
       var canLerp = alive && p.alive[i1];
-      var editada = reescrever.ativo ? reescrever.posicaoEditada(p.name) : null;   // peça movida na "Sua versão": no lugar dela
       var sp = editada || (canLerp ? smoothPos(p, i0, i1, tt) : [p.x[i0], p.y[i0]]);
       var X = mx(sp[0]);
       var Y = my(sp[1]);
@@ -1025,23 +1028,28 @@
         yaw = (canLerp && !farApart(p.x[i0], p.y[i0], p.x[i1], p.y[i1]))
           ? MapCore.interpolaAngulo(p.d[i0], p.d[i1], tt) : p.d[i0];
       }
+      var yawE = editada ? reescrever.yawEditada(p.name) : null;
+      if (yawE !== null && comDirecao) yaw = yawE;   // andando até o ponto novo, a peça olha para onde vai
       // Morto, em outro andar ou vivo: o desenho de cada caso está em
       // MapCore.desenhaJogador (a prancheta usa o mesmo).
-      var pLv = p.lv ? p.lv[i0] : 0;
+      var pLv = p.lv ? p.lv[editada ? reescrever.instante : i0] : 0;
       var tm = ctx.getTransform(), sx = tm.a * X + tm.c * Y + tm.e, sy = tm.b * X + tm.d * Y + tm.f;
       var marcado = alive && pLv !== lvNow && (sx < 0 || sx > cv.width || sy < 0 || sy > cv.height);   // fora do quadro: só o triângulo
       if (marcado) foraDoAndar.push({ sx: sx, sy: sy, cor: color, nome: p.name, lado: p.side });
+      var esmaecida = editada && reescrever.esmaecida(p.name);   // depois da morte do real a peça editada não pode parecer viva e bem
+      if (esmaecida) ctx.globalAlpha = 0.4;
       MapCore.desenhaJogador(ctx, X, Y, {
         cor: color,
         estado: !alive ? "morto" : (pLv !== lvNow ? "outro_andar" : "vivo"),
         acima: pLv > lvNow,
         cego: alive && pLv === lvNow && blindLeft(p.name, i0) > 0,
-        hp: p.hp[i0],
+        hp: p.hp[editada ? reescrever.instante : i0],
         nome: marcado ? null : p.name,
         yaw: yaw,
         escala: reescrever.ativo && alive ? reescrever.escala : undefined,   // a peça editável é 25% maior
         selecionado: reescrever.ativo && reescrever.sel === p.name
       });
+      if (esmaecida) ctx.globalAlpha = 1;
     });
     if (reescrever.ativo) reescrever.desenhaSobre(ctx);
     desenhaMarcasDeBorda(ctx, foraDoAndar);
@@ -1063,7 +1071,8 @@
   }
 
   function setPlaying(v) {
-    if (v && reescrever.ativo) return;   // na Reescrever o real fica parado no instante (tocar a sua versão: próxima fase)
+    if (v && playing) return;   // uma cadeia de quadros só
+    if (v && reescrever.ativo && !reescrever.podeTocar()) return;   // no Reescrever só toca a sua versão (e só com alguma peça movida)
     playing = v;
     document.getElementById("play").textContent = v ? "❚❚" : "▶";
     document.getElementById("play").setAttribute("aria-label", v ? "Pausar" : "Reproduzir");
@@ -1101,7 +1110,11 @@
   }
 
   function togglePlay() {
-    if (reescrever.ativo) return;
+    if (reescrever.ativo) {
+      if (!playing && !reescrever.preparaTocar()) return;   // a sua versão começa sempre no instante em que o modo abriu
+      setPlaying(!playing);
+      return;
+    }
     if (pos >= cur.frames - 1) { pos = 0; document.getElementById("scrub").value = 0; }
     setPlaying(!playing);
   }

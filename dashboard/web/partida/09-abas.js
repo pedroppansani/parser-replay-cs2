@@ -9,6 +9,7 @@
   // Nomeada (e não só um listener) porque o gráfico de vantagem também troca de
   // aba: clicar num round leva pro replay daquele round.
   function selectTab(name, semHash) {
+    if (name !== "replay" && reescrever.ativo && reescrever.pedeDescartar(function () { selectTab(name, semHash); })) return;   // com edições, pergunta antes
     var jaEstava = document.querySelector(".tabs [role=tab][aria-selected=true]");
     jaEstava = jaEstava && jaEstava.dataset.tab === name;
     Array.prototype.forEach.call(tabs, function (o) {
