@@ -124,10 +124,8 @@ html { scroll-padding-top: calc(var(--nav-h) + 16px); }   /* C2: âncora nunca e
 @media (max-width: 560px) {
   /* no celular a linha do tempo mantém a largura de antes: sem "Reescrever daqui" (o do cabeçalho já entra no instante parado) */
   .tr-esq { width: auto; }
-  /* o botão do cabeçalho com folga: "Round N" + botão cabem numa linha mesmo com fonte mais larga (senão o cabeçalho trocaria de altura entre os estados) */
-  .rh-acoes { width: auto; }
-  .rw-btn { padding: 0 12px; }
-  .rw-pilula { padding: 0 10px; }
+  /* o botão do cabeçalho numa linha só dele: com a fonte que o aparelho tiver, o cabeçalho tem a mesma altura nos dois estados (nada desce ao entrar) */
+  .rh-acoes { width: auto; order: 2; flex: 1 1 100%; justify-content: flex-start; }
   .rw-daqui { display: none; }
 }
 .reescrevendo .play:disabled { opacity: 0.45; cursor: not-allowed; }
@@ -146,14 +144,13 @@ html { scroll-padding-top: calc(var(--nav-h) + 16px); }   /* C2: âncora nunca e
 .peca-rw .pr-topo { display: flex; gap: 8px; align-items: baseline; line-height: 1.3; min-height: 1.3em; }
 .peca-rw .pr-nome { font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .peca-rw .pr-hp { margin-left: auto; font-family: var(--f-num); color: var(--apagado); }
-.peca-rw .pr-meio { font-size: var(--t-xs); line-height: 1.4; min-height: 1.4em; color: var(--tinta-2); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.peca-rw .pr-meio { font-size: var(--t-xs); line-height: 1.4; min-height: 1.4em; color: var(--tinta-2); min-width: 0; }   /* quebra a linha em vez de cortar, com qualquer fonte */
 .peca-rw .pr-tag { display: none; width: 8px; height: 8px; border-radius: 50%; background: var(--tinta); font-size: 0; overflow: hidden; flex: none; align-self: center; }   /* ponto de "editado" (o texto fica para leitor de tela e title): não come largura do nome */
 .peca-rw.editada .pr-tag { display: inline-block; }
 .peca-rw.ct { box-shadow: inset 4px 0 0 var(--ct-mapa); }
 .peca-rw.t { box-shadow: inset 4px 0 0 var(--tr-mapa); }
 .peca-rw[aria-pressed="true"] { border-color: var(--tinta); background: var(--superficie); outline: 2px solid var(--tinta); outline-offset: -3px; }
 .peca-rw[aria-disabled="true"] { cursor: default; opacity: 0.7; }
-.peca-rw[aria-disabled="true"] .pr-meio { white-space: normal; }   /* "morto às 1:42, antes de 1:21" quebra a linha em vez de ganhar reticências */
 .painel-rw p { margin: 0; color: var(--tinta-2); font-size: var(--t-sm); }
 .painel-rw .rw-fixa b { color: var(--tinta); }
 .painel-rw .rw-comeca { color: var(--tinta); font-weight: 600; }

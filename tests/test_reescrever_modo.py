@@ -279,7 +279,7 @@ def test_nenhum_texto_do_banco_fica_cortado_e_a_linha_do_tempo_inteira(navegador
         ctx.close()
 
 
-def test_no_celular_o_cabecalho_tem_a_mesma_altura_nos_dois_estados_com_folga(navegador, pagina):
+def test_no_celular_o_cabecalho_tem_a_mesma_altura_nos_dois_estados(navegador, pagina):
     ctx, pg, _ = _abre(navegador, pagina, 375, 812)
     try:
         medir = "() => { const h = document.querySelector('.roundhead'), a = document.getElementById('rh-acoes').getBoundingClientRect(), g = document.querySelector('.roundhead .big').getBoundingClientRect(); return [h.getBoundingClientRect().height, a.top - g.top, document.getElementById('rh-acoes').getBoundingClientRect().left - g.right]; }"
@@ -287,7 +287,7 @@ def test_no_celular_o_cabecalho_tem_a_mesma_altura_nos_dois_estados_com_folga(na
         pg.click("#rw-entrar")
         depois = pg.evaluate(medir)
         assert antes[0] == depois[0], (antes, depois)
-        assert abs(antes[1]) < 20 and antes[2] >= 24, antes                        # botão na mesma linha de "Round N", com 24 px de folga
+        assert antes[1] > 20 and depois[1] == antes[1], (antes, depois)            # o botão mora numa linha só dele, no mesmo lugar nos dois estados
     finally:
         ctx.close()
 
