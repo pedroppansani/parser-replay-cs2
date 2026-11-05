@@ -318,7 +318,7 @@ def build_html(match_id: str, site: dict | None = None, base: Path | None = None
     html = (
         le_fonte(TEMPLATE)   # o template com as partes incluídas (decisão 50)
         # a navbar do site e o comportamento comum da v2 (decisão 48) entram antes do dado
-        .replace("<!--__TOPO__-->", topo_do_site("partida", prancheta, REPO))
+        .replace("<!--__TOPO__-->", topo_do_site("partida", REPO))
         .replace("/*__V2_JS__*/", v2_js())
         .replace("/*__DATA__*/", payload)
         .replace("/*__REPLAY__*/", replay)

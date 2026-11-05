@@ -64,11 +64,9 @@ TEXTOS = {
 def build_html(site: str | None = None) -> str:
     from scripts.design_head import aplica  # tokens e fontes (decisão 44)
     dados = para_a_pagina()
-    from scripts.build_tactics_page import arquivo_da_pagina, mapas_disponiveis
     from scripts.build_web_page import REPO
     from scripts.design_head import topo_do_site, v2_js
-    mapas = mapas_disponiveis()
-    topo = topo_do_site("jogadores", arquivo_da_pagina("de_mirage" if "de_mirage" in mapas else mapas[0]) if mapas else None, REPO)
+    topo = topo_do_site("jogadores", REPO)
     return aplica((WEB / "jogadores.html").read_text(encoding="utf-8")
             .replace("<!--__TOPO__-->", topo)
             .replace("/*__V2_JS__*/", v2_js())

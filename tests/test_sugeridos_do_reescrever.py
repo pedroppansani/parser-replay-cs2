@@ -18,13 +18,13 @@ def _momento(tick, kind, who):
 
 
 def _erro(rn, tipo, dwpa, nome="a", nivel=None):
-    return {"tipo": tipo, "round_num": rn, "tick": 2000 + rn, "relogio": "1:30", "name": nome, "dwpa": dwpa, "nivel": nivel}
+    return {"tipo": tipo, "round_num": rn, "tick": 2000 + rn, "segundos": 15.0, "relogio": "1:30", "name": nome, "dwpa": dwpa, "nivel": nivel}
 
 
 def test_decisivo_vem_com_a_frase_do_card_e_sem_instante():
     s = sugeridos_da_partida({"round": 5}, "Levou o Time A de 50% para 75%.", [], [], ROUNDS, 64)
     assert s == [{"round": 5, "motivo": "decisivo", "texto": "Levou o Time A de 50% para 75%.", "jogador": None,
-                  "tick": None, "relogio": None, "tipo": None}]
+                  "tick": None, "t": None, "relogio": None, "tipo": None}]
 
 
 def test_momentos_so_com_jogador_um_por_round_pela_prioridade_e_no_maximo_tres():

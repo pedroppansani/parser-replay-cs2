@@ -111,19 +111,18 @@ def botao_do_tema() -> str:
             f'<span>{TEXTO_DO_TEMA}</span></button>')
 
 
-def topo_do_site(atual: str, prancheta: str | None, repo: str) -> str:
-    """A navbar do site (entrega-v2-goatdemo §5.1): a marca (cabra C + wordmark, leva à landing) e três links --
-    Partidas, Jogadores, Prancheta --, sem GitHub nem botão de ação (o GitHub fica no rodapé da landing, dúvida 1
-    do plano). `atual` é "partidas", "jogadores" ou "prancheta" (recebe aria-current); na landing ("partidas") entra o
-    botão de tema (Fase T). Com o `v2.css` (marcador
-    /*__V2__*/) ela flutua em pílula; sem ele, cada página a desenha com o CSS dela. `repo` fica na assinatura
-    para as páginas que chamam."""
+def topo_do_site(atual: str, repo: str) -> str:
+    """A navbar do site (entrega-v2-goatdemo §5.1; Reescrever, decisão 56): a marca (cabra C + wordmark, leva à landing) e três
+    links -- Partidas, Jogadores, Reescrever --, sem GitHub nem botão de ação (o GitHub fica no rodapé da landing). A prancheta livre
+    saiu da navbar: é um bloco da landing (e o endereço `prancheta_de_<mapa>.html` continua valendo). `atual` é "partidas",
+    "jogadores", "reescrever", ou outro ("partida", "prancheta"), que não marca link; na landing ("partidas") entra o botão de tema
+    (Fase T). Com o `v2.css` (marcador /*__V2__*/) ela flutua em pílula; sem ele, cada página a desenha com o CSS dela. `repo` fica na
+    assinatura para as páginas que chamam."""
     from html import escape as e
     # fora da landing, "Partidas" desce direto para a grade (index.html#partidas)
     links = [("partidas", "index.html" if atual == "partidas" else "index.html#partidas", "Partidas"),
-             ("jogadores", "jogadores.html", "Jogadores")]
-    if prancheta:
-        links.append(("prancheta", prancheta, "Prancheta"))
+             ("jogadores", "jogadores.html", "Jogadores"),
+             ("reescrever", "reescrever.html", "Reescrever")]
     nav = "".join(f'<a href="{e(h)}"{" aria-current=\"page\"" if k == atual else ""}>{t}</a>' for k, h, t in links)
     return (f'<header class="site-topo">\n'
             f'    <a class="marca" href="index.html" aria-label="GOAT.demo, início">{_cabra()}{_wordmark_liso()}</a>\n'

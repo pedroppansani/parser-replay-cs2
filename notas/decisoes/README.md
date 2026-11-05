@@ -97,3 +97,4 @@ Uma nota por decisão. O `CLAUDE.md` traz a lista curta das que estão em vigor.
 | [53](53-modo-palco-do-replay.md) | vigente | Replay a partir de 1024 x 700: faixa de rounds grudada sob as abas, rolagem ao palco ao abrir ou trocar de round, mapa de um tamanho só (579 px a 1440 x 900, 447 a 1366 x 768); celular igual. |
 | [54](54-enquadramento-da-nuke.md) | vigente | Replay da Nuke: a vista de cada round enquadra tudo o que o round mostra (jogadores, granadas, áreas); nunca esconde jogador vivo nem granada; outros mapas iguais. |
 | [55](55-dado-do-reescrever-r0.md) | vigente | Biblioteca de arremessos com o lado de quem lançou, o voo e o efeito do molotov lidos da demo (smoke sem fim na demo: nulo); índice `sugeridos.json` dos rounds do Reescrever |
+| [56](56-navbar-e-escolha-do-reescrever.md) | vigente | Navbar Partidas, Jogadores, Reescrever; a prancheta livre vira bloco da landing; página `reescrever.html` com os sugeridos (55) e a busca, dados embutidos |
