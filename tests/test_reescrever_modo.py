@@ -48,7 +48,7 @@ def _estado(pg):
     return pg.evaluate("window.__reescrever()")
 
 
-def test_as_tres_portas_entram_no_instante_parado_e_a_saida_devolve_o_replay(navegador, pagina):
+def test_as_duas_portas_entram_no_instante_parado_e_a_saida_devolve_o_replay(navegador, pagina):
     ctx, pg, erros = _abre(navegador, pagina, 1440, 900)
     try:
         relogio_antes = pg.inner_text("#clock b")
@@ -56,7 +56,7 @@ def test_as_tres_portas_entram_no_instante_parado_e_a_saida_devolve_o_replay(nav
         assert elenco_antes == 10
         assert pg.inner_text("#rw-entrar") == "Reescrever este round"
         assert pg.inner_text("#rw-daqui").startswith("Reescrever daqui")
-        for entrar in ("#rw-entrar", "#anot-reescrever", "#rw-daqui"):
+        for entrar in ("#rw-entrar", "#rw-daqui"):
             assert not _estado(pg)["ativo"]
             pg.click(entrar)
             est = _estado(pg)

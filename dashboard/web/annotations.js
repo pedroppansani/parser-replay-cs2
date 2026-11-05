@@ -964,13 +964,6 @@ window.MapAnnotations = (function () {
           })).id = "anot-abrir-round";
       }
     }
-    // "Reescrever este round" (R2, decisão 57): o modo Reescrever, a partir do instante em que o Replay está parado
-    if (opts.reescrever && opts.textoReescrever) {
-      var rw = botao(opts.textoReescrever, "Mudar o caminho de quem quiser a partir deste instante e ver o seu plano ao lado do real",
-                     function () { if (opts.pause) opts.pause(); opts.reescrever(); });
-      rw.id = "anot-reescrever";
-      ver.appendChild(rw);
-    }
     var fs = botao("Tela cheia", "Mapa em tela cheia (F)", alternaTelaCheia);
     fs.id = "anot-fs";
     ver.appendChild(fs);

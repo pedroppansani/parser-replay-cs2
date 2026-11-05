@@ -15,7 +15,7 @@ def test_a_barra_abre_recolhida_e_o_desenhar_mostra_as_ferramentas(contexto, par
         .filter(b => b.offsetParent !== null).map(b => b.id || b.textContent)""")
     # design-B3 (§7.2): com a barra recolhida ficam à vista Desenhar, Direção, Abrir round na prancheta,
     # Tela cheia e o "?" dos atalhos; as ferramentas de desenho continuam atrás do Desenhar
-    assert visiveis == ["anot-toggle", "anot-direcao", "anot-abrir-round", "anot-reescrever", "anot-fs", "b-atalhos"], visiveis
+    assert visiveis == ["anot-toggle", "anot-direcao", "anot-abrir-round", "anot-fs", "b-atalhos"], visiveis
     assert pg.get_attribute("#anot-toggle", "aria-expanded") == "false"
     assert not pg.is_visible('[data-ferramenta="caneta"]') and not pg.is_visible("#anot-exportar")
     pg.click("#anot-toggle")

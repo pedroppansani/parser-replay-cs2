@@ -11,8 +11,10 @@
 57. **Modo Reescrever (R2)** (design do Iriun em `notas/design/reescrever/`; D1, D2 e D7 do Pedro em 2026-11-04).
 
 - **Entrar:** "Reescrever este round" no cabeçalho do palco (D7; botão de 44 px; o cabeçalho continua com 55 px e o resumo do round encurta com
-  reticências, o inteiro no `title`), o mesmo botão na barra de ferramentas do mapa e "Reescrever daqui · 0:55" ao lado do ▶, que só aparece com o Replay
-  parado. Todos entram no instante em que o Replay está parado (o quadro gravado imediatamente anterior, como o `instante()` da prancheta). Sair: "Sair" ou Esc;
+  reticências, o inteiro no `title`) e "Reescrever daqui · 0:55" ao lado do ▶, que só aparece com o Replay parado. **O botão na barra de ferramentas do
+  mapa NÃO entrou:** o design o põe no lugar de "Abrir round na prancheta", e um botão a mais faz a barra passar de uma linha no desktop e estourar a largura no
+  celular com fonte larga (os testes `test_recolhida_a_barra_cabe_numa_linha` e `test_no_celular_nenhuma_aba_rola_na_horizontal` pegaram no CI); trocar o botão
+  antigo quebra os fluxos da decisão 43 e espera o OK do Pedro. Todos entram no instante em que o Replay está parado (o quadro gravado imediatamente anterior, como o `instante()` da prancheta). Sair: "Sair" ou Esc;
   trocar de round também sai. **Sair descarta as edições** (guardar edição é uma fase futura).
 - **O violeta (D2):** `data-tema="violeta"` só no `#palco` e nas duas colunas, enquanto o modo está ligado; navbar, abas, faixa de rounds e página seguem o
   tema da página; o mapa continua escuro. Nenhum token novo. No Assistir nada muda. Os rótulos vêm do Python (`leitura/reescrever.py` → `PAGINA.reescrever`),
@@ -27,8 +29,7 @@
 - **Contraste (3:1, pedido do Pedro):** o pior pixel de cada radar processado, contra o melhor dos dois anéis (halo claro e contorno escuro), é 4,13:1 a 4,16:1
   nos 8 mapas com radar do corpus (`scripts.design.mede_peca_reescrever`, e um teste).
 - **Fica para as próximas fases:** "Levar o X até" (teclado) e as setas na peça (R6), o fantasma e "O que mudou" (R3), trocar a granada (R4), as portas do "Por que
-  perdeu" e do Perfil (R5), o celular com o alternador Real/Sua versão (R6). O botão "Abrir round na prancheta" continua na barra até o Pedro dizer que sai (o
-  design o renomeia para "Reescrever este round"; manter os dois não quebra nenhum teste existente).
+  perdeu" e do Perfil (R5), o celular com o alternador Real/Sua versão (R6). O botão "Abrir round na prancheta" continua na barra até o Pedro decidir se o Reescrever o substitui, como o design propõe.
 - **Teclado e saída (code-review do R2):** no modo, setas, espaço, `[` `]` e os cliques no log e nas marcas não mexem no real (que está parado no instante);
   Esc sai, menos quando ele fecha o popover "?" (o Esc de outro dono não descarta as edições) ou com o foco num campo; trocar de round ou de aba também sai;
   as duas colunas trocam o `aria-label` ("Peças" e "Reescrever este round") e o devolvem ao sair. A dica não promete mover pela lista: o teclado é do R6.
@@ -37,4 +38,3 @@
   botão (o resumo desce para a linha de baixo no celular). Fora disso o Assistir não muda.
 - **Limites conhecidos:** abaixo de 1024 x 600 as colunas não têm `contain: size` (o mapa não se mexe, mas o que está abaixo pode descer); no celular o mapa tem
   `touch-action: none` enquanto o modo está ligado (arrastar a peça não rola a página, e o resto do mapa também não); o nome do jogador é a chave da edição.
-- **Teste existente alterado (precisa do OK do Pedro):** `test_replay_limpo_browser.py` lista os botões à vista da barra; entrou "Reescrever este round" (`anot-reescrever`).

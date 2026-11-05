@@ -1243,8 +1243,6 @@
         };
       },
       pause: function () { setPlaying(false); },
-      reescrever: function () { reescrever.entra(); },
-      textoReescrever: (PAGINA.reescrever || {}).entrar,
       redraw: function () { draw(); },
       contexto: function () {
         return {
