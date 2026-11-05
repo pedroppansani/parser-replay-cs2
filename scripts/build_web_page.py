@@ -81,7 +81,7 @@ def com_os_nomes_dos_lados(payload_texto: str, cabecalho: dict | None) -> str:
     """
     if not cabecalho:
         return payload_texto
-    import re
+    from leitura.narrativa import com_os_nomes_dos_times
     dados = json.loads(payload_texto)
     nomes = {k: v["nome"] for k, v in cabecalho["lados"].items()}
     narrativa = dados.get("narrative")
@@ -89,7 +89,7 @@ def com_os_nomes_dos_lados(payload_texto: str, cabecalho: dict | None) -> str:
         return payload_texto
     for chave, valor in narrativa.items():
         if isinstance(valor, str):
-            narrativa[chave] = re.sub(r"(?<!\w)Time ([AB])(?!\w)", lambda m: nomes[m.group(1)], valor)
+            narrativa[chave] = com_os_nomes_dos_times(valor, nomes)
     return json.dumps(dados, ensure_ascii=False, separators=(",", ":"))
 
 

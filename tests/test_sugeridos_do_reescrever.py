@@ -48,6 +48,26 @@ def test_so_erro_de_tipo_validado_entra_e_os_de_maior_perda_vem_primeiro():
     assert s[0]["texto"] == "Morreu sozinho · erro validado, depende da tática"
 
 
+def test_nenhum_rotulo_interno_time_a_ou_b_chega_a_tela(tmp_path):
+    """"Time A"/"Time B" é o identificador interno das frases: o nome do lado entra no lugar, no índice dos sugeridos e na página da partida."""
+    import re
+
+    from leitura.narrativa import com_os_nomes_dos_times
+    from scripts.build_site import indice_de_sugeridos, match_summary
+    from scripts.build_web_page import com_os_nomes_dos_lados
+    assert com_os_nomes_dos_times("Levou o Time A de 50% para 75%, com o Time B na frente", {"A": "FURIA", "B": "Vitality"}) ==         "Levou o FURIA de 50% para 75%, com o Vitality na frente"
+    ids = sorted(d.name for d in (RAIZ / "data" / "processed").glob("match_*"))
+    matches = [m for m in (match_summary(i) for i in ids) if m]
+    if len(matches) < 3:
+        pytest.skip("sem o processado")
+    rotulo = re.compile(r"(?<!\w)Time [AB](?!\w)")
+    assert not rotulo.search(json.dumps(indice_de_sugeridos(matches), ensure_ascii=False))
+    for m in matches:                                   # a frase do card do decisivo nas páginas das partidas (payload que vai ao HTML)
+        texto = (RAIZ / "data" / "processed" / m["id"] / "web_payload.json").read_text(encoding="utf-8")
+        depois = com_os_nomes_dos_lados(texto, {"lados": {k: {"nome": v["nome"]} for k, v in m["lados"].items()}})
+        assert not rotulo.search(json.dumps(json.loads(depois).get("narrative"), ensure_ascii=False)), m["id"]
+
+
 def test_o_arquivo_do_site_so_tem_partida_com_sugerido_e_nenhum_tipo_nao_validado():
     from scripts.build_site import indice_de_sugeridos, match_summary
     matches = [m for m in (match_summary(d.name) for d in sorted((RAIZ / "data" / "processed").glob("match_*"))) if m]

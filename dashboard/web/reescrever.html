@@ -47,8 +47,8 @@
   .contagem { color: var(--apagado); font-size: var(--t-sm); margin: 10px 0; min-height: 1.4em; }
   .resultados { max-height: 340px; overflow-y: auto; }
   .partida-btn { display: grid; gap: 2px; width: 100%; text-align: left; min-height: var(--toque); padding: 10px 14px; border-radius: var(--r-ctl);
-    border: 1px solid var(--linha); background: var(--superficie); color: var(--tinta); font: inherit; cursor: pointer; }
-  .partida-btn:hover { border-color: var(--borda); }
+    border: 1px solid var(--borda); background: var(--superficie); color: var(--tinta); font: inherit; cursor: pointer; }
+  .partida-btn:hover { border-color: var(--tinta-2); }
   .partida-btn[aria-pressed="true"] { border-color: var(--tinta); box-shadow: inset 4px 0 0 var(--tinta); background: var(--superficie-2); }
   .partida-btn small { color: var(--apagado); font-size: var(--t-xs); }
   .vazio { padding: 16px; border: 1px dashed var(--borda); border-radius: var(--r-md); color: var(--tinta-2); display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
@@ -124,10 +124,12 @@
   });
   var ORDEM = { decisivo: 0, momento: 1, erro: 2 };
   function melhor(l) { return Math.min.apply(null, l.motivos.map(function (m) { return ORDEM[m.motivo]; })); }
-  // uma linha por partida (a de motivo mais forte), na ordem das partidas: decisivo, momento e erro se misturam na lista curta
+  // uma linha por partida (a de motivo mais forte)
   var melhores = {};
   linhas.forEach(function (l) { var m = melhores[l.p.id]; if (!m || melhor(l) < melhor(m) || (melhor(l) === melhor(m) && l.round < m.round)) melhores[l.p.id] = l; });
-  linhas = Object.keys(melhores).sort().map(function (id) { return melhores[id]; });
+  // a ordem: a partida de exemplo, depois as profissionais, depois as da FACEIT; em cada grupo, pelo id da partida
+  linhas = Object.keys(melhores).map(function (id) { return melhores[id]; });
+  linhas.sort(function (a, b) { return a.p.grupo - b.p.grupo || (a.p.id < b.p.id ? -1 : a.p.id > b.p.id ? 1 : 0); });
   var lista = $("sugeridos");
   linhas.slice(0, T.max_linhas).forEach(function (l) {
     var li = el("li", "sug");
@@ -182,15 +184,29 @@
     $("escolhida-titulo").textContent = placar(p) + " · " + contexto(p);
     var faixa = $("faixa"); faixa.textContent = "";
     $("abrir").hidden = true;
+    // a faixa é UMA parada do Tab (a do round escolhido, ou o primeiro); as setas, Home e End andam entre os rounds
+    function paraAParada(c) {
+      Array.prototype.forEach.call(faixa.children, function (o) { o.tabIndex = o === c ? 0 : -1; });
+    }
     for (var n = 1; n <= p.rounds; n++) (function (n) {
       var c = el("button", "chip", String(n)); c.type = "button";
       c.setAttribute("aria-pressed", "false");
+      c.tabIndex = n === 1 ? 0 : -1;
       c.addEventListener("click", function () {
         Array.prototype.forEach.call(faixa.children, function (o) { o.setAttribute("aria-pressed", String(o === c)); });
+        paraAParada(c);
         var a = $("abrir"); a.hidden = false; a.textContent = T.botao.replace("{n}", n); a.href = endereco(p, n, null);
       });
       faixa.appendChild(c);
     })(n);
+    faixa.onkeydown = function (e) {
+      var cs = Array.prototype.slice.call(faixa.children), i = cs.indexOf(document.activeElement);
+      var alvo = e.key === "ArrowRight" || e.key === "ArrowDown" ? cs[Math.min(cs.length - 1, i + 1)] : e.key === "ArrowLeft" || e.key === "ArrowUp" ? cs[Math.max(0, i - 1)]
+        : e.key === "Home" ? cs[0] : e.key === "End" ? cs[cs.length - 1] : null;
+      if (!alvo || i < 0) return;
+      e.preventDefault(); paraAParada(alvo); alvo.focus();
+    };
+    faixa.firstChild.focus();   // quem escolheu a partida pelo teclado cai nos rounds, não no fim da lista
   }
   campo.addEventListener("input", mostra);
   $("limpa").addEventListener("click", function () { campo.value = ""; mostra(); campo.focus(); });

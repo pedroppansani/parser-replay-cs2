@@ -623,6 +623,7 @@ def indice_de_sugeridos(matches: list[dict]) -> dict:
     não baixar as páginas das partidas (de 2,4 a 5,2 MB). Só entra partida com sugerido; tipo de erro não validado nunca entra."""
     import polars as pl
 
+    from leitura.narrativa import com_os_nomes_dos_times
     from leitura.sugeridos import FORMATO_SUGERIDOS, sugeridos_da_partida
     partidas = {}
     for m in matches:
@@ -634,7 +635,11 @@ def indice_de_sugeridos(matches: list[dict]) -> dict:
         rounds = {int(r["round_num"]): r for r in pl.read_parquet(base / "rounds.parquet").to_dicts()}
         tickrate = int(json.loads((base / "replay.json").read_text(encoding="utf-8"))["tickrate"])
         erros = pl.read_parquet(arq_erros).to_dicts() if arq_erros.exists() else []
-        lista = sugeridos_da_partida(insights.get("decisive_round"), (insights.get("narrative") or {}).get("decisive"),
+        nomes = {k: v["nome"] for k, v in (m.get("lados") or {}).items()}
+        frase = (insights.get("narrative") or {}).get("decisive")
+        if frase and nomes:   # o nome do time, como no resto do site: o "Time A" é interno
+            frase = com_os_nomes_dos_times(frase, nomes)
+        lista = sugeridos_da_partida(insights.get("decisive_round"), frase,
                                      json.loads(arq_breakdown.read_text(encoding="utf-8")), erros, rounds, tickrate)
         if lista:
             partidas[m["id"]] = {"file": m["file"], "map": m["map"], "map_label": m["map_label"], "score_a": m["score_a"],

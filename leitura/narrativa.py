@@ -18,7 +18,18 @@ verifica-se que a frase sai curta em vez de citar campo vazio.
 """
 from __future__ import annotations
 
+import re
+
 from metrics.formatting import format_money, format_pct, format_pct_par
+
+_TIME_AB = re.compile(r"(?<!\w)Time ([AB])(?!\w)")
+
+
+def com_os_nomes_dos_times(texto: str, nomes: dict[str, str]) -> str:
+    """Troca "Time A"/"Time B" (o identificador interno das frases) pelo nome do lado ("MOUZ", "Time de donk666").
+    Só o TEXTO muda, nenhum número. Quem mostra uma frase desta classe na tela passa por aqui: a página da partida
+    (`build_web_page.com_os_nomes_dos_lados`) e o índice dos sugeridos do Reescrever (`build_site.indice_de_sugeridos`)."""
+    return _TIME_AB.sub(lambda m: nomes[m.group(1)], texto)
 
 # Como cada final de round é dito em português. O demo entrega códigos.
 MOTIVO = {

@@ -103,6 +103,16 @@ def test_a_pagina_de_escolha_mostra_os_sugeridos_com_motivo_e_leva_ao_replay_no_
             arq, _, resto = href.partition("#")
             assert arq in arquivos and re.fullmatch(r"replay\?round=\d+(&t=[\d.]+)?", resto), href
         assert pg.evaluate("document.documentElement.scrollWidth - innerWidth") == 0
+        assert not re.search(r"Time [AB]", pg.inner_text("body"))                            # nenhum rótulo interno na tela
+        # a ordem: a partida de exemplo, depois as profissionais, depois as da FACEIT
+        from scripts.build_site import partida_de_exemplo
+        exemplo = partida_de_exemplo(partidas)
+        origem = {m["file"]: m.get("origem") for m in partidas}
+        arqs = [h.split("#")[0] for h in hrefs]
+        if exemplo and exemplo["file"] in arqs:
+            assert arqs[0] == exemplo["file"]
+        grupos = [0 if a == (exemplo or {}).get("file") else 1 if origem[a] == "profissional" else 2 for a in arqs]
+        assert grupos == sorted(grupos), grupos
         assert erros == []
     finally:
         ctx.close()
@@ -128,8 +138,8 @@ def test_a_busca_filtra_sem_acento_mostra_o_vazio_e_abre_a_faixa_de_rounds(naveg
         pg.fill("#busca", alvo["lados"]["A"]["nome"][:5])
         assert pg.locator("#resultados .partida-btn").count() >= 1
         pg.locator("#resultados .partida-btn").first.focus()
-        pg.keyboard.press("Enter")                                                              # pelo teclado: o foco fica no botão
-        assert pg.evaluate("document.activeElement.classList.contains('partida-btn')")
+        pg.keyboard.press("Enter")                                                              # pelo teclado: o foco vai aos rounds
+        assert pg.evaluate("document.activeElement.classList.contains('chip')")
         assert pg.get_attribute("#resultados .partida-btn >> nth=0", "aria-pressed") == "true"
         assert pg.is_visible("#faixa") and pg.locator("#faixa .chip").count() >= 10
         assert pg.is_hidden("#abrir")                                                           # só aparece depois de escolher o round
@@ -140,6 +150,35 @@ def test_a_busca_filtra_sem_acento_mostra_o_vazio_e_abre_a_faixa_de_rounds(naveg
         assert pg.is_hidden("#faixa") and pg.is_hidden("#abrir")
         assert pg.evaluate("document.documentElement.scrollWidth - innerWidth") == 0
         assert erros == []
+    finally:
+        ctx.close()
+
+
+def test_o_teclado_faz_o_caminho_todo_da_busca_ao_botao_reescrever_o_round(navegador, paginas_html, partidas):
+    pasta, _ = paginas_html
+    ctx = navegador.new_context(viewport={"width": 1440, "height": 900})
+    pg = ctx.new_page()
+    foco = "() => { const a = document.activeElement; return [a.tagName, a.id, a.className, a.textContent.slice(0, 40)]; }"
+    try:
+        pg.goto((pasta / "reescrever.html").as_uri())
+        pg.focus("#busca")
+        pg.keyboard.type(partidas[0]["lados"]["A"]["nome"][:5])
+        assert pg.locator("#resultados .partida-btn").count() >= 1
+        pg.keyboard.press("Tab")                                                         # do campo à primeira partida (o "Limpar" está escondido)
+        assert pg.evaluate(foco)[2] == "partida-btn"
+        pg.keyboard.press("Enter")                                                       # escolher a partida leva o foco aos rounds
+        assert pg.evaluate(foco)[2:4] == ["chip", "1"]
+        n = pg.locator("#faixa .chip").count()
+        pg.keyboard.press("End")
+        assert pg.evaluate(foco)[3] == str(n)
+        pg.keyboard.press("ArrowLeft")
+        assert pg.evaluate(foco)[3] == str(n - 1)
+        pg.keyboard.press("Space")                                                       # escolher o round
+        assert pg.is_visible("#abrir") and pg.inner_text("#abrir") == f"Reescrever o round {n - 1}"
+        pg.keyboard.press("Tab")                                                         # a faixa é uma parada só: o próximo é o botão
+        assert pg.evaluate(foco)[1] == "abrir"
+        assert pg.get_attribute("#abrir", "href").endswith(f"#replay?round={n - 1}")
+        assert pg.evaluate("document.activeElement.getBoundingClientRect().height") >= 44
     finally:
         ctx.close()
 

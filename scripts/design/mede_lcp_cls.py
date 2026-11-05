@@ -33,7 +33,7 @@ ESQUEMA = os.environ.get("MEDE_ESQUEMA") or "light"   # o tema do aparelho (Fase
 PORTA = 8765
 MEDIDAS = 5
 LARGURAS = [(375, 667), (1440, 900)]
-PAGINAS = ["index.html?agente=tr", "match_02.html", "match_02.html#perfil", "prancheta_de_mirage.html"]
+PAGINAS = ["index.html?agente=tr", "reescrever.html", "match_02.html", "match_02.html#perfil", "prancheta_de_mirage.html"]
 LCP_MAXIMO_S = {"index.html?agente=tr": 2.5}   # o LCP da partida depende dos megabytes de dado embutidos
 CLS_MAXIMO = 0.0                                 # a meta do Pedro na v2-7
 REDE = {"offline": False, "latency": 165, "downloadThroughput": 9_000_000 / 8, "uploadThroughput": 1_500_000 / 8}

@@ -40,13 +40,17 @@ TEXTOS = {
 
 
 def dados_da_pagina(matches: list[dict], sugeridos: dict) -> dict:
-    """As partidas (todas, para a busca) com os sugeridos de cada uma. `matches` vem de `build_site.match_summary`."""
+    """As partidas (todas, para a busca) com os sugeridos de cada uma. `matches` vem de `build_site.match_summary`. `grupo` ordena a
+    lista curta como a landing: a partida de exemplo (o mesmo critério dela), depois as profissionais, depois as da FACEIT."""
+    from scripts.build_site import partida_de_exemplo
+    exemplo = partida_de_exemplo(matches)
     partidas = []
     for m in matches:
         lados = m.get("lados") or {}
         if not lados.get("A") or not lados.get("B"):
             continue
         partidas.append({
+            "grupo": 0 if exemplo and m["id"] == exemplo["id"] else 1 if m.get("origem") == "profissional" else 2,
             "id": m["id"], "file": m["file"], "map_label": m["map_label"], "evento": m.get("evento"), "rounds": m["rounds"],
             "lados": [{"nome": lados[k]["nome"], "pontos": lados[k]["pontos"]} for k in ("A", "B")],
             "sugeridos": (sugeridos["partidas"].get(m["id"]) or {}).get("sugeridos", []),
