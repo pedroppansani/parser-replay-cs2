@@ -118,6 +118,7 @@
                  trocas: trocas.map(function (t) { return { k: t.n.k, by: t.n.by, f0: t.n.f0, alt: t.alt.id, voo_s: t.alt.voo_s, cai: queda(t.n, t.alt), valida: !N.editada(t.n.by) }; }),
                  candidatas: candidatas().map(function (n) { return { k: n.k, by: n.by, f0: n.f0, lid: n.l ? n.l.id : null, fim: fimDe(n), origem: origemDe(n) }; }),
                  grupos: sel && bib.estado === "pronta" ? alternativas(sel).map(function (g) { return { lugar: g.lugar, n: g.n, id: g.melhor.id, d: g.d, mesmo: g.mesmo }; }) : [],
+                 zonas: reescrever.virtuais.smokes.concat(reescrever.virtuais.fires).map(function (z) { return { x: z.x, y: z.y, f0: z.f0, f1: z.f1, k: reescrever.virtuais.smokes.indexOf(z) >= 0 ? "smoke" : "molotov" }; }),
                  virtuais: { nades: reescrever.virtuais.nades.length, smokes: reescrever.virtuais.smokes.length, fires: reescrever.virtuais.fires.length, pops: reescrever.virtuais.pops.length } };
       },
       escolheNoMapa: function (k, by, f0) { var n = candidatas().filter(function (q) { return q.k === k && q.by === by && q.f0 === f0; })[0]; if (n) seleciona(n); }

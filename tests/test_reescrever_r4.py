@@ -394,3 +394,33 @@ def test_peca_movida_e_troca_da_mesma_granada_viram_uma_frase_so(navegador, pagi
         assert not any(t.startswith("A smoke de ZywOo") and "fica só no real" in t and "não vale" not in t for t in itens)      # a outra frase não repete a granada
     finally:
         ctx.close()
+
+
+def test_a_smoke_trocada_e_desenhada_como_uma_smoke_do_real_so_depois_da_queda_e_pela_mesma_duracao(navegador, pagina_com_biblioteca):
+    """Instrumenta o desenho de áreas: depois da queda a trocada sai com a MESMA área (raio) de uma smoke do real, no destino da alternativa,
+    pela duração da smoke; antes da queda e depois do fim não aparece como área."""
+    ctx, pg, erros = _abre(navegador, pagina_com_biblioteca, 1440, 900)
+    try:
+        pg.evaluate("""() => { window.__areas = []; const o = MapCore.desenhaArea;
+            MapCore.desenhaArea = function (c, arma, X, Y, r) { window.__areas.push([arma, X, Y, r]); return o.apply(this, arguments); }; }""")
+        _clica(pg, "#rw-entrar"); _clica(pg, "#rw-ferr-granada"); pg.wait_for_function(PRONTA)
+        tr = _troca_a_primeira(pg, por="ZywOo")["trocas"][0]
+        z = _estado(pg)  # as zonas só existem tocando
+        _clica(pg, "#play"); pg.wait_for_timeout(200); _clica(pg, "#play")
+        zona = _estado(pg)["trocas"]["zonas"][0]
+        assert zona["k"] == "smoke" and zona["f0"] == tr["cai"]
+        px = pg.evaluate("z => { const R = window.__RADAR__; return [(z.x - R.origin_x) * R.scale_px_per_unit, (R.origin_y - z.y) * R.scale_px_per_unit, 0]; }", zona)
+        raio = pg.evaluate("MapCore.RAIO_SMOKE_UNIDADES * window.__RADAR__.scale_px_per_unit")
+
+        def areas_no_destino(q):
+            pg.evaluate("q => { window.__areas = []; const s = document.getElementById('scrub'); s.disabled = false; s.value = q; s.dispatchEvent(new Event('input')); }", q)
+            pg.wait_for_timeout(150)
+            return [a for a in pg.evaluate("window.__areas") if a[0] == "smoke" and abs(a[1] - px[0]) < 1.5 and abs(a[2] - px[1]) < 1.5]
+        assert areas_no_destino(zona["f0"] - 2) == []                                       # antes da queda: nada de área no destino
+        depois = areas_no_destino(zona["f0"] + 2)
+        assert len(depois) == 1 and abs(depois[0][3] - raio) < 0.01                         # depois: a nuvem, com o raio da smoke do real
+        assert len(areas_no_destino(zona["f1"] - 1)) == 1                                   # dura até o fim da smoke (constante do projeto)
+        assert areas_no_destino(zona["f1"] + 2) == []                                       # e some depois dele
+        assert erros == []
+    finally:
+        ctx.close()
