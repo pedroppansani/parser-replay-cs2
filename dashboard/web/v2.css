@@ -90,18 +90,71 @@ html { scroll-padding-top: calc(var(--nav-h) + 16px); }   /* C2: âncora nunca e
 /* A moldura do mapa (§5.3, D2.7): ilha do tema escuro (data-tema="escuro" no #palco) em --radar, raio 20, com o
    anel de 6 px da --superficie DA PÁGINA (lido no .stage, fora da ilha); o canvas não muda de tamanho nem de cor. */
 .stage { --anel: var(--superficie); }
-.board[data-tema="escuro"] { background: var(--radar); color: var(--tinta); border-radius: var(--r-moldura);
+.board:is([data-tema="escuro"], [data-tema="violeta"]) { background: var(--radar); color: var(--tinta); border-radius: var(--r-moldura);
   border-color: var(--linha); box-shadow: 0 0 0 6px var(--anel); padding: 0 6px 12px; }
 /* atrás dos cantos arredondados do canvas fica o --entorno-mapa (a --superficie do escuro de antes, que não segue o
    violeta da v2-5): nenhum pixel do quadro muda */
-.board[data-tema="escuro"] .mapwrap { background: var(--entorno-mapa); }
-.board[data-tema="escuro"] .transport { background: var(--radar); border-radius: 0 0 12px 12px; }
-.board[data-tema="escuro"] .play { background: var(--tinta); color: var(--contorno); }
+.board:is([data-tema="escuro"], [data-tema="violeta"]) .mapwrap { background: var(--entorno-mapa); }
+.board:is([data-tema="escuro"], [data-tema="violeta"]) .transport { background: var(--radar); border-radius: 0 0 12px 12px; }
+.board:is([data-tema="escuro"], [data-tema="violeta"]) .play { background: var(--tinta); color: var(--contorno); }
 /* v2-7 (pedido do Pedro): os botões do Replay (Desenhar, Direção, Abrir round na prancheta, Tela cheia, ? e as
    ferramentas que abrem com o Desenhar) em pílula, com o texto da Geist sem condensar, como a barra da prancheta */
 .board .anot-b { border-radius: var(--r-ctl); font-family: var(--f-texto); font-stretch: normal; letter-spacing: 0;
   padding: 5px 12px; }
 @media (max-width: 1000px) { .stage { gap: 20px 14px; } }
+
+/* Reescrever (R2, decisão 57): a moldura e as duas colunas viram a ilha violeta da prancheta (D2); o mapa fica escuro. As colunas
+   (o banco das peças e o painel) tomam o lugar dos dois elencos e NÃO crescem com o conteúdo (contain: size, rolam por dentro),
+   então o mapa não muda de tamanho nem de lugar em nenhum estado. */
+.squad[data-tema="violeta"] { background: var(--superficie); color: var(--tinta); border-color: var(--linha); }
+.board[data-tema="violeta"], .board[data-tema="violeta"] .transport { background: var(--fundo); }
+.roundhead { align-items: center; }
+.roundhead .res { order: 3; flex: 1 1 100%; }   /* no celular o resumo do round desce para a linha de baixo, inteiro */
+.rh-acoes { display: flex; align-items: center; justify-content: flex-end; gap: 8px; width: 192px; flex: none; }
+.rw-btn { min-height: var(--toque); padding: 0 16px; border-radius: var(--r-ctl); border: 1px solid var(--borda); background: var(--superficie);
+  color: var(--tinta); font: inherit; font-size: var(--t-sm); font-weight: 600; cursor: pointer; white-space: nowrap; }
+.rw-btn:hover:not(:disabled) { background: var(--superficie-2); }
+.rw-btn.prim { background: var(--acao); color: var(--acao-ink); border-color: var(--acao); }
+.rw-btn.prim:hover:not(:disabled) { opacity: 0.88; background: var(--acao); }
+.rw-btn:disabled { color: var(--apagado); cursor: not-allowed; }
+.rw-pilula { display: inline-flex; align-items: center; min-height: 32px; padding: 0 12px; border-radius: 99px; border: 1px solid var(--borda);
+  background: var(--superficie-2); color: var(--tinta); font-size: var(--t-sm); font-weight: 600; white-space: nowrap; }
+.tr-esq { display: flex; align-items: center; gap: 8px; width: 244px; }
+.rw-daqui { flex: 1 1 0; min-width: 0; padding: 0 12px; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 560px) {
+  /* no celular a linha do tempo mantém a largura de antes: sem "Reescrever daqui" (o do cabeçalho já entra no instante parado) */
+  .tr-esq { width: auto; }
+  /* o botão do cabeçalho numa linha só dele: com a fonte que o aparelho tiver, o cabeçalho tem a mesma altura nos dois estados (nada desce ao entrar) */
+  .rh-acoes { width: auto; order: 2; flex: 1 1 100%; justify-content: flex-start; }
+  .rw-daqui { display: none; }
+}
+.reescrevendo .play:disabled { opacity: 0.45; cursor: not-allowed; }
+.reescrevendo .mapwrap { cursor: grab; touch-action: none; }
+@media (min-width: 1024px) and (min-height: 600px) {
+  .roundhead { box-sizing: border-box; height: 55px; padding-block: 5px; flex-wrap: nowrap; }
+  /* no palco o resumo encurta com reticências (o texto inteiro fica no title) e o botão nunca encolhe abaixo de 44 px */
+  .roundhead .res { order: 0; flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .stage.reescrevendo .squad { contain: size; overflow-y: auto; align-self: stretch; }
+}
+.banco, .painel-rw { display: grid; align-content: start; grid-auto-rows: max-content; grid-template-columns: minmax(0, 1fr); gap: 6px; }
+.banco h4, .painel-rw h4 { margin: 0; }
+.banco h4.t { margin-top: 6px; }
+.peca-rw { display: grid; grid-template-rows: auto auto; grid-template-columns: minmax(0, 1fr); gap: 0; width: 100%; min-height: var(--toque); text-align: left; padding: 5px 14px 5px 16px; border-radius: 12px;
+  border: 1px solid var(--borda); background: var(--superficie-2); color: var(--tinta); font: inherit; cursor: pointer; }
+.peca-rw .pr-topo { display: flex; gap: 8px; align-items: baseline; line-height: 1.3; min-height: 1.3em; }
+.peca-rw .pr-nome { font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.peca-rw .pr-hp { margin-left: auto; font-family: var(--f-num); color: var(--apagado); }
+.peca-rw .pr-meio { font-size: var(--t-xs); line-height: 1.4; min-height: 1.4em; color: var(--tinta-2); min-width: 0; }   /* quebra a linha em vez de cortar, com qualquer fonte */
+.peca-rw .pr-tag { display: none; width: 8px; height: 8px; border-radius: 50%; background: var(--tinta); font-size: 0; overflow: hidden; flex: none; align-self: center; }   /* ponto de "editado" (o texto fica para leitor de tela e title): não come largura do nome */
+.peca-rw.editada .pr-tag { display: inline-block; }
+.peca-rw.ct { box-shadow: inset 4px 0 0 var(--ct-mapa); }
+.peca-rw.t { box-shadow: inset 4px 0 0 var(--tr-mapa); }
+.peca-rw[aria-pressed="true"] { border-color: var(--tinta); background: var(--superficie); outline: 2px solid var(--tinta); outline-offset: -3px; }
+.peca-rw[aria-disabled="true"] { cursor: default; opacity: 0.7; }
+.painel-rw p { margin: 0; color: var(--tinta-2); font-size: var(--t-sm); }
+.painel-rw .rw-fixa b { color: var(--tinta); }
+.painel-rw .rw-comeca { color: var(--tinta); font-weight: 600; }
+
 
 /* Perfil (§5.4): o seletor de jogador em pílulas; o estado "em validação" é um bloco tracejado, sem número */
 .pfbotoes button { border-radius: var(--r-ctl); padding: 7px 16px; }

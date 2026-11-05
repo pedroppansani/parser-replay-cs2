@@ -16,6 +16,7 @@
       // tabindex itinerante: Tab entra na aba ativa, as setas andam entre elas
       o.tabIndex = o.dataset.tab === name ? 0 : -1;
     });
+    if (name !== "replay" && reescrever.ativo) reescrever.sai(true);   // outra aba: o modo Reescrever (e as edições) saem
     Array.prototype.forEach.call(document.querySelectorAll("[data-panel]"), function (p) {
       p.hidden = p.dataset.panel !== name;
     });

@@ -1157,6 +1157,7 @@
         <div class="roundhead">
           <div class="big" id="rh-round">Round 1</div>
           <div class="res" id="rh-res"></div>
+          <div class="rh-acoes" id="rh-acoes"></div>
         </div>
 
         <!-- A barra de desenho e inserida aqui por dashboard/web/annotations.js.
@@ -1167,7 +1168,9 @@
         </div>
 
         <div class="transport">
-          <button class="play" id="play" aria-label="Reproduzir">▶</button>
+          <div class="tr-esq" id="tr-esq">
+            <button class="play" id="play" aria-label="Reproduzir">▶</button>
+          </div>
           <div class="scrub">
             <div class="marks" id="marks" aria-hidden="true"></div>
             <input type="range" id="scrub" min="0" max="100" value="0" step="1" aria-label="Linha do tempo do round">
@@ -1357,6 +1360,7 @@
 //@inclui partida/07-perfil.js
 //@inclui partida/08-troca-de-partida.js
 //@inclui partida/09-abas.js
+//@inclui partida/10-reescrever.js
 })();
 </script>
 </body>

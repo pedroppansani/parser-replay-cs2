@@ -2,6 +2,8 @@
 
   var cv = document.getElementById("map");
   var ctx = cv.getContext("2d");
+  // o modo Reescrever (R2, decisão 57) mora em partida/10-reescrever.js; aqui só o estado e os ganchos do desenho
+  var reescrever = { ativo: false };
 
   // Radar oficial do mapa. A correspondência entre coordenada de jogo e pixel
   // não vem com a imagem — ela foi calibrada ajustando a nuvem de posições da
@@ -256,6 +258,7 @@
   }
 
   function seekToEvent(f) {
+    if (reescrever.ativo) return;   // no modo Reescrever o real fica parado no instante
     // O preroll pode encostar no começo do round: aí ele encurta, e o replay
     // ainda começa no quadro 0. Isso NÃO é clamp de erro — o quadro de destino
     // já foi validado em frameDoTick, que devolve null quando o tick cai fora.
@@ -398,6 +401,7 @@
   }
 
   function selectRound(r) {
+    if (reescrever.ativo) reescrever.sai(true);   // trocar de round sai do modo: as edições são deste round
     cur = r;
     frame = 0;
     pos = 0;
@@ -415,6 +419,7 @@
     document.getElementById("rh-round").textContent = "Round " + r.round;
     document.getElementById("rh-res").textContent =
       nomeLado(r.winner_team) + " · " + (REASON[r.reason] || r.reason) + " · " + br(r.seconds) + "s";
+    document.getElementById("rh-res").title = document.getElementById("rh-res").textContent;   // o palco encurta com reticências: o inteiro fica aqui
     buildLog();
     buildMarks();
     buildSquads();
@@ -1005,7 +1010,8 @@
       // guardas de distância ficam em unidades do jogo (onde o limite de
       // velocidade faz sentido) em vez de pixels do radar.
       var canLerp = alive && p.alive[i1];
-      var sp = canLerp ? smoothPos(p, i0, i1, tt) : [p.x[i0], p.y[i0]];
+      var editada = reescrever.ativo ? reescrever.posicaoEditada(p.name) : null;   // peça movida na "Sua versão": no lugar dela
+      var sp = editada || (canLerp ? smoothPos(p, i0, i1, tt) : [p.x[i0], p.y[i0]]);
       var X = mx(sp[0]);
       var Y = my(sp[1]);
       var color = p.side === "ct" ? CM.ct : CM.tr;
@@ -1032,9 +1038,12 @@
         cego: alive && pLv === lvNow && blindLeft(p.name, i0) > 0,
         hp: p.hp[i0],
         nome: marcado ? null : p.name,
-        yaw: yaw
+        yaw: yaw,
+        escala: reescrever.ativo && alive ? reescrever.escala : undefined,   // a peça editável é 25% maior
+        selecionado: reescrever.ativo && reescrever.sel === p.name
       });
     });
+    if (reescrever.ativo) reescrever.desenhaSobre(ctx);
     desenhaMarcasDeBorda(ctx, foraDoAndar);
     MapCore.rotulosDesenha();
 
@@ -1050,13 +1059,16 @@
     });
 
     updateSquads();
+    if (reescrever.aoQuadro) reescrever.aoQuadro();
   }
 
   function setPlaying(v) {
+    if (v && reescrever.ativo) return;   // na Reescrever o real fica parado no instante (tocar a sua versão: próxima fase)
     playing = v;
     document.getElementById("play").textContent = v ? "❚❚" : "▶";
     document.getElementById("play").setAttribute("aria-label", v ? "Pausar" : "Reproduzir");
     if (v) { lastT = performance.now(); requestAnimationFrame(tick); }
+    if (reescrever.aoQuadro) reescrever.aoQuadro();   // o "Reescrever daqui" só aparece com o Replay parado
   }
 
   // Avança em tempo contínuo e redesenha a cada quadro da tela: o replay foi
@@ -1089,6 +1101,7 @@
   }
 
   function togglePlay() {
+    if (reescrever.ativo) return;
     if (pos >= cur.frames - 1) { pos = 0; document.getElementById("scrub").value = 0; }
     setPlaying(!playing);
   }
@@ -1121,6 +1134,7 @@
     // atalho de replay não faz sentido com a aba de replay escondida
     if (document.querySelector("[data-panel='replay']").hidden) return;
 
+    if (reescrever.ativo) return;   // setas, espaço e [ ] não mexem no real parado do modo Reescrever
     var step = e.shiftKey ? Math.round(R.sample_hz) : 1;  // Shift = 1 segundo
     if (e.key === " " || e.key === "Spacebar") { e.preventDefault(); togglePlay(); }
     else if (e.key === "ArrowRight") { e.preventDefault(); stepFrame(step); }

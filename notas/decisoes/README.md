@@ -98,3 +98,4 @@ Uma nota por decisão. O `CLAUDE.md` traz a lista curta das que estão em vigor.
 | [54](54-enquadramento-da-nuke.md) | vigente | Replay da Nuke: a vista de cada round enquadra tudo o que o round mostra (jogadores, granadas, áreas); nunca esconde jogador vivo nem granada; outros mapas iguais. |
 | [55](55-dado-do-reescrever-r0.md) | vigente | Biblioteca de arremessos com o lado de quem lançou, o voo e o efeito do molotov lidos da demo (smoke sem fim na demo: nulo); índice `sugeridos.json` dos rounds do Reescrever |
 | [56](56-navbar-e-escolha-do-reescrever.md) | vigente | Navbar Partidas, Jogadores, Reescrever; a prancheta livre vira bloco da landing; página `reescrever.html` com os sugeridos (55) e a busca, dados embutidos |
+| [57](57-modo-reescrever.md) | vigente | Modo Reescrever na aba Replay: entra pelo cabeçalho, barra ou "Reescrever daqui"; palco e colunas em violeta; peças vivas arrastáveis; sai descartando; mapa no mesmo lugar e tamanho |
