@@ -471,7 +471,9 @@
 
       // Tempo decorrido desde o fim do freeze time, no relógio. Segundos crus
       // com sinal não diziam de onde o tempo era contado.
-      var quando = mmss(m.t) + (m.pos_round ? " <em>após o fim do round</em>" : "");
+      // (cartão 28) o mesmo relógio do resto do Replay (1:42 descendo; depois do plant, o da bomba), não o decorrido;
+      // depois do fim do round não há relógio a mostrar: só o aviso
+      var quando = m.pos_round ? "<em>após o fim do round</em>" : esc(relogioDe(m.t).main);
 
       var alvo = frameDoTick(m.tick);
       var podeClicar = alvo !== null;
@@ -481,11 +483,17 @@
       }
 
       var who = m.who ? "<b>" + esc(m.who) + "</b> " : "";
-      return "<button class='moment" + (podeClicar ? "" : " inerte") + "' data-i='" + i + "'" +
+      // a porta do Reescrever (R5): momento com jogador, dentro do round e com o instante no replay; na virada numérica o selecionado é a vítima
+      var quem = m.kind === "virada_numerica" ? (m.victim || m.who) : m.who;
+      var porta = quem && podeClicar && !m.pos_round && PAGINA.reescrever
+        ? "<button type='button' class='rw-btn moment-rw' data-i='" + i + "' aria-label='" +
+          esc(PAGINA.reescrever.porta_aria.replace("{relogio}", relogioDe(Math.max(0, m.t - PREROLL_SECONDS)).main).replace("{quem}", quem)) + "'>" +
+          esc(PAGINA.reescrever.porta) + "</button>" : "";
+      return "<div class='mrow'><button class='moment" + (podeClicar ? "" : " inerte") + "' data-i='" + i + "'" +
         (podeClicar ? "" : " disabled") + title + ">" +
         "<span class='mt'>" + quando + "</span>" +
         "<span class='ic'>" + (MOMENT_ICON[m.kind] || "•") + "</span>" +
-        "<span class='mx'>" + who + esc(m.text) + extra + "</span></button>";
+        "<span class='mx'>" + who + esc(m.text) + extra + "</span></button>" + porta + "</div>";
     }).join("");
 
     host.innerHTML =
@@ -501,8 +509,14 @@
       "<p class='caveat'>São padrões observáveis que costumam custar rounds — morrer sem cobertura, " +
       "ficar em desvantagem que não se recupera, não usar utility. <b>Não é um veredito sobre a decisão " +
       "tomada</b>: por que o jogador estava ali depende do call e do que o adversário mostrou, e isso o " +
-      "demo não registra. Clique num momento para assistir.</p>";
+      "demo não registra. Clique num momento para assistir." + (PAGINA.reescrever ? esc(PAGINA.reescrever.porta_dica) : "") + "</p>";
 
+    Array.prototype.forEach.call(host.querySelectorAll(".moment-rw"), function (btn) {
+      btn.addEventListener("click", function () {
+        var m = b.moments[Number(btn.dataset.i)];
+        reescrever.abreEm(cur.round, m.t, m.kind === "virada_numerica" ? (m.victim || m.who) : m.who);
+      });
+    });
     Array.prototype.forEach.call(host.querySelectorAll(".moment"), function (btn) {
       btn.addEventListener("click", function () {
         var m = b.moments[Number(btn.dataset.i)];

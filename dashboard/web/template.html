@@ -427,6 +427,14 @@
   .autopsy .ah .tags { gap: 5px; }
   .autopsy .why { padding: 12px 16px 4px; font-size: 13px; color: var(--tinta-2); margin: 0; max-width: 72ch; }
   .autopsy .mlist { padding: 6px 8px 8px; display: flex; flex-direction: column; gap: 2px; }
+  .mrow { display: flex; align-items: center; gap: 6px; }
+  .mrow .moment { flex: 1 1 auto; min-width: 0; width: auto; }
+  .moment-rw { flex: none; padding: 0 12px; font-size: 12.5px; }
+  @media (max-width: 640px) {   /* no celular o botão desce para baixo do texto, alinhado a ele (52 + 22 + 3 x 10 de coluna e folga) */
+    .mrow { flex-direction: column; align-items: flex-start; gap: 0; }
+    .mrow .moment { width: 100%; }
+    .moment-rw { margin: 0 0 6px 104px; }
+  }
   .moment {
     display: grid;
     grid-template-columns: 52px 22px 1fr;
@@ -980,16 +988,17 @@
   @keyframes brilho { to { background-position: -150% 0; } }
   /* §19.3 chips de round: round e relógio, 44 x 44; hover sem deslocamento (a faixa rola e recortaria); foco com folga;
      visitado = fundo + quadrado cheio (forma, não só cor); a faixa rola numa linha, com sombra na borda enquanto sobra chip */
-  .pfchips { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: thin; padding: 4px 4px 6px; margin: 6px -4px 0;
-    scroll-snap-type: x proximity; }
-  .pfchips.rola { -webkit-mask-image: linear-gradient(90deg, black calc(100% - 32px), transparent);
-    mask-image: linear-gradient(90deg, black calc(100% - 32px), transparent); }
-  .pfchips.rola.fim { -webkit-mask-image: none; mask-image: none; }
+  .pfchips { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px 4px 6px; margin: 6px -4px 0; }   /* os chips quebram para a linha de baixo: nada cortado nem escondido na rolagem */
   .pfchip { appearance: none; cursor: pointer; flex: none; scroll-snap-align: start; position: relative; min-width: var(--toque);
     height: var(--toque); padding: 0 8px; display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 2px; line-height: 1; border: 1px solid var(--borda); border-radius: var(--r-sm); background: var(--superficie);
     color: var(--tinta-2); font-family: var(--f-num); font-variant-numeric: tabular-nums;
     transition: background var(--dur), border-color var(--dur), color var(--dur); }
+  /* o chip e a porta do Reescrever são UM par (uma borda só), para não parecerem dois chips soltos */
+  .pfpar { display: inline-flex; flex: none; scroll-snap-align: start; border: 1px solid var(--borda); border-radius: var(--r-sm); background: var(--superficie); }
+  .pfpar .pfchip { border: 0; border-radius: var(--r-sm) 0 0 var(--r-sm); }
+  .pfpar .pfchip:focus-visible, .pfpar .pfchip-rw:focus-visible { outline-offset: -2px; }
+  .pfpar .pfchip-rw { flex: none; padding: 0 10px; font-size: var(--t-xs); min-height: 0; border: 0; border-left: 1px solid var(--borda); border-radius: 0 var(--r-sm) var(--r-sm) 0; background: transparent; color: var(--tinta-2); }
   .pfchip .n { font-size: var(--t-sm); font-weight: 600; }
   .pfchip .h { font-size: var(--t-xs); color: var(--apagado); }
   .pfchip:hover { background: var(--superficie-2); border-color: var(--tinta-2); color: var(--tinta); }

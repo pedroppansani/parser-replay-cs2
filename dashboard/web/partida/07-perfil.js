@@ -279,16 +279,26 @@
       v[chave] = true;
       try { sessionStorage.setItem(CHAVE_VISITADOS, JSON.stringify(v)); } catch (e) { /* sem armazenamento */ }
     }
+    // A porta do Reescrever (R5) ao lado do chip: o mesmo instante (3 s antes), com quem é dono do Perfil selecionado. Chip sem
+    // instante (t nulo) não tem porta.
+    var nomeDoPerfil = "";
+    function portaDoChip(c) {
+      var TXR = PAGINA.reescrever;
+      if (!TXR || c.t === null || !nomeDoPerfil) return "";
+      var aria = TXR.porta_chip_aria.replace("{round}", c.round).replace("{relogio}", c.relogio || "").replace("{quem}", nomeDoPerfil);
+      return "<button type='button' class='rw-btn pfchip-rw' data-round='" + esc(c.round) + "' data-t='" + esc(c.t) + "' data-quem='" +
+        esc(nomeDoPerfil) + "' title='" + esc(aria) + "' aria-label='" + esc(aria) + "'>" + esc(TXR.porta) + "</button>";
+    }
     function chipsDeRound(chips) {
       if (!chips || !chips.length) return "";
       var T = PF.textos, vis = lerVisitados();
       return "<div class='pfchips' role='group' aria-label='" + esc(T.rot_rounds) + "'>" + chips.map(function (c) {
         var jaAberto = !!vis[c.round + "@" + (c.t === null ? "" : c.t)];
         var titulo = c.titulo + (jaAberto ? " (" + T.ja_aberto + ")" : "");
-        return "<button type='button' class='pfchip' data-round='" + esc(c.round) + "' data-t='" +
+        return "<span class='pfpar'><button type='button' class='pfchip' data-round='" + esc(c.round) + "' data-t='" +
           esc(c.t === null ? "" : c.t) + "'" + (jaAberto ? " data-visitado" : "") + " title='" + esc(titulo) +
           "' aria-label='" + esc(titulo) + "'><span class='n'>" + esc(c.rotulo) + "</span>" +
-          (c.relogio ? "<span class='h'>" + esc(c.relogio) + "</span>" : "") + "</button>";
+          (c.relogio ? "<span class='h'>" + esc(c.relogio) + "</span>" : "") + "</button>" + portaDoChip(c) + "</span>";
       }).join("") + "</div>";
     }
     // a faixa rola numa linha; enquanto sobra chip fora da tela, sombra na borda direita (.rola); no fim, .fim
@@ -337,6 +347,7 @@
       if (!PF) return;
       var T = PF.textos, j = pfJogador(nomeA), k = nomeB ? pfJogador(nomeB) : null;
       if (!j) return;
+      nomeDoPerfil = j.name;
       var cab = "<div class='nk'>" + esc(j.name) + "</div><div class='time-do-jog'>" + esc(j.time_nome) +
         (j.comecou ? " <span class='tag comecou " + esc(j.comecou) + "'>" + esc(j.comecou_rotulo) + "</span>" : "") +
         "</div><div class='funcs'>" + j.funcoes.map(function (f) {
@@ -414,6 +425,8 @@
       if (PF.degradado) { aviso.textContent = PF.degradado; aviso.hidden = false; }
     }
     document.querySelector('[data-panel="perfil"]').addEventListener("click", function (e) {
+      var r = e.target.closest(".pfchip-rw");
+      if (r) { reescrever.abreEm(Number(r.getAttribute("data-round")), Number(r.getAttribute("data-t")), r.getAttribute("data-quem")); return; }
       var c = e.target.closest(".pfchip");
       if (!c) return;
       var t = c.getAttribute("data-t");
