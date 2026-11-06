@@ -188,7 +188,7 @@ def test_o_que_mudou_diz_a_troca_sem_prometer_nada(navegador, pagina_com_bibliot
         assert len(itens) == 1
         assert re.match(r"No real, a (smoke|flash|granada HE|molotov) de \S+ das \d:\d\d caiu .+\. Na sua versão, ela cai .+ às \d:\d\d, [\d,]+ s depois de sair da mão", itens[0]), itens[0]
         assert itens[0].endswith("O site não diz o que isso muda nos duelos.")
-        painel = pg.inner_text("#squad-t").lower()
+        painel = pg.inner_text("#squad-t").lower().replace(pg.inner_text("#rw-depois").lower(), "")    # sem o bloco "Depois": nomes de recursos (R6b), não frases sobre a sua versão
         fora = painel.replace("o site não simula o cs2 e não diz quem venceria os duelos", "").replace("não é uma previsão", "")
         assert not re.search(r"ganh|venc|vit[óo]ria|placar|melhor|pior|resultado|prever|previs[ãa]o\b(?!\.)|n[ãa]o morre|sobreviv|salv", fora), fora
     finally:
