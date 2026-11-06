@@ -61,3 +61,25 @@ def test_cancelar_o_aviso_pelo_voltar_deixa_o_endereco_igual_a_aba_que_aparece(n
         assert pg.evaluate("location.hash") == "#perfil" and not _estado(pg)["ativo"] and not erros
     finally:
         ctx.close()
+
+
+def test_cancelar_o_aviso_devolve_o_endereco_com_round_e_tempo(navegador, pagina):
+    """O endereço que abre o Replay num round e tempo (`#replay?round=23&t=40`) volta inteiro, não só `#replay`."""
+    ctx = navegador.new_context(viewport={"width": 1440, "height": 900})
+    pg = ctx.new_page(); erros = []
+    pg.on("pageerror", lambda e: erros.append(str(e)))
+    try:
+        pg.goto(pagina.as_uri() + "#replay?round=23&t=40")
+        pg.wait_for_function("() => window.MapAnnotations && MapAnnotations._interno.S.reprojecoes > 0")
+        pg.wait_for_timeout(1200)
+        endereco = pg.evaluate("location.hash")
+        assert endereco == "#replay?round=23&t=40"
+        pg.evaluate("document.getElementById('rw-entrar').click()"); pg.wait_for_timeout(1000)
+        _arrasta(pg)
+        pg.evaluate("location.hash = '#perfil'")
+        pg.wait_for_selector("#rw-continuar", state="visible")
+        pg.click("#rw-continuar")
+        pg.wait_for_function("() => location.hash.startsWith('#replay')")
+        assert pg.evaluate("location.hash") == endereco and pg.evaluate(ABA) == "replay" and not erros
+    finally:
+        ctx.close()

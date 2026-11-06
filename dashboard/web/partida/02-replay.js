@@ -294,6 +294,7 @@
     if (!semHash) {
       try {
         history.replaceState(null, "", "#replay?round=" + roundNum + (t === null || t === undefined ? "" : "&t=" + t));
+        hashVisivel = location.hash;      // o endereço da aba à mostra agora (o aviso de descartar cancelado devolve a ele; 09-abas.js)
       } catch (e) { /* arquivo local: sem hash */ }
     }
     return true;
