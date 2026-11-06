@@ -36,7 +36,7 @@ valem lá também.
 - Cor nova ou trocada passa por `py -3.12 -m metrics.paleta` contra o fundo dela (texto
   4,5:1, marca 3:1, ΔE2000 ≥ 8 no pior par daltônico); o scatter de clusters segue facetado (10)
 - Mapa, peças e granadas em canvas, com UM núcleo (`map_core.js`); `desenhaJogador` não ganha
-  save/restore; lugares, outro andar, palco, Reescrever (33, 52, 53, 54, 57, 58, 59, 60)
+  save/restore; lugares, outro andar, palco, Reescrever (33, 52, 53, 54, 57, 58, 59, 60, 61)
 - θ = −yaw só em `MapCore.anguloDeTela`; o ângulo interpola linear pelo caminho curto
   (`interpolaAngulo`), sem Catmull-Rom (34)
 <!-- bloco anotacao-unidade-de-jogo: inicio -->
