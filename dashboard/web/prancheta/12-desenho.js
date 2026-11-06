@@ -149,7 +149,9 @@
     if (editando && S.arrasto && S.arrasto.tipo === "peca" && S.arrasto.id === id) pos = S.arrasto.jogo;
     var c = jogoParaPixel(pos[0], pos[1]);
     var cor = cssVar(p.lado === "ct" ? "--ct-mapa" : "--tr-mapa");   // o canvas lê os *-mapa (decisão 48)
-    var alfa = alfaDoAndar(p.nivel) * p.alfa, yaw = editando ? yawDaPeca(id, p) : p.yaw;
+    // peça de outro andar: o mesmo desenho do Replay (disco cinza, anel do lado, ▲/▼, nome em itálico), no alfa da peça (D4, decisão 61); sai o esmaecido
+    var outro = p.nivel !== S.andar, estadoPeca = outro ? "outro_andar" : "vivo", acima = p.nivel > S.andar;
+    var alfa = p.alfa, yaw = editando ? yawDaPeca(id, p) : p.yaw;
     // rastro do passo anterior: onde estava e para onde olhava
     if (anterior && (anterior.x !== pos[0] || anterior.y !== pos[1] || anterior.yaw !== yaw)) {
       var a = jogoParaPixel(anterior.x, anterior.y);
@@ -160,14 +162,14 @@
         ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(c[0], c[1]); ctx.stroke();
         ctx.setLineDash([]);
       }
-      MapCore.desenhaJogador(ctx, a[0], a[1], { cor: cor, estado: "vivo", hp: 100, cego: false,
+      MapCore.desenhaJogador(ctx, a[0], a[1], { cor: cor, estado: estadoPeca, acima: acima, hp: 100, cego: false,
                                                 nome: "", yaw: anterior.yaw, escala: ESCALA_PECA });
       ctx.restore();
     }
     ctx.save();
     ctx.globalAlpha = alfa;
     var selecionada = editando && S.sel && S.sel.id === id;
-    MapCore.desenhaJogador(ctx, c[0], c[1], { cor: cor, estado: "vivo", hp: 100, cego: false,
+    MapCore.desenhaJogador(ctx, c[0], c[1], { cor: cor, estado: estadoPeca, acima: acima, hp: 100, cego: false,
                                               nome: rotuloDaPeca(p), yaw: yaw, escala: ESCALA_PECA,
                                               rotuloAcima: RAIO_PECA + 6, selecionado: selecionada });
     if (selecionada) {
@@ -186,7 +188,7 @@
       ctx.beginPath(); ctx.arc(h[0], h[1], RAIO_ALCA, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
     }
     ctx.restore();
-    S.ultimoDesenho.push({ tipo: "peca", id: id, x: c[0], y: c[1], yaw: yaw, alfa: alfa });
+    S.ultimoDesenho.push({ tipo: "peca", id: id, x: c[0], y: c[1], yaw: yaw, alfa: alfa, estado: estadoPeca });
   }
 
   /** Peça do banco tem rótulo 1 a 5 e aparece como "CT 1"; peça que veio de um

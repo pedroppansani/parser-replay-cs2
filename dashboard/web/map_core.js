@@ -995,7 +995,7 @@ window.MapCore = (function () {
       }
       ctx.globalAlpha = 1;
       ROT.caixas.push({ x: (cx - p.med.width / 2) / k, y: (yTexto - p.ascT) / k, w: p.med.width / k, h: (p.ascT + p.descT) / k,
-                        txt: r.txt, cor: corHex(r.cor), peso: 600, alt: (p.ascT + p.descT) / k, italico: r.italico,
+                        txt: r.txt, cor: corHex(r.cor), peso: 600, alt: (p.ascT + p.descT) / k, italico: r.italico, alfa: r.alfa,
                         linha: !!(p.propria && p.nivel > 0) });
     });
     ctx.restore();
@@ -1043,6 +1043,7 @@ window.MapCore = (function () {
       o.hp       vida de 0 a 100; abaixo de 100 desenha o anel que encolhe
       o.cego     true desenha o anel tracejado de cegueira
       o.nome     texto acima do jogador (até 9 caracteres)
+      o.alfaDoNome  opacidade do nome (0..1; ausente = 1): a peça editada esmaecida leva o nome junto
       o.yaw      direção do olhar em graus (convenção do CS2); ausente ou null =
                  sem ponta, e o jogador sai exatamente como antes da direção
       o.escala   fator de tamanho (padrão 1). A peça da prancheta é maior que o
@@ -1196,8 +1197,10 @@ window.MapCore = (function () {
       ctx.fillStyle = token("contorno");
       ctx.fillText(o.acima ? "▼" : "▲", X, Y + 0.4 * e);
       ctx.restore();
-      if (o.nome && ROT.ativo) rotulo(o.nome.slice(0, 9), X, Y, { cor: token("tinta-2-mapa"), italico: true, prioridade: -1,
-                                                                   dy: NOME_ACIMA - 4, daPeca: true });
+      if (o.nome && ROT.ativo) {
+        if (o.rotuloAcima != null) rotulo(o.nome.slice(0, 9), X, Y - o.rotuloAcima, { cor: token("tinta-2-mapa"), italico: true, prioridade: -1, dy: 2, daPeca: true, alfa: o.alfaDoNome });
+        else rotulo(o.nome.slice(0, 9), X, Y, { cor: token("tinta-2-mapa"), italico: true, prioridade: -1, dy: NOME_ACIMA - 4, daPeca: true, alfa: o.alfaDoNome });
+      }
       return;
     }
 
@@ -1229,9 +1232,9 @@ window.MapCore = (function () {
 
     if (o.nome && ROT.ativo) {
       // `rotuloAcima` (px do contexto): quem desenha a peça maior (prancheta) diz onde o nome começa
-      if (o.rotuloAcima != null) rotulo(o.nome.slice(0, 9), X, Y - o.rotuloAcima, { cor: token("tinta-mapa"), prioridade: o.selecionado ? 10 : 1, dy: 2, daPeca: true });
+      if (o.rotuloAcima != null) rotulo(o.nome.slice(0, 9), X, Y - o.rotuloAcima, { cor: token("tinta-mapa"), prioridade: o.selecionado ? 10 : 1, dy: 2, daPeca: true, alfa: o.alfaDoNome });
       else rotulo(o.nome.slice(0, 9), X, Y, { cor: token("tinta-mapa"), prioridade: o.selecionado ? 10 : 0,
-                                              dy: (comDirecao ? NOME_ACIMA_COM_DIRECAO : NOME_ACIMA) - 4, daPeca: true });
+                                              dy: (comDirecao ? NOME_ACIMA_COM_DIRECAO : NOME_ACIMA) - 4, daPeca: true, alfa: o.alfaDoNome });
     }
   }
 

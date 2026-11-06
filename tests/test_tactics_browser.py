@@ -538,15 +538,17 @@ def test_tela_cheia_zoom_e_redimensionar_nao_mudam_coordenada_guardada(contexto,
     assert abs(c["width"] - c["height"]) <= 1
 
 
-def test_nuke_peca_no_andar_de_baixo_fica_esmaecida_no_de_cima(contexto, tmp_path_factory):
+def test_nuke_peca_no_andar_de_baixo_vira_a_peca_do_outro_andar_do_replay_no_de_cima(contexto, tmp_path_factory):
+    """D4 (decisão 61): a peça do outro andar usa o desenho do Replay (disco cinza, anel do lado, seta), não o esmaecido de antes."""
     pg = abre(contexto, pagina_do_mapa(tmp_path_factory, "de_nuke"))
     pg.click('[data-andar="1"]')
     arrasta_do_banco(pg, "ct", "1", 0.5, 0.5)
     (op,) = [o for o in interno(pg, "S.doc.operacoes") if o["tipo"] == "cria_peca"]
     assert op["nivel"] == 1
-    assert ultimo(pg, "peca")[0]["alfa"] == 1
+    assert ultimo(pg, "peca")[0]["estado"] == "vivo" and ultimo(pg, "peca")[0]["alfa"] == 1
     pg.click('[data-andar="0"]')
-    assert ultimo(pg, "peca")[0]["alfa"] < 1
+    d = ultimo(pg, "peca")[0]
+    assert d["estado"] == "outro_andar" and d["alfa"] == 1                             # o desenho do Replay, sem o esmaecido
 
 
 def test_vertigo_abre_sem_busca_de_arremesso_e_diz_por_que(contexto, tmp_path_factory):

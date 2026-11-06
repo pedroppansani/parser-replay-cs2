@@ -71,7 +71,15 @@
 
   // Andar mostrado: segue onde está a maioria dos vivos, e o usuário pode
   // travar num andar específico.
-  var levelLock = null;
+  var levelLock = null, levelBox = null;
+  // Trava (ou solta, com null) o andar mostrado e acende o botão dele; o Reescrever usa ao selecionar uma peça do outro andar (R6a)
+  function travaAndar(v) {
+    levelLock = v;
+    if (levelBox) Array.prototype.forEach.call(levelBox.querySelectorAll("button"), function (o) {
+      o.classList.toggle("on", o.dataset.lv === (v === null ? "auto" : String(v)));
+    });
+    draw();
+  }
 
   function activeLevel(f) {
     if (levelLock !== null) return levelLock;
@@ -133,14 +141,11 @@
       }).join("");
       lg.appendChild(box);
 
+      levelBox = box;
       box.addEventListener("click", function (e) {
         var b = e.target.closest("button");
         if (!b) return;
-        levelLock = b.dataset.lv === "auto" ? null : Number(b.dataset.lv);
-        Array.prototype.forEach.call(box.querySelectorAll("button"), function (o) {
-          o.classList.toggle("on", o === b);
-        });
-        draw();
+        travaAndar(b.dataset.lv === "auto" ? null : Number(b.dataset.lv));
       });
     }
   }
@@ -344,6 +349,17 @@
     andarEnquadrado = -1;                              // trocar de round devolve a vista ao quadro do andar
     if (quadros || !MAPAS_COM_ENQUADRAMENTO[RAD.map] || LEVELS.length < 2) return;
     quadros = LEVELS.map(function (_, andar) { return quadroDaArea(andar); });
+  }
+  // A ÁREA de um andar em pixels do radar (o retângulo das âncoras dos nomes de lugar dele, mais uma folga): onde o Reescrever deixa a peça
+  // arrastada ficar (R6a). null em mapa de um andar só: ali vale o mapa inteiro.
+  var areasDosAndares = {}, FOLGA_DA_AREA = 28;
+  function areaDoAndar(andar) {
+    if (!MAPAS_COM_ENQUADRAMENTO[RAD.map] || LEVELS.length < 2) return null;
+    if (areasDosAndares[andar]) return areasDosAndares[andar];
+    var lista = RAD.lugares && RAD.lugares.rotulos && RAD.lugares.rotulos[andar], x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    (lista || []).forEach(function (par) { par[1].forEach(function (q) { x0 = Math.min(x0, q[0]); x1 = Math.max(x1, q[0]); y0 = Math.min(y0, q[1]); y1 = Math.max(y1, q[1]); }); });
+    if (!isFinite(x0)) return null;
+    return (areasDosAndares[andar] = { x0: x0 - FOLGA_DA_AREA, y0: y0 - FOLGA_DA_AREA, x1: x1 + FOLGA_DA_AREA, y1: y1 + FOLGA_DA_AREA });
   }
   // true se mudou a vista (e o redesenho já foi feito por ela)
   function aplicaQuadro(andar) {
@@ -1067,6 +1083,7 @@
         cego: alive && pLv === lvNow && blindLeft(p.name, i0) > 0,
         hp: p.hp[editada ? reescrever.instante : i0],
         nome: marcado ? null : p.name,
+        alfaDoNome: esmaecida ? 0.4 : undefined,   // o nome esmaece junto com a peça (a camada de rótulos não herda o globalAlpha)
         yaw: yaw,
         escala: reescrever.ativo && alive ? reescrever.escala : undefined,   // a peça editável é 25% maior
         selecionado: reescrever.ativo && reescrever.sel === p.name

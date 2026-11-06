@@ -252,7 +252,11 @@
       e.preventDefault(); e.stopPropagation();
       var q = doPonteiro(e);
       var cx = Math.min(cv.width, Math.max(0, q.cx)), cy = Math.min(cv.height, Math.max(0, q.cy));   // a peça fica dentro do mapa
-      var g = aGameUnits(cx, cy);
+      var g = aGameUnits(cx, cy), area = areaDoAndar(andarDaPeca(arrasto.nome));
+      if (area) {      // Nuke: a peça fica dentro da área do andar DELA (o editor é 2D e não troca de andar)
+        var px = Math.min(area.x1, Math.max(area.x0, (g.x - RAD.origin_x) * RAD.scale_px_per_unit)), py = Math.min(area.y1, Math.max(area.y0, (RAD.origin_y - g.y) * RAD.scale_px_per_unit));
+        g = { x: px / RAD.scale_px_per_unit + RAD.origin_x, y: RAD.origin_y - py / RAD.scale_px_per_unit };
+      }
       edicoes[arrasto.nome] = { x: g.x, y: g.y };
       atualizaBanco(true);     // durante o arrasto o texto de "O que mudou" não é refeito (leitor de tela)
       draw();
@@ -269,8 +273,13 @@
     mapwrap.addEventListener("pointercancel", soltou, true);
 
     /* ---------- o banco (coluna da esquerda) e o painel (coluna da direita) ---------- */
+    function andarDaPeca(nome) {
+      var it = pecas.filter(function (q) { return q.p.name === nome; })[0];
+      return it && it.p.lv ? it.p.lv[t0] : 0;
+    }
     function seleciona(nome) {
       reescrever.sel = nome;
+      if (LEVELS.length > 1 && nome && andarDaPeca(nome) !== activeLevel(Math.floor(pos))) travaAndar(andarDaPeca(nome));   // peça do outro andar: a vista vai para o andar dela
       atualizaBanco();
       draw();
     }
@@ -433,12 +442,14 @@
     };
 
     /* ---------- entrar e sair ---------- */
+    var andarAntes = null;
     reescrever.entra = function () {
       if (reescrever.ativo || !cur || document.querySelector("[data-panel='replay']").hidden) return;
       setPlaying(false);
       t0 = Math.floor(pos); pos = t0; frame = t0;     // o instante é o quadro gravado imediatamente anterior (o mesmo do `instante()`)
       scrubEl.value = t0;
       edicoes = {}; origem = {}; arrasto = null; reescrever.sel = null; reescrever.sua = false; reescrever.instante = t0;
+      andarAntes = levelLock;      // o andar travado de antes: a saída o devolve (selecionar peça do outro andar trava o dela)
       pecas = cur.players.map(function (p) {
         var vivo = !!p.alive[t0], q = 0;
         if (!vivo) { while (q < t0 && p.alive[q]) q++; } else { origem[p.name] = { x: p.x[t0], y: p.y[t0] }; }
@@ -464,6 +475,7 @@
       setPlaying(false);
       if (reescrever.granada) reescrever.granada.sai();
       reescrever.ativo = false; reescrever.sua = false; reescrever.sel = null; arrasto = null; edicoes = {}; origem = {}; pecas = [];
+      if (LEVELS.length > 1 && levelLock !== andarAntes) travaAndar(andarAntes);
       palco.setAttribute("data-tema", "escuro");
       hosts.ct.removeAttribute("data-tema"); hosts.t.removeAttribute("data-tema");
       stage.classList.remove("reescrevendo");
@@ -543,9 +555,16 @@
       e.preventDefault(); pedeSair();
     });
 
+    function telaDa(nome) {      // onde a peça está na TELA (px CSS, com o zoom e o pan da vista): o ponto em que o teste a pega
+      var q = edicoes[nome] || origem[nome];
+      if (!q) return null;
+      var pt = new DOMPoint(mx(q.x), my(q.y)).matrixTransform(matrizDaVista()), r = cv.getBoundingClientRect(), k = cv.width / r.width;
+      return [r.left + pt.x / k, r.top + pt.y / k];
+    }
     // o estado para os testes (como `__medicaoRotulos` e `__marcasDeBorda`): quem está editável e onde cada peça está
     window.__reescrever = function () {
       return {
+        andar: LEVELS.length > 1 ? activeLevel(Math.floor(pos)) : 0, area: LEVELS.length > 1 ? [0, 1].map(function (i) { return areaDoAndar(i); }) : null,
         ativo: reescrever.ativo, sua: reescrever.sua, fantasma: reescrever.fantasma, instante: t0, quadro: pos,
         fantasmas: reescrever.ativo && reescrever.sua ? fantasmasAgora().map(function (g) { return { nome: g.it.p.name, vivo: g.vivo, x: g.sp[0], y: g.sp[1] }; }) : [],
         esmaecidas: reescrever.ativo ? pecas.filter(function (it) { return editada(it.p.name) && reescrever.esmaecida(it.p.name); }).map(function (it) { return it.p.name; }) : [],
@@ -554,7 +573,7 @@
         pecas: pecas.map(function (it) {
           var e = edicoes[it.p.name], o = origem[it.p.name];
           var ag = e && editada(it.p.name) ? reescrever.posicaoEditada(it.p.name) : null;
-          return { nome: it.p.name, lado: it.p.side, editavel: it.vivo, editada: editada(it.p.name), x: e ? e.x : (o ? o.x : null), y: e ? e.y : (o ? o.y : null),
+          return { nome: it.p.name, nivel: andarDaPeca(it.p.name), tela: telaDa(it.p.name), lado: it.p.side, editavel: it.vivo, editada: editada(it.p.name), x: e ? e.x : (o ? o.x : null), y: e ? e.y : (o ? o.y : null),
                    x0: o ? o.x : null, y0: o ? o.y : null, agora: ag, velocidade: it.vivo ? velocidadeDe(it.p.name) : null };
         })
       };
