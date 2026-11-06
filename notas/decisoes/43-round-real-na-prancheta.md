@@ -63,3 +63,4 @@
   `test_desligado_o_clique_continua_movendo_no_horario_do_cabecote` (escrito na fase 8 para um modo
   que deixou de existir para quem usa). O helper `_com_peca` do teste do tempo perdeu a linha que
   chamava o interruptor, sem mudar o que verifica. Nenhum outro teste mudou de comportamento.
+- **A troca por "Reescrever este round" foi avaliada e recusada (2026-11-06, decisão 62).** O botão da barra do Replay continua sendo "Abrir round na prancheta": são duas ferramentas diferentes, e o Reescrever já tem três portas na mesma tela. Nenhum teste desta decisão mudou.

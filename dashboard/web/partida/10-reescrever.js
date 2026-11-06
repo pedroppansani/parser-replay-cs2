@@ -25,6 +25,10 @@
     reescrever.sel = null;
     reescrever.sua = false;        // a sua versão está tocando (ou pausada depois de tocar): nada é editável (decisão 35)
     reescrever.fantasma = true;    // o real, onde difere
+    reescrever.ver = "sua";        // celular (R6b): o que o mapa mostra, "real" ou "sua" (no computador o real vem como fantasma por cima)
+    var VAZIO = { nades: [], smokes: [], fires: [], pops: [] };
+    function vendoReal() { return reescrever.ativo && reescrever.ver === "real" && !MODO_PALCO.matches; }
+    reescrever.vv = function () { return vendoReal() ? VAZIO : reescrever.virtuais; };
     reescrever.instante = 0;
 
     function formata(texto, o) { return texto.replace(/\{(\w+)\}/g, function (_, k) { return o[k]; }); }
@@ -55,19 +59,19 @@
     }
     reescrever.posicaoEditada = function (nome) {
       var e = edicoes[nome];
-      if (!e) return null;
+      if (!e || vendoReal()) return null;
       if (!reescrever.sua) return [e.x, e.y];
       if (!editada(nome)) return null;
       var q = trecho(nome, pos);
       return [q.x, q.y];
     };
     reescrever.yawEditada = function (nome) {
-      if (!reescrever.sua || !editada(nome)) return null;
+      if (vendoReal() || !reescrever.sua || !editada(nome)) return null;
       var o = origem[nome], e = edicoes[nome];
       return Math.atan2(e.y - o.y, e.x - o.x) * 180 / Math.PI;
     };
     // quem foi editado não morre na sua versão: a morte do real só aparece no fantasma
-    reescrever.semAMorte = function (e) { return e.type === "kill" && e.f > t0 && editada(e.victim); };
+    reescrever.semAMorte = function (e) { return !vendoReal() && e.type === "kill" && e.f > t0 && editada(e.victim); };
     // granada lançada DEPOIS do instante por quem foi editado dependia da posição dele no real: fica só no fantasma (design §9)
     // a granada que gerou o item (a própria granada, ou o arremesso que fez a zona/estouro): a ligação gravada pelo export, ou o tipo e o ponto final
     function geradoraDe(it) {
@@ -94,14 +98,14 @@
     }
     reescrever.geradoraDe = geradoraDe;
     reescrever.soNoReal = function (it) {
-      if (it._virtual) return false;
+      if (it._virtual || vendoReal()) return false;
       if (it.by && editada(it.by) && lancouEm(it) > t0) return true;
       return !!(reescrever.granada && reescrever.granada.trocada(geradoraDe(it)));      // a granada trocada some da sua versão (fica só no fantasma)
     };
     reescrever.podeTocar = function () { return algumaMudanca(); };
     reescrever.esmaecida = function (nome) {     // depois da morte do real a peça editada fica esmaecida (o ✕ do fantasma mostra onde ele morreu)
       var it = pecas.filter(function (q) { return q.p.name === nome; })[0];
-      return !!(reescrever.sua && it && !it.p.alive[Math.floor(pos)]);
+      return !!(!vendoReal() && reescrever.sua && it && !it.p.alive[Math.floor(pos)]);
     };
     reescrever.preparaTocar = function () {
       if (!algumaMudanca()) return false;
@@ -113,6 +117,7 @@
 
     // a "Sua versão" no mapa: o losango onde ela começa e o caminho novo, branco sobre o contorno (design §4.3)
     reescrever.desenhaSobre = function (c) {
+      if (vendoReal()) return;      // vendo o real (celular): nada da sua versão por cima
       var contorno = C.contorno, tinta = CM.tinta;
       c.save();
       c.lineCap = "round"; c.lineJoin = "round";
@@ -134,7 +139,7 @@
         if ((!reescrever.sua || q.f < 1) && t0 + q.dur * R.sample_hz <= cur.frames - 1) MapCore.rotulo(formata(TX.chega, { relogio: relogioNo(t0 + q.dur * R.sample_hz) }), mx(e.x), my(e.y),
           { cor: CM.tinta, prioridade: 4, dy: 18 });
       });
-      if (reescrever.sua && reescrever.fantasma) desenhaFantasmas(c);
+      if (reescrever.sua && reescrever.fantasma && MODO_PALCO.matches) desenhaFantasmas(c);      // no celular o real tem a sua vez no alternador, não vem por cima
       if (reescrever.granada) reescrever.granada.desenha(c);
       c.save();
       if (reescrever.sel && origem[reescrever.sel]) {
@@ -242,21 +247,47 @@
       if (!reescrever.ativo || reescrever.sua || reescrever.ferramenta === "granada" || (e.button && e.button > 0)) return;
       var nome = acha(e);
       if (!nome) return;
+      if (vendoReal()) defineVer("sua");               // tocar numa peça no celular volta à sua versão (é nela que se edita)
       e.preventDefault(); e.stopPropagation();       // a peça vem antes do desenho e do arrastar do mapa
       seleciona(nome);
       arrasto = { nome: nome, id: e.pointerId };
       try { mapwrap.setPointerCapture(e.pointerId); } catch (x) { /* sem captura: o movimento segue pelo mapa */ }
     }, true);
+    // Nuke: a peça fica dentro da área do andar DELA (o editor é 2D e não troca de andar); em mapa de um andar, dentro da imagem do radar
+    function limitaNaArea(nome, g) {
+      var area = areaDoAndar(andarDaPeca(nome)) || { x0: 0, y0: 0, x1: RAD.width, y1: RAD.height };
+      var px = Math.min(area.x1, Math.max(area.x0, (g.x - RAD.origin_x) * RAD.scale_px_per_unit)), py = Math.min(area.y1, Math.max(area.y0, (RAD.origin_y - g.y) * RAD.scale_px_per_unit));
+      return { x: px / RAD.scale_px_per_unit + RAD.origin_x, y: RAD.origin_y - py / RAD.scale_px_per_unit };
+    }
+    // O teclado (R6b): com uma peça da lista em foco, as setas a movem (Shift anda mais); sobe = norte. O texto de "O que mudou" só é refeito ao SOLTAR
+    // a tecla (o leitor de tela anuncia uma vez, não a cada passo)
+    var PASSO = 20, PASSO_GRANDE = 100, SETAS = { ArrowUp: [0, 1], ArrowDown: [0, -1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }, moveuPorTeclado = false;
+    hosts.ct.addEventListener("keydown", function (e) {
+      var b = e.target.closest && e.target.closest(".peca-rw"), d = SETAS[e.key];
+      if (!b || !d || !reescrever.ativo || reescrever.sua || reescrever.ferramenta === "granada" || e.altKey || e.ctrlKey || e.metaKey) return;
+      var nome = b.dataset.nome, it = pecas.filter(function (q) { return q.p.name === nome; })[0];
+      if (!it || !it.vivo) return;
+      e.preventDefault();
+      if (vendoReal()) defineVer("sua");
+      if (reescrever.sel !== nome) { seleciona(nome, true); b.focus({ preventScroll: true }); }
+      var base = edicoes[nome] || origem[nome], passo = e.shiftKey ? PASSO_GRANDE : PASSO;
+      edicoes[nome] = limitaNaArea(nome, { x: base.x + d[0] * passo, y: base.y + d[1] * passo });
+      moveuPorTeclado = true;
+      atualizaBanco(true); draw();
+    });
+    hosts.ct.addEventListener("keyup", function (e) {
+      if (!moveuPorTeclado || !SETAS[e.key]) return;
+      moveuPorTeclado = false;
+      var nome = reescrever.sel;
+      if (nome && !editada(nome)) delete edicoes[nome];      // de volta ao ponto do real: não conta como movida
+      atualizaBanco(); draw();
+    });
     mapwrap.addEventListener("pointermove", function (e) {
       if (!arrasto || reescrever.sua || e.pointerId !== arrasto.id) return;
       e.preventDefault(); e.stopPropagation();
       var q = doPonteiro(e);
       var cx = Math.min(cv.width, Math.max(0, q.cx)), cy = Math.min(cv.height, Math.max(0, q.cy));   // a peça fica dentro do mapa
-      var g = aGameUnits(cx, cy), area = areaDoAndar(andarDaPeca(arrasto.nome));
-      if (area) {      // Nuke: a peça fica dentro da área do andar DELA (o editor é 2D e não troca de andar)
-        var px = Math.min(area.x1, Math.max(area.x0, (g.x - RAD.origin_x) * RAD.scale_px_per_unit)), py = Math.min(area.y1, Math.max(area.y0, (RAD.origin_y - g.y) * RAD.scale_px_per_unit));
-        g = { x: px / RAD.scale_px_per_unit + RAD.origin_x, y: RAD.origin_y - py / RAD.scale_px_per_unit };
-      }
+      var g = limitaNaArea(arrasto.nome, aGameUnits(cx, cy));
       edicoes[arrasto.nome] = { x: g.x, y: g.y };
       atualizaBanco(true);     // durante o arrasto o texto de "O que mudou" não é refeito (leitor de tela)
       draw();
@@ -277,10 +308,10 @@
       var it = pecas.filter(function (q) { return q.p.name === nome; })[0];
       return it && it.p.lv ? it.p.lv[t0] : 0;
     }
-    function seleciona(nome) {
+    function seleciona(nome, semTexto) {
       reescrever.sel = nome;
       if (LEVELS.length > 1 && nome && andarDaPeca(nome) !== activeLevel(Math.floor(pos))) travaAndar(andarDaPeca(nome));   // peça do outro andar: a vista vai para o andar dela
-      atualizaBanco();
+      atualizaBanco(semTexto);
       draw();
     }
     function montaBanco() {
@@ -296,7 +327,7 @@
           var b = novo("button", "peca-rw " + lado);
           b.type = "button";
           b.dataset.nome = it.p.name;
-          b.setAttribute("aria-pressed", "false");
+          b.setAttribute("aria-pressed", "false"); b.setAttribute("aria-keyshortcuts", "ArrowUp ArrowDown ArrowLeft ArrowRight");
           var topo = novo("span", "pr-topo");
           topo.appendChild(novo("b", "pr-nome", it.p.name));
           var tag = novo("span", "pr-tag", TX.editado); tag.title = TX.editado;   // um ponto na linha do nome: aparece sem mudar a altura do cartão (CLS 0) nem cortar o nome
@@ -396,6 +427,16 @@
       host.appendChild(novo("h4", null, TX.mudou_titulo));
       var mudou = novo("ul", "rw-mudou"); mudou.id = "rw-mudou"; mudou.setAttribute("aria-live", "polite");
       host.appendChild(mudou);
+      // "Depois" (R6b): o que ainda não existe, desligado e dito em texto ("em breve"); não recebe foco nem faz nada. Quando entrar, ocupa este espaço
+      host.appendChild(novo("h4", null, TX.depois_titulo));
+      var depois = novo("ul", "rw-depois"); depois.id = "rw-depois";
+      [TX.breve_1, TX.breve_2, TX.breve_3].forEach(function (t) {
+        var li = novo("li", "rw-breve"); li.setAttribute("aria-disabled", "true");
+        li.appendChild(novo("span", null, t));
+        li.appendChild(novo("span", "tag neutro", TX.breve));
+        depois.appendChild(li);
+      });
+      host.appendChild(depois);
     }
     function textoFantasma(b) {
       b.textContent = TX.fantasma + ": " + (reescrever.fantasma ? TX.fantasma_ligado : TX.fantasma_desligado);
@@ -404,7 +445,7 @@
     // volta ao instante e ao editor (a sua versão para de tocar)
     function voltaAEditar() {
       setPlaying(false);
-      reescrever.sua = false;
+      reescrever.sua = false; reescrever.ver = "sua";
       pos = t0; frame = t0; scrubEl.value = t0;
       atualizaBanco(); draw();
     }
@@ -432,6 +473,31 @@
     daqui.appendChild(novo("span", "rw-hora", ""));
     trEsq.appendChild(daqui);
 
+    // O alternador Real | Sua versão (R6b, celular): embaixo do transporte; o mapa mostra UM dos dois e o rótulo diz qual, com o relógio. No
+    // computador some (o real vem como fantasma por cima). Aparece só dentro do modo (CSS: .stage.reescrevendo).
+    var alt = novo("div", "rw-ver"); alt.id = "rw-ver"; alt.setAttribute("role", "radiogroup"); alt.setAttribute("aria-label", TX.ver_rotulo);
+    var altBotoes = {};
+    [["real", TX.ver_real], ["sua", TX.ver_sua]].forEach(function (par) {
+      var b = botao(par[1], "rw-btn rw-ver-b", function () { defineVer(par[0]); });
+      b.setAttribute("role", "radio"); b.dataset.ver = par[0];
+      b.addEventListener("keydown", function (e) {       // o padrão de radiogroup: as setas trocam e levam o foco
+        if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].indexOf(e.key) < 0) return;
+        e.preventDefault(); defineVer(par[0] === "real" ? "sua" : "real"); altBotoes[reescrever.ver].focus();
+      });
+      altBotoes[par[0]] = b; alt.appendChild(b);
+    });
+    var altRel = novo("span", "rw-ver-rel"); alt.appendChild(altRel);
+    trEsq.closest(".transport").insertAdjacentElement("afterend", alt);
+    function atualizaAlt() {
+      ["real", "sua"].forEach(function (v) { altBotoes[v].setAttribute("aria-checked", String(reescrever.ver === v)); altBotoes[v].tabIndex = reescrever.ver === v ? 0 : -1; });
+      altRel.textContent = formata(TX.ver_relogio, { qual: reescrever.ver === "real" ? TX.ver_real : TX.ver_sua, relogio: relogioNo(Math.floor(pos)) });
+    }
+    function defineVer(v) {
+      if (reescrever.ver === v) return;
+      reescrever.ver = v; atualizaAlt(); draw();
+    }
+    atualizaAlt();
+
     // "Reescrever daqui · 0:55": só com o Replay parado e fora do modo; o espaço fica reservado (visibility), então nada se mexe
     reescrever.aoQuadro = function () {
       var vivo = !reescrever.ativo && !playing;
@@ -439,6 +505,7 @@
       daqui.disabled = !vivo;
       if (vivo) daqui.lastChild.textContent = " · " + relogioNo(Math.floor(pos));
       if (reescrever.ativo) playBtn.setAttribute("aria-label", playing ? TX.pausa : TX.toca);
+      atualizaAlt();
     };
 
     /* ---------- entrar e sair ---------- */
@@ -448,7 +515,7 @@
       setPlaying(false);
       t0 = Math.floor(pos); pos = t0; frame = t0;     // o instante é o quadro gravado imediatamente anterior (o mesmo do `instante()`)
       scrubEl.value = t0;
-      edicoes = {}; origem = {}; arrasto = null; reescrever.sel = null; reescrever.sua = false; reescrever.instante = t0;
+      edicoes = {}; origem = {}; arrasto = null; reescrever.sel = null; reescrever.sua = false; reescrever.ver = "sua"; reescrever.instante = t0;
       andarAntes = levelLock;      // o andar travado de antes: a saída o devolve (selecionar peça do outro andar trava o dela)
       pecas = cur.players.map(function (p) {
         var vivo = !!p.alive[t0], q = 0;
@@ -474,7 +541,7 @@
       if (dlg && dlg.open) dlg.close();
       setPlaying(false);
       if (reescrever.granada) reescrever.granada.sai();
-      reescrever.ativo = false; reescrever.sua = false; reescrever.sel = null; arrasto = null; edicoes = {}; origem = {}; pecas = [];
+      reescrever.ativo = false; reescrever.sua = false; reescrever.ver = "sua"; reescrever.sel = null; arrasto = null; edicoes = {}; origem = {}; pecas = [];
       if (LEVELS.length > 1 && levelLock !== andarAntes) travaAndar(andarAntes);
       palco.setAttribute("data-tema", "escuro");
       hosts.ct.removeAttribute("data-tema"); hosts.t.removeAttribute("data-tema");
@@ -565,6 +632,7 @@
     window.__reescrever = function () {
       return {
         andar: LEVELS.length > 1 ? activeLevel(Math.floor(pos)) : 0, area: LEVELS.length > 1 ? [0, 1].map(function (i) { return areaDoAndar(i); }) : null,
+        ver: reescrever.ver, vendoReal: vendoReal(), rotuloVer: altRel.textContent,
         ativo: reescrever.ativo, sua: reescrever.sua, fantasma: reescrever.fantasma, instante: t0, quadro: pos,
         fantasmas: reescrever.ativo && reescrever.sua ? fantasmasAgora().map(function (g) { return { nome: g.it.p.name, vivo: g.vivo, x: g.sp[0], y: g.sp[1] }; }) : [],
         esmaecidas: reescrever.ativo ? pecas.filter(function (it) { return editada(it.p.name) && reescrever.esmaecida(it.p.name); }).map(function (it) { return it.p.name; }) : [],

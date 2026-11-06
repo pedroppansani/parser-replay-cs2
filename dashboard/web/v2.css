@@ -135,6 +135,9 @@ html { scroll-padding-top: calc(var(--nav-h) + 16px); }   /* C2: âncora nunca e
   /* no palco o resumo encurta com reticências (o texto inteiro fica no title) e o botão nunca encolhe abaixo de 44 px */
   .roundhead .res { order: 0; flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .stage.reescrevendo .squad { contain: size; overflow-y: auto; align-self: stretch; overflow-anchor: none; }   /* sem isso, o painel encolhendo (trocar a granada) puxava a rolagem da PÁGINA junto e o palco saía do lugar */
+  /* R6b: as colunas nunca passam da janela (o palco começa em --palco-topo): o fim do painel ("Depois") fica à vista rolando SÓ por dentro, e a roda do mouse no fim
+     do painel não passa para a página (que subiria o palco) */
+  .stage.reescrevendo .squad { max-height: calc(100vh - var(--palco-topo) - 12px); overscroll-behavior: contain; }
 }
 .banco, .painel-rw { display: grid; align-content: start; grid-auto-rows: max-content; grid-template-columns: minmax(0, 1fr); gap: 6px; }
 .banco h4, .painel-rw h4 { margin: 0; }
@@ -158,6 +161,10 @@ html { scroll-padding-top: calc(var(--nav-h) + 16px); }   /* C2: âncora nunca e
 .painel-rw .rw-btn[aria-pressed="true"] { border-color: var(--tinta); }
 .painel-rw .rw-mudou { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--tinta-2); font-size: var(--t-sm); }
 .painel-rw .rw-mudou .rw-nada { list-style: none; margin-left: -18px; }
+.painel-rw .rw-depois { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.painel-rw .rw-breve { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; border: 1px dashed var(--apagado);
+  border-radius: var(--r-sm); color: var(--apagado); font-size: var(--t-sm); cursor: default; }
+.painel-rw .rw-breve .tag { flex: none; white-space: nowrap; }
 /* trocar a granada (R4): a ferramenta, a lista do round e as alternativas reais */
 .painel-rw .rw-ferr { display: flex; gap: 6px; }
 .painel-rw .rw-ferr .rw-btn { flex: 1 1 0; min-width: 0; }
@@ -369,3 +376,13 @@ body:has(#decisive:empty) #foot { visibility: hidden; }
 .maplegend .lugares-botao[aria-pressed="true"] { background: var(--tinta); color: var(--fundo); }
 @media (pointer: coarse) { .maplegend .lugares-botao { min-height: 44px; padding: 3px 14px; } }
 .painel-rw .rw-btn { white-space: normal; padding-block: 6px; line-height: 1.25; }
+
+/* O alternador Real | Sua versão (R6b): só no celular (o computador tem o fantasma) e só dentro do modo; 44 px, embaixo do transporte */
+.rw-ver { display: none; }
+@media (max-width: 1023px), (max-height: 599px) {
+  .stage.reescrevendo .rw-ver { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; padding: 6px 12px; }
+  .rw-ver .rw-ver-b { padding: 0 14px; }
+  .rw-ver .rw-ver-b[aria-checked="true"] { background: var(--acao); color: var(--acao-ink); border-color: var(--acao); }
+  .rw-ver .rw-ver-rel { flex-basis: 100%; font-family: var(--f-num); font-size: var(--t-sm); color: var(--tinta-2); font-variant-numeric: tabular-nums; }   /* sempre na linha de baixo: o alternador não muda de altura ao trocar */
+  .painel-rw #rw-fantasma, .painel-rw .rw-leg { display: none; }      /* o real tem a vez dele no alternador */
+}

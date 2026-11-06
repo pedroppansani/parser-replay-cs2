@@ -130,7 +130,7 @@ def test_o_que_mudou_conta_o_movimento_a_morte_do_real_e_avisa_do_duelo_sem_prom
         assert "fica só no real" in texto                                                  # a granada que ele jogaria depois
         assert pg.get_attribute("#rw-mudou", "aria-live") == "polite"
         # honestidade: o site nunca diz nem sugere que a sua versão ganharia
-        painel = pg.inner_text("#squad-t").lower()
+        painel = pg.inner_text("#squad-t").lower().replace(pg.inner_text("#rw-depois").lower(), "")    # sem o bloco "Depois": são nomes de recursos (R6b), não frases sobre a sua versão
         fora_da_frase = painel.replace("o site não simula o cs2 e não diz quem venceria os duelos", "")
         assert not re.search(r"ganh|venc|vit[óo]ria|placar|melhor|pior|resultado|prever|previs[ãa]o\b(?!\.)|n[ãa]o morre|sobreviv|salv", fora_da_frase.replace("não é uma previsão", "")), fora_da_frase
         pg.click("#rw-voltar")
