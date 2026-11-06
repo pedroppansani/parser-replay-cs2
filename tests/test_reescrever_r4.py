@@ -329,6 +329,15 @@ def test_o_palco_nao_sai_do_lugar_na_tela_em_nenhum_estado_do_r4(navegador, pagi
         if desktop:      # como a pessoa usa: rola o painel por dentro até as alternativas e só então troca (o painel encolhe ao trocar)
             pg.evaluate("() => { const p = document.getElementById('squad-t'), e = document.querySelector('.rw-gr-det'); p.scrollTop = e.getBoundingClientRect().top - p.getBoundingClientRect().top + p.scrollTop - 12; }")
             mede("painel rolado por dentro", base)
+            # como a pessoa chega ao "Depois": a roda do mouse sobre o painel, até o fim. Rola só o painel; a página e o palco ficam onde estão (R6b)
+            r = pg.locator("#squad-t").bounding_box()
+            pg.mouse.move(r["x"] + r["width"] / 2, r["y"] + 120)
+            for _ in range(8):
+                pg.mouse.wheel(0, 700); pg.wait_for_timeout(120)
+            assert pg.evaluate("(() => { const p = document.getElementById('squad-t'); return p.scrollTop >= p.scrollHeight - p.clientHeight - 1; })()")      # chegou ao fim do painel
+            mede("painel rolado até o fim pela roda do mouse", base)
+            assert pg.evaluate("document.querySelector('#rw-depois li:last-child').getBoundingClientRect().bottom <= innerHeight")                        # e o fim do painel ("Depois") está à vista
+            pg.evaluate("() => { const p = document.getElementById('squad-t'), e = document.querySelector('.rw-gr-det'); p.scrollTop = e.getBoundingClientRect().top - p.getBoundingClientRect().top + p.scrollTop - 12; }")
         _clica(pg, '[data-foco="trocar"]'); mede("trocada", base)
         _clica(pg, "#play"); pg.wait_for_timeout(500); _clica(pg, "#play"); mede("tocando", base)
         _clica(pg, "#rw-editar"); mede("voltou a editar", base)

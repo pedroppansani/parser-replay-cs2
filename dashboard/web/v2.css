@@ -135,6 +135,9 @@ html { scroll-padding-top: calc(var(--nav-h) + 16px); }   /* C2: âncora nunca e
   /* no palco o resumo encurta com reticências (o texto inteiro fica no title) e o botão nunca encolhe abaixo de 44 px */
   .roundhead .res { order: 0; flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .stage.reescrevendo .squad { contain: size; overflow-y: auto; align-self: stretch; overflow-anchor: none; }   /* sem isso, o painel encolhendo (trocar a granada) puxava a rolagem da PÁGINA junto e o palco saía do lugar */
+  /* R6b: as colunas nunca passam da janela (o palco começa em --palco-topo): o fim do painel ("Depois") fica à vista rolando SÓ por dentro, e a roda do mouse no fim
+     do painel não passa para a página (que subiria o palco) */
+  .stage.reescrevendo .squad { max-height: calc(100vh - var(--palco-topo) - 12px); overscroll-behavior: contain; }
 }
 .banco, .painel-rw { display: grid; align-content: start; grid-auto-rows: max-content; grid-template-columns: minmax(0, 1fr); gap: 6px; }
 .banco h4, .painel-rw h4 { margin: 0; }
