@@ -219,9 +219,17 @@ def origem_da_partida(match_id: str) -> str | None:
     if linha.get("origem") == "faceit":
         return "FACEIT"
     if linha.get("evento"):
-        return " ".join(p.upper() if p in ("iem", "pgl", "blast", "esl") else p.capitalize()
-                        for p in str(linha["evento"]).split("-"))
+        return nome_do_evento(str(linha["evento"]))
     return None
+
+
+def nome_do_evento(slug: str) -> str:
+    """O nome de exibição do evento (cartão 27): da tabela `data/reference/eventos.json` (identificador da pasta da demo -> nome como a
+    HLTV o escreve, com acento). Evento fora da tabela cai na regra antiga (palavras do identificador), e o teste acusa o que faltar."""
+    tabela = json.loads((PROJECT_ROOT / "data" / "reference" / "eventos.json").read_text(encoding="utf-8"))["eventos"]
+    if slug in tabela:
+        return tabela[slug]
+    return " ".join(p.upper() if p in ("iem", "pgl", "blast", "esl") else p.capitalize() for p in slug.split("-"))
 
 
 # "método" ao lado do erro do rating: a seção do README que conta como o rating foi conferido

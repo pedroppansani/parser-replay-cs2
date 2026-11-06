@@ -660,6 +660,7 @@ O texto original do cartão:
 ## 27. O nome do evento sem acento ("IEM Krakw 2026")
 
 - **O que é:** o site mostra "IEM Krakw 2026" (sem o "ó") na landing, nas migalhas e no título, porque o nome do evento vem da pasta da demo.
+- **Feito na L1 (2026-11-06, decisão 63):** `data/reference/eventos.json` + `tests/test_eventos.py`.
 - **Conserto, quando for feito:** uma tabela pequena de nomes de evento, versionada e com teste (nome da pasta -> nome de exibição), e não uma
   exceção espalhada no código. Aberto em 2026-11-04 (pedido do Pedro, para depois).
 - **Fora do computador:** nada.
@@ -680,6 +681,7 @@ O texto original do cartão:
   demo (`infernos`, por quem lançou, round e o primeiro fogo depois de soltar) não achou um fogo, ou o achado voou mais de 15 s. Ninguém investigou por quê
   (suspeita: molotov apagado por smoke antes de queimar, ou fogo que a demo não registrou).
 - **Efeito hoje:** nenhum; o R4 só usa arremesso com voo conhecido. Investigar depois, sem bloquear nada. Aberto em 2026-11-04.
+- **Causa achada (L1, 2026-11-06, só investigação; `notas/investigacoes/2026-11-06-molotovs-sem-voo-e-sem-efeito.md`):** dos 148 sem voo, 82 caíram dentro de uma smoke (o jogo apaga o molotov), 8 têm fogo de outro dono, 5 só têm fogo anterior à soltura, 6 casam com um fogo a mais de 15 s e **47 ficam sem explicação nos dados**; dos 14 com voo e sem efeito, 14 são fogos que ainda ardiam quando o round acabou (sem `end_tick`). Nada foi corrigido.
 - **Fora do computador:** nada.
 
 ---

@@ -20,14 +20,24 @@
     function origemDe(n) { return n.l && n.l.o ? [n.l.o[0], n.l.o[1]] : [n.x[0], n.y[0]]; }
     function fimDe(n) { var u = n.x.length - 1; return [n.x[u], n.y[u]]; }
     function nivelDe(n) { var it = jogadorDe(n); return it && it.p.lv ? it.p.lv[n.f0] || 0 : 0; }
+    // O nome do lugar de um ponto: o nome de lugar DO MAPA mais perto dele (a tabela dos nomes que o mapa desenha: `radar.lugares.rotulos`, as âncoras
+    // de cada nome por andar), não o `place` da demo (que podia dizer "BombsiteA" para um ponto ao lado do "STAIRS" desenhado). Cartão 15 / L1.
     function lugarDe(x, y, nivel) {
-      var L = RAD.lugares && RAD.lugares.grade;
-      if (!L || L.andares.length !== 1) return null;     // mapa de vários andares: o andar do destino não é conhecido (a Nuke dentro do Reescrever é do R6), então sem nome
-      nivel = 0;
-      var px = MapCore.jogoParaPixel(RAD, x, y), cx = Math.floor(px[0] / L.lado), cy = Math.floor(px[1] / L.lado), rle = L.andares[nivel][String(cy)];
-      if (!rle) return null;
-      for (var i = 0; i < rle.length; i += 3) if (rle[i] <= cx && cx < rle[i] + rle[i + 2]) return RAD.lugares.textos[rle[i + 1]];
-      return null;
+      var L = RAD.lugares, lista = L && L.rotulos && L.rotulos[nivel || 0];
+      if (!lista || !lista.length) return null;
+      var px = MapCore.jogoParaPixel(RAD, x, y), melhor = null, dm = Infinity;
+      lista.forEach(function (par) {
+        // o bombsite o mapa desenha como LETRA, sempre na primeira âncora (MapCore.lugaresRegistra); os outros nomes podem ficar em qualquer âncora deles
+        var ancoras = /^Bombsite[A-Z]$/.test(L.nomes[par[0]]) ? par[1].slice(0, 1) : par[1];
+        ancoras.forEach(function (q) { var d = Math.hypot(q[0] - px[0], q[1] - px[1]); if (d < dm) { dm = d; melhor = par[0]; } });
+      });
+      return melhor === null ? null : L.textos[melhor];
+    }
+    // o andar de um ponto do destino de uma alternativa: pelo Z contra os cortes dos andares do mapa (a Nuke: -495); mapa de um andar só: o 0
+    function nivelDoPonto(z, padrao) {
+      if (LEVELS.length < 2 || z === undefined || z === null) return padrao || 0;
+      for (var i = 0; i < LEVELS.length; i++) if (LEVELS[i].min <= z && z < LEVELS[i].max) return i;
+      return padrao || 0;
     }
     function segundos(v) { return (Math.round(v * 10) / 10).toString().replace(".", ","); }
     function tipoDe(k) { return TX.granadas[k] || k; }
@@ -50,7 +60,7 @@
         if (n.l ? a.id === n.l.id : (a.jogador === n.by && a.round === cur.round && Math.hypot(a.destino[0] - orig[0], a.destino[1] - orig[1]) <= 60)) return;     // o próprio arremesso do real (sem ligação gravada: mesmo jogador, round e destino)
         var d = Math.hypot(a.origem[0] - o[0], a.origem[1] - o[1]);
         if (d > RAIO_U) return;
-        var lugar = lugarDe(a.destino[0], a.destino[1], nivel), chave = lugar || ("#" + a.id);     // destino sem nome não agrupa
+        var lugar = lugarDe(a.destino[0], a.destino[1], nivelDoPonto(a.destino[2], nivel)), chave = lugar || ("#" + a.id);     // destino sem nome não agrupa
         var g = grupos[chave];
         if (!g) { g = grupos[chave] = { lugar: lugar, n: 0, melhor: null, d: Infinity, mesmo: !!lugar && lugar === nomeOrig }; lista.push(g); }
         g.n++;
@@ -237,7 +247,7 @@
     // "No real, o mezii joga uma smoke em SNIPERS NEST às 1:54": um fato do real sobre o lugar escolhido, quando existe
     function fatoReal(n, a, nivel) {
       if (!a) return "";
-      var lugar = lugarDe(a.destino[0], a.destino[1], nivel);
+      var lugar = lugarDe(a.destino[0], a.destino[1], nivelDoPonto(a.destino[2], nivel));
       if (!lugar) return "";
       var achada = cur.nades.filter(function (q) { var f = fimDe(q); return q !== n && q.k === n.k && lugarDe(f[0], f[1], nivelDe(q)) === lugar; }).sort(function (x, y) { return x.f0 - y.f0; })[0];
       return achada ? N.formata(TX.fato_real, { nome: achada.by, tipo: tipoDe(n.k), lugar: lugar, relogio: N.relogioNo(achada.f0) }) : "";
@@ -275,7 +285,7 @@
     /* ---------- "O que mudou" ---------- */
     function frases() {
       return trocas.map(function (t) {
-        var n = t.n, a = t.alt, nivel = nivelDe(n), o = fimDe(n), real = lugarDe(o[0], o[1], nivel), nova = lugarDe(a.destino[0], a.destino[1], nivel);
+        var n = t.n, a = t.alt, nivel = nivelDe(n), o = fimDe(n), real = lugarDe(o[0], o[1], nivel), nova = lugarDe(a.destino[0], a.destino[1], nivelDoPonto(a.destino[2], nivel));
         var base = { tipo: tipoDe(n.k), nome: n.by, relogio: N.relogioNo(n.f0), seg: segundos(a.voo_s), chega: N.relogioNo(queda(n, a)),
                      real: real ? N.formata(TX.em_lugar, { lugar: real }) : TX.no_ponto_real, nova: nova ? N.formata(TX.em_lugar, { lugar: nova }) : TX.no_ponto_escolhido };
         if (N.editada(n.by)) return N.formata(TX.mudou_troca_parada, base);

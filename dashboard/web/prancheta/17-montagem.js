@@ -150,7 +150,7 @@
       ANDARES.forEach(function (a, i) {
         andares.appendChild(el("button", { "data-andar": String(i),
           texto: i === 0 ? "Andar de cima" : (ANDARES.length === 2 ? "Andar de baixo" : "Andar " + (i + 1)),
-          onclick: function () { S.andar = i; S.sel = null; S.acao = null; atualizaTudo(); } }));
+          onclick: function () { S.andar = i; S.sel = null; S.acao = null; enquadraAndar(); atualizaTudo(); } }));
       });
       barra.appendChild(andares);
     }
