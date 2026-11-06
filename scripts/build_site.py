@@ -90,6 +90,11 @@ def match_summary(match_id: str) -> dict | None:
     }
 
 
+def times_das_partidas(matches: list[dict]) -> dict[str, str]:
+    """"Time A × Time B" de cada partida, com os nomes do cabeçalho da partida (os mesmos da landing)."""
+    return {m["id"]: f'{m["lados"]["A"]["nome"]} × {m["lados"]["B"]["nome"]}' for m in matches if (m.get("lados") or {}).get("A") and m["lados"].get("B")}
+
+
 def _dados_do_card(match_id: str) -> dict:
     from scripts.build_web_page import _manifesto_da_partida, cabecalho_da_partida, origem_da_partida
     c = cabecalho_da_partida(match_id) or {}
@@ -697,7 +702,7 @@ def build(repo_url: str, preview: bool = False) -> Path:
         html = build_prancheta(mapa, MAP_LABEL, site=url_do_site(repo_url), grupo=grupo, biblioteca_externa=True)
         (saida / arquivo_da_pagina(mapa)).write_text(html, encoding="utf-8")
         # a biblioteca de arremessos num arquivo próprio, carregado depois de a tela montar (cartão 20)
-        bib = biblioteca_js(mapa)
+        bib = biblioteca_js(mapa, times_das_partidas(matches))
         if bib is not None:
             (saida / arquivo_da_biblioteca(mapa)).parent.mkdir(exist_ok=True)
             (saida / arquivo_da_biblioteca(mapa)).write_text(bib, encoding="utf-8")

@@ -3,7 +3,7 @@
   var cv = document.getElementById("map");
   var ctx = cv.getContext("2d");
   // o modo Reescrever (R2, decisão 57) mora em partida/10-reescrever.js; aqui só o estado e os ganchos do desenho
-  var reescrever = { ativo: false };
+  var reescrever = { ativo: false, virtuais: { nades: [], smokes: [], fires: [], pops: [] } };   // virtuais: as granadas trocadas do Reescrever (R4), desenhadas como as do real
 
   // Radar oficial do mapa. A correspondência entre coordenada de jogo e pixel
   // não vem com a imagem — ela foi calibrada ajustando a nuvem de posições da
@@ -781,11 +781,11 @@
     var SMOKE_R = MapCore.RAIO_SMOKE_UNIDADES * RAD.scale_px_per_unit;
     var FIRE_R = MapCore.RAIO_MOLOTOV_UNIDADES * RAD.scale_px_per_unit;
 
-    cur.smokes.forEach(function (z) {
+    cur.smokes.concat(reescrever.virtuais.smokes).forEach(function (z) {
       if (pos < z.f0 || pos > z.f1 || (reescrever.ativo && reescrever.soNoReal(z))) return;
       MapCore.desenhaArea(ctx, "smoke", mx(z.x), my(z.y), SMOKE_R);
     });
-    cur.fires.forEach(function (z) {
+    cur.fires.concat(reescrever.virtuais.fires).forEach(function (z) {
       if (pos < z.f0 || pos > z.f1 || (reescrever.ativo && reescrever.soNoReal(z))) return;
       MapCore.desenhaArea(ctx, "molotov", mx(z.x), my(z.y), FIRE_R);
     });
@@ -793,7 +793,7 @@
     // Granadas em voo. O rastro é curto e some atrás da granada (segmentos com
     // alfa decrescente em vez de uma linha só): uma linha inteira e opaca
     // riscava o mapa e competia com o rastro dos jogadores.
-    cur.nades.forEach(function (n) {
+    cur.nades.concat(reescrever.virtuais.nades).forEach(function (n) {
       if (reescrever.ativo && reescrever.soNoReal(n)) return;
       // Índice CONTÍNUO, não o quadro inteiro. O replay é amostrado a 4 Hz e os
       // jogadores já eram interpolados; a granada não era, então ela andava aos
@@ -891,11 +891,19 @@
     // impacto. O raio cresce com a consequência: quantos inimigos cegaram,
     // quanto dano a HE tirou. Detonação sem efeito aparece apagada e sem
     // rótulo — a granada existiu, o efeito não, e o mapa mostra a diferença.
-    (cur.pops || []).forEach(function (p) {
+    (cur.pops || []).concat(reescrever.virtuais.pops).forEach(function (p) {
       var age = pos - p.f;
       if (age < 0 || age > POP_TOTAL || (reescrever.ativo && reescrever.soNoReal(p))) return;
 
       var X = mx(p.x), Y = my(p.y);
+      if (p._virtual) {      // estouro da granada trocada (Reescrever): o site não calcula cegueira nem dano, então não desenha nem "forte" nem "apagado": anel pontilhado neutro e o rótulo
+        ctx.save();
+        ctx.setLineDash([2, 3]); ctx.lineWidth = 2; ctx.strokeStyle = NADE_COLOR[p.k] || CM.apagado;
+        ctx.beginPath(); ctx.arc(X, Y, 12, 0, Math.PI * 2); ctx.stroke();
+        ctx.restore();
+        if (age <= POP_FRAMES * 2) MapCore.rotulo(PAGINA.reescrever.sem_efeito, X, Y, { cor: CM.tinta, prioridade: 3, dy: 18 });
+        return;
+      }
       var flash = p.k === "flash";
       var col = flash ? NADE_COLOR.flash : NADE_COLOR.he;
 

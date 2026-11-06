@@ -250,9 +250,17 @@ def _nomes_dos_lados(c: dict | None) -> dict[str, str]:
     return {k: v["nome"] for k, v in c["lados"].items()}
 
 
+def biblioteca_do_mapa(mapa: str) -> str | None:
+    """O arquivo da biblioteca de arremessos do mapa (a mesma da prancheta), ou None se o mapa não tem corpus: a troca de granada do Reescrever (R4)
+    a carrega só ao usar a ferramenta."""
+    from scripts.build_tactics_page import LINEUPS_DIR, arquivo_da_biblioteca
+    return arquivo_da_biblioteca(mapa) if mapa and (LINEUPS_DIR / f"{mapa}.json").exists() else None
+
+
 def dados_da_pagina(match_id: str, base: Path | None = None, repo: str | None = None, preview: bool = False) -> dict:
     from leitura import marca_da_funcao, perfil_erros, peso_dos_rounds
     from leitura.reescrever import TEXTOS_DO_MODO
+    from metrics.constantes import DURACAO_SMOKE_S
     from metrics.tactics import VELOCIDADE_U_S
     from metrics.impacto import resumo_dos_grupos
     from scripts.numeros_citaveis import carrega
@@ -271,7 +279,9 @@ def dados_da_pagina(match_id: str, base: Path | None = None, repo: str | None = 
             # "Abrir round na prancheta" (fase 9): a tolerância medida do caminho
             "round_na_prancheta": {"tolerancia_u": TOLERANCIA_U},
             # o modo Reescrever (R2, decisão 57): os rótulos e a frase fixa de honestidade, prontos
-            "reescrever": {**TEXTOS_DO_MODO, "velocidade": {a: VELOCIDADE_U_S[(a, "correndo")] for a in ("AWP", "rifle")}},   # a mesma conta da prancheta (decisão 43)
+            "reescrever": {**TEXTOS_DO_MODO, "velocidade": {a: VELOCIDADE_U_S[(a, "correndo")] for a in ("AWP", "rifle")},
+                          "smoke_s": DURACAO_SMOKE_S,
+                          "biblioteca": biblioteca_do_mapa(_le_json(base / "match_meta.json").get("map_name") or "")},   # a mesma conta da prancheta (decisão 43); o arquivo das alternativas da troca de granada (R4)
             # "Quanto cada round pesou" (aba Placar): só texto, pronto; a barra o JS lê da curva do payload
             "peso_dos_rounds": peso_dos_rounds.bloco(payload, _nomes_dos_lados(cabecalho_da_partida(match_id, base))),
             # aba Perfil (fase 12): pontos a melhorar, pontos fortes e comparação, com as frases prontas.
@@ -343,9 +353,10 @@ def build_html(match_id: str, site: dict | None = None, base: Path | None = None
         # discordam sobre qual calibração um traço usou.
         radar["calibracao"] = impressao_da_calibracao(radar)
         # os nomes de lugar no mapa (Fase M, decisão 52): só os nomes e as âncoras; mapa sem tabela, sem nome
-        from metrics.lugares import para_o_replay, tabela_do_mapa
+        from metrics.lugares import grade_do_replay, para_o_replay, tabela_do_mapa
         if tabela_do_mapa(map_name):
             radar["lugares"] = para_o_replay(tabela_do_mapa(map_name))
+            radar["lugares"]["grade"] = grade_do_replay(tabela_do_mapa(map_name))   # o nome do lugar de um ponto (destino da granada trocada, R4)
         # o `||` mantém o `null` do template como fallback quando o mapa não tem radar
         radar_js = js(radar) + " ||"
     html = html.replace("/*__RADAR__*/", radar_js)

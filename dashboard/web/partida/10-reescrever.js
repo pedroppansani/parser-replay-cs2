@@ -69,31 +69,42 @@
     // quem foi editado não morre na sua versão: a morte do real só aparece no fantasma
     reescrever.semAMorte = function (e) { return e.type === "kill" && e.f > t0 && editada(e.victim); };
     // granada lançada DEPOIS do instante por quem foi editado dependia da posição dele no real: fica só no fantasma (design §9)
-    function lancouEm(it) {
-      if (it._lanc !== undefined) return it._lanc;
-      var f = it.f0 !== undefined ? it.f0 : it.f;
-      if (it.x === undefined || it.x.length === undefined) {     // zona ou detonação: acha o arremesso que a gerou
-        var tipo = it.k || (cur.smokes.indexOf(it) >= 0 ? "smoke" : "molotov"), achado = null, ligado = it.l ? JSON.stringify(it.l) : null;
+    // a granada que gerou o item (a própria granada, ou o arremesso que fez a zona/estouro): a ligação gravada pelo export, ou o tipo e o ponto final
+    function geradoraDe(it) {
+      if (it._ger !== undefined) return it._ger;
+      var ger = null;
+      if (it.x !== undefined && it.x.length !== undefined) ger = it;
+      else {
+        var f = it.f0 !== undefined ? it.f0 : it.f, tipo = it.k || (cur.smokes.indexOf(it) >= 0 ? "smoke" : "molotov"), ligado = it.l ? JSON.stringify(it.l) : null, achado = null;
         cur.nades.forEach(function (n) {
           var u = n.x.length - 1;
           if (n.by !== it.by || n.f0 > f + 1) return;
-          var bate = ligado && n.l ? JSON.stringify(n.l) === ligado                    // a ligação gravada pelo export, quando existe
+          var bate = ligado && n.l ? JSON.stringify(n.l) === ligado
             : (tipo === "molotov" ? n.k !== "smoke" && n.k !== "flash" && n.k !== "he" : n.k === tipo) && Math.hypot(n.x[u] - it.x, n.y[u] - it.y) <= 60;
-          if (bate && (achado === null || n.f0 > achado)) achado = n.f0;
+          if (bate && (achado === null || n.f0 > achado.f0)) achado = n;
         });
-        f = achado !== null ? achado : -Infinity;   // sem arremesso casado não dá para afirmar que dependia da peça editada: vale nos dois
+        ger = achado;
       }
-      it._lanc = f;
-      return f;
+      it._ger = ger;
+      return ger;
     }
-    reescrever.soNoReal = function (it) { return !!it.by && editada(it.by) && lancouEm(it) > t0; };
-    reescrever.podeTocar = function () { return algumaEditada(); };
+    function lancouEm(it) {
+      var g = geradoraDe(it);
+      return g ? g.f0 : (it.x !== undefined && it.x.length !== undefined ? it.f0 : -Infinity);   // sem arremesso casado não dá para afirmar que dependia da peça editada: vale nos dois
+    }
+    reescrever.geradoraDe = geradoraDe;
+    reescrever.soNoReal = function (it) {
+      if (it._virtual) return false;
+      if (it.by && editada(it.by) && lancouEm(it) > t0) return true;
+      return !!(reescrever.granada && reescrever.granada.trocada(geradoraDe(it)));      // a granada trocada some da sua versão (fica só no fantasma)
+    };
+    reescrever.podeTocar = function () { return algumaMudanca(); };
     reescrever.esmaecida = function (nome) {     // depois da morte do real a peça editada fica esmaecida (o ✕ do fantasma mostra onde ele morreu)
       var it = pecas.filter(function (q) { return q.p.name === nome; })[0];
       return !!(reescrever.sua && it && !it.p.alive[Math.floor(pos)]);
     };
     reescrever.preparaTocar = function () {
-      if (!algumaEditada()) return false;
+      if (!algumaMudanca()) return false;
       if (!reescrever.sua || pos >= cur.frames - 1) { pos = t0; frame = t0; scrubEl.value = t0; }
       reescrever.sua = true;
       atualizaBanco();
@@ -124,6 +135,7 @@
           { cor: CM.tinta, prioridade: 4, dy: 18 });
       });
       if (reescrever.sua && reescrever.fantasma) desenhaFantasmas(c);
+      if (reescrever.granada) reescrever.granada.desenha(c);
       c.save();
       if (reescrever.sel && origem[reescrever.sel]) {
         var q = edicoes[reescrever.sel] || origem[reescrever.sel];
@@ -196,6 +208,7 @@
       return !!(o && e && Math.hypot(e.x - o.x, e.y - o.y) >= MOVIDA);
     }
     function algumaEditada() { return Object.keys(edicoes).some(editada); }
+    function algumaMudanca() { return algumaEditada() || !!(reescrever.granada && reescrever.granada.temTroca()); }   // peça movida ou granada trocada
 
     /* ---------- o mapa: de um ponto da tela a unidades de jogo, e a peça sob o ponteiro ---------- */
     function matrizDaVista() {
@@ -226,7 +239,7 @@
     }
 
     mapwrap.addEventListener("pointerdown", function (e) {
-      if (!reescrever.ativo || reescrever.sua || (e.button && e.button > 0)) return;
+      if (!reescrever.ativo || reescrever.sua || reescrever.ferramenta === "granada" || (e.button && e.button > 0)) return;
       var nome = acha(e);
       if (!nome) return;
       e.preventDefault(); e.stopPropagation();       // a peça vem antes do desenho e do arrastar do mapa
@@ -298,13 +311,14 @@
         b.classList.toggle("editada", editada(b.dataset.nome));
       });
       var voltar = document.getElementById("rw-voltar");
-      if (voltar) voltar.disabled = !algumaEditada();
+      if (voltar) voltar.disabled = !algumaMudanca();
       var editar = document.getElementById("rw-editar");
       if (editar) editar.disabled = !reescrever.sua;
       var dica = document.getElementById("rw-dica");
       if (dica) dica.textContent = reescrever.sua ? TX.vendo : TX.dica;
-      playBtn.disabled = !algumaEditada();
-      playBtn.title = algumaEditada() ? "" : TX.toca_desligado;
+      playBtn.disabled = !algumaMudanca();
+      playBtn.title = algumaMudanca() ? "" : TX.toca_desligado;
+      if (reescrever.granada) reescrever.granada.atualiza();
       if (!semTexto) atualizaMudou();
       var a = document.activeElement;       // um botão que acabou de se desligar não pode prender o foco
       if (a && a.disabled) { var alvo = playBtn.disabled ? hosts.ct.querySelector(".peca-rw:not([aria-disabled])") : playBtn; if (alvo) alvo.focus({ preventScroll: true }); }
@@ -337,10 +351,11 @@
           if (n) itens.push(formata(TX.mudou_cegou, { nome: nome, relogio: relogioNo(q.f), n: formata(n === 1 ? TX.cegos.um : TX.cegos.varios, { n: n }) }));
         });
         cur.nades.forEach(function (n) {
-          if (n.by === nome && n.f0 > t0) itens.push(formata(TX.mudou_granada, { tipo: TX.granadas[n.k] || n.k, nome: nome, relogio: relogioNo(n.f0) }));
+          if (n.by === nome && n.f0 > t0 && !(reescrever.granada && reescrever.granada.temTrocaDe(n))) itens.push(formata(TX.mudou_granada, { tipo: TX.granadas[n.k] || n.k, nome: nome, relogio: relogioNo(n.f0) }));
         });
       });
       host.textContent = "";
+      if (reescrever.granada) itens = itens.concat(reescrever.granada.frases());
       if (!itens.length) { host.appendChild(novo("li", "rw-nada", TX.mudou_nada)); return; }
       itens.forEach(function (t) { host.appendChild(novo("li", null, t)); });
     }
@@ -354,6 +369,7 @@
       host.appendChild(novo("p", "rw-comeca", formata(TX.comeca_em, { relogio: relogioNo(t0) })));
       var dica = novo("p", "rw-dica", TX.dica); dica.id = "rw-dica"; dica.setAttribute("role", "status");
       host.appendChild(dica);
+      if (reescrever.granada) reescrever.granada.monta(host);
       var fant = botao("", "rw-btn", function () {
         reescrever.fantasma = !reescrever.fantasma;
         textoFantasma(fant); draw();
@@ -365,7 +381,7 @@
       var editar = botao(TX.editar_de_novo, "rw-btn", function () { voltaAEditar(); });
       editar.id = "rw-editar"; editar.disabled = true;
       host.appendChild(editar);
-      var voltar = botao(TX.voltar, "rw-btn", function () { edicoes = {}; voltaAEditar(); });
+      var voltar = botao(TX.voltar, "rw-btn", function () { edicoes = {}; if (reescrever.granada) reescrever.granada.limpa(); voltaAEditar(); });
       voltar.id = "rw-voltar"; voltar.disabled = true;
       host.appendChild(voltar);
       host.appendChild(novo("h4", null, TX.mudou_titulo));
@@ -436,6 +452,7 @@
       hosts.ct.setAttribute("aria-label", TX.banco); hosts.t.setAttribute("aria-label", TX.titulo);   // as colunas deixam de ser os elencos
       playBtn.disabled = true; playBtn.title = TX.toca_desligado;
       scrubEl.disabled = true; speedBtn.disabled = false;
+      if (reescrever.granada) reescrever.granada.entra();
       montaBanco(); montaPainel(); montaAcoes(); atualizaBanco();
       draw();
       var primeira = hosts.ct.querySelector(".peca-rw:not([aria-disabled])");
@@ -445,6 +462,7 @@
       if (!reescrever.ativo) return;
       if (dlg && dlg.open) dlg.close();
       setPlaying(false);
+      if (reescrever.granada) reescrever.granada.sai();
       reescrever.ativo = false; reescrever.sua = false; reescrever.sel = null; arrasto = null; edicoes = {}; origem = {}; pecas = [];
       palco.setAttribute("data-tema", "escuro");
       hosts.ct.removeAttribute("data-tema"); hosts.t.removeAttribute("data-tema");
@@ -484,13 +502,13 @@
     }
     var depoisDeDescartar = null;      // o que fazer se descartar (trocar de round ou de aba)
     reescrever.pedeDescartar = function (seguir) {     // true: abriu o aviso (quem chamou espera); false: sem edição, pode seguir
-      if (!reescrever.ativo || !algumaEditada()) return false;
+      if (!reescrever.ativo || !algumaMudanca()) return false;
       depoisDeDescartar = seguir;
       pedeSair();
       return true;
     };
     function pedeSair() {
-      if (!algumaEditada()) { reescrever.sai(); return; }
+      if (!algumaMudanca()) { reescrever.sai(); return; }
       setPlaying(false);       // a sua versão não segue tocando por trás do aviso
       var d = dialogo();
       if (!d.open) d.showModal();
@@ -514,6 +532,7 @@
         fantasmas: reescrever.ativo && reescrever.sua ? fantasmasAgora().map(function (g) { return { nome: g.it.p.name, vivo: g.vivo, x: g.sp[0], y: g.sp[1] }; }) : [],
         esmaecidas: reescrever.ativo ? pecas.filter(function (it) { return editada(it.p.name) && reescrever.esmaecida(it.p.name); }).map(function (it) { return it.p.name; }) : [],
         soNoReal: reescrever.ativo ? [].concat(cur.nades, cur.smokes, cur.fires, cur.pops || []).filter(function (it) { return reescrever.soNoReal(it); }).length : 0, relogio: relogioNo(t0), selecionada: reescrever.sel,
+        trocas: reescrever.granada ? reescrever.granada.estado() : null,
         pecas: pecas.map(function (it) {
           var e = edicoes[it.p.name], o = origem[it.p.name];
           var ag = e && editada(it.p.name) ? reescrever.posicaoEditada(it.p.name) : null;
@@ -521,6 +540,12 @@
                    x0: o ? o.x : null, y0: o ? o.y : null, agora: ag, velocidade: it.vivo ? velocidadeDe(it.p.name) : null };
         })
       };
+    };
+
+    // o que a granada (11-reescrever-granada.js) precisa do núcleo
+    reescrever.nucleo = {
+      t0: function () { return t0; }, pecas: function () { return pecas; }, editada: editada, relogioNo: relogioNo, formata: formata, novo: novo, botao: botao,
+      atualizaBanco: atualizaBanco, algumaMudanca: algumaMudanca, doPonteiro: doPonteiro, aGameUnits: aGameUnits, matrizDaVista: matrizDaVista, tracejado: tracejado
     };
 
     montaAcoes();
