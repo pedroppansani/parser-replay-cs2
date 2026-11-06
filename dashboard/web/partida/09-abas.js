@@ -8,6 +8,7 @@
 
   // Nomeada (e não só um listener) porque o gráfico de vantagem também troca de
   // aba: clicar num round leva pro replay daquele round.
+  var hashVisivel = location.hash;
   function selectTab(name, semHash) {
     if (name !== "replay" && reescrever.ativo && reescrever.pedeDescartar(function () { selectTab(name, semHash); })) return;   // com edições, pergunta antes
     var jaEstava = document.querySelector(".tabs [role=tab][aria-selected=true]");
@@ -25,6 +26,7 @@
       try { history.replaceState(null, "", "#" + ABA_NO_HASH[name]); } catch (e) { /* arquivo local: sem hash */ }
     }
     mostraAAbaAtiva();
+    hashVisivel = location.hash;      // o endereço que corresponde à aba à mostra (volta para ele se o aviso de descartar for cancelado)
     if (name === "replay") { draw(); if (!semHash && !jaEstava) rolaAtePalco(); }
   }
   // A faixa de abas rola de lado (375 px): a aba ativa fica sempre à vista, qualquer porta que a tenha aberto (clique, Perfil, bloco, endereço).
@@ -81,3 +83,22 @@
     hashInicial[1].split("&").forEach(function (par) { var kv = par.split("="); q[kv[0]] = decodeURIComponent(kv[1] || ""); });
     if (q.round) abreNoReplay(Number(q.round), q.t === undefined || q.t === "" ? null : Number(q.t), true);
   }
+
+  // O voltar/avançar do navegador entre endereços da mesma página: a aba acompanha o endereço (antes só o endereço mudava). Com edições do Reescrever o
+  // aviso "Descartar a sua versão?" abre; se for cancelado, o endereço volta para o da aba que continua à mostra (cartão do voltar do navegador, L1).
+  window.addEventListener("hashchange", function () {
+    var h = (location.hash || "").replace("#", "").split("?"), alvo = HASH_DA_ABA[h[0]];
+    if (!alvo) return;
+    var ativa = document.querySelector(".tabs [role=tab][aria-selected=true]");
+    if (ativa && ativa.dataset.tab === alvo && !(alvo === "replay" && h[1])) { hashVisivel = location.hash; return; }
+    selectTab(alvo, true);
+    if (alvo === "replay" && h[1] && !reescrever.ativo) {
+      var qq = {};
+      h[1].split("&").forEach(function (par) { var kv = par.split("="); qq[kv[0]] = decodeURIComponent(kv[1] || ""); });
+      if (qq.round) abreNoReplay(Number(qq.round), qq.t === undefined || qq.t === "" ? null : Number(qq.t), true);
+    }
+  });
+  reescrever.aoFecharOAviso = function () {      // o aviso fechou (continuar, Esc ou descartar): o endereço tem de ser o da aba à mostra
+    var h = (location.hash || "").replace("#", "").split("?")[0], ativa = document.querySelector(".tabs [role=tab][aria-selected=true]");
+    if (ativa && HASH_DA_ABA[h] !== ativa.dataset.tab) { try { history.replaceState(null, "", hashVisivel || "#" + ABA_NO_HASH[ativa.dataset.tab]); } catch (e) { /* arquivo local: sem hash */ } }
+  };

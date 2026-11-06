@@ -566,6 +566,7 @@
         quandoBiblioteca(function () { criaDoInstante(retrato); reprojeta(); });
       } else { novaTatica(); S.aviso = "O instante do replay não pôde ser lido."; atualizaAviso(); }
     } else if (nova || !(aberta && abre(aberta))) novaTatica();
+    enquadraAndar();      // Nuke: abre no enquadramento do andar (a vista; o canvas não muda de tamanho)
     reprojeta();
     if (ganchos.aoIniciar) ganchos.aoIniciar();
     if (!bibliotecaPronta()) carregaBiblioteca();

@@ -193,6 +193,18 @@ window.MapCore = (function () {
     return { zoom: Math.min(ZOOM_MAX, z), cx: (x0 + x1) / 2, cy: (y0 + y1) / 2 };
   }
 
+  /* Enquadramento por ÁREA de andar (decisão 54; a prancheta da Nuke também usa, L1): na Nuke a arte ocupa só o miolo do quadrado e cada andar ocupa
+     uma parte dele. O quadro é o retângulo das âncoras dos nomes de lugar daquele andar (`lugares.rotulos[andar]`), com a margem de `enquadramento`, e o
+     zoom é fixo por andar (no máximo ENQ_ZOOM_MAXIMO: acima disso o quadro mostra pouco contexto). Mapa fora da lista: sem enquadramento. */
+  var MAPAS_COM_ENQUADRAMENTO = { de_nuke: true }, ENQ_ZOOM_MAXIMO = 2.5;
+  function quadroDoAndar(radar, lugares, andar) {
+    var lista = lugares && lugares.rotulos && lugares.rotulos[andar], pts = [];
+    (lista || []).forEach(function (par) { par[1].forEach(function (q) { pts.push([q[0], q[1], 0]); }); });
+    var e = enquadramento(pts, radar);
+    e.zoom = Math.min(e.zoom, ENQ_ZOOM_MAXIMO);
+    return e;
+  }
+
   /** Põe o centro (cx, cy) do radar no centro da tela, no zoom dado (o pan segue limitado à arte). */
   function vistaCentrada(view, radar, zoom, cx, cy) {
     view.zoom = zoom;
@@ -1738,6 +1750,7 @@ window.MapCore = (function () {
     limitaPan: limitaPan,
     enquadramento: enquadramento,
     vistaCentrada: vistaCentrada,
+    quadroDoAndar: quadroDoAndar, MAPAS_COM_ENQUADRAMENTO: MAPAS_COM_ENQUADRAMENTO,
     caixaDoMapa: caixaDoMapa,
     tamanhoInterno: tamanhoInterno,
     agrupaPorQuadro: agrupaPorQuadro,

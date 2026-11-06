@@ -1,0 +1,15 @@
+{
+  "_leia_isto": "Nome de exibição de cada evento do corpus (cartão 27). A chave é o identificador do evento no manifesto (o nome da pasta da demo, sem acento); o valor é o nome como a HLTV o escreve. Evento novo no corpus entra aqui (tests/test_eventos.py acusa o que faltar). Nada de exceção espalhada no código.",
+  "eventos": {
+    "blast-open-lisbon-2025": "BLAST Open Lisbon 2025",
+    "blast-rivals-2025-season-2": "BLAST Rivals 2025 Season 2",
+    "iem-cologne-major-2026": "IEM Cologne Major 2026",
+    "iem-dallas-2025": "IEM Dallas 2025",
+    "iem-katowice-2025": "IEM Katowice 2025",
+    "iem-krakw-2026": "IEM Kraków 2026",
+    "iem-rio-2026": "IEM Rio 2026",
+    "pgl-cluj-napoca-2026": "PGL Cluj-Napoca 2026",
+    "starladder-budapest-major-2025": "StarLadder Budapest Major 2025",
+    "starladder-starseries-fall-2026": "StarLadder StarSeries Fall 2026"
+  }
+}

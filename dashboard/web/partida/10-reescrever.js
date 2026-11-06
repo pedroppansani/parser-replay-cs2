@@ -593,7 +593,10 @@
         if (document.activeElement === alvo) { e.preventDefault(); outro.focus(); }
       });
       dlg.appendChild(t); dlg.appendChild(novo("p", null, TX.descartar_texto)); dlg.appendChild(linhas);
-      dlg.addEventListener("close", function () { depoisDeDescartar = null; });   // Esc ou Continuar: nada a seguir
+      dlg.addEventListener("close", function () {      // Esc ou Continuar: nada a seguir; e o endereço volta a ser o da aba à mostra (voltar do navegador)
+        depoisDeDescartar = null;
+        if (reescrever.aoFecharOAviso) setTimeout(reescrever.aoFecharOAviso, 0);
+      });
       document.body.appendChild(dlg);
       return dlg;
     }

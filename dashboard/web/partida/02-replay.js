@@ -294,6 +294,7 @@
     if (!semHash) {
       try {
         history.replaceState(null, "", "#replay?round=" + roundNum + (t === null || t === undefined ? "" : "&t=" + t));
+        hashVisivel = location.hash;      // o endereço da aba à mostra agora (o aviso de descartar cancelado devolve a ele; 09-abas.js)
       } catch (e) { /* arquivo local: sem hash */ }
     }
     return true;
@@ -335,16 +336,9 @@
   // enquadra a ÁREA do andar (o retângulo das âncoras dos nomes de lugar daquele andar, com a margem de MapCore.enquadramento), não
   // os pontos do round: o zoom é fixo por andar, igual em todos os rounds, e nada pula durante o replay. A vista só muda ao trocar de
   // round ou de andar (o zoom manual vale até lá). Jogador vivo do outro andar fora do quadro vira um triângulo na borda (marcasDeBorda).
-  var MAPAS_COM_ENQUADRAMENTO = { de_nuke: true };
-  var ENQ_ZOOM_MAXIMO = 2.5;   // trava: acima disso o quadro mostra pouco contexto (o pedido do Pedro, 2026-11-04)
+  var MAPAS_COM_ENQUADRAMENTO = MapCore.MAPAS_COM_ENQUADRAMENTO;    // a regra e a conta do quadro estão no MapCore (a prancheta da Nuke usa as mesmas)
   var quadros = null, andarEnquadrado = -1;
-  function quadroDaArea(andar) {
-    var lista = RAD.lugares && RAD.lugares.rotulos && RAD.lugares.rotulos[andar], pts = [];
-    (lista || []).forEach(function (par) { par[1].forEach(function (q) { pts.push([q[0], q[1], 0]); }); });
-    var e = MapCore.enquadramento(pts, RAD);
-    e.zoom = Math.min(e.zoom, ENQ_ZOOM_MAXIMO);
-    return e;
-  }
+  function quadroDaArea(andar) { return MapCore.quadroDoAndar(RAD, RAD.lugares, andar); }
   function calculaQuadros() {
     andarEnquadrado = -1;                              // trocar de round devolve a vista ao quadro do andar
     if (quadros || !MAPAS_COM_ENQUADRAMENTO[RAD.map] || LEVELS.length < 2) return;

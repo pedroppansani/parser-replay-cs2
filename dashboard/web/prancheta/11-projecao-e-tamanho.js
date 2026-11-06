@@ -75,5 +75,12 @@
       desenha(); atualizaBarra();
     }
   }
+  // Nuke: cada andar abre no enquadramento da ÁREA dele (como no Replay, decisão 54), com o zoom fixo por andar. O canvas não muda de tamanho: só a vista.
+  // O "100%" da barra continua mostrando o radar inteiro.
+  function enquadraAndar() {
+    if (!MapCore.MAPAS_COM_ENQUADRAMENTO[cfg.radar.map] || !cfg.lugares || ANDARES.length < 2) return;
+    var e = MapCore.quadroDoAndar(cfg.radar, cfg.lugares, S.andar);
+    MapCore.vistaCentrada(S.view, cfg.radar, e.zoom, e.cx, e.cy);
+  }
   function resetaZoom() { S.view = { zoom: 1, panX: 0, panY: 0 }; desenha(); atualizaBarra(); }
 
