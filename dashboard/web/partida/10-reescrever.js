@@ -474,6 +474,24 @@
       draw();
       if (!semFoco) { var e = document.getElementById("rw-entrar"); if (e) e.focus({ preventScroll: true }); }
     };
+    // As portas de entrada (R5): o botão "Reescrever" dos momentos do "Por que perdeu" e dos chips do Perfil. Abre o round em
+    // `t` (segundos desde o fim do freeze), 3 s antes (o mesmo pré-roll do Replay), já editando e com `quem` selecionado.
+    // Se já estiver no modo, com edições, pergunta antes de descartar (como trocar de round).
+    reescrever.abreEm = function (round, t, quem) {
+      function vai() {
+        if (reescrever.ativo) reescrever.sai(true);
+        if (!abreNoReplay(round, t)) return;
+        reescrever.entra();
+        if (quem && reescrever.ativo && pecas.some(function (it) { return it.p.name === quem && it.vivo; })) seleciona(quem);
+        if (MODO_PALCO.matches) rolaAtePalco();
+        else {      // celular: o topo do palco (a pílula "Reescrever" e o "Sair") logo abaixo das faixas grudadas, não escondido atrás delas
+          var abas = document.querySelector(".tabs").getBoundingClientRect(), pal = document.getElementById("palco").getBoundingClientRect();
+          window.scrollBy({ top: pal.top - abas.bottom - 8, behavior: reduced ? "auto" : "smooth" });
+        }
+      }
+      if (reescrever.ativo && reescrever.pedeDescartar(vai)) return;
+      vai();
+    };
     // Sair com edições pede confirmação (o <dialog> prende o foco; o Esc dele é "Continuar editando"); sem edição sai direto
     var dlg = null;
     function dialogo() {
