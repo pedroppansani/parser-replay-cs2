@@ -33,7 +33,7 @@ valem lá também.
   sem matiz; `--erro` e `--aviso` nunca marcam erro de jogador (44, 46)
 - Tema: claro ou escuro escolhido na landing (`tema.js` no `<head>`, sem inline); prancheta sempre `violeta`; o
   canvas lê só `*-mapa` e granadas, iguais em todo tema; a moldura do mapa é a ilha `data-tema="escuro"` (48, 51)
-- Cor nova ou trocada passa por `py -3.12 -m metrics.paleta` contra o fundo dela (texto
+- Cor nova ou trocada passa por `py -3.12 -m metrics.paleta` contra o fundo (texto
   4,5:1, marca 3:1, ΔE2000 ≥ 8 no pior par daltônico); o scatter de clusters segue facetado (10)
 - Mapa, peças e granadas em canvas, com UM núcleo (`map_core.js`); `desenhaJogador` não ganha
   save/restore; lugares, outro andar, palco, Reescrever (33, 52, 53, 54, 57, 58, 59, 60, 61, 62, 63)
