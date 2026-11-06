@@ -24,7 +24,18 @@
     if (!semHash && !jaEstava) {   // §19.3: só quando a aba muda de fato; `#replay?round=&t=` não é apagado
       try { history.replaceState(null, "", "#" + ABA_NO_HASH[name]); } catch (e) { /* arquivo local: sem hash */ }
     }
+    mostraAAbaAtiva();
     if (name === "replay") { draw(); if (!semHash && !jaEstava) rolaAtePalco(); }
+  }
+  // A faixa de abas rola de lado (375 px): a aba ativa fica sempre à vista, qualquer porta que a tenha aberto (clique, Perfil, bloco, endereço).
+  // Só o `scrollLeft` da faixa muda (nunca `scrollIntoView`, que rolaria a página); a folga da direita deixa o "›" livre.
+  function mostraAAbaAtiva() {
+    var lista = document.querySelector(".tabs"), ativa = document.querySelector(".tabs [role=tab][aria-selected=true]");
+    if (!lista || !ativa) return;
+    var l = lista.getBoundingClientRect(), a = ativa.getBoundingClientRect(), alvo = lista.scrollLeft;
+    if (a.left < l.left + 8) alvo += a.left - l.left - 8;
+    else if (a.right > l.right - 48) alvo += a.right - l.right + 48;
+    if (alvo !== lista.scrollLeft) lista.scrollTo({ left: Math.max(0, alvo), behavior: reduced ? "auto" : "smooth" });
   }
 
   Array.prototype.forEach.call(tabs, function (b, i) {

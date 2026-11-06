@@ -11,6 +11,8 @@ sync_api = pytest.importorskip("playwright.sync_api")
 from tests.test_reescrever_modo import (  # noqa: E402,F401  (fixtures e ajudas)
     _abre, _estado, _sai, navegador, pagina)
 from tests.test_reescrever_r3 import _arrasta  # noqa: E402
+from tests.test_reescrever_r4 import (  # noqa: E402,F401  (a biblioteca ao lado da página, como no site)
+    PRONTA, _clica, _troca_a_primeira, biblioteca, pagina_com_biblioteca)
 
 RELOGIO = re.compile(r"(\d+):(\d\d)")
 
@@ -127,5 +129,99 @@ def test_o_celular_poe_a_porta_embaixo_do_texto_e_sem_corte(navegador, pagina, w
             assert b["y"] >= a["y"] + a["height"] - 1                                  # embaixo do texto
         else:
             assert b["x"] >= a["x"] + a["width"] - 1                                   # ao lado
+    finally:
+        ctx.close()
+
+
+def test_o_molotov_trocado_e_desenhado_como_o_do_real_so_depois_da_queda_e_pela_duracao_do_efeito(navegador, pagina_com_biblioteca, biblioteca):
+    """Instrumenta o desenho de áreas: depois da queda o molotov trocado sai com a MESMA área (raio) do fogo do real, no destino da alternativa,
+    pelo `efeito_s` da alternativa; antes da queda e depois do fim não aparece como área."""
+    ctx, pg, erros = _abre(navegador, pagina_com_biblioteca, 1440, 900, round_=1, frac=0.1)      # o round 1 tem molotov depois do instante
+    try:
+        pg.evaluate("""() => { window.__areas = []; const o = MapCore.desenhaArea;
+            MapCore.desenhaArea = function (c, arma, X, Y, r) { window.__areas.push([arma, X, Y, r]); return o.apply(this, arguments); }; }""")
+        _clica(pg, "#rw-entrar"); _clica(pg, "#rw-ferr-granada"); pg.wait_for_function(PRONTA)
+        tr = _troca_a_primeira(pg, tipo="molotov")["trocas"][0]
+        _clica(pg, "#play"); pg.wait_for_timeout(200); _clica(pg, "#play")
+        zona = _estado(pg)["trocas"]["zonas"][0]
+        efeito = biblioteca[tr["alt"]]["efeito_s"]
+        assert zona["k"] == "molotov" and zona["f0"] == tr["cai"]
+        assert abs((zona["f1"] - zona["f0"]) - efeito * 4) < 0.01                             # dura o `efeito_s` do arremesso real escolhido
+        px = pg.evaluate("z => { const R = window.__RADAR__; return [(z.x - R.origin_x) * R.scale_px_per_unit, (R.origin_y - z.y) * R.scale_px_per_unit]; }", zona)
+        raio = pg.evaluate("MapCore.RAIO_MOLOTOV_UNIDADES * window.__RADAR__.scale_px_per_unit")
+
+        def areas_no_destino(q):
+            pg.evaluate("q => { window.__areas = []; const s = document.getElementById('scrub'); s.disabled = false; s.value = q; s.dispatchEvent(new Event('input')); }", q)
+            pg.wait_for_timeout(150)
+            return [a for a in pg.evaluate("window.__areas") if a[0] == "molotov" and abs(a[1] - px[0]) < 1.5 and abs(a[2] - px[1]) < 1.5]
+        assert areas_no_destino(int(zona["f0"]) - 2) == []                                    # antes da queda: nada de área no destino
+        depois = areas_no_destino(int(zona["f0"]) + 2)
+        assert len(depois) == 1 and abs(depois[0][3] - raio) < 0.01                           # depois: o fogo, com o raio do molotov do real
+        assert len(areas_no_destino(int(zona["f1"]) - 1)) == 1                                # dura até o fim do efeito
+        assert areas_no_destino(int(zona["f1"]) + 2) == []                                    # e some depois dele
+        assert erros == []
+    finally:
+        ctx.close()
+
+
+_ABA_ATIVA_A_VISTA = """() => { const l = document.querySelector('.tabs').getBoundingClientRect(), a = document.querySelector('.tabs [role=tab][aria-selected=true]').getBoundingClientRect();
+    return a.left >= l.left - 1 && a.right <= l.right + 1; }"""
+
+
+def _perfil_com_porta(pg):
+    pg.click('[data-tab="perfil"]')
+    for nome in pg.eval_on_selector_all("#pf-botoes button", "bs => bs.map(b => b.dataset.nome)"):
+        pg.locator("#pf-botoes button", has_text=nome).first.click()
+        if pg.locator("#pf-melhorar .pfchip-rw").count():
+            return nome
+    pytest.skip("nenhum jogador com chip nesta partida")
+
+
+@pytest.mark.parametrize("w,h", [(375, 812), (1366, 657)])
+def test_nenhum_chip_do_perfil_passa_da_largura_do_cartao_e_eles_quebram_de_linha(navegador, pagina, w, h):
+    ctx, pg, _ = _abre(navegador, pagina, w, h)
+    try:
+        _perfil_com_porta(pg)
+        for cartao in pg.locator("#pf-melhorar .ponto, #pf-uma-vez .ponto").all():
+            faixa = cartao.locator(".pfchips")
+            if not faixa.count():
+                continue
+            c = cartao.bounding_box()
+            for par in faixa.locator(".pfpar").all():
+                b = par.bounding_box()
+                assert b["x"] >= c["x"] - 0.5 and b["x"] + b["width"] <= c["x"] + c["width"] + 0.5      # nada passa do cartão (nem é cortado)
+                assert b["height"] >= 43.5
+            assert pg.evaluate("e => e.scrollWidth <= e.clientWidth + 1", faixa.element_handle())           # a faixa não rola de lado
+        if w == 375:                                                                                     # a 375 há chips o bastante para quebrar? se sim, a linha de baixo existe
+            ys = {round(par.bounding_box()["y"]) for par in pg.locator("#pf-melhorar .pfpar").all()}
+            assert len(ys) >= 1
+    finally:
+        ctx.close()
+
+
+def test_a_aba_ativa_fica_a_vista_no_celular_por_qualquer_porta_sem_rolar_a_pagina(navegador, pagina):
+    # o endereço: abre direto na última aba (a mais longe no 375) sem rolar a página
+    ctx = navegador.new_context(viewport={"width": 375, "height": 812})
+    pg = ctx.new_page()
+    try:
+        pg.goto(pagina.as_uri() + "#estilos")
+        pg.wait_for_function("() => document.querySelector('.tabs [role=tab][aria-selected=true]')")
+        pg.wait_for_timeout(900)
+        assert pg.evaluate("document.querySelector('.tabs [role=tab][aria-selected=true]').dataset.tab") == "estilos"
+        assert pg.evaluate(_ABA_ATIVA_A_VISTA)
+        assert pg.evaluate("scrollY") == 0                                                            # só a faixa rolou de lado, a página não
+    finally:
+        ctx.close()
+    # a porta do Perfil: de uma aba longe de volta ao Replay
+    ctx, pg, _ = _abre(navegador, pagina, 375, 812)
+    try:
+        _perfil_com_porta(pg)
+        pg.wait_for_timeout(700)
+        assert pg.evaluate(_ABA_ATIVA_A_VISTA)                                                        # o Perfil ativo está à vista
+        pg.locator("#pf-melhorar .pfchip-rw").first.click()
+        pg.wait_for_function("() => window.__reescrever().ativo")
+        pg.wait_for_timeout(900)
+        assert pg.evaluate("document.querySelector('.tabs [role=tab][aria-selected=true]').dataset.tab") == "replay"
+        assert pg.evaluate(_ABA_ATIVA_A_VISTA)                                                        # e o Replay, depois da porta
     finally:
         ctx.close()

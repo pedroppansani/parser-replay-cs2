@@ -988,11 +988,7 @@
   @keyframes brilho { to { background-position: -150% 0; } }
   /* §19.3 chips de round: round e relógio, 44 x 44; hover sem deslocamento (a faixa rola e recortaria); foco com folga;
      visitado = fundo + quadrado cheio (forma, não só cor); a faixa rola numa linha, com sombra na borda enquanto sobra chip */
-  .pfchips { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: thin; padding: 4px 4px 6px; margin: 6px -4px 0;
-    scroll-snap-type: x proximity; }
-  .pfchips.rola { -webkit-mask-image: linear-gradient(90deg, black calc(100% - 32px), transparent);
-    mask-image: linear-gradient(90deg, black calc(100% - 32px), transparent); }
-  .pfchips.rola.fim { -webkit-mask-image: none; mask-image: none; }
+  .pfchips { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px 4px 6px; margin: 6px -4px 0; }   /* os chips quebram para a linha de baixo: nada cortado nem escondido na rolagem */
   .pfchip { appearance: none; cursor: pointer; flex: none; scroll-snap-align: start; position: relative; min-width: var(--toque);
     height: var(--toque); padding: 0 8px; display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 2px; line-height: 1; border: 1px solid var(--borda); border-radius: var(--r-sm); background: var(--superficie);
