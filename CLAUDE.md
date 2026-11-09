@@ -145,7 +145,8 @@ Uma regra por linha; o número entre parênteses é a nota em `notas/decisoes/`.
 - `parsing/CLAUDE.md`: o que o parse corta ou corrige (freeze, faca, dano, cegueira, rota B).
 - `clustering/CLAUDE.md`: agrupamento de estilo (KMeans global, features, nomes).
 - `scripts/CLAUDE.md`: referências do corpus, calibração do rating, biblioteca, lugares e build.
-- `dashboard/web/CLAUDE.md`: template, mapa, cores, replay, anotação, prancheta e grupos.
+- `dashboard/web/CLAUDE.md`: template, páginas, fontes e v2.
+- `dashboard/web/prancheta/CLAUDE.md`: mapa, cores, canvas, replay, anotação, prancheta e grupos (leia antes de mexer no `map_core.js`).
 - `tests/CLAUDE.md`: invariantes, controles e testes que pulam sem dado ou navegador.
 - `notas/decisoes/README.md`: índice das decisões. `notas/glossario.md`: termos.
   `notas/design/entrega-sala-de-demo.md`: design (§12 é regra dura); v2: `notas/design/entrega-v2-goatdemo.md`.

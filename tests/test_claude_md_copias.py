@@ -22,8 +22,8 @@ COPIA = re.compile(r"<!-- copia de ([^#\s]+)#([a-z0-9-]+): inicio -->\n(.*?)\n<!
 MARCA = re.compile(r"<!-- (?:bloco [a-z0-9-]+|copia de [^#\s]+#[a-z0-9-]+): (?:inicio|fim) -->")
 # Os blocos decididos na fase 17a: (origem, nome) -> onde está a cópia.
 ESPERADOS = {
-    ("dashboard/web/CLAUDE.md", "prancheta-espelho"): "metrics/CLAUDE.md",
-    ("dashboard/web/CLAUDE.md", "anotacao-unidade-de-jogo"): "metrics/CLAUDE.md",
+    ("dashboard/web/prancheta/CLAUDE.md", "prancheta-espelho"): "metrics/CLAUDE.md",
+    ("dashboard/web/prancheta/CLAUDE.md", "anotacao-unidade-de-jogo"): "metrics/CLAUDE.md",
     ("metrics/CLAUDE.md", "regras-fit-metricas"): "scripts/CLAUDE.md",
     ("clustering/CLAUDE.md", "regras-clustering"): "scripts/CLAUDE.md",
 }
