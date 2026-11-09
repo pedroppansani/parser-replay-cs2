@@ -712,3 +712,11 @@ O texto original do cartão:
 - **Próximo passo:** repetir a medição várias vezes e gravar as fontes do `layout-shift` (elemento e retângulos) no relatório da própria `mede_lcp_cls`.
   Meta do Pedro: CLS 0. Aberto em 2026-11-05.
 - **Fora do computador:** nada.
+
+---
+
+## 32. A grade da demo (3 a 13 KB por mapa) continua na página sem uso
+
+- **O que é:** `radar.lugares.grade` (a grade de células com o `place` da demo, decisão 59) entrou na página da partida para dar nome ao destino da granada trocada. Desde a L1 (decisão 63) o nome vem da tabela dos nomes que o mapa desenha, e a grade não é mais lida, mas continua embutida em cada página (3 a 13 KB por mapa).
+- **Proposta:** retirar a grade (`metrics/lugares.grade_do_replay` e a chave `grade` do `radar.lugares`) numa fase futura, com a impressão dos números (`scripts.design.impressao_numeros`) mostrando que SÓ ela muda. Fica fora da L1 de propósito, para a impressão dela ficar idêntica. Aberto em 2026-11-09 (pedido do Pedro).
+- **Fora do computador:** nada.

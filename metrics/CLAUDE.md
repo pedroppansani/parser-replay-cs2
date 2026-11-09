@@ -116,7 +116,7 @@ Antes de mexer nos erros do Perfil (`metrics/erros/`), leia `metrics/erros/CLAUD
 
 ## Espelho da prancheta e da anotação (`tactics.py`, `annotations.py`)
 
-<!-- copia de dashboard/web/CLAUDE.md#prancheta-espelho: inicio -->
+<!-- copia de dashboard/web/prancheta/CLAUDE.md#prancheta-espelho: inicio -->
 - A tática é um LOG DE OPERAÇÕES aplicado na ordem (seq, autor, id); mesclar é a união por id;
   persistência só por `Armazem`; arquivo com formato, versão e calibração (outra é recusada); JS e
   Python chegam ao MESMO estado; versão antiga é migrada em memória sem mudar operação (32)
@@ -132,12 +132,12 @@ Antes de mexer nos erros do Perfil (`metrics/erros/`), leia `metrics/erros/CLAUD
 - Toda operação que entra de fora (arquivo, tática guardada, sala, ao vivo) passa por `problemaDaOperacao`, espelhada em `metrics/tactics.problemas_da_operacao`: validador único, nunca um segundo (47)
 - Operação nova da prancheta exige migração nova (`grupos.tipos_de_operacao()`, conferida contra `OPERACOES` do JS e do
   Python); o log do grupo é o estado inicial, numa linha, seguido das operações; os tetos de uso são do servidor (47)
-<!-- copia de dashboard/web/CLAUDE.md#prancheta-espelho: fim -->
-<!-- copia de dashboard/web/CLAUDE.md#anotacao-unidade-de-jogo: inicio -->
+<!-- copia de dashboard/web/prancheta/CLAUDE.md#prancheta-espelho: fim -->
+<!-- copia de dashboard/web/prancheta/CLAUDE.md#anotacao-unidade-de-jogo: inicio -->
 - Anotação guardada em unidade de jogo, com a impressão da calibração em cada traço; todo
   redimensionamento passa por `reprojetaTudo()`, nunca redesenha do que está pintado; espaço +
   arrastar move o mapa e nunca começa traço (23)
-<!-- copia de dashboard/web/CLAUDE.md#anotacao-unidade-de-jogo: fim -->
+<!-- copia de dashboard/web/prancheta/CLAUDE.md#anotacao-unidade-de-jogo: fim -->
 
 ## Calibração do Pedro (não resolva sozinho)
 
