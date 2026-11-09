@@ -140,3 +140,13 @@ Rascunho em `notas/investigacoes/2026-11-09-comandos-nomes-em-portugues.csv` (um
 3. **Molotov "perto de onde o jogador está".** (a) manter o raio de 150 u (quase nunca acha); (b) buscar o arremesso real mais perto e oferecer mover o jogador até o ponto de lançamento; (c) pôr a molotov sem arremesso real, com aviso. **Recomendo (b), com (c) como fallback explícito.**
 4. **O número que o comando mostra de tempo de corrida.** (a) a mediana de saída→entrada; (b) a faixa; (c) o ponto do meio. **Recomendo (b), "entre 4,9 e 7,2 s", com n.**
 5. **Horário.** O exemplo do Pedro usa relógio ("aos 1:20"). Aceito só relógio regressivo ou também "aos 20 s do início"? **Recomendo as duas, perguntando quando não houver "do início".**
+
+## Decisões do Pedro (2026-11-09), todas como recomendado
+
+1. Só os nomes da demo, mais a tabela de apelidos em português; a tabela de áreas à mão fica para depois, se fizer falta.
+2. Tempo real do corpus; "estimado" (linha reta com `VELOCIDADE_U_S`) onde não houver amostra. Nenhum leitor novo do `.nav` agora; os `.nav` baixados não entram no repositório.
+3. Buscar o arremesso real mais perto do destino, do mesmo lado, e oferecer levar o jogador até o ponto real de lançamento; alternativa: colocar a molotov sem arremesso real, com aviso.
+4. Mostrar a faixa, com o número de casos.
+5. Aceitar o relógio regressivo e "aos N s do início", perguntando quando faltar o "do início".
+
+Também: o leitor entende o nome do jogo em inglês (sem diferença de maiúscula, espaço e acento), não só o apelido; lugar com "?" na tabela funciona pelo nome em inglês. A C1 só começa depois que o Pedro completar a tabela de apelidos.
