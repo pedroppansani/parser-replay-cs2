@@ -1,0 +1,172 @@
+﻿mapa;nome_do_jogo;texto_no_mapa;traducao_das_palavras;apelido_br;pedacos_no_mapa;andares;ticks_no_corpus;status
+de_ancient;Alley;ALLEY;Beco;?;1;1;11945;rascunho, o Pedro confere
+de_ancient;BombsiteA;BOMBSITE A;Bomb A;A / bomb A / site A;1;1;12886;rascunho, o Pedro confere
+de_ancient;BombsiteB;BOMBSITE B;Bomb B;B / bomb B / site B;1;1;13602;rascunho, o Pedro confere
+de_ancient;CTSpawn;CT SPAWN;CT Spawn;spawn CT / base CT;1;1;26627;rascunho, o Pedro confere
+de_ancient;House;HOUSE;Casa;?;1;1;7868;rascunho, o Pedro confere
+de_ancient;MainHall;MAIN HALL;Principal Salão;?;1;1;5256;rascunho, o Pedro confere
+de_ancient;Middle;MIDDLE;Meio;meio / mid;1;1;10609;rascunho, o Pedro confere
+de_ancient;Outside;OUTSIDE;Lado de fora;?;1;1;10929;rascunho, o Pedro confere
+de_ancient;Ramp;RAMP;Rampa;?;1;1;3916;rascunho, o Pedro confere
+de_ancient;Ruins;RUINS;Ruínas;?;1;1;5359;rascunho, o Pedro confere
+de_ancient;SideEntrance;SIDE ENTRANCE;Lateral Entrada;?;1;1;9275;rascunho, o Pedro confere
+de_ancient;SideHall;SIDE HALL;Lateral Salão;?;1;1;7200;rascunho, o Pedro confere
+de_ancient;TSideLower;T SIDE LOWER;TR Lateral Baixo;?;1;1;6900;rascunho, o Pedro confere
+de_ancient;TSideUpper;T SIDE UPPER;TR Lateral Alto;?;1;1;6129;rascunho, o Pedro confere
+de_ancient;TSpawn;T SPAWN;TR Spawn;spawn TR / base TR;1;1;34249;rascunho, o Pedro confere
+de_ancient;TopofMid;TOP OF MID;Topo de Mid;?;1;1;910;rascunho, o Pedro confere
+de_ancient;Tunnel;TUNNEL;Túnel;?;1;1;2077;rascunho, o Pedro confere
+de_ancient;Water;WATER;Água;?;1;1;1983;rascunho, o Pedro confere
+de_anubis;Alley;ALLEY;Beco;?;1;1;6575;rascunho, o Pedro confere
+de_anubis;BackofB;BACK OF B;Fundo de B;?;1;1;8113;rascunho, o Pedro confere
+de_anubis;BombsiteA;BOMBSITE A;Bomb A;A / bomb A / site A;1;1;17741;rascunho, o Pedro confere
+de_anubis;BombsiteB;BOMBSITE B;Bomb B;B / bomb B / site B;1;1;39818;rascunho, o Pedro confere
+de_anubis;Bricks;BRICKS;Tijolos;?;1;1;1598;rascunho, o Pedro confere
+de_anubis;Bridge;BRIDGE;Ponte;?;1;1;16489;rascunho, o Pedro confere
+de_anubis;CTSideUpper;CT SIDE UPPER;CT Lateral Alto;?;1;1;51478;rascunho, o Pedro confere
+de_anubis;CTSpawn;CT SPAWN;CT Spawn;spawn CT / base CT;1;1;2706;rascunho, o Pedro confere
+de_anubis;Canal;CANAL;Canal;?;2;1;32192;rascunho, o Pedro confere
+de_anubis;Connector;CONNECTOR;Conector;?;1;1;12755;rascunho, o Pedro confere
+de_anubis;Fountain;FOUNTAIN;Fonte;?;1;1;4963;rascunho, o Pedro confere
+de_anubis;Heaven;HEAVEN;Céu;?;1;1;5357;rascunho, o Pedro confere
+de_anubis;LowerTunnel;LOWER TUNNEL;Baixo Túnel;?;1;1;3227;rascunho, o Pedro confere
+de_anubis;Main;MAIN;Principal;?;1;1;18456;rascunho, o Pedro confere
+de_anubis;MidDoors;MID DOORS;Mid Portas;?;1;1;6464;rascunho, o Pedro confere
+de_anubis;Middle;MIDDLE;Meio;meio / mid;1;1;26873;rascunho, o Pedro confere
+de_anubis;OutsideLong;OUTSIDE LONG;Lado de fora Longo;?;1;1;16230;rascunho, o Pedro confere
+de_anubis;PalaceInterior;PALACE INTERIOR;Palácio Interior;?;1;1;13680;rascunho, o Pedro confere
+de_anubis;Ruins;RUINS;Ruínas;?;1;1;20187;rascunho, o Pedro confere
+de_anubis;SnipersNest;SNIPERS NEST;Snipers Ninho;?;1;1;1581;rascunho, o Pedro confere
+de_anubis;Street;STREET;Rua;?;1;1;11426;rascunho, o Pedro confere
+de_anubis;TSideUpper;T SIDE UPPER;TR Lateral Alto;?;1;1;7625;rascunho, o Pedro confere
+de_anubis;TSpawn;T SPAWN;TR Spawn;spawn TR / base TR;1;1;57018;rascunho, o Pedro confere
+de_anubis;TStairs;T STAIRS;TR Escadas;?;1;1;5625;rascunho, o Pedro confere
+de_anubis;Tunnel;TUNNEL;Túnel;?;1;1;1626;rascunho, o Pedro confere
+de_anubis;TunnelStairs;TUNNEL STAIRS;Túnel Escadas;?;1;1;1504;rascunho, o Pedro confere
+de_anubis;Walkway;WALKWAY;Passagem;?;1;1;9557;rascunho, o Pedro confere
+de_anubis;Water;WATER;Água;?;1;1;647;rascunho, o Pedro confere
+de_dust2;ARamp;A RAMP;A Rampa;?;1;1;19368;rascunho, o Pedro confere
+de_dust2;BDoors;B DOORS;B Portas;?;2;1;21104;rascunho, o Pedro confere
+de_dust2;BombsiteA;BOMBSITE A;Bomb A;A / bomb A / site A;1;1;23105;rascunho, o Pedro confere
+de_dust2;BombsiteB;BOMBSITE B;Bomb B;B / bomb B / site B;1;1;87011;rascunho, o Pedro confere
+de_dust2;CTSpawn;CT SPAWN;CT Spawn;spawn CT / base CT;1;1;130462;rascunho, o Pedro confere
+de_dust2;Catwalk;CATWALK;Passarela;?;1;1;36428;rascunho, o Pedro confere
+de_dust2;ExtendedA;EXTENDED A;Estendido A;?;2;1;25691;rascunho, o Pedro confere
+de_dust2;Hole;HOLE;Buraco;?;1;1;5047;rascunho, o Pedro confere
+de_dust2;LongA;LONG A;Longo A;?;1;1;62210;rascunho, o Pedro confere
+de_dust2;LongDoors;LONG DOORS;Longo Portas;?;1;1;52714;rascunho, o Pedro confere
+de_dust2;LowerTunnel;LOWER TUNNEL;Baixo Túnel;?;1;1;22789;rascunho, o Pedro confere
+de_dust2;MidDoors;MID DOORS;Mid Portas;?;1;1;50499;rascunho, o Pedro confere
+de_dust2;Middle;MIDDLE;Meio;meio / mid;1;1;23397;rascunho, o Pedro confere
+de_dust2;OutsideLong;OUTSIDE LONG;Lado de fora Longo;?;1;1;40317;rascunho, o Pedro confere
+de_dust2;OutsideTunnel;OUTSIDE TUNNEL;Lado de fora Túnel;?;1;1;13013;rascunho, o Pedro confere
+de_dust2;Pit;PIT;Fosso;?;1;1;9760;rascunho, o Pedro confere
+de_dust2;ShortStairs;SHORT STAIRS;Curto Escadas;?;1;1;28205;rascunho, o Pedro confere
+de_dust2;Side;SIDE;Lateral;?;1;1;1807;rascunho, o Pedro confere
+de_dust2;TRamp;T RAMP;TR Rampa;?;1;1;2748;rascunho, o Pedro confere
+de_dust2;TSpawn;T SPAWN;TR Spawn;spawn TR / base TR;3;1;124973;rascunho, o Pedro confere
+de_dust2;TopofMid;TOP OF MID;Topo de Mid;?;1;1;41972;rascunho, o Pedro confere
+de_dust2;TunnelStairs;TUNNEL STAIRS;Túnel Escadas;?;1;1;10082;rascunho, o Pedro confere
+de_dust2;UnderA;UNDER A;Sob A;?;1;1;33856;rascunho, o Pedro confere
+de_dust2;UpperTunnel;UPPER TUNNEL;Alto Túnel;?;1;1;48951;rascunho, o Pedro confere
+de_inferno;Apartments;APARTMENTS;Apartamentos;?;2;1;26940;rascunho, o Pedro confere
+de_inferno;Arch;ARCH;Arco;?;1;1;15770;rascunho, o Pedro confere
+de_inferno;BackAlley;BACK ALLEY;Fundo Beco;?;1;1;3430;rascunho, o Pedro confere
+de_inferno;Balcony;BALCONY;Sacada;?;1;1;6561;rascunho, o Pedro confere
+de_inferno;Banana;BANANA;Banana;?;1;1;67255;rascunho, o Pedro confere
+de_inferno;BombsiteA;BOMBSITE A;Bomb A;A / bomb A / site A;1;1;45327;rascunho, o Pedro confere
+de_inferno;BombsiteB;BOMBSITE B;Bomb B;B / bomb B / site B;1;1;49472;rascunho, o Pedro confere
+de_inferno;Bridge;BRIDGE;Ponte;?;3;1;1031;rascunho, o Pedro confere
+de_inferno;CTSpawn;CT SPAWN;CT Spawn;spawn CT / base CT;1;1;77506;rascunho, o Pedro confere
+de_inferno;Deck;DECK;Deck;?;1;1;1144;rascunho, o Pedro confere
+de_inferno;Graveyard;GRAVEYARD;Cemitério;?;1;1;664;rascunho, o Pedro confere
+de_inferno;Kitchen;KITCHEN;Cozinha;?;1;1;294;rascunho, o Pedro confere
+de_inferno;Library;LIBRARY;Biblioteca;?;1;1;7436;rascunho, o Pedro confere
+de_inferno;LowerMid;LOWER MID;Baixo Mid;?;1;1;11205;rascunho, o Pedro confere
+de_inferno;Middle;MIDDLE;Meio;meio / mid;1;1;28624;rascunho, o Pedro confere
+de_inferno;Pit;PIT;Fosso;?;1;1;14463;rascunho, o Pedro confere
+de_inferno;Quad;QUAD;?;?;1;1;2709;rascunho, o Pedro confere
+de_inferno;Ruins;RUINS;Ruínas;?;1;1;16754;rascunho, o Pedro confere
+de_inferno;SecondMid;SECOND MID;Segundo Mid;?;1;1;15386;rascunho, o Pedro confere
+de_inferno;TRamp;T RAMP;TR Rampa;?;1;1;16262;rascunho, o Pedro confere
+de_inferno;TSpawn;T SPAWN;TR Spawn;spawn TR / base TR;1;1;65383;rascunho, o Pedro confere
+de_inferno;TopofMid;TOP OF MID;Topo de Mid;?;1;1;20738;rascunho, o Pedro confere
+de_inferno;Underpass;UNDERPASS;Passagem inferior;?;1;1;2237;rascunho, o Pedro confere
+de_inferno;Upstairs;UPSTAIRS;Andar de cima;?;1;1;827;rascunho, o Pedro confere
+de_mirage;Apartments;APARTMENTS;Apartamentos;?;1;1;40712;rascunho, o Pedro confere
+de_mirage;BackAlley;BACK ALLEY;Fundo Beco;?;1;1;36404;rascunho, o Pedro confere
+de_mirage;BombsiteA;BOMBSITE A;Bomb A;A / bomb A / site A;1;1;121767;rascunho, o Pedro confere
+de_mirage;BombsiteB;BOMBSITE B;Bomb B;B / bomb B / site B;1;1;79716;rascunho, o Pedro confere
+de_mirage;CTSpawn;CT SPAWN;CT Spawn;spawn CT / base CT;1;1;272207;rascunho, o Pedro confere
+de_mirage;Catwalk;CATWALK;Passarela;?;1;1;46525;rascunho, o Pedro confere
+de_mirage;Connector;CONNECTOR;Conector;?;1;1;25565;rascunho, o Pedro confere
+de_mirage;House;HOUSE;Casa;?;1;1;18337;rascunho, o Pedro confere
+de_mirage;Jungle;JUNGLE;Selva;?;1;1;20717;rascunho, o Pedro confere
+de_mirage;Ladder;LADDER;Escada de mão;?;1;1;7610;rascunho, o Pedro confere
+de_mirage;Middle;MIDDLE;Meio;meio / mid;1;1;43164;rascunho, o Pedro confere
+de_mirage;PalaceAlley;PALACE ALLEY;Palácio Beco;?;1;1;37340;rascunho, o Pedro confere
+de_mirage;PalaceInterior;PALACE INTERIOR;Palácio Interior;?;3;1;65321;rascunho, o Pedro confere
+de_mirage;Scaffolding;SCAFFOLDING;Andaime;?;0;1;2132;rascunho, o Pedro confere
+de_mirage;Shop;SHOP;Loja;?;1;1;26755;rascunho, o Pedro confere
+de_mirage;SideAlley;SIDE ALLEY;Lateral Beco;?;1;1;41835;rascunho, o Pedro confere
+de_mirage;SnipersNest;SNIPERS NEST;Snipers Ninho;?;1;1;20227;rascunho, o Pedro confere
+de_mirage;Stairs;STAIRS;Escadas;?;1;1;12163;rascunho, o Pedro confere
+de_mirage;TRamp;T RAMP;TR Rampa;?;1;1;17962;rascunho, o Pedro confere
+de_mirage;TSpawn;T SPAWN;TR Spawn;spawn TR / base TR;1;1;201577;rascunho, o Pedro confere
+de_mirage;TopofMid;TOP OF MID;Topo de Mid;?;1;1;50680;rascunho, o Pedro confere
+de_mirage;Truck;TRUCK;Caminhão;?;1;1;21337;rascunho, o Pedro confere
+de_mirage;Underpass;UNDERPASS;Passagem inferior;?;2;1;45789;rascunho, o Pedro confere
+de_nuke;Admin;ADMIN;Administração;?;1;1;9384;rascunho, o Pedro confere
+de_nuke;BombsiteA;BOMBSITE A;Bomb A;A / bomb A / site A;1;1;59179;rascunho, o Pedro confere
+de_nuke;BombsiteB;BOMBSITE B;Bomb B;B / bomb B / site B;1;1;22098;rascunho, o Pedro confere
+de_nuke;CTSpawn;CT SPAWN;CT Spawn;spawn CT / base CT;3;1;94542;rascunho, o Pedro confere
+de_nuke;Catwalk;CATWALK;Passarela;?;3;1;5285;rascunho, o Pedro confere
+de_nuke;Control;CONTROL;Controle;?;1;1;8440;rascunho, o Pedro confere
+de_nuke;Crane;CRANE;Guindaste;?;2;1;1908;rascunho, o Pedro confere
+de_nuke;Decon;DECON;?;?;1;1;3550;rascunho, o Pedro confere
+de_nuke;Garage;GARAGE;Garagem;?;1;1;11326;rascunho, o Pedro confere
+de_nuke;Heaven;HEAVEN;Céu;?;1;1;12845;rascunho, o Pedro confere
+de_nuke;Hell;HELL;Inferno;?;2;1;10347;rascunho, o Pedro confere
+de_nuke;Hut;HUT;Cabana;?;2;1;9223;rascunho, o Pedro confere
+de_nuke;HutRoof;HUT ROOF;Cabana Telhado;?;1;1;8912;rascunho, o Pedro confere
+de_nuke;Lobby;LOBBY;Saguão;?;1;1;39784;rascunho, o Pedro confere
+de_nuke;LockerRoom;LOCKER ROOM;Armários Sala;?;1;1;3349;rascunho, o Pedro confere
+de_nuke;Mini;MINI;Mini;?;1;1;12634;rascunho, o Pedro confere
+de_nuke;Observation;OBSERVATION;Observação;?;1;1;3165;rascunho, o Pedro confere
+de_nuke;Outside;OUTSIDE;Lado de fora;?;2;1;127994;rascunho, o Pedro confere
+de_nuke;Rafters;RAFTERS;Vigas;?;2;1;15734;rascunho, o Pedro confere
+de_nuke;Ramp;RAMP;Rampa;?;2;2;53349;rascunho, o Pedro confere
+de_nuke;Roof;ROOF;Telhado;?;8;1;11145;rascunho, o Pedro confere
+de_nuke;Secret;SECRET;Secreto;?;2;2;12676;rascunho, o Pedro confere
+de_nuke;Silo;SILO;Silo;?;2;1;9125;rascunho, o Pedro confere
+de_nuke;Squeaky;SQUEAKY;?;?;1;1;13289;rascunho, o Pedro confere
+de_nuke;TSpawn;T SPAWN;TR Spawn;spawn TR / base TR;6;1;107718;rascunho, o Pedro confere
+de_nuke;Trophy;TROPHY;Troféu;?;1;1;9758;rascunho, o Pedro confere
+de_nuke;Tunnels;TUNNELS;Túneis;?;3;1;28365;rascunho, o Pedro confere
+de_nuke;Vending;VENDING;Máquina de venda;?;1;1;13565;rascunho, o Pedro confere
+de_nuke;Vents;VENTS;Dutos;?;1;1;9534;rascunho, o Pedro confere
+de_overpass;Alley;ALLEY;Beco;?;1;1;7098;rascunho, o Pedro confere
+de_overpass;BackofA;BACK OF A;Fundo de A;?;1;1;2421;rascunho, o Pedro confere
+de_overpass;BombsiteA;BOMBSITE A;Bomb A;A / bomb A / site A;1;1;30310;rascunho, o Pedro confere
+de_overpass;BombsiteB;BOMBSITE B;Bomb B;B / bomb B / site B;1;1;12837;rascunho, o Pedro confere
+de_overpass;Bridge;BRIDGE;Ponte;?;1;1;1405;rascunho, o Pedro confere
+de_overpass;Canal;CANAL;Canal;?;1;1;11601;rascunho, o Pedro confere
+de_overpass;Connector;CONNECTOR;Conector;?;1;1;6199;rascunho, o Pedro confere
+de_overpass;Construction;CONSTRUCTION;Construção;?;1;1;3579;rascunho, o Pedro confere
+de_overpass;Fountain;FOUNTAIN;Fonte;?;1;1;9877;rascunho, o Pedro confere
+de_overpass;Lobby;LOBBY;Saguão;?;1;1;1306;rascunho, o Pedro confere
+de_overpass;LowerPark;LOWER PARK;Baixo Parque;?;1;1;21101;rascunho, o Pedro confere
+de_overpass;Pipe;PIPE;Cano;?;1;1;2517;rascunho, o Pedro confere
+de_overpass;Playground;PLAYGROUND;Parquinho;?;1;1;1181;rascunho, o Pedro confere
+de_overpass;Restroom;RESTROOM;Banheiro;?;1;1;1409;rascunho, o Pedro confere
+de_overpass;SideAlley;SIDE ALLEY;Lateral Beco;?;1;1;15;rascunho, o Pedro confere
+de_overpass;SnipersNest;SNIPERS NEST;Snipers Ninho;?;1;1;4258;rascunho, o Pedro confere
+de_overpass;Stairs;STAIRS;Escadas;?;1;1;1213;rascunho, o Pedro confere
+de_overpass;StorageRoom;STORAGE ROOM;Depósito Sala;?;1;1;595;rascunho, o Pedro confere
+de_overpass;TSpawn;T SPAWN;TR Spawn;spawn TR / base TR;1;1;24399;rascunho, o Pedro confere
+de_overpass;TStairs;T STAIRS;TR Escadas;?;1;1;1642;rascunho, o Pedro confere
+de_overpass;Tunnels;TUNNELS;Túneis;?;1;1;11624;rascunho, o Pedro confere
+de_overpass;UnderA;UNDER A;Sob A;?;2;1;3496;rascunho, o Pedro confere
+de_overpass;UpperPark;UPPER PARK;Alto Parque;?;2;1;8224;rascunho, o Pedro confere
+de_overpass;Walkway;WALKWAY;Passagem;?;1;1;7139;rascunho, o Pedro confere
+de_overpass;Water;WATER;Água;?;2;1;14039;rascunho, o Pedro confere
