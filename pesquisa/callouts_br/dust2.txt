@@ -1,0 +1,56 @@
+# x y texto
+108 50 Altar
+226 76 Fundo|do Bomb
+143 106 Barril
+198 122 @B
+270 118 Buraco
+326 117 Pintor
+181 153 Caixa|Alta
+254 148 Default
+861 43 Newba/|Goose
+697 85 Caixa|Branca/|RKZ
+462 170 Caminhão
+156 201 Caixa|Gorda
+72 228 Portão
+388 211 Rampa B/|Meio B
+260 229 Porta B
+310 267 Caixa|(da Porta)
+395 261 Pilar
+634 215 ↓ Base CT
+727 186 Caixa Nova
+806 150 Dupla
+837 160 Default
+880 145 Simples
+860 185 @A
+832 202 L /|Elevador
+928 153 Rampa
+775 235 Rampa CT
+718 260 Fallen
+971 265 Carro
+72 308 Esquer|dinha
+159 314 ↑ Nak
+221 305 Carro
+198 356 Newba
+497 330 Niko
+482 360 Porta Meio
+373 404 Escuro Baixo
+502 410 Caixa|Gorda|/Xbox
+622 401 Varanda
+907 395 Fundo|/Rua
+867 452 Esquina|do Fundo
+175 463 Escuro (Cima)
+485 497 Meio
+538 507 Varanda TR
+766 480 Azul
+818 521 Fundo
+977 588 Altar do Fundo
+437 612 Caixa|Verde|/Coqueiro|Invertido
+562 638 Coqueiro|/Esquina
+729 620 Casinha
+909 646 Bunker
+831 678 NBK
+187 660 Fora do Escuro
+672 752 Fora do Fundo
+733 767 Táxi
+484 780 Caminho/|Corredor da Morte
+404 935 Base TR

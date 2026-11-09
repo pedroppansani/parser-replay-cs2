@@ -1,0 +1,611 @@
+﻿mapa;andar;nome;apelidos;qualificacao;posicao_vertical;tipo;x;y;lugar_da_demo;lugares_na_borda;repete_no_mapa;texto_original;observacao;fonte;conferido
+de_ancient;único;Templo;;;;lugar;-983;1383;BombsiteA;CTSpawn;;Templo;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Base CT;;;;lugar;-353;1414;CTSpawn;;;Base CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Vela;;;;lugar;-1406;1245;BombsiteA;CTSpawn;;Vela;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Altar;;;;lugar;-2107;1148;BombsiteA;;;Altar;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Caixa Altar;;;;lugar;-1910;1245;BombsiteA (mais perto);;;Caixa Altar;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Caixa Gorda;;;;lugar;-1775;999;BombsiteA;;Caixa Gorda (2x);Caixa Gorda;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;CT;;;;lugar;-968;1079;BombsiteA;;CT (3x);CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;A;;;;bombsite;-1471;836;BombsiteA;;;@A;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Default;;;;lugar;-1335;813;BombsiteA;;Default (2x);Default;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Caixa Fogo;;;;lugar;-1199;810;BombsiteA;;;Caixa Fogo;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Caverna;;;;lugar;-425;810;House;;;Caverna;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;CT;;;;lugar;204;861;Alley;;CT (3x);CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Caixa CT;;;;lugar;435;802;Alley (mais perto);;;Caixa CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Escanteio;L;;;lugar;1106;858;Alley;;;Escanteio/ L;'L' é lido como apelido;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Árvore;Pézinho;;;lugar;-1809;452;BombsiteA;;;Árvore/ Pézinho;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;CT;;;;lugar;670;567;Alley;;CT (3x);CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Sombra;;;;lugar;1469;540;Alley (mais perto);;;Sombra;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Paredão;;;;lugar;964;399;BombsiteB;;;Paredão;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Sol;Cabecinha;;;lugar;1345;298;BombsiteB (mais perto);;;Sol /Cabecinha;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Janelão;;;;lugar;-530;330;House;TopofMid;;Janelão;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Liga;;;;lugar;-1373;217;SideHall;;;Liga;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Fundo;;;;lugar;-1962;-55;MainHall (mais perto);;;Fundo;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Rosquinha;Meio Falso / Quadrado;;;lugar;-1310;-177;SideHall (mais perto);;Quadrado (2x);Rosquinha /Meio Falso /Quadrado;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Pilar;;;;lugar;813;114;BombsiteB (mais perto);;;Pilar;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;B;;;;bombsite;997;66;BombsiteB;;;@B;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Default;;;;lugar;825;-18;BombsiteB;;Default (2x);Default;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Escuro;;;;lugar;418;36;SideEntrance;;;Escuro;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Sem Saída;;;;lugar;-171;-198;Middle;;;Sem Saída;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Meio;;;;lugar;-490;-427;Middle;;;Meio;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Areia;Newba;;;lugar;714;-347;BombsiteB;;;Areia/ Newba;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Rato;Escuro Alto;;;lugar;253;-496;SideEntrance;;;Rato/ Escuro Alto;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Vazio;;;;lugar;689;-532;TSideLower;;;Vazio;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Rampa;;;;lugar;1287;-450;Ramp;;;Rampa;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Caixa Rampa;;;;lugar;1027;-664;TSideLower;;;Caixa Rampa;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Esquina;;;;lugar;-974;-768;Outside;Middle;;Esquina;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Marote;;;;lugar;-2113;-890;Outside;;;Marote;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Rampa Fundo;;;;lugar;-1788;-913;Outside;;;Rampa Fundo;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Caixa Gorda;;;;lugar;-339;-811;Middle;;Caixa Gorda (2x);Caixa Gorda;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Varanda;;;;lugar;225;-821;TSideUpper;;;V a r a n d a;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Laranja;;;;lugar;473;-771;TSideUpper;;;Laranja;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Porta Dupla;;;;lugar;1079;-966;Ruins;TSideLower;;Porta Dupla;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Quadrado do Fundo;;;;lugar;-1348;-1253;Outside (mais perto);;;Quadrado do Fundo;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Quadrado;Jardim;;;lugar;1081;-1195;Ruins;;Quadrado (2x);Quadrado/ Jardim;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Caixa do Quadrado;Jardim;;;lugar;1299;-1457;Ruins (mais perto);;Jardim (2x);Caixa do Quadrado/Jardim;"a barra pode querer dizer 'Caixa do Quadrado' e 'Caixa do Jardim'; lido como dois apelidos";mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Rampa TR;;;;lugar;-936;-1614;Outside;;;Rampa TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Túnel;;;;lugar;146;-1834;Tunnel;;;Túnel;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Tronco;;;;lugar;624;-1662;Water;Ruins;;Tronco;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Base TR;;;;lugar;-477;-2226;TSpawn;;;Base TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Praia;;;;lugar;-263;2616;CTSpawn;;;Praia;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Esgoto;;;;lugar;303;2163;Tunnel;;;Esgoto;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Céu;;;;lugar;965;2188;Heaven;;;Céu;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;A;;;;bombsite;1419;2108;BombsiteA;;;@A;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Plataforma;;;;lugar;786;1858;Heaven;;;Plataforma;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Redondo;;;;lugar;1194;1960;BombsiteA;;;Redondo;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Default;;;;lugar;1310;1849;BombsiteA;;Default (2x);Default;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Altar;Pilar;;;lugar;1694;1859;Fountain;;Pilar (2x);Altar/ Pilar;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Caixa;;;;lugar;1015;1563;Walkway;BombsiteA;;Caixa;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Base CT;;;;lugar;-493;2112;CTSideUpper;;;Base CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;B Cima;;;;lugar;-1136;1833;SnipersNest;;;B Cima;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Caverna;;B;;lugar;-822;1562;LowerTunnel;;;Caverna (B);;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Porta Tumba;;;;lugar;75;1567;Middle;PalaceInterior;;(Porta Tumba);texto todo entre parênteses;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Escada Tumba;;;;lugar;-446;1319;PalaceInterior;;;(Escada Tumba);texto todo entre parênteses;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;B Baixo;;;;lugar;-1215;1355;Alley;;;B Baixo;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Liga;;;;lugar;556;1298;Middle;Walkway;;Liga;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Paredão;;;;lugar;942;1262;Walkway;;;Paredão;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Mercado;;;;lugar;1680;1214;Main;;;Mercado;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Meio;;;;lugar;209;1087;Middle;;;Meio;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Tumba;;;;lugar;-489;1123;PalaceInterior;;;Tumba;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Newba;;;;lugar;-722;912;BackofB;;;Newba;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;B;;;;bombsite;-1159;800;BombsiteB;;;@B;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Default;;;;lugar;-1144;665;BombsiteB;;Default (2x);Default;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Pilar do Bomb;;;;lugar;-746;713;BackofB;;;(Pilar do Bomb);texto todo entre parênteses;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Portão;Pizza;;;lugar;-1538;769;BombsiteB;;;Portão/ Pizza;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Janelão;;;;lugar;-106;689;Middle;Bridge;;Janelão;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Porta;;Meio;;lugar;283;695;MidDoors;Middle;;Porta(Meio);;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Sombra;;;;lugar;-562;544;BackofB;;;Sombra;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Barco;;;;lugar;950;552;Canal;;;Barco;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Biscoitão;;;;lugar;1229;499;Canal;TSideUpper;;Biscoitão;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Altar do Fundo;;;;lugar;-1911;417;OutsideLong (mais perto);;;Altar do Fundo;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Pilar;;;;lugar;-1018;359;BombsiteB;;Pilar (2x);Pilar;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Rato;;;;lugar;-680;209;Connector;;;Rato;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Ponte;;;;lugar;-112;212;Bridge;Canal;;Ponte;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Água;Rio;;;lugar;320;188;Canal;;;Água/Rio;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Varanda;;;;lugar;1424;99;TSideUpper;;;Varanda;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Buraco;Escadão;;;lugar;822;-57;TStairs;Canal;;Buraco/ Escadão;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Fundo;;;;lugar;-1401;-9;OutsideLong;;;Fundo;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Caixa;;do Fundo;;lugar;-1755;-155;OutsideLong;;;Caixa (do Fundo);;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Esquina;;;;lugar;-391;-203;Bridge;;;Esquina;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Coqueiro;;;;lugar;153;-358;Street;;;Coqueiro;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Arco;;;;lugar;-1170;-511;Ruins;OutsideLong;;Arco;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Fundo TR;;;;lugar;-978;-765;Ruins;;;Fundo TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Passagem TR;;;;lugar;590;-823;Street;;;Passagem TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Base TR;;;;lugar;-137;-1528;TSpawn;;;Base TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Escanteio;;;;lugar;-437;2248;(mapa sem tabela da demo);;;Escanteio;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Byali;;;;lugar;28;2237;(mapa sem tabela da demo);;;Byali;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Tripla;;;;lugar;-271;2116;(mapa sem tabela da demo);;;Tripla;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Azul;;;;lugar;555;2166;(mapa sem tabela da demo);;;Azul;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;A;;;;bombsite;-123;1890;(mapa sem tabela da demo);;;@A;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Taco;;;cima;lugar;344;1956;(mapa sem tabela da demo);;;↑ Taco;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Default;;;;lugar;-123;1890;(mapa sem tabela da demo);;Default (2x);Default;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Vermelho;;;;lugar;-63;1637;(mapa sem tabela da demo);;Vermelho (2x);Vermelho;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Gerador;;;;lugar;1111;1841;(mapa sem tabela da demo);;;Gerador;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Vestiário;;;;lugar;908;1507;(mapa sem tabela da demo);;;Vestiário;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Garagem;Galpão;;;lugar;652;1361;(mapa sem tabela da demo);;;Garagem /Galpão;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Grafite;;;;lugar;1161;1208;(mapa sem tabela da demo);;;Grafite;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Paredão;;;;lugar;-808;1496;(mapa sem tabela da demo);;;Paredão;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Empilhadeira;;;;lugar;176;1369;(mapa sem tabela da demo);;;Empilhadeira;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Plataforma;;;cima;lugar;176;1369;(mapa sem tabela da demo);;;↑ Plataforma;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Tóxico;;;baixo;lugar;36;1176;(mapa sem tabela da demo);;Tóxico (2x);↓ Tóxico;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Geladeira;;;;lugar;-496;1156;(mapa sem tabela da demo);;;Geladeira;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Toyota;;;;lugar;-953;1154;(mapa sem tabela da demo);;;Toyota;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Guarita;;;;lugar;-265;1004;(mapa sem tabela da demo);;;Guarita;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Rua;;;;lugar;-205;728;(mapa sem tabela da demo);;;Rua;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Rampa Toyota;;;;lugar;-912;638;(mapa sem tabela da demo);;;Rampa Toyota;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Base CT;;;;lugar;-1485;694;(mapa sem tabela da demo);;;Base CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Lona;;;;lugar;771;672;(mapa sem tabela da demo);;;Lona;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Sem Saída;;;;lugar;503;601;(mapa sem tabela da demo);;;Sem Saída;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Caminhão;;;;lugar;1896;686;(mapa sem tabela da demo);;;Caminhão;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Caixa Branca;;;;lugar;0;432;(mapa sem tabela da demo);;;Caixa Branca;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Meio;;;;lugar;393;214;(mapa sem tabela da demo);;;Meio;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Vermelho;;;;lugar;1186;322;(mapa sem tabela da demo);;Vermelho (2x);Vermelho;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Liga CT;;;;lugar;-498;146;(mapa sem tabela da demo);;;Liga CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;CT;;;;lugar;-897;33;(mapa sem tabela da demo);;;CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Galpão TR;;;;lugar;1265;23;(mapa sem tabela da demo);;;Galpão TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Base TR;;;;lugar;2812;-44;(mapa sem tabela da demo);;;Base TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Cimento;;;;lugar;41;-26;(mapa sem tabela da demo);;;Cimento;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Telhado;;;;lugar;412;-32;(mapa sem tabela da demo);;;Telhado;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Ninja;;;;lugar;-231;-122;(mapa sem tabela da demo);;;Ninja;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Goteira;;;;lugar;-374;-350;(mapa sem tabela da demo);;;Goteira;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Areia;;;;lugar;707;-133;(mapa sem tabela da demo);;;Areia;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Duto;;;;lugar;454;-267;(mapa sem tabela da demo);;;Duto;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Xadrez;;;;lugar;35;-350;(mapa sem tabela da demo);;;Xadrez;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Torneira;;;;lugar;1087;-318;(mapa sem tabela da demo);;;Torneira;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Rampa;;;;lugar;-576;-466;(mapa sem tabela da demo);;;Rampa;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Céu;;;cima;lugar;-350;-689;(mapa sem tabela da demo);;;↑ Céu;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Esquina;;;;lugar;125;-497;(mapa sem tabela da demo);;;Esquina;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Caixa do Miolo;;;;lugar;549;-614;(mapa sem tabela da demo);;;Caixa do Miolo;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Casinha;;;;lugar;1912;-565;(mapa sem tabela da demo);;;Casinha;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Miolo;;;;lugar;1167;-726;(mapa sem tabela da demo);;Miolo (2x);Miolo;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Vazio;;;;lugar;1976;-825;(mapa sem tabela da demo);;;Vazio;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Pallet;;;;lugar;-1003;-669;(mapa sem tabela da demo);;;Pallet;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Baixo CT;;;;lugar;-784;-909;(mapa sem tabela da demo);;;Baixo CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Miolo;;;;lugar;737;-999;(mapa sem tabela da demo);;Miolo (2x);Miolo;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;NAK;;;;lugar;136;-978;(mapa sem tabela da demo);;;NAK;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;BTT;;;;lugar;161;-1135;(mapa sem tabela da demo);;;BTT;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Alvo;;;;lugar;-180;-1135;(mapa sem tabela da demo);;;Alvo;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Default;;;;lugar;-165;-1231;(mapa sem tabela da demo);;Default (2x);Default;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Trincheira;;;;lugar;-377;-1181;(mapa sem tabela da demo);;;Trincheira;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;B;;;;bombsite;-105;-1348;(mapa sem tabela da demo);;;@B;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Fundo do Bomb;;;;lugar;86;-1475;(mapa sem tabela da demo);;;Fundo do Bomb;;mapas de callouts do Pedro, 2026-11-09;não
+de_cache;único;Tóxico;;;;lugar;945;-1339;(mapa sem tabela da demo);;Tóxico (2x);Tóxico;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Altar;;;;lugar;-2008;2960;BombsiteB;;;Altar;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Fundo do Bomb;;;;lugar;-1518;2852;BombsiteB;;;Fundo do Bomb;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Barril;;;;lugar;-1861;2726;BombsiteB;;;Barril;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;B;;;;bombsite;-1627;2653;BombsiteB;;;@B;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Buraco;;;;lugar;-1320;2670;Hole;;;Buraco;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Pintor;;;;lugar;-1081;2677;BDoors;;;Pintor;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Caixa Alta;;;;lugar;-1688;2570;BombsiteB;;;Caixa Alta;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Default;;;;lugar;-1386;2547;BombsiteB;;Default (2x);Default;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Newba;Goose;;;lugar;1204;2989;BombsiteA;;Newba (2x);Newba/ Goose;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Caixa Branca;RKZ;;;lugar;505;2812;ExtendedA (mais perto);;;Caixa Branca/ RKZ;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Caminhão;;;;lugar;-497;2453;MidDoors;;;Caminhão;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Caixa Gorda;;;;lugar;-1802;2321;BombsiteB;;Caixa Gorda (2x);Caixa Gorda;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Portão;;;;lugar;-2168;2204;BombsiteB;;;Portão;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Rampa B;Meio B;;;lugar;-815;2274;MidDoors;;;Rampa B/ Meio B;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Porta B;;;;lugar;-1356;2200;BombsiteB;BDoors;;Porta B;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Caixa;;da Porta;;lugar;-1149;2031;BDoors (mais perto);;;Caixa (da Porta);;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Pilar;;;;lugar;-781;2065;BDoors;MidDoors;;Pilar;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Base CT;;;baixo;lugar;242;2258;CTSpawn;ExtendedA;;↓ Base CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Caixa Nova;;;;lugar;628;2383;UnderA;ExtendedA;;Caixa Nova;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Dupla;;;;lugar;965;2535;BombsiteA;;;Dupla;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Default;;;;lugar;1097;2492;BombsiteA;;Default (2x);Default;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Simples;;;;lugar;1281;2556;BombsiteA;ARamp;;Simples;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;A;;;;bombsite;1195;2386;BombsiteA;;;@A;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;L;Elevador;;;lugar;1076;2313;BombsiteA;UnderA;;L / Elevador;'L' é lido como apelido;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Rampa;;;;lugar;1485;2522;ARamp;;;Rampa;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Rampa CT;;;;lugar;833;2173;UnderA;;;Rampa CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Fallen;;;;lugar;594;2072;UnderA;;;Fallen;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Carro;;;;lugar;1673;2047;LongA;;Carro (2x);Carro;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Esquerdinha;;;;lugar;-2162;1858;BombsiteB (mais perto);;;Esquer dinha;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Nak;;;cima;lugar;-1793;1835;BombsiteB;;;↑ Nak;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Carro;;;;lugar;-1529;1873;BombsiteB;;Carro (2x);Carro;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Newba;;;;lugar;-1625;1656;BombsiteB;;Newba (2x);Newba;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Niko;;;;lugar;-348;1769;MidDoors;;;Niko;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Porta Meio;;;;lugar;-414;1637;MidDoors;;;Porta Meio;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Escuro Baixo;;;;lugar;-879;1454;LowerTunnel;;;Escuro Baixo;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Caixa Gorda;Xbox;;;lugar;-331;1422;Middle;;Caixa Gorda (2x);Caixa Gorda /Xbox;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Varanda;;;;lugar;178;1469;Catwalk;;;Varanda;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Fundo;Rua;;;lugar;1412;1550;LongA;;Fundo (2x);Fundo /Rua;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Esquina do Fundo;;;;lugar;1225;1246;LongA (mais perto);LongDoors;;Esquina do Fundo;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Escuro;;Cima;;lugar;-1725;1194;UpperTunnel;;;Escuro (Cima);;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Meio;;;;lugar;-406;1058;Middle;;;Meio;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Varanda TR;;;;lugar;-178;1013;Catwalk;;;Varanda TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Azul;;;;lugar;792;1133;LongDoors;;;Azul;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Fundo;;;;lugar;1022;956;LongDoors;;Fundo (2x);Fundo;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Altar do Fundo;;;;lugar;1694;668;Side;;;Altar do Fundo;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Caixa Verde;Coqueiro Invertido;;;lugar;-608;565;TopofMid;;;Caixa Verde /Coqueiro Invertido;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Coqueiro;Esquina;;;lugar;-71;506;TopofMid (mais perto);;;Coqueiro /Esquina;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Casinha;;;;lugar;638;532;LongDoors;;;Casinha;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Bunker;;;;lugar;1401;404;Pit;;;Bunker;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;NBK;;;;lugar;1073;287;LongDoors;;;NBK;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Fora do Escuro;;;;lugar;-1672;346;OutsideTunnel;;;Fora do Escuro;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Fora do Fundo;;;;lugar;393;-31;OutsideLong;;;Fora do Fundo;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Táxi;;;;lugar;655;-91;OutsideLong;;;Táxi;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Caminho;Corredor da Morte;;;lugar;-408;-151;TopofMid;;;Caminho/ Corredor da Morte;;mapas de callouts do Pedro, 2026-11-09;não
+de_dust2;único;Base TR;;;;lugar;-749;-811;TSpawn;;;Base TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Jardim;;;;lugar;556;3509;BombsiteB;;;Jardim;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Newba;Escuro;;;lugar;79;3194;BombsiteB (mais perto);;;Newba/ Escuro;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Caixão;;;;lugar;465;3188;BombsiteB;;;Caixão;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Igreja;3D / Construção;;;lugar;998;3162;Ruins;;;Igreja/3D/ Construção;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Pilar;;;;lugar;-8;2936;BombsiteB;;;Pilar;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Default;;;;lugar;491;2919;BombsiteB;;Default (2x);Default;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Fonte;;;;lugar;287;2776;BombsiteB;;;Fonte;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;B;;;;bombsite;450;2770;BombsiteB;;;@B;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Piscina;;;;lugar;816;2871;BombsiteB;;;Piscina;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Tripla;;;;lugar;38;2564;BombsiteB;;;Tripla;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;BTT 2;;;;lugar;337;2475;BombsiteB;;;BTT 2;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Sanduíche;;;;lugar;461;2429;BombsiteB;;;Sanduíche;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;BTT 1;;;;lugar;584;2481;BombsiteB;;;BTT 1;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;CT;;;;lugar;1029;2728;Ruins;BombsiteB;;CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Pézinho;;;;lugar;1059;2594;Ruins (mais perto);;;Pézinho;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Árvore CT;;;;lugar;1371;2633;Ruins (mais perto);;;Árvore CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Speed;Corredor Base;;;lugar;1631;2165;CTSpawn;;;Speed/Corredor Base;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Caminhão;;;;lugar;2030;2577;CTSpawn;;;Caminhão;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Base CT;;;;lugar;2364;2147;CTSpawn;;;Base CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Fallen;;;;lugar;770;2282;Banana;BombsiteB;;Fallen;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Carro;;;;lugar;452;2098;Banana;;;Carro;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Cimento;;;;lugar;701;1900;Banana;;;Cimento;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Sem Saída;Portão;;;lugar;1119;1868;Banana (mais perto);;;Sem Saída /Portão;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Muro;;;;lugar;508;1779;Banana (mais perto);;;Muro;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Barril;Madeira;;;lugar;27;1606;Banana (mais perto);;;(Barril/ Madeira);texto todo entre parênteses;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Banana;;;;lugar;215;1577;Banana;;Banana (2x);Banana;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Árvore;;;;lugar;-82;1391;Banana;;;Árvore;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Tavares;;;;lugar;365;1309;Banana (mais perto);;;Tavares;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Banana;;;;lugar;109;1077;Banana;;Banana (2x);Banana;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Arco;;;;lugar;1800;1417;Arch;;;Arco;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Biblioteca;;;;lugar;2463;1293;Library (mais perto);;;Biblioteca;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Piru;;;;lugar;1314;1205;TopofMid;;;Piru;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;NiP;;;;lugar;1889;1135;Arch;;NiP (2x);N i P;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;NiP;;;;lugar;1427;947;TopofMid;;NiP (2x);NiP;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Areia 2;;;;lugar;2502;949;BombsiteA (mais perto);;;Areia 2;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Piruzinho;;;;lugar;1219;797;TopofMid (mais perto);;;Piruzinho;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Caverna;;;;lugar;-305;858;TRamp;;;Caverna;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Caverna;;TR;;lugar;-663;648;LowerMid;;;Caverna (TR);;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Moto;;;;lugar;-383;587;LowerMid;;;Moto;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Túnel;;TR;;lugar;-1088;528;TSpawn;;;Túnel(TR);;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Base TR;;;;lugar;-1578;422;TSpawn;;;Base TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Fundo Bomb;;;;lugar;1839;702;BombsiteA (mais perto);;;Fundo Bomb;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Device;;;cima;lugar;1796;552;BombsiteA;;;↑ Device;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;A;;;;bombsite;1991;429;BombsiteA;;;@A;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Meio;;;;lugar;775;539;Middle;;;M e i o;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Rato;;;baixo;lugar;278;418;Underpass;Middle;;↓ Rato;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Escada MF;;;;lugar;894;216;SecondMid;;;(Escada MF);texto todo entre parênteses;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Campanário;;;;lugar;1208;279;Apartments;;;Campa nário;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Cozinha;;;;lugar;-257;292;Upstairs;Kitchen;;Cozinha;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Varanda da Cozinha;;;;lugar;53;73;Deck;;;Varanda da Cozinha;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Coldzera;;;cima;lugar;1739;227;BombsiteA (mais perto);;;↑ Coldzera;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Default;;;;lugar;2099;179;BombsiteA;;Default (2x);Default;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;S1mple;;;;lugar;1900;166;BombsiteA (mais perto);;;S1mple;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Xuxa;;;;lugar;1605;93;BombsiteA;TopofMid;;X u x a;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Cogu;;;cima;lugar;1401;-33;Quad;TopofMid;;↑ Cogu;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Embaixo do Cogu;;;baixo;lugar;1505;-118;Quad;BombsiteA;;↓ Embaixo do Cogu;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Carroça;;;;lugar;1921;-33;BombsiteA;;;Carroça;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Varanda Tapete;;;;lugar;1912;-198;Apartments;Balcony;;Varanda Tapete;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Meio Falso;;MF;;lugar;256;-124;SecondMid;;;Meio Falso (MF);"(MF) lido como qualificação; parece sigla";mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Ponte;;;;lugar;-388;-137;Bridge;SecondMid;;Ponte;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Janelão;;;;lugar;1024;-118;Apartments;Balcony;;Janelão;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Apartamento;;;;lugar;1219;-211;Apartments;;;Apartamento;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Tapete;;;;lugar;1579;-328;Apartments;;;Tapete;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Cabecinha;Headshot;;;lugar;2160;-380;Pit;Balcony;;Cabecinha/ Headshot;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Areia;Quebrado;;;lugar;2500;-224;Pit;;;Areia/ Quebrado;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Cemitério;;;;lugar;2533;288;Graveyard;;;Cemitério;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Rádio;;;;lugar;-1229;-258;TSpawn;;;Rádio;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Tapete TR;;;;lugar;-13;-453;Apartments;;;Tapete TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Poltrona;;;;lugar;-1509;906;Apartments (mais perto);;;Poltrona;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;TV;;;;lugar;-37;843;House;;TV (2x);TV;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;TV;;;;lugar;430;843;House;;TV (2x);TV;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Portão;Newba;;;lugar;-2548;580;BombsiteB (mais perto);;Portão (2x);Portão/ Newba;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Coldzera;;;;lugar;-2234;805;Truck;;;Coldzera;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Van;;;;lugar;-2332;705;Truck;;;Van;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Snax;;;;lugar;-2026;788;Apartments;Truck;;Snax;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Tapete;;;;lugar;-1710;766;Apartments;;;Tapete;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Sol;;;;lugar;-2202;523;BombsiteB;;Sol (2x);Sol;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Sol;;;;lugar;-1908;523;BombsiteB;;Sol (2x);Sol;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Queda;;;;lugar;-1812;625;BombsiteB;Apartments;;Queda;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Default;;;;lugar;-2010;405;BombsiteB;;Default (2x);Default;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Ninja;;;cima;lugar;-1835;397;BombsiteB;;Ninja (2x);↑ Ninja;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Vazio;;;;lugar;-2173;112;BombsiteB;;;Vazio;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Sombra;;;;lugar;-2063;6;BombsiteB;;;Sombra;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;b4rtin;;;;lugar;-2332;242;BombsiteB;;;b4rtin;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Forest;;;;lugar;-2574;301;BombsiteB;;;Forest;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;B;;;;bombsite;-2108;271;BombsiteB;;;@B;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Cozinha;;;;lugar;-1125;594;Apartments;;;Cozinha;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Corredor Escada;;;;lugar;-598;592;BackAlley;;;Corredor Escada;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Escada TV;;;;lugar;735;653;SideAlley;House;;Escada TV;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Edward;Arco;;;lugar;-1427;352;BombsiteB (mais perto);;;Edward/ Arco;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Escada Rato;;;;lugar;-638;441;Underpass;BackAlley;;Escada Rato;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Portão da Base;;;;lugar;1294;494;TSpawn (mais perto);;;Portão da Base;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Sem saída do MF;;;;lugar;151;282;SideAlley;;;Sem saída do MF;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Meio Falso;;MF;;lugar;358;201;SideAlley;;;Meio Falso (MF);"(MF) lido como qualificação; parece sigla";mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;L;;;;lugar;-836;205;Catwalk;Underpass;L (2x);L;dois 'L': um branco e grande (embaixo) e um cinza e pequeno (em cima, perto de Escada Rato);mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;L;;;;lugar;-809;-227;Catwalk;;L (2x);L;dois 'L': um branco e grande (embaixo) e um cinza e pequeno (em cima, perto de Escada Rato);mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Rato;;;baixo;lugar;-1015;89;Catwalk;Underpass;Rato (2x);↓ Rato;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Rato;;;;lugar;-1007;-374;Underpass;;Rato (2x);Rato;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Moscow;;;;lugar;-1140;-200;Ladder;;;Moscow;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Esquina;;;;lugar;338;-219;TopofMid;;;Esquina;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Top Meio;;;;lugar;-359;-407;Catwalk;;;Top Meio;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Meio;;;;lugar;-349;-661;Middle;;;Meio;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Carroça;;;;lugar;436;-676;TopofMid;;;Carroça;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Banco;;;;lugar;-864;-755;Middle;;Banco (2x);Banco;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Cadeira;;;;lugar;-261;-906;Middle;;;Cadeira;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Torneira;;;;lugar;202;-912;TopofMid;;;Torneira;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Liga;;;;lugar;-683;-977;Connector;Middle;;Liga;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Caixa da Liga;;;;lugar;-882;-1146;Connector (mais perto);;;Caixa da Liga;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Janelão;;;;lugar;-1184;-622;SnipersNest;;;Janelão;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Buraco;;;;lugar;-1349;-955;CTSpawn;;;Buraco;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Jungle;;;;lugar;-1137;-1385;Jungle;CTSpawn;;Jungle;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;FNX;;;;lugar;-1261;-1548;CTSpawn (mais perto);Jungle;;FNX;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Sem Saída;;;;lugar;-1459;-1580;CTSpawn;;;Sem Saída;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Top Liga;;;;lugar;-632;-1315;BombsiteA;Connector;;Top Liga;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Cabecinha;;;;lugar;-489;-1519;Stairs;;;Cabecinha;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Sanduíche;;;;lugar;-324;-1517;BombsiteA;;;Sanduíche;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Tetris;;;;lugar;-108;-1489;BombsiteA;;;Tetris;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Taco;;;;lugar;84;-1699;PalaceInterior;BombsiteA;;Taco;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Caverna;;;;lugar;502;-1621;TRamp;PalaceAlley;;Caverna;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Caverna TR;;;;lugar;917;-1128;PalaceAlley;;;Caverna TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Plataforma;;;;lugar;803;-1499;PalaceAlley;;;Plataforma;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Areia cima;;;cima;lugar;161;-1941;PalaceInterior;BombsiteA;;↑ Areia cima;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Areia;;;;lugar;47;-2064;BombsiteA;PalaceInterior;;Areia;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Palácio;Tapete A;;;lugar;616;-2217;PalaceInterior;;;Palácio (ou Tapete A);'ou Tapete A' lido como apelido;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Banco;;;;lugar;-768;-1839;BombsiteA;;Banco (2x);Banco;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Caixa Fogo;;;;lugar;-603;-2080;BombsiteA;;;Caixa Fogo;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Default;;;;lugar;-326;-2194;BombsiteA;;Default (2x);Default;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;A;;;;bombsite;-460;-2204;BombsiteA;;;@A;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Ninja;;;;lugar;-428;-2343;BombsiteA;;Ninja (2x);Ninja;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Newba;;;;lugar;-148;-2373;BombsiteA;;Newba (2x);Newba;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Portão;;;;lugar;-652;-2461;BombsiteA;;Portão (2x);Portão;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Boltz;;;;lugar;-980;-2473;CTSpawn;BombsiteA;;Boltz;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;CT;;;;lugar;-1388;-2340;CTSpawn;;;CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Lixeira;;;;lugar;-1086;-2249;CTSpawn;;Lixeira (2x);Lixeira;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Base CT;;;;lugar;-1746;-1884;CTSpawn;;;Base CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Base TR;;;;lugar;1255;-146;TSpawn;;;Base TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Mercado;;;;lugar;-2018;-549;Shop;;;Mercado;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Porta Mercado;;;;lugar;-2371;-296;Shop;BombsiteB;;Porta Mercado;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Janela Mercado;;;;lugar;-1951;-294;Shop;BombsiteB;;Janela Mercado;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Moddii;;;;lugar;-1655;-209;BombsiteB;;;Moddii;;mapas de callouts do Pedro, 2026-11-09;não
+de_mirage;único;Lixeira;;;;lugar;-2411;-104;BombsiteB;;Lixeira (2x);Lixeira;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Cofre;;;;lugar;-2470;1575;StorageRoom;;;Cofre;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Banco;;;;lugar;-2532;1346;Lobby;StorageRoom;;Banco;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Grafite;;;;lugar;-1937;1315;BackofA;;;Grafite;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;SWAT;Van;;;lugar;-2681;1055;Lobby (mais perto);BombsiteA;;SWAT /Van;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Lixeira;;;;lugar;-2051;993;BombsiteA;BackofA;;Lixeira;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Base CT;;;;lugar;-2246;877;BombsiteA;;;Base CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Caixa Gorda;;;;lugar;-2594;822;BombsiteA;;;Caixa Gorda;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;A;;;;bombsite;-2311;727;BombsiteA;;;@A;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Default;;;;lugar;-2546;626;BombsiteA;;Default (2x);Default;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Caminhão;;;;lugar;-2183;657;BombsiteA;;;Cami nhão;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Ninja;;;;lugar;-3068;798;BombsiteA;;;Ninja;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Placa;Verde;;;lugar;-2796;560;BombsiteA;;;Placa/ Verde;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Olof;;;;lugar;-2196;438;BombsiteA;LowerPark / UnderA;;Olof;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Labirinto;;;baixo;lugar;-1896;600;SnipersNest;UnderA;;↓ Labirinto;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Céu;;;;lugar;-1741;462;SnipersNest;;;Céu;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Fundo CT;;;;lugar;-3235;178;UpperPark;;;Fundo CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Jardim;;;;lugar;-2755;314;LowerPark;;;Jardim;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Cabecinha;HS;;;lugar;-2337;109;LowerPark;;;Cabecinha /HS;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Areia;;;;lugar;-1625;181;Water;;;Areia;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Com Saída;;;;lugar;-1913;93;Walkway;UnderA;;Com Saída;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Tóxico;;;;lugar;-918;438;BombsiteB;;;Tóxico;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Grade;;;;lugar;-326;334;Canal;;;Grade;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Headshot;;;;lugar;-1245;290;Water;;;Headshot;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;B;;;;bombsite;-1085;167;BombsiteB;Water;;@B;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Redondo;Pilar;;;lugar;-830;77;BombsiteB;;;Redondo /Pilar;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Água;;;;lugar;-1370;51;Water;;;Água;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Default;;;;lugar;-1165;-9;BombsiteB;Water;Default (2x);Default;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Madeira;;;;lugar;-760;-129;BombsiteB;;;Madeira;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Sapão;Aberto;;;lugar;-410;18;Canal;;;Sapão /Aberto;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Quina;;;;lugar;-2885;-45;LowerPark;;;Quina;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Pézinho;;;;lugar;-1717;-291;Walkway;;Pézinho (2x);Pézinho;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Ponte;;;;lugar;-1337;-212;Bridge;Water;;Ponte;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Banheiro;;;;lugar;-2494;-513;LowerPark;;;Banheiro;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Rua;;;;lugar;-2267;-543;LowerPark;;;Rua;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Newba do Esgoto;;;;lugar;-1377;-413;Water (mais perto);;;Newba do Esgoto;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Cimento;;;;lugar;-992;-430;Construction;;;Cimento;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Túnel Sapão;;;;lugar;-509;-489;Canal;;;Túnel Sapão;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Canteiro;Pézinho;;;lugar;-3684;-445;UpperPark;;Pézinho (2x);Canteiro /Pézinho;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Portão;;;;lugar;-3339;-354;UpperPark;;;Portão;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Sem Saída;;;;lugar;-1881;-665;Connector (mais perto);;;Sem Saída;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Esgoto;;;;lugar;-1371;-805;Water;;;Esgoto;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Vestiário;;;;lugar;-3238;-843;Restroom;UpperPark;;Vestiário;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Parque;Fundo;;;lugar;-3713;-1228;UpperPark;;;Parque/Fundo;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Newba Liga;;;baixo;lugar;-1979;-909;Connector;;;↓ Newba Liga;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Porta;Metal;;;lugar;-1629;-903;Water;Connector;;Porta /Metal;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Canudo;;;;lugar;-926;-937;Pipe;;;Canudo;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Sapão TR;;;;lugar;-449;-1102;Canal;;;Sapão TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Carretel;;;;lugar;-208;-1181;Canal;;;(Carretel);texto todo entre parênteses;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Fer;;;;lugar;-2168;-1070;LowerPark;;;Fer;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Liga;;;;lugar;-2060;-1273;Connector;;;Liga;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Túnel da Liga;;;;lugar;-1793;-1465;Tunnels;;;Túnel da Liga;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Meio;;;;lugar;-2638;-1254;LowerPark;;;Meio;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Balão;Picnic;;;lugar;-3040;-1390;UpperPark;;;Balão/ Picnic;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Árvore do Fundo;;;;lugar;-4107;-1344;UpperPark (mais perto);;;Árvore do Fundo;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Miolo;;;;lugar;-710;-1639;Alley;;;Miolo;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Balada;;;;lugar;-192;-1964;SideAlley (mais perto);;;Balada;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Bombeiro;;;;lugar;-1657;-1980;Tunnels;;;Bombeiro;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Pedra do Fundo;;;;lugar;-3394;-1925;UpperPark;;;Pedra do Fundo;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Fonte;;;;lugar;-2514;-1991;Fountain (mais perto);;;F o n t e;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Fundo TR;;;;lugar;-3406;-2251;UpperPark;;;Fundo TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Parquinho;;;;lugar;-2631;-2546;Playground;Fountain;;Parquinho;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Caverna;;;;lugar;-1417;-2305;Tunnels;;;Caverna;;mapas de callouts do Pedro, 2026-11-09;não
+de_overpass;único;Base TR;;;;lugar;-1161;-2965;TSpawn;;;B a s e T R;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Trilho;;;;lugar;-228;1749;(mapa sem tabela da demo);;;Trilho;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Fundo;;TR;;lugar;934;1601;(mapa sem tabela da demo);;;Fundo (TR);;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Rua TR;;;;lugar;-135;1533;(mapa sem tabela da demo);;;Rua TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Caminhão;;;;lugar;450;1449;(mapa sem tabela da demo);;;Caminhão;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Base TR;;;;lugar;-1737;1360;(mapa sem tabela da demo);;;Base TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Lixão;;;;lugar;-409;1296;(mapa sem tabela da demo);;;Lixão;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Sem Saída;;;;lugar;153;1255;(mapa sem tabela da demo);;;Sem Saída;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Escada TR;;;;lugar;-925;987;(mapa sem tabela da demo);;;Escada TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Fundo;;;;lugar;1055;1049;(mapa sem tabela da demo);;;Fundo;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Verde;;;;lugar;1239;1149;(mapa sem tabela da demo);;;Verde;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Corredor do Fundo;;;;lugar;937;675;(mapa sem tabela da demo);;;(Corredor do Fundo);texto todo entre parênteses;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Vestiário;Cozinha;;cima;lugar;-677;772;(mapa sem tabela da demo);;;↑ Vestiário/ Cozinha;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Vazio;Buraco;;;lugar;550;750;(mapa sem tabela da demo);;Buraco (2x);Vazio/ Buraco;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Olof;Escanteio;;;lugar;-88;683;(mapa sem tabela da demo);;;Olof/Escanteio;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Newba;;;;lugar;1295;692;(mapa sem tabela da demo);;;Newba;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Amarelo;;;;lugar;548;464;(mapa sem tabela da demo);;;Amarelo;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Fundo CT;;;;lugar;1289;475;(mapa sem tabela da demo);;;Fundo CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Sanduíche;;;;lugar;205;399;(mapa sem tabela da demo);;;Sanduíche;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Vermelho;;;;lugar;-114;254;(mapa sem tabela da demo);;;Vermelho;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Liga TR;;;baixo;lugar;-679;411;(mapa sem tabela da demo);;;↓ Liga TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Caminho da Morte;;;;lugar;-969;282;(mapa sem tabela da demo);;;Caminho da Morte;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Forest;;;;lugar;818;170;(mapa sem tabela da demo);;;Forest;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Servidor;;;cima;lugar;-711;-61;(mapa sem tabela da demo);;;↑ Servidor;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Geladeira;;;;lugar;-188;-14;(mapa sem tabela da demo);;;Geladeira;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Default;;;;lugar;150;-108;(mapa sem tabela da demo);;Default (2x);Default;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;A;;;;bombsite;395;-116;(mapa sem tabela da demo);;;@A;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Antigo;;Bomb;;lugar;1217;-122;(mapa sem tabela da demo);;;(Bomb) Antigo;parênteses no começo: lido como qualificação 'Bomb' do nome 'Antigo';mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;FNX;;;;lugar;-312;-260;(mapa sem tabela da demo);;;FNX;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Bombeiro;;;;lugar;-504;-366;(mapa sem tabela da demo);;;Bombeiro;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Céu;;;;lugar;633;-353;(mapa sem tabela da demo);;;Céu;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Guarita;;;;lugar;193;-417;(mapa sem tabela da demo);;;Guarita;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Escada Bombeiro;;;;lugar;-1179;-381;(mapa sem tabela da demo);;;Escada Bombeiro;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Buraco;;;;lugar;-954;-458;(mapa sem tabela da demo);;Buraco (2x);Buraco;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Escada Servidor;;;;lugar;-519;-564;(mapa sem tabela da demo);;;Escada Servidor;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Queda;;;;lugar;-977;-562;(mapa sem tabela da demo);;;Queda;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Liga CT;;;;lugar;447;-621;(mapa sem tabela da demo);;;L i g a C T;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Escada Liga;;;;lugar;617;-833;(mapa sem tabela da demo);;;(Escada Liga);texto todo entre parênteses;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Escada CT;;;;lugar;1664;-629;(mapa sem tabela da demo);;;Escada CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;B Baixo;;;;lugar;-672;-861;(mapa sem tabela da demo);;;B Baixo;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Rua;;;;lugar;-58;-873;(mapa sem tabela da demo);;;R u a;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;CT;;;;lugar;1296;-874;(mapa sem tabela da demo);;;CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Plataforma;;;;lugar;-1122;-1188;(mapa sem tabela da demo);;;Plataforma;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Banana;Corredor B;;;lugar;-915;-1247;(mapa sem tabela da demo);;;Banana/ Corredor B;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Azul;Pava;;;lugar;-66;-1040;(mapa sem tabela da demo);;;Azul/Pava;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Vermelho B;Pavinha;;;lugar;602;-1064;(mapa sem tabela da demo);;;Vermelho B/ Pavinha;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Default;;;;lugar;-303;-1287;(mapa sem tabela da demo);;Default (2x);Default;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;B;;;;bombsite;-31;-1302;(mapa sem tabela da demo);;;@B;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Summit;;;;lugar;249;-1306;(mapa sem tabela da demo);;;Summit;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Aberto B;;;;lugar;568;-1334;(mapa sem tabela da demo);;;Aberto B;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Paredão;;;;lugar;1026;-1311;(mapa sem tabela da demo);;;Paredão;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Base CT;;;;lugar;1458;-1321;(mapa sem tabela da demo);;;Base CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Drop;;;;lugar;-420;-1461;(mapa sem tabela da demo);;;Drop;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Escada;;;;lugar;-375;-1549;(mapa sem tabela da demo);;;Escada;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Flusha;;;;lugar;-226;-1631;(mapa sem tabela da demo);;;Flusha;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Óleo;Laranja;;;lugar;267;-1557;(mapa sem tabela da demo);;;Óleo/Laranja;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Nightwolf;;;;lugar;674;-1592;(mapa sem tabela da demo);;;Nightwolf;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Gaules;;;;lugar;-765;-1721;(mapa sem tabela da demo);;;G a u l e s;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Casinha;;;;lugar;-185;-1733;(mapa sem tabela da demo);;;Casinha;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Mega Rampa;;;;lugar;509;-1761;(mapa sem tabela da demo);;;Mega Rampa;;mapas de callouts do Pedro, 2026-11-09;não
+de_train;único;Corredor CT;;;;lugar;1466;-1718;(mapa sem tabela da demo);;;Corredor CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Fundo da Rampa;Forest;;;lugar;624;872;Ramp;;;Fundo da Rampa /Forest;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Rampa;;;;lugar;643;441;Ramp (mais perto);;Rampa (3x);R a m p a;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Caixa Gorda;;;;lugar;621;224;Ramp;;;Caixa Gorda;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Rampa;;;;lugar;640;7;Ramp;;Rampa (3x);Rampa;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Controle;;;;lugar;181;-32;Control;;;Controle;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;ADM;;;;lugar;1118;-60;Admin;;;ADM;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Pézinho;;;;lugar;474;-172;Ramp;;;Pézinho;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Troféu;;;;lugar;111;-492;Trophy;;;Troféu;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Rádio;;;;lugar;-144;-495;Vending;;;Rádio;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Passarela;;;cima;lugar;296;-587;Rafters;BombsiteA / Trophy;Passarela (2x);↑ Passarela;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Azul;;;;lugar;519;-421;BombsiteA;Rafters;Azul (2x);Azul;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Céu;Cat;;cima;lugar;1291;-364;Catwalk;Heaven / Hell;;↑ Céu/Cat;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Inferno;;Hell;baixo;lugar;1408;-444;Catwalk;Hell / Outside;;↓ Inferno(Hell);"(Hell) é o nome em inglês do jogo; lido como qualificação";mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Default;;;;lugar;710;-581;BombsiteA;Rafters;Default (2x);Default;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Silo;;;;lugar;707;-722;Rafters;BombsiteA;Silo (2x);Silo;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;A;;;;bombsite;685;-849;BombsiteA;Rafters;;@A;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Vestiário;Vidro;;;lugar;1294;-766;Outside;Catwalk / LockerRoom;;Vestiário/ Vidro;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Telhado;;;cima;lugar;-176;-875;Lobby;;;↑ Telhado;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Miolo;;;baixo;lugar;-90;-1009;Lobby;;;↓ Miolo;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Casinha;;;;lugar;398;-990;Hut;HutRoof;;Casinha;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Tetris;Tripla;;;lugar;653;-1149;BombsiteA;;;Tetris/ Tripla;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Shox;;;;lugar;1118;-1277;Outside;;;Shox;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Duto Falso;;;;lugar;857;-1430;BombsiteA (mais perto);;;Duto Falso;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Metal;;;;lugar;18;-1264;Squeaky;Lobby / Roof;;Metal;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Duto;;;;lugar;388;-1437;BombsiteA;;Duto (2x);Duto;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Montanha;;;;lugar;66;-1788;Silo;;;Montanha;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Sem Saída;;;;lugar;372;-1673;Outside;Silo;;Sem Saída;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Terra;;;;lugar;717;-1667;Mini;;;Terra;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Azul;;;;lugar;1345;-1580;Outside;;Azul (2x);Azul;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Fora;;;;lugar;-304;-1788;Outside;;Fora (2x);F o r a;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Fora;;;;lugar;685;-1983;Outside;;Fora (2x);F o r a;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Galpão;Garagem;;;lugar;1791;-1855;Garage;;;Galpão/ Garagem;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Vermelho;;;;lugar;637;-2267;Outside;;;Vermelho;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Secret;;;;lugar;1418;-2398;Secret;;;Secret;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Caixa TR;;;;lugar;-1063;-862;TSpawn (mais perto);;;Caixa TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Base TR;;;;lugar;-2035;-999;TSpawn (mais perto);;;Base TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Caminhão;;;;lugar;-1146;-1258;TSpawn (mais perto);;;Caminhão;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Fundo da Base TR;;;;lugar;-2753;-926;TSpawn (mais perto);;;Fundo da Base TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Base CT;;;;lugar;2400;-399;CTSpawn;;;Base CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Caixa CT;;;;lugar;1884;-894;Outside (mais perto);;;Caixa CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;cima;Fundo da Base CT;;;;lugar;3318;-702;CTSpawn (mais perto);;;Fundo da Base CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;baixo;Rampa;;;;lugar;631;478;Ramp;;Rampa (3x);R a m p a;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;baixo;Porta Rampa;;;;lugar;409;-47;Ramp;BombsiteB;Porta Rampa (2x);Porta Rampa;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;baixo;Porta Rampa;;;;lugar;894;-51;Ramp (mais perto);BombsiteB;Porta Rampa (2x);Porta Rampa;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;baixo;Rampinha;;;;lugar;638;-335;BombsiteB;;;Rampinha;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;baixo;Batman;Escuro;;;lugar;903;-416;BombsiteB;;;Batman/ Escuro;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;baixo;Janela;;;;lugar;1234;-511;Observation;;;Janela;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;baixo;Robin;Tóxico;;;lugar;471;-631;BombsiteB;;;Robin/ Tóxico;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;baixo;Água;;;;lugar;453;-877;BombsiteB;;;Água;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;baixo;B;;;;bombsite;639;-973;BombsiteB;;;@B;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;baixo;Passarela;;;cima;lugar;909;-986;BombsiteB;Tunnels;Passarela (2x);↑ Passarela;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;baixo;Dupla;;;;lugar;1107;-989;Tunnels;BombsiteB;;Dupla;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;baixo;Amarelo;;;cima;lugar;350;-1031;BombsiteB;;;↑ Amarelo;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;baixo;Silo;;;;lugar;645;-1144;BombsiteB;;Silo (2x);Silo;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;baixo;Corredor;;;;lugar;1124;-1324;Tunnels;;;Corredor;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;baixo;Default;;;;lugar;612;-1298;BombsiteB;;Default (2x);Default;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;baixo;Newba;;;;lugar;922;-1266;BombsiteB;Vents;;Newba;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;baixo;Boia;;;cima;lugar;526;-1329;BombsiteB;Vents;;↑ Boia;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;baixo;Breaking Bad;;BB;;lugar;189;-1415;Decon;;;Breaking Bad (BB);;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;baixo;Duto;;;;lugar;639;-1432;Vents;BombsiteB;Duto (2x);Duto;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;baixo;Banana;;;;lugar;731;-1609;Tunnels;;;B a n a n a;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;baixo;Metrô;;;;lugar;1362;-1915;Tunnels;;;Metrô;;mapas de callouts do Pedro, 2026-11-09;não
+de_nuke;baixo;Escada Secret;;;;lugar;1533;-2296;Secret;;;Escada Secret;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Escanteio;;;;lugar;-2502;1060;(mapa sem tabela da demo);;;Escanteio;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Coluna;;;;lugar;-2097;1052;(mapa sem tabela da demo);;;Coluna;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Suicida;;;;lugar;-1734;1089;(mapa sem tabela da demo);;;Suicida;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Cold;;;;lugar;-1745;976;(mapa sem tabela da demo);;;Cold;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;3D;;;;lugar;-1466;855;(mapa sem tabela da demo);;;3D;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Passarela;;;;lugar;-2621;785;(mapa sem tabela da demo);;Passarela (3x);Passarela;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Passarela;;;;lugar;-2621;347;(mapa sem tabela da demo);;Passarela (3x);Passarela;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;B;;;;bombsite;-2312;823;(mapa sem tabela da demo);;;@B;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Default;;;;lugar;-2228;857;(mapa sem tabela da demo);;Default (2x);Default;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Gerador;;;;lugar;-1872;757;(mapa sem tabela da demo);;;Gerador;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Laranja;;;;lugar;-2352;643;(mapa sem tabela da demo);;;Laranja;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Base CT;;;;lugar;-872;774;(mapa sem tabela da demo);;;Base CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Janelão;Construção / Favela;;;lugar;-1453;526;(mapa sem tabela da demo);;;Janelão/ Construção/ Favela;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Pallet;;B;;lugar;-1851;538;(mapa sem tabela da demo);;;Pallet (B);;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Branco;;;;lugar;-2546;504;(mapa sem tabela da demo);;;Branco;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Cimento;;B;;lugar;-2439;499;(mapa sem tabela da demo);;;Cimento (B);;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Sem Saída;;;;lugar;-2204;391;(mapa sem tabela da demo);;Sem Saída (2x);Sem Saída;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Madeira;;;;lugar;-2303;216;(mapa sem tabela da demo);;Madeira (2x);Madeira;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Meio CT;;;;lugar;-1443;237;(mapa sem tabela da demo);;;Meio CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Corredor Fundo;;;;lugar;-684;295;(mapa sem tabela da demo);;;Corredor Fundo;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Liga CT;;;;lugar;-979;200;(mapa sem tabela da demo);;;Liga CT;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Fundo;;;;lugar;-356;170;(mapa sem tabela da demo);;;Fundo;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Embaixo da Escada;;;baixo;lugar;-2383;62;(mapa sem tabela da demo);;;↓ Embaixo da Escada;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Escada B;;;;lugar;-2384;-71;(mapa sem tabela da demo);;Escada B (2x);Escada B;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Pallet;;;;lugar;-2024;46;(mapa sem tabela da demo);;;Pallet;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Meio;;;;lugar;-1883;19;(mapa sem tabela da demo);;;Meio;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Pézinho;;;cima;lugar;-1612;107;(mapa sem tabela da demo);;;↑ Pézinho;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Cabecinha;Headshot;;;lugar;-301;10;(mapa sem tabela da demo);;;Cabecinha/ Headshot;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Quina;;;;lugar;-1757;-272;(mapa sem tabela da demo);;Quina (3x);Quina;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Meio Falso;;MF;;lugar;-1455;-201;(mapa sem tabela da demo);;;Meio Falso (MF);"(MF) lido como qualificação; parece sigla";mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Elevador;;;;lugar;-886;-232;(mapa sem tabela da demo);;;Elevador;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Escuro;;;;lugar;-560;-235;(mapa sem tabela da demo);;;Escuro;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Newba;Tripla;;;lugar;-124;-380;(mapa sem tabela da demo);;;Newba/ Tripla;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Passarela;;;;lugar;50;-331;(mapa sem tabela da demo);;Passarela (3x);Passarela;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Meio TR;;;;lugar;-1813;-443;(mapa sem tabela da demo);;;Meio TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;A;;;;bombsite;-372;-590;(mapa sem tabela da demo);;;@A;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Default;;;;lugar;-373;-692;(mapa sem tabela da demo);;Default (2x);Default;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Maroto;;;;lugar;-22;-685;(mapa sem tabela da demo);;;Maroto;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Gerador TR;;;;lugar;-2206;-639;(mapa sem tabela da demo);;;Gerador TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Bombeiro;;Cima;;lugar;-1345;-679;(mapa sem tabela da demo);;;Bombeiro (Cima);;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Madeira;;;;lugar;-857;-726;(mapa sem tabela da demo);;Madeira (2x);Madeira;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Quina;;;;lugar;-957;-816;(mapa sem tabela da demo);;Quina (3x);Quina;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Corredor;Beco;;;lugar;-1114;-917;(mapa sem tabela da demo);;;Corredor /Beco;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Rampa Baixo;;;;lugar;-813;-1046;(mapa sem tabela da demo);;Rampa Baixo (2x);Rampa Baixo;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Amarelo;;;;lugar;-970;-1067;(mapa sem tabela da demo);;Amarelo (2x);Amarelo;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Guindaste;;;;lugar;-388;-931;(mapa sem tabela da demo);;;Guindaste;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Cimento Rampa;;;;lugar;-623;-1119;(mapa sem tabela da demo);;;Cimento Rampa;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Pilar;;;;lugar;6;-1042;(mapa sem tabela da demo);;;Pilar;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Rampa Cima;;;;lugar;-441;-1252;(mapa sem tabela da demo);;Rampa Cima (2x);Rampa Cima;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Passarela TR;;;;lugar;-2477;-1069;(mapa sem tabela da demo);;Passarela TR (3x);Passarela TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Passarela TR;;;;lugar;-1787;-1085;(mapa sem tabela da demo);;Passarela TR (3x);Passarela TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Escada TR;;;;lugar;-2132;-1056;(mapa sem tabela da demo);;;Escada TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Lixão;;;;lugar;-1956;-1084;(mapa sem tabela da demo);;;Lixão;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Base TR;;;;lugar;-1519;-1240;(mapa sem tabela da demo);;Base TR (2x);Base TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Passarela TR;;;;lugar;-2132;-1451;(mapa sem tabela da demo);;Passarela TR (3x);Passarela TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;51;;;;lugar;-989;-1419;(mapa sem tabela da demo);;;51;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Laje;;;;lugar;-617;-1440;(mapa sem tabela da demo);;;L a j e;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Cimento;;A;;lugar;-177;-1387;(mapa sem tabela da demo);;;Cimento (A);;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;baixo;Sombra;;;;lugar;-2516;59;(mapa sem tabela da demo);;;Sombra;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;baixo;Escada B;;;;lugar;-2344;-57;(mapa sem tabela da demo);;Escada B (2x);Escada B;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;baixo;Corrimão;;;;lugar;-2512;-176;(mapa sem tabela da demo);;;Corrimão;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;baixo;Túnel;;B;;lugar;-1921;-140;(mapa sem tabela da demo);;;Túnel (B);;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;baixo;Sem Saída;;;;lugar;-1523;90;(mapa sem tabela da demo);;Sem Saída (2x);Sem Saída;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;baixo;Ponte;;;;lugar;-1186;-82;(mapa sem tabela da demo);;;Ponte;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;baixo;Miolo;;;;lugar;-1446;-291;(mapa sem tabela da demo);;;Miolo;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;baixo;Liga;;;;lugar;-1710;-403;(mapa sem tabela da demo);;;Liga;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;baixo;Empilhadeira;;;;lugar;-826;-246;(mapa sem tabela da demo);;;Empilhadeira;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;baixo;Acesso Túnel;;;;lugar;-2079;-502;(mapa sem tabela da demo);;;Acesso Túnel;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;baixo;Quina;;;;lugar;-969;-549;(mapa sem tabela da demo);;Quina (3x);Quina;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;baixo;Bombeiro;;Baixo;;lugar;-1264;-687;(mapa sem tabela da demo);;;Bombeiro (Baixo);;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;baixo;Acesso Miolo;;;;lugar;-1556;-751;(mapa sem tabela da demo);;;Acesso Miolo;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;baixo;Banheiro;;;;lugar;-1904;-773;(mapa sem tabela da demo);;;Banheiro;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;baixo;Rampa Baixo;;;;lugar;-776;-759;(mapa sem tabela da demo);;Rampa Baixo (2x);Rampa Baixo;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;baixo;Amarelo;;;;lugar;-979;-885;(mapa sem tabela da demo);;Amarelo (2x);Amarelo;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;baixo;Embaixo da Escada TR;;;baixo;lugar;-2139;-1062;(mapa sem tabela da demo);;;↓ Embaixo da Escada TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;baixo;Base TR;;;;lugar;-1546;-1266;(mapa sem tabela da demo);;Base TR (2x);Base TR;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;baixo;Rampa Cima;;;;lugar;-584;-1255;(mapa sem tabela da demo);;Rampa Cima (2x);Rampa Cima;;mapas de callouts do Pedro, 2026-11-09;não

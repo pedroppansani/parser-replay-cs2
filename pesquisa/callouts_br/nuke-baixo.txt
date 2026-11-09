@@ -1,0 +1,23 @@
+# x y texto
+507 167 R a m p a
+447 305 Porta|Rampa
+577 305 Porta|Rampa
+508 383 Rampinha
+574 401 Batman/|Escuro
+668 432 Janela
+462 462 Robin/|Tóxico
+458 527 Água
+507 553 @B
+580 556 ↑ Passarela
+633 557 Dupla
+430 568 ↑ Amarelo
+508 599 Silo
+637 646 Corredor
+509 628 Default
+582 631 Newba
+477 647 ↑ Boia
+386 670 Breaking|Bad (BB)
+507 675 Duto
+532 721 B a n a n a
+700 803 Metrô
+747 903 Escada|Secret

@@ -1,0 +1,42 @@
+# x y texto
+569 233 Fundo da|Rampa|/Forest
+574 299 R a m p a
+569 335 Caixa|Gorda
+573 369 Rampa
+501 375 Controle
+649 375 ADM
+547 397 Pézinho
+490 447 Troféu
+451 447 Rádio
+519 462 ↑ Passarela
+554 436 Azul
+675 427 ↑ Céu/Cat
+693 450 ↓ Inferno(Hell)
+584 461 Default
+583 479 Silo
+580 503 @A
+676 489 Vestiário/|Vidro
+445 507 ↑ Telhado
+458 525 ↓ Miolo
+535 525 Casinha
+575 550 Tetris/|Tripla
+648 570 Shox
+607 594 Duto|Falso
+475 569 Metal
+533 596 Duto
+483 650 Montanha
+531 632 Sem|Saída
+585 631 Terra
+684 618 Azul
+425 650 F o r a
+580 682 F o r a
+754 673 Galpão/|Garagem
+573 725 Vermelho
+695 746 Secret
+305 505 Caixa|TR
+152 527 Base TR
+306 568 Caminhão
+41 515 Fundo da|Base TR
+848 433 Base CT
+768 510 Caixa|CT
+993 480 Fundo da|Base CT

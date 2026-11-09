@@ -1,0 +1,64 @@
+# x y texto
+452 22 Cofre
+440 68 Banco
+558 75 Grafite
+410 126 SWAT|/Van
+536 138 Lixeira
+497 161 Base CT
+427 172 Caixa|Gorda
+484 191 @A
+437 211 Default
+521 213 Cami|nhão
+333 176 Ninja
+387 224 Placa/|Verde
+505 245 Olof
+570 226 ↓ Labirinto
+597 256 Céu
+299 300 Fundo CT
+395 272 Jardim
+478 312 Cabecinha|/HS
+621 303 Areia
+559 308 Com|Saída
+763 250 Tóxico
+881 270 Grade
+697 279 Headshot
+729 303 @B
+780 321 Redondo|/Pilar
+672 325 Água
+713 338 Default
+794 362 Madeira
+864 333 Sapão|/Aberto
+369 344 Quina
+603 390 Pézinho
+678 379 Ponte
+447 438 Banheiro
+494 430 Rua
+656 417 Newba do|Esgoto
+749 422 Cimento
+846 437 Túnel|Sapão
+209 424 Canteiro|/Pézinho
+278 406 Portão
+569 467 Sem|Saída
+670 498 Esgoto
+296 503 Vestiário
+203 580 Parque/Fundo
+550 517 ↓ Newba|Liga
+620 516 Porta|/Metal
+760 524 Canudo
+856 556 Sapão TR
+904 572 (Carretel)
+513 549 Fer
+540 590 Liga
+587 628 Túnel da Liga
+417 586 Meio
+337 613 Balão/|Picnic
+124 606 Árvore do|Fundo
+802 663 Miolo
+906 728 Balada
+615 729 Bombeiro
+265 718 Pedra do|Fundo
+442 733 F o n t e
+264 785 Fundo TR
+419 841 Parquinho
+662 792 Caverna
+710 938 B a s e T R

@@ -1,0 +1,20 @@
+# x y texto
+84 400 Sombra
+145 440 Escada B
+85 483 Corrimão
+295 468 Túnel (B)
+436 389 Sem|Saída
+555 450 Ponte
+463 524 Miolo
+370 560 Liga
+683 506 Empilhadeira
+240 598 Acesso Túnel
+632 613 Quina
+527 662 Bombeiro|(Baixo)
+424 685 Acesso|Miolo
+300 693 Banheiro
+700 690 Rampa|Baixo
+629 733 Amarelo
+218 795 ↓ Embaixo da|Escada TR
+427 868 Base TR
+769 864 Rampa|Cima
