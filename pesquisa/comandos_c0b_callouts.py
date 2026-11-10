@@ -37,19 +37,28 @@ ARQUIVOS = [("de_ancient", "ancient"), ("de_anubis", "anubis"), ("de_cache", "ca
 RAIO_BORDA_PX = 12            # raio (px do radar do projeto) em volta do ponto para dizer "na borda entre dois lugares"
 # palavras que a imagem do Pedro quebra em duas linhas (a leitura as deixa em duas partes)
 EMENDAS = {"Esquer dinha": "Esquerdinha", "Cami nhão": "Caminhão", "Campa nário": "Campanário", "BaseTR": "Base TR", "LigaCT": "Liga CT"}
-# observações por (arquivo, texto original) onde a leitura tem uma ressalva
-OBSERVACOES = {
-    ("ancient", "Caixa do Quadrado/Jardim"): "a barra pode querer dizer 'Caixa do Quadrado' e 'Caixa do Jardim'; lido como dois apelidos",
-    ("ancient", "Escanteio/ L"): "'L' é lido como apelido",
-    ("dust2", "L / Elevador"): "'L' é lido como apelido",
-    ("mirage", "Meio Falso (MF)"): "(MF) lido como qualificação; parece sigla",
-    ("inferno", "Meio Falso (MF)"): "(MF) lido como qualificação; parece sigla",
-    ("vertigo-cima", "Meio Falso (MF)"): "(MF) lido como qualificação; parece sigla",
-    ("mirage", "Palácio (ou Tapete A)"): "'ou Tapete A' lido como apelido",
-    ("train", "(Bomb) Antigo"): "parênteses no começo: lido como qualificação 'Bomb' do nome 'Antigo'",
-    ("nuke-cima", "↓ Inferno(Hell)"): "(Hell) é o nome em inglês do jogo; lido como qualificação",
-    ("mirage", "L"): "dois 'L': um branco e grande (embaixo) e um cinza e pequeno (em cima, perto de Escada Rato)",
+# Decisões do Pedro sobre a leitura (2026-11-10): (arquivo, texto original) -> (nome, apelidos, qualificação) que valem no lugar do que a regra geral leria
+AJUSTES = {
+    **{(a, "Meio Falso (MF)"): ("Meio Falso", ["MF"], "") for a in ("mirage", "inferno", "vertigo-cima")},      # "(MF)" é apelido, não qualificação
+    ("nuke-cima", "↓ Inferno(Hell)"): ("Inferno", ["Hell"], ""),                                              # "(Hell)" é apelido
+    ("ancient", "Caixa do Quadrado/Jardim"): ("Caixa do Quadrado", ["Caixa do Jardim"], ""),                  # as duas valem
+    ("train", "(Bomb) Antigo"): ("Antigo", ["Bomb Antigo"], ""),                                              # aceita "Bomb Antigo" e "Antigo"
+    ("mirage", "Moddii"): ("Moddii", ["Mogi"], ""),                                                           # "Mogi" é apelido do Moddii (pedido do Pedro)
 }
+# observações por (arquivo, texto original): o que a leitura decidiu e quem decidiu
+OBSERVACOES = {
+    ("ancient", "Escanteio/ L"): "'L' fica como apelido (nome repetido: o leitor pergunta qual)",
+    ("dust2", "L / Elevador"): "'L' fica como apelido (nome repetido: o leitor pergunta qual)",
+    ("mirage", "L"): "dois 'L' (repetido: o leitor pergunta qual): um branco e grande (embaixo) e um cinza e pequeno (em cima, perto de Escada Rato)",
+    ("mirage", "Palácio (ou Tapete A)"): "'ou Tapete A' é apelido do Palácio",
+    **{(a, "Meio Falso (MF)"): "'MF' é apelido do Meio Falso (decisão do Pedro)" for a in ("mirage", "inferno", "vertigo-cima")},
+    ("nuke-cima", "↓ Inferno(Hell)"): "'Hell' é apelido do Inferno (decisão do Pedro)",
+    ("ancient", "Caixa do Quadrado/Jardim"): "valem 'Caixa do Quadrado' e 'Caixa do Jardim' (decisão do Pedro)",
+    ("train", "(Bomb) Antigo"): "aceita 'Bomb Antigo' e 'Antigo' (decisão do Pedro)",
+    ("mirage", "Moddii"): "'Mogi' é apelido do Moddii (pedido do Pedro; a imagem diz 'Moddii')",
+}
+# mapas que o Pedro já conferiu nas imagens (2026-11-10); os outros seguem `conferido = não` até ele avisar
+CONFERIDOS = {"de_mirage", "de_dust2"}
 
 
 def sem_acento(s: str) -> str:
@@ -85,6 +94,9 @@ def interpreta(linhas: list[str], arquivo: str) -> dict:
     nomes = [n.strip() for n in texto.split("/") if n.strip()]
     if qual.startswith("ou "):
         nomes.append(qual[3:].strip()); qual = ""
+    if (arquivo, original) in AJUSTES:
+        n0, apel, qual = AJUSTES[(arquivo, original)]
+        nomes = [n0] + apel
     if (arquivo, original) in OBSERVACOES:
         obs.append(OBSERVACOES[(arquivo, original)])
     incerto = original.startswith("?")
@@ -207,7 +219,7 @@ def grava_dados(linhas: list[dict]) -> None:
         for l in linhas:
             w.writerow([l["mapa"], l["andar"], l["nome"], " / ".join(l["apelidos"]), l["qualificacao"], l["vertical"], l["tipo"], l["x"], l["y"],
                         l["lugar_da_demo"] if l["tem_tabela_da_demo"] else "(mapa sem tabela da demo)", " / ".join(l["lugares_na_borda"]), l["repete_no_mapa"],
-                        l["texto_original"], "; ".join(l["obs"]), FONTE, "não"])
+                        l["texto_original"], "; ".join(l["obs"]), FONTE, "sim" if l["mapa"] in CONFERIDOS else "não"])
 
 
 def preenche_apelido_br(linhas: list[dict]) -> tuple[int, int]:

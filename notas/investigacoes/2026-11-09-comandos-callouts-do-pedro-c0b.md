@@ -87,3 +87,12 @@ A página da prancheta é gerada para todo radar calibrado de mapa `de_*` (`mapa
 ## Limite de reprodução
 
 O script que estimou o alinhamento (busca de escala e deslocamento nas máscaras do mapa, depois ECC do OpenCV) não está no repositório: só o resultado (`pesquisa/callouts_br/alinhamento.json`). A leitura dos nomes é manual (sem OCR), e o centro de cada texto foi ajustado ao bloco de texto mais perto (até 15 px) lendo a imagem do Pedro, que precisa estar na pasta `callouts-br` para `pesquisa.comandos_c0b_callouts` regerar o CSV.
+
+## Decisões do Pedro (2026-11-10) e o que mudou nos dados
+
+1. **Mínimo para o tempo real: 20 casos e 3 partidas.** Abaixo disso, "estimado".
+2. **Nome repetido: perguntar "qual?" com botões**, mas aceitar qualificadores que resolvem sozinhos ("default do A", "lixeira do CT", "banco do meio").
+3. **Conferência:** Mirage e Dust2 estão conferidas (`conferido = sim` nos 128 pontos dos dois mapas); os outros 8 seguem `não` até o Pedro avisar.
+4. **Troca de andar:** a peça vai para o andar do ponto. O tempo vem do corpus, se houver amostra; se não houver, o site diz que não estimou o tempo por causa da troca de andar, em vez de usar a linha reta.
+5. **Os 25 lugares da demo sem apelido** ficam só com o nome do jogo em inglês.
+6. **Ressalvas:** "L" fica como está (repetido, então pergunta); "(MF)" virou o apelido "MF" do Meio Falso (Mirage, Inferno, Vertigo); "ou Tapete A" é apelido do Palácio; "(Hell)" é apelido do Inferno (Nuke); "Caixa do Quadrado" e "Caixa do Jardim" valem as duas (Ancient); "(Bomb) Antigo" aceita "Bomb Antigo" e "Antigo" (Train); **"Mogi" foi acrescentado como apelido do "Moddii"** na Mirage (a imagem do Pedro diz "Moddii"; "Mogi" não estava nos dados, então não havia o que conferir: entrou por pedido dele). Os ajustes estão em `AJUSTES` de `pesquisa/comandos_c0b_callouts.py`.

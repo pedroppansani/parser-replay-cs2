@@ -87,7 +87,7 @@ de_inferno;Middle;MIDDLE;Meio;meio / mid;1;1;28624;rascunho, o Pedro confere
 de_inferno;Pit;PIT;Fosso;Cabecinha / Headshot / Areia / Quebrado;1;1;14463;rascunho, o Pedro confere
 de_inferno;Quad;QUAD;?;↑ Cogu / ↓ Embaixo do Cogu;1;1;2709;rascunho, o Pedro confere
 de_inferno;Ruins;RUINS;Ruínas;Igreja / 3D / Construção / CT;1;1;16754;rascunho, o Pedro confere
-de_inferno;SecondMid;SECOND MID;Segundo Mid;Escada MF / Meio Falso (MF);1;1;15386;rascunho, o Pedro confere
+de_inferno;SecondMid;SECOND MID;Segundo Mid;Escada MF / Meio Falso / MF;1;1;15386;rascunho, o Pedro confere
 de_inferno;TRamp;T RAMP;TR Rampa;Caverna;1;1;16262;rascunho, o Pedro confere
 de_inferno;TSpawn;T SPAWN;TR Spawn;spawn TR / base TR / Túnel (TR) / Rádio;1;1;65383;rascunho, o Pedro confere
 de_inferno;TopofMid;TOP OF MID;Topo de Mid;Piru / NiP;1;1;20738;rascunho, o Pedro confere
@@ -96,7 +96,7 @@ de_inferno;Upstairs;UPSTAIRS;Andar de cima;Cozinha;1;1;827;rascunho, o Pedro con
 de_mirage;Apartments;APARTMENTS;Apartamentos;Snax / Tapete / Cozinha;1;1;40712;rascunho, o Pedro confere
 de_mirage;BackAlley;BACK ALLEY;Fundo Beco;Corredor Escada;1;1;36404;rascunho, o Pedro confere
 de_mirage;BombsiteA;BOMBSITE A;Bomb A;A / bomb A / site A / Top Liga / Sanduíche / Tetris / Areia / Banco / Caixa Fogo / Default / Ninja / Newba / Portão;1;1;121767;rascunho, o Pedro confere
-de_mirage;BombsiteB;BOMBSITE B;Bomb B;B / bomb B / site B / Sol / Queda / Default / ↑ Ninja / Vazio / Sombra / b4rtin / Forest / Moddii / Lixeira;1;1;79716;rascunho, o Pedro confere
+de_mirage;BombsiteB;BOMBSITE B;Bomb B;B / bomb B / site B / Sol / Queda / Default / ↑ Ninja / Vazio / Sombra / b4rtin / Forest / Moddii / Mogi / Lixeira;1;1;79716;rascunho, o Pedro confere
 de_mirage;CTSpawn;CT SPAWN;CT Spawn;spawn CT / base CT / Buraco / Sem Saída / Boltz / CT / Lixeira;1;1;272207;rascunho, o Pedro confere
 de_mirage;Catwalk;CATWALK;Passarela;L / ↓ Rato / Top Meio;1;1;46525;rascunho, o Pedro confere
 de_mirage;Connector;CONNECTOR;Conector;Liga;1;1;25565;rascunho, o Pedro confere
@@ -108,7 +108,7 @@ de_mirage;PalaceAlley;PALACE ALLEY;Palácio Beco;Caverna TR / Plataforma;1;1;373
 de_mirage;PalaceInterior;PALACE INTERIOR;Palácio Interior;Taco / ↑ Areia cima / Palácio / Tapete A;3;1;65321;rascunho, o Pedro confere
 de_mirage;Scaffolding;SCAFFOLDING;Andaime;?;0;1;2132;rascunho, o Pedro confere
 de_mirage;Shop;SHOP;Loja;Mercado / Porta Mercado / Janela Mercado;1;1;26755;rascunho, o Pedro confere
-de_mirage;SideAlley;SIDE ALLEY;Lateral Beco;Escada TV / Sem saída do MF / Meio Falso (MF);1;1;41835;rascunho, o Pedro confere
+de_mirage;SideAlley;SIDE ALLEY;Lateral Beco;Escada TV / Sem saída do MF / Meio Falso / MF;1;1;41835;rascunho, o Pedro confere
 de_mirage;SnipersNest;SNIPERS NEST;Snipers Ninho;Janelão;1;1;20227;rascunho, o Pedro confere
 de_mirage;Stairs;STAIRS;Escadas;Cabecinha;1;1;12163;rascunho, o Pedro confere
 de_mirage;TRamp;T RAMP;TR Rampa;Caverna;1;1;17962;rascunho, o Pedro confere
@@ -120,7 +120,7 @@ de_nuke;Admin;ADMIN;Administração;ADM;1;1;9384;rascunho, o Pedro confere
 de_nuke;BombsiteA;BOMBSITE A;Bomb A;A / bomb A / site A / Azul / Default / Tetris / Tripla / Duto;1;1;59179;rascunho, o Pedro confere
 de_nuke;BombsiteB;BOMBSITE B;Bomb B;B / bomb B / site B / Rampinha / Batman / Escuro / Robin / Tóxico / Água / ↑ Passarela / ↑ Amarelo / Silo / Default / Newba / ↑ Boia;1;1;22098;rascunho, o Pedro confere
 de_nuke;CTSpawn;CT SPAWN;CT Spawn;spawn CT / base CT;3;1;94542;rascunho, o Pedro confere
-de_nuke;Catwalk;CATWALK;Passarela;↑ Céu / Cat / ↓ Inferno (Hell);3;1;5285;rascunho, o Pedro confere
+de_nuke;Catwalk;CATWALK;Passarela;↑ Céu / Cat / ↓ Inferno / Hell;3;1;5285;rascunho, o Pedro confere
 de_nuke;Control;CONTROL;Controle;Controle;1;1;8440;rascunho, o Pedro confere
 de_nuke;Crane;CRANE;Guindaste;?;2;1;1908;rascunho, o Pedro confere
 de_nuke;Decon;DECON;?;Breaking Bad (BB);1;1;3550;rascunho, o Pedro confere
