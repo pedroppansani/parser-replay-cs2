@@ -24,7 +24,7 @@
   // ---------- vocabulário ----------
   function lista(s) { var o = {}; s.split(" ").forEach(function (w) { o[w] = true; }); return o; }
   var LANCAR = lista("joga jogar jogam lanca lancar lancam solta soltar soltam manda mandar mandam usa usar usam arremessa arremessar arremessam");
-  var MOVER = lista("vai ir vao roda rodar rodam corre correr correm anda andar andam caminha caminhar caminham agacha agachar agacham");
+  var MOVER = lista("vai ir vao roda rodar rodam corre correr correm anda andar andam caminha caminhar caminham agacha agachar agacham entra entrar entram sobe subir sobem desce descer descem volta voltar voltam rotaciona rotacionar rotacionam");
   var SEGURAR = lista("segura segurar seguram fica ficar ficam holda holdar holdam");
   var ESPERAR = lista("espera esperar esperam aguarda aguardar aguardam");
   var GRANADAS = { smoke: "smoke smokes fumaca fumacas", flash: "flash flashes flashbang flashbangs luz", molotov: "molotov molotovs molo molos incendiaria incendiarias fogo",
@@ -104,8 +104,23 @@
     pontos.forEach(function (x) { var id = x.e.tipo === "ponto" ? "p" + x.e.p.id : "a" + x.e.a.nome; if (!vistos[id] && o.length < quantas) { vistos[id] = 1; o.push(x.e); } });
     return o;
   }
+  function agrupa(entradas) {   // o mesmo nome em dois pontos da MESMA área da demo e do MESMO andar é um alvo só: o ponto do meio entre eles
+    var grupos = {}, ordem = [];
+    entradas.forEach(function (e) {
+      var chave = e.tipo === "ponto" && e.p.lugar ? "g|" + e.p.lugar + "|" + (e.p.andar || "") : "i|" + (e.tipo === "ponto" ? e.p.id : e.a.nome);
+      if (!grupos[chave]) { grupos[chave] = []; ordem.push(chave); }
+      grupos[chave].push(e);
+    });
+    return ordem.map(function (k) {
+      var g = grupos[k]; if (g.length === 1) return g[0];
+      var p = {}; Object.keys(g[0].p).forEach(function (c) { p[c] = g[0].p[c]; });
+      p.x = Math.round(g.reduce(function (t, e) { return t + e.p.x; }, 0) / g.length); p.y = Math.round(g.reduce(function (t, e) { return t + e.p.y; }, 0) / g.length);
+      p.ids = g.map(function (e) { return e.p.id; }); p.id = p.ids.join("+"); p.ponto_medio = true;
+      return { tipo: "ponto", p: p };
+    });
+  }
   function alvoDe(e) {
-    if (e.tipo === "ponto") return { tipo: "ponto", id: e.p.id, nome: e.p.nome, qualificacao: e.p.qualificacao || "", x: e.p.x, y: e.p.y, andar: e.p.andar, vertical: e.p.vertical || "", lugar: e.p.lugar || "" };
+    if (e.tipo === "ponto") return { tipo: "ponto", id: e.p.id, nome: e.p.nome, qualificacao: e.p.qualificacao || "", x: e.p.x, y: e.p.y, andar: e.p.andar, vertical: e.p.vertical || "", lugar: e.p.lugar || "", ponto_medio: !!e.p.ponto_medio, ids: e.p.ids || [e.p.id] };
     return { tipo: "area", nome: e.a.nome, texto: e.a.texto, x: e.a.x, y: e.a.y, andar: e.a.andar || "", lugar: e.a.nome };
   }
   function rotuloDe(e, outros) {   // como a opção se escreve: o nome e o que distingue (o andar, o lugar da demo; as coordenadas se nada distingue)
@@ -235,7 +250,8 @@
           if (sites.length) { entradas = sites.map(function (p) { return { tipo: "ponto", p: p }; }); nomeIx = x; fimNome = (ant && (ant.t === "site" || ant.t === "bomb" || ant.t === "bombsite") ? x : x); marca(x, x, "onde"); }
         });
       }
-      if (entradas && entradas.length > 1) {   // nome repetido: tenta o qualificador "do/da/de X"
+      if (entradas && entradas.length > 1) entradas = agrupa(entradas);
+      if (entradas && entradas.length > 1) {   // nome repetido em áreas ou andares diferentes: tenta o qualificador "do/da/de X"
         var prox2 = tk[fimNome + 1], resolvido = null;
         if (prox2 && /^(do|da|de|dos|das)$/.test(prox2.t) && tk[fimNome + 2]) {
           var refTk = tk[fimNome + 2], refPos = [], refTxt = refTk.t, consumiu = fimNome + 2;
@@ -286,7 +302,7 @@
       });
       // sobrou "do início" colado ao número já tratado
       if (o.rel && !ac.quando) ac.quando = { tipo: o.rel };
-      if (!ac.quando && anterior && ac.quem.length && !o.rel && implicito && anterior.quando) ac.quando = { tipo: "depois" };   // mesmo jogador, "e roda pra TV": vem depois
+      if (!ac.quando && anterior && ac.quem.length && !o.rel && implicito) ac.quando = { tipo: "depois" };   // mesmo jogador, "e roda pra TV": vem depois
       if (ac.quando && ac.quando.tipo === "depois" && !anterior) ac.quando = null;
 
       // não entendido: palavras que sobraram (artigos e preposições não contam)
