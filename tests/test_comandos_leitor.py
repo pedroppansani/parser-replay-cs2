@@ -23,6 +23,16 @@ def test_o_leitor_e_puro_sem_dom_rede_nem_armazenamento():
         assert proibido not in js, proibido
 
 
+def test_a_aba_nao_escreve_html_e_toda_pagina_de_mapa_leva_o_leitor_e_o_contexto():
+    aba = (RAIZ / "dashboard" / "web" / "prancheta" / "20-comandos.js").read_text(encoding="utf-8")
+    for proibido in ("innerHTML", "insertAdjacentHTML", "document.write", "eval(", "localStorage", "fetch("):
+        assert proibido not in aba, proibido
+    from scripts.build_tactics_page import build_html
+    for mapa in ("de_mirage", "de_cache", "de_nuke"):                                       # com tabela conferida, sem tabela da demo, com dois andares
+        html = build_html(mapa)
+        assert "LeitorDeComandos" in html and '"pontos_nao_conferidos"' in html and "/*__COMANDOS__*/" not in html, mapa
+
+
 def test_toda_pergunta_que_o_leitor_pode_fazer_tem_texto_do_python():
     """A frase da tela sai do Python (decisão 18): cada `codigo` de pergunta do JS tem `pergunta_<codigo>` em TEXTOS, e cada opção fixa tem o seu texto."""
     js = LEITOR.read_text(encoding="utf-8")

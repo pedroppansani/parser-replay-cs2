@@ -175,3 +175,15 @@ def test_a_pergunta_recebe_o_foco_e_o_cartao_acompanha_a_tatica(contexto, tmp_pa
     _poe_ficha(pg, "t", "2")                                                                        # a ficha entra depois de "Entender"
     aba_do_painel(pg, "comandos")
     assert pg.is_enabled("#pr-cmd-aplicar") and "ainda não está no mapa" not in pg.inner_text("#pr-cmd-resultado")
+
+
+def test_num_round_real_as_fichas_tem_nome_e_a_aba_avisa(contexto, tmp_path_factory):
+    """Em round real a ficha se chama pelo nome do jogador: "TR 2" não vale; a aba diz, em vez de só "ainda não está no mapa"."""
+    pg = _pagina(contexto, tmp_path_factory)
+    aba_do_painel(pg, "comandos")
+    assert pg.locator("#pr-cmd-round").count() == 0
+    pg.evaluate("""() => { const I = Prancheta._interno, S = I.S;
+        I.emiteLote([["cria_peca", { peca: "demo-niko", lado: "t", rotulo: "NiKo", passo: S.estado.passos[0].passo, x: 0, y: 0, nivel: 0 }]]); }""")
+    assert "têm o nome do jogador" in pg.inner_text("#pr-cmd-round")
+    pg.evaluate("() => Prancheta._interno.desfaz()")
+    assert pg.locator("#pr-cmd-round").count() == 0

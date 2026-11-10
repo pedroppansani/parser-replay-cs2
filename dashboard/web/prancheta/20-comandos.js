@@ -110,7 +110,16 @@
   }
   /** A tática mudou (uma ficha entrou no mapa, um desfazer): o cartão que está na tela refaz o plano, sem roubar o foco de quem digita. */
   var cmdChave = "";
+  /** Num round real as fichas têm o nome do jogador, não "TR 2": o cartão avisa, em vez de dizer só que a ficha não está no mapa. */
+  function cmdNotaDoRound() {
+    var dica = $("pr-cmd-dica"), nota = $("pr-cmd-round");
+    if (!dica || !S.estado) return;
+    var nomeadas = Object.keys(S.estado.pecas).some(function (pid) { return !/^[1-9]$/.test(String(S.estado.pecas[pid].rotulo)); });
+    if (nomeadas && !nota) dica.parentNode.insertBefore(el("p", { class: "pr-cmd-aviso", id: "pr-cmd-round", texto: cmdT("ui_round") }), dica.nextSibling);
+    else if (!nomeadas && nota) nota.parentNode.removeChild(nota);
+  }
   function cmdAtualiza() {
+    cmdNotaDoRound();
     if (!Cmd.leitura || !$("pr-cmd-resultado")) return;
     var chave = S.doc ? S.doc.operacoes.length + ":" + Object.keys(S.estado.pecas).join() : "";
     if (chave === cmdChave) return;
@@ -228,5 +237,5 @@
         el("button", { type: "button", id: "pr-cmd-corrigir", class: "pr-cmd-corrigir", texto: cmdT("ui_corrigir"), onclick: cmdCorrige })])
     ]);
     painel.appendChild(caixa);
-    cmdDesenha();
+    cmdNotaDoRound(); cmdDesenha();
   }

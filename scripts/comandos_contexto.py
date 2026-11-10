@@ -56,6 +56,7 @@ TEXTOS = {
     "ui_sem_nomes": "Os nomes de lugar deste mapa ainda não foram conferidos: valem os nomes do jogo, em inglês.",
     "ui_sem_nenhum": "Este mapa ainda não tem nomes de lugar conferidos, então não há onde mandar o jogador.",
     "ui_corrija": "Corrija a frase e toque em Entender de novo.",
+    "ui_round": "Neste round as fichas têm o nome do jogador: ainda não dá para mandar por número (TR 2). Comece uma tática nova para usar os comandos.",
     "linha_lancar": "{quem} · {granada} em {alvo} · {quando}",
     "linha_mover": "{quem} · {modo} até {alvo} · {quando}",
     "linha_segurar": "{quem} · segura {alvo} · {quando}",
