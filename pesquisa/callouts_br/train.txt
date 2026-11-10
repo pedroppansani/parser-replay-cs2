@@ -1,0 +1,61 @@
+# x y texto
+502 62 Trilho
+797 97 Fundo (TR)
+525 116 Rua TR
+674 138 Caminhão
+115 160 Base TR
+454 173 Lixão
+598 187 Sem Saída
+311 255 Escada|TR
+828 245 Fundo
+876 213 Verde
+799 335 (Corredor do Fundo)
+388 304 ↑ Vestiário/|Cozinha
+700 316 Vazio/|Buraco
+537 333 Olof/Escanteio
+891 331 Newba
+698 390 Amarelo
+887 387 Fundo CT
+610 405 Sanduíche
+530 443 Vermelho
+380 410 ↓ Liga TR
+314 450 Caminho da Morte
+768 464 Forest
+378 523 ↑ Servidor
+512 512 Geladeira
+598 536 Default
+660 538 @A
+870 537 (Bomb) Antigo
+480 574 FNX
+431 601 Bombeiro
+722 598 Céu
+609 619 Guarita
+258 606 Escada|Bombeiro
+315 625 Buraco
+420 653 Escada|Servidor
+309 651 Queda
+674 666 L i g a C T
+717 719 (Escada Liga)
+985 668 Escada CT
+387 728 B Baixo
+545 728 R u a
+890 730 CT
+273 811 Plataforma
+326 826 Banana/|Corredor B
+543 772 Azul/Pava
+712 780 Vermelho B/|Pavinha
+497 836 Default
+551 838 @B
+624 840 Summit
+705 848 Aberto B
+822 842 Paredão
+931 845 Base CT
+451 878 Drop
+464 903 Escada
+501 925 Flusha
+628 905 Óleo/Laranja
+732 914 Nightwolf
+365 947 G a u l e s
+512 951 Casinha
+690 955 Mega Rampa
+935 946 Corredor CT

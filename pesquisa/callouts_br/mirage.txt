@@ -1,0 +1,74 @@
+# x y texto (como escrito na imagem do Pedro, 1024x1024); "|" separa linhas do mesmo rótulo; "@A"/"@B" = a letra vermelha do bombsite
+290 82 Poltrona
+651 97 TV
+765 97 TV
+35 162 Portão/|Newba
+112 107 Coldzera
+95 132 Van
+163 111 Snax
+240 114 Tapete
+120 176 Sol
+192 176 Sol
+215 151 Queda
+167 205 Default
+210 207 ↑ Ninja
+127 277 Vazio
+155 303 Sombra
+88 245 b4rtin
+30 230 Forest
+143 238 @B
+385 158 Cozinha
+513 160 Corredor Escada
+840 145 Escada TV
+310 218 Edward/|Arco
+502 197 Escada Rato
+977 183 Portão da|Base
+697 235 Sem saída|do MF
+748 255 Meio Falso|(MF)
+455 254 L
+459 361 L
+410 288 ↓ Rato
+413 400 Rato
+380 350 Moscow
+755 356 Esquina
+572 404 Top Meio
+574 467 Meio
+767 470 Carroça
+447 490 Banco
+595 526 Cadeira
+710 528 Torneira
+492 543 Liga
+441 584 Caixa da|Liga
+368 457 Janelão
+328 538 Buraco
+381 642 Jungle
+350 684 FNX
+299 692 Sem|Saída
+505 627 Top Liga
+540 677 Cabecinha
+580 689 Sanduíche
+633 669 Tetris
+680 721 Taco
+783 702 Caverna
+886 581 Caverna TR
+857 672 Plataforma
+698 780 ↑ Areia cima
+672 811 Areia
+811 848 Palácio|(ou Tapete A)
+472 741 Banco
+511 815 Caixa|Fogo
+590 840 Default
+547 845 @A
+555 879 Ninja
+622 887 Newba
+500 908 Portão
+419 911 Boltz
+319 879 CT
+392 856 Lixeira
+232 767 Base CT
+968 340 Base TR
+165 440 Mercado
+79 375 Porta|Mercado
+181 376 Janela|Mercado
+252 356 Moddii
+68 330 Lixeira

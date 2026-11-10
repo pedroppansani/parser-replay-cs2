@@ -1,0 +1,59 @@
+# x y texto
+83 38 Escanteio
+230 42 Coluna
+362 28 Suicida
+358 68 Cold
+459 112 3D
+40 138 Passarela
+40 297 Passarela
+151 124 @B
+181 110 Default
+310 149 Gerador
+137 187 Laranja
+672 141 Base CT
+459 231 Janelão/|Construção/|Favela
+318 226 Pallet (B)
+67 240 Branco
+117 250 Cimento|(B)
+191 279 Sem|Saída
+155 345 Madeira
+466 336 Meio CT
+741 314 Corredor|Fundo
+633 349 Liga|CT
+860 360 Fundo
+126 400 ↓ Embaixo|da Escada
+126 449 Escada B
+257 405 Pallet
+307 415 Meio
+404 383 ↑ Pézinho
+875 418 Cabecinha/|Headshot
+352 520 Quina
+459 492 Meio|Falso|(MF)
+667 506 Elevador
+787 508 Escuro
+944 558 Newba/|Tripla
+1007 540 Passarela
+331 582 Meio TR
+853 634 @A
+853 672 Default
+980 669 Maroto
+189 656 Gerador TR
+501 664 Bombeiro|(Cima)
+678 684 Madeira
+642 717 Quina
+587 753 Corredor|/Beco
+694 800 Rampa Baixo
+637 808 Amarelo
+848 758 Guindaste
+761 824 Cimento|Rampa
+990 799 Pilar
+828 873 Rampa Cima
+91 810 Passarela TR
+341 815 Passarela TR
+216 805 Escada TR
+279 816 Lixão
+438 871 Base TR
+216 948 Passarela TR
+631 937 51
+764 939 L a j e
+924 923 Cimento (A)

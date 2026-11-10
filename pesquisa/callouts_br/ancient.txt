@@ -1,0 +1,49 @@
+# x y texto
+382 92 Templo
+530 87 Base CT
+283 127 Vela
+113 150 Altar
+160 127 Caixa Altar
+192 185 Caixa|Gorda
+384 166 CT
+265 224 @A
+297 230 Default
+340 231 Caixa|Fogo
+514 231 Caverna
+664 218 CT
+718 232 Caixa|CT
+878 219 Escanteio/ L
+184 317 Árvore/|Pézinho
+774 289 CT
+965 296 Sombra
+844 329 Paredão
+937 353 Sol|/Cabecinha
+503 346 Janelão
+287 371 Liga
+147 437 Fundo
+302 466 Rosquinha|/Meio Falso|/Quadrado
+808 398 Pilar
+853 408 @B
+812 428 Default
+715 415 Escuro
+575 471 Sem|Saída
+498 526 Meio
+785 507 Areia/|Newba
+675 541 Rato/|Escuro Alto
+779 550 Vazio
+922 531 Rampa
+860 582 Caixa|Rampa
+396 605 Esquina
+112 634 Marote
+188 641 Rampa|Fundo
+534 616 Caixa|Gorda
+672 618 V a r a n d a
+727 597 Laranja
+872 651 Porta|Dupla
+293 723 Quadrado|do Fundo
+872 709 Quadrado/|Jardim
+925 770 Caixa do|Quadrado/Jardim
+391 800 Rampa TR
+651 862 Túnel
+764 820 Tronco
+501 954 Base TR

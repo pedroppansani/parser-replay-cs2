@@ -1,0 +1,46 @@
+# x y texto
+469 121 Praia
+584 215 Esgoto
+723 209 Céu
+815 226 @A
+686 277 Plataforma
+770 256 Redondo
+794 279 Default
+873 277 Altar/|Pilar
+733 338 Caixa
+422 226 Base CT
+290 282 B Cima
+354 336 Caverna|(B)
+538 337 (Porta|Tumba)
+431 388 (Escada|Tumba)
+273 391 B Baixo
+638 391 Liga
+717 401 Paredão
+870 410 Mercado
+567 436 Meio
+423 429 Tumba
+375 472 Newba
+285 495 @B
+288 523 Default
+370 513 (Pilar do|Bomb)
+203 507 Portão/|Pizza
+502 518 Janelão
+582 517 Porta(Meio)
+408 548 Sombra
+721 545 Barco
+778 558 Biscoitão
+130 574 Altar do|Fundo
+314 587 Pilar
+385 613 Rato
+500 628 Ponte
+588 621 Água/Rio
+817 640 Varanda
+693 672 Buraco/|Escadão
+235 662 Fundo
+162 692 Caixa|(do Fundo)
+442 700 Esquina
+554 732 Coqueiro
+283 766 Arco
+322 818 Fundo TR
+645 830 Passagem TR
+494 975 Base TR

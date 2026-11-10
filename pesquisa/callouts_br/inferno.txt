@@ -1,0 +1,69 @@
+# x y texto
+533 29 Jardim
+421 101 Newba/|Escuro
+498 103 Caixão
+635 106 Igreja/3D/|Construção
+402 161 Pilar
+518 164 Default
+471 197 Fonte
+507 198 @B
+593 175 Piscina
+412 245 Tripla
+470 268 BTT 2
+511 277 Sanduíche
+541 258 BTT 1
+642 208 CT
+649 239 Pézinho
+721 230 Árvore|CT
+781 338 Speed/Corredor Base
+872 243 Caminhão
+950 342 Base CT
+583 311 Fallen
+508 354 Carro
+566 399 Cimento
+650 406 Sem Saída|/Portão
+522 427 Muro
+409 468 (Barril/|Madeira)
+455 472 Banana
+386 519 Árvore
+489 535 Tavares
+430 589 Banana
+820 511 Arco
+973 539 Biblioteca
+707 560 Piru
+840 576 N i P
+734 619 NiP
+981 619 Areia 2
+685 654 Piruzinho
+333 640 Caverna
+252 688 Caverna|(TR)
+316 702 Moto
+153 714 Túnel(TR)
+41 740 Base TR
+829 676 Fundo|Bomb
+818 711 ↑ Device
+863 739 @A
+592 711 M e i o
+469 741 ↓ Rato
+610 774 (Escada MF)
+679 774 Campa|nário
+344 772 Cozinha
+416 821 Varanda da|Cozinha
+806 785 ↑ Coldzera
+889 796 Default
+853 790 S1mple
+775 816 X u x a
+728 845 ↑ Cogu
+751 873 ↓ Embaixo|do Cogu
+848 845 Carroça
+846 883 Varanda|Tapete
+463 866 Meio Falso (MF)
+316 865 Ponte
+642 862 Janelão
+686 886 Apartamento
+769 911 Tapete
+903 925 Cabecinha/|Headshot
+988 893 Areia/|Quebrado
+989 771 Cemitério
+121 897 Rádio
+404 940 Tapete TR

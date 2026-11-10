@@ -1,0 +1,59 @@
+# x y texto
+276 147 Escanteio
+369 147 Byali
+311 171 Tripla
+473 163 Azul
+336 208 @A
+431 205 ↑ Taco
+338 231 Default
+351 268 Vermelho
+583 228 Gerador
+545 290 Vestiário
+493 322 Garagem|/Galpão
+594 352 Grafite
+203 295 Paredão
+408 311 Empilhadeira
+388 329 ↑ Plataforma
+371 358 ↓ Tóxico
+252 363 Geladeira
+173 361 Toyota
+311 393 Guarita
+323 447 Rua
+181 464 Rampa|Toyota
+70 454 Base CT
+517 458 Lona
+464 472 Sem|Saída
+726 456 Caminhão
+364 505 Caixa|Branca
+441 549 Meio
+600 527 Vermelho
+266 570 Liga|CT
+186 585 CT
+615 582 Galpão TR
+922 599 Base TR
+373 596 Cimento
+434 602 Telhado
+319 615 Ninja
+291 660 Goteira
+505 617 Areia
+448 643 Duto
+372 661 Xadrez
+581 654 Torneira
+249 683 Rampa
+283 727 ↑ Céu
+390 689 Esquina
+474 712 Caixa do|Miolo
+743 703 Casinha
+597 735 Miolo
+757 754 Vazio
+166 723 Pallet
+209 770 Baixo CT
+511 789 Miolo
+392 783 NAK
+397 815 BTT
+330 815 Alvo
+333 834 Default
+291 824 Trincheira
+345 857 @B
+383 882 Fundo|do Bomb
+553 855 Tóxico
