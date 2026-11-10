@@ -147,6 +147,8 @@ CASOS = [
     (48, "de_mirage", "tr 2 rotaciona pra b aos 1:00", None, ["mover|tr2|-|B@BOMBSITE B|correndo|relogio:60"], [], []),
     (49, "de_inferno", "tr 2 vai pra banana aos 1:00", None, ["mover|tr2|-|Banana@BANANA|correndo|relogio:60"], [], []),                                    # duas Bananas na mesma área: um alvo só
     (50, "de_mirage", "tr 2 vai pro default aos 1:00", None, ["mover|tr2|-|-|correndo|relogio:60"], [(0, "qual")], []),                                  # Default do A e do B: áreas diferentes, pergunta
+    (51, "de_mirage", "tr 2 joga smoke na janela aos 1:30", None, ["lancar|tr2|smoke|Janelão@SNIPERS NEST|-|relogio:90"], [], []),                           # "janela" é apelido do Janelão
+    (52, "de_mirage", "tr 2 joga smoke na janela mercado aos 1:30", None, ["lancar|tr2|smoke|Janela Mercado@SHOP|-|relogio:90"], [], []),                   # e não leva o "Janela Mercado"
 ]
 
 

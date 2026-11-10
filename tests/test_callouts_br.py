@@ -52,6 +52,9 @@ def test_as_decisoes_de_leitura_do_pedro():
     assert por[("de_ancient", "Caixa do Quadrado")]["apelidos"] == "Caixa do Jardim"
     assert por[("de_train", "Antigo")]["apelidos"] == "Bomb Antigo"
     assert any(l["mapa"] == "de_mirage" and l["nome"] == "Palácio" and "Tapete A" in l["apelidos"] for l in _linhas())
+    for mapa in ("de_ancient", "de_anubis", "de_inferno", "de_mirage", "de_vertigo"):
+        assert "Janela" in por[(mapa, "Janelão")]["apelidos"].split(" / "), mapa                                         # "janelão também pode ser janela" (2026-11-10)
+    assert ("de_nuke", "Janelão") not in por and por[("de_nuke", "Janela")]["apelidos"] == ""                         # na Nuke "Janela" já é um ponto, não apelido de nada
     ls = [l for l in _linhas() if l["mapa"] == "de_mirage" and l["nome"] == "L"]
     assert len(ls) == 2 and all(l["repete_no_mapa"] for l in ls)                       # "L" repetido: o leitor pergunta qual
 
