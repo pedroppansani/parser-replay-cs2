@@ -120,6 +120,8 @@
   }
   function cmdAtualiza() {
     cmdNotaDoRound();
+    // o "Aplicado…" vale até a tática mudar de novo (desfazer, outra edição): depois disso ele mentiria
+    if (Cmd.mensagem && Cmd.aplicadoEm != null && S.doc && S.doc.operacoes.length !== Cmd.aplicadoEm) { Cmd.mensagem = ""; Cmd.aplicadoEm = null; cmdChave = ""; if ($("pr-cmd-resultado")) cmdDesenha(); }
     if (!Cmd.leitura || !$("pr-cmd-resultado")) return;
     var chave = S.doc ? S.doc.operacoes.length + ":" + Object.keys(S.estado.pecas).join() : "";
     if (chave === cmdChave) return;
@@ -142,6 +144,7 @@
     var plano = cmdPlano(l);
     if (plano.falta || plano.problemas.length || !plano.ops.length) { cmdDesenha(); return; }
     emiteLote(plano.ops);
+    Cmd.aplicadoEm = S.doc.operacoes.length;
     Cmd.mensagem = cmdT("ok_aplicado", { n: plano.ops.length }); Cmd.leitura = null; $("pr-cmd-texto").value = ""; Cmd.textoVisto = "";
     cmdDesenha();
   }

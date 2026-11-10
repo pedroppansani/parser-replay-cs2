@@ -70,7 +70,10 @@ def test_o_exemplo_do_pedro_aplicado_vira_um_lote_e_um_desfazer_volta_tudo(conte
     assert g["arma"] == "molotov" and abs(g["t"] - 35) < 0.01 and g["jogador"] is not None
     assert interno(pg, "I.problemas(JSON.parse(JSON.stringify(S.doc)), 1)") == []         # a validação do site aceita as operações
     assert "Aplicado" in pg.inner_text("#pr-cmd-resultado") and pg.input_value("#pr-cmd-texto") == ""
+    roteiro = pg.locator("#pr-roteiro .pr-evento-texto").all_inner_texts()                # a ficha ficou parada até o horário do comando: o roteiro diz "fica", não "chega"
+    assert any(" fica em " in r and " até 1:20" in r for r in roteiro) and not any(r.startswith("TR 2 chega em") and r.endswith(" 1:20") for r in roteiro)
     pg.evaluate("() => Prancheta._interno.desfaz()")                                       # UM desfazer volta o comando inteiro
+    assert "Aplicado" not in pg.inner_text("#pr-cmd-resultado")                            # e o aviso de "Aplicado" some com o desfazer
     assert interno(pg, "Object.keys(S.e3.granadas).length") == 0
     assert interno(pg, "Object.values(S.e3.pecas).flatMap(p => p.pontos).filter(pt => pt.caminho).length") == 0
 

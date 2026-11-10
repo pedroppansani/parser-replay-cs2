@@ -166,7 +166,7 @@ def test_no_celular_some_o_desenho_reproduzir_ocupa_a_largura_e_nao_ha_rolagem_l
     ctx = navegador.new_context(viewport={"width": 375, "height": 667}, is_mobile=True)
     pg = abre(ctx, pagina)
     try:
-        assert pg.is_visible("#pr-aviso-celular") and "só no computador" in pg.inner_text("#pr-aviso-celular")
+        assert pg.is_visible("#pr-aviso-celular") and "só no computador" in pg.inner_text("#pr-aviso-celular") and "comandos pela aba Comandos" in pg.inner_text("#pr-aviso-celular")
         assert pg.locator('#pr-barra [data-ferramenta="caneta"]').is_hidden() and pg.locator("#pr-andares").count() in (0, 1)
         if pg.locator("#pr-andares").count():
             assert pg.locator("#pr-andares").is_hidden()

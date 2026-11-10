@@ -78,10 +78,12 @@
       p.pontos.forEach(function (pt, i) {
         if (pt.fora) return;
         var lugar = lugarDe(pt.x, pt.y, pt.nivel);
-        var acao = i === 0 || p.pontos[i - 1].fora ? "começa" : "chega";
+        var ant = i > 0 && !p.pontos[i - 1].fora ? p.pontos[i - 1] : null;
+        var parado = ant && ant.x === pt.x && ant.y === pt.y && (ant.nivel || 0) === (pt.nivel || 0);   // o mesmo lugar do ponto de antes: ficou parado
+        var acao = parado ? "fica" : i === 0 || !ant ? "começa" : "chega";
         ev.push({ alvo: pid + "/" + pt.id, tipo: "ponto", peca: pid, ponto: pt.id, ordem: 1, t: pt.t,
                   x: pt.x, y: pt.y, nivel: pt.nivel,
-                  texto: nome + (p.funcao ? " (" + p.funcao + ")" : "") + " " + acao + (lugar ? " em " + lugar : "") +
+                  texto: nome + (p.funcao ? " (" + p.funcao + ")" : "") + " " + acao + (lugar ? " em " + lugar : "") + (parado ? " até " + relogioEm(pt.t) : "") +
                          (tem(atrasos, pt.id) ? " (" + segundosEmTexto(atrasos[pt.id]) + " s atrasado)" : "") });
       });
     });
