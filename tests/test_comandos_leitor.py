@@ -47,6 +47,9 @@ def test_o_contexto_do_mapa_tem_os_pontos_do_pedro_as_areas_da_demo_e_so_conferi
         assert not [x for x in a["apelidos"] if re.sub(r"[^a-z0-9]", "", x.lower()) in nomes_norm], a
     assert len(contexto("de_mirage", so_conferidos=True)["pontos"]) == len(c["pontos"])            # Mirage e Dust2 estão conferidas
     assert contexto("de_nuke", so_conferidos=True)["pontos"] == []                                  # os outros ainda não
+    # os nomes de ponto de um mapa ainda não conferido não entram pela tabela de apelidos das áreas (só os apelidos escritos à mão)
+    apelidos = {x.lower() for a in contexto("de_nuke", so_conferidos=True)["areas"] for x in a["apelidos"]}
+    assert apelidos == {"bomb a", "site a", "bomb b", "site b", "spawn ct", "spawn tr"}, apelidos
     assert contexto("de_cache")["areas"] == []                                                      # mapa sem tabela da demo: só os pontos do Pedro
 
 

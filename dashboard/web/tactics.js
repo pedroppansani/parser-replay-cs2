@@ -22,6 +22,7 @@
 var Prancheta = (function () {
   "use strict";
 
+//@inclui comandos/leitor.js
 //@inclui prancheta/01-constantes.js
 //@inclui prancheta/02-modelo.js
 //@inclui prancheta/03-reproducao-pura.js
@@ -41,5 +42,6 @@ var Prancheta = (function () {
 //@inclui prancheta/17-montagem.js
 //@inclui prancheta/18-linha-do-tempo.js
 //@inclui prancheta/19-reproducao-na-tela.js
-//@inclui prancheta/20-api-do-grupo.js
+//@inclui prancheta/20-comandos.js
+//@inclui prancheta/21-api-do-grupo.js
 })();

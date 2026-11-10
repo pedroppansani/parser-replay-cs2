@@ -57,6 +57,7 @@
     atualizaBiblioteca(); atualizaPassos(); atualizaPainel(); atualizaBusca(); atualizaFerramentas();
     atualizaBanco(); atualizaBarra(); atualizaAviso(); atualizaContexto(); atualizaDica(); desenha();
     atualizaRelogioGrande(); atualizaLinhaDoTempo();
+    if (typeof cmdAtualiza === "function") cmdAtualiza();
     if (ganchos.aoAtualizar) ganchos.aoAtualizar();
   }
 

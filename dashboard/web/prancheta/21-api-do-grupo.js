@@ -123,7 +123,7 @@
       emReproducao: function () { return !!S.reproducao; }, aplica: aplica, chaveDeOrdem: chaveDeOrdem
     },
     _interno: {
-      S: S, aplica: aplica, mescla: mescla, posicaoNoPasso: posicaoNoPasso, migra: migra,
+      S: S, problemas: problemas, aplica: aplica, mescla: mescla, posicaoNoPasso: posicaoNoPasso, migra: migra,
       quadroDoPasso: quadroDoPasso, ordemDeCriacao: ordemDeCriacao, anuladas: anuladas,
       estadoNoTempo: estadoNoTempo, linhaDoTempo: linhaDoTempo,
       taticaNoTempo: taticaNoTempo, quadroNoTempo: quadroNoTempo, posicaoNoTempo: posicaoNoTempo,

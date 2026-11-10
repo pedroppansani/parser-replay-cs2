@@ -280,3 +280,22 @@ h3 { margin: 0 0 4px; font-size: 15px; }
   .pr-relogio-grande { font-size: 32px; }
   .pr-roteiro { max-height: 220px; }
 }
+
+/* aba Comandos (C2, decisão 64): o campo, o que o site entendeu, a pergunta da vez e Aplicar / Corrigir */
+.pr-cmd-texto { width: 100%; box-sizing: border-box; min-height: 76px; resize: vertical; font: inherit; padding: 8px 10px; border: 1px solid var(--borda);
+  border-radius: var(--r-sm); background: var(--fundo); color: var(--tinta); }
+.pr-comandos button { font: inherit; border: 1px solid var(--borda); background: var(--superficie); color: var(--tinta-2); border-radius: var(--r-sm); padding: 5px 12px;
+  min-height: var(--toque); cursor: pointer; }
+.pr-comandos .pr-cmd-entender, .pr-comandos .pr-cmd-aplicar { background: var(--tinta); color: var(--fundo); border-color: var(--tinta); font-weight: 600; }
+.pr-cmd-barra { margin-top: 8px; }
+.pr-cmd-resultado { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.pr-cmd-sub { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--apagado); margin: 0; }
+.pr-cmd-entendi { margin: 0; padding-left: 1.4em; display: grid; gap: 4px; }
+.pr-cmd-aviso, .pr-cmd-erro { margin: 0; padding: 6px 10px; border-left: 3px solid var(--aviso); background: var(--superficie-2); color: var(--tinta); }
+.pr-cmd-erro { border-left-color: var(--erro); }
+.pr-cmd-pergunta { border: 1px solid var(--borda); border-radius: var(--r-md); padding: 8px; display: grid; gap: 6px; }
+.pr-cmd-pergunta-texto { margin: 0; font-weight: 600; }
+.pr-cmd-opcoes { gap: 6px; }
+.pr-cmd-horario { max-width: 14em; }
+.pr-cmd-acoes { margin-top: 10px; }
+.pr-cmd-acoes[hidden] { display: none; }

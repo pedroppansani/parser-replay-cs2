@@ -100,6 +100,15 @@ def biblioteca_js(mapa: str, partidas: dict[str, str] | None = None) -> str | No
     return "Prancheta.recebeBiblioteca(" + _js(dados) + ");\n"
 
 
+def _comandos(mapa: str) -> dict:
+    """O que a aba Comandos precisa do mapa (C2): os pontos do Pedro JÁ CONFERIDOS, os lugares da demo, o relógio e os textos. Os jogadores vêm da tática na tela."""
+    from scripts.comandos_contexto import contexto
+    c = contexto(mapa, so_conferidos=True)
+    c.pop("jogadores")
+    c["pontos_nao_conferidos"] = bool(contexto(mapa)["pontos"]) and not c["pontos"]
+    return c
+
+
 def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | None = None,
                grupo: dict | None = None, biblioteca_externa: bool = False) -> str:
     """`grupo`: a configuração da aba Grupo (fase 13), ou None para a prancheta sem grupo. Os testes passam
@@ -147,6 +156,7 @@ def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | Non
         .replace("/*__MODELO3__*/null", _js(modelo3_para_a_pagina()))
         .replace("/*__LUGARES__*/null", _js(lugares))
         .replace("/*__TEXTOS__*/null", _js(TEXTOS_DA_PRANCHETA))
+        .replace("/*__COMANDOS__*/null", _js(_comandos(mapa)))
         .replace("<!--__GRUPO__-->", bloco_do_grupo(grupo))
         .replace("<!--__META__-->", meta_tags(
             f"Prancheta tática · {rotulos.get(mapa, mapa)} · {MARCA}",
