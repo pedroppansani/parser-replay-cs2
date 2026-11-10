@@ -187,7 +187,7 @@
     // a aba Comandos (C2): entra antes da Tática, e só nas páginas que o build entrega com o leitor
     if (cfg.comandos && typeof LeitorDeComandos !== "undefined" && !ABAS_DO_PAINEL.some(function (x) { return x[0] === "comandos"; })) ABAS_DO_PAINEL.splice(2, 0, ["comandos", cfg.comandos.textos.ui_aba]);
     var lado = limpa(document.querySelector("aside"));
-    var abas = el("div", { class: "pr-abas" + (ABAS_DO_PAINEL.length > 3 ? " quatro" : ""), id: "pr-abas", role: "tablist", "aria-label": "Painel da prancheta" });
+    var abas = el("div", { class: "pr-abas" + (ABAS_DO_PAINEL.length > 3 ? " quatro" : "") + (ABAS_DO_PAINEL.length > 4 ? " cinco" : ""), id: "pr-abas", role: "tablist", "aria-label": "Painel da prancheta" });
     ABAS_DO_PAINEL.forEach(function (a) {
       var b = el("button", { type: "button", role: "tab", id: "pr-aba-" + a[0], "data-aba": a[0], "aria-controls": "pr-painel-" + a[0],
         "aria-selected": "false", tabindex: "-1", texto: a[1], onclick: function () { abaDoPainel(a[0]); } });

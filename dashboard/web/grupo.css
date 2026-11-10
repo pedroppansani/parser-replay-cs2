@@ -100,6 +100,8 @@
 .pr-abas.quatro [role="tab"] { padding: 0 8px; letter-spacing: 0.04em; white-space: nowrap; }
 /* a Geist não tem largura condensada (decisão 48): no celular as quatro abas perdem o espaçamento para caber */
 @media (max-width: 420px) { .pr-abas.quatro [role="tab"] { padding: 0 5px; letter-spacing: 0; } }
+/* com o grupo ligado são cinco (Jogadores, Granadas, Comandos, Tática, Grupo): no celular o texto encolhe um pouco para caber sem rolar */
+@media (max-width: 420px) { .pr-abas.cinco [role="tab"] { padding: 0 2px; font-size: 13px; } }
 
 /* linha de dica com o grupo (§19.6): o texto e, à direita, a etiqueta temporária de quem mexeu */
 .pr-dica-estado.com-grupo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 14px; line-height: 1.45; }
