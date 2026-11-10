@@ -106,7 +106,7 @@ def _pagina_da_nuke_com_todos_os_pontos(contexto, tmp_path_factory):
     from scripts import build_tactics_page as bt
     from scripts.comandos_contexto import contexto as contexto_do_mapa
     original = bt._comandos
-    bt._comandos = lambda mapa: {**{k: v for k, v in contexto_do_mapa(mapa).items() if k != "jogadores"}, "pontos_nao_conferidos": False}
+    bt._comandos = lambda mapa: {k: v for k, v in contexto_do_mapa(mapa).items() if k != "jogadores"}
     try:
         html = tmp_path_factory.mktemp("nuke_todos") / "prancheta_de_nuke.html"
         html.write_text(bt.build_html("de_nuke"), encoding="utf-8")
@@ -187,3 +187,14 @@ def test_num_round_real_as_fichas_tem_nome_e_a_aba_avisa(contexto, tmp_path_fact
     assert "têm o nome do jogador" in pg.inner_text("#pr-cmd-round")
     pg.evaluate("() => Prancheta._interno.desfaz()")
     assert pg.locator("#pr-cmd-round").count() == 0
+
+
+def test_segundos_soltos_na_resposta_pedem_relogio_ou_inicio_em_vez_de_calar(contexto, tmp_path_factory):
+    pg = _pagina(contexto, tmp_path_factory)
+    _escreve(pg, "tr 2 joga smoke na b")
+    pg.fill("#pr-cmd-horario", "40 segundos")
+    pg.press("#pr-cmd-horario", "Enter")
+    assert "40 segundos contados como?" in pg.inner_text("#pr-cmd-resultado")
+    pg.fill("#pr-cmd-horario", "40 s do início")
+    pg.press("#pr-cmd-horario", "Enter")
+    assert pg.locator("#pr-cmd-entendi li").all_inner_texts() == ["TR 2 · Smoke em B · aos 40 s do início"]

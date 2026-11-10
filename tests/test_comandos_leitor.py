@@ -30,7 +30,7 @@ def test_a_aba_nao_escreve_html_e_toda_pagina_de_mapa_leva_o_leitor_e_o_contexto
     from scripts.build_tactics_page import build_html
     for mapa in ("de_mirage", "de_cache", "de_nuke"):                                       # com tabela conferida, sem tabela da demo, com dois andares
         html = build_html(mapa)
-        assert "LeitorDeComandos" in html and '"pontos_nao_conferidos"' in html and "/*__COMANDOS__*/" not in html, mapa
+        assert "LeitorDeComandos" in html and '"textos"' in html and "/*__COMANDOS__*/" not in html, mapa
 
 
 def test_toda_pergunta_que_o_leitor_pode_fazer_tem_texto_do_python():

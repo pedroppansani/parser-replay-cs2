@@ -105,7 +105,6 @@ def _comandos(mapa: str) -> dict:
     from scripts.comandos_contexto import contexto
     c = contexto(mapa, so_conferidos=True)
     c.pop("jogadores")
-    c["pontos_nao_conferidos"] = bool(contexto(mapa)["pontos"]) and not c["pontos"]
     return c
 
 

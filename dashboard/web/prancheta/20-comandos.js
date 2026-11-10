@@ -152,7 +152,11 @@
   }
   function cmdHorario(texto, aoAceitar) {
     var h = LeitorDeComandos.horario(texto, cmdContexto());
-    if (!h || h.invalido || h.ambiguo) { Cmd.mensagem = cmdT(h && h.invalido ? "pergunta_horario_invalido" : "pergunta_quando", { horario: h && h.segundos_restantes != null ? cmdRelogio(h.segundos_restantes) : "", trecho: texto }); cmdDesenha(); return; }
+    if (!h || h.invalido || h.ambiguo) {
+      Cmd.mensagem = h && h.ambiguo ? cmdT("pergunta_quando_segundos", { n: h.segundos }) + " " + cmdT("ui_horario") + "."
+        : cmdT(h && h.invalido ? "pergunta_horario_invalido" : "pergunta_quando", { horario: h && h.segundos_restantes != null ? cmdRelogio(h.segundos_restantes) : "", trecho: texto });
+      cmdDesenha(); return;
+    }
     aoAceitar(h);
   }
 
