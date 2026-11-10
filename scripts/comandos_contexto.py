@@ -40,6 +40,41 @@ TEXTOS = {
     "opcao_relogio_n": "{n} s no relógio do round ({h})",
     "opcao_inicio_n": "{n} s depois do início do round",
     "granada_smoke": "Smoke", "granada_flash": "Flash", "granada_molotov": "Molotov", "granada_he": "HE",
+    # a aba Comandos da prancheta (C2)
+    "ui_aba": "Comandos",
+    "ui_titulo": "Comandos",
+    "ui_dica": "Escreva o que cada jogador faz. Nada muda no mapa até você aplicar.",
+    "ui_exemplo": "Ex.: tr 2 joga smoke no B aos 1:30 e depois corre até o meio",
+    "ui_rotulo": "O que acontece, em uma frase",
+    "ui_entender": "Entender",
+    "ui_aplicar": "Aplicar",
+    "ui_corrigir": "Corrigir",
+    "ui_confirmar": "Confirmar",
+    "ui_entendi": "O que entendi",
+    "ui_vazio": "Escreva uma frase e toque em Entender.",
+    "ui_horario": "ex.: 1:20 ou 40 s do início",
+    "ui_sem_nomes": "Os nomes de lugar deste mapa ainda não foram conferidos: valem os nomes do jogo, em inglês.",
+    "ui_sem_nenhum": "Este mapa ainda não tem nomes de lugar conferidos, então não há onde mandar o jogador.",
+    "ui_corrija": "Corrija a frase e toque em Entender de novo.",
+    "ui_round": "Neste round as fichas têm o nome do jogador: ainda não dá para mandar por número (TR 2). Comece uma tática nova para usar os comandos.",
+    "linha_lancar": "{quem} · {granada} em {alvo} · {quando}",
+    "linha_mover": "{quem} · {modo} até {alvo} · {quando}",
+    "linha_segurar": "{quem} · segura {alvo} · {quando}",
+    "linha_esperar": "{quem} · espera {n} s · {quando}",
+    "linha_incompleta": "{quem} · ainda falta dizer o que faz",
+    "aviso_origem": "Ainda não busco o arremesso real: a granada sai de onde o jogador está nesse horário.",
+    "chegada": "chega por volta de {h} (estimado: linha reta e velocidade medida)",
+    "q_relogio": "aos {h}", "q_inicio": "aos {n} s do início", "q_depois": "depois", "q_junto": "ao mesmo tempo", "q_sem": "sem horário",
+    "quem_vazio": "quem?", "onde_vazio": "onde?",
+    "aviso_duracao_imposta": "Você pediu {n} s de corrida. O site não confere esse tempo: usa a corrida estimada.",
+    "aviso_ordem_invertida": "O horário desta ação vem antes do da anterior, mas a frase diz “depois”.",
+    "aviso_depende_do_deslocamento": "O horário desta ação é fixo: não espera o jogador chegar.",
+    "aviso_palavra_sobrando": "Não entendi: {trechos}.",
+    "pergunta_chegada": "{quem} muda de andar para ir a {alvo}. Não estimei o tempo por causa da troca de andar. Quando chega?",
+    "ok_aplicado": "Aplicado ({n} operações). Desfazer volta tudo de uma vez.",
+    "erro_sem_peca": "{quem} ainda não está no mapa. Ponha a ficha no mapa e aplique de novo.",
+    "erro_sem_horario": "{quem}: não sei de que horário esta ação parte. Corrija a frase.",
+    "erro_inicio": "{quem}: a frase põe uma ação depois de outra, mas a anterior não tem horário. Corrija a frase.",
 }
 
 
@@ -65,7 +100,8 @@ def _areas(mapa: str, pontos: list[dict]) -> list[dict]:
         return []
     radar = json.loads((RAIZ / "assets" / "radars" / f"{mapa}.json").read_text(encoding="utf-8"))
     esc, ox, oy = radar["scale_px_per_unit"], radar["origin_x"], radar["origin_y"]
-    nomes_de_ponto = {_norma(n) for p in pontos for n in [p["nome"]] + p["apelidos"]}
+    # nomes de TODO ponto do Pedro do mapa (conferido ou não): um nome de ponto não conferido não pode entrar pela tabela de apelidos das áreas
+    nomes_de_ponto = {_norma(n) for p in _pontos(mapa, False) for n in [p["nome"], p["nome"] + p["qualificacao"]] + p["apelidos"]}
     apelidos: dict[str, list[str]] = {}
     for r in csv.DictReader(open(TABELA_C0, encoding="utf-8-sig", newline=""), delimiter=";"):
         if r["mapa"] == mapa and r["apelido_br"] not in ("", "?"):

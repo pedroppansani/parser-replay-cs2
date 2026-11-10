@@ -34,7 +34,7 @@
   var MODO_DO_VERBO = { corre: "correndo", correm: "correndo", correr: "correndo", anda: "andando", andam: "andando", andar: "andando", caminha: "andando", caminham: "andando",
                         caminhar: "andando", agacha: "agachado", agacham: "agachado", agachar: "agachado" };
   var PREPS = lista("ate pra para pro em na no nos nas ao a de do da");
-  var PARADAS = lista("o a os as um uma uns umas de do da dos das pra pro para ate em na no nos nas ao aos as com se que e ele ela eles elas depois seguida ai entao aos mesmo tempo junto juntos por");
+  var PARADAS = lista("o a os as um uma uns umas de do da dos das pra pro para ate em na no nos nas ao aos as com se que e ele ela eles elas depois seguida ai entao aos mesmo tempo junto juntos por favor");
   var UNIDADE_S = lista("s seg segs segundo segundos");
   var LADOS = { tr: "tr", t: "tr", ct: "ct" };
 
@@ -361,6 +361,50 @@
     return { ok: perguntas.length === 0 && acoes.length > 0 && !naoEntendido.length, acoes: acoes, perguntas: perguntas, avisos: avisos, entendido: entendido, naoEntendido: naoEntendido };
   }
 
-  global.LeitorDeComandos = { le: le, norm: norm };
+  // ---------- o horário digitado sozinho ("1:20", "aos 1:20", "40 s do início"): a resposta à pergunta "quando?" ----------
+  function horario(texto, ctx) {
+    var SEG = (ctx && ctx.segundos_do_round) || 115, tk = tokeniza(texto), mm;
+    for (var i = 0; i < tk.length; i++) {
+      if ((mm = /^(\d{1,2}):(\d{2})$/.exec(tk[i].t))) {
+        var r = parseInt(mm[1], 10) * 60 + parseInt(mm[2], 10);
+        return r > SEG ? { invalido: true, segundos_restantes: r } : { tipo: "relogio", segundos_restantes: r, t_decorrido: SEG - r };
+      }
+      var n = parseInt(tk[i].t, 10), unidade = /^\d+s$/.test(tk[i].t) || (/^\d+$/.test(tk[i].t) && tk[i + 1] && UNIDADE_S[tk[i + 1].t]);
+      if (unidade && !isNaN(n)) {
+        var resto = tk.slice(i + 1).map(function (k) { return k.t; }).join(" ");
+        if (/(^| )(inicio|comeco)( |$)/.test(resto)) return n > SEG ? { invalido: true, segundos: n } : { tipo: "inicio", segundos: n, t_decorrido: n };
+        return { ambiguo: true, segundos: n };      // "40 segundos" sozinho: a pessoa precisa dizer se é no relógio ou depois do início
+      }
+    }
+    return null;
+  }
+
+  // ---------- a resposta a uma pergunta: a leitura muda, a pergunta sai, e o que ela destrava (quando, onde) é perguntado em seguida ----------
+  function responde(leitura, indice, valor, ctx) {
+    var TX = (ctx && ctx.textos) || {}, p = leitura.perguntas[indice];
+    if (!p) return leitura;
+    var ac = leitura.acoes[p.acao];
+    if (p.codigo === "quem" || p.codigo === "quem_lado" || p.codigo === "quem_funcao") {
+      var q = { lado: valor.lado, num: valor.num, funcao: null, ref: "", resolvido: true, candidatos: [{ lado: valor.lado, num: valor.num }] };
+      if (p.indice_quem != null && ac.quem[p.indice_quem]) { q.ref = ac.quem[p.indice_quem].ref; ac.quem[p.indice_quem] = q; } else ac.quem.push(q);
+      for (var j = p.acao + 1; j < leitura.acoes.length && leitura.acoes[j].quem_herdado; j++) leitura.acoes[j].quem = ac.quem.map(function (x) { return x; });
+      ac.quem_herdado = false;
+    } else if (p.codigo === "qual" || p.codigo === "onde" || p.codigo === "onde_desconhecido") { ac.alvo = valor.alvo; ac.origem_do_alvo = valor.alvo.tipo; }
+    else if (p.codigo === "granada") { ac.granada = valor.granada; }
+    else if (p.codigo === "quando" || p.codigo === "quando_segundos" || p.codigo === "horario_invalido") { ac.quando = valor.quando; }
+    else if (p.codigo === "acao") {
+      ac.tipo = valor.tipo;
+      if (ac.tipo === "mover" && !ac.modo) { ac.modo = "correndo"; ac.modo_padrao = true; }
+      var nova = [];
+      if (!ac.alvo && !leitura.perguntas.some(function (x) { return x.acao === ac.indice && /^(onde|qual|onde_desconhecido)$/.test(x.codigo); })) nova.push({ codigo: "onde", campo: "onde", opcoes: [] });
+      if (!ac.quando && !leitura.perguntas.some(function (x) { return x.acao === ac.indice && x.codigo === "quando"; })) nova.push({ codigo: "quando", campo: "quando", opcoes: [] });
+      nova.forEach(function (x) { x.acao = ac.indice; x.texto = formata(TX["pergunta_" + x.codigo], { trecho: ac.trecho }); leitura.perguntas.push(x); });
+    }
+    leitura.perguntas.splice(indice, 1);
+    leitura.ok = leitura.perguntas.length === 0 && leitura.acoes.length > 0 && !leitura.naoEntendido.length;
+    return leitura;
+  }
+
+  global.LeitorDeComandos = { le: le, norm: norm, horario: horario, responde: responde };
   if (typeof module !== "undefined" && module.exports) module.exports = global.LeitorDeComandos;
 })(typeof window !== "undefined" ? window : this);

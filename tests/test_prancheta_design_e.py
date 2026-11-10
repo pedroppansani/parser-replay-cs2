@@ -81,17 +81,19 @@ def test_mapa_e_linha_do_tempo_cabem_na_janela(contexto, pagina):
         pg.close()
 
 
-def test_o_painel_tem_tres_abas_com_teclado_e_so_uma_visivel(contexto, pagina):
-    """§14: Jogadores · Granadas · Tática, role=tablist, setas/Home/End, tabindex móvel."""
+def test_o_painel_tem_quatro_abas_com_teclado_e_so_uma_visivel(contexto, pagina):
+    """§14: Jogadores · Granadas · Comandos (C2) · Tática, role=tablist, setas/Home/End, tabindex móvel."""
     pg = abre(contexto, pagina)
     try:
-        assert pg.eval_on_selector_all("#pr-abas [role=tab]", "ts => ts.map(t => t.textContent)") == ["Jogadores", "Granadas", "Tática"]
+        assert pg.eval_on_selector_all("#pr-abas [role=tab]", "ts => ts.map(t => t.textContent)") == ["Jogadores", "Granadas", "Comandos", "Tática"]
         visiveis = lambda: pg.eval_on_selector_all("aside [role=tabpanel]", "ps => ps.filter(p => !p.hidden).map(p => p.dataset.aba)")  # noqa: E731
         assert visiveis() == ["jogadores"]
-        assert pg.eval_on_selector_all("#pr-abas [role=tab]", "ts => ts.map(t => t.tabIndex)") == [0, -1, -1]
+        assert pg.eval_on_selector_all("#pr-abas [role=tab]", "ts => ts.map(t => t.tabIndex)") == [0, -1, -1, -1]
         pg.focus("#pr-aba-jogadores")
         pg.keyboard.press("ArrowRight")
         assert visiveis() == ["granadas"] and pg.evaluate("document.activeElement.dataset.aba") == "granadas"
+        pg.keyboard.press("ArrowRight")
+        assert visiveis() == ["comandos"]
         pg.keyboard.press("End")
         assert visiveis() == ["tatica"]
         pg.keyboard.press("ArrowRight")                                    # volta ao começo
@@ -164,7 +166,7 @@ def test_no_celular_some_o_desenho_reproduzir_ocupa_a_largura_e_nao_ha_rolagem_l
     ctx = navegador.new_context(viewport={"width": 375, "height": 667}, is_mobile=True)
     pg = abre(ctx, pagina)
     try:
-        assert pg.is_visible("#pr-aviso-celular") and "só no computador" in pg.inner_text("#pr-aviso-celular")
+        assert pg.is_visible("#pr-aviso-celular") and "só no computador" in pg.inner_text("#pr-aviso-celular") and "comandos pela aba Comandos" in pg.inner_text("#pr-aviso-celular")
         assert pg.locator('#pr-barra [data-ferramenta="caneta"]').is_hidden() and pg.locator("#pr-andares").count() in (0, 1)
         if pg.locator("#pr-andares").count():
             assert pg.locator("#pr-andares").is_hidden()

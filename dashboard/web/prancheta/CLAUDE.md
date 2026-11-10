@@ -14,7 +14,7 @@ Complementa o `CLAUDE.md` da raiz e o de `dashboard/web/`, e não os substitui. 
 - Cor nova ou trocada passa por `py -3.12 -m metrics.paleta` contra o fundo (texto
   4,5:1, marca 3:1, ΔE2000 ≥ 8 no pior par daltônico); o scatter de clusters segue facetado (10)
 - Mapa, peças e granadas em canvas, com UM núcleo (`map_core.js`); `desenhaJogador` não ganha
-  save/restore; lugares, outro andar, palco, Reescrever (33, 52, 53, 54, 57, 58, 59, 60, 61, 62, 63)
+  save/restore; lugares, outro andar, palco, Reescrever (33, 52, 53, 54, 57, 58, 59, 60, 61, 62, 63, 64)
 - θ = −yaw só em `MapCore.anguloDeTela`; o ângulo interpola linear pelo caminho curto
   (`interpolaAngulo`), sem Catmull-Rom (34)
 <!-- bloco anotacao-unidade-de-jogo: inicio -->
@@ -43,6 +43,7 @@ Complementa o `CLAUDE.md` da raiz e o de `dashboard/web/`, e não os substitui. 
 - Operação nova da prancheta exige migração nova (`grupos.tipos_de_operacao()`, conferida contra `OPERACOES` do JS e do
   Python); o log do grupo é o estado inicial, numa linha, seguido das operações; os tetos de uso são do servidor (47)
 <!-- bloco prancheta-espelho: fim -->
+- Aba Comandos (`20-comandos.js`): Entender nunca muda a tática; Aplicar emite UM lote com operações existentes (um desfazer); tempo de corrida estimado e dito; troca de andar pergunta a chegada (64)
 - A interação é UMA máquina de estados (`ESTADOS`); atalhos num mapa único `ATALHOS`, sem tecla
   repetida (32)
 - Ponto atrasado é CALCULADO do log (`atrasosDosPontos`) e nunca guardado; desenha-se em `--aviso` com

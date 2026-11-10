@@ -184,6 +184,8 @@
     (ganchos.abas || []).forEach(function (a) {
       if (!ABAS_DO_PAINEL.some(function (x) { return x[0] === a[0]; })) ABAS_DO_PAINEL.push(a);
     });
+    // a aba Comandos (C2): entra antes da Tática, e só nas páginas que o build entrega com o leitor
+    if (cfg.comandos && typeof LeitorDeComandos !== "undefined" && !ABAS_DO_PAINEL.some(function (x) { return x[0] === "comandos"; })) ABAS_DO_PAINEL.splice(2, 0, ["comandos", cfg.comandos.textos.ui_aba]);
     var lado = limpa(document.querySelector("aside"));
     var abas = el("div", { class: "pr-abas" + (ABAS_DO_PAINEL.length > 3 ? " quatro" : ""), id: "pr-abas", role: "tablist", "aria-label": "Painel da prancheta" });
     ABAS_DO_PAINEL.forEach(function (a) {
@@ -206,6 +208,7 @@
       paineis[a[0]] = el("div", { id: "pr-painel-" + a[0], role: "tabpanel", "aria-labelledby": "pr-aba-" + a[0], "data-aba": a[0], class: "pr-painel" });
       lado.appendChild(paineis[a[0]]);
     });
+    if (paineis.comandos) montaComandos(paineis.comandos);
     var alvo = paineis.jogadores;
     var caixa = function (titulo, filhos, id) {
       var s = el("section", { class: "caixa" }, [el("h2", { texto: titulo })].concat(filhos));

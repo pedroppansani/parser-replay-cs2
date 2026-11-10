@@ -23,6 +23,16 @@ def test_o_leitor_e_puro_sem_dom_rede_nem_armazenamento():
         assert proibido not in js, proibido
 
 
+def test_a_aba_nao_escreve_html_e_toda_pagina_de_mapa_leva_o_leitor_e_o_contexto():
+    aba = (RAIZ / "dashboard" / "web" / "prancheta" / "20-comandos.js").read_text(encoding="utf-8")
+    for proibido in ("innerHTML", "insertAdjacentHTML", "document.write", "eval(", "localStorage", "fetch("):
+        assert proibido not in aba, proibido
+    from scripts.build_tactics_page import build_html
+    for mapa in ("de_mirage", "de_cache", "de_nuke"):                                       # com tabela conferida, sem tabela da demo, com dois andares
+        html = build_html(mapa)
+        assert "LeitorDeComandos" in html and '"textos"' in html and "/*__COMANDOS__*/" not in html, mapa
+
+
 def test_toda_pergunta_que_o_leitor_pode_fazer_tem_texto_do_python():
     """A frase da tela sai do Python (decisão 18): cada `codigo` de pergunta do JS tem `pergunta_<codigo>` em TEXTOS, e cada opção fixa tem o seu texto."""
     js = LEITOR.read_text(encoding="utf-8")
@@ -47,6 +57,9 @@ def test_o_contexto_do_mapa_tem_os_pontos_do_pedro_as_areas_da_demo_e_so_conferi
         assert not [x for x in a["apelidos"] if re.sub(r"[^a-z0-9]", "", x.lower()) in nomes_norm], a
     assert len(contexto("de_mirage", so_conferidos=True)["pontos"]) == len(c["pontos"])            # Mirage e Dust2 estão conferidas
     assert contexto("de_nuke", so_conferidos=True)["pontos"] == []                                  # os outros ainda não
+    # os nomes de ponto de um mapa ainda não conferido não entram pela tabela de apelidos das áreas (só os apelidos escritos à mão)
+    apelidos = {x.lower() for a in contexto("de_nuke", so_conferidos=True)["areas"] for x in a["apelidos"]}
+    assert apelidos == {"bomb a", "site a", "bomb b", "site b", "spawn ct", "spawn tr"}, apelidos
     assert contexto("de_cache")["areas"] == []                                                      # mapa sem tabela da demo: só os pontos do Pedro
 
 
