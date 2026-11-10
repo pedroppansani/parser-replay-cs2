@@ -18,7 +18,7 @@ de_ancient;único;CT;;;;lugar;670;567;Alley;;CT (3x);CT;;mapas de callouts do Pe
 de_ancient;único;Sombra;;;;lugar;1469;540;Alley (mais perto);;;Sombra;;mapas de callouts do Pedro, 2026-11-09;não
 de_ancient;único;Paredão;;;;lugar;964;399;BombsiteB;;;Paredão;;mapas de callouts do Pedro, 2026-11-09;não
 de_ancient;único;Sol;Cabecinha;;;lugar;1345;298;BombsiteB (mais perto);;;Sol /Cabecinha;;mapas de callouts do Pedro, 2026-11-09;não
-de_ancient;único;Janelão;;;;lugar;-530;330;House;TopofMid;;Janelão;;mapas de callouts do Pedro, 2026-11-09;não
+de_ancient;único;Janelão;Janela;;;lugar;-530;330;House;TopofMid;;Janelão;'Janela' é apelido do Janelão (decisão do Pedro);mapas de callouts do Pedro, 2026-11-09;não
 de_ancient;único;Liga;;;;lugar;-1373;217;SideHall;;;Liga;;mapas de callouts do Pedro, 2026-11-09;não
 de_ancient;único;Fundo;;;;lugar;-1962;-55;MainHall (mais perto);;;Fundo;;mapas de callouts do Pedro, 2026-11-09;não
 de_ancient;único;Rosquinha;Meio Falso / Quadrado;;;lugar;-1310;-177;SideHall (mais perto);;Quadrado (2x);Rosquinha /Meio Falso /Quadrado;;mapas de callouts do Pedro, 2026-11-09;não
@@ -72,7 +72,7 @@ de_anubis;único;B;;;;bombsite;-1159;800;BombsiteB;;;@B;;mapas de callouts do Pe
 de_anubis;único;Default;;;;lugar;-1144;665;BombsiteB;;Default (2x);Default;;mapas de callouts do Pedro, 2026-11-09;não
 de_anubis;único;Pilar do Bomb;;;;lugar;-746;713;BackofB;;;(Pilar do Bomb);texto todo entre parênteses;mapas de callouts do Pedro, 2026-11-09;não
 de_anubis;único;Portão;Pizza;;;lugar;-1538;769;BombsiteB;;;Portão/ Pizza;;mapas de callouts do Pedro, 2026-11-09;não
-de_anubis;único;Janelão;;;;lugar;-106;689;Middle;Bridge;;Janelão;;mapas de callouts do Pedro, 2026-11-09;não
+de_anubis;único;Janelão;Janela;;;lugar;-106;689;Middle;Bridge;;Janelão;'Janela' é apelido do Janelão (decisão do Pedro);mapas de callouts do Pedro, 2026-11-09;não
 de_anubis;único;Porta;;Meio;;lugar;283;695;MidDoors;Middle;;Porta(Meio);;mapas de callouts do Pedro, 2026-11-09;não
 de_anubis;único;Sombra;;;;lugar;-562;544;BackofB;;;Sombra;;mapas de callouts do Pedro, 2026-11-09;não
 de_anubis;único;Barco;;;;lugar;950;552;Canal;;;Barco;;mapas de callouts do Pedro, 2026-11-09;não
@@ -265,7 +265,7 @@ de_inferno;único;Carroça;;;;lugar;1921;-33;BombsiteA;;;Carroça;;mapas de call
 de_inferno;único;Varanda Tapete;;;;lugar;1912;-198;Apartments;Balcony;;Varanda Tapete;;mapas de callouts do Pedro, 2026-11-09;não
 de_inferno;único;Meio Falso;MF;;;lugar;256;-124;SecondMid;;;Meio Falso (MF);'MF' é apelido do Meio Falso (decisão do Pedro);mapas de callouts do Pedro, 2026-11-09;não
 de_inferno;único;Ponte;;;;lugar;-388;-137;Bridge;SecondMid;;Ponte;;mapas de callouts do Pedro, 2026-11-09;não
-de_inferno;único;Janelão;;;;lugar;1024;-118;Apartments;Balcony;;Janelão;;mapas de callouts do Pedro, 2026-11-09;não
+de_inferno;único;Janelão;Janela;;;lugar;1024;-118;Apartments;Balcony;;Janelão;'Janela' é apelido do Janelão (decisão do Pedro);mapas de callouts do Pedro, 2026-11-09;não
 de_inferno;único;Apartamento;;;;lugar;1219;-211;Apartments;;;Apartamento;;mapas de callouts do Pedro, 2026-11-09;não
 de_inferno;único;Tapete;;;;lugar;1579;-328;Apartments;;;Tapete;;mapas de callouts do Pedro, 2026-11-09;não
 de_inferno;único;Cabecinha;Headshot;;;lugar;2160;-380;Pit;Balcony;;Cabecinha/ Headshot;;mapas de callouts do Pedro, 2026-11-09;não
@@ -313,7 +313,7 @@ de_mirage;único;Cadeira;;;;lugar;-261;-906;Middle;;;Cadeira;;mapas de callouts 
 de_mirage;único;Torneira;;;;lugar;202;-912;TopofMid;;;Torneira;;mapas de callouts do Pedro, 2026-11-09;sim
 de_mirage;único;Liga;;;;lugar;-683;-977;Connector;Middle;;Liga;;mapas de callouts do Pedro, 2026-11-09;sim
 de_mirage;único;Caixa da Liga;;;;lugar;-882;-1146;Connector (mais perto);;;Caixa da Liga;;mapas de callouts do Pedro, 2026-11-09;sim
-de_mirage;único;Janelão;;;;lugar;-1184;-622;SnipersNest;;;Janelão;;mapas de callouts do Pedro, 2026-11-09;sim
+de_mirage;único;Janelão;Janela;;;lugar;-1184;-622;SnipersNest;;;Janelão;'Janela' é apelido do Janelão (decisão do Pedro);mapas de callouts do Pedro, 2026-11-09;sim
 de_mirage;único;Buraco;;;;lugar;-1349;-955;CTSpawn;;;Buraco;;mapas de callouts do Pedro, 2026-11-09;sim
 de_mirage;único;Jungle;;;;lugar;-1137;-1385;Jungle;CTSpawn;;Jungle;;mapas de callouts do Pedro, 2026-11-09;sim
 de_mirage;único;FNX;;;;lugar;-1261;-1548;CTSpawn (mais perto);Jungle;;FNX;;mapas de callouts do Pedro, 2026-11-09;sim
@@ -544,7 +544,7 @@ de_vertigo;cima;Default;;;;lugar;-2228;857;(mapa sem tabela da demo);;Default (2
 de_vertigo;cima;Gerador;;;;lugar;-1872;757;(mapa sem tabela da demo);;;Gerador;;mapas de callouts do Pedro, 2026-11-09;não
 de_vertigo;cima;Laranja;;;;lugar;-2352;643;(mapa sem tabela da demo);;;Laranja;;mapas de callouts do Pedro, 2026-11-09;não
 de_vertigo;cima;Base CT;;;;lugar;-872;774;(mapa sem tabela da demo);;;Base CT;;mapas de callouts do Pedro, 2026-11-09;não
-de_vertigo;cima;Janelão;Construção / Favela;;;lugar;-1453;526;(mapa sem tabela da demo);;;Janelão/ Construção/ Favela;;mapas de callouts do Pedro, 2026-11-09;não
+de_vertigo;cima;Janelão;Construção / Favela / Janela;;;lugar;-1453;526;(mapa sem tabela da demo);;;Janelão/ Construção/ Favela;'Janela' é apelido do Janelão (decisão do Pedro);mapas de callouts do Pedro, 2026-11-09;não
 de_vertigo;cima;Pallet;;B;;lugar;-1851;538;(mapa sem tabela da demo);;;Pallet (B);;mapas de callouts do Pedro, 2026-11-09;não
 de_vertigo;cima;Branco;;;;lugar;-2546;504;(mapa sem tabela da demo);;;Branco;;mapas de callouts do Pedro, 2026-11-09;não
 de_vertigo;cima;Cimento;;B;;lugar;-2439;499;(mapa sem tabela da demo);;;Cimento (B);;mapas de callouts do Pedro, 2026-11-09;não

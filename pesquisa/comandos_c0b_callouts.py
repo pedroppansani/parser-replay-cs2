@@ -57,6 +57,8 @@ OBSERVACOES = {
     ("train", "(Bomb) Antigo"): "aceita 'Bomb Antigo' e 'Antigo' (decisão do Pedro)",
     ("mirage", "Moddii"): "'Mogi' é apelido do Moddii (pedido do Pedro; a imagem diz 'Moddii')",
 }
+# Apelido que vale para todo ponto com esse nome (Pedro, 2026-11-10: "janelão também pode ser janela"), salvo no mapa em que já existe um ponto com o apelido
+APELIDOS_GERAIS = {"Janelão": ["Janela"]}
 # mapas que o Pedro já conferiu nas imagens (2026-11-10); os outros seguem `conferido = não` até ele avisar
 CONFERIDOS = {"de_mirage", "de_dust2"}
 
@@ -188,6 +190,10 @@ def monta(pasta_imagens: Path) -> list[dict]:
                            "px_x": round(float(xp), 1), "px_y": round(float(yp), 1), "lugar_da_demo": prim, "lugares_na_borda": borda,
                            "tem_tabela_da_demo": tab is not None, "obs": rr["obs"]})
         print(f"{arq}: {len(rots)} rótulos ({ajustados} com o centro ajustado pelo bloco de texto)")
+    for l in linhas:
+        for apelido in APELIDOS_GERAIS.get(l["nome"], []):
+            if l["tipo"] == "lugar" and not any(o["mapa"] == l["mapa"] and norma(apelido) in [norma(o["nome"])] + [norma(x) for x in o["apelidos"]] for o in linhas):
+                l["apelidos"] = l["apelidos"] + [apelido]; l["obs"] = l["obs"] + [f"'{apelido}' é apelido do {l['nome']} (decisão do Pedro)"]
     # nomes repetidos no mesmo mapa (os dois andares contam juntos); apelido que é nome de outro rótulo também conta
     por_mapa: dict = defaultdict(lambda: defaultdict(list))
     for i, l in enumerate(linhas):

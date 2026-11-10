@@ -29,6 +29,9 @@ Antes de mexer no `map_core.js`, no canvas, no Replay (`partida/`) ou na pranche
   pR 12); a barra é depois menos antes da curva publicada, o decisivo é o do payload, e textos e rótulos
   vêm de `leitura/peso_dos_rounds.py` (19, 18)
 
+- Leitor de comandos (`comandos/leitor.js`): puro (sem DOM, rede nem armazenamento); a frase de cada pergunta sai do Python
+  (`scripts/comandos_contexto.py`); palavra desconhecida nunca vira alvo em silêncio; não calcula tempo de corrida (64)
+
 ## Calibração do Pedro (não resolva sozinho)
 
 - Paleta dos gráficos (10).

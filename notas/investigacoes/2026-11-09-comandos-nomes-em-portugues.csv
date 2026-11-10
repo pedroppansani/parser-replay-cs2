@@ -3,7 +3,7 @@ de_ancient;Alley;ALLEY;Beco;CT / Escanteio / L;1;1;11945;rascunho, o Pedro confe
 de_ancient;BombsiteA;BOMBSITE A;Bomb A;A / bomb A / site A / Templo / Vela / Altar / Caixa Gorda / CT / Default / Caixa Fogo / Árvore / Pézinho;1;1;12886;rascunho, o Pedro confere
 de_ancient;BombsiteB;BOMBSITE B;Bomb B;B / bomb B / site B / Paredão / Default / Areia / Newba;1;1;13602;rascunho, o Pedro confere
 de_ancient;CTSpawn;CT SPAWN;CT Spawn;spawn CT / base CT;1;1;26627;rascunho, o Pedro confere
-de_ancient;House;HOUSE;Casa;Caverna / Janelão;1;1;7868;rascunho, o Pedro confere
+de_ancient;House;HOUSE;Casa;Caverna / Janelão / Janela;1;1;7868;rascunho, o Pedro confere
 de_ancient;MainHall;MAIN HALL;Principal Salão;?;1;1;5256;rascunho, o Pedro confere
 de_ancient;Middle;MIDDLE;Meio;meio / mid / Sem Saída / Caixa Gorda;1;1;10609;rascunho, o Pedro confere
 de_ancient;Outside;OUTSIDE;Lado de fora;Esquina / Marote / Rampa Fundo / Rampa TR;1;1;10929;rascunho, o Pedro confere
@@ -32,7 +32,7 @@ de_anubis;Heaven;HEAVEN;Céu;Céu / Plataforma;1;1;5357;rascunho, o Pedro confer
 de_anubis;LowerTunnel;LOWER TUNNEL;Baixo Túnel;Caverna (B);1;1;3227;rascunho, o Pedro confere
 de_anubis;Main;MAIN;Principal;Mercado;1;1;18456;rascunho, o Pedro confere
 de_anubis;MidDoors;MID DOORS;Mid Portas;Porta (Meio);1;1;6464;rascunho, o Pedro confere
-de_anubis;Middle;MIDDLE;Meio;meio / mid / Porta Tumba / Liga / Janelão;1;1;26873;rascunho, o Pedro confere
+de_anubis;Middle;MIDDLE;Meio;meio / mid / Porta Tumba / Liga / Janelão / Janela;1;1;26873;rascunho, o Pedro confere
 de_anubis;OutsideLong;OUTSIDE LONG;Lado de fora Longo;Fundo / Caixa (do Fundo);1;1;16230;rascunho, o Pedro confere
 de_anubis;PalaceInterior;PALACE INTERIOR;Palácio Interior;Escada Tumba / Tumba;1;1;13680;rascunho, o Pedro confere
 de_anubis;Ruins;RUINS;Ruínas;Arco / Fundo TR;1;1;20187;rascunho, o Pedro confere
@@ -69,7 +69,7 @@ de_dust2;TopofMid;TOP OF MID;Topo de Mid;Caixa Verde / Coqueiro Invertido / Cami
 de_dust2;TunnelStairs;TUNNEL STAIRS;Túnel Escadas;?;1;1;10082;rascunho, o Pedro confere
 de_dust2;UnderA;UNDER A;Sob A;Caixa Nova / Rampa CT / Fallen;1;1;33856;rascunho, o Pedro confere
 de_dust2;UpperTunnel;UPPER TUNNEL;Alto Túnel;Escuro (Cima);1;1;48951;rascunho, o Pedro confere
-de_inferno;Apartments;APARTMENTS;Apartamentos;Campanário / Varanda Tapete / Janelão / Apartamento / Tapete / Tapete TR;2;1;26940;rascunho, o Pedro confere
+de_inferno;Apartments;APARTMENTS;Apartamentos;Campanário / Varanda Tapete / Janelão / Apartamento / Tapete / Tapete TR / Janela;2;1;26940;rascunho, o Pedro confere
 de_inferno;Arch;ARCH;Arco;Arco / NiP;1;1;15770;rascunho, o Pedro confere
 de_inferno;BackAlley;BACK ALLEY;Fundo Beco;?;1;1;3430;rascunho, o Pedro confere
 de_inferno;Balcony;BALCONY;Sacada;?;1;1;6561;rascunho, o Pedro confere
@@ -109,7 +109,7 @@ de_mirage;PalaceInterior;PALACE INTERIOR;Palácio Interior;Taco / ↑ Areia cima
 de_mirage;Scaffolding;SCAFFOLDING;Andaime;?;0;1;2132;rascunho, o Pedro confere
 de_mirage;Shop;SHOP;Loja;Mercado / Porta Mercado / Janela Mercado;1;1;26755;rascunho, o Pedro confere
 de_mirage;SideAlley;SIDE ALLEY;Lateral Beco;Escada TV / Sem saída do MF / Meio Falso / MF;1;1;41835;rascunho, o Pedro confere
-de_mirage;SnipersNest;SNIPERS NEST;Snipers Ninho;Janelão;1;1;20227;rascunho, o Pedro confere
+de_mirage;SnipersNest;SNIPERS NEST;Snipers Ninho;Janelão / Janela;1;1;20227;rascunho, o Pedro confere
 de_mirage;Stairs;STAIRS;Escadas;Cabecinha;1;1;12163;rascunho, o Pedro confere
 de_mirage;TRamp;T RAMP;TR Rampa;Caverna;1;1;17962;rascunho, o Pedro confere
 de_mirage;TSpawn;T SPAWN;TR Spawn;spawn TR / base TR;1;1;201577;rascunho, o Pedro confere
