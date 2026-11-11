@@ -109,6 +109,7 @@
   return {
     init: init,
     recebeBiblioteca: recebeBiblioteca,
+    recebeTempos: function (t) { if (typeof cmdTemposChegaram === "function") cmdTemposChegaram(t); },
     ganchos: ganchos,
     grupo: {
       recebe: recebeDeFora, retira: retiraRecusadas,

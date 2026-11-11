@@ -22,7 +22,7 @@ import json
 import shutil
 from pathlib import Path
 
-from scripts.build_tactics_page import arquivo_da_biblioteca, arquivo_da_pagina, biblioteca_js, mapas_disponiveis
+from scripts.build_tactics_page import arquivo_da_biblioteca, arquivo_da_pagina, arquivo_dos_tempos, biblioteca_js, mapas_disponiveis, tempos_js
 from scripts.build_tactics_page import build_html as build_prancheta
 from scripts.build_web_page import build_html
 
@@ -706,6 +706,11 @@ def build(repo_url: str, preview: bool = False) -> Path:
         if bib is not None:
             (saida / arquivo_da_biblioteca(mapa)).parent.mkdir(exist_ok=True)
             (saida / arquivo_da_biblioteca(mapa)).write_text(bib, encoding="utf-8")
+        # os tempos reais de corrida da aba Comandos (C3), no mesmo molde: arquivo próprio, carregado quando a aba abre
+        tempos = tempos_js(mapa)
+        if tempos is not None:
+            (saida / arquivo_dos_tempos(mapa)).parent.mkdir(exist_ok=True)
+            (saida / arquivo_dos_tempos(mapa)).write_text(tempos, encoding="utf-8")
         pranchetas.append({"mapa": mapa, "file": arquivo_da_pagina(mapa), "label": MAP_LABEL.get(mapa, mapa)})
         print(f"  {arquivo_da_pagina(mapa)}  ({len(html) / 1024:.0f} KB)  prancheta")
 

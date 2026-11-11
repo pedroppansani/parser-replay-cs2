@@ -195,6 +195,13 @@ def impressao(docs: Path = DOCS, fina: bool = False) -> dict[str, str]:
             inicio = js.index("recebeBiblioteca(") + len("recebeBiblioteca(")
             obj, _ = json.JSONDecoder().raw_decode(js, inicio)
             achata(obj, f"{f.name}::biblioteca", saida, fina)
+        # C3: os tempos reais de corrida da aba Comandos também vêm de um arquivo próprio (`comandos.tempos_arquivo`); entram como <página>::tempos
+        tempos = re.search(r'"tempos_arquivo"\s*:\s*"([^"]+)"', texto)
+        if tempos:
+            js = (docs / tempos.group(1)).read_text(encoding="utf-8")
+            inicio = js.index("recebeTempos(") + len("recebeTempos(")
+            obj, _ = json.JSONDecoder().raw_decode(js, inicio)
+            achata(obj, f"{f.name}::tempos", saida, fina)
     if NUMEROS.exists():
         achata(json.loads(NUMEROS.read_text(encoding="utf-8")), "numeros_citaveis.json", saida, fina)
     # A contagem de testes do repositório não é dado das páginas: cresce a cada teste novo.

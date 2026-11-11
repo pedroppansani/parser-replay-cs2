@@ -109,7 +109,7 @@ def _pagina_da_nuke_com_todos_os_pontos(contexto, tmp_path_factory):
     from scripts import build_tactics_page as bt
     from scripts.comandos_contexto import contexto as contexto_do_mapa
     original = bt._comandos
-    bt._comandos = lambda mapa: {k: v for k, v in contexto_do_mapa(mapa).items() if k != "jogadores"}
+    bt._comandos = lambda mapa, tempos_externos=False: {k: v for k, v in contexto_do_mapa(mapa).items() if k != "jogadores"}
     try:
         html = tmp_path_factory.mktemp("nuke_todos") / "prancheta_de_nuke.html"
         html.write_text(bt.build_html("de_nuke"), encoding="utf-8")

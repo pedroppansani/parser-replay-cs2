@@ -50,15 +50,87 @@
     var chave = { lancar: "linha_lancar", mover: "linha_mover", segurar: "linha_segurar", esperar: "linha_esperar" }[ac.tipo] || "linha_incompleta";
     var texto = cmdFmt(cfg.comandos.textos[chave], v);
     var chegada = plano && plano.chegadas[ac.indice];
-    return chegada != null ? texto + " · " + cmdT("chegada", { h: cmdDoRelogio(chegada) }) : texto;
+    return chegada ? texto + " · " + cmdChegada(chegada) : texto;
+  }
+  /** De onde veio o horário de chegada, dito na tela: tempo real (faixa, casos, partidas) ou estimado (com o fator de desvio do mapa, se houver). */
+  function cmdChegada(c) {
+    if (c.tipo === "real") {
+      return cmdT(c.fonte === "pontos" ? "chegada_real_pontos" : "chegada_real_areas", { h1: cmdDoRelogio(c.t25), h2: cmdDoRelogio(c.t75), h: cmdDoRelogio(c.t), n: c.casos, p: c.partidas });
+    }
+    return c.fator ? cmdT("chegada_fator", { h: cmdDoRelogio(c.t), f: c.fator.toFixed(2).replace(".", ",") }) : cmdT("chegada_reta", { h: cmdDoRelogio(c.t) });
   }
 
-  /** Do que foi entendido às operações. Devolve { ops, chegadas, problemas, falta }: `falta` é a chegada que o site não estimou (troca de andar). */
+  /* ---------- os tempos reais de corrida (C3): a tabela do mapa vem num arquivo próprio, carregado só quando a aba abre pela primeira vez ---------- */
+  var Tempos = { estado: "inicial", dados: null, pontos: {}, areas: {}, nos: [], areaDoTexto: {} };
+  function cmdIndiceDosTempos(t) {
+    Tempos.dados = t || null; Tempos.pontos = {}; Tempos.areas = {}; Tempos.nos = [];
+    if (!t) return;
+    t.pontos.forEach(function (r) { Tempos.pontos[r[0] + "|" + r[1]] = r; });
+    t.areas.forEach(function (r) { Tempos.areas[r[0] + "|" + r[1]] = r; });
+    Tempos.nos = t.nos;
+  }
+  /** O arquivo dos tempos chama Prancheta.recebeTempos(...). */
+  function cmdTemposChegaram(t) {
+    Tempos.estado = "pronta"; cmdIndiceDosTempos(t);
+    if ($("pr-cmd-resultado")) cmdDesenha();
+  }
+  /** Abrir a aba pela primeira vez busca os tempos. Sem arquivo (a página gerada sozinha, nos testes) a tabela já vem no cfg; sem tabela, só estimado. */
+  function cmdAbriuAba() {
+    if (Tempos.estado !== "inicial") return;
+    (cfg.comandos.areas || []).forEach(function (a) { Tempos.areaDoTexto[a.texto] = a.nome; });
+    if (cfg.comandos.tempos) { Tempos.estado = "pronta"; cmdIndiceDosTempos(cfg.comandos.tempos); return; }
+    if (!cfg.comandos.tempos_arquivo) { Tempos.estado = "pronta"; return; }
+    Tempos.estado = "carregando";
+    var sc = document.createElement("script");
+    sc.src = cfg.comandos.tempos_arquivo;
+    sc.onerror = function () { Tempos.estado = "erro"; if ($("pr-cmd-resultado")) cmdDesenha(); };
+    document.body.appendChild(sc);
+  }
+  function cmdChaveDoAlvo(alvo) {
+    return alvo.tipo === "ponto" ? (alvo.ids || [alvo.id]).map(function (id) { return parseInt(String(id).split(":")[1], 10); }).sort(function (a, b) { return a - b; }).join("+") : null;
+  }
+  function cmdAreaDoAlvo(alvo) { return alvo.tipo === "area" ? alvo.nome : (Tempos.areaDoTexto[alvo.lugar] || null); }
+  /** O tempo real do corpus entre onde a peça está e o alvo, só para quem corre: entre pontos do Pedro, senão entre as áreas da demo; null = estimar. */
+  function cmdTempoReal(pos, alvo, modo) {
+    var T = Tempos.dados;
+    if (!T || modo !== "correndo") return null;
+    var kb = cmdChaveDoAlvo(alvo), ka = pos.chave || null;
+    if (kb && !ka) {
+      var d0 = T.raio_origem;
+      Tempos.nos.forEach(function (n) { var d = Math.hypot(n[1] - pos.x, n[2] - pos.y); if (d <= d0) { d0 = d; ka = n[0]; } });
+    }
+    var linha = kb && ka && ka !== kb ? Tempos.pontos[ka + "|" + kb] : null;
+    if (linha) return { fonte: "pontos", p25: linha[2], mediana: linha[3], p75: linha[4], casos: linha[5], partidas: linha[6] };
+    var aa = pos.area || (typeof lugarDe === "function" ? lugarDe(pos.x, pos.y, pos.nivel || 0) : null), ab = cmdAreaDoAlvo(alvo);
+    linha = aa && ab && aa !== ab ? Tempos.areas[aa + "|" + ab] : null;
+    return linha ? { fonte: "areas", p25: linha[2], mediana: linha[3], p75: linha[4], casos: linha[5], partidas: linha[6] } : null;
+  }
+  function cmdFator() { var f = Tempos.dados && Tempos.dados.fator; return f && f.valor ? f.valor : null; }
+
+  /** Do que foi entendido às operações. Devolve { ops, chegadas, problemas, falta }: `falta` é a chegada que o site não estimou (troca de andar sem tempo
+      real). `chegadas[i]` diz de onde veio o horário: "real" (a mediana do corpus, com a faixa e os casos) ou "estimado" (linha reta, com o fator de desvio do
+      mapa quando ele existe). Uma peça que ainda anda por um comando anterior parte do ponto por onde o plano a deixou naquele instante (interpolado em linha
+      reta, como a prancheta faz): o caminho anterior termina ali e o novo segue dali. */
   function cmdPlano(leitura) {
-    var ops = [], chegadas = {}, problemas = [], falta = null, fim = {}, pos = {}, inicioAnterior = null, fimGeral = null;
+    var ops = [], chegadas = {}, problemas = [], falta = null, fim = {}, trilha = {}, inicioAnterior = null, fimGeral = null, EPS = 1e-6;
     var passos = S.estado.passos;
+    function interpola(pts, t) {
+      for (var i = pts.length - 1; i > 0; i--) {
+        if (t >= pts[i - 1].t - EPS) {
+          var a = pts[i - 1], b = pts[i], f = b.t > a.t ? (t - a.t) / (b.t - a.t) : 1;
+          return { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f, nivel: f < 1 - EPS ? a.nivel : b.nivel, modo: b.modo };
+        }
+      }
+      return null;
+    }
     function posicaoEm(pid, t) {
-      if (pos[pid] && t >= pos[pid].t - 1e-9) return pos[pid];
+      var tr = trilha[pid];
+      if (tr) {
+        var u = tr.pts, ultimo = u[u.length - 1];
+        if (t >= ultimo.t - EPS) return { x: ultimo.x, y: ultimo.y, nivel: ultimo.nivel, t: t, chave: ultimo.chave, area: ultimo.area };
+        var m = t >= u[0].t - EPS ? interpola(u, t) : null;
+        if (m) return { x: m.x, y: m.y, nivel: m.nivel, t: t };
+      }
       var q = quadroNoTempo(S.e3, t, CENTRO).pecas[pid];
       return q ? { x: q.x, y: q.y, nivel: q.nivel || 0, t: t } : null;
     }
@@ -85,20 +157,42 @@
           fim[pid] = t0; fimGeral = t0; return;
         }
         // mover e segurar: andar até o ponto (segurar é chegar e ficar)
-        var nivel = cmdNivel(ac.alvo), chega;
-        if (nivel !== (ini.nivel || 0)) {
+        var modo = ac.modo || "correndo", nivel = cmdNivel(ac.alvo), chega, info = null;
+        var real = cmdTempoReal(ini, ac.alvo, modo);
+        if (real) {
+          chega = Math.round((t0 + real.mediana) * 100) / 100;
+          info = { tipo: "real", fonte: real.fonte, t: chega, t25: t0 + real.p25, t75: t0 + real.p75, casos: real.casos, partidas: real.partidas };
+        } else if (nivel !== (ini.nivel || 0)) {
           if (ac.chegada_t == null) { falta = falta || { acao: ac.indice, quem: nome, alvo: ac.alvo.nome, t0: t0 }; return; }
           chega = ac.chegada_t;
         } else {
-          chega = Math.round((t0 + Math.hypot(ac.alvo.x - ini.x, ac.alvo.y - ini.y) / velocidade(funcaoDe(pid), ac.modo || "correndo")) * 100) / 100;
-          chegadas[ac.indice] = chega;
+          var fator = cmdFator();
+          chega = Math.round((t0 + Math.hypot(ac.alvo.x - ini.x, ac.alvo.y - ini.y) / velocidade(funcaoDe(pid), modo) * (fator || 1)) * 100) / 100;
+          info = { tipo: "estimado", t: chega, fator: fator };
         }
         if (chega <= t0) { problemas.push(cmdT("erro_inicio", { quem: nome })); return; }
-        var pontos = [{ t: chega, x: ac.alvo.x, y: ac.alvo.y, nivel: nivel, modo: ac.modo || "correndo" }];
-        if (baseReal() === null) pontos.unshift({ t: t0, x: ini.x, y: ini.y, nivel: ini.nivel || 0 });   // a peça fica onde está até t0 e só então anda
-        ops = ops.concat(cortaReal(pid, t0), ancoraReal(pid, t0), [["cria_caminho", { peca: pid, pontos: pontos }]]);
-        pos[pid] = { x: ac.alvo.x, y: ac.alvo.y, nivel: nivel, t: chega }; fim[pid] = chega; fimGeral = chega;
+        if (info) chegadas[ac.indice] = info;
+        var destino = { t: chega, x: ac.alvo.x, y: ac.alvo.y, nivel: nivel, modo: modo, chave: cmdChaveDoAlvo(ac.alvo), area: cmdAreaDoAlvo(ac.alvo) };
+        var anterior = trilha[pid];
+        if (anterior && t0 < anterior.pts[anterior.pts.length - 1].t - EPS && t0 >= anterior.pts[0].t - EPS) {
+          var m = interpola(anterior.pts, t0);        // ainda andava: o caminho segue do ponto por onde passava
+          anterior.pts = anterior.pts.filter(function (p) { return p.t < t0 - EPS; });
+          anterior.pts.push({ t: t0, x: m.x, y: m.y, nivel: m.nivel, modo: m.modo }, destino);
+          delete chegadas[anterior.acao]; anterior.acao = ac.indice;   // a chegada que o caminho anterior dizia não vale mais
+        } else {
+          var pts = [destino];
+          if (baseReal() === null) pts.unshift({ t: t0, x: ini.x, y: ini.y, nivel: ini.nivel || 0 });   // a peça fica onde está até t0 e só então anda
+          trilha[pid] = { pts: pts, acao: ac.indice };
+          ops = ops.concat(cortaReal(pid, t0), ancoraReal(pid, t0), [["cria_caminho", { peca: pid, pontos: null, trilha: trilha[pid] }]]);
+        }
+        fim[pid] = chega; fimGeral = chega;
       });
+    });
+    // as operações levam só os campos que a prancheta conhece (sem a chave e a área, que servem à próxima viagem do plano)
+    ops.forEach(function (op) {
+      if (op[0] !== "cria_caminho" || !op[1].trilha) return;
+      op[1].pontos = op[1].trilha.pts.map(function (p) { var o = { t: p.t, x: p.x, y: p.y, nivel: p.nivel }; if (p.modo) o.modo = p.modo; return o; });
+      delete op[1].trilha;
     });
     return { ops: ops, chegadas: chegadas, problemas: problemas, falta: falta };
   }
@@ -220,9 +314,11 @@
     } else if (plano && plano.problemas.length) {
       plano.problemas.filter(function (m, i, v) { return v.indexOf(m) === i; }).forEach(function (m) { raiz.appendChild(el("p", { class: "pr-cmd-erro", role: "alert", texto: m })); });
     }
+    if (Tempos.estado === "carregando") raiz.appendChild(el("p", { class: "pr-cmd-aviso", id: "pr-cmd-carregando", role: "status", texto: cmdT("ui_carregando_tempos") }));
+    if (Tempos.estado === "erro") raiz.appendChild(el("p", { class: "pr-cmd-aviso", id: "pr-cmd-sem-tempos", texto: cmdT("aviso_tempos_falhou") }));
     if (Cmd.mensagem) raiz.appendChild(el("p", { class: "pr-cmd-aviso", role: "status", texto: Cmd.mensagem }));
     var acoes = $("pr-cmd-acoes"); acoes.hidden = false;
-    $("pr-cmd-aplicar").disabled = !(pronta && plano && !plano.falta && !plano.problemas.length && plano.ops.length);
+    $("pr-cmd-aplicar").disabled = !(pronta && plano && !plano.falta && !plano.problemas.length && plano.ops.length) || Tempos.estado === "carregando";
   }
 
   /** O painel da aba, montado pelo `montaLateral`. */
