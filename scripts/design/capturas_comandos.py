@@ -25,6 +25,7 @@ ESTADOS = [
     ("4-pergunta-horario", "o 2 joga smoke na b|TR 2"),
     ("5-aplicado", EXEMPLO + "|aplica"),
     ("6-palavra-desconhecida", "tr 2 vai pro meio aos 1:00 rapidinho"),
+    ("7-aplicado-e-desfeito", EXEMPLO + "|aplica|desfaz"),
 ]
 
 
@@ -50,6 +51,8 @@ def main() -> None:
                         for parte in acao.split("|"):
                             if parte == "aplica":
                                 pg.click("#pr-cmd-aplicar"); pg.evaluate("() => Prancheta._interno.defineTempo(37)")
+                            elif parte == "desfaz":
+                                pg.evaluate("() => Prancheta._interno.desfaz()")
                             elif parte == "TR 2":
                                 pg.click(".pr-cmd-opcao >> text=TR 2")
                             else:
