@@ -22,14 +22,21 @@
     return null;
   }
 
-  /** O nome do lugar para ler numa frase: nos mapas de callouts conferidos, o nome do Pedro ("Base TR"); nos outros, o nome com espaços ("T Spawn", "Top of Mid").
-      `lugarDe` continua devolvendo o nome do dado, que é a chave das tabelas. */
+  /** O nome do lugar para ler numa frase. Uma ÁREA da demo se escreve com o nome do jogo, legível e igual ao do botão "Lugares" ("Top of Mid", "T Spawn"), em todos os
+      mapas; quando a posição é um ponto do Pedro (mapa conferido, a até `raio_do_ponto_u` dele), vale o nome do Pedro ("Base TR"). `lugarDe` continua devolvendo o nome do
+      dado, que é a chave das tabelas. */
   function nomeExibidoDoLugar(nome) {
     var as = (cfg && cfg.comandos && cfg.comandos.areas) || [];
     for (var i = 0; i < as.length; i++) if (as[i].nome === nome) return as[i].exibe || nome;
     return nome;
   }
-  function lugarExibido(x, y, nivel) { var n = lugarDe(x, y, nivel); return n === null ? null : nomeExibidoDoLugar(n); }
+  function lugarExibido(x, y, nivel) {
+    var n = lugarDe(x, y, nivel);
+    if (n === null) return null;
+    var c = cfg && cfg.comandos, melhor = null, d0 = c && c.raio_do_ponto_u;
+    if (d0) c.pontos.forEach(function (p) { var d = Math.hypot(p.x - x, p.y - y); if (d <= d0) { d0 = d; melhor = p; } });
+    return melhor ? melhor.nome : nomeExibidoDoLugar(n);
+  }
 
   /** A tática tem horário (alguma operação do formato 3, ou granada com `t`):
       toca no relógio do round. A que só tem passos -- toda tática das versões 1

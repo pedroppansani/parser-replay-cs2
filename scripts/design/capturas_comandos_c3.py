@@ -4,7 +4,7 @@
 
 1 tempo real entre pontos do Pedro (Mirage, Base TR até Meio) · 2 tempo real entre áreas da demo (Mirage, TSpawn até TopofMid) · 3 estimado, um PISO (Overpass, sem
 tempo real nenhum) · 4 troca de andar com tempo real (Nuke, Secret até Tunnels) · 4b troca de andar sem tempo real: pergunta a chegada (Nuke, CTSpawn até Tunnels) ·
-5 tempo real entre pontos na Dust2 (Base TR até Fora do Escuro). As páginas geradas vão para uma pasta temporária: a pasta de saída só leva as imagens.
+5 tempo real entre pontos na Dust2 (Base TR até Fora do Escuro) · 6 o aviso da granada que sobra depois do corte (Mirage). As páginas geradas vão para uma pasta temporária: a pasta de saída só leva as imagens.
 A prancheta é sempre violeta (o `tema.js` não a toca): o claro e o escuro saem iguais, e o script diz em quantos pares.
 """
 from __future__ import annotations
@@ -41,6 +41,7 @@ def situacoes():
         ("3-estimado-piso", "de_overpass", (ov[0]["x"], ov[0]["y"], 0), f"tr 2 corre pro {ov[1]['nome']} aos 1:30"),
         ("4-troca-de-andar-com-tempo-real", "de_nuke", (sec["x"], sec["y"], 1 if sec["andar"] == "baixo" else 0), "tr 2 corre pro tunnels aos 1:30"),
         ("4b-troca-de-andar-sem-tempo-real", "de_nuke", (tsp["x"], tsp["y"], 1 if tsp["andar"] == "baixo" else 0), "tr 2 corre pro tunnels aos 1:30"),
+        ("6-aviso-do-corte", "de_mirage", (mirage_base["x"], mirage_base["y"], 0), "tr 2 corre pro meio aos 1:30 e depois joga smoke na b, tr 2 corre pra b aos 1:25"),
         ("5-real-entre-pontos-dust2", "de_dust2", (dust_base["x"], dust_base["y"], 0), "tr 2 corre pro fora do escuro aos 1:30"),
     ]
 

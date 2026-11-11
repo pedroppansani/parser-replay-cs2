@@ -121,7 +121,7 @@
       anda por um comando anterior parte do ponto por onde o plano a deixou naquele instante (interpolado em linha reta, como a prancheta toca): o caminho
       anterior termina ali e o novo segue dali. */
   function cmdPlano(leitura) {
-    var ops = [], chegadas = {}, problemas = [], falta = null, trilha = {}, acaoFim = {}, EPS = 1e-6;
+    var ops = [], chegadas = {}, problemas = [], avisos = [], falta = null, trilha = {}, acaoFim = {}, EPS = 1e-6;
     var passos = S.estado.passos;
     function interpola(pts, t) {
       for (var i = pts.length - 1; i > 0; i--) {
@@ -187,6 +187,11 @@
         var anterior = trilha[pid];
         if (anterior && t0 < anterior.pts[anterior.pts.length - 1].t - EPS && t0 >= anterior.pts[0].t - EPS) {
           var m = interpola(anterior.pts, t0);        // ainda andava: o caminho segue do ponto por onde passava
+          // uma granada dessa peça que o plano já pôs DEPOIS do corte fica (nada some sem a pessoa ver), e o cartão avisa
+          ops.forEach(function (op) {
+            if (op[0] !== "cria_granada" || op[1].jogador !== pid || !(op[1].t > t0 + EPS)) return;
+            avisos.push(cmdT("aviso_corte_granada", { n2: ac.indice + 1, n1: anterior.acao + 1, granada: String(cmdT("granada_" + op[1].arma) || op[1].arma).toLowerCase(), h: cmdDoRelogio(op[1].t) }));
+          });
           anterior.pts = anterior.pts.filter(function (p) { return p.t < t0 - EPS; });
           anterior.pts.push({ t: t0, x: m.x, y: m.y, nivel: m.nivel, modo: m.modo }, destino);
           delete chegadas[anterior.acao]; anterior.acao = ac.indice;   // a chegada que o caminho anterior dizia não vale mais
@@ -214,7 +219,7 @@
       op[1].pontos = op[1].trilha.pts.map(function (p) { var o = { t: p.t, x: p.x, y: p.y, nivel: p.nivel }; if (p.modo) o.modo = p.modo; return o; });
       delete op[1].trilha;
     });
-    return { ops: ops, chegadas: chegadas, problemas: problemas, falta: falta };
+    return { ops: ops, chegadas: chegadas, problemas: problemas, avisos: avisos, falta: falta };
   }
 
   /** A pergunta que acabou de aparecer recebe o foco (o campo do horário ou a primeira opção), para quem usa o teclado. */
@@ -307,6 +312,7 @@
       if (a.codigo === "duracao_imposta" || a.codigo === "ordem_invertida") raiz.appendChild(el("p", { class: "pr-cmd-aviso", texto: cmdT("aviso_" + a.codigo, base) }));
     });
     if (l.acoes.some(function (ac) { return ac.tipo === "lancar"; })) raiz.appendChild(el("p", { class: "pr-cmd-aviso", id: "pr-cmd-origem", texto: cmdT("aviso_origem") }));
+    if (plano) plano.avisos.filter(function (m, i, v) { return v.indexOf(m) === i; }).forEach(function (m) { raiz.appendChild(el("p", { class: "pr-cmd-aviso", "data-aviso": "corte", texto: m })); });
     l.acoes.forEach(function (ac) { if (ac.depende_do_deslocamento) raiz.appendChild(el("p", { class: "pr-cmd-aviso", texto: cmdT("aviso_depende_do_deslocamento") })); });
     if (l.naoEntendido.length) {
       raiz.appendChild(el("p", { class: "pr-cmd-aviso", texto: cmdT("aviso_palavra_sobrando", { trechos: l.naoEntendido.map(function (x) { return "“" + x.trecho + "”"; }).join(", ") }) + " " + cmdT("ui_corrija") }));
