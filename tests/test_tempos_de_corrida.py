@@ -120,9 +120,10 @@ def test_so_os_mapas_com_pontos_conferidos_tem_tempo_entre_pontos():
     for mapa, t in _tabelas().items():
         conferidos = contexto(mapa, so_conferidos=True)["pontos"]
         assert bool(t["pontos"]) == bool(conferidos), mapa                                  # Nuke, Inferno, Anubis, Ancient: só áreas, até o Pedro conferir
-        n = len(conferidos)
-        for k, *_ in t["nos"]:
-            assert all(0 <= int(i) < n for i in k.split("+")), (mapa, k)                    # a chave é o número do ponto, como o leitor monta de `alvo.ids`
+        from scripts.build_tempos import nos_de_pontos
+        esperados = {n["chave"]: (n["x"], n["y"]) for n in nos_de_pontos(conferidos)}
+        for k, x, y, _ in t["nos"]:
+            assert esperados.get(k) == (x, y), (mapa, k)                                    # a chave é o número do ponto (como o leitor monta de `alvo.ids`) e a posição bate com o CSV de hoje
 
 
 def test_as_areas_da_tabela_existem_no_contexto_do_mapa():

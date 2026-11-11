@@ -55,7 +55,9 @@
   /** De onde veio o horário de chegada, dito na tela: tempo real (faixa, casos, partidas) ou estimado (com o fator de desvio do mapa, se houver). */
   function cmdChegada(c) {
     if (c.tipo === "real") {
-      return cmdT(c.fonte === "pontos" ? "chegada_real_pontos" : "chegada_real_areas", { h1: cmdDoRelogio(c.t25), h2: cmdDoRelogio(c.t75), h: cmdDoRelogio(c.t), n: c.casos, p: c.partidas });
+      var h1 = cmdDoRelogio(c.t25), h2 = cmdDoRelogio(c.t75);
+      // faixa que cabe num segundo só: "entre 1:24 e 1:24" não diz nada, então a frase vem sem o "entre"
+      return cmdT((c.fonte === "pontos" ? "chegada_real_pontos" : "chegada_real_areas") + (h1 === h2 ? "_unico" : ""), { h1: h1, h2: h2, h: cmdDoRelogio(c.t), n: c.casos, p: c.partidas });
     }
     return c.fator ? cmdT("chegada_fator", { h: cmdDoRelogio(c.t), f: c.fator.toFixed(2).replace(".", ",") }) : cmdT("chegada_reta", { h: cmdDoRelogio(c.t) });
   }

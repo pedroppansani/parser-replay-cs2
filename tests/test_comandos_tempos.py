@@ -67,6 +67,22 @@ def test_entre_pontos_do_pedro_mostra_a_faixa_os_casos_e_aplica_a_mediana(contex
     assert interno(pg, "I.problemas(JSON.parse(JSON.stringify(S.doc)), 1)") == []
 
 
+def test_faixa_que_cabe_num_segundo_nao_diz_entre_1_24_e_1_24(contexto, tmp_path_factory):
+    import re
+    from scripts.comandos_contexto import contexto as c
+    t = _tabela("de_dust2")
+    pts = c("de_dust2", so_conferidos=True)["pontos"]
+    a, b = next(p for p in pts if p["nome"] == "Base TR"), next(p for p in pts if p["nome"] == "Fora do Escuro")
+    chave = {(x, y): k for k, x, y, _ in t["nos"]}
+    linha = next(r for r in t["pontos"] if r[0] == chave[(a["x"], a["y"])] and r[1] == chave[(b["x"], b["y"])])
+    assert linha[5] >= 200 and linha[4] - linha[2] < 1.0                                     # 243 casos, faixa de meio segundo: o exemplo de números da Dust2
+    pg = _pagina(contexto, tmp_path_factory, "de_dust2")
+    _peca(pg, a["x"], a["y"])
+    _escreve(pg, "tr 2 corre pro fora do escuro aos 1:30")
+    texto = pg.locator("#pr-cmd-entendi li").all_inner_texts()[0]
+    assert f"{linha[5]} casos em {linha[6]} partidas" in texto and not re.search(r"entre (\S+) e ", texto) and "por volta de" in texto, texto
+
+
 def test_entre_areas_da_demo_quando_nao_ha_par_de_pontos(contexto, tmp_path_factory):
     from scripts.comandos_contexto import contexto as c
     ctx = c("de_mirage")

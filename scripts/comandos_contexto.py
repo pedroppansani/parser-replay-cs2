@@ -65,6 +65,8 @@ TEXTOS = {
     "aviso_origem": "Ainda não busco o arremesso real: a granada sai de onde o jogador está nesse horário.",
     "chegada_real_pontos": "chega entre {h1} e {h2}, por volta de {h} (tempo real entre os pontos: {n} casos em {p} partidas)",
     "chegada_real_areas": "chega entre {h1} e {h2}, por volta de {h} (tempo real entre as áreas da demo: {n} casos em {p} partidas)",
+    "chegada_real_pontos_unico": "chega por volta de {h} (tempo real entre os pontos: {n} casos em {p} partidas, quase sempre o mesmo tempo)",
+    "chegada_real_areas_unico": "chega por volta de {h} (tempo real entre as áreas da demo: {n} casos em {p} partidas, quase sempre o mesmo tempo)",
     "chegada_fator": "chega por volta de {h} (estimado: linha reta corrigida pelo desvio medido no mapa, {f}×)",
     "chegada_reta": "chega por volta de {h} (estimado: linha reta, sem correção: poucos dados neste mapa)",
     "ui_carregando_tempos": "Carregando os tempos reais de corrida…",
