@@ -60,7 +60,7 @@ def test_o_exemplo_do_pedro_aplicado_vira_um_lote_e_um_desfazer_volta_tudo(conte
     _escreve(pg, "tr 2 joga uma molotov na caverna aos 1:20 e roda pra TV correndo")
     linhas = pg.locator("#pr-cmd-entendi li").all_inner_texts()
     assert linhas[0].startswith("TR 2 · Molotov em Caverna · aos 1:20") and linhas[1].startswith("TR 2 · correndo até TV · depois")
-    assert "chega por volta de" in linhas[1] and "estimado" in linhas[1]                  # o tempo de corrida é estimado e a tela diz
+    assert "chega não antes de" in linhas[1] and "estimado" in linhas[1]                  # o tempo de corrida é estimado e a tela diz
     assert "Ainda não busco o arremesso real" in pg.inner_text("#pr-cmd-origem")           # a granada sai de onde o jogador está: dito, sem prometer o arremesso real
     assert pg.is_enabled("#pr-cmd-aplicar")
     pg.click("#pr-cmd-aplicar")
@@ -109,7 +109,7 @@ def _pagina_da_nuke_com_todos_os_pontos(contexto, tmp_path_factory):
     from scripts import build_tactics_page as bt
     from scripts.comandos_contexto import contexto as contexto_do_mapa
     original = bt._comandos
-    bt._comandos = lambda mapa: {k: v for k, v in contexto_do_mapa(mapa).items() if k != "jogadores"}
+    bt._comandos = lambda mapa, tempos_externos=False: {k: v for k, v in contexto_do_mapa(mapa).items() if k != "jogadores"}
     try:
         html = tmp_path_factory.mktemp("nuke_todos") / "prancheta_de_nuke.html"
         html.write_text(bt.build_html("de_nuke"), encoding="utf-8")

@@ -176,6 +176,7 @@
       b.setAttribute("aria-selected", String(on)); b.tabIndex = on ? 0 : -1;
     });
     Array.prototype.forEach.call(document.querySelectorAll("aside [role=tabpanel]"), function (p) { p.hidden = p.dataset.aba !== nome; });
+    if (nome === "comandos" && typeof cmdAbriuAba === "function") cmdAbriuAba();      // os tempos reais de corrida carregam na primeira vez (C3)
     return true;
   }
 

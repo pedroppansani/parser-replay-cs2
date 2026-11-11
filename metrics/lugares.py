@@ -178,6 +178,15 @@ def texto_do_lugar(nome: str) -> str:
     return re.sub(r" +", " ", n).strip().upper()
 
 
+def nome_de_exibicao(nome: str) -> str:
+    """O nome do lugar para ler numa frase: as mesmas palavras de `texto_do_lugar`, sem caixa alta ("TopofMid" vira "Top of Mid", "CTSpawn" vira "CT Spawn",
+    "BackofA" vira "Back of A"). O botão "Lugares" desenha o texto em caixa alta no mapa; a frase usa este."""
+    n = re.sub(r"(?<=[a-z])of(?=[A-Z])", " of ", nome)
+    n = re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", n)
+    n = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1 \2", n)
+    return re.sub(r" +", " ", n).strip()
+
+
 PASTA_DAS_TABELAS = Path(__file__).resolve().parent.parent / "data" / "lugares"
 
 

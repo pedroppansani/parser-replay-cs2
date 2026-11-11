@@ -109,6 +109,7 @@
   return {
     init: init,
     recebeBiblioteca: recebeBiblioteca,
+    recebeTempos: function (t) { if (typeof cmdTemposChegaram === "function") cmdTemposChegaram(t); },
     ganchos: ganchos,
     grupo: {
       recebe: recebeDeFora, retira: retiraRecusadas,
@@ -129,11 +130,12 @@
       taticaNoTempo: taticaNoTempo, quadroNoTempo: quadroNoTempo, posicaoNoTempo: posicaoNoTempo,
       problemasNoTempo: problemasNoTempo,
       vooEstimado: vooEstimado, velocidade: velocidade, M3: function () { return M3; },
+      cmdChegada: function (c) { return cmdChegada(c); }, cmdRelogio: function (t) { return cmdRelogio(t); },
       defineTempo: defineTempo, abaDoPainel: abaDoPainel, douglasPeucker: douglasPeucker, noMarco: noMarco, emiteLote: emiteLote,
       TOLERANCIA_DP_PX: TOLERANCIA_DP_PX,
       criaDoRound: criaDoRound, voltaAoReal: voltaAoReal, alternaFantasma: alternaFantasma, e3Real: e3Real,
       cortaReal: cortaReal, baseReal: baseReal,
-      atrasosDosPontos: atrasosDosPontos, atualizaTudo: atualizaTudo, adiaArremesso: adiaArremesso, lugarDe: lugarDe, eventosDe: eventosDe, eventoEm: eventoEm,
+      atrasosDosPontos: atrasosDosPontos, atualizaTudo: atualizaTudo, adiaArremesso: adiaArremesso, lugarDe: lugarDe, lugarExibido: lugarExibido, eventosDe: eventosDe, eventoEm: eventoEm,
       fimDaTatica: fimDaTatica, cenaNoRelogio: cenaNoRelogio, tocaNoRelogio: tocaNoRelogio, relogioEm: relogioEm, mudaHorarioDaGranada: mudaHorarioDaGranada, reproduzAte: function (t) { reproduzAte(t); },
       comecaReproducao: comecaReproducao, editaAqui: editaAqui, toca: function (s) { toca(s); },
       problemas: problemas, problemaDaOperacao: problemaDaOperacao, problemasDaOrigem: problemasDaOrigem, textoDaOrigem: textoDaOrigem,

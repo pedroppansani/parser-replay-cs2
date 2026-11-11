@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import sys
+import tempfile
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright
@@ -31,7 +32,7 @@ ESTADOS = [
 
 def main() -> None:
     saida = Path(sys.argv[1]); saida.mkdir(parents=True, exist_ok=True)
-    pagina = saida / "_prancheta_de_mirage.html"
+    pagina = Path(tempfile.mkdtemp(prefix="capturas_c2_")) / "prancheta_de_mirage.html"      # a página gerada fica fora da pasta das imagens
     pagina.write_text(build_html("de_mirage"), encoding="utf-8")
     base_tr = next(p for p in contexto("de_mirage")["pontos"] if p["nome"] == "Base TR")
     hashes: dict[str, list[str]] = {}

@@ -13,8 +13,9 @@ import re
 import unicodedata
 from pathlib import Path
 
-from metrics.lugares import rotulos, tabela_do_mapa, texto_do_lugar
+from metrics.lugares import nome_de_exibicao, rotulos, tabela_do_mapa, texto_do_lugar
 from metrics.tactics import SEGUNDOS_DO_ROUND, funcoes_da_prancheta
+from metrics.tempos_de_corrida import RAIO_ORIGEM, VELOCIDADE_MAXIMA_CORRENDO_U_S
 
 RAIZ = Path(__file__).resolve().parent.parent
 CALLOUTS = RAIZ / "data" / "reference" / "callouts_br.csv"
@@ -63,7 +64,14 @@ TEXTOS = {
     "linha_esperar": "{quem} · espera {n} s · {quando}",
     "linha_incompleta": "{quem} · ainda falta dizer o que faz",
     "aviso_origem": "Ainda não busco o arremesso real: a granada sai de onde o jogador está nesse horário.",
-    "chegada": "chega por volta de {h} (estimado: linha reta e velocidade medida)",
+    "chegada_real_pontos": "chega entre {h1} e {h2}, por volta de {h} (cerca de {d} s; tempo real entre os pontos: {n} casos em {p} partidas)",
+    "chegada_real_areas": "chega entre {h1} e {h2}, por volta de {h} (cerca de {d} s; tempo real entre as áreas da demo: {n} casos em {p} partidas)",
+    "chegada_real_pontos_unico": "chega por volta de {h} (cerca de {d} s, quase sempre o mesmo tempo; tempo real entre os pontos: {n} casos em {p} partidas)",
+    "chegada_real_areas_unico": "chega por volta de {h} (cerca de {d} s, quase sempre o mesmo tempo; tempo real entre as áreas da demo: {n} casos em {p} partidas)",
+    "aviso_corte_granada": "O comando {n2} corta o caminho do comando {n1}. A {granada} das {h} foi mantida: confira se ainda faz sentido.",
+    "chegada_piso": "chega não antes de {h} (estimado: linha reta; o caminho real costuma ser mais longo, e bem mais quando contorna paredes)",
+    "ui_carregando_tempos": "Carregando os tempos reais de corrida…",
+    "aviso_tempos_falhou": "Os tempos reais não carregaram: os tempos abaixo são estimados em linha reta. Recarregue a página para tentar de novo.",
     "q_relogio": "aos {h}", "q_inicio": "aos {n} s do início", "q_depois": "depois", "q_junto": "ao mesmo tempo", "q_sem": "sem horário",
     "quem_vazio": "quem?", "onde_vazio": "onde?",
     "aviso_duracao_imposta": "Você pediu {n} s de corrida. O site não confere esse tempo: usa a corrida estimada.",
@@ -112,7 +120,8 @@ def _areas(mapa: str, pontos: list[dict]) -> list[dict]:
             if not pts or any(a["nome"] == tab["nomes"][ix] for a in areas):
                 continue
             nome = tab["nomes"][ix]
-            areas.append({"nome": nome, "texto": texto_do_lugar(nome), "apelidos": apelidos.get(nome, []), "x": round(ox + pts[0][0] / esc), "y": round(oy - pts[0][1] / esc),
+            areas.append({"nome": nome, "texto": texto_do_lugar(nome), "exibe": nome_de_exibicao(nome),      # a ÁREA se escreve com o nome do jogo, igual ao do botão "Lugares" ("Top of Mid"); o nome do Pedro é só dos pontos dele
+                           "apelidos": apelidos.get(nome, []), "x": round(ox + pts[0][0] / esc), "y": round(oy - pts[0][1] / esc),
                           "andar": "baixo" if andar else ("cima" if len(tab["andares"]) > 1 else "único")})
     return areas
 
@@ -124,4 +133,4 @@ def jogadores_padrao() -> list[dict]:
 def contexto(mapa: str, jogadores: list[dict] | None = None, so_conferidos: bool = False) -> dict:
     pontos = _pontos(mapa, so_conferidos)
     return {"mapa": mapa, "pontos": pontos, "areas": _areas(mapa, pontos), "jogadores": jogadores or jogadores_padrao(), "funcoes": funcoes_da_prancheta(),
-            "segundos_do_round": int(SEGUNDOS_DO_ROUND), "textos": TEXTOS}
+            "segundos_do_round": int(SEGUNDOS_DO_ROUND), "velocidade_piso_correndo": VELOCIDADE_MAXIMA_CORRENDO_U_S, "raio_do_ponto_u": RAIO_ORIGEM, "textos": TEXTOS}

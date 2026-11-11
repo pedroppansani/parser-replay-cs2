@@ -27,6 +27,9 @@ RADARS_DIR = PROJECT_ROOT / "assets" / "radars"
 # (cartão 20, decisão 49): o site a grava em docs/arremessos/<mapa>.js; o build_html continua embutindo por padrão
 # (a página gerada sozinha, sem pasta ao lado, como nos testes).
 PASTA_DA_BIBLIOTECA = "arremessos"
+# Os tempos reais de corrida (C3): data/tempos/<mapa>.json, entregues como a biblioteca (arquivo próprio, só quando a aba Comandos abre)
+PASTA_DOS_TEMPOS = "tempos"
+TEMPOS_DIR = PROJECT_ROOT / "data" / "tempos"
 # Frases de interface da prancheta que saem do Python (decisão 18), lidas pelo tactics.js em `cfg.textos`
 TEXTOS_DA_PRANCHETA = {
     # o lugar reservado da linha do tempo antes da primeira peça (v2-5b: o mapa não muda de tamanho quando ela entra)
@@ -100,11 +103,34 @@ def biblioteca_js(mapa: str, partidas: dict[str, str] | None = None) -> str | No
     return "Prancheta.recebeBiblioteca(" + _js(dados) + ");\n"
 
 
-def _comandos(mapa: str) -> dict:
-    """O que a aba Comandos precisa do mapa (C2): os pontos do Pedro JÁ CONFERIDOS, os lugares da demo, o relógio e os textos. Os jogadores vêm da tática na tela."""
+def arquivo_dos_tempos(mapa: str) -> str:
+    """O caminho, relativo à página, do arquivo com os tempos reais de corrida do mapa (C3)."""
+    return f"{PASTA_DOS_TEMPOS}/{mapa}.js"
+
+
+def _tempos(mapa: str) -> dict | None:
+    caminho = TEMPOS_DIR / f"{mapa}.json"
+    return json.loads(caminho.read_text(encoding="utf-8")) if caminho.exists() else None
+
+
+def tempos_js(mapa: str) -> str | None:
+    """O conteúdo do arquivo dos tempos (a tabela entregue a `Prancheta.recebeTempos`); None quando o mapa não tem tabela."""
+    t = _tempos(mapa)
+    return None if t is None else "Prancheta.recebeTempos(" + _js(t) + ");\n"
+
+
+def _comandos(mapa: str, tempos_externos: bool = False) -> dict:
+    """O que a aba Comandos precisa do mapa (C2): os pontos do Pedro JÁ CONFERIDOS, os lugares da demo, o relógio e os textos. Os jogadores vêm da tática na tela.
+    C3: os tempos reais de corrida do mapa, embutidos (a página gerada sozinha) ou, no site, só o caminho do arquivo (`tempos_externos`)."""
     from scripts.comandos_contexto import contexto
     c = contexto(mapa, so_conferidos=True)
     c.pop("jogadores")
+    t = _tempos(mapa)
+    if t is not None:
+        if tempos_externos:
+            c["tempos_arquivo"] = arquivo_dos_tempos(mapa)
+        else:
+            c["tempos"] = t
     return c
 
 
@@ -155,7 +181,7 @@ def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | Non
         .replace("/*__MODELO3__*/null", _js(modelo3_para_a_pagina()))
         .replace("/*__LUGARES__*/null", _js(lugares))
         .replace("/*__TEXTOS__*/null", _js(TEXTOS_DA_PRANCHETA))
-        .replace("/*__COMANDOS__*/null", _js(_comandos(mapa)))
+        .replace("/*__COMANDOS__*/null", _js(_comandos(mapa, tempos_externos=biblioteca_externa)))
         .replace("<!--__GRUPO__-->", bloco_do_grupo(grupo))
         .replace("<!--__META__-->", meta_tags(
             f"Prancheta tática · {rotulos.get(mapa, mapa)} · {MARCA}",
