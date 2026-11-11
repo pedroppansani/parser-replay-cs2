@@ -58,11 +58,11 @@
     if (!alvo) return;
     var t = tempoMostrado();
     var pecas = Object.keys(cena.pecas).map(function (id) {
-      var p = cena.pecas[id], lugar = lugarDe(p.x, p.y, p.nivel || 0);
+      var p = cena.pecas[id], lugar = lugarExibido(p.x, p.y, p.nivel || 0);
       return rotuloDaPeca(p) + (p.funcao ? " (" + p.funcao + ")" : "") + (lugar ? " em " + lugar : "");
     }).sort();
     var granadas = Object.keys(cena.granadas || {}).map(function (id) {
-      var g = cena.granadas[id], d = g.destino || [], lugar = d.length ? lugarDe(d[0], d[1], g.nivel || 0) : null;
+      var g = cena.granadas[id], d = g.destino || [], lugar = d.length ? lugarExibido(d[0], d[1], g.nivel || 0) : null;
       return (NOME_ARMA[g.arma] || g.arma) + (lugar ? " em " + lugar : "");
     }).sort();
     var texto = (t !== null ? "Às " + relogioEm(t) + ": " : "") +

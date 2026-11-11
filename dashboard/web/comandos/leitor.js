@@ -121,10 +121,10 @@
   }
   function alvoDe(e) {
     if (e.tipo === "ponto") return { tipo: "ponto", id: e.p.id, nome: e.p.nome, qualificacao: e.p.qualificacao || "", x: e.p.x, y: e.p.y, andar: e.p.andar, vertical: e.p.vertical || "", lugar: e.p.lugar || "", ponto_medio: !!e.p.ponto_medio, ids: e.p.ids || [e.p.id] };
-    return { tipo: "area", nome: e.a.nome, texto: e.a.texto, x: e.a.x, y: e.a.y, andar: e.a.andar || "", lugar: e.a.nome };
+    return { tipo: "area", nome: e.a.nome, texto: e.a.texto, exibe: e.a.exibe || e.a.texto, x: e.a.x, y: e.a.y, andar: e.a.andar || "", lugar: e.a.nome };
   }
   function rotuloDe(e, outros) {   // como a opção se escreve: o nome e o que distingue (o andar, o lugar da demo; as coordenadas se nada distingue)
-    if (e.tipo === "area") return e.a.texto;
+    if (e.tipo === "area") return e.a.exibe || e.a.texto;
     var p = e.p, r = p.nome + (p.qualificacao ? " (" + p.qualificacao + ")" : "") + (p.vertical ? (p.vertical === "cima" ? " ↑" : " ↓") : "");
     var parte = [];
     if (p.andar && p.andar !== "único") parte.push(p.andar);
@@ -322,7 +322,7 @@
       });
       if (!ac.tipo) {
         var opc = [];
-        if (ac.alvo || pend.onde) opc.push({ rotulo: formata(TX["opcao_mover"], { lugar: ac.alvo ? (ac.alvo.texto || ac.alvo.nome) : trechoDe(nomeIx, fimNome) }), valor: { tipo: "mover" } }, { rotulo: formata(TX["opcao_segurar"], { lugar: ac.alvo ? (ac.alvo.texto || ac.alvo.nome) : trechoDe(nomeIx, fimNome) }), valor: { tipo: "segurar" } });
+        if (ac.alvo || pend.onde) opc.push({ rotulo: formata(TX["opcao_mover"], { lugar: ac.alvo ? (ac.alvo.exibe || ac.alvo.texto || ac.alvo.nome) : trechoDe(nomeIx, fimNome) }), valor: { tipo: "mover" } }, { rotulo: formata(TX["opcao_segurar"], { lugar: ac.alvo ? (ac.alvo.exibe || ac.alvo.texto || ac.alvo.nome) : trechoDe(nomeIx, fimNome) }), valor: { tipo: "segurar" } });
         P.push({ codigo: "acao", campo: "acao", trecho: ac.trecho, opcoes: opc });
       }
       if (ac.tipo === "lancar" && !ac.granada) P.push({ codigo: "granada", campo: "granada", opcoes: ["smoke", "flash", "molotov", "he"].map(function (g) { return { rotulo: TX["granada_" + g], valor: { granada: g } }; }) });

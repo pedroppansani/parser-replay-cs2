@@ -13,8 +13,9 @@ import re
 import unicodedata
 from pathlib import Path
 
-from metrics.lugares import rotulos, tabela_do_mapa, texto_do_lugar
+from metrics.lugares import nome_de_exibicao, rotulos, tabela_do_mapa, texto_do_lugar
 from metrics.tactics import SEGUNDOS_DO_ROUND, funcoes_da_prancheta
+from metrics.tempos_de_corrida import VELOCIDADE_MAXIMA_CORRENDO_U_S
 
 RAIZ = Path(__file__).resolve().parent.parent
 CALLOUTS = RAIZ / "data" / "reference" / "callouts_br.csv"
@@ -63,12 +64,11 @@ TEXTOS = {
     "linha_esperar": "{quem} · espera {n} s · {quando}",
     "linha_incompleta": "{quem} · ainda falta dizer o que faz",
     "aviso_origem": "Ainda não busco o arremesso real: a granada sai de onde o jogador está nesse horário.",
-    "chegada_real_pontos": "chega entre {h1} e {h2}, por volta de {h} (tempo real entre os pontos: {n} casos em {p} partidas)",
-    "chegada_real_areas": "chega entre {h1} e {h2}, por volta de {h} (tempo real entre as áreas da demo: {n} casos em {p} partidas)",
-    "chegada_real_pontos_unico": "chega por volta de {h} (tempo real entre os pontos: {n} casos em {p} partidas, quase sempre o mesmo tempo)",
-    "chegada_real_areas_unico": "chega por volta de {h} (tempo real entre as áreas da demo: {n} casos em {p} partidas, quase sempre o mesmo tempo)",
-    "chegada_fator": "chega por volta de {h} (estimado: linha reta corrigida pelo desvio medido no mapa, {f}×)",
-    "chegada_reta": "chega por volta de {h} (estimado: linha reta, sem correção: poucos dados neste mapa)",
+    "chegada_real_pontos": "chega entre {h1} e {h2}, por volta de {h} (cerca de {d} s; tempo real entre os pontos: {n} casos em {p} partidas)",
+    "chegada_real_areas": "chega entre {h1} e {h2}, por volta de {h} (cerca de {d} s; tempo real entre as áreas da demo: {n} casos em {p} partidas)",
+    "chegada_real_pontos_unico": "chega por volta de {h} (cerca de {d} s, quase sempre o mesmo tempo; tempo real entre os pontos: {n} casos em {p} partidas)",
+    "chegada_real_areas_unico": "chega por volta de {h} (cerca de {d} s, quase sempre o mesmo tempo; tempo real entre as áreas da demo: {n} casos em {p} partidas)",
+    "chegada_piso": "chega não antes de {h} (estimado: linha reta; o caminho real costuma ser mais longo, e bem mais quando contorna paredes)",
     "ui_carregando_tempos": "Carregando os tempos reais de corrida…",
     "aviso_tempos_falhou": "Os tempos reais não carregaram: os tempos abaixo são estimados em linha reta. Recarregue a página para tentar de novo.",
     "q_relogio": "aos {h}", "q_inicio": "aos {n} s do início", "q_depois": "depois", "q_junto": "ao mesmo tempo", "q_sem": "sem horário",
@@ -109,17 +109,23 @@ def _areas(mapa: str, pontos: list[dict]) -> list[dict]:
     esc, ox, oy = radar["scale_px_per_unit"], radar["origin_x"], radar["origin_y"]
     # nomes de TODO ponto do Pedro do mapa (conferido ou não): um nome de ponto não conferido não pode entrar pela tabela de apelidos das áreas
     nomes_de_ponto = {_norma(n) for p in _pontos(mapa, False) for n in [p["nome"], p["nome"] + p["qualificacao"]] + p["apelidos"]}
+    do_pedro = {_norma(p["nome"]): p["nome"] for p in pontos}      # o nome do Pedro, com a letra dele, só dos pontos que a página traz (os conferidos)
     apelidos: dict[str, list[str]] = {}
+    exibe_do_pedro: dict[str, str] = {}
     for r in csv.DictReader(open(TABELA_C0, encoding="utf-8-sig", newline=""), delimiter=";"):
         if r["mapa"] == mapa and r["apelido_br"] not in ("", "?"):
-            apelidos[r["nome_do_jogo"]] = [a.strip() for a in r["apelido_br"].split(" / ") if a.strip() and _norma(a) not in nomes_de_ponto]
+            todos = [a.strip() for a in r["apelido_br"].split(" / ") if a.strip()]
+            apelidos[r["nome_do_jogo"]] = [a for a in todos if _norma(a) not in nomes_de_ponto]
+            primeiro = next((do_pedro[_norma(a)] for a in todos if _norma(a) in do_pedro), None)     # o primeiro apelido dele que também é ponto conferido
+            if primeiro:
+                exibe_do_pedro[r["nome_do_jogo"]] = primeiro
     areas = []
     for andar, lugares in enumerate(rotulos(tab)):
         for ix, pts in lugares:
             if not pts or any(a["nome"] == tab["nomes"][ix] for a in areas):
                 continue
             nome = tab["nomes"][ix]
-            areas.append({"nome": nome, "texto": texto_do_lugar(nome), "apelidos": apelidos.get(nome, []), "x": round(ox + pts[0][0] / esc), "y": round(oy - pts[0][1] / esc),
+            areas.append({"nome": nome, "texto": texto_do_lugar(nome), "exibe": exibe_do_pedro.get(nome) or nome_de_exibicao(nome), "apelidos": apelidos.get(nome, []), "x": round(ox + pts[0][0] / esc), "y": round(oy - pts[0][1] / esc),
                           "andar": "baixo" if andar else ("cima" if len(tab["andares"]) > 1 else "único")})
     return areas
 
@@ -131,4 +137,4 @@ def jogadores_padrao() -> list[dict]:
 def contexto(mapa: str, jogadores: list[dict] | None = None, so_conferidos: bool = False) -> dict:
     pontos = _pontos(mapa, so_conferidos)
     return {"mapa": mapa, "pontos": pontos, "areas": _areas(mapa, pontos), "jogadores": jogadores or jogadores_padrao(), "funcoes": funcoes_da_prancheta(),
-            "segundos_do_round": int(SEGUNDOS_DO_ROUND), "textos": TEXTOS}
+            "segundos_do_round": int(SEGUNDOS_DO_ROUND), "velocidade_piso_correndo": VELOCIDADE_MAXIMA_CORRENDO_U_S, "textos": TEXTOS}

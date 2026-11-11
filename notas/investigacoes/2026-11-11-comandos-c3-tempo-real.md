@@ -14,42 +14,36 @@ ticks andando (shift) e nenhum agachado; a demo grava os dois a cada tick, entã
 
 ## O mínimo e a cobertura
 
-20 casos correndo em pelo menos 3 partidas. Pares com amostra: Mirage 581 de 5.256 pares de pontos (11%) e 91 de 506 pares de áreas; Dust2 336 de 2.970 (11%) e 88 de áreas;
-Nuke 116, Inferno 52, Anubis 65 e Ancient 28 pares de áreas; Overpass (2 partidas) e Train (1) não têm tabela. Os pontos do Pedro só entram nos mapas `conferido = sim` (Mirage e Dust2).
+20 casos correndo em pelo menos 3 partidas. Pares com amostra (depois do alinhamento): Mirage 454 de 5.256 pares de pontos (9%) e 74 de 506 pares de áreas; Dust2 276 de 2.970 (9%) e 70 de áreas;
+Nuke 74, Inferno 42, Anubis 43 e Ancient 23 pares de áreas; Overpass (2 partidas) e Train (1) não têm tabela. Os pontos do Pedro só entram nos mapas `conferido = sim` (Mirage e Dust2).
 
-## O fator de desvio por mapa
+## O fator de desvio saiu, e o estimado virou um piso
 
-Mediana de (tempo real ÷ tempo em linha reta a 210,6 u/s) dos pares com amostra, sem troca de andar e com reta de 300 u ou mais; vale com pelo menos 15 pares. O erro é a mediana de
-|tempo real − estimado| nesses pares, em segundos; "validado" deixa cada par de fora do cálculo do fator.
+O fator (mediana de real ÷ reta) deu 0,91 a 1,02 e quase não mudava o erro, e o Pedro o tirou: o erro foi medido nos pares que já têm tempo real, onde o estimado nunca é usado; o estimado só
+aparece nos pares sem amostra, que são os que contornam parede (Mirage Base TR → Meio: 12,0 s real contra 8,0 s em linha reta). Os dois sinais de que as contas mediam coisas diferentes:
 
-| mapa | fonte | pares | fator | erro da reta | erro com o fator | erro validado |
-|---|---|---|---|---|---|---|
-| Mirage | pontos | 492 | 0,96 | 0,41 s | 0,36 s | 0,36 s |
-| Dust2 | pontos | 278 | 1,02 | 0,32 s | 0,33 s | 0,33 s |
-| Nuke | áreas | 94 | 0,97 | 0,42 s | 0,40 s | 0,43 s |
-| Inferno | áreas | 52 | 0,94 | 0,53 s | 0,57 s | 0,63 s |
-| Anubis | áreas | 65 | 0,91 | 0,45 s | 0,26 s | 0,26 s |
-| Ancient | áreas | 28 | 0,93 | 0,49 s | 0,39 s | 0,46 s |
-| Overpass, Train | nenhuma | 0 | sem fator (linha reta pura) | | | |
-
-**Leitura honesta:** o fator fica entre 0,91 e 1,02, quase 1, e quase não melhora o erro: com o fator o erro cai em 4 mapas e sobe em 2 (0,01 s na Dust2, 0,04 s no Inferno); validado (par deixado de fora), cai em 3 e sobe em 3. Dois motivos: a mediana é dominada pelos pares curtos
-(erro de meio segundo para reta de 2 a 5 s), e os pares com 20 casos correndo são os trajetos populares e diretos (viés de seleção: pares que cercam parede ficam sem amostra). Nos pares longos
-(reta de 1.200 u ou mais) o erro da reta sobe para 0,6 a 0,8 s e a direção do erro muda de mapa a mapa; um par como Mirage Base TR → Meio tem 1,5 vez a reta (12,0 s contra 8,0 s).
+- **Distância:** a reta entre os centros dos nós é em mediana 5,4% (Mirage) e 4,2% (Dust2) maior que a distância entre os pontos de maior aproximação que o tempo real mede. Agora a duração é alinhada
+  (multiplicada por essa razão; razão fora de 0,8 a 1,25 descarta a viagem). Custo: Mirage 581 → 454 pares de pontos e 91 → 74 de áreas; Dust2 336 → 276 e 88 → 70.
+- **Velocidade:** 210,6 u/s é a mediana de quem corre com rifle, não um teto. Velocidade em linha reta entre os pontos de maior aproximação, viagens correndo com reta de 300 u ou mais: Mirage (50.509
+  viagens) p50 206, p90 240, p99 248, p99,9 250; Dust2 (21.356) p50 193, p90 237, p99 250, p99,9 250; 45% das viagens da Mirage passam de 211 u/s, e só 0,1% passam de 250. Faca na mão em 27% das viagens da
+  Mirage e 20% da Dust2. Por isso "não antes de" usa 250 u/s correndo (e, andando e agachado, a velocidade constante de cada jeito). Teste: em todo par da tabela a mediana real passa da reta a 250 u/s.
 
 ## Exemplos
 
-- Mirage Base TR → Meio (pontos): 20 casos em 9 partidas, chega entre 1:18 e 1:16, por volta de 1:18 (saída às 1:30).
-- Mirage TSpawn → TopofMid (áreas): 20 casos em 10 partidas, entre 1:21 e 1:20.
+- Mirage Base TR → Meio (pontos): 20 casos em 9 partidas, chega entre 1:18 e 1:17, por volta de 1:17 (cerca de 13 s; saída às 1:30).
+- Mirage TSpawn → TopofMid (áreas, na tela "Base TR → Esquina"): 20 casos em 10 partidas, entre 1:22 e 1:21, cerca de 8 s.
 - Mirage Caverna → TV: **não passa do mínimo** (12 casos correndo em 5 partidas); desce para as áreas (TRamp → House, 7 casos) e termina em "estimado".
-- Dust2 Base TR → Fora do Escuro (pontos): 243 casos em 10 partidas, mediana 6,25 s (faixa de 6,12 a 6,50 s; em relógio, tudo cai em 1:24).
+- Dust2 Base TR → Fora do Escuro (pontos): 243 casos em 10 partidas, cerca de 7 s (a faixa cabe num segundo; em relógio, 1:23).
 - Nuke Secret → Tunnels (troca de andar, áreas): 35 casos em 9 partidas, mediana 5,4 s; CTSpawn → Tunnels não tem par e a aba pergunta a chegada.
 
-## A peça que ainda anda (o caso que ficou da C2)
+## A ordem do relógio e a peça que ainda anda
 
-O plano guarda, por peça, a trilha dos pontos que ele mesmo criou. O ponto de partida de um comando é a posição da trilha naquele horário (interpolada em linha reta entre dois pontos, como a prancheta
-toca); depois do último ponto, o destino; antes do primeiro, a tática. Se o comando começa no meio de uma corrida do plano, o caminho anterior termina ali e o novo segue dali (um `cria_caminho` só).
-A chegada que o primeiro comando dizia deixa de aparecer, porque a peça não chega mais lá. Limite: o plano lê as frases na ordem em que foram escritas; "joga smoke aos 1:25" escrita antes de "corre aos 1:30" parte da tática, não da corrida.
+Cada comando com horário abre uma cadeia; os sem horário ("depois", "junto", "espera") ficam presos ao comando anterior na escrita; as cadeias andam por horário e, no mesmo horário, na ordem da escrita.
+O plano guarda, por peça, a trilha dos pontos que ele mesmo criou; o ponto de partida de um comando é a posição da trilha naquele horário (interpolada em linha reta), depois do último ponto o destino,
+antes do primeiro a tática. Se o comando começa no meio de uma corrida do plano, o caminho anterior termina ali e o novo segue dali (um `cria_caminho` só); a chegada que o primeiro comando dizia deixa de aparecer.
 
 ## A impressão dos números
 
-`scripts/design/impressao_numeros.py` agora lê `tempos/<mapa>.js` como `<página>::tempos`. Antes (main) 18.408 linhas; depois 18.496: 88 linhas novas, todas `::tempos` (14 a 16 por mapa), 0 mudaram, 0 sumiram.
+`scripts/design/impressao_numeros.py` lê `tempos/<mapa>.js` como `<página>::tempos`. Antes (main) 18.408 linhas; depois 18.470: 62 novas, 0 sumiram. Das novas, 52 são `::tempos` (8 a 10 por mapa) e 10 são
+`comandos.velocidade_piso_correndo` (250, uma por página). Mudaram 7 linhas, todas `comandos.areas` (um hash): a estrutura ganhou o campo de texto `exibe` (o nome na tela) e o hash inclui as chaves; nenhum número mudou.
+O alinhamento da duração mexe só nas linhas `::tempos`.

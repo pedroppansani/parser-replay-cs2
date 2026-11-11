@@ -22,6 +22,15 @@
     return null;
   }
 
+  /** O nome do lugar para ler numa frase: nos mapas de callouts conferidos, o nome do Pedro ("Base TR"); nos outros, o nome com espaços ("T Spawn", "Top of Mid").
+      `lugarDe` continua devolvendo o nome do dado, que é a chave das tabelas. */
+  function nomeExibidoDoLugar(nome) {
+    var as = (cfg && cfg.comandos && cfg.comandos.areas) || [];
+    for (var i = 0; i < as.length; i++) if (as[i].nome === nome) return as[i].exibe || nome;
+    return nome;
+  }
+  function lugarExibido(x, y, nivel) { var n = lugarDe(x, y, nivel); return n === null ? null : nomeExibidoDoLugar(n); }
+
   /** A tática tem horário (alguma operação do formato 3, ou granada com `t`):
       toca no relógio do round. A que só tem passos -- toda tática das versões 1
       e 2, que a migração sobe de versão sem mudar nada -- continua tocando
@@ -77,7 +86,7 @@
       var p = e3.pecas[pid], nome = rotuloDaPeca(p);
       p.pontos.forEach(function (pt, i) {
         if (pt.fora) return;
-        var lugar = lugarDe(pt.x, pt.y, pt.nivel);
+        var lugar = lugarExibido(pt.x, pt.y, pt.nivel);
         var ant = i > 0 && !p.pontos[i - 1].fora ? p.pontos[i - 1] : null;
         var parado = ant && ant.x === pt.x && ant.y === pt.y && (ant.nivel || 0) === (pt.nivel || 0);   // o mesmo lugar do ponto de antes: ficou parado
         var acao = parado ? "fica" : i === 0 || !ant ? "começa" : "chega";
@@ -89,12 +98,12 @@
     });
     Object.keys(e3.granadas).forEach(function (gid) {
       var g = e3.granadas[gid], quem = g.jogador && e3.pecas[g.jogador] ? rotuloDaPeca(e3.pecas[g.jogador]) : null;
-      var lugar = lugarDe(g.destino[0], g.destino[1], g.nivel);
+      var lugar = lugarExibido(g.destino[0], g.destino[1], g.nivel);
       ev.push({ alvo: gid, tipo: "granada", granada: gid, ordem: 2, t: g.t, x: g.destino[0], y: g.destino[1], nivel: g.nivel,
                 texto: (quem ? quem + " joga " : "") + NOME_ARMA[g.arma] + (lugar ? " em " + lugar : "") });
     });
     if (e3.bomba) {
-      var lb = lugarDe(e3.bomba.x, e3.bomba.y, e3.bomba.nivel);
+      var lb = lugarExibido(e3.bomba.x, e3.bomba.y, e3.bomba.nivel);
       ev.push({ alvo: "bomba", tipo: "bomba", ordem: 3, t: e3.bomba.t, x: e3.bomba.x, y: e3.bomba.y, nivel: e3.bomba.nivel,
                 texto: "Bomba plantada" + (lb ? " em " + lb : "") });
     }

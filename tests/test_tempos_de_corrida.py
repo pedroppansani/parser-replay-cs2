@@ -86,12 +86,14 @@ def test_no_de_um_andar_so_vale_para_ticks_daquele_andar():
     assert (0, 1) in T.viagens([_rastro(xs, ys, z=-500.0)], nos, 150.0, corte_z=0.0)
 
 
-def test_o_fator_e_a_mediana_de_real_sobre_reta_com_o_erro_dito():
-    nos = [{"chave": str(i), "x": 1000.0 * i, "y": 0.0, "andar": ""} for i in range(8)]
-    pr = {(a, b): {"mediana": (1000.0 * abs(b - a)) / 210.6 * 1.25} for a in range(8) for b in range(8) if a != b}
-    f = T.fator_do_mapa([("pontos", pr, nos)], 210.6)
-    assert abs(f["valor"] - 1.25) < 0.001 and f["pares"] == 56 and f["erro_corrigido_s"] < 0.01 and f["erro_reta_s"] > 1
-    assert T.fator_do_mapa([("pontos", {(0, 1): {"mediana": 5.0}}, nos)], 210.6)["valor"] is None   # poucos pares: sem fator
+def test_a_duracao_e_alinhada_a_distancia_entre_os_nos():
+    """A viagem passa por pontos de maior aproximação a 1.000 u de distância, mas os nós (os centros) estão a 1.100 u: a duração vale para os 1.100 u."""
+    xs = [100.0 + i * 25 for i in range(37)]                       # de 100 a 1.000 u, a 200 u/s: 4,5 s para 900 u
+    nos = [{"chave": "A", "x": 0, "y": 0, "membros": [(0, 0)], "andar": ""}, {"chave": "B", "x": 1100.0, "y": 0, "membros": [(1100.0, 0)], "andar": ""}]
+    (_, dur, _, _), = T.viagens([_rastro(xs, [0.0] * len(xs))], nos, 150.0)[(0, 1)]
+    assert abs(dur - 4.5 * 1100 / 900) < 0.2
+    nos[1]["x"] = 2000.0; nos[1]["membros"] = [(2000.0, 0)]            # nós longe demais do que o jogador percorreu (razão fora de 0,8 a 1,25): fora
+    assert (0, 1) not in T.viagens([_rastro(xs, [0.0] * len(xs))], nos, 1100.0)
 
 
 # ---------- a forma da tabela (sem corpus) ----------
@@ -111,8 +113,20 @@ def test_toda_linha_da_tabela_respeita_o_minimo_e_a_ordem_da_faixa():
                 assert a != b and n >= 20 and partidas >= 3 and p25 <= med <= p75 and 0 < p25 < 25, (mapa, fonte, a, b)
         chaves = {k for k, *_ in t["nos"]}
         assert all(r[0] in chaves and r[1] in chaves for r in t["pontos"])                  # todo ponto da tabela tem o seu nó (a aba acha a peça pelo nó)
-        f = t["fator"]
-        assert f["valor"] is None or (0.5 < f["valor"] < 2.0 and f["pares"] >= T.MIN_PARES_DO_FATOR and f["erro_corrigido_s"] >= 0)
+        assert "fator" not in t                                                             # o fator de desvio saiu (decisão do Pedro): o estimado é um piso
+
+
+def test_o_piso_de_250_u_s_vale_em_todo_par_da_tabela():
+    """A linha reta a 250 u/s (o teto de quem corre) nunca passa da mediana real: o "não antes de" da aba é verdadeiro nos pares que têm tempo real."""
+    import math
+    from scripts.comandos_contexto import contexto
+    for mapa, t in _tabelas().items():
+        nos = {k: (x, y) for k, x, y, _ in t["nos"]}
+        ar = {a["nome"]: (a["x"], a["y"]) for a in contexto(mapa)["areas"]}
+        for a, b, p25, med, p75, n, partidas in t["pontos"]:
+            assert med >= math.hypot(nos[a][0] - nos[b][0], nos[a][1] - nos[b][1]) / T.VELOCIDADE_MAXIMA_CORRENDO_U_S, (mapa, a, b)
+        for a, b, p25, med, p75, n, partidas in t["areas"]:
+            assert med >= math.hypot(ar[a][0] - ar[b][0], ar[a][1] - ar[b][1]) / T.VELOCIDADE_MAXIMA_CORRENDO_U_S, (mapa, a, b)
 
 
 def test_so_os_mapas_com_pontos_conferidos_tem_tempo_entre_pontos():
@@ -209,8 +223,11 @@ def _recalcula(rastros, nos, raio, corte_z):
                 reta = ((X[ib] - X[ia]) ** 2 + (Y[ib] - Y[ia]) ** 2) ** 0.5
                 if parado > 1.0 or reta < 1 or andado > 1.8 * reta:
                     continue
+                razao = ((nos[a]["x"] - nos[b]["x"]) ** 2 + (nos[a]["y"] - nos[b]["y"]) ** 2) ** 0.5 / reta       # a duração vale para a distância entre os nós
+                if not 0.8 <= razao <= 1.25:
+                    continue
                 anda = sum(walk[ia:ib + 1]) / (ib - ia + 1)
-                casos.setdefault((a, b), []).append((partida, dur, anda, any(duck[ia:ib + 1])))
+                casos.setdefault((a, b), []).append((partida, dur * razao, anda, any(duck[ia:ib + 1])))
     return casos
 
 

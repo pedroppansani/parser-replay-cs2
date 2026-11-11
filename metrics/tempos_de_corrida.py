@@ -10,7 +10,10 @@ Um NÓ é um alvo possível: `{"chave", "x", "y", "membros": [(x, y), ...], "and
 A regra, em uma frase (o teste a recalcula por outro caminho): cada tick recebe o nó mais perto, se estiver a no máximo RAIO dele (o nó com mais de um membro
 conta pelo membro mais perto; um nó de um andar só vale para ticks daquele andar); uma VISITA são ticks seguidos do mesmo nó; a viagem de A a B vai do tick de
 MAIOR APROXIMAÇÃO de A, na última visita a A antes de B, ao tick de maior aproximação da primeira visita a B; descarta o que parou mais de 1 s, tem buraco
-no rastro (morte, troca de round), passou de 25 s ou andou mais de 1,8 vezes a reta (quem volta a A conta da última saída). Só "correndo" entra na tabela: no máximo 10% dos ticks
+no rastro (morte, troca de round), passou de 25 s ou andou mais de 1,8 vezes a reta (quem volta a A conta da última saída). ALINHADA à distância entre os nós:
+a duração medida entre os dois pontos de maior aproximação vale para a distância entre eles, que quase nunca é a distância entre os centros dos nós (a mediana é
+4 a 5% maior); cada duração é então multiplicada por (distância entre os nós ÷ distância entre os pontos de maior aproximação), e a viagem fica de fora se essa
+razão sair de 0,8 a 1,25. Assim o tempo real e a linha reta da aba medem a mesma distância. Só "correndo" entra na tabela: no máximo 10% dos ticks
 andando (shift) e nenhum agachado.
 """
 from __future__ import annotations
@@ -19,13 +22,16 @@ from collections import defaultdict
 
 import numpy as np
 
+# A velocidade do PISO de quem corre: o teto do jogo (faca, 250 u/s). A mediana de quem corre com rifle, 210,6 u/s (`metrics.tactics.VELOCIDADE_U_S`), NÃO é teto:
+# no corpus (Mirage e Dust2, 71.865 viagens correndo, reta de 300 u ou mais) 45% das viagens passam de 211 u/s e só 0,1% passam de 250 (o p99,9 é 250). Por isso
+# "não antes de" usa 250 para quem corre; andando e agachado seguem as velocidades constantes de cada jeito.
+VELOCIDADE_MAXIMA_CORRENDO_U_S = 250.0
 RAIO_PONTOS = 200.0     # u em volta de um ponto do Pedro (um ponto é um canto; ±1 s de ruído em cada ponta)
 RAIO_AREAS = 250.0      # u em volta da âncora de uma área da demo
 RAIO_ORIGEM = 150.0     # u: a peça "está" num ponto se estiver a no máximo isto dele (a aba usa para achar o ponto de partida)
 MIN_CASOS = 20
 MIN_PARTIDAS = 3
-MIN_PARES_DO_FATOR = 15
-RETA_MIN_DO_FATOR = 300.0   # pares mais curtos que isto não entram no fator: o ruído do raio pesa mais que o desvio
+RAZAO_MIN, RAZAO_MAX = 0.8, 1.25   # distância entre os nós ÷ distância entre os pontos de maior aproximação: fora disto a viagem não representa o par
 LIMITE_S = 25.0
 PARADO_U_S = 40.0
 PARADA_MAX_S = 1.0
@@ -77,7 +83,10 @@ def viagens(rastros: list[dict], nos: list[dict], raio: float, corte_z: float | 
                 reta = float(np.hypot(r["x"][ib] - r["x"][ia], r["y"][ib] - r["y"][ia]))
                 if ruim or reta < 1 or andado > DESVIO_MAX * reta:
                     continue
-                saida[(a, b)].append((r["partida"], dur, float(r["walk"][ia:ib + 1].mean()), float(r["duck"][ia:ib + 1].max())))
+                razao = float(np.hypot(nos[a]["x"] - nos[b]["x"], nos[a]["y"] - nos[b]["y"])) / reta
+                if not RAZAO_MIN <= razao <= RAZAO_MAX:
+                    continue
+                saida[(a, b)].append((r["partida"], dur * razao, float(r["walk"][ia:ib + 1].mean()), float(r["duck"][ia:ib + 1].max())))
     return saida
 
 
@@ -98,28 +107,3 @@ def resumo(casos: list[tuple]) -> dict | None:
 
 def pares(rastros: list[dict], nos: list[dict], raio: float, corte_z: float | None = None) -> dict[tuple[int, int], dict]:
     return {k: r for k, v in viagens(rastros, nos, raio, corte_z).items() if (r := resumo(v)) is not None}
-
-
-def fator_do_mapa(tabelas: list[tuple[str, dict[tuple[int, int], dict], list[dict]]], velocidade: float) -> dict:
-    """O fator de desvio do mapa: a mediana de (tempo real ÷ tempo em linha reta) nos pares com amostra, sem troca de andar e com reta de pelo menos 300 u.
-
-    `tabelas` = [(fonte, pares, nós)] em ordem de preferência; vale a primeira com pelo menos MIN_PARES_DO_FATOR pares. Devolve também quanto o tempo em
-    linha reta e o corrigido erram em relação à mediana real (mediana do erro absoluto, em s), o segundo também com cada par deixado de fora ("validação")."""
-    for fonte, pr, nos in tabelas:
-        linhas = []
-        for (a, b), r in pr.items():
-            na, nb = nos[a], nos[b]
-            if na.get("andar") in ("cima", "baixo") and nb.get("andar") in ("cima", "baixo") and na["andar"] != nb["andar"]:
-                continue                                            # troca de andar: a reta não diz nada
-            reta = float(np.hypot(na["x"] - nb["x"], na["y"] - nb["y"]))
-            if reta >= RETA_MIN_DO_FATOR:
-                linhas.append((reta / velocidade, r["mediana"]))
-        if len(linhas) < MIN_PARES_DO_FATOR:
-            continue
-        reta_s = np.array([x[0] for x in linhas]); real = np.array([x[1] for x in linhas]); razao = real / reta_s
-        f = float(np.median(razao))
-        fora = np.array([float(np.median(np.delete(razao, i))) for i in range(len(razao))])
-        return {"valor": round(f, 3), "fonte": fonte, "pares": len(linhas),
-                "erro_reta_s": round(float(np.median(np.abs(real - reta_s))), 2), "erro_corrigido_s": round(float(np.median(np.abs(real - f * reta_s))), 2),
-                "erro_validado_s": round(float(np.median(np.abs(real - fora * reta_s))), 2)}
-    return {"valor": None, "fonte": None, "pares": 0}

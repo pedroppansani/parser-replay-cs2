@@ -15,8 +15,7 @@ import numpy as np
 import polars as pl
 
 from metrics.map_areas import floor_split_z
-from metrics.tactics import VELOCIDADE_U_S
-from metrics.tempos_de_corrida import (MIN_CASOS, MIN_PARTIDAS, RAIO_AREAS, RAIO_ORIGEM, RAIO_PONTOS, fator_do_mapa, pares)
+from metrics.tempos_de_corrida import MIN_CASOS, MIN_PARTIDAS, RAIO_AREAS, RAIO_ORIGEM, RAIO_PONTOS, pares
 from scripts.build_lineups import INTERIM, PROCESSED, detect_tickrate, load_interim
 from scripts.comandos_contexto import contexto
 
@@ -83,14 +82,12 @@ def tabela(mapa: str) -> dict | None:
     if not rs or not (ctx["pontos"] or ctx["areas"]):
         return None
     corte = floor_split_z(mapa)
-    v = VELOCIDADE_U_S[("rifle", "correndo")]
     areas = nos_de_areas(ctx["areas"]); pontos = nos_de_pontos(ctx["pontos"])
     par_a = pares(rs, areas, RAIO_AREAS, corte) if areas else {}
     par_p = pares(rs, pontos, RAIO_PONTOS, corte) if pontos else {}
     usados = sorted({i for k in par_p for i in k})
-    saida = {"versao": VERSAO, "mapa": mapa, "partidas": len({r["partida"] for r in rs}), "velocidade_de_referencia": v,
+    saida = {"versao": VERSAO, "mapa": mapa, "partidas": len({r["partida"] for r in rs}),
              "raio_pontos": RAIO_PONTOS, "raio_areas": RAIO_AREAS, "raio_origem": RAIO_ORIGEM, "minimo_casos": MIN_CASOS, "minimo_partidas": MIN_PARTIDAS,
-             "fator": fator_do_mapa([("pontos", par_p, pontos), ("áreas", par_a, areas)], v),
              "nos": [[pontos[i]["chave"], pontos[i]["x"], pontos[i]["y"], pontos[i]["andar"]] for i in usados],
              "pontos": [[pontos[a]["chave"], pontos[b]["chave"], r["p25"], r["mediana"], r["p75"], r["casos"], r["partidas"]] for (a, b), r in sorted(par_p.items())],
              "areas": [[areas[a]["chave"], areas[b]["chave"], r["p25"], r["mediana"], r["p75"], r["casos"], r["partidas"]] for (a, b), r in sorted(par_a.items())]}
@@ -108,9 +105,7 @@ def main() -> None:
             print(f"{mapa}: sem tabela (sem lugares, sem pontos conferidos ou sem par com amostra)")
             continue
         arquivo_dos_tempos(mapa).write_text(json.dumps(t, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
-        f = t["fator"]
-        print(f"{mapa}: {t['partidas']} partidas, {len(t['pontos'])} pares de pontos, {len(t['areas'])} de áreas, fator {f['valor']} ({f['fonte']}, {f['pares']} pares"
-              + (f"; erro mediano da reta {f['erro_reta_s']} s, corrigida {f['erro_corrigido_s']} s, validada {f['erro_validado_s']} s" if f["valor"] else "") + ")", flush=True)
+        print(f"{mapa}: {t['partidas']} partidas, {len(t['pontos'])} pares de pontos, {len(t['areas'])} pares de áreas", flush=True)
 
 
 if __name__ == "__main__":

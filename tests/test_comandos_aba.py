@@ -60,7 +60,7 @@ def test_o_exemplo_do_pedro_aplicado_vira_um_lote_e_um_desfazer_volta_tudo(conte
     _escreve(pg, "tr 2 joga uma molotov na caverna aos 1:20 e roda pra TV correndo")
     linhas = pg.locator("#pr-cmd-entendi li").all_inner_texts()
     assert linhas[0].startswith("TR 2 · Molotov em Caverna · aos 1:20") and linhas[1].startswith("TR 2 · correndo até TV · depois")
-    assert "chega por volta de" in linhas[1] and "estimado" in linhas[1]                  # o tempo de corrida é estimado e a tela diz
+    assert "chega não antes de" in linhas[1] and "estimado" in linhas[1]                  # o tempo de corrida é estimado e a tela diz
     assert "Ainda não busco o arremesso real" in pg.inner_text("#pr-cmd-origem")           # a granada sai de onde o jogador está: dito, sem prometer o arremesso real
     assert pg.is_enabled("#pr-cmd-aplicar")
     pg.click("#pr-cmd-aplicar")

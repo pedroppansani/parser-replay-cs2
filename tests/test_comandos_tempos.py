@@ -98,28 +98,6 @@ def test_entre_areas_da_demo_quando_nao_ha_par_de_pontos(contexto, tmp_path_fact
     assert abs(_caminho_do_ultimo_comando(pg)[-1][0] - (25 + par[3])) < 0.011
 
 
-def test_andando_ou_agachado_continua_estimado_e_com_o_fator_do_mapa(contexto, tmp_path_factory):
-    t, ka, linha, a = _linha_dos_pontos("de_mirage", "Base TR", "Meio")
-    fator = f"{t['fator']['valor']:.2f}".replace(".", ",")
-    pg = _pagina(contexto, tmp_path_factory)
-    _peca(pg, a["x"], a["y"])
-    _escreve(pg, "tr 2 anda até o meio aos 1:30")                                           # o corpus só mede quem corre
-    texto = pg.locator("#pr-cmd-entendi li").all_inner_texts()[0]
-    assert "estimado: linha reta corrigida pelo desvio medido no mapa" in texto and f"{fator}×" in texto and "tempo real" not in texto
-
-
-def test_mapa_sem_fator_diz_que_e_linha_reta_pura(contexto, tmp_path_factory):
-    assert not (RAIZ / "data" / "tempos" / "de_overpass.json").exists()                     # 2 partidas: sem par com amostra, sem fator
-    pg = _pagina(contexto, tmp_path_factory, "de_overpass")
-    from scripts.comandos_contexto import contexto as c
-    areas = c("de_overpass")["areas"]
-    assert len(areas) >= 2
-    _peca(pg, areas[0]["x"], areas[0]["y"])
-    _escreve(pg, f"tr 2 corre pro {areas[1]['nome']} aos 1:30")
-    texto = pg.locator("#pr-cmd-entendi li").all_inner_texts()[0]
-    assert "estimado: linha reta, sem correção" in texto and "poucos dados neste mapa" in texto
-
-
 def test_troca_de_andar_com_tempo_real_nao_pergunta_a_chegada(contexto, tmp_path_factory):
     from scripts.comandos_contexto import contexto as c
     t = _tabela("de_nuke")
@@ -184,3 +162,130 @@ def test_o_arquivo_dos_tempos_carrega_so_ao_abrir_a_aba_e_a_falha_cai_para_o_est
     _escreve(pg2, "tr 2 corre pro meio aos 1:30")
     pg2.wait_for_function("() => document.querySelector('#pr-cmd-entendi li') && /tempo real/.test(document.querySelector('#pr-cmd-entendi li').textContent)")
     assert not pg2.locator("#pr-cmd-carregando").count()
+
+
+def test_o_estimado_e_um_piso_andando_usa_a_velocidade_do_jeito_e_correndo_o_teto(contexto, tmp_path_factory):
+    import math
+    t, ka, linha, a = _linha_dos_pontos("de_mirage", "Base TR", "Meio")
+    meio = _ponto("de_mirage", "Meio")
+    reta = math.hypot(meio["x"] - a["x"], meio["y"] - a["y"])
+    pg = _pagina(contexto, tmp_path_factory)
+    _peca(pg, a["x"], a["y"])
+    _escreve(pg, "tr 2 anda até o meio aos 1:30")                                           # o corpus só mede quem corre: andando é estimado
+    texto = pg.locator("#pr-cmd-entendi li").all_inner_texts()[0]
+    assert "chega não antes de" in texto and "estimado: linha reta; o caminho real costuma ser mais longo" in texto and "tempo real" not in texto
+    assert "fator" not in texto and "sem correção" not in texto and "0,96" not in texto
+    pg.click("#pr-cmd-aplicar")
+    assert abs(_caminho_do_ultimo_comando(pg)[-1][0] - (25 + reta / interno(pg, "I.velocidade(null, 'andando')"))) < 0.02     # a velocidade constante de andar
+
+
+def test_correndo_sem_par_com_amostra_o_piso_usa_o_teto_de_250(contexto, tmp_path_factory):
+    import math
+    from scripts.comandos_contexto import contexto as c
+    areas = c("de_overpass")["areas"]
+    assert not (RAIZ / "data" / "tempos" / "de_overpass.json").exists()                     # 2 partidas: sem tempo real nenhum
+    pg = _pagina(contexto, tmp_path_factory, "de_overpass")
+    _peca(pg, areas[0]["x"], areas[0]["y"])
+    _escreve(pg, f"tr 2 corre pro {areas[1]['nome']} aos 1:30")
+    texto = pg.locator("#pr-cmd-entendi li").all_inner_texts()[0]
+    assert "chega não antes de" in texto and "bem mais quando contorna paredes" in texto and "poucos dados" not in texto
+    pg.click("#pr-cmd-aplicar")
+    reta = math.hypot(areas[1]["x"] - areas[0]["x"], areas[1]["y"] - areas[0]["y"])
+    assert abs(_caminho_do_ultimo_comando(pg)[-1][0] - (25 + reta / 250.0)) < 0.02
+
+
+def _ops_sem_ids(pg):
+    """As operações do que foi aplicado, sem ids e em ordem estável: o que importa é o roteiro, não a ordem em que as frases foram escritas."""
+    ops = interno(pg, "S.doc.operacoes.filter(o => o.tipo === 'cria_granada' || o.tipo === 'cria_caminho').map(o => o.tipo === 'cria_granada' ? ['g', o.arma, o.t, o.origem.map(Math.round), o.destino.map(Math.round)] : ['c', o.pontos.map(p => [p.t, Math.round(p.x), Math.round(p.y)])])")
+    return sorted(json.dumps(o) for o in ops)
+
+
+def test_a_ordem_do_relogio_vale_nao_a_da_escrita(contexto, tmp_path_factory):
+    t, ka, linha, a = _linha_dos_pontos("de_mirage", "Base TR", "Meio")
+    resultados = []
+    for frase in ("tr 2 corre pro meio aos 1:30 e joga smoke na b aos 1:25", "tr 2 joga smoke na b aos 1:25 e corre pro meio aos 1:30"):
+        pg = _pagina(contexto, tmp_path_factory)
+        _peca(pg, a["x"], a["y"])
+        _escreve(pg, frase)
+        pg.click("#pr-cmd-aplicar")
+        resultados.append(_ops_sem_ids(pg))
+        pg.close()
+    assert resultados[0] == resultados[1]
+    g = next(json.loads(o) for o in resultados[0] if json.loads(o)[0] == "g")
+    assert g[2] == 30 and g[3] != [round(a["x"]), round(a["y"])]                             # a smoke saiu de onde a peça estava no meio da corrida, não da base
+
+
+def test_sem_horario_o_comando_fica_preso_ao_anterior_na_escrita_e_empate_vale_a_escrita(contexto, tmp_path_factory):
+    t, ka, linha, a = _linha_dos_pontos("de_mirage", "Base TR", "Meio")
+    pg = _pagina(contexto, tmp_path_factory)
+    _peca(pg, a["x"], a["y"])
+    _peca(pg, a["x"] + 100, a["y"], rotulo="3")
+    # o "depois" é da smoke do TR 3 (o comando anterior na escrita), mesmo que o do TR 2 seja mais cedo no relógio
+    _escreve(pg, "tr 3 joga smoke na b aos 1:10 depois tr 3 corre pro meio, tr 2 corre pro meio aos 1:30")
+    pg.click("#pr-cmd-aplicar")
+    ops = interno(pg, "S.doc.operacoes.filter(o => o.tipo === 'cria_caminho').map(o => [o.peca, o.pontos[o.pontos.length - 1].t])")
+    por_peca = {p: t_ for p, t_ in ops}
+    assert abs(por_peca["demo-t2"] - (25 + linha[3])) < 0.011                               # TR 2: 1:30, o horário dele
+    assert por_peca["demo-t3"] > 45 + 5                                                      # TR 3: só depois da smoke das 1:10 (t = 45), não colado ao TR 2
+    pg.close()
+    # no MESMO horário vale a ordem da escrita: o mesmo roteiro com as frases trocadas troca só quem vem primeiro, e o resultado por peça não muda
+    resultados = []
+    for frase in ("tr 2 joga smoke na b aos 1:30 e tr 3 joga flash na b aos 1:30", "tr 3 joga flash na b aos 1:30 e tr 2 joga smoke na b aos 1:30"):
+        pg = _pagina(contexto, tmp_path_factory)
+        _peca(pg, a["x"], a["y"])
+        _peca(pg, a["x"] + 100, a["y"], rotulo="3")
+        _escreve(pg, frase)
+        pg.click("#pr-cmd-aplicar")
+        resultados.append(interno(pg, "S.doc.operacoes.filter(o => o.tipo === 'cria_granada').map(o => o.arma)"))
+        pg.close()
+    assert resultados[0] == ["smoke", "flash"] and resultados[1] == ["flash", "smoke"]
+
+
+def test_a_mediana_mostrada_nunca_fica_fora_da_faixa_mostrada_e_a_duracao_aparece(contexto, tmp_path_factory):
+    import re
+    pg = _pagina(contexto, tmp_path_factory)
+    aba_do_painel(pg, "comandos")
+    assert pg.evaluate("() => [Prancheta._interno.cmdRelogio(119.6), Prancheta._interno.cmdRelogio(59.6), Prancheta._interno.cmdRelogio(60.4), Prancheta._interno.cmdRelogio(0.4)]") == ["2:00", "1:00", "1:00", "0:00"]
+    def segundos(h):
+        m, s = h.split(":")
+        return int(m) * 60 + int(s)
+    for mapa in ("de_mirage", "de_dust2", "de_nuke"):
+        for fonte in ("pontos", "areas"):
+            for a_, b_, p25, med, p75, n, partidas in _tabela(mapa)[fonte][::7]:
+                for t0 in (25.0, 25.37, 40.5):
+                    c = {"tipo": "real", "fonte": fonte, "t": t0 + med, "t25": t0 + p25, "t75": t0 + p75, "casos": n, "partidas": partidas, "duracao": med}
+                    texto = pg.evaluate("c => Prancheta._interno.cmdChegada(c)", c)
+                    m = re.search(r"chega (?:entre (\d+:\d\d) e (\d+:\d\d), )?por volta de (\d+:\d\d)", texto)
+                    assert m, texto
+                    h1, h2, h = m.groups()
+                    if h1:
+                        assert segundos(h1) >= segundos(h) >= segundos(h2), texto            # o relógio desce: a ponta mais cedo, a mediana no meio, a mais tarde
+                    assert f"cerca de {int(med + 0.5)} s" in texto and f"{n} casos em {partidas} partidas" in texto, texto
+
+
+def test_os_nomes_na_tela_sao_os_do_pedro_nos_mapas_conferidos_e_os_do_mapa_nos_outros(contexto, tmp_path_factory):
+    from scripts.comandos_contexto import contexto as c
+    # Mirage (conferida): "Base TR", "Esquina", "Caverna"; o leitor aceita o nome do jogo, o texto do mapa e o do Pedro
+    ar = {a["nome"]: a for a in c("de_mirage", so_conferidos=True)["areas"]}
+    assert ar["TSpawn"]["exibe"] == "Base TR" and ar["TopofMid"]["exibe"] == "Esquina" and ar["TRamp"]["exibe"] == "Caverna"
+    pg = _pagina(contexto, tmp_path_factory)
+    _peca(pg, ar["TSpawn"]["x"], ar["TSpawn"]["y"])
+    textos = []
+    for frase in ("tr 2 corre pro TopofMid aos 1:30", "tr 2 corre pro top of mid aos 1:30", "tr 2 corre pra esquina aos 1:30"):
+        _escreve(pg, frase)
+        textos.append(pg.locator("#pr-cmd-entendi li").all_inner_texts()[0].split(" · ")[1])
+    assert textos[0] == textos[1] == "correndo até Esquina" and "Esquina" in textos[2], textos      # as duas formas dão o mesmo alvo
+    pg.click("#pr-cmd-aplicar")
+    roteiro = " | ".join(pg.locator("#pr-roteiro .pr-evento-texto").all_inner_texts())
+    assert "começa em Base TR" in roteiro and "TSpawn" not in roteiro and "TopofMid" not in roteiro, roteiro
+    # Overpass (não conferida): o nome que o botão "Lugares" desenha, com espaços
+    areas = c("de_overpass", so_conferidos=True)["areas"]                                    # a página só traz os pontos conferidos (nenhum, na Overpass)
+    ov = {a["nome"]: a for a in areas}
+    assert ov["BackofA"]["exibe"] == "Back of A" and ov["TSpawn"]["exibe"] == "T Spawn"
+    pg2 = _pagina(contexto, tmp_path_factory, "de_overpass")
+    _peca(pg2, ov["TSpawn"]["x"], ov["TSpawn"]["y"])
+    _escreve(pg2, "tr 2 corre pro BackofA aos 1:30")
+    assert pg2.locator("#pr-cmd-entendi li").all_inner_texts()[0].startswith("TR 2 · correndo até Back of A")
+    pg2.click("#pr-cmd-aplicar")
+    roteiro2 = " | ".join(pg2.locator("#pr-roteiro .pr-evento-texto").all_inner_texts())
+    assert "começa em T Spawn" in roteiro2 and "chega em Back of A" in roteiro2 and "BackofA" not in roteiro2, roteiro2

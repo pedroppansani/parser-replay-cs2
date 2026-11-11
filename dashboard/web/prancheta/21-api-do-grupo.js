@@ -130,6 +130,7 @@
       taticaNoTempo: taticaNoTempo, quadroNoTempo: quadroNoTempo, posicaoNoTempo: posicaoNoTempo,
       problemasNoTempo: problemasNoTempo,
       vooEstimado: vooEstimado, velocidade: velocidade, M3: function () { return M3; },
+      cmdChegada: function (c) { return cmdChegada(c); }, cmdRelogio: function (t) { return cmdRelogio(t); },
       defineTempo: defineTempo, abaDoPainel: abaDoPainel, douglasPeucker: douglasPeucker, noMarco: noMarco, emiteLote: emiteLote,
       TOLERANCIA_DP_PX: TOLERANCIA_DP_PX,
       criaDoRound: criaDoRound, voltaAoReal: voltaAoReal, alternaFantasma: alternaFantasma, e3Real: e3Real,
