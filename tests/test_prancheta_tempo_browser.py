@@ -373,7 +373,9 @@ def test_nome_do_lugar_e_o_mesmo_no_python_e_no_navegador(contexto, pagina):
     _tatica_no_tempo(pg)
     ev = {e["alvo"]: e for e in interno(pg, "I.eventosDe(S.e3)")}
     nome = interno(pg, "I.lugarDe(-500, -400, 0)")
-    assert nome and ev["s"]["texto"].endswith("em " + nome)
+    from scripts.comandos_contexto import contexto as contexto_do_mapa
+    exibe = {a["nome"]: a["exibe"] for a in contexto_do_mapa(mapa, so_conferidos=True)["areas"]}      # o roteiro escreve o nome do Pedro nos mapas conferidos ("L" para Catwalk) e o nome com espaços nos outros
+    assert nome and ev["s"]["texto"].endswith("em " + exibe.get(nome, nome))
 
 
 # --- 8.6: o que faltava da lista de testes da fase 8 -----------------------------

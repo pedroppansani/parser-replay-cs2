@@ -21,7 +21,7 @@ from scripts.comandos_contexto import contexto
 
 RAIZ = Path(__file__).resolve().parent.parent
 PASTA = RAIZ / "data" / "tempos"
-PASSO = 8
+PASSO_EM_S = 0.125      # uma amostra a cada 0,125 s (8 ticks a 64 ticks/s); a taxa da partida vem de `detect_tickrate`
 VERSAO = 1
 
 
@@ -42,7 +42,7 @@ def rastros(mapa: str) -> list[dict]:
             continue
         t = load_interim(INTERIM, d.name)
         rounds = pl.read_parquet(PROCESSED / d.name / "rounds.parquet")
-        tr = int(detect_tickrate(rounds, t["ticks"])["tickrate"]); passo = max(1, round(PASSO * tr / 64))
+        tr = int(detect_tickrate(rounds, t["ticks"])["tickrate"]); passo = max(1, round(PASSO_EM_S * tr))
         janela = {r["round_num"]: (r["freeze_end"], r["end"]) for r in rounds.iter_rows(named=True) if r["freeze_end"] is not None and r["end"] is not None}
         tk = (t["ticks"].filter((pl.col("tick") % passo == 0) & pl.col("is_alive")).select("tick", "round_num", "steamid", "X", "Y", "Z", "is_walking", "ducking")
               .sort("steamid", "round_num", "tick"))
