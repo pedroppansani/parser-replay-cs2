@@ -375,8 +375,10 @@ def _rating_da_partida(tabelas, interim, rounds, team_of, vencedor_por_round, ka
     referencia = carrega_referencia()
     modelo = ModeloDeRound.da_referencia((referencia or {}).get("modelo_de_round"))
     entrada = _entrada_do_rating(tabelas, interim, rounds)
-    _, resumo = calcula_rating(entrada, team_of, vencedor_por_round, kast, tickrate,
-                               referencia=referencia, modelo=modelo)
+    swing_por_round, resumo = calcula_rating(entrada, team_of, vencedor_por_round, kast, tickrate,
+                                             referencia=referencia, modelo=modelo)
+    from metrics.round_swing_jogador import da_partida as swing_da_partida
+    swing_pp = swing_da_partida(swing_por_round, resumo["jogadores"])      # RS1: o Round Swing em p.p. por round, só exposto
     por_jogador = {
         j["steamid"]: {
             "rating": round(float(j["rating"]), 2),
@@ -388,6 +390,7 @@ def _rating_da_partida(tabelas, interim, rounds, team_of, vencedor_por_round, ka
             # os seis sub-ratings já na escala do rating (1,00 = média), para o
             # perfil mostrar de onde o número veio
             "rating_sub": {n: round(float(j[f"norm_{n}"]), 2) for n in resumo["pesos"]},
+            "round_swing": swing_pp[int(j["steamid"])],
         }
         for j in resumo["jogadores"]
     }
