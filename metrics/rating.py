@@ -651,8 +651,9 @@ def swing_por_evento(
     kills: pl.DataFrame, damages: pl.DataFrame, blinds: pl.DataFrame | None,
     rounds: pl.DataFrame, grupos: pl.DataFrame, modelo: ModeloDeRound,
     team_of: dict[int, str], vencedor_por_round: dict[int, str], tickrate: int,
+    agrega: bool = True,
 ) -> pl.DataFrame:
-    """Round Swing de cada kill, ja dividido entre os envolvidos.
+    """Round Swing de cada kill, ja dividido entre os envolvidos. `agrega=False` devolve as linhas por evento e papel (kill, dano, flash, trade, morreu, fim_do_round), para os testes da divisão do crédito.
 
     A variacao de probabilidade de um evento e UMA so; o que muda e quem levou o
     credito dela. A soma distribuida nunca excede essa variacao -- os pesos somam
@@ -834,6 +835,8 @@ def swing_por_evento(
         )
 
     swing = pl.DataFrame(linhas)
+    if not agrega:
+        return swing
     # Variação de probabilidade PURA, sem corte para round perdido (decisão
     # 22k do CLAUDE.md). A HLTV escreve que "round perdido não gera Swing
     # positivo", mas o Swing oficial soma zero em 28 de 31 partidas, e cortar o

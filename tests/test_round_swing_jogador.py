@@ -159,3 +159,67 @@ def test_o_insights_de_todas_as_partidas_tem_o_campo_e_a_soma_do_time_nao_e_inve
         assert all("round_swing" in p for p in ins["players"]), f"{a.parent.name}: sem o campo (reprocesse)"
         soma = sum(p["round_swing"]["soma_pp"] for p in ins["players"])
         assert abs(soma) < 0.05 * ins["match"].get("rounds", 30) + 25, (a.parent.name, soma)     # folga das mortes sem matador inimigo
+
+
+# --- a divisão do crédito de UMA kill, num round montado à mão (55% matador / 25% dano / 10% flash / 10% troca) -------------------------------
+
+class _ModeloDeDegraus:
+    """P(ganhar) = logística da diferença de vivos: uma kill sempre move a chance, e a conta é conferível de cabeça."""
+    def prob(self, X):
+        return 1.0 / (1.0 + np.exp(-np.asarray(X)[:, 0]))
+
+
+def _round_pequeno(com_dano: bool, com_flash: bool, com_troca: bool):
+    """Time A (1 a 5) contra B (11 a 15), 64 ticks. Kill alvo: A1 mata B11 aos 20 s. Opcionais: A2 deu 60 de dano em B11 (e não matou), A3 cegou B11 1 s antes,
+    e B11 tinha matado A4 3 s antes (a kill de A1 troca a morte de A4)."""
+    tr, t0 = 64, 1000
+    quando = lambda s: t0 + int(s * tr)
+    kills = [{"round_num": 1, "tick": quando(17), "attacker_steamid": 11, "victim_steamid": 4, "weapon": "ak47"} if com_troca else
+             {"round_num": 1, "tick": quando(17), "attacker_steamid": 12, "victim_steamid": 5, "weapon": "ak47"},
+             {"round_num": 1, "tick": quando(20), "attacker_steamid": 1, "victim_steamid": 11, "weapon": "m4a1"}]
+    danos = [{"round_num": 1, "tick": quando(19), "attacker_steamid": 2, "victim_steamid": 11, "dmg_health_real": 60.0}] if com_dano else \
+            [{"round_num": 1, "tick": quando(19), "attacker_steamid": 99, "victim_steamid": 77, "dmg_health_real": 5.0}]
+    cegos = [{"round_num": 1, "tick": quando(19), "user_steamid": 11, "attacker_steamid": 3, "blind_duration": 2.0}] if com_flash else \
+            [{"round_num": 1, "tick": quando(19), "user_steamid": 77, "attacker_steamid": 99, "blind_duration": 2.0}]
+    times = {**{s: "A" for s in range(1, 6)}, **{s: "B" for s in range(11, 16)}, 99: "B", 77: "A"}
+    rounds = pl.DataFrame({"round_num": [1], "bomb_plant": [None], "freeze_end": [t0], "end": [quando(60)]}, schema_overrides={"bomb_plant": pl.Int64})
+    grupos = pl.DataFrame({"round_num": [1] * 10, "steamid": list(range(1, 6)) + list(range(11, 16)), "side": ["t"] * 5 + ["ct"] * 5, "equip": [4000.0] * 10})
+    return (pl.DataFrame(kills), pl.DataFrame(danos), pl.DataFrame(cegos), rounds, grupos, times, tr)
+
+
+def _credito(com_dano, com_flash, com_troca):
+    import metrics.rating as R
+    k, d, b, r, g, times, tr = _round_pequeno(com_dano, com_flash, com_troca)
+    linhas = R.swing_por_evento(k, d, b, r, g, _ModeloDeDegraus(), times, {1: "A"}, tr, agrega=False)
+    ev = linhas.filter((pl.col("papel") != "fim_do_round"))
+    # a variação da kill alvo: a vítima B11 paga -delta (a segunda linha 'morreu' do round)
+    morreu = ev.filter((pl.col("papel") == "morreu") & (pl.col("steamid") == 11))["swing"].to_list()
+    delta = -morreu[-1]
+    por = lambda papel, sid: sum(ev.filter((pl.col("papel") == papel) & (pl.col("steamid") == sid))["swing"].to_list())
+    return delta, por
+
+
+def test_o_credito_de_uma_kill_sai_55_matador_25_dano_10_flash_10_troca():
+    delta, por = _credito(True, True, True)
+    assert delta > 0.05
+    assert por("kill", 1) == pytest.approx(0.55 * delta)       # o matador fica com 55% pela kill...
+    assert por("trade", 1) == pytest.approx(0.10 * delta)      # ...e com 10% pela troca
+    assert por("dano", 2) == pytest.approx(0.25 * delta)       # quem deu o dano e não matou: 25% (todo o dano foi dele)
+    assert por("flash", 3) == pytest.approx(0.10 * delta)      # quem cegou a vítima: 10%
+    assert por("morreu", 11) == pytest.approx(-delta)          # a vítima paga a variação inteira
+    # nada se perde: a soma dos créditos é exatamente a variação do evento
+    assert por("kill", 1) + por("trade", 1) + por("dano", 2) + por("flash", 3) == pytest.approx(delta)
+
+
+def test_sem_flash_e_sem_troca_a_sobra_vai_para_o_matador_e_o_dano_segue_em_25():
+    delta, por = _credito(True, False, False)
+    assert por("dano", 2) == pytest.approx(0.25 * delta)
+    assert por("flash", 3) == 0 and por("trade", 1) == 0
+    assert por("kill", 1) == pytest.approx(0.75 * delta)       # 55% + os 20% que ninguém reclamou
+    assert por("kill", 1) + por("dano", 2) == pytest.approx(delta)
+
+
+def test_sem_dano_de_outro_sem_flash_e_sem_troca_o_matador_leva_tudo():
+    delta, por = _credito(False, False, False)
+    assert por("kill", 1) == pytest.approx(delta)
+    assert por("dano", 2) == 0 and por("flash", 3) == 0 and por("trade", 1) == 0
