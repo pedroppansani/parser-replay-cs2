@@ -16,3 +16,12 @@ Testes: `tests/test_comandos_granada.py`. Capturas: `scripts/design/capturas_com
 
 ## A impressão dos números
 Antes (C3 mesclada) 18.480 linhas; depois 18.520: 40 novas (`comandos.granada.*`, 4 constantes por página), 0 mudaram, 0 sumiram.
+
+## Testes de C2/C3 alterados na C4 (aprovados pelo Pedro)
+Quinze testes tocados; 12 só trocam `pg.click("#pr-cmd-aplicar")` por `_aplica(pg)` (responde "sem arremesso real" a qualquer pergunta da granada e clica no Aplicar). Três mudaram asserção (`tests/test_comandos_aba.py`):
+1. `test_o_exemplo_do_pedro_aplicado_vira_um_lote_e_um_desfazer_volta_tudo`: antes `"Ainda não busco o arremesso real" in #pr-cmd-origem`; agora `"Sem arremesso real: a granada sai de onde o jogador está" in #pr-cmd-origem` (texto mudou na C4), mais a asserção nova de que a pergunta da granada aparece.
+2. `test_a_pergunta_recebe_o_foco_e_o_cartao_acompanha_a_tatica`: antes `is_enabled(Aplicar) and "ainda não está no mapa" not in resultado`; afrouxei para só a segunda metade e corrigi: agora responde "sem arremesso real" e exige as duas de novo.
+3. `test_a_granada_que_sobra_depois_do_corte_e_mantida_e_o_cartao_avisa` (`test_comandos_tempos.py`): asserções intactas; só entrou `_sem_arremesso_real(pg)` antes delas, duas vezes.
+
+## Cartão: times sem nome conhecido
+Nove partidas aparecem como "Time de <jogador> × Time de <jogador>" (match_01 a match_09; ex. match_06 "Time de adamS × Time de -_-siNNer"). Proposta: tabela pequena de nomes de time, versionada, com teste (como a dos nomes de evento).
