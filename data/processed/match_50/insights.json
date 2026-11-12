@@ -1085,6 +1085,15 @@
         "kast": 1.11,
         "multikills": 2.14,
         "round_swing": 1.38
+      },
+      "round_swing": {
+        "rounds": 19,
+        "pp_por_round": 6.42,
+        "erro_padrao_pp": 5.02,
+        "soma_pp": 122.0406,
+        "soma_quad_pp2": 9411.3729,
+        "poucos_rounds": true,
+        "estavel": false
       }
     },
     {
@@ -1115,6 +1124,15 @@
         "kast": 1.11,
         "multikills": 1.41,
         "round_swing": 1.56
+      },
+      "round_swing": {
+        "rounds": 19,
+        "pp_por_round": 9.74,
+        "erro_padrao_pp": 5.2,
+        "soma_pp": 185.12,
+        "soma_quad_pp2": 11047.1107,
+        "poucos_rounds": true,
+        "estavel": false
       }
     },
     {
@@ -1145,6 +1163,15 @@
         "kast": 0.78,
         "multikills": 1.4,
         "round_swing": 0.99
+      },
+      "round_swing": {
+        "rounds": 19,
+        "pp_por_round": 0.47,
+        "erro_padrao_pp": 4.8,
+        "soma_pp": 9.0247,
+        "soma_quad_pp2": 7868.5176,
+        "poucos_rounds": true,
+        "estavel": false
       }
     },
     {
@@ -1175,6 +1202,15 @@
         "kast": 1.04,
         "multikills": 0.99,
         "round_swing": 0.98
+      },
+      "round_swing": {
+        "rounds": 19,
+        "pp_por_round": -1.17,
+        "erro_padrao_pp": 5.74,
+        "soma_pp": -22.2285,
+        "soma_quad_pp2": 11289.4588,
+        "poucos_rounds": true,
+        "estavel": false
       }
     },
     {
@@ -1205,6 +1241,15 @@
         "kast": 0.92,
         "multikills": 1.23,
         "round_swing": 1.11
+      },
+      "round_swing": {
+        "rounds": 19,
+        "pp_por_round": 2.75,
+        "erro_padrao_pp": 6.16,
+        "soma_pp": 52.1665,
+        "soma_quad_pp2": 13134.1021,
+        "poucos_rounds": true,
+        "estavel": false
       }
     },
     {
@@ -1235,6 +1280,15 @@
         "kast": 0.86,
         "multikills": 0.41,
         "round_swing": 0.72
+      },
+      "round_swing": {
+        "rounds": 19,
+        "pp_por_round": -4.44,
+        "erro_padrao_pp": 5.01,
+        "soma_pp": -84.3526,
+        "soma_quad_pp2": 8955.9268,
+        "poucos_rounds": true,
+        "estavel": false
       }
     },
     {
@@ -1265,6 +1319,15 @@
         "kast": 1.03,
         "multikills": 0.56,
         "round_swing": 0.77
+      },
+      "round_swing": {
+        "rounds": 19,
+        "pp_por_round": -5.07,
+        "erro_padrao_pp": 3.03,
+        "soma_pp": -96.2784,
+        "soma_quad_pp2": 3635.9647,
+        "poucos_rounds": true,
+        "estavel": false
       }
     },
     {
@@ -1295,6 +1358,15 @@
         "kast": 1.03,
         "multikills": 1.09,
         "round_swing": 1.0
+      },
+      "round_swing": {
+        "rounds": 19,
+        "pp_por_round": -0.67,
+        "erro_padrao_pp": 4.82,
+        "soma_pp": -12.8001,
+        "soma_quad_pp2": 7951.8245,
+        "poucos_rounds": true,
+        "estavel": false
       }
     },
     {
@@ -1325,6 +1397,15 @@
         "kast": 0.84,
         "multikills": 0.77,
         "round_swing": 0.92
+      },
+      "round_swing": {
+        "rounds": 19,
+        "pp_por_round": -0.84,
+        "erro_padrao_pp": 3.29,
+        "soma_pp": -15.9927,
+        "soma_quad_pp2": 3726.1015,
+        "poucos_rounds": true,
+        "estavel": false
       }
     },
     {
@@ -1355,6 +1436,15 @@
         "kast": 0.84,
         "multikills": 0.19,
         "round_swing": 0.58
+      },
+      "round_swing": {
+        "rounds": 19,
+        "pp_por_round": -7.19,
+        "erro_padrao_pp": 2.89,
+        "soma_pp": -136.6994,
+        "soma_quad_pp2": 3849.7874,
+        "poucos_rounds": true,
+        "estavel": false
       }
     }
   ],

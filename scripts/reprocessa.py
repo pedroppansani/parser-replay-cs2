@@ -325,6 +325,9 @@ def reprocessa(ids: list[str], processos: int, reajusta_referencias: bool = Fals
     from scripts import build_player_profiles
 
     _passo_de_corpus("build_player_profiles", build_player_profiles.main)
+    from scripts import build_round_swing
+
+    _passo_de_corpus("build_round_swing", build_round_swing.main)
 
     print("[5/6] payload da página por partida")
     falhas |= _etapa_por_partida(vivos(), "payload", processos)
