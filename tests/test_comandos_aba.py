@@ -193,7 +193,8 @@ def test_a_pergunta_recebe_o_foco_e_o_cartao_acompanha_a_tatica(contexto, tmp_pa
     assert pg.is_disabled("#pr-cmd-aplicar") and "ainda não está no mapa" in pg.inner_text("#pr-cmd-resultado")
     _poe_ficha(pg, "t", "2")                                                                        # a ficha entra depois de "Entender"
     aba_do_painel(pg, "comandos")
-    assert "ainda não está no mapa" not in pg.inner_text("#pr-cmd-resultado")                       # com a ficha no mapa o plano roda (e a granada real pergunta, se a saída é longe)
+    _sem_arremesso_real(pg)                                                                         # com a ficha no mapa a granada real pode perguntar (C4): responde, e o Aplicar volta
+    assert pg.is_enabled("#pr-cmd-aplicar") and "ainda não está no mapa" not in pg.inner_text("#pr-cmd-resultado")
 
 
 def test_num_round_real_as_fichas_tem_nome_e_a_aba_avisa(contexto, tmp_path_factory):

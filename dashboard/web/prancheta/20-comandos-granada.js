@@ -73,7 +73,8 @@
   /** O que a linha do cartão diz do arremesso real escolhido: qual (i de n), de que partida e round, de onde sai e, se o voo é conhecido, quando cai. */
   function cmdTextoDaGranada(g) {
     if (!g || !g.r) return "";
-    var v = { i: g.i, n: g.n, lado: cmdLadoEscrito(g.lado), partida: g.r.partida, round: g.r.round, onde: g.onde, h: cmdDoRelogio(g.tSai), hc: g.tCai == null ? "" : cmdDoRelogio(g.tCai) };
+    var times = cfg.biblioteca && cfg.biblioteca.partidas_times && cfg.biblioteca.partidas_times[g.r.partida];      // os times, como a lista de Partidas ("FURIA × Vitality"); sem eles, o id
+    var v = { i: g.i, n: g.n, lado: cmdLadoEscrito(g.lado), partida: times || g.r.partida, round: g.r.round, onde: g.onde, h: cmdDoRelogio(g.tSai), hc: g.tCai == null ? "" : cmdDoRelogio(g.tCai) };
     var texto = cmdT(g.tCai == null ? "granada_real_sem_voo" : "granada_real", v);
     return g.levar ? texto + "; " + cmdT("granada_levar", { quem: g.quem, h: cmdDoRelogio(g.levar.chega) }) : texto;
   }

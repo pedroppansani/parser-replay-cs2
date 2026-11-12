@@ -38,6 +38,15 @@
     return melhor ? melhor.nome : nomeExibidoDoLugar(n);
   }
 
+  /** O lugar mais perto (ponto do Pedro ou âncora de área da demo) para quem está fora de qualquer área: "perto de Apartments". */
+  function lugarMaisPerto(x, y) {
+    var c = cfg && cfg.comandos, melhor = null, d0 = Infinity;
+    if (!c) return null;
+    c.pontos.forEach(function (p) { var d = Math.hypot(p.x - x, p.y - y); if (d < d0) { d0 = d; melhor = p.nome; } });
+    c.areas.forEach(function (a) { var d = Math.hypot(a.x - x, a.y - y); if (d < d0) { d0 = d; melhor = a.exibe || a.nome; } });
+    return melhor;
+  }
+
   /** A tática tem horário (alguma operação do formato 3, ou granada com `t`):
       toca no relógio do round. A que só tem passos -- toda tática das versões 1
       e 2, que a migração sobe de versão sem mudar nada -- continua tocando
@@ -93,13 +102,13 @@
       var p = e3.pecas[pid], nome = rotuloDaPeca(p);
       p.pontos.forEach(function (pt, i) {
         if (pt.fora) return;
-        var lugar = lugarExibido(pt.x, pt.y, pt.nivel);
+        var lugar = lugarExibido(pt.x, pt.y, pt.nivel), perto = lugar === null ? lugarMaisPerto(pt.x, pt.y) : null;
         var ant = i > 0 && !p.pontos[i - 1].fora ? p.pontos[i - 1] : null;
         var parado = ant && ant.x === pt.x && ant.y === pt.y && (ant.nivel || 0) === (pt.nivel || 0);   // o mesmo lugar do ponto de antes: ficou parado
         var acao = parado ? "fica" : i === 0 || !ant ? "começa" : "chega";
         ev.push({ alvo: pid + "/" + pt.id, tipo: "ponto", peca: pid, ponto: pt.id, ordem: 1, t: pt.t,
                   x: pt.x, y: pt.y, nivel: pt.nivel,
-                  texto: nome + (p.funcao ? " (" + p.funcao + ")" : "") + " " + acao + (lugar ? " em " + lugar : "") + (parado ? " até " + relogioEm(pt.t) : "") +
+                  texto: nome + (p.funcao ? " (" + p.funcao + ")" : "") + " " + acao + (lugar ? " em " + lugar : perto ? " perto de " + perto : "") + (parado ? " até " + relogioEm(pt.t) : "") +
                          (tem(atrasos, pt.id) ? " (" + segundosEmTexto(atrasos[pt.id]) + " s atrasado)" : "") });
       });
     });

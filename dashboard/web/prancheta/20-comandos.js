@@ -193,7 +193,7 @@
       var i = Math.min(ac.gr_i || 0, Math.max(0, busca.grupos.length - 1)), g = busca.grupos[i];
       if (g && ac.gr_decisao !== "sem") {
         var ox = g.r.origem[0], oy = g.r.origem[1], nivelO = nivelDoZ(g.r.origem[2]), perto = g.dist <= cmdGr().raio_saida, outroAndar = nivelO !== (ini.nivel || 0);
-        var base = { acao: ac.indice, quem: nome, i: i + 1, n: busca.grupos.length, d: Math.round(g.dist), onde: lugarExibido(ox, oy, nivelO) || "", pode_levar: !outroAndar, ha_outro: i + 1 < busca.grupos.length };
+        var base = { acao: ac.indice, quem: nome, i: i + 1, n: busca.grupos.length, d: Math.round(g.dist), s: Math.max(1, Math.round(g.dist / cmdVelocidadeDoPiso(pid, "correndo"))), onde: lugarExibido(ox, oy, nivelO) || "", pode_levar: !outroAndar, ha_outro: i + 1 < busca.grupos.length };
         if (!perto && (ac.gr_decisao !== "levar" || outroAndar)) { pergunta = pergunta || Object.assign({ tipo: "longe" }, base); return; }
         var vel = cmdVelocidadeDoPiso(pid, "correndo"), livre = livreEm[pid] || 0, tSai = t0, inicio = t0 - Math.hypot(ox - ini.x, oy - ini.y) / vel;
         var iniS = posicaoEm(pid, Math.max(inicio, 0)) || ini, dur = Math.hypot(ox - iniS.x, oy - iniS.y) / vel;
@@ -380,7 +380,14 @@
     });
     if (plano && plano.espera) raiz.appendChild(el("p", { class: "pr-cmd-aviso", id: "pr-cmd-carregando-granadas", role: "status", texto: cmdT("ui_carregando_granadas") }));
     if (plano) plano.avisos.filter(function (m, i, v) { return v.indexOf(m) === i; }).forEach(function (m) { raiz.appendChild(el("p", { class: "pr-cmd-aviso", "data-aviso": "corte", texto: m })); });
-    l.acoes.forEach(function (ac) { if (ac.depende_do_deslocamento) raiz.appendChild(el("p", { class: "pr-cmd-aviso", texto: cmdT("aviso_depende_do_deslocamento") })); });
+    l.acoes.forEach(function (ac) {          // horário fixo: diz de qual comando fala e, se ele corta outros, quais
+      if (!ac.depende_do_deslocamento) return;
+      var h = plano && plano.inicios[ac.indice] != null ? cmdDoRelogio(plano.inicios[ac.indice]) : ac.quando && ac.quando.tipo === "relogio" ? cmdRelogio(ac.quando.segundos_restantes) : "";
+      var cortados = plano ? Object.keys(plano.cortados).filter(function (k) { return plano.cortados[k] === ac.indice + 1; }).map(function (k) { return +k + 1; }) : [];
+      var v = { n: ac.indice + 1, h: h, quem: cmdQuem(ac) };
+      if (cortados.length) v.os_comandos = (cortados.length === 1 ? "o comando " : "os comandos ") + cortados.slice(0, -1).join(", ") + (cortados.length > 1 ? " e " : "") + cortados[cortados.length - 1];
+      raiz.appendChild(el("p", { class: "pr-cmd-aviso", texto: cmdT(cortados.length ? "aviso_horario_fixo_corta" : "aviso_depende_do_deslocamento", v) }));
+    });
     if (l.naoEntendido.length) {
       raiz.appendChild(el("p", { class: "pr-cmd-aviso", texto: cmdT("aviso_palavra_sobrando", { trechos: l.naoEntendido.map(function (x) { return "“" + x.trecho + "”"; }).join(", ") }) + " " + cmdT("ui_corrija") }));
     }

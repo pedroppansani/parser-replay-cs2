@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import math
+import re
 from pathlib import Path
 
 import pytest
@@ -145,7 +146,8 @@ def test_a_contagem_aparece_sempre_com_a_partida_e_o_round_e_a_saida_perto_nao_p
     assert pg.locator("#pr-cmd-pergunta-granada").count() == 0
     texto = pg.locator("#pr-cmd-entendi li").all_inner_texts()[0]
     n = len(b["grupos"])
-    assert f"arremesso real 1 de {n} (TR), partida match_" in texto and ", round " in texto and "cai por volta de" in texto, texto
+    assert f"lugar de saída 1 de {n} (TR), " in texto and ", round " in texto and "cai por volta de" in texto, texto
+    assert "match_" not in texto and " × " in texto, texto                                   # a partida pelo nome da lista de Partidas (os times), nunca pelo id
     assert pg.is_enabled("#pr-cmd-aplicar")
     _aplica(pg)
     gr = interno(pg, "Object.values(S.e3.granadas)[0]")
@@ -159,7 +161,10 @@ def test_saida_longe_pergunta_levar_ate_la_e_o_desfazer_volta_exatamente_ao_esta
     antes = interno(pg, "JSON.stringify({ p: S.e3.pecas, g: S.e3.granadas })")
     _escreve(pg, "tr 2 joga smoke no janelão aos 1:20")
     assert pg.is_disabled("#pr-cmd-aplicar")
-    assert "O TR 2 está a" in pg.inner_text("#pr-cmd-pergunta-granada") and "arremesso real 1 de" in pg.inner_text("#pr-cmd-pergunta-granada")
+    pergunta = pg.inner_text("#pr-cmd-pergunta-granada")
+    m = re.search(r"O TR 2 está a cerca de (\d+) s correndo \((\d+) u\) do lugar de saída 1 de", pergunta)
+    assert m, pergunta
+    assert int(m.group(1)) == max(1, round(int(m.group(2)) / 250))                          # a distância em segundos, na mesma velocidade de 250 u/s da corrida até a saída
     botoes = pg.locator("#pr-cmd-pergunta-granada .pr-cmd-opcao").all_inner_texts()
     assert botoes[0] == "Levar o TR 2 até lá" and "Usar outro arremesso" in botoes and botoes[-1] == "Pôr a granada sem arremesso real"
     ops_pergunta = interno(pg, "S.doc.operacoes.length")
@@ -185,7 +190,7 @@ def test_corrida_que_chega_depois_do_horario_pede_confirmacao_e_a_granada_sai_qu
     _escreve(pg, "tr 2 joga smoke no janelão aos 1:52")                                                      # 3 s depois do início: ninguém chega ao ponto de saída
     pg.click("[data-escolha=levar]")
     texto = pg.inner_text("#pr-cmd-pergunta-granada")
-    assert "só chega ao ponto do arremesso real" in texto and "não antes de" in texto and "Jogar às " in texto, texto
+    assert "só chega ao lugar de saída" in texto and "não antes de" in texto and "Jogar às " in texto, texto
     assert pg.is_disabled("#pr-cmd-aplicar")
     pg.click("[data-escolha=tarde]")
     assert pg.is_enabled("#pr-cmd-aplicar")
@@ -199,15 +204,15 @@ def test_usar_outro_arremesso_passa_para_o_proximo_da_lista(contexto, tmp_path_f
     base = _ponto_longe(pg, "smoke", _alvo_do_ponto("Janelão")[0], "t", 400)
     _peca(pg, base["x"], base["y"])
     _escreve(pg, "tr 2 joga smoke no janelão aos 1:20")
-    assert "arremesso real 1 de" in pg.inner_text("#pr-cmd-pergunta-granada")
+    assert "lugar de saída 1 de" in pg.inner_text("#pr-cmd-pergunta-granada")
     primeiro = pg.inner_text("#pr-cmd-pergunta-granada")
     pg.click("[data-escolha=outro]")
     segundo = pg.inner_text("#pr-cmd-pergunta-granada")
-    assert "arremesso real 2 de" in segundo and segundo != primeiro
+    assert "lugar de saída 2 de" in segundo and segundo != primeiro
     pg.click("[data-escolha=levar]")
     if pg.locator("[data-escolha=tarde]").count():
         pg.click("[data-escolha=tarde]")
-    assert "arremesso real 2 de" in pg.inner_text("#pr-cmd-entendi")
+    assert "lugar de saída 2 de" in pg.inner_text("#pr-cmd-entendi")
 
 
 def test_sem_arremesso_real_para_o_destino_a_granada_vai_como_antes_com_o_aviso(contexto, tmp_path_factory):
@@ -246,7 +251,7 @@ def test_poucos_do_lado_e_muitos_do_outro_avisa_e_nunca_usa_o_outro_lado_as_duas
     assert b["mesmo"] == mesmo_ct and b["grupos"] and all(g["lado"] == "ct" for g in b["grupos"])
     _escreve(pg, "ct 2 joga molotov na caverna aos 1:20")
     assert "recebe muita" not in " ".join(pg.locator("#pr-cmd-resultado .pr-cmd-aviso").all_inner_texts())
-    assert "arremesso real 1 de" in (pg.inner_text("#pr-cmd-pergunta-granada") if pg.locator("#pr-cmd-pergunta-granada").count() else pg.inner_text("#pr-cmd-entendi"))
+    assert "lugar de saída 1 de" in (pg.inner_text("#pr-cmd-pergunta-granada") if pg.locator("#pr-cmd-pergunta-granada").count() else pg.inner_text("#pr-cmd-entendi"))
 
 
 def test_cartoes_que_ficaram_da_c3_o_depois_mostra_o_horario_e_o_cortado_diz_que_foi_cortado(contexto, tmp_path_factory):
@@ -288,3 +293,30 @@ def test_o_corte_marca_todos_os_comandos_cortados_mesmo_com_um_depois_no_meio_e_
     pts = interno(pg, "Object.values(S.e3.pecas).flatMap(p => p.pontos).filter(pt => pt.caminho).map(pt => pt.t)")
     assert pts == sorted(pts) and interno(pg, "I.problemas(JSON.parse(JSON.stringify(S.doc)), 1)") == []
     assert interno(pg, "S.doc.operacoes.filter(o => o.tipo === 'cria_caminho').length") == 1                # um caminho só por peça
+
+
+def test_o_horario_fixo_diz_de_qual_comando_fala_e_quais_ele_corta(contexto, tmp_path_factory):
+    a = _ponto("de_mirage", "Base TR")
+    pg = _pagina(contexto, tmp_path_factory)
+    _peca(pg, a["x"], a["y"])
+    # o comando 3 (1:25) vem depois do 2 (corre ao meio, 1:30) e começa no meio da corrida do 1: corta os comandos 1 e 2
+    _escreve(pg, "tr 2 corre pro meio aos 1:30 e depois corre pra b, tr 2 corre pro top of mid aos 1:25")
+    avisos = pg.locator("#pr-cmd-resultado .pr-cmd-aviso").all_inner_texts()
+    assert any(re.fullmatch(r"O comando 3 tem horário fixo \(1:25\): ele corta os comandos 1 e 2, mesmo que o TR 2 ainda não tenha chegado\.", t) for t in avisos), avisos
+    _escreve(pg, "tr 2 corre pro meio aos 1:30 e tr 2 corre pra b aos 1:10")
+    avisos = pg.locator("#pr-cmd-resultado .pr-cmd-aviso").all_inner_texts()
+    assert not any("desta ação" in t for t in avisos), avisos                                # o texto genérico, sem dizer o comando, não existe mais
+
+
+def test_a_peca_fora_de_qualquer_area_comeca_perto_do_lugar_mais_perto(contexto, tmp_path_factory):
+    pg = _pagina(contexto, tmp_path_factory)
+    _peca(pg, 4000, 4000)                                                                    # longe de tudo: nenhuma área, nenhum ponto a 150 u
+    assert interno(pg, "I.lugarExibido(4000, 4000, 0)") is None
+    roteiro = " | ".join(pg.locator("#pr-roteiro .pr-evento-texto").all_inner_texts())
+    assert re.search(r"TR 2 começa perto de \S", roteiro), roteiro
+    # o mais perto vem do dado: o ponto do Pedro ou a âncora de área de menor distância
+    from scripts.comandos_contexto import contexto as c
+    cx = c("de_mirage", so_conferidos=True)
+    cands = [(math.hypot(q["x"] - 4000, q["y"] - 4000), q["nome"]) for q in cx["pontos"]] + [(math.hypot(q["x"] - 4000, q["y"] - 4000), q["exibe"]) for q in cx["areas"]]
+    esperado = min(cands)[1]
+    assert f"TR 2 começa perto de {esperado}" in roteiro, (roteiro, esperado)

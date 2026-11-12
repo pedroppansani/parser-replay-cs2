@@ -151,6 +151,10 @@ def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | Non
     arquivo_bib = arquivo_da_biblioteca(mapa) if biblioteca_externa and biblioteca is not None else None
     if arquivo_bib:
         biblioteca = None   # vem do arquivo, depois
+    elif biblioteca is not None:      # a página sozinha também diz a partida pelos times ("FURIA × Vitality"), como o site (C4)
+        from scripts.build_site import match_summary, times_das_partidas
+        ids = sorted({a["partida"] for a in biblioteca["arremessos"]})
+        biblioteca["partidas_times"] = times_das_partidas([m for m in (match_summary(i) for i in ids) if m])
     # nomes de lugar do roteiro (scripts/build_lugares.py); sem tabela, sem nome
     # e as âncoras dos nomes no mapa (Fase M, decisão 52): o desenho só põe o que não cobre nada
     from metrics.lugares import para_a_prancheta, tabela_do_mapa
