@@ -40,12 +40,22 @@ jobs:
         run: pip install -r requirements-dev.txt
       # Os testes de navegador usam o Chromium do Playwright (no runner não há
       # Chrome instalado no canal que eles pedem primeiro; caem no Chromium).
+      # P1a: o download do Chromium (~20 s, mas já travou por 6 e 10 min) fica em cache, com chave pela versão EXATA do
+      # Playwright. Sem acerto, instala como antes. As dependências do sistema (apt) continuam sendo instaladas.
+      - name: Versão do Playwright
+        id: pw
+        run: echo "versao=$(python -c 'import importlib.metadata as m; print(m.version("playwright"))')" >> "$GITHUB_OUTPUT"
+      - name: Cache dos navegadores do Playwright
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.versao }}
       - name: Chromium do Playwright
         run: python -m playwright install --with-deps chromium
       # Os testes que dependem de data/interim/ (não versionado) são pulados
       # num clone limpo -- nunca quebram.
       - name: Testes
-        run: python -m pytest -q
+        run: python -m pytest -q --durations=10
 
   # O site é gerado JUNTO com os testes (ci-optimizer, escolha do Pedro): o deploy espera os dois, então nada é
   # publicado sem a suíte verde.
