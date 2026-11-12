@@ -10,6 +10,7 @@ import pytest
 
 pytest.importorskip("playwright.sync_api")
 
+from tests.test_comandos_aba import _aplica, _sem_arremesso_real  # noqa: E402
 from tests.test_tactics_browser import (  # noqa: E402,F401  (fixtures e ajudas)
     abre, aba_do_painel, contexto, interno, navegador, pagina_do_mapa)
 
@@ -62,7 +63,7 @@ def test_entre_pontos_do_pedro_mostra_a_faixa_os_casos_e_aplica_a_mediana(contex
     texto = pg.locator("#pr-cmd-entendi li").all_inner_texts()[0]
     assert "tempo real entre os pontos" in texto and f"{linha[5]} casos em {linha[6]} partidas" in texto and "estimado" not in texto
     assert " entre " in texto and "por volta de" in texto
-    pg.click("#pr-cmd-aplicar")
+    _aplica(pg)
     ultimo = _caminho_do_ultimo_comando(pg)[-1]
     assert abs(ultimo[0] - (115 - 90 + linha[3])) < 0.011                                    # o Aplicar usa a MEDIANA como chegada
     assert interno(pg, "I.problemas(JSON.parse(JSON.stringify(S.doc)), 1)") == []
@@ -95,7 +96,7 @@ def test_entre_areas_da_demo_quando_nao_ha_par_de_pontos(contexto, tmp_path_fact
     _escreve(pg, "tr 2 corre pro top of mid aos 1:30")
     texto = pg.locator("#pr-cmd-entendi li").all_inner_texts()[0]
     assert "tempo real entre as áreas da demo" in texto and f"{par[5]} casos em {par[6]} partidas" in texto, texto
-    pg.click("#pr-cmd-aplicar")
+    _aplica(pg)
     assert abs(_caminho_do_ultimo_comando(pg)[-1][0] - (25 + par[3])) < 0.011
 
 
@@ -120,7 +121,7 @@ def test_a_peca_que_ainda_anda_parte_do_ponto_por_onde_passava(contexto, tmp_pat
     _peca(pg, a["x"], a["y"])
     # a corrida começa em 1:30 (t = 25) e dura `mediana` s; a smoke sai em 1:25 (t = 30), 5 s depois, no meio da corrida
     _escreve(pg, "tr 2 corre pro meio aos 1:30 e joga smoke na b aos 1:25")
-    pg.click("#pr-cmd-aplicar")
+    _aplica(pg)
     g = interno(pg, "Object.values(S.e3.granadas)[0]")
     f = 5 / linha[3]
     esperado = [a["x"] + (meio["x"] - a["x"]) * f, a["y"] + (meio["y"] - a["y"]) * f]
@@ -133,7 +134,7 @@ def test_um_segundo_comando_no_meio_da_corrida_corta_o_caminho_e_segue_dali(cont
     pg = _pagina(contexto, tmp_path_factory)
     _peca(pg, a["x"], a["y"])
     _escreve(pg, "tr 2 corre pro meio aos 1:30 e tr 2 corre pra b aos 1:25")
-    pg.click("#pr-cmd-aplicar")
+    _aplica(pg)
     pts = _caminho_do_ultimo_comando(pg)
     assert [p[0] for p in pts] == sorted(p[0] for p in pts)                                  # uma linha do tempo só, sem volta
     f = 5 / linha[3]
@@ -176,7 +177,7 @@ def test_o_estimado_e_um_piso_andando_usa_a_velocidade_do_jeito_e_correndo_o_tet
     texto = pg.locator("#pr-cmd-entendi li").all_inner_texts()[0]
     assert "chega não antes de" in texto and "estimado: linha reta; o caminho real costuma ser mais longo" in texto and "tempo real" not in texto
     assert "fator" not in texto and "sem correção" not in texto and "0,96" not in texto
-    pg.click("#pr-cmd-aplicar")
+    _aplica(pg)
     assert abs(_caminho_do_ultimo_comando(pg)[-1][0] - (25 + reta / interno(pg, "I.velocidade(null, 'andando')"))) < 0.02     # a velocidade constante de andar
 
 
@@ -190,7 +191,7 @@ def test_correndo_sem_par_com_amostra_o_piso_usa_o_teto_de_250(contexto, tmp_pat
     _escreve(pg, f"tr 2 corre pro {areas[1]['nome']} aos 1:30")
     texto = pg.locator("#pr-cmd-entendi li").all_inner_texts()[0]
     assert "chega não antes de" in texto and "bem mais quando contorna paredes" in texto and "poucos dados" not in texto
-    pg.click("#pr-cmd-aplicar")
+    _aplica(pg)
     reta = math.hypot(areas[1]["x"] - areas[0]["x"], areas[1]["y"] - areas[0]["y"])
     assert abs(_caminho_do_ultimo_comando(pg)[-1][0] - (25 + reta / 250.0)) < 0.02
 
@@ -208,7 +209,7 @@ def test_a_ordem_do_relogio_vale_nao_a_da_escrita(contexto, tmp_path_factory):
         pg = _pagina(contexto, tmp_path_factory)
         _peca(pg, a["x"], a["y"])
         _escreve(pg, frase)
-        pg.click("#pr-cmd-aplicar")
+        _aplica(pg)
         resultados.append(_ops_sem_ids(pg))
         pg.close()
     assert resultados[0] == resultados[1]
@@ -223,7 +224,7 @@ def test_sem_horario_o_comando_fica_preso_ao_anterior_na_escrita_e_empate_vale_a
     _peca(pg, a["x"] + 100, a["y"], rotulo="3")
     # o "depois" é da smoke do TR 3 (o comando anterior na escrita), mesmo que o do TR 2 seja mais cedo no relógio
     _escreve(pg, "tr 3 joga smoke na b aos 1:10 depois tr 3 corre pro meio, tr 2 corre pro meio aos 1:30")
-    pg.click("#pr-cmd-aplicar")
+    _aplica(pg)
     ops = interno(pg, "S.doc.operacoes.filter(o => o.tipo === 'cria_caminho').map(o => [o.peca, o.pontos[o.pontos.length - 1].t])")
     por_peca = {p: t_ for p, t_ in ops}
     assert abs(por_peca["demo-t2"] - (25 + linha[3])) < 0.011                               # TR 2: 1:30, o horário dele
@@ -236,7 +237,7 @@ def test_sem_horario_o_comando_fica_preso_ao_anterior_na_escrita_e_empate_vale_a
         _peca(pg, a["x"], a["y"])
         _peca(pg, a["x"] + 100, a["y"], rotulo="3")
         _escreve(pg, frase)
-        pg.click("#pr-cmd-aplicar")
+        _aplica(pg)
         resultados.append(interno(pg, "S.doc.operacoes.filter(o => o.tipo === 'cria_granada').map(o => o.arma)"))
         pg.close()
     assert resultados[0] == ["smoke", "flash"] and resultados[1] == ["flash", "smoke"]
@@ -281,7 +282,7 @@ def test_ponto_do_pedro_tem_o_nome_dele_e_area_da_demo_o_nome_do_jogo_legivel_em
         textos.append(pg.locator("#pr-cmd-entendi li").all_inner_texts()[0].split(" · ")[1])
     assert textos[0] == textos[1] == "correndo até Top of Mid" and textos[2] == "correndo até Meio", textos      # área: o nome do jogo; ponto: o do Pedro
     _escreve(pg, "tr 2 corre pro top of mid aos 1:30")
-    pg.click("#pr-cmd-aplicar")
+    _aplica(pg)
     roteiro = " | ".join(pg.locator("#pr-roteiro .pr-evento-texto").all_inner_texts())
     assert "começa em Base TR" in roteiro and "TSpawn" not in roteiro and "TopofMid" not in roteiro, roteiro
     # Overpass (nenhum ponto conferido): o nome do jogo, legível, também no roteiro
@@ -291,7 +292,7 @@ def test_ponto_do_pedro_tem_o_nome_dele_e_area_da_demo_o_nome_do_jogo_legivel_em
     _peca(pg2, ov["TSpawn"]["x"], ov["TSpawn"]["y"])
     _escreve(pg2, "tr 2 corre pro BackofA aos 1:30")
     assert pg2.locator("#pr-cmd-entendi li").all_inner_texts()[0].startswith("TR 2 · correndo até Back of A")
-    pg2.click("#pr-cmd-aplicar")
+    _aplica(pg2)
     roteiro2 = " | ".join(pg2.locator("#pr-roteiro .pr-evento-texto").all_inner_texts())
     assert "começa em T Spawn" in roteiro2 and "chega em Back of A" in roteiro2 and "BackofA" not in roteiro2, roteiro2
 
@@ -310,11 +311,13 @@ def test_a_granada_que_sobra_depois_do_corte_e_mantida_e_o_cartao_avisa(contexto
     _peca(pg, a["x"], a["y"])
     # comando 1: corre ao meio (chega em t = 25 + mediana); comando 2: a smoke, depois de chegar; comando 3 (1:25, t = 30): corta a corrida no meio do caminho
     _escreve(pg, "tr 2 corre pro meio aos 1:30 e depois joga smoke na b, tr 2 corre pra b aos 1:25")
+    _sem_arremesso_real(pg)
     avisos = pg.locator("#pr-cmd-resultado [data-aviso=corte]").all_inner_texts()
     assert len(avisos) == 1 and re.fullmatch(r"O comando 3 corta o caminho do comando 1\. A smoke das \d+:\d\d foi mantida: confira se ainda faz sentido\.", avisos[0]), avisos
     assert pg.is_enabled("#pr-cmd-aplicar")                                                  # só avisa: quem decide é a pessoa
-    pg.click("#pr-cmd-aplicar")
+    _aplica(pg)
     assert interno(pg, "Object.keys(S.e3.granadas).length") == 1                             # nada foi apagado
     # sem granada depois do corte, nenhum aviso
     _escreve(pg, "tr 3 corre pro meio aos 1:30 e tr 3 corre pra b aos 1:25")
+    _sem_arremesso_real(pg)
     assert pg.locator("#pr-cmd-resultado [data-aviso=corte]").count() == 0

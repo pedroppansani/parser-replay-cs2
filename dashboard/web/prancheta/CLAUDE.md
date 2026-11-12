@@ -43,7 +43,7 @@ Complementa o `CLAUDE.md` da raiz e o de `dashboard/web/`, e não os substitui. 
 - Operação nova da prancheta exige migração nova (`grupos.tipos_de_operacao()`, conferida contra `OPERACOES` do JS e do
   Python); o log do grupo é o estado inicial, numa linha, seguido das operações; os tetos de uso são do servidor (47)
 <!-- bloco prancheta-espelho: fim -->
-- Aba Comandos (`20-comandos.js`): Entender nunca muda a tática; Aplicar emite UM lote com operações existentes (um desfazer); tempo de corrida REAL do corpus quando há amostra (`data/tempos`, arquivo próprio carregado ao abrir a aba), senão um PISO ("não antes de": linha reta a 250 u/s correndo); a tela diz de onde veio; a ordem é a do relógio; troca de andar sem tempo real pergunta a chegada; a peça que ainda anda parte do ponto interpolado do plano (64)
+- Aba Comandos (`20-comandos.js`): Entender nunca muda a tática; Aplicar emite UM lote com operações existentes (um desfazer); tempo de corrida REAL do corpus quando há amostra (`data/tempos`, arquivo próprio carregado ao abrir a aba), senão um PISO ("não antes de": linha reta a 250 u/s correndo); a tela diz de onde veio; a granada puxa um arremesso real da biblioteca (mesmo tipo e lado, queda a 150 u, saída a 50 u da peça sem perguntar; `20-comandos-granada.js`); a ordem é a do relógio; troca de andar sem tempo real pergunta a chegada; a peça que ainda anda parte do ponto interpolado do plano (64)
 - A interação é UMA máquina de estados (`ESTADOS`); atalhos num mapa único `ATALHOS`, sem tecla
   repetida (32)
 - Ponto atrasado é CALCULADO do log (`atrasosDosPontos`) e nunca guardado; desenha-se em `--aviso` com
