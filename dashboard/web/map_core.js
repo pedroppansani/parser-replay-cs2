@@ -752,14 +752,14 @@ window.MapCore = (function () {
        - o bombsite é só a letra (A ou B), desenhada junto do mapa, por baixo das peças.
      --------------------------------------------------------------------- */
   var ROT = { ativo: false, ctx: null, canvas: null, lista: [], pecas: [], sitios: [], lugares: [], caixas: [],
-              caixasDeLugar: [], caixasDeSitio: [], caixasDePeca: [], modo: "normal", redesenha: null };
+              caixasDeLugar: [], caixasDeSitio: [], caixasDePeca: [], reservas: [], modo: "normal", redesenha: null };
   var ROT_TAM = 12.5, ROT_FOLGA_X = 4, ROT_FOLGA_Y = 3, ROT_CONTORNO = 6;
   var LUGAR_TAM = 10, LUGAR_ESPACO = 0.12, LUGAR_FOLGA = 4, SITIO_TAM = 15;
   var RAIO_DA_PECA_NO_ROTULO = 11, RAIO_DO_MORTO_NO_ROTULO = 5.5;   // px do radar, ao redor do centro da peça
   // Posições do nome ao redor da peça, depois das cinco na vertical (decisão 52; medidas na Fase M, a olho nas capturas da Mirage
-  // e da Nuke): três anéis, cada um a esta fração do 1º; as diagonais ficam a 75 % do lado e do alto; 3 px de tela de folga
+  // e da Nuke): quatro anéis (o 4º, P1b, é para a peça embaixo do relógio grande da prancheta, que ocupa 100 x 44 px do canto), cada um a esta fração do 1º; as diagonais ficam a 75 % do lado e do alto; 3 px de tela de folga
   // entre a peça e o nome; a linha fina até a peça some se tiver menos de 1,5 px de tela (o nome encostou na peça).
-  var ROT_ANEIS = [1, 1.7, 2.6], ROT_DIAGONAL = 0.75, ROT_FOLGA_DA_PECA = 3, ROT_LINHA_MINIMA = 1.5;
+  var ROT_ANEIS = [1, 1.7, 2.6, 3.6], ROT_DIAGONAL = 0.75, ROT_FOLGA_DA_PECA = 3, ROT_LINHA_MINIMA = 1.5;
   // Os nomes de lugar ligados ou desligados, lembrado no navegador POR TIPO DE TELA: no computador começam ligados; no
   // celular (até 640 px), desligados (a tela é pequena e a regra "não cobre nada" tira quase todos). Quem liga ou desliga
   // numa delas só muda a escolha dela. Os bombsites (as letras A e B) não dependem disto.
@@ -797,9 +797,13 @@ window.MapCore = (function () {
 
   function rotulosInicia(ctx, canvas, redesenha) {
     ROT.ativo = true; ROT.ctx = ctx; ROT.canvas = canvas; ROT.lista = [];
-    ROT.pecas = []; ROT.sitios = []; ROT.lugares = [];
+    ROT.pecas = []; ROT.sitios = []; ROT.lugares = []; ROT.reservas = [];
     if (redesenha) ROT.redesenha = redesenha;
   }
+
+  /** P1b: uma área da tela que os nomes devem evitar (o relógio grande da prancheta, que é HTML por cima do mapa, não está no
+      canvas). `r` = {x, y, w, h} em px de tela relativos ao canto do canvas. Chamar depois de `rotulosInicia`. */
+  function rotulosReserva(r) { if (ROT.ativo && r) ROT.reservas.push(r); }
 
   /** Px do canvas por px de tela (CSS). */
   function pxPorPxDeTela() {
@@ -900,7 +904,7 @@ window.MapCore = (function () {
     ctx.textAlign = "center";
     ctx.textBaseline = "alphabetic";
     ctx.lineJoin = "round";
-    var ocupadas = pecas.concat(ROT.sitios);
+    var ocupadas = pecas.concat(ROT.sitios, ROT.reservas.map(function (r) { return { x: r.x * k, y: r.y * k, w: r.w * k, h: r.h * k }; }));
 
     // 1) os nomes dos jogadores: nenhum some
     var ordem = ROT.lista.slice().sort(function (a, b) { return b.prioridade - a.prioridade; });
@@ -1780,6 +1784,7 @@ window.MapCore = (function () {
     radarProcessado: radarProcessado,
     radarSemBorda: radarSemBorda,
     rotulosInicia: rotulosInicia,
+    rotulosReserva: rotulosReserva,
     rotulo: rotulo,
     rotulosDesenha: rotulosDesenha,
     lugaresRegistra: lugaresRegistra,

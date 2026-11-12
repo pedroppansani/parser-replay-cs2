@@ -4,6 +4,14 @@
   function cssVar(nome) { return getComputedStyle(document.documentElement).getPropertyValue(nome).trim(); }
   function escalaUnidade() { return cfg.radar.scale_px_per_unit; }
 
+  /** A área do relógio grande (HTML sobre o mapa), em px de tela relativos ao canvas, entra na camada de rótulos como obstáculo. */
+  function reservaORelogio(cv) {
+    var rel = $("pr-relogio-grande");
+    if (!rel || rel.hidden) return;
+    var a = rel.getBoundingClientRect(), c = cv.getBoundingClientRect();
+    MapCore.rotulosReserva({ x: a.left - c.left, y: a.top - c.top, w: a.width, h: a.height });
+  }
+
   function desenha() {
     if (!ctx || !temQuadro()) return;
     S.ultimoDesenho = [];
@@ -21,6 +29,7 @@
     var cena = editando ? cenaDoEditor() : S.reproducao.cena;
     // nomes, funções e horários vão para a camada de rótulos (px de tela, por cima de tudo; §4.2)
     MapCore.rotulosInicia(ctx, cv, desenha);
+    reservaORelogio(cv);   // P1b: o relógio grande é HTML por cima do mapa; nenhum nome fica embaixo dele
     MapCore.lugaresRegistra(cfg.lugares, S.andar);   // Fase M: nomes de lugar e letras dos bombsites (mapa sem tabela: nada)
     desenhaFantasma(tempoMostrado());
     if (editando) desenhaBusca();
