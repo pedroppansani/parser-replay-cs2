@@ -35,12 +35,12 @@
   function cmdQuem(ac) {
     return ac.quem.length ? ac.quem.map(function (q) { return q.resolvido === false || !q.lado ? (q.ref || cmdT("quem_vazio")) : q.lado.toUpperCase() + " " + q.num; }).join(" + ") : cmdT("quem_vazio");
   }
-  function cmdQuando(ac) {
+  function cmdQuando(ac, plano) {
     var q = ac.quando;
     if (!q) return cmdT("q_sem");
     if (q.tipo === "relogio") return cmdT("q_relogio", { h: cmdRelogio(q.segundos_restantes) });
     if (q.tipo === "inicio") return cmdT("q_inicio", { n: q.segundos });
-    if (q.tipo === "depois") return cmdT("q_depois");
+    if (q.tipo === "depois") return plano && plano.inicios[ac.indice] != null ? cmdT("q_depois_h", { h: cmdDoRelogio(plano.inicios[ac.indice]) }) : cmdT("q_depois");   // o horário que ficou valendo
     if (q.tipo === "junto") return cmdT("q_junto");
     return cmdT("q_sem");
   }
@@ -51,12 +51,15 @@
   /** A velocidade da estimativa: quem corre usa o TETO do jogo (250 u/s, medido no corpus), o que faz da linha reta um piso; andando e agachado seguem a velocidade de cada jeito. */
   function cmdVelocidadeDoPiso(pid, modo) { return modo === "correndo" ? cfg.comandos.velocidade_piso_correndo : velocidade(funcaoDe(pid), modo); }
   function cmdLinha(ac, plano) {
-    var v = { quem: cmdQuem(ac), alvo: ac.alvo ? cmdNomeDoAlvo(ac.alvo) : cmdT("onde_vazio"), quando: cmdQuando(ac),
+    var v = { quem: cmdQuem(ac), alvo: ac.alvo ? cmdNomeDoAlvo(ac.alvo) : cmdT("onde_vazio"), quando: cmdQuando(ac, plano),
               granada: ac.granada ? cmdT("granada_" + ac.granada) || ac.granada : "?", modo: ac.modo || "correndo", n: ac.espera_s };
     var chave = { lancar: "linha_lancar", mover: "linha_mover", segurar: "linha_segurar", esperar: "linha_esperar" }[ac.tipo] || "linha_incompleta";
     var texto = cmdFmt(cfg.comandos.textos[chave], v);
     var chegada = plano && plano.chegadas[ac.indice];
-    return chegada ? texto + " · " + cmdChegada(chegada) : texto;
+    if (plano && plano.cortados[ac.indice]) texto += " · " + cmdT("cortado_por", { n: plano.cortados[ac.indice] });      // a chegada que ele dizia não vale mais
+    else if (chegada) texto += " · " + cmdChegada(chegada);
+    var gr = plano && plano.granadas[ac.indice];
+    return gr && gr.r ? texto + " · " + cmdTextoDaGranada(gr) : texto;
   }
   /** De onde veio o horário de chegada, dito na tela: tempo real (faixa, casos, partidas) ou estimado (com o fator de desvio do mapa, se houver). */
   function cmdChegada(c) {
@@ -122,6 +125,7 @@
       anterior termina ali e o novo segue dali. */
   function cmdPlano(leitura) {
     var ops = [], chegadas = {}, problemas = [], avisos = [], falta = null, trilha = {}, acaoFim = {}, EPS = 1e-6;
+    var granadas = {}, inicios = {}, cortados = {}, pergunta = null, espera = false, livreEm = {};
     var passos = S.estado.passos;
     function interpola(pts, t) {
       for (var i = pts.length - 1; i > 0; i--) {
@@ -146,6 +150,73 @@
     function anota(ac, pid, t0, fim) {
       var f = acaoFim[ac.indice] = acaoFim[ac.indice] || { pecas: {}, geral: null, inicio: null };
       f.pecas[pid] = fim; f.geral = fim; f.inicio = t0;
+      livreEm[pid] = Math.max(livreEm[pid] || 0, fim); inicios[ac.indice] = t0;
+    }
+    /** A peça anda de `ini` (em t0) até `destino`. Cada peça tem UM caminho no plano (um `cria_caminho`): um comando novo acrescenta o ponto dela (ela fica onde chegou até t0); um que
+        começa no meio de uma corrida do plano CORTA o caminho ali (os pontos de depois saem, com os comandos a que eles pertenciam, que o cartão marca como cortados) e segue dali. */
+    function anda(ac, pid, t0, ini, destino) {
+      destino.acao = ac.indice;
+      var tr = trilha[pid];
+      if (!tr) {
+        var pts = [destino];
+        if (baseReal() === null) pts.unshift({ t: t0, x: ini.x, y: ini.y, nivel: ini.nivel || 0, acao: ac.indice });   // a peça fica onde está até t0 e só então anda
+        trilha[pid] = { pts: pts };
+        ops = ops.concat(cortaReal(pid, t0), ancoraReal(pid, t0), [["cria_caminho", { peca: pid, pontos: null, trilha: trilha[pid] }]]);
+        return;
+      }
+      var ultimo = tr.pts[tr.pts.length - 1];
+      if (t0 < ultimo.t - EPS && t0 >= tr.pts[0].t - EPS) {
+        var m = interpola(tr.pts, t0), cortadas = {}, primeira = null;
+        tr.pts.forEach(function (p) {
+          if (!(p.t > t0 + EPS)) return;
+          if (primeira === null) primeira = p.acao;
+          if (p.acao != null) cortadas[p.acao] = true;
+        });
+        // uma granada dessa peça que o plano já pôs DEPOIS do corte fica (nada some sem a pessoa ver), e o cartão avisa
+        ops.forEach(function (op) {
+          if (op[0] !== "cria_granada" || op[1].jogador !== pid || !(op[1].t > t0 + EPS)) return;
+          avisos.push(cmdT("aviso_corte_granada", { n2: ac.indice + 1, n1: (primeira === null ? ac.indice : primeira) + 1, granada: String(cmdT("granada_" + op[1].arma) || op[1].arma).toLowerCase(), h: cmdDoRelogio(op[1].t) }));
+        });
+        tr.pts = tr.pts.filter(function (p) { return p.t < t0 - EPS; });
+        tr.pts.push({ t: t0, x: m.x, y: m.y, nivel: m.nivel, modo: m.modo, acao: primeira }, destino);
+        Object.keys(cortadas).forEach(function (k) { delete chegadas[k]; cortados[k] = ac.indice + 1; });     // a chegada que eles diziam não vale mais
+      } else {
+        if (baseReal() === null && t0 > ultimo.t + EPS) tr.pts.push({ t: t0, x: ultimo.x, y: ultimo.y, nivel: ultimo.nivel, acao: ac.indice });   // fica onde chegou até t0
+        tr.pts.push(destino);
+      }
+    }
+    /** "joga X em Y": o arremesso real da biblioteca (mesmo tipo e lado, que caiu perto), com a pergunta quando a saída é longe da peça ou ela só chega depois do horário. */
+    function lanca(ac, pid, nome, t0, ini) {
+      var lado = S.estado.pecas[pid].lado, busca = cmdBuscaReal(ac.granada, ac.alvo, lado, ini), aviso = cmdAvisoDeLado(ac.granada, lado, busca);
+      if (aviso) avisos.push(aviso);
+      if (busca.estado === "carregando") espera = true;
+      var i = Math.min(ac.gr_i || 0, Math.max(0, busca.grupos.length - 1)), g = busca.grupos[i];
+      if (g && ac.gr_decisao !== "sem") {
+        var ox = g.r.origem[0], oy = g.r.origem[1], nivelO = nivelDoZ(g.r.origem[2]), perto = g.dist <= cmdGr().raio_saida, outroAndar = nivelO !== (ini.nivel || 0);
+        var base = { acao: ac.indice, quem: nome, i: i + 1, n: busca.grupos.length, d: Math.round(g.dist), s: Math.max(1, Math.round(g.dist / cmdVelocidadeDoPiso(pid, "correndo"))), onde: lugarExibido(ox, oy, nivelO) || "", pode_levar: !outroAndar, ha_outro: i + 1 < busca.grupos.length };
+        if (!perto && (ac.gr_decisao !== "levar" || outroAndar)) { pergunta = pergunta || Object.assign({ tipo: "longe" }, base); return; }
+        var vel = cmdVelocidadeDoPiso(pid, "correndo"), livre = livreEm[pid] || 0, tSai = t0, inicio = t0 - Math.hypot(ox - ini.x, oy - ini.y) / vel;
+        var iniS = posicaoEm(pid, Math.max(inicio, 0)) || ini, dur = Math.hypot(ox - iniS.x, oy - iniS.y) / vel;
+        inicio = tSai - dur;
+        if (inicio < livre - EPS) {                       // não dá tempo de chegar ao ponto do arremesso até o horário pedido
+          var chegaTarde = Math.round((livre + dur) * 100) / 100;
+          if (chegaTarde - t0 > 0.3 && !ac.gr_tarde_ok) { pergunta = pergunta || Object.assign({ tipo: "tarde", chega: chegaTarde, h: cmdDoRelogio(chegaTarde) }, base); return; }
+          tSai = chegaTarde; inicio = livre;
+        }
+        if (tSai - inicio < 0.05) inicio = tSai - 0.05;
+        var yaw = ((Math.round(g.r.yaw) % 360) + 360) % 360;
+        anda(ac, pid, inicio, iniS, { t: tSai, x: ox, y: oy, nivel: nivelO, modo: "correndo", yaw: yaw, chave: null, area: null });
+        ops.push(["cria_granada", { granada: novoId(), arma: ac.granada, passo: passos[marcoQueContem(tSai)].passo, nivel: nivelO, origem: [ox, oy],
+                                    destino: g.r.destino.slice(0, 2), arremesso: g.r, t: Math.round(tSai * 100) / 100, jogador: pid }]);
+        granadas[ac.indice] = { r: g.r, i: i + 1, n: busca.grupos.length, lado: lado, onde: base.onde, tSai: tSai, tCai: g.voo ? tSai + g.r.voo_s : null, levar: dur > 0.3 ? { chega: tSai } : null, quem: nome };
+        anota(ac, pid, t0, tSai);
+        return;
+      }
+      // sem arremesso real: a granada sai de onde o jogador está, como antes, e o cartão diz por quê
+      ops.push(["cria_granada", { granada: novoId(), arma: ac.granada, passo: passos[marcoQueContem(t0)].passo, nivel: ini.nivel || 0, origem: [ini.x, ini.y],
+                                  destino: [ac.alvo.x, ac.alvo.y], arremesso: null, t: t0, jogador: pid }]);
+      granadas[ac.indice] = { sem: true, lado: lado, motivo: busca.estado === "carregando" ? "carregando" : busca.estado === "sem" ? "sem_biblioteca" : g ? "escolha" : "nenhum" };
+      anota(ac, pid, t0, t0);
     }
     function executa(ac) {
       ac.quem.forEach(function (q) {
@@ -163,11 +234,7 @@
           anota(ac, pid, t0, qd && qd.tipo === "espera_ate" ? M3.SEGUNDOS_DO_ROUND - qd.segundos_restantes : t0 + (ac.espera_s || 0)); return;
         }
         if (!ini) { problemas.push(cmdT("erro_sem_peca", { quem: nome })); return; }
-        if (ac.tipo === "lancar") {
-          ops.push(["cria_granada", { granada: novoId(), arma: ac.granada, passo: passos[marcoQueContem(t0)].passo, nivel: ini.nivel || 0, origem: [ini.x, ini.y],
-                                      destino: [ac.alvo.x, ac.alvo.y], arremesso: null, t: t0, jogador: pid }]);
-          anota(ac, pid, t0, t0); return;
-        }
+        if (ac.tipo === "lancar") { lanca(ac, pid, nome, t0, ini); return; }
         // mover e segurar: andar até o ponto (segurar é chegar e ficar)
         var modo = ac.modo || "correndo", nivel = cmdNivel(ac.alvo), chega, info = null;
         var real = cmdTempoReal(ini, ac.alvo, modo);
@@ -184,23 +251,7 @@
         if (chega <= t0) { problemas.push(cmdT("erro_inicio", { quem: nome })); return; }
         if (info) chegadas[ac.indice] = info;
         var destino = { t: chega, x: ac.alvo.x, y: ac.alvo.y, nivel: nivel, modo: modo, chave: cmdChaveDoAlvo(ac.alvo), area: cmdAreaDoAlvo(ac.alvo) };
-        var anterior = trilha[pid];
-        if (anterior && t0 < anterior.pts[anterior.pts.length - 1].t - EPS && t0 >= anterior.pts[0].t - EPS) {
-          var m = interpola(anterior.pts, t0);        // ainda andava: o caminho segue do ponto por onde passava
-          // uma granada dessa peça que o plano já pôs DEPOIS do corte fica (nada some sem a pessoa ver), e o cartão avisa
-          ops.forEach(function (op) {
-            if (op[0] !== "cria_granada" || op[1].jogador !== pid || !(op[1].t > t0 + EPS)) return;
-            avisos.push(cmdT("aviso_corte_granada", { n2: ac.indice + 1, n1: anterior.acao + 1, granada: String(cmdT("granada_" + op[1].arma) || op[1].arma).toLowerCase(), h: cmdDoRelogio(op[1].t) }));
-          });
-          anterior.pts = anterior.pts.filter(function (p) { return p.t < t0 - EPS; });
-          anterior.pts.push({ t: t0, x: m.x, y: m.y, nivel: m.nivel, modo: m.modo }, destino);
-          delete chegadas[anterior.acao]; anterior.acao = ac.indice;   // a chegada que o caminho anterior dizia não vale mais
-        } else {
-          var pts = [destino];
-          if (baseReal() === null) pts.unshift({ t: t0, x: ini.x, y: ini.y, nivel: ini.nivel || 0 });   // a peça fica onde está até t0 e só então anda
-          trilha[pid] = { pts: pts, acao: ac.indice };
-          ops = ops.concat(cortaReal(pid, t0), ancoraReal(pid, t0), [["cria_caminho", { peca: pid, pontos: null, trilha: trilha[pid] }]]);
-        }
+        anda(ac, pid, t0, ini, destino);
         anota(ac, pid, t0, chega);
       });
     }
@@ -216,10 +267,10 @@
     // as operações levam só os campos que a prancheta conhece (sem a chave e a área, que servem à próxima viagem do plano)
     ops.forEach(function (op) {
       if (op[0] !== "cria_caminho" || !op[1].trilha) return;
-      op[1].pontos = op[1].trilha.pts.map(function (p) { var o = { t: p.t, x: p.x, y: p.y, nivel: p.nivel }; if (p.modo) o.modo = p.modo; return o; });
+      op[1].pontos = op[1].trilha.pts.slice().sort(function (p, q) { return p.t - q.t; }).map(function (p) { var o = { t: p.t, x: p.x, y: p.y, nivel: p.nivel }; if (p.modo) o.modo = p.modo; if (p.yaw !== undefined) o.yaw = p.yaw; return o; });
       delete op[1].trilha;
     });
-    return { ops: ops, chegadas: chegadas, problemas: problemas, avisos: avisos, falta: falta };
+    return { ops: ops, chegadas: chegadas, problemas: problemas, avisos: avisos, falta: falta, granadas: granadas, inicios: inicios, cortados: cortados, pergunta: pergunta, espera: espera };
   }
 
   /** A pergunta que acabou de aparecer recebe o foco (o campo do horário ou a primeira opção), para quem usa o teclado. */
@@ -242,7 +293,7 @@
     // o "Aplicado…" vale até a tática mudar de novo (desfazer, outra edição): depois disso ele mentiria
     if (Cmd.mensagem && Cmd.aplicadoEm != null && S.doc && S.doc.operacoes.length !== Cmd.aplicadoEm) { Cmd.mensagem = ""; Cmd.aplicadoEm = null; cmdChave = ""; if ($("pr-cmd-resultado")) cmdDesenha(); }
     if (!Cmd.leitura || !$("pr-cmd-resultado")) return;
-    var chave = S.doc ? S.doc.operacoes.length + ":" + Object.keys(S.estado.pecas).join() : "";
+    var chave = S.doc ? S.doc.operacoes.length + ":" + Object.keys(S.estado.pecas).join() + ":" + cmdEstadoDaBiblioteca() : "";
     if (chave === cmdChave) return;
     cmdChave = chave;
     var ativo = document.activeElement && document.activeElement.id;
@@ -254,14 +305,14 @@
     var area = $("pr-cmd-texto"), texto = area.value.trim();
     Cmd.mensagem = ""; Cmd.falta = null; Cmd.textoVisto = texto;
     Cmd.leitura = texto ? LeitorDeComandos.le(texto, cmdContexto()) : null;
-    cmdChave = S.doc ? S.doc.operacoes.length + ":" + Object.keys(S.estado.pecas).join() : "";
+    cmdChave = S.doc ? S.doc.operacoes.length + ":" + Object.keys(S.estado.pecas).join() + ":" + cmdEstadoDaBiblioteca() : "";
     cmdDesenha(); cmdFoco();
   }
   function cmdAplica() {
     var l = Cmd.leitura;
     if (!l || l.perguntas.length || l.naoEntendido.length) return;
     var plano = cmdPlano(l);
-    if (plano.falta || plano.problemas.length || !plano.ops.length) { cmdDesenha(); return; }
+    if (plano.falta || plano.pergunta || plano.espera || plano.problemas.length || !plano.ops.length) { cmdDesenha(); return; }
     emiteLote(plano.ops);
     Cmd.aplicadoEm = S.doc.operacoes.length;
     Cmd.mensagem = cmdT("ok_aplicado", { n: plano.ops.length }); Cmd.leitura = null; $("pr-cmd-texto").value = ""; Cmd.textoVisto = "";
@@ -270,6 +321,16 @@
   function cmdCorrige() { Cmd.leitura = null; Cmd.falta = null; Cmd.mensagem = ""; cmdDesenha(); var a = $("pr-cmd-texto"); a.focus(); a.select(); }
   function cmdResponde(indice, valor) {
     LeitorDeComandos.responde(Cmd.leitura, indice, valor, cmdContexto());
+    cmdDesenha(); cmdFoco();
+  }
+  /** Os botões da pergunta da granada real: levar a peça até o ponto do arremesso, jogar às X, usar outro arremesso, pôr a granada sem arremesso real. */
+  function cmdGranadaDecide(acao, escolha) {
+    var ac = Cmd.leitura && Cmd.leitura.acoes[acao];
+    if (!ac) return;
+    if (escolha === "levar") ac.gr_decisao = "levar";
+    else if (escolha === "tarde") ac.gr_tarde_ok = true;
+    else if (escolha === "sem") ac.gr_decisao = "sem";
+    else if (escolha === "outro") { ac.gr_i = (ac.gr_i || 0) + 1; ac.gr_decisao = null; ac.gr_tarde_ok = false; }
     cmdDesenha(); cmdFoco();
   }
   function cmdHorario(texto, aoAceitar) {
@@ -311,9 +372,22 @@
       var ac = l.acoes[a.acao], base = { n: a.segundos != null ? a.segundos : "" };
       if (a.codigo === "duracao_imposta" || a.codigo === "ordem_invertida") raiz.appendChild(el("p", { class: "pr-cmd-aviso", texto: cmdT("aviso_" + a.codigo, base) }));
     });
-    if (l.acoes.some(function (ac) { return ac.tipo === "lancar"; })) raiz.appendChild(el("p", { class: "pr-cmd-aviso", id: "pr-cmd-origem", texto: cmdT("aviso_origem") }));
+    l.acoes.forEach(function (ac) {          // a granada sem arremesso real diz por quê (nunca em silêncio)
+      var g = plano && plano.granadas[ac.indice];
+      if (!g || !g.sem) return;
+      var chave = { sem_biblioteca: "aviso_sem_biblioteca", nenhum: "aviso_sem_real", escolha: "aviso_origem" }[g.motivo];
+      if (chave) raiz.appendChild(el("p", { class: "pr-cmd-aviso", id: "pr-cmd-origem", texto: cmdT(chave, { lado: cmdLadoEscrito(g.lado) }) }));
+    });
+    if (plano && plano.espera) raiz.appendChild(el("p", { class: "pr-cmd-aviso", id: "pr-cmd-carregando-granadas", role: "status", texto: cmdT("ui_carregando_granadas") }));
     if (plano) plano.avisos.filter(function (m, i, v) { return v.indexOf(m) === i; }).forEach(function (m) { raiz.appendChild(el("p", { class: "pr-cmd-aviso", "data-aviso": "corte", texto: m })); });
-    l.acoes.forEach(function (ac) { if (ac.depende_do_deslocamento) raiz.appendChild(el("p", { class: "pr-cmd-aviso", texto: cmdT("aviso_depende_do_deslocamento") })); });
+    l.acoes.forEach(function (ac) {          // horário fixo: diz de qual comando fala e, se ele corta outros, quais
+      if (!ac.depende_do_deslocamento) return;
+      var h = plano && plano.inicios[ac.indice] != null ? cmdDoRelogio(plano.inicios[ac.indice]) : ac.quando && ac.quando.tipo === "relogio" ? cmdRelogio(ac.quando.segundos_restantes) : "";
+      var cortados = plano ? Object.keys(plano.cortados).filter(function (k) { return plano.cortados[k] === ac.indice + 1; }).map(function (k) { return +k + 1; }) : [];
+      var v = { n: ac.indice + 1, h: h, quem: cmdQuem(ac) };
+      if (cortados.length) v.os_comandos = (cortados.length === 1 ? "o comando " : "os comandos ") + cortados.slice(0, -1).join(", ") + (cortados.length > 1 ? " e " : "") + cortados[cortados.length - 1];
+      raiz.appendChild(el("p", { class: "pr-cmd-aviso", texto: cmdT(cortados.length ? "aviso_horario_fixo_corta" : "aviso_depende_do_deslocamento", v) }));
+    });
     if (l.naoEntendido.length) {
       raiz.appendChild(el("p", { class: "pr-cmd-aviso", texto: cmdT("aviso_palavra_sobrando", { trechos: l.naoEntendido.map(function (x) { return "“" + x.trecho + "”"; }).join(", ") }) + " " + cmdT("ui_corrija") }));
     }
@@ -337,6 +411,17 @@
         Cmd.leitura.acoes[f.acao].chegada_t = h.t_decorrido; Cmd.mensagem = ""; cmdDesenha(); $("pr-cmd-aplicar").focus();
       }));
       raiz.appendChild(b2);
+    } else if (plano && plano.pergunta) {
+      var q = plano.pergunta, textoQ = q.tipo === "tarde" ? cmdT("pergunta_granada_tarde", q) : cmdT("pergunta_granada_longe", q);
+      var b3 = el("div", { class: "pr-cmd-pergunta", id: "pr-cmd-pergunta-granada", role: "group", "aria-label": textoQ }, [el("p", { class: "pr-cmd-pergunta-texto", texto: textoQ })]);
+      var ops3 = el("div", { class: "linha pr-cmd-opcoes" });
+      var botoes = [];
+      if (q.tipo === "tarde") botoes.push(["tarde", cmdT("opcao_jogar_as", q)]);
+      else if (q.pode_levar) botoes.push(["levar", cmdT("opcao_levar", q)]);
+      if (q.ha_outro) botoes.push(["outro", cmdT("opcao_outro_arremesso")]);
+      botoes.push(["sem", cmdT("opcao_sem_arremesso")]);
+      botoes.forEach(function (b, i) { ops3.appendChild(el("button", { type: "button", class: "pr-cmd-opcao", "data-i": String(i), "data-escolha": b[0], texto: b[1], onclick: function () { cmdGranadaDecide(q.acao, b[0]); } })); });
+      b3.appendChild(ops3); raiz.appendChild(b3);
     } else if (plano && plano.problemas.length) {
       plano.problemas.filter(function (m, i, v) { return v.indexOf(m) === i; }).forEach(function (m) { raiz.appendChild(el("p", { class: "pr-cmd-erro", role: "alert", texto: m })); });
     }
@@ -344,7 +429,7 @@
     if (Tempos.estado === "erro") raiz.appendChild(el("p", { class: "pr-cmd-aviso", id: "pr-cmd-sem-tempos", texto: cmdT("aviso_tempos_falhou") }));
     if (Cmd.mensagem) raiz.appendChild(el("p", { class: "pr-cmd-aviso", role: "status", texto: Cmd.mensagem }));
     var acoes = $("pr-cmd-acoes"); acoes.hidden = false;
-    $("pr-cmd-aplicar").disabled = !(pronta && plano && !plano.falta && !plano.problemas.length && plano.ops.length) || Tempos.estado === "carregando";
+    $("pr-cmd-aplicar").disabled = !(pronta && plano && !plano.falta && !plano.pergunta && !plano.espera && !plano.problemas.length && plano.ops.length) || Tempos.estado === "carregando";
   }
 
   /** O painel da aba, montado pelo `montaLateral`. */

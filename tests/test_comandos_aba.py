@@ -28,6 +28,20 @@ def _ops(pg):
     return interno(pg, "S.doc.operacoes.map(o => o.tipo)")
 
 
+def _sem_arremesso_real(pg):
+    """A granada agora procura um arremesso real (C4) e pergunta quando a saída é longe da peça. Os testes que medem OUTRA coisa escolhem "sem arremesso real"."""
+    for _ in range(8):
+        b = pg.locator("#pr-cmd-pergunta-granada [data-escolha=sem]")
+        if not b.count():
+            break
+        b.click()
+
+
+def _aplica(pg):
+    _sem_arremesso_real(pg)
+    pg.click("#pr-cmd-aplicar")
+
+
 def _poe_ficha(pg, lado, rotulo, fx=0.5, fy=0.5):
     aba_do_painel(pg, "jogadores")
     arrasta_do_banco(pg, lado, rotulo, fx, fy)
@@ -58,10 +72,12 @@ def test_o_exemplo_do_pedro_aplicado_vira_um_lote_e_um_desfazer_volta_tudo(conte
     _poe_ficha(pg, "t", "2", 0.3, 0.3)
     antes = _ops(pg)
     _escreve(pg, "tr 2 joga uma molotov na caverna aos 1:20 e roda pra TV correndo")
+    assert pg.locator("#pr-cmd-pergunta-granada").count() == 1                              # a molotov real da Caverna sai longe da ficha: pergunta (C4)
+    _sem_arremesso_real(pg)
     linhas = pg.locator("#pr-cmd-entendi li").all_inner_texts()
     assert linhas[0].startswith("TR 2 · Molotov em Caverna · aos 1:20") and linhas[1].startswith("TR 2 · correndo até TV · depois")
     assert "chega não antes de" in linhas[1] and "estimado" in linhas[1]                  # o tempo de corrida é estimado e a tela diz
-    assert "Ainda não busco o arremesso real" in pg.inner_text("#pr-cmd-origem")           # a granada sai de onde o jogador está: dito, sem prometer o arremesso real
+    assert "Sem arremesso real: a granada sai de onde o jogador está" in pg.inner_text("#pr-cmd-origem")           # escolhido "sem arremesso real": dito, sem prometer o real
     assert pg.is_enabled("#pr-cmd-aplicar")
     pg.click("#pr-cmd-aplicar")
     novas = _ops(pg)[len(antes):]
@@ -151,7 +167,7 @@ def test_o_mapa_nao_muda_de_tamanho_ao_escrever_perguntar_e_aplicar(contexto, tm
     assert pg.evaluate(CAIXA) == tamanho
     pg.click(".pr-cmd-opcao >> text=TR 2")
     assert pg.evaluate(CAIXA) == tamanho
-    pg.click("#pr-cmd-aplicar")
+    _aplica(pg)
     assert pg.evaluate(CAIXA) == tamanho
 
 
@@ -177,6 +193,7 @@ def test_a_pergunta_recebe_o_foco_e_o_cartao_acompanha_a_tatica(contexto, tmp_pa
     assert pg.is_disabled("#pr-cmd-aplicar") and "ainda não está no mapa" in pg.inner_text("#pr-cmd-resultado")
     _poe_ficha(pg, "t", "2")                                                                        # a ficha entra depois de "Entender"
     aba_do_painel(pg, "comandos")
+    _sem_arremesso_real(pg)                                                                         # com a ficha no mapa a granada real pode perguntar (C4): responde, e o Aplicar volta
     assert pg.is_enabled("#pr-cmd-aplicar") and "ainda não está no mapa" not in pg.inner_text("#pr-cmd-resultado")
 
 

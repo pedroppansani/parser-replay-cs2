@@ -42,6 +42,7 @@ var Prancheta = (function () {
 //@inclui prancheta/17-montagem.js
 //@inclui prancheta/18-linha-do-tempo.js
 //@inclui prancheta/19-reproducao-na-tela.js
+//@inclui prancheta/20-comandos-granada.js
 //@inclui prancheta/20-comandos.js
 //@inclui prancheta/21-api-do-grupo.js
 })();

@@ -598,6 +598,7 @@
       $("pr-sem-biblioteca").hidden = false;
       var fila = esperandoBiblioteca; esperandoBiblioteca = [];
       fila.forEach(function (fn) { fn(); });
+      if (typeof cmdAtualiza === "function") cmdAtualiza();      // a aba Comandos deixa de esperar a biblioteca (C4)
     };
     document.body.appendChild(s);
   }

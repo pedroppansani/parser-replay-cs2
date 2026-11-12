@@ -22,6 +22,10 @@ CALLOUTS = RAIZ / "data" / "reference" / "callouts_br.csv"
 TABELA_C0 = RAIZ / "notas" / "investigacoes" / "2026-11-09-comandos-nomes-em-portugues.csv"
 
 # A frase de cada pergunta e de cada opção (o leitor só preenche {os campos}).
+# A busca do arremesso real (C4, decisão 64): a queda a até 150 u do destino (a mesma jogada cai a 126 u do centro dela no p90), a saída a até 50 u é o mesmo lugar de
+# lançamento (p99 = 44 u) e a lista junta as jogadas por ela; com menos de 5 do lado da peça e 20 ou mais do outro lado, o cartão avisa (e nunca usa o do outro lado).
+GRANADA_REAL = {"raio_queda": 150.0, "raio_saida": 50.0, "poucos": 5, "muitos": 20}
+
 TEXTOS = {
     "pergunta_quem": 'Quem faz "{trecho}"?',
     "pergunta_quem_lado": 'De qual time é "{ref}"?',
@@ -63,7 +67,23 @@ TEXTOS = {
     "linha_segurar": "{quem} · segura {alvo} · {quando}",
     "linha_esperar": "{quem} · espera {n} s · {quando}",
     "linha_incompleta": "{quem} · ainda falta dizer o que faz",
-    "aviso_origem": "Ainda não busco o arremesso real: a granada sai de onde o jogador está nesse horário.",
+    "aviso_origem": "Sem arremesso real: a granada sai de onde o jogador está nesse horário.",
+    "aviso_sem_real": "Não achei arremesso real de {lado} para este lugar: a granada é posta sem arremesso real e sai de onde o jogador está nesse horário.",
+    "aviso_sem_biblioteca": "Este mapa não tem arremessos reais na biblioteca: a granada é posta sem arremesso real e sai de onde o jogador está nesse horário.",
+    "aviso_poucos_do_lado": "Achei {n} {arremessos} de {lado} aqui. Este lugar recebe muita {granada} de {outro} ({m}): confira se o jogador é do lado certo.",
+    "aviso_nenhum_do_lado": "Não achei arremesso real de {lado} aqui. Este lugar recebe muita {granada} de {outro} ({m}): confira se o jogador é do lado certo.",
+    "ui_carregando_granadas": "Carregando os arremessos reais…",
+    "granada_real": "lugar de saída {i} de {n} ({lado}), {partida}, round {round}: a granada parte de {onde} às {h} e cai por volta de {hc}",
+    "granada_real_sem_voo": "lugar de saída {i} de {n} ({lado}), {partida}, round {round}: a granada parte de {onde} às {h}; não sei quando ela cai",
+    "granada_levar": "antes disso o {quem} corre até o ponto de saída, chegando às {h} (estimado: linha reta)",
+    "pergunta_granada_longe": "O {quem} está a cerca de {s} s correndo ({d} u) do lugar de saída {i} de {n} ({onde}). O que fazer?",
+    "pergunta_granada_tarde": "O {quem} só chega ao lugar de saída {i} de {n} ({onde}) não antes de {h} (estimado: linha reta). Jogar às {h}?",
+    "opcao_levar": "Levar o {quem} até lá",
+    "opcao_jogar_as": "Jogar às {h}",
+    "opcao_outro_arremesso": "Usar outro arremesso",
+    "opcao_sem_arremesso": "Pôr a granada sem arremesso real",
+    "q_depois_h": "depois, por volta de {h}",
+    "cortado_por": "cortado pelo comando {n}",
     "chegada_real_pontos": "chega entre {h1} e {h2}, por volta de {h} (cerca de {d} s; tempo real entre os pontos: {n} casos em {p} partidas)",
     "chegada_real_areas": "chega entre {h1} e {h2}, por volta de {h} (cerca de {d} s; tempo real entre as áreas da demo: {n} casos em {p} partidas)",
     "chegada_real_pontos_unico": "chega por volta de {h} (cerca de {d} s, quase sempre o mesmo tempo; tempo real entre os pontos: {n} casos em {p} partidas)",
@@ -76,7 +96,8 @@ TEXTOS = {
     "quem_vazio": "quem?", "onde_vazio": "onde?",
     "aviso_duracao_imposta": "Você pediu {n} s de corrida. O site não confere esse tempo: usa a corrida estimada.",
     "aviso_ordem_invertida": "O horário desta ação vem antes do da anterior, mas a frase diz “depois”.",
-    "aviso_depende_do_deslocamento": "O horário desta ação é fixo: não espera o jogador chegar.",
+    "aviso_depende_do_deslocamento": "O comando {n} tem horário fixo ({h}): ele não espera o {quem} chegar.",
+    "aviso_horario_fixo_corta": "O comando {n} tem horário fixo ({h}): ele corta {os_comandos}, mesmo que o {quem} ainda não tenha chegado.",
     "aviso_palavra_sobrando": "Não entendi: {trechos}.",
     "pergunta_chegada": "{quem} muda de andar para ir a {alvo}. Não estimei o tempo por causa da troca de andar. Quando chega?",
     "ok_aplicado": "Aplicado ({n} operações). Desfazer volta tudo de uma vez.",
@@ -133,4 +154,4 @@ def jogadores_padrao() -> list[dict]:
 def contexto(mapa: str, jogadores: list[dict] | None = None, so_conferidos: bool = False) -> dict:
     pontos = _pontos(mapa, so_conferidos)
     return {"mapa": mapa, "pontos": pontos, "areas": _areas(mapa, pontos), "jogadores": jogadores or jogadores_padrao(), "funcoes": funcoes_da_prancheta(),
-            "segundos_do_round": int(SEGUNDOS_DO_ROUND), "velocidade_piso_correndo": VELOCIDADE_MAXIMA_CORRENDO_U_S, "raio_do_ponto_u": RAIO_ORIGEM, "textos": TEXTOS}
+            "segundos_do_round": int(SEGUNDOS_DO_ROUND), "velocidade_piso_correndo": VELOCIDADE_MAXIMA_CORRENDO_U_S, "raio_do_ponto_u": RAIO_ORIGEM, "granada": GRANADA_REAL, "textos": TEXTOS}
