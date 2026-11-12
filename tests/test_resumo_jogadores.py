@@ -109,7 +109,7 @@ def test_a_tabela_tem_a_ordem_nova_a_coluna_fixa_e_a_etiqueta_comecou(navegador,
     ctx, pg = _abre(navegador, pagina_html, hash_="#jogadores")
     try:
         cab = pg.eval_on_selector_all(".tabela-jog thead th", "els => els.map(e => e.textContent.trim())")
-        assert cab[:7] == ["Jogador", "Rating*", "ADR", "KAST", "K", "A", "M"]
+        assert cab[:8] == ["Jogador", "Rating*", "Round swing (p.p.)", "ADR", "KAST", "K", "A", "M"]     # RS2: a coluna do round swing depois do Rating
         assert pg.eval_on_selector(".tabela-jog tbody th", "e => getComputedStyle(e).position") == "sticky"
         linhas = pg.locator(".tabela-jog tbody tr")
         assert linhas.count() == 10

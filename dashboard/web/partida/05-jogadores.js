@@ -24,6 +24,8 @@
       kast: function (p) { return p.kast_pct || 0; }
     };
     var ordem = temRating ? "rating" : "adr";
+    // Round swing (RS2): texto pronto do Python (PAGINA.round_swing); some junto com o rating quando o rating está degradado
+    var RS = PAGINA.round_swing || null, temSwing = temRating && RS && Object.keys(RS.partida).length > 0;
 
     function rotulo(chave, texto, titulo) {
       return "<th scope='col'><button type='button' data-ordem='" + esc(chave) + "' title='" + esc(titulo) + "'" +
@@ -36,6 +38,7 @@
       // Rating primeiro (cabe em 375), depois ADR, KAST, K, A, M; o dano round a round e a mira vêm no fim
       var cab = "<thead><tr><th scope='col' class='fixa'>Jogador</th>" +
         (temRating ? rotulo("rating", "Rating*", (D.rating_info || {}).texto || "") : "<th scope='col'></th>") +
+        (temSwing ? "<th scope='col' class='col-swing' title='" + esc(RS.textos.frase) + "'>" + esc(RS.textos.coluna) + "</th>" : "") +
         rotulo("adr", "ADR", "Ordenar por ADR") + rotulo("kast", "KAST", "Ordenar por KAST") +
         rotulo("k", "K", "Ordenar por kills") + "<th scope='col'>A</th><th scope='col'>M</th>" +
         "<th scope='col'>Dano round a round</th><th scope='col' title='" + esc(D.dica_mira || "") + "'>Mira</th></tr></thead>";
@@ -52,12 +55,20 @@
         var kd = kad[p.name] || {};
         // Amostra fraca (poucos rounds) aparece apagada e com o motivo no title:
         // o número existe, mas não sustenta comparação.
+        var cs = temSwing ? RS.partida[p.name] : null;
+        // celular: a coluna do swing some (CSS) e o número vai embaixo do Rating, com o mesmo texto para o leitor de tela
+        var mini = cs ? "<span class='rs-mini'><span aria-hidden='true'>" + esc(RS.textos.rotulo_curto + " " + cs.t) + "</span><span class='so-leitor'>" + esc(cs.l) + "</span></span>" : "";
         var rt = (p.rating == null || ratingDegradado) ? "<td class='n q'>—</td>" :
           "<td class='n rt" + (p.rating_amostra_fraca ? " fraca" : "") + "'" +
           (p.rating_amostra_fraca ? " title='amostra pequena: poucos rounds jogados'" : "") + ">" +
-          p.rating.toFixed(2).replace(".", ",") + "</td>";
+          p.rating.toFixed(2).replace(".", ",") + mini + "</td>";
+        var sw = "";
+        if (temSwing) {
+          var c = RS.partida[p.name];
+          sw = c ? "<td class='n rswing'><span aria-hidden='true'>" + esc(c.t) + "</span><span class='so-leitor'>" + esc(c.l) + "</span></td>" : "<td class='n q'>—</td>";
+        }
         corpo += "<tr><th scope='row' class='fixa'><span class='nk'>" + esc(p.name) + "</span>" +
-          "<span class='time-do-jog'>" + esc(nomeLado(p.team)) + " " + etiquetaComecou(p.team) + "</span></th>" + rt +
+          "<span class='time-do-jog'>" + esc(nomeLado(p.team)) + " " + etiquetaComecou(p.team) + "</span></th>" + rt + sw +
           "<td class='n'>" + br(p.adr) + "</td><td class='n q'>" + fmt(p.kast_pct, 0) + "%</td>" +
           "<td class='n'>" + (kd.kills_totais != null ? kd.kills_totais : "—") + "</td>" +
           "<td class='n q'>" + (kd.assistencias != null ? kd.assistencias : "—") + "</td>" +
@@ -72,14 +83,22 @@
       });
 
       // Legenda da tabela: o rating (rótulo do Python: implementação própria, não o oficial) e a mira
+      // a legenda fica FORA da caixa que rola na horizontal: sempre inteira, mesmo com a tabela rolada
       var leg = document.createElement("div");
-      leg.className = "legenda-tabela";
-      wrap.appendChild(leg);
+      leg.className = "legenda-tabela"; leg.id = "players-legenda";
+      var velha = document.getElementById("players-legenda"); if (velha) velha.remove();
+      wrap.parentNode.insertBefore(leg, wrap.nextSibling);
       if (temRating && D.rating_info && D.rating_info.texto) {
         var nota = document.createElement("p");
         nota.className = "rnota";
         nota.textContent = "* " + D.rating_info.texto;
         leg.appendChild(nota);
+      }
+      if (temSwing) {
+        var swn = document.createElement("p");
+        swn.className = "rnota"; swn.id = "legenda-swing";
+        swn.textContent = RS.textos.frase + " " + RS.textos.p_p + " " + RS.textos.aviso_partida;
+        leg.appendChild(swn);
       }
       if (D.dica_mira) {
         var mira = document.createElement("p");
