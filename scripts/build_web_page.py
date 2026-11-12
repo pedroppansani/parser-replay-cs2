@@ -266,7 +266,7 @@ def biblioteca_do_mapa(mapa: str) -> str | None:
 
 
 def dados_da_pagina(match_id: str, base: Path | None = None, repo: str | None = None, preview: bool = False) -> dict:
-    from leitura import marca_da_funcao, perfil_erros, peso_dos_rounds
+    from leitura import marca_da_funcao, perfil_erros, peso_dos_rounds, round_swing_texto
     from leitura.reescrever import TEXTOS_DO_MODO
     from metrics.constantes import DURACAO_SMOKE_S
     from metrics.tactics import VELOCIDADE_U_S
@@ -291,6 +291,8 @@ def dados_da_pagina(match_id: str, base: Path | None = None, repo: str | None = 
                           "smoke_s": DURACAO_SMOKE_S,
                           "biblioteca": biblioteca_do_mapa(_le_json(base / "match_meta.json").get("map_name") or "")},   # a mesma conta da prancheta (decisão 43); o arquivo das alternativas da troca de granada (R4)
             # "Quanto cada round pesou" (aba Placar): só texto, pronto; a barra o JS lê da curva do payload
+            # o Round swing (RS2): a coluna da tabela de jogadores e a linha do Perfil, só texto pronto; só os jogadores desta partida
+            "round_swing": round_swing_texto.bloco(payload),
             "peso_dos_rounds": peso_dos_rounds.bloco(payload, _nomes_dos_lados(cabecalho_da_partida(match_id, base))),
             # aba Perfil (fase 12): pontos a melhorar, pontos fortes e comparação, com as frases prontas.
             # Só os tipos de erro validados entram (metrics.erros.TIPOS_DE_ERRO_VALIDADOS); `preview` mostra

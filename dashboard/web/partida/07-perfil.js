@@ -343,6 +343,20 @@
         esc(f.valor) + "</span>" + (f.bruto ? "<span class='bruto'>" + esc(f.bruto) + "</span>" : "") + "</div>" +
         "<div class='ref'>" + esc(f.referencia) + "</div></li>";
     }
+    // Round swing no corpus (RS2): texto pronto do Python. Menos de 30 rounds: o motivo, sem número; 30 a 99: número com "±"; 100 ou mais: com "±" e "estável".
+    function linhaDoSwing(nome, comNome) {
+      var RS = PAGINA.round_swing, c = RS && RS.corpus[nome];
+      if (!c) return "";
+      var T = RS.textos;
+      return "<p class='pf-swing " + esc(c.estado) + "' data-estado='" + esc(c.estado) + "'" + (comNome ? " data-jogador='comparado'" : "") + ">" +
+        "<span class='so-leitor'>" + esc((comNome ? nome + ": " : "") + c.l) + "</span>" +
+        "<span aria-hidden='true'><span class='rot'>" + esc((comNome ? nome + " · " : "") + T.titulo_do_perfil) + "</span> " +
+        (c.estado === "poucos" ? "<span class='motivo'>" + esc(c.motivo) + "</span>"
+          : "<b class='num'>" + esc(c.numero) + "</b> <span class='un'>" + esc(T.unidade) + "</span> <span class='ct'>(" + esc(c.contagem) + ")</span>" +
+            (c.estado === "estavel" ? " <span class='tag neutro'>" + esc(T.estavel) + "</span>" : "")) +
+        " <span class='tag neutro selo'>" + esc(T.selo) + "</span></span></p>";
+    }
+
     function desenhaNovo(nomeA, nomeB) {
       if (!PF) return;
       var T = PF.textos, j = pfJogador(nomeA), k = nomeB ? pfJogador(nomeB) : null;
@@ -355,7 +369,7 @@
             (f.dica ? " title='" + esc(f.dica) + "'" : "") + ">" +
             esc(f.lado) + " · " + esc(f.texto) + "</span>";
         }).join("") + "</div><p>" + esc(j.resumo) + "</p>";
-      document.getElementById("pf-cab").innerHTML = cab;
+      document.getElementById("pf-cab").innerHTML = cab + linhaDoSwing(j.name, false) + (k ? linhaDoSwing(k.name, true) : "");
 
       var mel = "<h3>" + esc(T.melhorar) + "</h3>";
       if (PF.estado === "em_validacao") {
