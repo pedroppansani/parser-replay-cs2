@@ -811,6 +811,12 @@
   .tabela-jog td.n.rt.fraca { color: var(--apagado); font-weight: 400; }
   /* Round swing (RS2): coluna logo depois do Rating; o cabeçalho quebra em duas linhas, o número fica numa linha só (a altura das linhas não muda) */
   .tabela-jog th.col-swing { white-space: normal; min-width: 76px; line-height: 1.2; text-align: right; }
+  .tabela-jog .rs-mini { display: none; }
+  /* celular (a coluna não cabe ao lado do Rating): a coluna some e o número vai embaixo do Rating, sem mudar a altura da linha */
+  @media (max-width: 430px) {
+    .tabela-jog th.col-swing, .tabela-jog td.rswing { display: none; }
+    .tabela-jog .rs-mini { display: block; margin-top: 2px; font-family: var(--f-num); font-size: 11px; font-weight: 600; line-height: 1.2; color: var(--tinta-2); }
+  }
   .tabela-jog td.n.rswing { color: var(--tinta); font-weight: 600; }
   .tabela-jog td.sp { width: 220px; min-width: 140px; }
   .tabela-jog td.sp svg { display: block; width: 100%; height: 28px; }

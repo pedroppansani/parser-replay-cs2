@@ -55,10 +55,13 @@
         var kd = kad[p.name] || {};
         // Amostra fraca (poucos rounds) aparece apagada e com o motivo no title:
         // o número existe, mas não sustenta comparação.
+        var cs = temSwing ? RS.partida[p.name] : null;
+        // celular: a coluna do swing some (CSS) e o número vai embaixo do Rating, com o mesmo texto para o leitor de tela
+        var mini = cs ? "<span class='rs-mini'><span aria-hidden='true'>" + esc(RS.textos.rotulo_curto + " " + cs.t) + "</span><span class='so-leitor'>" + esc(cs.l) + "</span></span>" : "";
         var rt = (p.rating == null || ratingDegradado) ? "<td class='n q'>—</td>" :
           "<td class='n rt" + (p.rating_amostra_fraca ? " fraca" : "") + "'" +
           (p.rating_amostra_fraca ? " title='amostra pequena: poucos rounds jogados'" : "") + ">" +
-          p.rating.toFixed(2).replace(".", ",") + "</td>";
+          p.rating.toFixed(2).replace(".", ",") + mini + "</td>";
         var sw = "";
         if (temSwing) {
           var c = RS.partida[p.name];
@@ -80,9 +83,11 @@
       });
 
       // Legenda da tabela: o rating (rótulo do Python: implementação própria, não o oficial) e a mira
+      // a legenda fica FORA da caixa que rola na horizontal: sempre inteira, mesmo com a tabela rolada
       var leg = document.createElement("div");
-      leg.className = "legenda-tabela";
-      wrap.appendChild(leg);
+      leg.className = "legenda-tabela"; leg.id = "players-legenda";
+      var velha = document.getElementById("players-legenda"); if (velha) velha.remove();
+      wrap.parentNode.insertBefore(leg, wrap.nextSibling);
       if (temRating && D.rating_info && D.rating_info.texto) {
         var nota = document.createElement("p");
         nota.className = "rnota";

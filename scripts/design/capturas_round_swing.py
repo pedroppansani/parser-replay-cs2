@@ -34,13 +34,14 @@ def _nome_no_estado(partida: str, estado: str) -> str:
 
 def main() -> None:
     saida = Path(sys.argv[1]); saida.mkdir(parents=True, exist_ok=True)
+    so = sys.argv[2:] or None                                       # só estas situações (prefixo do nome), p. ex. "1" "1b"
     pasta = Path(tempfile.mkdtemp(prefix="capturas_rs2_"))
     shutil.copyfile(RAIZ / "dashboard/web" / TEMA_JS if (RAIZ / "dashboard/web" / TEMA_JS).exists() else RAIZ / "docs" / TEMA_JS, pasta / TEMA_JS)
     for m in ("match_09", "match_21", "match_23"):
         (pasta / f"{m}.html").write_text(build_html(m), encoding="utf-8")
     situacoes = [
         ("1-tabela-da-partida", "match_21", "jogadores", None, None),
-        ("1b-tabela-rolada-ate-o-swing", "match_21", "jogadores", None, None),
+        ("1b-tabela-rolada-ate-o-fim", "match_21", "jogadores", None, None),
         ("2-perfil-poucos-rounds", "match_09", "perfil", _nome_no_estado("match_09", "poucos"), None),
         ("3-perfil-30-a-99-rounds", "match_21", "perfil", _nome_no_estado("match_21", "inter"), None),
         ("4-perfil-estavel-e-comparado", "match_23", "perfil", _nome_no_estado("match_23", "estavel"), _nome_no_estado("match_23", "poucos")),
@@ -51,6 +52,8 @@ def main() -> None:
             for rotulo, w, h in TAMANHOS:
                 ctx = nav.new_context(viewport={"width": w, "height": h}, color_scheme=esquema, device_scale_factor=1)
                 for nome, m, aba, a, b in situacoes:
+                    if so and nome.split("-")[0] not in so:
+                        continue
                     pg = ctx.new_page(); erros = []
                     pg.on("pageerror", lambda e: erros.append(str(e)))
                     pg.goto((pasta / f"{m}.html").as_uri())
@@ -62,11 +65,11 @@ def main() -> None:
                     if b:
                         pg.select_option("#pf-b", b)
                     pg.wait_for_timeout(300)
-                    alvo = "#players" if aba == "jogadores" else "#pf-cab"
+                    alvo = "#players-legenda" if aba == "jogadores" else "#pf-cab"
                     if nome.startswith("1b"):
                         if w > 420:
                             pg.close(); continue                      # a rolagem da caixa só existe no celular
-                        pg.evaluate("document.querySelector('.tabela-jog').scrollLeft = 90")
+                        pg.evaluate("(() => { const t = document.querySelector('.tabela-jog'); t.scrollLeft = t.scrollWidth; })()")
                     pg.locator(alvo).scroll_into_view_if_needed()
                     topo = "#players" if aba == "jogadores" else "#pf-botoes"
                     box = pg.locator(topo).bounding_box(); fim = pg.locator(alvo).bounding_box()

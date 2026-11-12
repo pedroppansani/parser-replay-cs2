@@ -130,7 +130,7 @@ def test_a_coluna_vem_depois_do_rating_e_a_legenda_tem_a_frase_o_pp_e_o_aviso(na
         assert cab[1].lower().startswith("rating") and cab[2].lower() == "round swing (p.p.)", cab     # o CSS põe em maiúsculas
         legenda = pg.inner_text("#legenda-swing")
         assert TEXTOS["frase"] in legenda and "p.p. = pontos percentuais" in legenda and TEXTOS["aviso_partida"] in legenda
-        assert pg.locator("#players").inner_text().count("p.p. = pontos percentuais") == 1         # "p.p." é explicado uma vez só
+        assert pg.locator("#players-legenda").inner_text().count("p.p. = pontos percentuais") == 1         # "p.p." é explicado uma vez só
         assert erros == []
     finally:
         ctx.close()
@@ -210,5 +210,65 @@ def test_a_altura_das_linhas_da_tabela_nao_muda_com_a_coluna(navegador, paginas)
     try:
         alturas = pg.evaluate("[...document.querySelectorAll('#players tbody tr')].map(r => Math.round(r.getBoundingClientRect().height))")
         assert len(set(alturas)) == 1 and alturas[0] <= 65, alturas
+    finally:
+        ctx.close()
+
+
+# --- celular: o número embaixo do Rating, e a legenda fora da caixa que rola (ajustes da RS2) --------------------------------------------
+
+def _estado_da_tabela(pg):
+    return pg.evaluate("""() => { const vis = e => !!e && getComputedStyle(e).display !== 'none';
+        return { coluna: vis(document.querySelector('#players th.col-swing')), mini: vis(document.querySelector('#players .rs-mini')) }; }""")
+
+
+@pytest.mark.parametrize("largura,celular", [(375, True), (430, True), (431, False), (768, False), (1440, False)])
+def test_a_coluna_troca_pelo_numero_embaixo_do_rating_ate_430_px(navegador, paginas, largura, celular):
+    ctx, pg, _ = _abre(navegador, paginas["match_21"], "jogadores", largura, 900)
+    try:
+        assert _estado_da_tabela(pg) == {"coluna": not celular, "mini": celular}, largura
+    finally:
+        ctx.close()
+
+
+def test_no_celular_o_numero_embaixo_do_rating_e_o_do_insights_e_o_leitor_le_o_mesmo_texto_da_coluna(navegador, paginas):
+    ins = {p["name"]: p["round_swing"]["pp_por_round"] for p in _insights("match_21")["players"]}
+    ctx, pg, _ = _abre(navegador, paginas["match_21"], "jogadores", 375, 812)
+    ctx2, pg2, _ = _abre(navegador, paginas["match_21"], "jogadores", 1440, 900)
+    try:
+        for i in range(10):
+            nome = pg.locator("#players tbody tr").nth(i).locator("th .nk").inner_text().strip()
+            mini = pg.locator("#players tbody tr").nth(i).locator(".rs-mini")
+            assert mini.locator("[aria-hidden]").inner_text() == "swing " + numero(ins[nome]), nome
+            lido_celular = mini.locator(".so-leitor").inner_text()
+            nome2 = pg2.locator("#players tbody tr").nth(i).locator("th .nk").inner_text().strip()
+            assert nome2 == nome
+            assert lido_celular == pg2.locator("#players tbody tr").nth(i).locator("td.rswing .so-leitor").inner_text()     # o mesmo texto da coluna
+    finally:
+        ctx.close(); ctx2.close()
+
+
+def test_a_altura_da_linha_e_a_mesma_no_celular_com_o_numero_embaixo_e_no_computador(navegador, paginas):
+    ctx, pg, _ = _abre(navegador, paginas["match_21"], "jogadores", 375, 812)
+    ctx2, pg2, _ = _abre(navegador, paginas["match_21"], "jogadores", 1440, 900)
+    js = "[...document.querySelectorAll('#players tbody tr')].map(r => Math.round(r.getBoundingClientRect().height))"
+    try:
+        a, b = pg.evaluate(js), pg2.evaluate(js)
+        assert len(set(a)) == 1 and a == b, (a, b)                                 # 64 px nas duas telas: o "swing +9,5" cabe na altura que o time já dá
+        # o número não sai da célula do Rating
+        assert pg.evaluate("[...document.querySelectorAll('#players tbody tr')].every(r => { const c = r.querySelector('td.rt'), m = r.querySelector('.rs-mini'); return c.contains(m) && m.getBoundingClientRect().bottom <= r.getBoundingClientRect().bottom; })")
+    finally:
+        ctx.close(); ctx2.close()
+
+
+@pytest.mark.parametrize("largura", [375, 1440])
+def test_a_legenda_fica_fora_da_caixa_que_rola_e_inteira_com_a_tabela_rolada_ate_o_fim(navegador, paginas, largura):
+    ctx, pg, _ = _abre(navegador, paginas["match_21"], "jogadores", largura, 812)
+    try:
+        assert pg.evaluate("!document.getElementById('players').contains(document.getElementById('players-legenda'))")
+        pg.evaluate("const t = document.getElementById('players'); t.scrollLeft = t.scrollWidth")
+        r = pg.evaluate("(() => { const b = document.getElementById('players-legenda').getBoundingClientRect(); return [b.left, b.right, innerWidth]; })()")
+        assert r[0] >= 0 and r[1] <= r[2] + 0.5, r
+        texto = pg.inner_text("#players-legenda")
+        assert "Rating 3.0" in texto and TEXTOS["frase"] in texto and "Mira:" in texto
     finally:
         ctx.close()

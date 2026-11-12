@@ -23,6 +23,7 @@ MENOS = "−"          # o sinal de menos tipográfico
 
 TEXTOS = {
     "coluna": "Round swing (p.p.)",
+    "rotulo_curto": "swing",          # o número embaixo do Rating, no celular ("swing +9,5")
     "selo": "implementação própria",
     "frase": "Round swing: quanto o jogador mexeu, por round, na chance de o time vencer o round; implementação própria, o número pode diferir do da HLTV.",
     "p_p": "p.p. = pontos percentuais.",
