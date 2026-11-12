@@ -19,7 +19,7 @@ def main() -> None:
     d = pl.read_parquet(sys.argv[1])
     ref = json.loads((RAIZ / "data/reference/hltv_componentes.json").read_text(encoding="utf-8"))["partidas"]
     # (1) por partida e jogador: média por round em pontos percentuais (round sem linha = 0)
-    pj = (d.group_by(["partida", "steamid", "nome", "rounds_da_partida"]).agg(pl.col("swing").sum().alias("soma"))
+    pj = (d.group_by(["partida", "steamid", "nome", "rounds_da_partida"], maintain_order=True).agg(pl.col("swing").sum().alias("soma"))
           .with_columns((100 * pl.col("soma") / pl.col("rounds_da_partida")).alias("pp")))
     lin = []
     for mid, v in ref.items():
@@ -50,17 +50,13 @@ def main() -> None:
     print("    maiores erros:", "; ".join(f"{m} {n} oficial {o:+.2f} nosso {x:+.2f}" for m, n, o, x, r in ordem))
 
     # (2) estabilidade: a média por round de cada jogador (steamid) em n rounds sorteados, duas metades disjuntas
-    por_jog = {}
-    for (sid, nome), g in d.group_by(["steamid", "nome"]):
-        pass
-    todos = d.group_by(["partida", "steamid"]).agg(pl.col("round_num").n_unique().alias("r_com_linha"))
     # série completa por jogador: um valor por round jogado (0 onde não há linha)
-    rounds_por_partida = d.select("partida", "rounds_da_partida").unique().to_dicts()
+    rounds_por_partida = d.select("partida", "rounds_da_partida").unique(maintain_order=True).to_dicts()
     series: dict[int, list[float]] = {}
-    for mid, ng in d.group_by("partida"):
+    for mid, ng in d.group_by("partida", maintain_order=True):
         mid = mid[0]
         nr = int(ng["rounds_da_partida"][0])
-        for sid, g in ng.group_by("steamid"):
+        for sid, g in ng.group_by("steamid", maintain_order=True):
             sid = sid[0]
             v = np.zeros(nr)
             for r, s in zip(g["round_num"].to_list(), g["swing"].to_list()):

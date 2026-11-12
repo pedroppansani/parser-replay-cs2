@@ -68,7 +68,7 @@ def main() -> None:
 
 
 def kills_rounds(t):
-    return t["kills"]["round_num"].unique().to_list()
+    return t["kills"]["round_num"].unique(maintain_order=True).to_list()
 
 
 def imprime(mid, rn, k, linhas, log, rounds, nome, team_of, vencedor, tickrate):

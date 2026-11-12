@@ -28,8 +28,8 @@ def main() -> None:
     mapa = {m: json.loads((RAIZ / "data/processed" / m / "match_meta.json").read_text(encoding="utf-8"))["map_name"] for m in ids}
     df = df.with_columns(pl.col("partida").replace_strict(mapa, return_dtype=pl.String).alias("mapa"))
     um = df.filter(pl.col("lado_a"))
-    print(f"{len(ids)} partidas; {int(df['lado_a'].sum())} estados (um por kill); rounds distintos: {df.select('partida', 'round').unique().height}")
-    por_mapa = um.group_by("mapa").agg(pl.col("partida").n_unique().alias("partidas"), pl.len().alias("estados"), pl.struct("partida", "round").n_unique().alias("rounds")).sort("mapa")
+    print(f"{len(ids)} partidas; {int(df['lado_a'].sum())} estados (um por kill); rounds distintos: {df.select('partida', 'round').unique(maintain_order=True).height}")
+    por_mapa = um.group_by("mapa", maintain_order=True).agg(pl.col("partida").n_unique().alias("partidas"), pl.len().alias("estados"), pl.struct("partida", "round").n_unique().alias("rounds")).sort("mapa")
     print(por_mapa)
     X0 = atributos(df, "tempo")
     y, g = df["venceu"].to_numpy(), df["partida"].to_numpy()
@@ -62,9 +62,9 @@ def main() -> None:
         print(f"| {nome} | {r['brier']} | {r['log_loss']} | {r['auc']} |")
     print("\nconfiabilidade (previsto médio → observado) da logística atual: " + "; ".join(f"{a} n={n}: {b}→{c}" for a, n, b, c in mede(df, previsoes['logística atual (tempo)'])['confiabilidade']))
     # o mapa: taxa de vitória do CT por mapa (de todo kill-estado seria ruído: usa a taxa de rounds)
-    rr = um.group_by(["mapa", "partida", "round"]).agg(pl.col("venceu").first(), pl.col("ct").first()).with_columns(((pl.col("venceu") == 1) == (pl.col("ct") == 1)).alias("ct_venceu"))
+    rr = um.group_by(["mapa", "partida", "round"], maintain_order=True).agg(pl.col("venceu").first(), pl.col("ct").first()).with_columns(((pl.col("venceu") == 1) == (pl.col("ct") == 1)).alias("ct_venceu"))
     print("\nrounds com kill e taxa de vitória do CT por mapa (aprox.; o time A pode ser CT ou TR, ver `ct` do lado A):")
-    print(rr.group_by("mapa").agg(pl.len().alias("rounds"), pl.col("ct_venceu").mean().round(3).alias("ct")).sort("mapa"))
+    print(rr.group_by("mapa", maintain_order=True).agg(pl.len().alias("rounds"), pl.col("ct_venceu").mean().round(3).alias("ct")).sort("mapa"))
 
 
 if __name__ == "__main__":
