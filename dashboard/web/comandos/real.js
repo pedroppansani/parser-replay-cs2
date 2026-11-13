@@ -96,6 +96,7 @@
       var f = ac.fim;
       if (f && f.tipo === "relogio" && f.base === undefined && caiDepoisDoPlant(ctx.real, f.segundos_restantes)) {
         delete ac.fim;
+        if (leitura.perguntas.some(function (p) { return p._real && p.codigo === "quando" && p.acao === ac.indice; })) { ac._fim_pend = f; return; }      // início e fim depois do plant: "bomba ou round?" uma vez só, a resposta vale para os dois
         var pq = perguntaDoRelogio(ctx, ac.indice, ac.trecho, f.segundos_restantes);
         pq.codigo = "fim_relogio"; pq.campo = "fim";
         pq.opcoes.forEach(function (o) { o.valor = { fim: o.valor.quando }; });
@@ -131,6 +132,12 @@
       leitura.acoes[p.acao].fim = valor.fim;
       leitura.perguntas.splice(indice, 1);
       return posprocessa(leitura, ctx);
+    }
+    if (p && p._real && p.codigo === "quando" && valor && valor.quando && leitura.acoes[p.acao] && leitura.acoes[p.acao]._fim_pend) {      // a mesma base (bomba ou round) para o fim
+      var ac = leitura.acoes[p.acao], f = ac._fim_pend, r = ctx.real;
+      delete ac._fim_pend;
+      ac.fim = { tipo: "relogio", segundos_restantes: f.segundos_restantes, base: valor.quando.base,
+                 t_decorrido: valor.quando.base === "bomba" ? arredonda2(r.plant_s + (r.bomba_s - f.segundos_restantes)) : arredonda2(r.segundos_do_round - f.segundos_restantes) };
     }
     return posprocessa(leitor().responde(leitura, indice, valor, ctx), ctx);
   }

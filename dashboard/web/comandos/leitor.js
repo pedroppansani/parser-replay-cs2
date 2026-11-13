@@ -19,7 +19,7 @@
     return o;
   }
   function tokeniza(frase) {
-    var n = norm(frase), re = /\d{1,2}:\d{2}|\d+s\b|\d+|[a-z]+|[,;]/g, m, t = [];
+    var n = norm(frase).replace(/\.(?=\s)/g, ";"), re = /\d{1,2}:\d{2}|\d+s\b|\d+|[a-z]+|[,;]/g, m, t = [];
     while ((m = re.exec(n))) t.push({ t: m[0], i: m.index, f: m.index + m[0].length, uso: null });
     return t;
   }

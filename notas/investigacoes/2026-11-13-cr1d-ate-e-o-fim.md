@@ -14,3 +14,8 @@ Decisão do Pedro: em "segura X até H", H é o FIM. "segura o meio até 0:45" =
 - Leitor, bateria byte a byte (`prova_leitor_dos_comandos`): 250 diferenças de 2.050; as 250 são frases com "segura ... até horário" (checado por padrão). Horários: 48 iguais.
 - Plano: 392 diferenças de 4.116 (frases e telas); todas "segura ... até horário"; buscas 1.080 iguais.
 - Antes e depois de 5 frases: `notas/logs/cr1d-frases-antes.json` e `-depois.json`.
+
+## Ajustes do Pedro antes do merge
+1. "Agora" é igual nos dois: o fim do comando anterior da MESMA peça; sem comando anterior, o marcador (prancheta) ou o instante (Reescrever). Teste: "tr 2 corre pro meio aos 1:30. tr 2 segura o meio até 0:45". Isso mostrou duas coisas: o ponto final seguido de espaço não separava comandos (agora vale como ";"), e "segura X até H" com a peça já em X dava `erro_inicio` (agora a peça não anda, só fica até H).
+2. "Bomba ou round?" uma vez só por comando quando o início e o fim caem depois do plant; a resposta vale para os dois.
+Reprova: leitor 250 diferenças de 2.050 e plano 392 de 4.116, todas "segura ... até horário"; testes da C1 a C4: 141 passaram.

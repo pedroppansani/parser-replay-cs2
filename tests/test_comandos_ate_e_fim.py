@@ -176,3 +176,32 @@ def test_na_prancheta_o_fim_que_vem_antes_da_chegada_avisa_e_nao_segura(contexto
     assert any("não deixa tempo de segurar" in a for a in avisos), avisos
     _aplica(pg)
     assert _caminho(pg)[-1][0] < 71                                                                    # nenhum ponto de espera até 1:49 foi criado
+
+
+def test_no_reescrever_inicio_e_fim_depois_do_plant_perguntam_bomba_ou_round_uma_vez_so(pg):
+    frase = "KSCERATO segura o meio aos 0:35 até 0:30"
+    x = le(pg, frase)
+    assert len(x["r"]["perguntas"]) == 1 and x["r"]["perguntas"][0]["codigo"] == "quando"
+    for i in (0, 1):
+        r = pg.evaluate("""([f, i]) => { const x = window.ctx; let l = ComandosDoReal.le(f, x); l = ComandosDoReal.responde(l, 0, l.perguntas[0].opcoes[i].valor, x);
+            return { perguntas: l.perguntas.length, q: l.acoes[0].quando, f: l.acoes[0].fim }; }""", [frase, i])
+        assert r["perguntas"] == 0 and r["q"]["base"] == r["f"]["base"] == ("bomba", "round")[i]                      # a mesma base para os dois
+        assert r["f"]["t_decorrido"] > r["q"]["t_decorrido"]
+
+
+def test_na_prancheta_agora_e_o_fim_do_comando_anterior_da_mesma_peca(contexto, tmp_path_factory):
+    base = _ponto("de_mirage", "Base TR")
+    pg = _pagina_da_prancheta(contexto, tmp_path_factory)
+    _peca(pg, base["x"], base["y"])
+    _escreve(pg, "tr 2 corre pro meio aos 1:30. tr 2 segura o meio até 0:45")
+    linhas = _linhas(pg)
+    assert len(linhas) == 2 and "aos 1:30" in linhas[0] and "desde 1:30" not in linhas[1] and "até 0:45" in linhas[1], linhas
+    import re
+    chegada = re.search(r"por volta de (\d+:\d\d)", linhas[0]).group(1)                           # onde o primeiro comando termina
+    assert f"desde {chegada}" in linhas[1], linhas                                                           # o segundo começa aí, não no marcador (1:55)
+    _aplica(pg)
+    assert _caminho(pg)[-1][0] == 70 and len({(x, y) for t, x, y in _caminho(pg) if t > 30}) == 1                  # chega ao meio, fica lá até 70 s: um lugar só
+    # outra peça no meio: o "agora" continua sendo o fim do comando da MESMA peça
+    _escreve(pg, "tr 2 corre pro meio aos 1:30. tr 3 corre pra b aos 1:00. tr 2 segura o meio até 0:45")
+    l3 = _linhas(pg)
+    assert len(l3) == 3 and f"desde {chegada}" in l3[2], l3
