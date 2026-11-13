@@ -92,6 +92,16 @@
         leitura.perguntas.push(perguntaDoRelogio(ctx, ac.indice, ac.trecho, q.segundos_restantes));
       }
     });
+    leitura.acoes.forEach(function (ac) {
+      var f = ac.fim;
+      if (f && f.tipo === "relogio" && f.base === undefined && caiDepoisDoPlant(ctx.real, f.segundos_restantes)) {
+        delete ac.fim;
+        var pq = perguntaDoRelogio(ctx, ac.indice, ac.trecho, f.segundos_restantes);
+        pq.codigo = "fim_relogio"; pq.campo = "fim";
+        pq.opcoes.forEach(function (o) { o.valor = { fim: o.valor.quando }; });
+        leitura.perguntas.push(pq);
+      }
+    });
     leitura.perguntas.sort(function (a, b) { return (a.acao === null ? -1 : a.acao) - (b.acao === null ? -1 : b.acao); });      // por ação (a ordem de dentro da ação fica)
     leitura.ok = leitura.perguntas.length === 0 && leitura.acoes.length > 0 && !leitura.naoEntendido.length;
     return leitura;
@@ -117,6 +127,11 @@
       nova._frase = leitura._frase; nova._decisoes = d;
       return posprocessa(nova, c2);
     }
+    if (p && p.codigo === "fim_relogio") {      // a resposta de "bomba ou round?" do FIM do comando
+      leitura.acoes[p.acao].fim = valor.fim;
+      leitura.perguntas.splice(indice, 1);
+      return posprocessa(leitura, ctx);
+    }
     return posprocessa(leitor().responde(leitura, indice, valor, ctx), ctx);
   }
 
@@ -131,6 +146,7 @@
   /** O fim do comando que o próprio comando diz: "em 8 s" (duração imposta) ou "espera 5 segundos". Os outros (mover, lançar) o plano calcula e entrega em `fins`. */
   function fimDoComando(ac, T, fins) {
     if (fins && typeof fins[ac.indice] === "number") return fins[ac.indice];
+    if (ac.fim && typeof ac.fim.t_decorrido === "number") return ac.fim.t_decorrido;      // "segura X até H" (CR1d)
     if (ac.duracao_s != null) return T + ac.duracao_s;
     if (ac.tipo === "esperar" && ac.espera_s != null) return T + ac.espera_s;
     return null;
@@ -139,7 +155,7 @@
   function veredictoDe(ac, j, T, fim, ctx) {
     var real = ctx.real, TX = ctx.textos || {}, ini = relogioNa(real, real.t0_s);
     var base = { acao: ac.indice, lado: j.lado, num: j.num, nick: j.nick };
-    var v = { nick: j.nick, matador: j.matador, h_cmd: relogioNa(real, T), inicio: ini, h_morte: j.morreu_s === null ? "" : relogioNa(real, j.morreu_s) };
+    var v = { nick: j.nick, matador: j.matador, h_cmd: relogioNa(real, T), h_fim: fim === null ? "" : relogioNa(real, fim), inicio: ini, h_morte: j.morreu_s === null ? "" : relogioNa(real, j.morreu_s) };
     var sufixo = j.matador ? "" : "_sem_matador";
     var botoesRecusa = [{ codigo: "outro_jogador", rotulo: TX["botao_outro_jogador"] }, { codigo: "corrigir", rotulo: TX["botao_corrigir"] }];
     function com(codigo, aplica, chaveDoTexto, botoes, extra) {
@@ -150,6 +166,7 @@
     if (!j.vivo) return com("ja_morto", false, "veredicto_ja_morto" + sufixo, botoesRecusa, { morte: { s: j.morreu_s, h: v.h_morte, matador: j.matador } });
     if (T < real.t0_s - 1e-9) return com("antes_do_instante", false, "veredicto_antes_do_instante",
       [{ codigo: "comecar_em", rotulo: formata(TX["botao_comecar_em"], { inicio: ini }) }, { codigo: "corrigir", rotulo: TX["botao_corrigir"] }], { instante_s: real.t0_s });
+    if (fim !== null && fim < real.t0_s - 1e-9) return com("fim_antes_do_instante", false, "veredicto_fim_antes_do_instante", [{ codigo: "corrigir", rotulo: TX["botao_corrigir"] }], { instante_s: real.t0_s, fim_s: fim });
     if (j.morreu_s !== null && T >= j.morreu_s) return com("comeca_depois_da_morte", false, "veredicto_comeca_depois_da_morte" + sufixo, botoesRecusa, { morte: { s: j.morreu_s, h: v.h_morte, matador: j.matador } });
     if (j.morreu_s !== null && fim !== null && fim > j.morreu_s) return com("termina_depois_da_morte", true, "veredicto_termina_depois_da_morte" + sufixo, [], { esmaece_em_s: j.morreu_s, fim_s: fim, morte: { s: j.morreu_s, h: v.h_morte, matador: j.matador } });
     return { acao: base.acao, lado: base.lado, num: base.num, nick: base.nick, codigo: "ok", aplica: true, texto: "", botoes: [] };
@@ -161,7 +178,7 @@
     var out = [];
     leitura.acoes.forEach(function (ac) {
       var pendente = leitura.perguntas.some(function (p) { return p.acao === ac.indice; }), q = ac.quando;
-      var T = q && (q.tipo === "relogio" || q.tipo === "inicio") ? q.t_decorrido : null;
+      var T = q && (q.tipo === "relogio" || q.tipo === "inicio") ? q.t_decorrido : (q && q.tipo === "agora" && ac.indice === 0 ? ctx.real.t0_s : null);      // "desde agora": o instante (o plano calcula os que vêm depois de outro comando)
       if (pendente || !ac.quem.length || T === null) { out.push({ acao: ac.indice, codigo: "pendente", aplica: false, texto: "", botoes: [] }); return; }
       ac.quem.forEach(function (s) {
         var j = s.resolvido ? jogadorDe(ctx, s.lado, s.num) : null;

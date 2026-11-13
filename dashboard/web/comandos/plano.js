@@ -27,6 +27,7 @@
     function ancoraReal(pid, t0) { return W.ancoraReal(pid, t0); }
     function novoId() { return W.novoId(); }
     function marcoQueContem(t) { return W.marcoQueContem(t); }
+    function agora() { return W.agora(); }
 
     // ---------- o texto que veio da prancheta ----------
   function cmdNivel(alvo) { return alvo.andar === "baixo" && ANDARES.length > 1 ? 1 : 0; }
@@ -163,6 +164,7 @@
         if (qd && (qd.tipo === "relogio" || qd.tipo === "inicio")) t0 = qd.t_decorrido;
         else if (qd && qd.tipo === "depois") t0 = ant ? (ant.pecas[pid] != null ? ant.pecas[pid] : ant.geral) : null;
         else if (qd && qd.tipo === "junto") t0 = ant ? ant.inicio : null;
+        else if (qd && qd.tipo === "agora") t0 = ant ? (ant.pecas[pid] != null ? ant.pecas[pid] : ant.geral) : agora();      // "segura X até H" sem início
         else if (ac.tipo === "esperar" && qd && qd.tipo === "espera_ate") t0 = ant ? (ant.pecas[pid] != null ? ant.pecas[pid] : ant.geral) : null;
         if (t0 == null) { problemas.push(cmdT(qd ? "erro_inicio" : "erro_sem_horario", { quem: nome })); return; }
         t0 = Math.round(t0 * 100) / 100;
@@ -189,7 +191,14 @@
         if (info) chegadas[ac.indice] = info;
         var destino = { t: chega, x: ac.alvo.x, y: ac.alvo.y, nivel: nivel, modo: modo, chave: cmdChaveDoAlvo(ac.alvo), area: cmdAreaDoAlvo(ac.alvo) };
         anda(ac, pid, t0, ini, destino);
-        anota(ac, pid, t0, chega);
+        var fimDaEspera = chega;
+        if (ac.tipo === "segurar" && ac.fim) {      // CR1d: "segura X até H": chega, fica em X até H; o comando seguinte parte de H
+          if (ac.fim.t_decorrido > chega + EPS) {
+            fimDaEspera = ac.fim.t_decorrido;
+            if (baseReal() === null) trilha[pid].pts.push({ t: fimDaEspera, x: destino.x, y: destino.y, nivel: destino.nivel, acao: ac.indice });      // fica onde chegou até H
+          } else avisos.push(cmdT("aviso_segura_curto", { quem: nome, alvo: cmdNomeDoAlvo(ac.alvo), h: cmdDoRelogio(chega), fim: cmdDoRelogio(ac.fim.t_decorrido) }));
+        }
+        anota(ac, pid, t0, fimDaEspera);
       });
     }
     // as cadeias: um comando com horário abre uma; os sem horário ficam presos ao comando anterior na escrita

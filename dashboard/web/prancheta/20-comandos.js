@@ -41,6 +41,7 @@
     if (q.tipo === "inicio") return cmdT("q_inicio", { n: q.segundos });
     if (q.tipo === "depois") return plano && plano.inicios[ac.indice] != null ? cmdT("q_depois_h", { h: cmdDoRelogio(plano.inicios[ac.indice]) }) : cmdT("q_depois");   // o horário que ficou valendo
     if (q.tipo === "junto") return cmdT("q_junto");
+    if (q.tipo === "agora") return plano && plano.inicios[ac.indice] != null ? cmdT("q_agora_h", { h: cmdDoRelogio(plano.inicios[ac.indice]) }) : cmdT("q_agora");      // "segura X até H" sem início
     return cmdT("q_sem");
   }
   /** Como o alvo se escreve na tela: o nome do Pedro (ponto, ou a área que ele apelidou, nos mapas conferidos) ou o nome da área que o botão "Lugares" desenha, com espaços ("Top of Mid"). */
@@ -49,8 +50,9 @@
   }
   function cmdLinha(ac, plano) {
     var v = { quem: cmdQuem(ac), alvo: ac.alvo ? cmdNomeDoAlvo(ac.alvo) : cmdT("onde_vazio"), quando: cmdQuando(ac, plano),
-              granada: ac.granada ? cmdT("granada_" + ac.granada) || ac.granada : "?", modo: ac.modo || "correndo", n: ac.espera_s };
+              granada: ac.granada ? cmdT("granada_" + ac.granada) || ac.granada : "?", modo: ac.modo || "correndo", n: ac.espera_s, fim: ac.fim ? cmdRelogio(ac.fim.segundos_restantes) : "" };
     var chave = { lancar: "linha_lancar", mover: "linha_mover", segurar: "linha_segurar", esperar: "linha_esperar" }[ac.tipo] || "linha_incompleta";
+    if (ac.tipo === "segurar" && ac.fim) chave = "linha_segurar_ate";      // CR1d
     var texto = cmdFmt(cfg.comandos.textos[chave], v);
     var chegada = plano && plano.chegadas[ac.indice];
     if (plano && plano.cortados[ac.indice]) texto += " · " + cmdT("cortado_por", { n: plano.cortados[ac.indice] });      // a chegada que ele dizia não vale mais
@@ -105,6 +107,7 @@
       Tempos: Tempos, t: cmdT, doRelogio: cmdDoRelogio, peca: cmdPeca, nomeDoAlvo: cmdNomeDoAlvo, ladoEscrito: cmdLadoEscrito,
       velocidade: velocidade, funcaoDe: funcaoDe, lugarExibido: lugarExibido, nivelDoZ: nivelDoZ, quadroNoTempo: quadroNoTempo, baseReal: baseReal, cortaReal: cortaReal,
       ancoraReal: ancoraReal, novoId: novoId, marcoQueContem: marcoQueContem,
+      agora: function () { return Math.max(0, S.t || 0); },      // "desde agora": o marcador do tempo da prancheta
       lugarDe: function (x, y, nivel) { return typeof lugarDe === "function" ? lugarDe(x, y, nivel) : null; },
       bibliotecaPronta: function () { return typeof bibliotecaPronta === "function" ? bibliotecaPronta() : true; }
     };
