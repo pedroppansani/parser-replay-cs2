@@ -37,6 +37,10 @@ Antes de mexer no `map_core.js`, no canvas, no Replay (`partida/`) ou na pranche
 - Reescrever (`partida/10-reescrever.js`): a peça editada tem uma TRILHA com horário (`[{f, x, y}]`, `f` = quadro de partida): segue o caminho real até partir, anda em linha
   reta na velocidade medida até cada parada, e uma parada que parte no meio da anterior a corta; arrastar é UMA parada em t0. A morte do real depois da partida só existe no
   real (D3). Quem edita sem arrastar usa `window.__reescrever.trilha.define`, que recusa peça morta, horário antes do instante e fora de ordem (58)
+- Comandos no Reescrever, sem tela (CR1c): o leitor entende nicks só quando o contexto os traz (sem diferenciar caixa e acento; parcial só com 4 letras ou mais, único e fora do
+  vocabulário do leitor e dos nomes de lugar; nick que também é lugar do mapa sempre pergunta); `comandos/real.js` monta o elenco do round e dá o veredito de cada comando:
+  começa depois da morte ou jogador já morto = recusado ([Escolher outro jogador], [Corrigir]); termina depois da morte = aplicado, a peça esmaece na hora da morte real;
+  antes do instante = o real não muda; "bomba ou round?" só depois do plant. Sem nick no contexto (a prancheta) a leitura é a de sempre (64)
 
 ## Calibração do Pedro (não resolva sozinho)
 

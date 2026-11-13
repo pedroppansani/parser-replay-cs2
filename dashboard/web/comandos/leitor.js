@@ -4,7 +4,11 @@
    os jogadores, as funções, o relógio e os TEXTOS das perguntas (frase da tela sai do Python, decisão 18).
    Regras: palavra desconhecida NUNCA é aproximada em silêncio (vira pergunta, com sugestões que a pessoa escolhe); campo que falta vira pergunta;
    nome repetido no mapa pergunta "qual?", a não ser que um qualificador ("default do A", "lixeira do CT") resolva sozinho; o tempo de corrida NÃO é
-   calculado aqui (C3). Estilo ES5, como o resto do JS do site. */
+   calculado aqui (C3). Estilo ES5, como o resto do JS do site.
+   Nicks (Reescrever, CR1c): só quando `ctx.jogadores[i].nick` existe. Aí o nick vale como sujeito (sem diferenciar caixa nem acento; o nick parcial só com 4 letras ou mais,
+   prefixo de uma palavra do nick, ÚNICO entre os jogadores e que não seja palavra do leitor nem nome de lugar; parcial ambíguo vira a pergunta "de qual time é?") e um nick que
+   também é nome de lugar do mapa (FalleN e Niko no Dust2) SEMPRE pergunta ("quem_ou_lugar", antes de ler o resto), a decisão volta em `ctx.decisoes[chave]`. Sem nick no
+   contexto (a prancheta) nada disto roda e a leitura é a de sempre. */
 (function (global) {
   "use strict";
 
@@ -134,6 +138,41 @@
     return r + " · " + parte.join(" · ");
   }
 
+  // ---------- os nicks (CR1c) ----------
+  var PALAVRAS_DO_LEITOR = (function () {
+    var o = {};
+    [LANCAR, MOVER, SEGURAR, ESPERAR, GRANADA_DE, MODO_DE, PREPS, PARADAS, UNIDADE_S, NUMEROS, LADOS].forEach(function (m) { Object.keys(m).forEach(function (k) { o[k] = true; }); });
+    "jogador player numero num ele ela depois ai entao seguida mesmo tempo inicio comeco round bombsite bomb site aos ate nao quando onde".split(" ").forEach(function (k) { o[k] = true; });
+    return o;
+  })();
+  /** Onde a frase fala de um jogador pelo nick: [{ i, n, chave, js, parcial, lugar }] (`js`: os jogadores que o trecho pode ser; `lugar`: o nick inteiro é também nome de lugar). */
+  function achaNicks(tk, jogadores, indice, funcoes) {
+    var porChave = {}, maxLen = 1, palavrasDeLugar = {}, lista = [];
+    jogadores.forEach(function (j) {
+      var c = j.nick ? chaveDe(j.nick) : "";
+      if (!c) return;
+      (porChave[c] = porChave[c] || []).push(j);
+      maxLen = Math.max(maxLen, c.split(" ").length);
+    });
+    Object.keys(indice.idx).forEach(function (k) { k.split(" ").forEach(function (w) { palavrasDeLugar[w] = true; }); });
+    Object.keys(funcoes).forEach(function (k) { k.split(" ").forEach(function (w) { palavrasDeLugar[w] = true; }); });
+    for (var i = 0; i < tk.length; i++) {
+      if (LADOS[tk[i].t] && tk[i + 1] && numero(tk[i + 1], tk[i])) { i++; continue; }      // "ct 3" é o jogador pela posição
+      var achou = false;
+      for (var L = Math.min(maxLen, tk.length - i); L >= 1 && !achou; L--) {
+        var chave = tk.slice(i, i + L).map(function (k) { return k.t; }).join(" ");
+        if (porChave[chave]) { lista.push({ i: i, n: L, chave: chave, js: porChave[chave], parcial: false, lugar: !!indice.idx[chave] }); i += L - 1; achou = true; }
+      }
+      if (achou) continue;
+      var t = tk[i].t;      // o parcial: 4 letras ou mais, prefixo de uma palavra do nick; fora do vocabulário do leitor e dos nomes de lugar
+      if (/^[a-z]{4,}$/.test(t) && !PALAVRAS_DO_LEITOR[t] && !palavrasDeLugar[t]) {
+        var dele = jogadores.filter(function (j) { return j.nick && chaveDe(j.nick).split(" ").some(function (w) { return /^[a-z]+$/.test(w) && w.indexOf(t) === 0; }); });
+        if (dele.length) lista.push({ i: i, n: 1, chave: t, js: dele, parcial: true, lugar: false });
+      }
+    }
+    return lista;
+  }
+
   // ---------- o leitor ----------
   function le(frase, ctx) {
     var TX = ctx.textos || {}, SEG = ctx.segundos_do_round || 115, tk = tokeniza(frase), indice = monta(ctx);
@@ -145,11 +184,32 @@
       entendido.push({ campo: campo, trecho: trechoDe(a, b), i: tk[a].i, f: tk[b].f });
     };
 
+    // 0) os nicks (CR1c): só com o nick no contexto. Nick que também é lugar do mapa SEMPRE pergunta, antes de ler o resto; a decisão volta em `ctx.decisoes`
+    var mencoes = null;
+    if (jogadores.some(function (j) { return j.nick; })) {
+      mencoes = { lista: achaNicks(tk, jogadores, indice, funcoes), porInicio: {} };
+      var duvida = mencoes.lista.filter(function (m) { return m.lugar && !(ctx.decisoes && ctx.decisoes[m.chave]); })[0];
+      if (duvida) {
+        var nomeDito = trechoDe(duvida.i, duvida.i + duvida.n - 1), eleJ = duvida.js[0];
+        return { ok: false, acoes: [], avisos: [], entendido: [], naoEntendido: [], perguntas: [{ codigo: "quem_ou_lugar", campo: "mencao", acao: null, chave: duvida.chave, trecho: nomeDito,
+          texto: formata(TX["pergunta_quem_ou_lugar"], { nome: nomeDito }),
+          opcoes: [{ rotulo: formata(TX["opcao_nick_jogador"], { nick: eleJ.nick, lado: eleJ.lado.toUpperCase(), num: eleJ.num }), valor: { decisao: "jogador", chave: duvida.chave } },
+                   { rotulo: formata(TX["opcao_nick_lugar"], { nome: nomeDito }), valor: { decisao: "lugar", chave: duvida.chave } }] }] };
+      }
+      mencoes.lista.forEach(function (m) {
+        if (m.lugar && ctx.decisoes[m.chave] === "lugar") return;      // a pessoa disse que é o lugar: fica para o passo dos nomes de lugar
+        for (var z = m.i; z < m.i + m.n; z++) tk[z].uso = "nick";
+        mencoes.porInicio[m.i] = m;
+      });
+    }
+
     // 1) os nomes de lugar (o mais longo, da esquerda para a direita), na frase toda
     var nomes = {};   // índice do 1º token -> { n, entradas }
     for (var i = 0; i < tk.length; i++) {
+      if (mencoes && tk[i].uso) continue;      // já é um nick
       if (LADOS[tk[i].t] && tk[i + 1] && numero(tk[i + 1], tk[i])) { i++; continue; }   // "ct 3" é o jogador, mesmo que exista um ponto chamado "CT"
       for (var L = Math.min(indice.maxLen, tk.length - i); L >= 1; L--) {
+        if (mencoes && tk.slice(i, i + L).some(function (k) { return k.uso; })) continue;
         var chave = tk.slice(i, i + L).map(function (k) { return k.t; }).join(" ");
         if (indice.idx[chave]) { nomes[i] = { n: L, entradas: unicos(indice.idx[chave]) }; for (var z = i; z < i + L; z++) tk[z].uso = "nome"; i += L - 1; break; }
       }
@@ -162,7 +222,7 @@
       atual = { a: 0, rel: proxRel || (atual.tk.length ? null : atual.rel), tk: [] };
     }
     for (i = 0; i < tk.length; i++) {
-      var w = tk[i].t, livre = tk[i].uso !== "nome";
+      var w = tk[i].t, livre = tk[i].uso !== "nome" && tk[i].uso !== "nick";
       if (livre && (w === "e" || w === "," || w === ";")) { fecha(null); continue; }
       if (livre && (w === "depois" || w === "ai" || w === "entao")) { fecha("depois"); continue; }
       if (livre && w === "em" && tk[i + 1] && tk[i + 1].t === "seguida" && tk[i + 1].uso !== "nome") { fecha("depois"); i++; continue; }
@@ -183,6 +243,11 @@
       var suj = [];
       for (var q = 0; q < o.tk.length; q++) {
         var k = o.tk[q], t = tk[k].t, prox = tk[o.tk[q + 1]], dig = function (x, ant) { return numero(x, ant || tk[k]); };
+        if (mencoes && tk[k].uso === "nick" && mencoes.porInicio[k]) {      // o nick é o sujeito (um jogador; vários, se o parcial é ambíguo)
+          var mc = mencoes.porInicio[k], so1 = mc.js.length === 1;
+          suj.push(so1 ? { lado: mc.js[0].lado, num: mc.js[0].num, ref: trechoDe(k, k + mc.n - 1) } : { lado: null, num: null, cands: mc.js, ref: trechoDe(k, k + mc.n - 1) });
+          marca(k, k + mc.n - 1, "quem"); q += mc.n - 1; continue;
+        }
         if (tk[k].uso !== null) continue;
         if (LADOS[t] && dig(prox) && tk[o.tk[q + 1]].uso === null) { suj.push({ lado: LADOS[t], num: dig(prox), ref: trechoDe(k, o.tk[q + 1]) }); marca(k, o.tk[q + 1], "quem"); q++; continue; }
         if ((t === "jogador" || t === "player" || t === "numero" || t === "num") && prox) {
@@ -206,9 +271,9 @@
       if (!suj.length && ultimosSujeitos) { suj = ultimosSujeitos.slice(); implicito = true; }
       ac.quem_herdado = implicito || (!!pronome.length && !suj.some(function (x) { return x.ref && !/^(ele|ela)$/.test(x.ref); }));
       ac.quem = suj.map(function (s) {
-        var cand = jogadores.filter(function (j) { return (s.lado ? j.lado === s.lado : true) && (s.num ? j.num === s.num : true) && (s.funcao ? j.funcao === s.funcao : true); });
+        var cand = s.cands || jogadores.filter(function (j) { return (s.lado ? j.lado === s.lado : true) && (s.num ? j.num === s.num : true) && (s.funcao ? j.funcao === s.funcao : true); });
         var r = { lado: s.lado || null, num: s.num || null, funcao: s.funcao || null, ref: s.ref || "" };
-        if (cand.length === 1) { r.lado = cand[0].lado; r.num = cand[0].num; r.funcao = cand[0].funcao || r.funcao; }
+        if (cand.length === 1) { r.lado = cand[0].lado; r.num = cand[0].num; r.funcao = cand[0].funcao || r.funcao; if (cand[0].nick) r.nick = cand[0].nick; }
         else r.resolvido = false;
         if (cand.length === 1) r.resolvido = true;
         r.candidatos = cand.map(function (j) { return { lado: j.lado, num: j.num }; });
