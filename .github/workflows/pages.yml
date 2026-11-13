@@ -55,7 +55,7 @@ jobs:
       # Os testes que dependem de data/interim/ (não versionado) são pulados
       # num clone limpo -- nunca quebram.
       - name: Testes
-        run: python -m pytest -q --durations=10
+        run: python -m pytest -q --durations=0
 
   # O site é gerado JUNTO com os testes (ci-optimizer, escolha do Pedro): o deploy espera os dois, então nada é
   # publicado sem a suíte verde.
