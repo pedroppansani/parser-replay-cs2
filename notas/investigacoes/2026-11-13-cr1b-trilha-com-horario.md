@@ -1,0 +1,26 @@
+# CR1b: a trilha com horário no Reescrever (sem mudança visível)
+
+Segunda fase da CR1 (proposta em `2026-11-13-comandos-no-reescrever-cr0.md`; a primeira, a extração do plano, em `2026-11-13-cr1a-extrair-o-plano-dos-comandos.md`). Mexe no coração do R2 e do R3 (`dashboard/web/partida/10-reescrever.js`), então esta nota diz o que mudou, o que não pode mudar e a prova.
+
+## O modelo
+Antes: `edicoes[nome] = {x, y}`, um ponto; a peça partia do ponto do real no instante do "Reescrever daqui" e andava em linha reta até ele, sem horário próprio.
+Agora: `trilhas[nome] = [{f, x, y}]`, as **paradas** da peça (`f` = o quadro, em quadros gravados a 4 por segundo, em que ela parte; `f` >= t0).
+- Até o quadro em que parte, a peça **segue o caminho real** (`realEm`: a mesma conta com que o replay desenha, spline entre quadros).
+- Dali anda em **linha reta, na velocidade medida** da arma na mão no instante (a mesma tabela de antes, decisão 43) até cada parada e fica na última.
+- Uma parada que parte **no meio da anterior a corta**: o caminho novo segue de onde a peça estava (como a prancheta toca).
+- **Arrastar é o caso de UMA parada em t0**: `poeParada` = `poeTrilha(nome, [{f: t0, x, y}])`; as contas (`naReta`, `recalcula`) são as mesmas expressões de antes.
+- `edicoes[nome]` continua existindo como a **última parada** (é o que se arrasta, o que o banco mostra parado e o que a seleção usa), então o resto do código e os testes que leem `x`/`y` não mudam.
+- **O que depende de "depois da partida"** passou de t0 para o quadro de partida da peça: a morte do real que ela não sofre (`semAMorte`), a granada que fica "só no real" (`soNoReal`) e os itens de "O que mudou" (morte, plant, desarme, flash, granada). Para quem foi arrastado a partida é t0: nada muda.
+- **`editada`** passou a medir o comprimento dos trechos (>= 8 u, do ponto do real em que a peça parte), em vez de comparar a parada com o ponto do instante. Para o arrastar dá o mesmo número.
+- **Para quem edita sem arrastar** (os comandos, CR1c): `window.__reescrever.trilha.define(nome, paradas)`, `.de(nome)` e `.apaga(nome)`. `define` **recusa** o que o modelo não sustenta: sem parada, `f` antes do instante ou depois do fim do round, `f`/`x`/`y` que não são números, paradas fora de ordem, peça morta no quadro de partida (D3: quem já morreu só existe no real), movimento de menos de 8 u, e qualquer chamada com a sua versão tocando. Dois achados dos próprios testes: `isFinite(null)` é verdadeiro (um `x` nulo passava; agora exige número) e a primeira definição de "editada" media contra o ponto do instante, não contra o ponto em que a peça parte.
+- **Desenho:** o losango marca onde a sua versão começa (onde a peça deixa o real; em t0 para quem foi arrastado), uma reta por trecho e o rótulo "chega H" na última parada.
+- **"O que mudou":** um item por trecho (o texto de antes, "{nome} sai de {lugar} às {h} e vai até o ponto marcado: chega às {h}, {n} s depois"). Para o arrastar é um item só, o mesmo de antes.
+
+## A prova de que nada muda para quem usa
+1. **Testes do R2 ao R6b sem mudança:** `test_reescrever_modo`, `_r1`, `_r3`, `_r4`, `_r5`, `_r6a`, `_r6b` e `test_sugeridos_do_reescrever`: **81 passaram**, nenhum arquivo de teste alterado. Mais os **7 novos** em `tests/test_reescrever_trilha.py` (arrastar é uma parada em t0 com a conta de antes; segue o real até partir e anda na velocidade medida; a segunda parada corta a primeira onde a peça está; o que o real fez antes de a peça partir não é diferença; a morte do real depois da partida e a peça esmaecida; `define` recusa o que o modelo não sustenta e não deixa rastro; sair e entrar não guardam a trilha): **88 passaram** juntos.
+2. **Capturas do Reescrever, antes (`main`) e depois (branch), no round 23 da match_43** (`scripts/design/capturas_reescrever_cr1b.py`), nos 3 tamanhos (375, 1366x657, 1440x900), com o relógio simulado do Playwright parado num instante fixo (duas rodadas no mesmo código dão 18 de 18 idênticas, então a comparação vale): entrou, arrastou KSCERATO, tocou 2 s com o fantasma do real, sem fantasma (no celular, o alternador na vista Real) e "O que mudou" à vista (tema escuro), mais o passo "tocou" no tema claro: **18 capturas, 18 iguais byte a byte** entre antes e depois, e o `window.__reescrever()` de cada passo (sem os campos novos `trilha`, `partida`, `trechos`) também idêntico. As 18 do depois foram abertas.
+3. **O tempo de um quadro** (`scripts/design/mede_quadro_reescrever.py`: 5 peças arrastadas, a sua versão tocando por 4 s, o tempo de cada chamada do laço de animação, 5 rodadas alternando antes e depois, cerca de 2.885 quadros por lado): CPU normal, mediana **0,50 ms nos dois** (média 0,56 nos dois, p95 0,70, p99 0,90); com a CPU 4 vezes mais lenta, mediana **2,50 ms nos dois** (média 2,58 nos dois, p95 3,30 contra 3,40, p99 4,30 contra 4,40). Sem diferença.
+4. `Prancheta`, replay e Assistir não mudam: só `10-reescrever.js` mudou (e a documentação).
+
+## O que fica para a CR1c e a CR2
+Nenhuma tela cria trilha com horário ainda; o leitor com nicks e as regras do real (CR1c) e o painel Comandos com o botão "Desfazer" (CR2) vão usar `trilha.define`. O "Desfazer" precisa copiar `edicoes`, `trilhas` e as trocas de granada (três objetos pequenos).
