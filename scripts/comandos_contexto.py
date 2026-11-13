@@ -29,6 +29,10 @@ GRANADA_REAL = {"raio_queda": 150.0, "raio_saida": 50.0, "poucos": 5, "muitos": 
 TEXTOS = {
     "pergunta_quem": 'Quem faz "{trecho}"?',
     "pergunta_quem_lado": 'De qual time é "{ref}"?',
+    # o nick que também é lugar do mapa (CR1c): só aparece quando o contexto traz o nick dos jogadores (o Reescrever); o leitor é o mesmo, então os textos moram aqui
+    "pergunta_quem_ou_lugar": '"{nome}" é o jogador ou o lugar do mapa?',
+    "opcao_nick_jogador": "{nick}, o jogador ({lado} {num})",
+    "opcao_nick_lugar": "{nome}, o lugar do mapa",
     "pergunta_quem_funcao": 'Não achei "{ref}" na tática. Quem é?',
     "pergunta_granada": 'Qual granada em "{trecho}"?',
     "pergunta_acao": 'Não entendi "{trecho}". O que o jogador faz?',
@@ -151,6 +155,39 @@ def _areas(mapa: str, pontos: list[dict]) -> list[dict]:
 
 def jogadores_padrao() -> list[dict]:
     return [{"lado": lado, "num": n} for lado in ("tr", "ct") for n in range(1, 6)]
+
+
+# Os textos que SÓ o Reescrever usa (CR1c): o relógio da bomba, o elenco do round real e os vereditos. A prancheta não os recebe (`contexto` não os leva). (Os três textos do nick que
+# também é lugar do mapa ficam em TEXTOS: o leitor, que é o mesmo nas duas telas, os usa.)
+TEXTOS_DO_REAL = {
+    "opcao_jogador_do_real": "{nick} · {lado} {num}",
+    "opcao_jogador_morto": "{nick} · {lado} {num}, {estado}",
+    "estado_morto": "morto às {h}, antes de {inicio}",
+    "pergunta_quando_relogio": "{h} é o relógio da bomba ou o do round?",
+    "opcao_relogio_bomba": "Relógio da bomba: {h}, {n} s depois do plant ({s} s do início)",
+    "opcao_relogio_round": "Relógio do round: {h} ({s} s do início)",
+    "opcao_no_instante": "No instante ({h})",
+    # os vereditos (o que o round real diz do comando): recusado ou aplicado
+    "veredicto_comeca_depois_da_morte": "No real, {nick} morreu para {matador} às {h_morte}. O comando começa às {h_cmd}, depois disso, e a peça dele só existe no real: o site não refaz esse duelo.",
+    "veredicto_comeca_depois_da_morte_sem_matador": "No real, {nick} morreu às {h_morte}. O comando começa às {h_cmd}, depois disso, e a peça dele só existe no real: o site não refaz essa morte.",
+    "veredicto_termina_depois_da_morte": "No real, {nick} morreu para {matador} às {h_morte}. O comando termina depois disso: na sua versão a peça anda até a hora da morte e esmaece ali; o site não refaz esse duelo.",
+    "veredicto_termina_depois_da_morte_sem_matador": "No real, {nick} morreu às {h_morte}. O comando termina depois disso: na sua versão a peça anda até a hora da morte e esmaece ali; o site não refaz essa morte.",
+    "veredicto_ja_morto": "No real, {nick} morreu para {matador} às {h_morte}, antes de {inicio}, onde a sua versão começa: a peça dele só existe no real e o site não refaz esse duelo.",
+    "veredicto_ja_morto_sem_matador": "No real, {nick} morreu às {h_morte}, antes de {inicio}, onde a sua versão começa: a peça dele só existe no real e o site não refaz essa morte.",
+    "veredicto_antes_do_instante": "{h_cmd} é antes de {inicio}, onde a sua versão começa. Antes disso o real não muda.",
+    "botao_outro_jogador": "Escolher outro jogador",
+    "botao_corrigir": "Corrigir",
+    "botao_comecar_em": "Começar em {inicio}",
+}
+
+
+def contexto_do_real(mapa: str, so_conferidos: bool = True) -> dict:
+    """O contexto do leitor no Reescrever: o do mapa (os pontos conferidos do Pedro, as áreas da demo) sem os jogadores (vêm do round: `comandos/real.js` monta o elenco) e
+    com os textos do real somados."""
+    c = contexto(mapa, so_conferidos=so_conferidos)
+    c.pop("jogadores")
+    c["textos"] = dict(c["textos"], **TEXTOS_DO_REAL)
+    return c
 
 
 def contexto(mapa: str, jogadores: list[dict] | None = None, so_conferidos: bool = False) -> dict:
