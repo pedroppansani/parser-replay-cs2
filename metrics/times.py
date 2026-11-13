@@ -55,3 +55,22 @@ def nome_do_lado_faceit(nicks: list[str]) -> str:
     if not nicks:
         return ""
     return "Time de " + min(nicks, key=lambda n: (n.casefold(), n))
+
+
+# Nomes que a demo grava quando não há nome de verdade do time (decisão 65): vale a reserva da decisão 28.
+_GENERICOS = {"", "team", "ct", "t", "terrorist", "terrorists", "counter-terrorist", "counter-terrorists"}
+
+
+def nick_do_nome_da_demo(nome: str | None) -> str:
+    """O nick que a demo da FACEIT grava como nome do time: "team_t1ltedbot" -> "t1ltedbot". "" quando o nome falta, é vazio ou genérico."""
+    n = (nome or "").strip()
+    if n.casefold().startswith("team_"):
+        n = n[5:].strip()
+    return "" if n.casefold() in _GENERICOS else n
+
+
+def nome_do_time_faceit(nome_da_demo: str | None, nicks: list[str]) -> str:
+    """"Time de <nick>" de um lado da FACEIT (decisão 65, que substitui a 28 só aqui): o nick que a demo grava no nome do time
+    (`team_<nick>`, sem o prefixo). Sem nome, com nome vazio ou genérico, vale a reserva da decisão 28 (`nome_do_lado_faceit`)."""
+    nick = nick_do_nome_da_demo(nome_da_demo)
+    return "Time de " + nick if nick else nome_do_lado_faceit(nicks)

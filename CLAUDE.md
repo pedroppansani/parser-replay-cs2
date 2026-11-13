@@ -72,6 +72,8 @@ Uma regra por linha; o número entre parênteses é a nota em `notas/decisoes/`.
 - Agregado por time usa `metrics/times.nome_canonico` (`data/reference/times_conhecidos.json`);
   nome fora da tabela é o próprio canônico, nada é adivinhado, e nenhum módulo normaliza nome de
   time por conta própria (38)
+- O time da FACEIT é "Time de <nick que a demo grava em `team_<nick>`>" (`metrics/times.nome_do_time_faceit`);
+  sem nome, vazio ou genérico, vale o primeiro nick em ordem alfabética (28, 65)
 - IGL nunca é atribuído automaticamente: vem de `roles_manual.json`, preenchido à mão; o código
   nunca escreve nele e `pesquisa/igl_candidatos.py` só imprime (7g)
 - Dinheiro só por `metrics.formatting.format_money` (`3.750$`), nunca f-string com `$` (8e)

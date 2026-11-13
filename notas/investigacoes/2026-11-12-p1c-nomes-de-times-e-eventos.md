@@ -1,6 +1,6 @@
 # P1c: nomes de time e de evento (investigação; nenhum nome mudou)
 
-Só leitura. Dados: `data/manifest.json` (nome que a demo gravou, jogadores, mapa, data, caminho da demo), `data/reference/eventos.json`, `scripts/build_web_page.py`. Proposta da tabela: `2026-11-12-p1c-nomes-proposta.csv` (nesta pasta, fora de `data/reference/` para nada ler dela ainda).
+Só leitura. Dados: `data/manifest.json` (nome que a demo gravou, jogadores, mapa, data, caminho da demo), `data/reference/eventos.json`, `scripts/build_web_page.py`. A tabela `nomes.csv` proposta aqui foi **descartada pelo Pedro** (o nome do time vem da demo; os eventos ficam no `eventos.json`): decisão 65.
 
 ## O que muda em relação ao pedido
 - **As 9 partidas sem time são todas da FACEIT** (match_01 a match_09, todas de 15/09/2026, a data do arquivo .dem, não conferida). São partidas de fila (jogadores que se repetem: donk666 está nas 9, lilpeepfan- em 4), **não há time de verdade**: a demo grava um nome gerado, `team_<nick>`, onde `<nick>` é um jogador do próprio lado em todos os 18 casos. Então a coluna "nome certo" fica "?" para todos; não existe nome real a completar, a menos que o Pedro saiba de algum.
