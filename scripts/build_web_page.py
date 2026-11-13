@@ -38,19 +38,19 @@ def _nome_do_mapa(base: Path, match_id: str) -> str:
 
 
 def _nome_do_lado(linha: dict, lado: str, nicks: list[str] | None = None) -> str:
-    """O nome de um lado: o canônico do time (profissionais) ou "Time de <nick>" (FACEIT)."""
-    from metrics.times import nome_canonico, nome_do_lado_faceit
+    """O nome de um lado: o canônico do time (profissionais) ou "Time de <nick que a demo grava>" (FACEIT, decisão 65)."""
+    from metrics.times import nome_canonico, nome_do_time_faceit
     info = (linha.get("times") or {}).get(lado) or {}
     if linha.get("origem") == "profissional" and info.get("nome"):
         return nome_canonico(info["nome"])
-    return nome_do_lado_faceit(nicks or info.get("jogadores") or []) or f"Lado {lado}"
+    return nome_do_time_faceit(info.get("nome"), nicks or info.get("jogadores") or []) or f"Lado {lado}"
 
 
 def cabecalho_da_partida(match_id: str, base: Path | None = None) -> dict | None:
     """Tudo que o placar do cabeçalho mostra, pronto: nome, pontos, quem venceu e de que lado começou.
 
     O nome do lado é o canônico do time nas partidas profissionais e "Time de <nick>" na FACEIT
-    (metrics.times.nome_do_lado_faceit), com os nicks DA PARTIDA. Sem placar no payload, devolve None
+    (metrics.times.nome_do_time_faceit: o nick do nome que a demo grava; a reserva usa os nicks DA PARTIDA). Sem placar no payload, devolve None
     e a página cai no título só com o mapa. Os rótulos "começou CT/TR" e "venceu" são do JS.
     """
     from leitura.narrativa import linha_do_decisor
