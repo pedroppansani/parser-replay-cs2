@@ -14,7 +14,9 @@
     var playBtn = document.getElementById("play"), scrubEl = document.getElementById("scrub"), speedBtn = document.getElementById("speed");
     var ALVO = 24;            // px de tela: o raio de pegar a peça (alvo de 48 px)
     var MOVIDA = 8;           // unidades de jogo: menos que isso a peça não conta como editada
-    var edicoes = {};         // nome -> {x, y} em unidades de jogo
+    var edicoes = {};         // nome -> {x, y} em unidades de jogo: a ÚLTIMA parada da trilha (é o que se arrasta e o que o banco mostra parado)
+    var trilhas = {};         // nome -> [{f, x, y}]: as paradas da peça editada; `f` = o quadro em que ela parte (>= t0). Arrastar é UMA parada em t0 (CR1b)
+    var segs = {};            // nome -> [{f0, ax, ay, bx, by, d, dur, f1}]: o que as paradas viram (a conta da trilha, refeita quando ela muda)
     var origem = {};          // nome -> {x, y} no instante (o real)
     var pecas = [];           // {p, vivo, morreuEm}
     var arrasto = null;
@@ -46,16 +48,48 @@
       return b;
     }
 
-    // A peça editada anda do ponto do real em t0 até o ponto novo na velocidade medida da função dela (a mesma conta da prancheta, decisão 43) e
-    // fica lá: não há dado depois disso. Antes de tocar, mostra o ponto novo (é o que se arrasta).
+    // A peça editada tem uma TRILHA (CR1b): até o quadro em que ela parte ela segue o caminho REAL (o dado existe); dali anda em linha reta, na velocidade medida da
+    // função dela (a mesma conta da prancheta, decisão 43), até cada parada e fica na última (não há dado depois). Uma parada que parte no meio da anterior CORTA a
+    // anterior: o caminho novo segue de onde a peça estava (como a prancheta toca). Arrastar uma peça é o caso de UMA parada, no instante (`f` = t0): a conta é a de
+    // antes. Antes de tocar, mostra a última parada (é o que se arrasta).
     function velocidadeDe(nome) {
       var it = pecas.filter(function (q) { return q.p.name === nome; })[0], w = it ? it.p.w[t0] : -1;
       return TX.velocidade[w >= 0 && /awp/i.test(cur.weapons[w]) ? "AWP" : "rifle"];
     }
+    function realEm(nome, f) {      // onde o real está no quadro f (fracionário): a mesma conta com que o replay desenha
+      var p = pecas.filter(function (q) { return q.p.name === nome; })[0].p, i0 = Math.floor(f), i1 = Math.min(cur.frames - 1, i0 + 1), tt = f - i0;
+      return tt === 0 || !p.alive[i0] || !p.alive[i1] ? [p.x[i0], p.y[i0]] : smoothPos(p, i0, i1, tt);
+    }
+    function naReta(sg, quadro) {      // a peça no trecho `sg` no quadro dado (>= a partida dele): na reta, e parada na chegada
+      var el = Math.max(0, (quadro - sg.f0) / R.sample_hz), f = sg.dur > 0 ? Math.min(1, el / sg.dur) : 1;
+      return { x: sg.ax + (sg.bx - sg.ax) * f, y: sg.ay + (sg.by - sg.ay) * f, f: f };
+    }
+    function recalcula(nome) {
+      var v = velocidadeDe(nome), lista = [];
+      trilhas[nome].forEach(function (pa, k) {
+        var a = k === 0 ? realEm(nome, pa.f) : naReta(lista[k - 1], pa.f), ax = k === 0 ? a[0] : a.x, ay = k === 0 ? a[1] : a.y;
+        var d = Math.hypot(pa.x - ax, pa.y - ay), dur = d / v;
+        lista.push({ f0: pa.f, ax: ax, ay: ay, bx: pa.x, by: pa.y, d: d, dur: dur, f1: pa.f + dur * R.sample_hz });
+      });
+      segs[nome] = lista;
+    }
+    function poeTrilha(nome, paradas) {      // [{f, x, y}] com f >= t0, em ordem
+      trilhas[nome] = paradas.map(function (pa) { return { f: pa.f, x: pa.x, y: pa.y }; });
+      var u = paradas[paradas.length - 1];
+      edicoes[nome] = { x: u.x, y: u.y };
+      recalcula(nome);
+    }
+    function poeParada(nome, g) { poeTrilha(nome, [{ f: t0, x: g.x, y: g.y }]); }      // o arrastar: uma parada, no instante
+    function apagaEdicao(nome) { delete edicoes[nome]; delete trilhas[nome]; delete segs[nome]; }
+    function limpaEdicoes() { edicoes = {}; trilhas = {}; segs = {}; }
+    function partida(nome) { var sg = segs[nome]; return sg && sg.length ? sg[0].f0 : Infinity; }       // o quadro em que a peça deixa o real
+    // {x, y, dur, d, f, k, antes}: o trecho que vale no quadro (o último, se já passou de todos); `antes` = ainda no real (a peça ainda não partiu)
     function trecho(nome, quadro) {
-      var o = origem[nome], e = edicoes[nome], v = velocidadeDe(nome), d = Math.hypot(e.x - o.x, e.y - o.y), dur = d / v;
-      var el = Math.max(0, (quadro - t0) / R.sample_hz), f = dur > 0 ? Math.min(1, el / dur) : 1;
-      return { x: o.x + (e.x - o.x) * f, y: o.y + (e.y - o.y) * f, dur: dur, d: d, f: f };
+      var sg = segs[nome], k = 0;
+      for (var i = 0; i < sg.length; i++) if (quadro >= sg[i].f0) k = i;
+      if (quadro < sg[0].f0) { var r = realEm(nome, quadro); return { x: r[0], y: r[1], dur: sg[0].dur, d: sg[0].d, f: 0, k: 0, antes: true }; }
+      var q = naReta(sg[k], quadro);
+      return { x: q.x, y: q.y, dur: sg[k].dur, d: sg[k].d, f: q.f, k: k, antes: false };
     }
     reescrever.posicaoEditada = function (nome) {
       var e = edicoes[nome];
@@ -63,15 +97,36 @@
       if (!reescrever.sua) return [e.x, e.y];
       if (!editada(nome)) return null;
       var q = trecho(nome, pos);
-      return [q.x, q.y];
+      return q.antes ? null : [q.x, q.y];      // antes de partir a peça é o real (o replay a desenha como sempre)
     };
     reescrever.yawEditada = function (nome) {
       if (vendoReal() || !reescrever.sua || !editada(nome)) return null;
-      var o = origem[nome], e = edicoes[nome];
-      return Math.atan2(e.y - o.y, e.x - o.x) * 180 / Math.PI;
+      var q = trecho(nome, pos);
+      if (q.antes) return null;
+      var sg = segs[nome][q.k];
+      return Math.atan2(sg.by - sg.ay, sg.bx - sg.ax) * 180 / Math.PI;
     };
-    // quem foi editado não morre na sua versão: a morte do real só aparece no fantasma
-    reescrever.semAMorte = function (e) { return !vendoReal() && e.type === "kill" && e.f > t0 && editada(e.victim); };
+    // quem foi editado não morre na sua versão: a morte do real só aparece no fantasma (a de antes de ele partir fica: até lá ele é o real)
+    reescrever.semAMorte = function (e) { return !vendoReal() && e.type === "kill" && e.f > partida(e.victim) && editada(e.victim); };
+    // a trilha para quem edita sem arrastar (os comandos, CR1c): `define` recusa o que o modelo não sustenta (peça morta, antes do instante, fora de ordem)
+    reescrever.trilha = {
+      define: function (nome, paradas) {
+        var it = pecas.filter(function (q) { return q.p.name === nome; })[0], ant = -Infinity;
+        if (!reescrever.ativo || reescrever.sua || !it || !it.vivo || !paradas || !paradas.length) return false;
+        for (var i = 0; i < paradas.length; i++) {
+          var pa = paradas[i];
+          if (!pa || typeof pa.f !== "number" || typeof pa.x !== "number" || typeof pa.y !== "number" || !isFinite(pa.f) || !isFinite(pa.x) || !isFinite(pa.y) || pa.f < t0 || pa.f > cur.frames - 1 || pa.f <= ant) return false;
+          ant = pa.f;
+        }
+        if (!it.p.alive[Math.floor(paradas[0].f)]) return false;     // quem já morreu no real só existe no real (D3)
+        poeTrilha(nome, paradas);
+        if (!editada(nome)) { apagaEdicao(nome); return false; }
+        atualizaBanco(); draw();
+        return true;
+      },
+      de: function (nome) { return trilhas[nome] ? trilhas[nome].map(function (pa) { return { f: pa.f, x: pa.x, y: pa.y }; }) : []; },
+      apaga: function (nome) { if (trilhas[nome]) { apagaEdicao(nome); atualizaBanco(); draw(); } }
+    };
     // granada lançada DEPOIS do instante por quem foi editado dependia da posição dele no real: fica só no fantasma (design §9)
     // a granada que gerou o item (a própria granada, ou o arremesso que fez a zona/estouro): a ligação gravada pelo export, ou o tipo e o ponto final
     function geradoraDe(it) {
@@ -99,7 +154,7 @@
     reescrever.geradoraDe = geradoraDe;
     reescrever.soNoReal = function (it) {
       if (it._virtual || vendoReal()) return false;
-      if (it.by && editada(it.by) && lancouEm(it) > t0) return true;
+      if (it.by && editada(it.by) && lancouEm(it) > partida(it.by)) return true;
       return !!(reescrever.granada && reescrever.granada.trocada(geradoraDe(it)));      // a granada trocada some da sua versão (fica só no fantasma)
     };
     reescrever.podeTocar = function () { return algumaMudanca(); };
@@ -122,21 +177,24 @@
       c.save();
       c.lineCap = "round"; c.lineJoin = "round";
       Object.keys(edicoes).forEach(function (nome) {
-        var o = origem[nome], e = edicoes[nome];
+        var o = origem[nome];
         if (!o || !editada(nome)) return;
-        var ax = mx(o.x), ay = my(o.y), bx = mx(e.x), by = my(e.y);
-        [[contorno, 5.2], [tinta, 2.4]].forEach(function (par) {
-          c.strokeStyle = par[0]; c.lineWidth = par[1];
-          c.beginPath(); c.moveTo(ax, ay); c.lineTo(bx, by); c.stroke();
+        segs[nome].forEach(function (sg, k) {
+          var ax = mx(sg.ax), ay = my(sg.ay), bx = mx(sg.bx), by = my(sg.by);
+          [[contorno, 5.2], [tinta, 2.4]].forEach(function (par) {
+            c.strokeStyle = par[0]; c.lineWidth = par[1];
+            c.beginPath(); c.moveTo(ax, ay); c.lineTo(bx, by); c.stroke();
+          });
+          if (k > 0) return;      // o losango marca onde a sua versão começa: onde a peça deixa o real (em t0, para quem foi arrastado)
+          c.beginPath(); c.moveTo(ax, ay - 6.5); c.lineTo(ax + 6.5, ay); c.lineTo(ax, ay + 6.5); c.lineTo(ax - 6.5, ay); c.closePath();
+          c.fillStyle = tinta; c.strokeStyle = contorno; c.lineWidth = 2; c.fill(); c.stroke();
         });
-        c.beginPath(); c.moveTo(ax, ay - 6.5); c.lineTo(ax + 6.5, ay); c.lineTo(ax, ay + 6.5); c.lineTo(ax - 6.5, ay); c.closePath();
-        c.fillStyle = tinta; c.strokeStyle = contorno; c.lineWidth = 2; c.fill(); c.stroke();
       });
       c.restore();
       Object.keys(edicoes).forEach(function (nome) {
         if (!editada(nome)) return;
-        var e = edicoes[nome], q = trecho(nome, pos);
-        if ((!reescrever.sua || q.f < 1) && t0 + q.dur * R.sample_hz <= cur.frames - 1) MapCore.rotulo(formata(TX.chega, { relogio: relogioNo(t0 + q.dur * R.sample_hz) }), mx(e.x), my(e.y),
+        var sg = segs[nome], u = sg[sg.length - 1], q = naReta(u, pos);
+        if ((!reescrever.sua || q.f < 1) && u.f1 <= cur.frames - 1) MapCore.rotulo(formata(TX.chega, { relogio: relogioNo(u.f1) }), mx(u.bx), my(u.by),
           { cor: CM.tinta, prioridade: 4, dy: 18 });
       });
       if (reescrever.sua && reescrever.fantasma && MODO_PALCO.matches) desenhaFantasmas(c);      // no celular o real tem a sua vez no alternador, não vem por cima
@@ -208,9 +266,9 @@
       c.restore();
     }
 
-    function editada(nome) {
-      var o = origem[nome], e = edicoes[nome];
-      return !!(o && e && Math.hypot(e.x - o.x, e.y - o.y) >= MOVIDA);
+    function editada(nome) {      // algum trecho anda MOVIDA unidades ou mais (do ponto do real em que a peça parte, ou de onde estava): menos que isso não é edição
+      var sg = segs[nome];
+      return !!(origem[nome] && sg && sg.some(function (t) { return t.d >= MOVIDA; }));
     }
     function algumaEditada() { return Object.keys(edicoes).some(editada); }
     function algumaMudanca() { return algumaEditada() || !!(reescrever.granada && reescrever.granada.temTroca()); }   // peça movida ou granada trocada
@@ -271,7 +329,7 @@
       if (vendoReal()) defineVer("sua");
       if (reescrever.sel !== nome) { seleciona(nome, true); b.focus({ preventScroll: true }); }
       var base = edicoes[nome] || origem[nome], passo = e.shiftKey ? PASSO_GRANDE : PASSO;
-      edicoes[nome] = limitaNaArea(nome, { x: base.x + d[0] * passo, y: base.y + d[1] * passo });
+      poeParada(nome, limitaNaArea(nome, { x: base.x + d[0] * passo, y: base.y + d[1] * passo }));
       moveuPorTeclado = true;
       atualizaBanco(true); draw();
     });
@@ -279,7 +337,7 @@
       if (!moveuPorTeclado || !SETAS[e.key]) return;
       moveuPorTeclado = false;
       var nome = reescrever.sel;
-      if (nome && !editada(nome)) delete edicoes[nome];      // de volta ao ponto do real: não conta como movida
+      if (nome && !editada(nome)) apagaEdicao(nome);      // de volta ao ponto do real: não conta como movida
       atualizaBanco(); draw();
     });
     mapwrap.addEventListener("pointermove", function (e) {
@@ -288,14 +346,14 @@
       var q = doPonteiro(e);
       var cx = Math.min(cv.width, Math.max(0, q.cx)), cy = Math.min(cv.height, Math.max(0, q.cy));   // a peça fica dentro do mapa
       var g = limitaNaArea(arrasto.nome, aGameUnits(cx, cy));
-      edicoes[arrasto.nome] = { x: g.x, y: g.y };
+      poeParada(arrasto.nome, g);
       atualizaBanco(true);     // durante o arrasto o texto de "O que mudou" não é refeito (leitor de tela)
       draw();
     }, true);
     function soltou(e) {
       if (!arrasto || e.pointerId !== arrasto.id) return;
       e.stopPropagation();
-      if (!editada(arrasto.nome)) delete edicoes[arrasto.nome];   // movida por menos de 8 u não conta: volta ao real já ao soltar
+      if (!editada(arrasto.nome)) apagaEdicao(arrasto.nome);   // movida por menos de 8 u não conta: volta ao real já ao soltar
       arrasto = null;
       atualizaBanco();
       draw();
@@ -371,27 +429,30 @@
       pecas.forEach(function (it) {
         var nome = it.p.name;
         if (!it.vivo || !editada(nome)) return;
-        var q = trecho(nome, t0 + 1e9), lugar = it.p.p ? cur.places[it.p.p[t0]] : "";
-        var chega = t0 + q.dur * R.sample_hz, base = { nome: nome, de: lugar, relogio: relogioNo(t0), chega: relogioNo(chega),
-          seg: (Math.round(q.dur * 10) / 10).toString().replace(".", ",") };
-        itens.push(formata(chega > cur.frames - 1 ? TX.mudou_nao_chega : (lugar ? TX.mudou_move : TX.mudou_move_sem_lugar), base));
+        segs[nome].forEach(function (sg, k) {
+          if (sg.d < MOVIDA) return;      // uma parada no mesmo lugar não é um movimento
+          var lugar = k === 0 && it.p.p ? cur.places[it.p.p[Math.floor(sg.f0)]] : "", chega = sg.f1;
+          var base = { nome: nome, de: lugar, relogio: relogioNo(sg.f0), chega: relogioNo(chega), seg: (Math.round(sg.dur * 10) / 10).toString().replace(".", ",") };
+          itens.push(formata(chega > cur.frames - 1 ? TX.mudou_nao_chega : (lugar ? TX.mudou_move : TX.mudou_move_sem_lugar), base));
+        });
+        var ini = partida(nome);      // até partir a peça é o real: o que aconteceu antes dela partir é igual nos dois
         cur.events.forEach(function (e) {
-          if (e.type !== "kill" || e.f <= t0) return;
+          if (e.type !== "kill" || e.f <= ini) return;
           if (e.victim === nome) itens.push(formata(e.attacker ? TX.mudou_morreu : TX.mudou_morreu_sem_matador, { nome: nome, matador: e.attacker, relogio: relogioNo(e.f) }));
           else if (e.attacker === nome && !editada(e.victim)) itens.push(formata(TX.mudou_d3, { nome: nome, vitima: e.victim, relogio: relogioNo(e.f) }));
         });
         cur.events.forEach(function (e) {
-          if (e.player !== nome || e.f <= t0) return;
+          if (e.player !== nome || e.f <= ini) return;
           if (e.type === "plant") itens.push(formata(TX.mudou_plantou, { nome: nome, relogio: relogioNo(e.f) }));
           if (e.type === "defuse") itens.push(formata(TX.mudou_desarmou, { nome: nome, relogio: relogioNo(e.f) }));
         });
         (cur.pops || []).forEach(function (q) {
-          if (q.k !== "flash" || q.by !== nome || q.f <= t0) return;
+          if (q.k !== "flash" || q.by !== nome || q.f <= ini) return;
           var n = (q.hit || []).filter(function (v) { return v.e && v.s >= R.effective_blind_s; }).length;
           if (n) itens.push(formata(TX.mudou_cegou, { nome: nome, relogio: relogioNo(q.f), n: formata(n === 1 ? TX.cegos.um : TX.cegos.varios, { n: n }) }));
         });
         cur.nades.forEach(function (n) {
-          if (n.by === nome && n.f0 > t0 && !(reescrever.granada && reescrever.granada.temTrocaDe(n))) itens.push(formata(TX.mudou_granada, { tipo: TX.granadas[n.k] || n.k, nome: nome, relogio: relogioNo(n.f0) }));
+          if (n.by === nome && n.f0 > ini && !(reescrever.granada && reescrever.granada.temTrocaDe(n))) itens.push(formata(TX.mudou_granada, { tipo: TX.granadas[n.k] || n.k, nome: nome, relogio: relogioNo(n.f0) }));
         });
       });
       host.textContent = "";
@@ -421,7 +482,7 @@
       var editar = botao(TX.editar_de_novo, "rw-btn", function () { voltaAEditar(); });
       editar.id = "rw-editar"; editar.disabled = true;
       host.appendChild(editar);
-      var voltar = botao(TX.voltar, "rw-btn", function () { edicoes = {}; if (reescrever.granada) reescrever.granada.limpa(); voltaAEditar(); });
+      var voltar = botao(TX.voltar, "rw-btn", function () { limpaEdicoes(); if (reescrever.granada) reescrever.granada.limpa(); voltaAEditar(); });
       voltar.id = "rw-voltar"; voltar.disabled = true;
       host.appendChild(voltar);
       host.appendChild(novo("h4", null, TX.mudou_titulo));
@@ -515,7 +576,7 @@
       setPlaying(false);
       t0 = Math.floor(pos); pos = t0; frame = t0;     // o instante é o quadro gravado imediatamente anterior (o mesmo do `instante()`)
       scrubEl.value = t0;
-      edicoes = {}; origem = {}; arrasto = null; reescrever.sel = null; reescrever.sua = false; reescrever.ver = "sua"; reescrever.instante = t0;
+      limpaEdicoes(); origem = {}; arrasto = null; reescrever.sel = null; reescrever.sua = false; reescrever.ver = "sua"; reescrever.instante = t0;
       andarAntes = levelLock;      // o andar travado de antes: a saída o devolve (selecionar peça do outro andar trava o dela)
       pecas = cur.players.map(function (p) {
         var vivo = !!p.alive[t0], q = 0;
@@ -541,7 +602,7 @@
       if (dlg && dlg.open) dlg.close();
       setPlaying(false);
       if (reescrever.granada) reescrever.granada.sai();
-      reescrever.ativo = false; reescrever.sua = false; reescrever.ver = "sua"; reescrever.sel = null; arrasto = null; edicoes = {}; origem = {}; pecas = [];
+      reescrever.ativo = false; reescrever.sua = false; reescrever.ver = "sua"; reescrever.sel = null; arrasto = null; limpaEdicoes(); origem = {}; pecas = [];
       if (LEVELS.length > 1 && levelLock !== andarAntes) travaAndar(andarAntes);
       palco.setAttribute("data-tema", "escuro");
       hosts.ct.removeAttribute("data-tema"); hosts.t.removeAttribute("data-tema");
@@ -645,10 +706,14 @@
           var e = edicoes[it.p.name], o = origem[it.p.name];
           var ag = e && editada(it.p.name) ? reescrever.posicaoEditada(it.p.name) : null;
           return { nome: it.p.name, nivel: andarDaPeca(it.p.name), tela: telaDa(it.p.name), lado: it.p.side, editavel: it.vivo, editada: editada(it.p.name), x: e ? e.x : (o ? o.x : null), y: e ? e.y : (o ? o.y : null),
-                   x0: o ? o.x : null, y0: o ? o.y : null, agora: ag, velocidade: it.vivo ? velocidadeDe(it.p.name) : null };
+                   x0: o ? o.x : null, y0: o ? o.y : null, agora: ag, velocidade: it.vivo ? velocidadeDe(it.p.name) : null,
+                   trilha: reescrever.trilha.de(it.p.name), partida: editada(it.p.name) ? partida(it.p.name) : null,
+                   trechos: segs[it.p.name] ? segs[it.p.name].map(function (sg) { return { f0: sg.f0, f1: sg.f1, ax: sg.ax, ay: sg.ay, bx: sg.bx, by: sg.by, d: sg.d, dur: sg.dur }; }) : [] };
         })
       };
     };
+
+    window.__reescrever.trilha = reescrever.trilha;      // quem edita sem arrastar (os testes, e os comandos na CR1c)
 
     // o que a granada (11-reescrever-granada.js) precisa do núcleo
     reescrever.nucleo = {

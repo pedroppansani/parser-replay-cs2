@@ -34,6 +34,9 @@ Antes de mexer no `map_core.js`, no canvas, no Replay (`partida/`) ou na pranche
 - Plano dos comandos (`comandos/plano.js`): puro; recebe o "mundo" (`PlanoDeComandos.cria(W)`: estado da tática, relógio, peças, textos, biblioteca e tempos) e devolve o plano,
   o tempo real de corrida e a busca da granada real, o mesmo para a prancheta e (depois) o Reescrever. No site vem por arquivo, só quando a aba Comandos abre; a página gerada
   sozinha o traz embutido. O texto das funções não muda sem a prova `scripts/design/prova_plano_dos_comandos.py` (64)
+- Reescrever (`partida/10-reescrever.js`): a peça editada tem uma TRILHA com horário (`[{f, x, y}]`, `f` = quadro de partida): segue o caminho real até partir, anda em linha
+  reta na velocidade medida até cada parada, e uma parada que parte no meio da anterior a corta; arrastar é UMA parada em t0. A morte do real depois da partida só existe no
+  real (D3). Quem edita sem arrastar usa `window.__reescrever.trilha.define`, que recusa peça morta, horário antes do instante e fora de ordem (58)
 
 ## Calibração do Pedro (não resolva sozinho)
 
