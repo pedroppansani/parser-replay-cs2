@@ -1,0 +1,29 @@
+tipo,id,nome_que_aparece_hoje,nome_certo,fonte,conferido
+time,match_01:A,Time de _AmadeuS,?,demo grava 'team_t1ltedbot' (nome gerado pela FACEIT); o Pedro completa se souber,não
+time,match_01:B,Time de 9amaterasu9,?,demo grava 'team_HLEB' (nome gerado pela FACEIT); o Pedro completa se souber,não
+time,match_02:A,Time de -olik,?,demo grava 'team_lilpeepfan-' (nome gerado pela FACEIT); o Pedro completa se souber,não
+time,match_02:B,Time de -h4wkkk,?,demo grava 'team_Krimbo' (nome gerado pela FACEIT); o Pedro completa se souber,não
+time,match_03:A,Time de ArmaHan,?,demo grava 'team_lilpeepfan-' (nome gerado pela FACEIT); o Pedro completa se souber,não
+time,match_03:B,Time de dyrod,?,demo grava 'team_zecco' (nome gerado pela FACEIT); o Pedro completa se souber,não
+time,match_04:A,Time de donk666,?,demo grava 'team_somehxw' (nome gerado pela FACEIT); o Pedro completa se souber,não
+time,match_04:B,Time de borzSE,?,demo grava 'team_D0KT0R3N' (nome gerado pela FACEIT); o Pedro completa se souber,não
+time,match_05:A,Time de chiefkeef19,?,demo grava 'team_Olajida' (nome gerado pela FACEIT); o Pedro completa se souber,não
+time,match_05:B,Time de donk666,?,demo grava 'team_lilpeepfan-' (nome gerado pela FACEIT); o Pedro completa se souber,não
+time,match_06:A,Time de adamS,?,demo grava 'team_xKacpersky' (nome gerado pela FACEIT); o Pedro completa se souber,não
+time,match_06:B,Time de -_-siNNer,?,demo grava 'team_ar1sFLXR' (nome gerado pela FACEIT); o Pedro completa se souber,não
+time,match_07:A,Time de donk666,?,demo grava 'team_Krabeni' (nome gerado pela FACEIT); o Pedro completa se souber,não
+time,match_07:B,Time de Ajuyep,?,demo grava 'team_xKacpersky' (nome gerado pela FACEIT); o Pedro completa se souber,não
+time,match_08:A,Time de -EsD,?,demo grava 'team_Ahuniwip' (nome gerado pela FACEIT); o Pedro completa se souber,não
+time,match_08:B,Time de certa1n,?,demo grava 'team_lilpeepfan-' (nome gerado pela FACEIT); o Pedro completa se souber,não
+time,match_09:A,Time de d3bab,?,demo grava 'team_lemight' (nome gerado pela FACEIT); o Pedro completa se souber,não
+time,match_09:B,Time de donk666,?,demo grava 'team_Magnojezzz' (nome gerado pela FACEIT); o Pedro completa se souber,não
+evento,blast-open-lisbon-2025,BLAST Open Lisbon 2025,BLAST Open Lisbon 2025,"tabela data/reference/eventos.json (L1, decisão 63); acento posto pelo Pedro",não
+evento,blast-rivals-2025-season-2,BLAST Rivals 2025 Season 2,BLAST Rivals 2025 Season 2,"tabela data/reference/eventos.json (L1, decisão 63); acento posto pelo Pedro",não
+evento,iem-cologne-major-2026,IEM Cologne Major 2026,IEM Cologne Major 2026,"tabela data/reference/eventos.json (L1, decisão 63); acento posto pelo Pedro",não
+evento,iem-dallas-2025,IEM Dallas 2025,IEM Dallas 2025,"tabela data/reference/eventos.json (L1, decisão 63); acento posto pelo Pedro",não
+evento,iem-katowice-2025,IEM Katowice 2025,IEM Katowice 2025,"tabela data/reference/eventos.json (L1, decisão 63); acento posto pelo Pedro",não
+evento,iem-krakw-2026,IEM Kraków 2026,IEM Kraków 2026,"tabela data/reference/eventos.json (L1, decisão 63); acento posto pelo Pedro",não
+evento,iem-rio-2026,IEM Rio 2026,IEM Rio 2026,"tabela data/reference/eventos.json (L1, decisão 63); acento posto pelo Pedro",não
+evento,pgl-cluj-napoca-2026,PGL Cluj-Napoca 2026,PGL Cluj-Napoca 2026,"tabela data/reference/eventos.json (L1, decisão 63); acento posto pelo Pedro",não
+evento,starladder-budapest-major-2025,StarLadder Budapest Major 2025,StarLadder Budapest Major 2025,"tabela data/reference/eventos.json (L1, decisão 63); acento posto pelo Pedro",não
+evento,starladder-starseries-fall-2026,StarLadder StarSeries Fall 2026,StarLadder StarSeries Fall 2026,"tabela data/reference/eventos.json (L1, decisão 63); acento posto pelo Pedro",não
