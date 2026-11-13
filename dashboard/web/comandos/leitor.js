@@ -19,7 +19,7 @@
     return o;
   }
   function tokeniza(frase) {
-    var n = norm(frase), re = /\d{1,2}:\d{2}|\d+s\b|\d+|[a-z]+|[,;]/g, m, t = [];
+    var n = norm(frase).replace(/\.(?=\s)/g, ";"), re = /\d{1,2}:\d{2}|\d+s\b|\d+|[a-z]+|[,;]/g, m, t = [];
     while ((m = re.exec(n))) t.push({ t: m[0], i: m.index, f: m.index + m[0].length, uso: null });
     return t;
   }
@@ -347,8 +347,10 @@
         var t = tk[x].t, ant = tk[x - 1], pro = tk[x + 1], mm;
         if ((mm = /^(\d{1,2}):(\d{2})$/.exec(t))) {
           var restante = parseInt(mm[1], 10) * 60 + parseInt(mm[2], 10);
-          marca(x, x, "quando");
-          if (ant && /^(aos?|as|com|no|na|ate)$/.test(ant.t) && ant.uso === null) marca(x - 1, x, "quando");
+          var ehFim = ac.tipo === "segurar" && !!ant && ant.t === "ate" && ant.uso === null, campoT = ehFim ? "fim" : "quando";      // CR1d: "segura X até H": H é o FIM da espera, não o início
+          marca(x, x, campoT);
+          if (ant && /^(aos?|as|com|no|na|ate)$/.test(ant.t) && ant.uso === null) marca(x - 1, x, campoT);
+          if (ehFim) { ac.fim = { tipo: "relogio", segundos_restantes: restante, t_decorrido: SEG - restante }; if (restante > SEG) ac.fim.invalido = true; return; }
           if (ac.tipo === "esperar" && ant && ant.t === "ate") ac.quando = { tipo: "espera_ate", segundos_restantes: restante };
           else ac.quando = { tipo: "relogio", segundos_restantes: restante, t_decorrido: SEG - restante };
           if (restante > SEG) { ac.quando.invalido = true; }
@@ -366,6 +368,7 @@
         else ac.quando = { tipo: "segundos_ambiguo", segundos: n_ };
       });
       // sobrou "do início" colado ao número já tratado
+      if (ac.fim && !ac.quando && !o.rel) ac.quando = { tipo: "agora" };      // CR1d: "segura X até H" sem horário de início: desde agora (ou desde o fim do comando anterior)
       if (o.rel && !ac.quando) ac.quando = { tipo: o.rel };
       if (!ac.quando && anterior && ac.quem.length && !o.rel && implicito) ac.quando = { tipo: "depois" };   // mesmo jogador, "e roda pra TV": vem depois
       if (ac.quando && ac.quando.tipo === "depois" && !anterior) ac.quando = null;
@@ -400,6 +403,7 @@
         }
       }
       if (ac.tipo === "esperar" && ac.espera_s == null && !(ac.quando && ac.quando.tipo === "espera_ate")) P.push({ codigo: "espera", campo: "duracao", trecho: ac.trecho, opcoes: [] });
+      if (ac.fim && ac.fim.invalido) { P.push({ codigo: "horario_invalido", campo: "fim", para: "fim", horario: relogioTexto(ac.fim.segundos_restantes), opcoes: [] }); delete ac.fim; }
       if (ac.quando && ac.quando.invalido) P.push({ codigo: "horario_invalido", campo: "quando", horario: relogioTexto(ac.quando.segundos_restantes), opcoes: [] }), ac.quando = null;
       else if (ac.quando && ac.quando.tipo === "segundos_ambiguo") {
         var ns = ac.quando.segundos;
@@ -456,7 +460,7 @@
       ac.quem_herdado = false;
     } else if (p.codigo === "qual" || p.codigo === "onde" || p.codigo === "onde_desconhecido") { ac.alvo = valor.alvo; ac.origem_do_alvo = valor.alvo.tipo; }
     else if (p.codigo === "granada") { ac.granada = valor.granada; }
-    else if (p.codigo === "quando" || p.codigo === "quando_segundos" || p.codigo === "horario_invalido") { ac.quando = valor.quando; }
+    else if (p.codigo === "quando" || p.codigo === "quando_segundos" || p.codigo === "horario_invalido") { if (p.para === "fim") ac.fim = valor.quando; else ac.quando = valor.quando; }
     else if (p.codigo === "acao") {
       ac.tipo = valor.tipo;
       if (ac.tipo === "mover" && !ac.modo) { ac.modo = "correndo"; ac.modo_padrao = true; }

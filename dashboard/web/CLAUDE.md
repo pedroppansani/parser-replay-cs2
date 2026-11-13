@@ -41,6 +41,7 @@ Antes de mexer no `map_core.js`, no canvas, no Replay (`partida/`) ou na pranche
   vocabulário do leitor e dos nomes de lugar; nick que também é lugar do mapa sempre pergunta); `comandos/real.js` monta o elenco do round e dá o veredito de cada comando:
   começa depois da morte ou jogador já morto = recusado ([Escolher outro jogador], [Corrigir]); termina depois da morte = aplicado, a peça esmaece na hora da morte real;
   antes do instante = o real não muda; "bomba ou round?" só depois do plant. Sem nick no contexto (a prancheta) a leitura é a de sempre (64)
+- "Até" é o FIM do `segurar` (CR1d): "segura o meio até 0:45" = fica no meio desde agora (ou desde o fim do comando anterior) até 0:45; "aos 0:45" continua sendo o início. O leitor devolve `quando: {tipo: "agora"}` e `fim: {t_decorrido}`; o plano para a peça no destino até o fim (e o comando seguinte parte dele); `esperar` e `mover` não mudam. "Agora" = marcador do tempo na prancheta, instante no Reescrever (`real.js`: `fim_antes_do_instante`, `termina_depois_da_morte`).
 
 ## Calibração do Pedro (não resolva sozinho)
 

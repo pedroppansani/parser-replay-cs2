@@ -27,6 +27,7 @@
     function ancoraReal(pid, t0) { return W.ancoraReal(pid, t0); }
     function novoId() { return W.novoId(); }
     function marcoQueContem(t) { return W.marcoQueContem(t); }
+    function agora() { return W.agora(); }
 
     // ---------- o texto que veio da prancheta ----------
   function cmdNivel(alvo) { return alvo.andar === "baixo" && ANDARES.length > 1 ? 1 : 0; }
@@ -62,6 +63,7 @@
       anterior termina ali e o novo segue dali. */
   function cmdPlano(leitura) {
     var ops = [], chegadas = {}, problemas = [], avisos = [], falta = null, trilha = {}, acaoFim = {}, EPS = 1e-6;
+    function fimAnteriorDaPeca(i, pid) { for (var k = i - 1; k >= 0; k--) if (acaoFim[k] && acaoFim[k].pecas[pid] != null) return acaoFim[k].pecas[pid]; return agora(); }
     var granadas = {}, inicios = {}, cortados = {}, pergunta = null, espera = false, livreEm = {};
     var passos = S.estado.passos;
     function interpola(pts, t) {
@@ -163,6 +165,7 @@
         if (qd && (qd.tipo === "relogio" || qd.tipo === "inicio")) t0 = qd.t_decorrido;
         else if (qd && qd.tipo === "depois") t0 = ant ? (ant.pecas[pid] != null ? ant.pecas[pid] : ant.geral) : null;
         else if (qd && qd.tipo === "junto") t0 = ant ? ant.inicio : null;
+        else if (qd && qd.tipo === "agora") t0 = fimAnteriorDaPeca(ac.indice, pid);      // "segura X até H" sem início: o fim do comando anterior da MESMA peça; sem ele, "agora" do mundo
         else if (ac.tipo === "esperar" && qd && qd.tipo === "espera_ate") t0 = ant ? (ant.pecas[pid] != null ? ant.pecas[pid] : ant.geral) : null;
         if (t0 == null) { problemas.push(cmdT(qd ? "erro_inicio" : "erro_sem_horario", { quem: nome })); return; }
         t0 = Math.round(t0 * 100) / 100;
@@ -185,11 +188,20 @@
           chega = Math.round((t0 + Math.hypot(ac.alvo.x - ini.x, ac.alvo.y - ini.y) / cmdVelocidadeDoPiso(pid, modo)) * 100) / 100;
           info = { tipo: "estimado", t: chega };
         }
-        if (chega <= t0) { problemas.push(cmdT("erro_inicio", { quem: nome })); return; }
+        var jaAli = ac.tipo === "segurar" && !!ac.fim && !!trilha[pid] && chega <= t0 + EPS;      // "segura X até H" com a peça já em X (veio do comando anterior): não anda, só fica
+        if (jaAli) chega = t0;
+        else if (chega <= t0) { problemas.push(cmdT("erro_inicio", { quem: nome })); return; }
         if (info) chegadas[ac.indice] = info;
         var destino = { t: chega, x: ac.alvo.x, y: ac.alvo.y, nivel: nivel, modo: modo, chave: cmdChaveDoAlvo(ac.alvo), area: cmdAreaDoAlvo(ac.alvo) };
-        anda(ac, pid, t0, ini, destino);
-        anota(ac, pid, t0, chega);
+        if (!jaAli) anda(ac, pid, t0, ini, destino);
+        var fimDaEspera = chega;
+        if (ac.tipo === "segurar" && ac.fim) {      // CR1d: "segura X até H": chega, fica em X até H; o comando seguinte parte de H
+          if (ac.fim.t_decorrido > chega + EPS) {
+            fimDaEspera = ac.fim.t_decorrido;
+            if (baseReal() === null) trilha[pid].pts.push({ t: fimDaEspera, x: destino.x, y: destino.y, nivel: destino.nivel, acao: ac.indice });      // fica onde chegou até H
+          } else avisos.push(cmdT("aviso_segura_curto", { quem: nome, alvo: cmdNomeDoAlvo(ac.alvo), h: cmdDoRelogio(chega), fim: cmdDoRelogio(ac.fim.t_decorrido) }));
+        }
+        anota(ac, pid, t0, fimDaEspera);
       });
     }
     // as cadeias: um comando com horário abre uma; os sem horário ficam presos ao comando anterior na escrita

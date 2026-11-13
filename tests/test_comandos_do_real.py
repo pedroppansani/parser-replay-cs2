@@ -120,10 +120,12 @@ def test_exemplo_4_ropz_e_apex_correm_pro_meio_aos_1_10(pg):
 
 
 def test_exemplo_5_mezii_segura_a_caverna_ate_0_45(pg):
+    # CR1d (decisão do Pedro): "até" é o FIM. Antes: o horário 0:45 (70 s) era o INÍCIO do comando (`quando` = relógio 70). Agora: o início é "agora" (o instante, 1:20) e o fim é 0:45.
     x = le(pg, "mezii segura a caverna até 0:45")
     a = x["r"]["acoes"][0]
-    assert a["tipo"] == "segurar" and a["alvo"] == "Caverna" and a["quando"]["t_decorrido"] == 70                              # o leitor é o da prancheta: o horário é o do comando
-    assert ver(x)["codigo"] == "ok" and ver(x)["nick"] == "mezii"                                                              # mezii morre só aos 0:34
+    assert a["tipo"] == "segurar" and a["alvo"] == "Caverna" and a["quando"] == {"tipo": "agora"}
+    assert pg.evaluate("""() => ComandosDoReal.le("mezii segura a caverna até 0:45", window.ctx).acoes[0].fim.t_decorrido""") == 70
+    assert ver(x)["codigo"] == "ok" and ver(x)["nick"] == "mezii"                                                              # o fim, 70 s, vem antes da morte dele (80,8 s)
 
 
 def test_exemplo_6_ropz_vai_pro_b_e_depois_pro_meio_pergunta_o_horario_com_o_botao_no_instante(pg):
