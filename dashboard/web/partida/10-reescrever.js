@@ -22,6 +22,8 @@
     var arrasto = null;
     var t0 = 0;
     var rotulos = null;       // os aria-label dos elencos, de volta ao sair
+    var desfazer = [];        // a pilha do "Desfazer" (CR2): um item por comando aplicado = {foto: nome -> {trilha, pc} de ANTES, linha: o que o comando disse}
+    var porComando = {};      // nome -> {f: true}: as paradas que vieram de um comando (o "O que mudou" as diz pela linha do comando, não pelo trecho)
 
     reescrever.escala = 1.25;
     reescrever.sel = null;
@@ -73,15 +75,18 @@
       });
       segs[nome] = lista;
     }
-    function poeTrilha(nome, paradas) {      // [{f, x, y}] com f >= t0, em ordem
+    function poeTrilha(nome, paradas, fsDoComando) {      // [{f, x, y}] com f >= t0, em ordem; `fsDoComando`: os quadros das paradas que um comando acabou de pôr (CR2)
+      var antes = porComando[nome] || {}, pc = {};
+      if (fsDoComando) paradas.forEach(function (pa) { if (fsDoComando.indexOf(pa.f) >= 0 || antes[pa.f]) pc[pa.f] = true; });
+      porComando[nome] = pc;
       trilhas[nome] = paradas.map(function (pa) { return { f: pa.f, x: pa.x, y: pa.y }; });
       var u = paradas[paradas.length - 1];
       edicoes[nome] = { x: u.x, y: u.y };
       recalcula(nome);
     }
     function poeParada(nome, g) { poeTrilha(nome, [{ f: t0, x: g.x, y: g.y }]); }      // o arrastar: uma parada, no instante
-    function apagaEdicao(nome) { delete edicoes[nome]; delete trilhas[nome]; delete segs[nome]; }
-    function limpaEdicoes() { edicoes = {}; trilhas = {}; segs = {}; }
+    function apagaEdicao(nome) { delete edicoes[nome]; delete trilhas[nome]; delete segs[nome]; delete porComando[nome]; }
+    function limpaEdicoes() { edicoes = {}; trilhas = {}; segs = {}; porComando = {}; desfazer = []; }
     function partida(nome) { var sg = segs[nome]; return sg && sg.length ? sg[0].f0 : Infinity; }       // o quadro em que a peça deixa o real
     // {x, y, dur, d, f, k, antes}: o trecho que vale no quadro (o último, se já passou de todos); `antes` = ainda no real (a peça ainda não partiu)
     function trecho(nome, quadro) {
@@ -110,7 +115,7 @@
     reescrever.semAMorte = function (e) { return !vendoReal() && e.type === "kill" && e.f > partida(e.victim) && editada(e.victim); };
     // a trilha para quem edita sem arrastar (os comandos, CR1c): `define` recusa o que o modelo não sustenta (peça morta, antes do instante, fora de ordem)
     reescrever.trilha = {
-      define: function (nome, paradas) {
+      define: function (nome, paradas, fsDoComando) {
         var it = pecas.filter(function (q) { return q.p.name === nome; })[0], ant = -Infinity;
         if (!reescrever.ativo || reescrever.sua || !it || !it.vivo || !paradas || !paradas.length) return false;
         for (var i = 0; i < paradas.length; i++) {
@@ -119,14 +124,39 @@
           ant = pa.f;
         }
         if (!it.p.alive[Math.floor(paradas[0].f)]) return false;     // quem já morreu no real só existe no real (D3)
-        poeTrilha(nome, paradas);
-        if (!editada(nome)) { apagaEdicao(nome); return false; }
+        var antesT = trilhas[nome] ? trilhas[nome].map(function (pa) { return { f: pa.f, x: pa.x, y: pa.y }; }) : null, antesPc = porComando[nome];
+        poeTrilha(nome, paradas, fsDoComando);
+        if (!editada(nome)) {      // não é edição: volta ao que era antes (uma trilha que já existia não some)
+          if (antesT) { trilhas[nome] = antesT; edicoes[nome] = { x: antesT[antesT.length - 1].x, y: antesT[antesT.length - 1].y }; porComando[nome] = antesPc || {}; recalcula(nome); } else apagaEdicao(nome);
+          return false;
+        }
         atualizaBanco(); draw();
         return true;
       },
       de: function (nome) { return trilhas[nome] ? trilhas[nome].map(function (pa) { return { f: pa.f, x: pa.x, y: pa.y }; }) : []; },
       apaga: function (nome) { if (trilhas[nome]) { apagaEdicao(nome); atualizaBanco(); draw(); } }
     };
+    // O "Desfazer" dos comandos (CR2): UM item por comando aplicado, mesmo quando mexe em mais de uma peça. A foto guarda, das peças que o comando tocou, a trilha de ANTES
+    // (e as paradas que já vinham de comandos): desfazer a devolve exatamente. Mexer na peça à mão depois não impede o desfazer: ele devolve a trilha de antes do comando.
+    function clonaTrilha(nome) { return trilhas[nome] ? trilhas[nome].map(function (pa) { return { f: pa.f, x: pa.x, y: pa.y }; }) : null; }
+    reescrever.comandos = reescrever.comandos || {};
+    reescrever.comandos.foto = function (nomes) {
+      var o = {};
+      nomes.forEach(function (n) { o[n] = { trilha: clonaTrilha(n), pc: porComando[n] ? Object.assign({}, porComando[n]) : null }; });
+      return o;
+    };
+    reescrever.comandos.empurra = function (foto, linha) { desfazer.push({ foto: foto, linha: linha }); atualizaBanco(); };
+    reescrever.comandos.desfaz = function () {
+      var u = desfazer.length && !reescrever.sua ? desfazer.pop() : null;
+      if (!u) return false;
+      Object.keys(u.foto).forEach(function (n) {
+        var f = u.foto[n];
+        if (f.trilha) { trilhas[n] = f.trilha; edicoes[n] = { x: f.trilha[f.trilha.length - 1].x, y: f.trilha[f.trilha.length - 1].y }; porComando[n] = f.pc || {}; recalcula(n); } else apagaEdicao(n);
+      });
+      atualizaBanco(); draw();
+      return true;
+    };
+    reescrever.comandos.profundidade = function () { return desfazer.length; };
     // granada lançada DEPOIS do instante por quem foi editado dependia da posição dele no real: fica só no fantasma (design §9)
     // a granada que gerou o item (a própria granada, ou o arremesso que fez a zona/estouro): a ligação gravada pelo export, ou o tipo e o ponto final
     function geradoraDe(it) {
@@ -388,6 +418,9 @@
           b.setAttribute("aria-pressed", "false"); b.setAttribute("aria-keyshortcuts", "ArrowUp ArrowDown ArrowLeft ArrowRight");
           var topo = novo("span", "pr-topo");
           topo.appendChild(novo("b", "pr-nome", it.p.name));
+          var num = novo("span", "pr-num", String(deste.indexOf(it) + 1));      // o número dos comandos ("TR 2"): só no modo Reescrever (o banco só existe nele)
+          num.title = formata(TX.numero_dica, { lado: lado === "ct" ? "CT" : "TR", n: deste.indexOf(it) + 1 });
+          topo.appendChild(num);
           var tag = novo("span", "pr-tag", TX.editado); tag.title = TX.editado;   // um ponto na linha do nome: aparece sem mudar a altura do cartão (CLS 0) nem cortar o nome
           topo.appendChild(tag);
           topo.appendChild(novo("span", "pr-hp", it.vivo ? String(it.p.hp[t0]) : "0"));
@@ -410,6 +443,9 @@
       });
       var voltar = document.getElementById("rw-voltar");
       if (voltar) voltar.disabled = !algumaMudanca();
+      var desf = document.getElementById("rw-desfazer");
+      if (desf) desf.disabled = !desfazer.length || reescrever.sua;
+      if (reescrever.comandos.aoMudar) reescrever.comandos.aoMudar();
       var editar = document.getElementById("rw-editar");
       if (editar) editar.disabled = !reescrever.sua;
       var dica = document.getElementById("rw-dica");
@@ -431,6 +467,7 @@
         if (!it.vivo || !editada(nome)) return;
         segs[nome].forEach(function (sg, k) {
           if (sg.d < MOVIDA) return;      // uma parada no mesmo lugar não é um movimento
+          if (porComando[nome] && porComando[nome][sg.f0]) return;      // a que um comando pôs: a linha do comando já a diz
           var lugar = k === 0 && it.p.p ? cur.places[it.p.p[Math.floor(sg.f0)]] : "", chega = sg.f1;
           var base = { nome: nome, de: lugar, relogio: relogioNo(sg.f0), chega: relogioNo(chega), seg: (Math.round(sg.dur * 10) / 10).toString().replace(".", ",") };
           itens.push(formata(chega > cur.frames - 1 ? TX.mudou_nao_chega : (lugar ? TX.mudou_move : TX.mudou_move_sem_lugar), base));
@@ -456,6 +493,7 @@
         });
       });
       host.textContent = "";
+      itens = desfazer.map(function (u) { return u.linha; }).concat(itens);      // uma linha por comando aplicado, na ordem em que foram aplicados
       if (reescrever.granada) itens = itens.concat(reescrever.granada.frases());
       if (!itens.length) { host.appendChild(novo("li", "rw-nada", TX.mudou_nada)); return; }
       itens.forEach(function (t) { host.appendChild(novo("li", null, t)); });
@@ -470,6 +508,7 @@
       host.appendChild(novo("p", "rw-comeca", formata(TX.comeca_em, { relogio: relogioNo(t0) })));
       var dica = novo("p", "rw-dica", TX.dica); dica.id = "rw-dica"; dica.setAttribute("role", "status");
       host.appendChild(dica);
+      if (reescrever.comandos.monta) reescrever.comandos.monta(host);      // a seção "Comandos" (CR2, 12-reescrever-comandos.js): entre a dica e o resto
       if (reescrever.granada) reescrever.granada.monta(host);
       var fant = botao("", "rw-btn", function () {
         reescrever.fantasma = !reescrever.fantasma;
@@ -482,6 +521,9 @@
       var editar = botao(TX.editar_de_novo, "rw-btn", function () { voltaAEditar(); });
       editar.id = "rw-editar"; editar.disabled = true;
       host.appendChild(editar);
+      var desf = botao(TX.desfazer, "rw-btn", function () { reescrever.comandos.desfaz(); });
+      desf.id = "rw-desfazer"; desf.disabled = true;
+      host.appendChild(desf);
       var voltar = botao(TX.voltar, "rw-btn", function () { limpaEdicoes(); if (reescrever.granada) reescrever.granada.limpa(); voltaAEditar(); });
       voltar.id = "rw-voltar"; voltar.disabled = true;
       host.appendChild(voltar);
@@ -701,7 +743,7 @@
         fantasmas: reescrever.ativo && reescrever.sua ? fantasmasAgora().map(function (g) { return { nome: g.it.p.name, vivo: g.vivo, x: g.sp[0], y: g.sp[1] }; }) : [],
         esmaecidas: reescrever.ativo ? pecas.filter(function (it) { return editada(it.p.name) && reescrever.esmaecida(it.p.name); }).map(function (it) { return it.p.name; }) : [],
         soNoReal: reescrever.ativo ? [].concat(cur.nades, cur.smokes, cur.fires, cur.pops || []).filter(function (it) { return reescrever.soNoReal(it); }).length : 0, relogio: relogioNo(t0), selecionada: reescrever.sel,
-        trocas: reescrever.granada ? reescrever.granada.estado() : null,
+        trocas: reescrever.granada ? reescrever.granada.estado() : null, comandos: { desfazer: desfazer.length, linhas: desfazer.map(function (u) { return u.linha; }) },
         pecas: pecas.map(function (it) {
           var e = edicoes[it.p.name], o = origem[it.p.name];
           var ag = e && editada(it.p.name) ? reescrever.posicaoEditada(it.p.name) : null;
@@ -718,7 +760,8 @@
     // o que a granada (11-reescrever-granada.js) precisa do núcleo
     reescrever.nucleo = {
       t0: function () { return t0; }, pecas: function () { return pecas; }, editada: editada, relogioNo: relogioNo, formata: formata, novo: novo, botao: botao,
-      atualizaBanco: atualizaBanco, algumaMudanca: algumaMudanca, doPonteiro: doPonteiro, aGameUnits: aGameUnits, matrizDaVista: matrizDaVista, tracejado: tracejado
+      atualizaBanco: atualizaBanco, algumaMudanca: algumaMudanca, velocidadeDe: velocidadeDe, andarDaPeca: andarDaPeca, atualizaMudou: atualizaMudou,
+      posicaoNoQuadro: function (nome, f) { if (segs[nome] && segs[nome].length) { var q = trecho(nome, f); return { x: q.x, y: q.y }; } var r = realEm(nome, f); return { x: r[0], y: r[1] }; }, doPonteiro: doPonteiro, aGameUnits: aGameUnits, matrizDaVista: matrizDaVista, tracejado: tracejado
     };
 
     montaAcoes();

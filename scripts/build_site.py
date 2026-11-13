@@ -688,6 +688,10 @@ def build(repo_url: str, preview: bool = False) -> Path:
         (saida / m["file"]).write_text(html, encoding="utf-8")
         print(f"  {m['file']}  ({len(html) / 1024:.0f} KB)  {m['map_label']} {m['score_a']}-{m['score_b']}")
 
+    # os comandos dentro do Reescrever (CR2): os arquivos que a seção carrega quando abre, e o contexto de cada mapa que tem partida
+    from scripts.build_reescrever_comandos import escreve as escreve_comandos_do_reescrever
+    escreve_comandos_do_reescrever(saida, sorted({m["map"] for m in matches if m.get("map")}))
+
     # prancheta tática: uma página por mapa com radar e biblioteca de arremessos
     pranchetas = []
     # grupos (fase 13): o supabase-js fixado é conferido pelo sha256 em todo build, e só vai para docs/ (ao lado

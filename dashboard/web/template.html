@@ -1123,6 +1123,39 @@
   @media (max-width: 640px) {
     #pf-tabela { overflow-x: auto; }
   }
+  /* só a página da partida (as outras páginas, como a prancheta, não carregam estas regras) */
+  /* os comandos (CR2): a seção do painel. O cartão "O que entendi" tem altura FIXA e rola por dentro: abrir, entender, perguntar, aplicar e desfazer não empurram nada (CLS 0). */
+  .peca-rw .pr-num { flex: none; align-self: center; min-width: 1.5em; padding: 0 5px; border-radius: 99px; border: 1px solid var(--borda); font-family: var(--f-num); font-size: var(--t-xs); line-height: 1.5; text-align: center; color: var(--tinta-2); }
+  .painel-rw .rw-cmd { display: grid; gap: 6px; min-width: 0; }
+  .painel-rw .rw-cmd-cab { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: var(--toque); padding: 0 12px; border-radius: 12px; border: 1px solid var(--borda); background: var(--superficie); color: var(--tinta); font: inherit; font-size: var(--t-sm); font-weight: 600; letter-spacing: 0; text-transform: none; text-align: left; cursor: pointer; }
+  .painel-rw .rw-cmd-cab:hover { background: var(--superficie-2); }
+  .painel-rw .rw-cmd-seta::before { content: "▾"; display: inline-block; transition: transform 0.15s; }
+  .painel-rw .rw-cmd-cab[aria-expanded="true"] .rw-cmd-seta::before { transform: rotate(180deg); }
+  @media (prefers-reduced-motion: reduce) { .painel-rw .rw-cmd-seta::before { transition: none; } }
+  .painel-rw .rw-cmd-corpo { display: grid; gap: 6px; min-width: 0; }
+  .painel-rw .rw-cmd-corpo[hidden] { display: none; }
+  .painel-rw .rw-cmd-texto { box-sizing: border-box; width: 100%; min-height: 3.6em; resize: none; padding: 8px 10px; border-radius: 12px; border: 1px solid var(--borda); background: var(--superficie); color: var(--tinta); font: inherit; font-size: 16px; line-height: 1.35; }
+  .painel-rw .rw-cmd-texto::placeholder { color: var(--apagado); }
+  .painel-rw .rw-cmd-cartao { box-sizing: border-box; height: 22rem; overflow-x: hidden; overflow-y: auto; overflow-anchor: none; overscroll-behavior: contain; padding: 8px 10px; border-radius: 12px; border: 1px solid var(--borda); background: var(--superficie-2); display: grid; align-content: start; gap: 6px; grid-template-columns: minmax(0, 1fr); }
+  .painel-rw .rw-cmd-cartao > * { min-width: 0; overflow-wrap: anywhere; }
+  .painel-rw .rw-cmd-veredito, .painel-rw .rw-cmd-pergunta, .painel-rw .rw-cmd-opcoes { grid-template-columns: minmax(0, 1fr); box-sizing: border-box; }
+  .painel-rw .rw-cmd-cartao p { color: var(--tinta-2); }
+  .painel-rw .rw-cmd-sub { margin: 0; font-size: var(--t-sm); color: var(--tinta); }
+  .painel-rw .rw-cmd-entendi { margin: 0; padding-left: 20px; display: grid; gap: 4px; color: var(--tinta); font-size: var(--t-sm); }
+  .painel-rw .rw-cmd-erro { color: var(--erro); font-weight: 600; }
+  .painel-rw .rw-cmd-veredito { display: grid; gap: 6px; padding: 6px 8px; border-radius: 10px; border: 1px solid var(--borda); border-left-width: 4px; background: var(--superficie); }
+  .painel-rw .rw-cmd-veredito.recusa { border-left-color: var(--erro); }
+  .painel-rw .rw-cmd-veredito.aviso { border-left-color: var(--tinta); }
+  .painel-rw .rw-cmd-pergunta { display: grid; gap: 6px; padding: 6px 8px; border-radius: 10px; border: 1px solid var(--tinta); background: var(--superficie); }
+  .painel-rw .rw-cmd-pergunta-texto { color: var(--tinta); font-weight: 600; }
+  .painel-rw .rw-cmd-opcoes { display: grid; gap: 4px; }
+  .painel-rw .rw-cmd-opcao { text-align: left; white-space: normal; overflow-wrap: anywhere; height: auto; }
+  .painel-rw .rw-cmd-linha-horario { display: flex; gap: 6px; }
+  .painel-rw .rw-cmd-horario { box-sizing: border-box; flex: 1 1 0; min-width: 0; min-height: var(--toque); padding: 0 10px; border-radius: 12px; border: 1px solid var(--borda); background: var(--superficie); color: var(--tinta); font: inherit; font-size: 16px; }
+  @media (max-width: 1023px) { .painel-rw .rw-cmd-cartao { height: 15rem; } }      /* o celular tem a largura toda: o mesmo texto ocupa menos linhas */
+  .painel-rw .rw-cmd-acoes { display: flex; gap: 6px; flex-wrap: wrap; }
+  .painel-rw .rw-cmd-acoes .rw-btn { flex: 1 1 0; min-width: 0; }
+  .painel-rw .rw-cmd-rot.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   /* o CSS da v2 (dashboard/web/v2.css) vem por último: a forma nova sobre as regras de cima */
   /*__V2__*/
 </style>
@@ -1386,6 +1419,7 @@
 //@inclui partida/09-abas.js
 //@inclui partida/10-reescrever.js
 //@inclui partida/11-reescrever-granada.js
+//@inclui partida/12-reescrever-comandos.js
 })();
 </script>
 </body>
