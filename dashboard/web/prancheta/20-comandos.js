@@ -31,7 +31,6 @@
     });
     return ids[0] || null;
   }
-  function cmdNivel(alvo) { return alvo.andar === "baixo" && ANDARES.length > 1 ? 1 : 0; }
   function cmdQuem(ac) {
     return ac.quem.length ? ac.quem.map(function (q) { return q.resolvido === false || !q.lado ? (q.ref || cmdT("quem_vazio")) : q.lado.toUpperCase() + " " + q.num; }).join(" + ") : cmdT("quem_vazio");
   }
@@ -48,8 +47,6 @@
   function cmdNomeDoAlvo(alvo) {
     return alvo.tipo === "area" ? (alvo.exibe || alvo.texto || alvo.nome) : alvo.nome + (alvo.qualificacao ? " (" + alvo.qualificacao + ")" : "");
   }
-  /** A velocidade da estimativa: quem corre usa o TETO do jogo (250 u/s, medido no corpus), o que faz da linha reta um piso; andando e agachado seguem a velocidade de cada jeito. */
-  function cmdVelocidadeDoPiso(pid, modo) { return modo === "correndo" ? cfg.comandos.velocidade_piso_correndo : velocidade(funcaoDe(pid), modo); }
   function cmdLinha(ac, plano) {
     var v = { quem: cmdQuem(ac), alvo: ac.alvo ? cmdNomeDoAlvo(ac.alvo) : cmdT("onde_vazio"), quando: cmdQuando(ac, plano),
               granada: ac.granada ? cmdT("granada_" + ac.granada) || ac.granada : "?", modo: ac.modo || "correndo", n: ac.espera_s };
@@ -87,6 +84,7 @@
   }
   /** Abrir a aba pela primeira vez busca os tempos. Sem arquivo (a página gerada sozinha, nos testes) a tabela já vem no cfg; sem tabela, só estimado. */
   function cmdAbriuAba() {
+    cmdCarregaPlano();
     if (Tempos.estado !== "inicial") return;
     (cfg.comandos.areas || []).forEach(function (a) { Tempos.areaDoTexto[a.texto] = a.nome; });
     if (cfg.comandos.tempos) { Tempos.estado = "pronta"; cmdIndiceDosTempos(cfg.comandos.tempos); return; }
@@ -97,181 +95,39 @@
     sc.onerror = function () { Tempos.estado = "erro"; if ($("pr-cmd-resultado")) cmdDesenha(); };
     document.body.appendChild(sc);
   }
-  function cmdChaveDoAlvo(alvo) {
-    return alvo.tipo === "ponto" ? (alvo.ids || [alvo.id]).map(function (id) { return parseInt(String(id).split(":")[1], 10); }).sort(function (a, b) { return a - b; }).join("+") : null;
-  }
-  function cmdAreaDoAlvo(alvo) { return alvo.tipo === "area" ? alvo.nome : (Tempos.areaDoTexto[alvo.lugar] || null); }
-  /** O tempo real do corpus entre onde a peça está e o alvo, só para quem corre: entre pontos do Pedro, senão entre as áreas da demo; null = estimar. */
-  function cmdTempoReal(pos, alvo, modo) {
-    var T = Tempos.dados;
-    if (!T || modo !== "correndo") return null;
-    var kb = cmdChaveDoAlvo(alvo), ka = pos.chave || null;
-    if (kb && !ka) {
-      var d0 = T.raio_origem;
-      Tempos.nos.forEach(function (n) { var d = Math.hypot(n[1] - pos.x, n[2] - pos.y); if (d <= d0) { d0 = d; ka = n[0]; } });
-    }
-    var linha = kb && ka && ka !== kb ? Tempos.pontos[ka + "|" + kb] : null;
-    if (linha) return { fonte: "pontos", p25: linha[2], mediana: linha[3], p75: linha[4], casos: linha[5], partidas: linha[6] };
-    var aa = pos.area || (typeof lugarDe === "function" ? lugarDe(pos.x, pos.y, pos.nivel || 0) : null), ab = cmdAreaDoAlvo(alvo);
-    linha = aa && ab && aa !== ab ? Tempos.areas[aa + "|" + ab] : null;
-    return linha ? { fonte: "areas", p25: linha[2], mediana: linha[3], p75: linha[4], casos: linha[5], partidas: linha[6] } : null;
-  }
 
-  /** Do que foi entendido às operações. Devolve { ops, chegadas, problemas, falta }: `falta` é a chegada que o site não estimou (troca de andar sem tempo
-      real). `chegadas[i]` diz de onde veio o horário: "real" (a mediana do corpus, com a faixa e os casos) ou "estimado" (a linha reta na velocidade do jeito de
-      andar: um PISO, não um palpite). A ordem é a do RELÓGIO, não a da escrita: cada comando com horário abre uma cadeia, e os que não têm ("depois", "junto",
-      "espera") ficam presos ao comando anterior na escrita; as cadeias andam por horário e, no mesmo horário, na ordem em que foram escritas. Uma peça que ainda
-      anda por um comando anterior parte do ponto por onde o plano a deixou naquele instante (interpolado em linha reta, como a prancheta toca): o caminho
-      anterior termina ali e o novo segue dali. */
-  function cmdPlano(leitura) {
-    var ops = [], chegadas = {}, problemas = [], avisos = [], falta = null, trilha = {}, acaoFim = {}, EPS = 1e-6;
-    var granadas = {}, inicios = {}, cortados = {}, pergunta = null, espera = false, livreEm = {};
-    var passos = S.estado.passos;
-    function interpola(pts, t) {
-      for (var i = pts.length - 1; i > 0; i--) {
-        if (t >= pts[i - 1].t - EPS) {
-          var a = pts[i - 1], b = pts[i], f = b.t > a.t ? (t - a.t) / (b.t - a.t) : 1;
-          return { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f, nivel: f < 1 - EPS ? a.nivel : b.nivel, modo: b.modo };
-        }
-      }
-      return null;
-    }
-    function posicaoEm(pid, t) {
-      var tr = trilha[pid];
-      if (tr) {
-        var u = tr.pts, ultimo = u[u.length - 1];
-        if (t >= ultimo.t - EPS) return { x: ultimo.x, y: ultimo.y, nivel: ultimo.nivel, t: t, chave: ultimo.chave, area: ultimo.area };
-        var m = t >= u[0].t - EPS ? interpola(u, t) : null;
-        if (m) return { x: m.x, y: m.y, nivel: m.nivel, t: t };
-      }
-      var q = quadroNoTempo(S.e3, t, CENTRO).pecas[pid];
-      return q ? { x: q.x, y: q.y, nivel: q.nivel || 0, t: t } : null;
-    }
-    function anota(ac, pid, t0, fim) {
-      var f = acaoFim[ac.indice] = acaoFim[ac.indice] || { pecas: {}, geral: null, inicio: null };
-      f.pecas[pid] = fim; f.geral = fim; f.inicio = t0;
-      livreEm[pid] = Math.max(livreEm[pid] || 0, fim); inicios[ac.indice] = t0;
-    }
-    /** A peça anda de `ini` (em t0) até `destino`. Cada peça tem UM caminho no plano (um `cria_caminho`): um comando novo acrescenta o ponto dela (ela fica onde chegou até t0); um que
-        começa no meio de uma corrida do plano CORTA o caminho ali (os pontos de depois saem, com os comandos a que eles pertenciam, que o cartão marca como cortados) e segue dali. */
-    function anda(ac, pid, t0, ini, destino) {
-      destino.acao = ac.indice;
-      var tr = trilha[pid];
-      if (!tr) {
-        var pts = [destino];
-        if (baseReal() === null) pts.unshift({ t: t0, x: ini.x, y: ini.y, nivel: ini.nivel || 0, acao: ac.indice });   // a peça fica onde está até t0 e só então anda
-        trilha[pid] = { pts: pts };
-        ops = ops.concat(cortaReal(pid, t0), ancoraReal(pid, t0), [["cria_caminho", { peca: pid, pontos: null, trilha: trilha[pid] }]]);
-        return;
-      }
-      var ultimo = tr.pts[tr.pts.length - 1];
-      if (t0 < ultimo.t - EPS && t0 >= tr.pts[0].t - EPS) {
-        var m = interpola(tr.pts, t0), cortadas = {}, primeira = null;
-        tr.pts.forEach(function (p) {
-          if (!(p.t > t0 + EPS)) return;
-          if (primeira === null) primeira = p.acao;
-          if (p.acao != null) cortadas[p.acao] = true;
-        });
-        // uma granada dessa peça que o plano já pôs DEPOIS do corte fica (nada some sem a pessoa ver), e o cartão avisa
-        ops.forEach(function (op) {
-          if (op[0] !== "cria_granada" || op[1].jogador !== pid || !(op[1].t > t0 + EPS)) return;
-          avisos.push(cmdT("aviso_corte_granada", { n2: ac.indice + 1, n1: (primeira === null ? ac.indice : primeira) + 1, granada: String(cmdT("granada_" + op[1].arma) || op[1].arma).toLowerCase(), h: cmdDoRelogio(op[1].t) }));
-        });
-        tr.pts = tr.pts.filter(function (p) { return p.t < t0 - EPS; });
-        tr.pts.push({ t: t0, x: m.x, y: m.y, nivel: m.nivel, modo: m.modo, acao: primeira }, destino);
-        Object.keys(cortadas).forEach(function (k) { delete chegadas[k]; cortados[k] = ac.indice + 1; });     // a chegada que eles diziam não vale mais
-      } else {
-        if (baseReal() === null && t0 > ultimo.t + EPS) tr.pts.push({ t: t0, x: ultimo.x, y: ultimo.y, nivel: ultimo.nivel, acao: ac.indice });   // fica onde chegou até t0
-        tr.pts.push(destino);
-      }
-    }
-    /** "joga X em Y": o arremesso real da biblioteca (mesmo tipo e lado, que caiu perto), com a pergunta quando a saída é longe da peça ou ela só chega depois do horário. */
-    function lanca(ac, pid, nome, t0, ini) {
-      var lado = S.estado.pecas[pid].lado, busca = cmdBuscaReal(ac.granada, ac.alvo, lado, ini), aviso = cmdAvisoDeLado(ac.granada, lado, busca);
-      if (aviso) avisos.push(aviso);
-      if (busca.estado === "carregando") espera = true;
-      var i = Math.min(ac.gr_i || 0, Math.max(0, busca.grupos.length - 1)), g = busca.grupos[i];
-      if (g && ac.gr_decisao !== "sem") {
-        var ox = g.r.origem[0], oy = g.r.origem[1], nivelO = nivelDoZ(g.r.origem[2]), perto = g.dist <= cmdGr().raio_saida, outroAndar = nivelO !== (ini.nivel || 0);
-        var base = { acao: ac.indice, quem: nome, i: i + 1, n: busca.grupos.length, d: Math.round(g.dist), s: Math.max(1, Math.round(g.dist / cmdVelocidadeDoPiso(pid, "correndo"))), onde: lugarExibido(ox, oy, nivelO) || "", pode_levar: !outroAndar, ha_outro: i + 1 < busca.grupos.length };
-        if (!perto && (ac.gr_decisao !== "levar" || outroAndar)) { pergunta = pergunta || Object.assign({ tipo: "longe" }, base); return; }
-        var vel = cmdVelocidadeDoPiso(pid, "correndo"), livre = livreEm[pid] || 0, tSai = t0, inicio = t0 - Math.hypot(ox - ini.x, oy - ini.y) / vel;
-        var iniS = posicaoEm(pid, Math.max(inicio, 0)) || ini, dur = Math.hypot(ox - iniS.x, oy - iniS.y) / vel;
-        inicio = tSai - dur;
-        if (inicio < livre - EPS) {                       // não dá tempo de chegar ao ponto do arremesso até o horário pedido
-          var chegaTarde = Math.round((livre + dur) * 100) / 100;
-          if (chegaTarde - t0 > 0.3 && !ac.gr_tarde_ok) { pergunta = pergunta || Object.assign({ tipo: "tarde", chega: chegaTarde, h: cmdDoRelogio(chegaTarde) }, base); return; }
-          tSai = chegaTarde; inicio = livre;
-        }
-        if (tSai - inicio < 0.05) inicio = tSai - 0.05;
-        var yaw = ((Math.round(g.r.yaw) % 360) + 360) % 360;
-        anda(ac, pid, inicio, iniS, { t: tSai, x: ox, y: oy, nivel: nivelO, modo: "correndo", yaw: yaw, chave: null, area: null });
-        ops.push(["cria_granada", { granada: novoId(), arma: ac.granada, passo: passos[marcoQueContem(tSai)].passo, nivel: nivelO, origem: [ox, oy],
-                                    destino: g.r.destino.slice(0, 2), arremesso: g.r, t: Math.round(tSai * 100) / 100, jogador: pid }]);
-        granadas[ac.indice] = { r: g.r, i: i + 1, n: busca.grupos.length, lado: lado, onde: base.onde, tSai: tSai, tCai: g.voo ? tSai + g.r.voo_s : null, levar: dur > 0.3 ? { chega: tSai } : null, quem: nome };
-        anota(ac, pid, t0, tSai);
-        return;
-      }
-      // sem arremesso real: a granada sai de onde o jogador está, como antes, e o cartão diz por quê
-      ops.push(["cria_granada", { granada: novoId(), arma: ac.granada, passo: passos[marcoQueContem(t0)].passo, nivel: ini.nivel || 0, origem: [ini.x, ini.y],
-                                  destino: [ac.alvo.x, ac.alvo.y], arremesso: null, t: t0, jogador: pid }]);
-      granadas[ac.indice] = { sem: true, lado: lado, motivo: busca.estado === "carregando" ? "carregando" : busca.estado === "sem" ? "sem_biblioteca" : g ? "escolha" : "nenhum" };
-      anota(ac, pid, t0, t0);
-    }
-    function executa(ac) {
-      ac.quem.forEach(function (q) {
-        var nome = q.lado.toUpperCase() + " " + q.num, pid = cmdPeca(q);
-        if (!pid) { problemas.push(cmdT("erro_sem_peca", { quem: nome })); return; }
-        var qd = ac.quando, t0 = null, ant = ac.indice > 0 ? acaoFim[ac.indice - 1] : null;
-        if (qd && (qd.tipo === "relogio" || qd.tipo === "inicio")) t0 = qd.t_decorrido;
-        else if (qd && qd.tipo === "depois") t0 = ant ? (ant.pecas[pid] != null ? ant.pecas[pid] : ant.geral) : null;
-        else if (qd && qd.tipo === "junto") t0 = ant ? ant.inicio : null;
-        else if (ac.tipo === "esperar" && qd && qd.tipo === "espera_ate") t0 = ant ? (ant.pecas[pid] != null ? ant.pecas[pid] : ant.geral) : null;
-        if (t0 == null) { problemas.push(cmdT(qd ? "erro_inicio" : "erro_sem_horario", { quem: nome })); return; }
-        t0 = Math.round(t0 * 100) / 100;
-        var ini = posicaoEm(pid, t0);
-        if (ac.tipo === "esperar") {
-          anota(ac, pid, t0, qd && qd.tipo === "espera_ate" ? M3.SEGUNDOS_DO_ROUND - qd.segundos_restantes : t0 + (ac.espera_s || 0)); return;
-        }
-        if (!ini) { problemas.push(cmdT("erro_sem_peca", { quem: nome })); return; }
-        if (ac.tipo === "lancar") { lanca(ac, pid, nome, t0, ini); return; }
-        // mover e segurar: andar até o ponto (segurar é chegar e ficar)
-        var modo = ac.modo || "correndo", nivel = cmdNivel(ac.alvo), chega, info = null;
-        var real = cmdTempoReal(ini, ac.alvo, modo);
-        if (real) {
-          chega = Math.round((t0 + real.mediana) * 100) / 100;
-          info = { tipo: "real", fonte: real.fonte, t: chega, t25: t0 + real.p25, t75: t0 + real.p75, casos: real.casos, partidas: real.partidas, duracao: real.mediana };
-        } else if (nivel !== (ini.nivel || 0)) {
-          if (ac.chegada_t == null) { falta = falta || { acao: ac.indice, quem: nome, alvo: cmdNomeDoAlvo(ac.alvo), t0: t0 }; return; }
-          chega = ac.chegada_t;
-        } else {
-          chega = Math.round((t0 + Math.hypot(ac.alvo.x - ini.x, ac.alvo.y - ini.y) / cmdVelocidadeDoPiso(pid, modo)) * 100) / 100;
-          info = { tipo: "estimado", t: chega };
-        }
-        if (chega <= t0) { problemas.push(cmdT("erro_inicio", { quem: nome })); return; }
-        if (info) chegadas[ac.indice] = info;
-        var destino = { t: chega, x: ac.alvo.x, y: ac.alvo.y, nivel: nivel, modo: modo, chave: cmdChaveDoAlvo(ac.alvo), area: cmdAreaDoAlvo(ac.alvo) };
-        anda(ac, pid, t0, ini, destino);
-        anota(ac, pid, t0, chega);
-      });
-    }
-    // as cadeias: um comando com horário abre uma; os sem horário ficam presos ao comando anterior na escrita
-    var cadeias = [], atual = null;
-    leitura.acoes.forEach(function (ac) {
-      var qd = ac.quando, explicito = qd && (qd.tipo === "relogio" || qd.tipo === "inicio");
-      if (explicito || !atual) { atual = { t: explicito ? qd.t_decorrido : -Infinity, ordem: cadeias.length, acoes: [] }; cadeias.push(atual); }
-      atual.acoes.push(ac);
-    });
-    cadeias.sort(function (a, b) { return a.t === b.t ? a.ordem - b.ordem : a.t - b.t; });
-    cadeias.forEach(function (c) { c.acoes.forEach(executa); });
-    // as operações levam só os campos que a prancheta conhece (sem a chave e a área, que servem à próxima viagem do plano)
-    ops.forEach(function (op) {
-      if (op[0] !== "cria_caminho" || !op[1].trilha) return;
-      op[1].pontos = op[1].trilha.pts.slice().sort(function (p, q) { return p.t - q.t; }).map(function (p) { var o = { t: p.t, x: p.x, y: p.y, nivel: p.nivel }; if (p.modo) o.modo = p.modo; if (p.yaw !== undefined) o.yaw = p.yaw; return o; });
-      delete op[1].trilha;
-    });
-    return { ops: ops, chegadas: chegadas, problemas: problemas, avisos: avisos, falta: falta, granadas: granadas, inicios: inicios, cortados: cortados, pergunta: pergunta, espera: espera };
+  /* ---------- o plano, o tempo real e a busca da granada real (CR1a): moram em `comandos/plano.js` (puro; o Reescrever vai usar o mesmo), carregado só quando a aba abre ----------
+     Aqui ficam o "mundo" que o módulo recebe (o estado da tática, o relógio, as peças, os textos) e os nomes de sempre (`cmdPlano`, `cmdBuscaReal`...), agora finos. */
+  var PlanoArq = { estado: "inicial", mod: null };
+  function cmdMundo() {
+    return {
+      S: function () { return S; }, cfg: function () { return cfg; }, M3: function () { return M3; }, ANDARES: function () { return ANDARES; }, CENTRO: function () { return CENTRO; },
+      Tempos: Tempos, t: cmdT, doRelogio: cmdDoRelogio, peca: cmdPeca, nomeDoAlvo: cmdNomeDoAlvo, ladoEscrito: cmdLadoEscrito,
+      velocidade: velocidade, funcaoDe: funcaoDe, lugarExibido: lugarExibido, nivelDoZ: nivelDoZ, quadroNoTempo: quadroNoTempo, baseReal: baseReal, cortaReal: cortaReal,
+      ancoraReal: ancoraReal, novoId: novoId, marcoQueContem: marcoQueContem,
+      lugarDe: function (x, y, nivel) { return typeof lugarDe === "function" ? lugarDe(x, y, nivel) : null; },
+      bibliotecaPronta: function () { return typeof bibliotecaPronta === "function" ? bibliotecaPronta() : true; }
+    };
   }
+  /** O módulo, criado na primeira vez que alguém precisa (a página gerada sozinha o traz embutido; no site chega pelo arquivo quando a aba abre). */
+  function cmdModulo() {
+    if (!PlanoArq.mod && typeof PlanoDeComandos !== "undefined") PlanoArq.mod = PlanoDeComandos.cria(cmdMundo());
+    return PlanoArq.mod;
+  }
+  function cmdCarregaPlano() {
+    if (PlanoArq.estado !== "inicial") return;
+    if (typeof PlanoDeComandos !== "undefined" || !cfg.comandos.plano_arquivo) { PlanoArq.estado = "pronta"; return; }
+    PlanoArq.estado = "carregando";
+    var sc = document.createElement("script");
+    sc.src = cfg.comandos.plano_arquivo;
+    sc.onload = function () { PlanoArq.estado = "pronta"; if ($("pr-cmd-resultado")) cmdDesenha(); };
+    sc.onerror = function () { PlanoArq.estado = "erro"; if ($("pr-cmd-resultado")) cmdDesenha(); };
+    document.body.appendChild(sc);
+  }
+  var PLANO_SEM_MODULO = function () { return { ops: [], chegadas: {}, problemas: [], avisos: [], falta: null, granadas: {}, inicios: {}, cortados: {}, pergunta: null, espera: true }; };
+  function cmdPlano(leitura) { var m = cmdModulo(); return m ? m.plano(leitura) : PLANO_SEM_MODULO(); }
+  function cmdBuscaReal(arma, alvo, lado, ini) { var m = cmdModulo(); return m ? m.buscaReal(arma, alvo, lado, ini) : { estado: "carregando", grupos: [], mesmo: 0, outro: 0 }; }
+  function cmdEstadoDaBiblioteca() { var m = cmdModulo(); return m ? m.estadoDaBiblioteca() : "carregando"; }
 
   /** A pergunta que acabou de aparecer recebe o foco (o campo do horário ou a primeira opção), para quem usa o teclado. */
   function cmdFoco() {
@@ -378,7 +234,7 @@
       var chave = { sem_biblioteca: "aviso_sem_biblioteca", nenhum: "aviso_sem_real", escolha: "aviso_origem" }[g.motivo];
       if (chave) raiz.appendChild(el("p", { class: "pr-cmd-aviso", id: "pr-cmd-origem", texto: cmdT(chave, { lado: cmdLadoEscrito(g.lado) }) }));
     });
-    if (plano && plano.espera) raiz.appendChild(el("p", { class: "pr-cmd-aviso", id: "pr-cmd-carregando-granadas", role: "status", texto: cmdT("ui_carregando_granadas") }));
+    if (plano && plano.espera && PlanoArq.estado !== "carregando") raiz.appendChild(el("p", { class: "pr-cmd-aviso", id: "pr-cmd-carregando-granadas", role: "status", texto: cmdT("ui_carregando_granadas") }));
     if (plano) plano.avisos.filter(function (m, i, v) { return v.indexOf(m) === i; }).forEach(function (m) { raiz.appendChild(el("p", { class: "pr-cmd-aviso", "data-aviso": "corte", texto: m })); });
     l.acoes.forEach(function (ac) {          // horário fixo: diz de qual comando fala e, se ele corta outros, quais
       if (!ac.depende_do_deslocamento) return;
@@ -425,6 +281,8 @@
     } else if (plano && plano.problemas.length) {
       plano.problemas.filter(function (m, i, v) { return v.indexOf(m) === i; }).forEach(function (m) { raiz.appendChild(el("p", { class: "pr-cmd-erro", role: "alert", texto: m })); });
     }
+    if (PlanoArq.estado === "carregando") raiz.appendChild(el("p", { class: "pr-cmd-aviso", id: "pr-cmd-carregando-plano", role: "status", texto: cmdT("ui_carregando_plano") }));
+    if (PlanoArq.estado === "erro") raiz.appendChild(el("p", { class: "pr-cmd-erro", id: "pr-cmd-sem-plano", role: "alert", texto: cmdT("aviso_plano_falhou") }));
     if (Tempos.estado === "carregando") raiz.appendChild(el("p", { class: "pr-cmd-aviso", id: "pr-cmd-carregando", role: "status", texto: cmdT("ui_carregando_tempos") }));
     if (Tempos.estado === "erro") raiz.appendChild(el("p", { class: "pr-cmd-aviso", id: "pr-cmd-sem-tempos", texto: cmdT("aviso_tempos_falhou") }));
     if (Cmd.mensagem) raiz.appendChild(el("p", { class: "pr-cmd-aviso", role: "status", texto: Cmd.mensagem }));

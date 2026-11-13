@@ -22,7 +22,7 @@ import json
 import shutil
 from pathlib import Path
 
-from scripts.build_tactics_page import arquivo_da_biblioteca, arquivo_da_pagina, arquivo_dos_tempos, biblioteca_js, mapas_disponiveis, tempos_js
+from scripts.build_tactics_page import ARQUIVO_DO_PLANO, arquivo_da_biblioteca, arquivo_da_pagina, arquivo_dos_tempos, biblioteca_js, mapas_disponiveis, tempos_js
 from scripts.build_tactics_page import build_html as build_prancheta
 from scripts.build_web_page import build_html
 
@@ -699,7 +699,7 @@ def build(repo_url: str, preview: bool = False) -> Path:
     for mapa in mapas_disponiveis():
         grupo = config_do_grupo(url_do_site(repo_url), arquivo_da_pagina(mapa))
         com_grupo = com_grupo or grupo is not None
-        html = build_prancheta(mapa, MAP_LABEL, site=url_do_site(repo_url), grupo=grupo, biblioteca_externa=True)
+        html = build_prancheta(mapa, MAP_LABEL, site=url_do_site(repo_url), grupo=grupo, biblioteca_externa=True, plano_externo=True)
         (saida / arquivo_da_pagina(mapa)).write_text(html, encoding="utf-8")
         # a biblioteca de arremessos num arquivo próprio, carregado depois de a tela montar (cartão 20)
         bib = biblioteca_js(mapa, times_das_partidas(matches))
@@ -712,6 +712,8 @@ def build(repo_url: str, preview: bool = False) -> Path:
             (saida / arquivo_dos_tempos(mapa)).parent.mkdir(exist_ok=True)
             (saida / arquivo_dos_tempos(mapa)).write_text(tempos, encoding="utf-8")
         pranchetas.append({"mapa": mapa, "file": arquivo_da_pagina(mapa), "label": MAP_LABEL.get(mapa, mapa)})
+        (saida / ARQUIVO_DO_PLANO).parent.mkdir(exist_ok=True)       # o plano dos comandos (CR1a): um arquivo só, para todos os mapas
+        shutil.copyfile(PROJECT_ROOT / "dashboard" / "web" / "comandos" / "plano.js", saida / ARQUIVO_DO_PLANO)
         print(f"  {arquivo_da_pagina(mapa)}  ({len(html) / 1024:.0f} KB)  prancheta")
 
     if com_grupo:
