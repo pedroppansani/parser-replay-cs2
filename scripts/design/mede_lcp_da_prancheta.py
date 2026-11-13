@@ -2,7 +2,7 @@
 
     py -3.12 -m scripts.design.mede_lcp_da_prancheta PASTA_DOCS_ANTES PASTA_DOCS_DEPOIS [rodadas] [mapa]
 
-Cada pasta é um site gerado (`docs/`), servido por HTTP local (como em produção; a política de segurança vale). Cada medida usa um contexto novo (sem cache), a
+Cada pasta é um site gerado (`docs/`), servido por HTTP local (como em produção; a política de segurança vale). Cada medida usa um contexto novo (sem cache), alternando antes e depois, a
 janela de cada um dos 3 tamanhos (375x812, 1366x657, 1440x900) e, além do normal, o processador 4 vezes mais lento (um celular fraco). O LCP é o da própria
 página (`largest-contentful-paint`); também sai o tamanho do HTML e a lista de arquivos de script pedidos antes e depois de abrir a aba.
 """
@@ -79,8 +79,15 @@ def main() -> int:
         print(f"{'janela':8} {'CPU':6} {'LCP antes (mediana / p75)':30} {'LCP depois (mediana / p75)':30} {'HTML antes':11} {'HTML depois':11}")
         for rotulo, w, h in TAMANHOS:
             for lento in (False, True):
-                la, ka = mede(nav, pa, mapa, w, h, lento, n)
-                ld, kd = mede(nav, pd, mapa, w, h, lento, n)
+                la, ld, ka, kd = [], [], 0, 0          # as medidas alternam antes e depois (a deriva do computador cai igual nos dois lados)
+                for i in range(n):
+                    for quem in (("a", "d") if i % 2 == 0 else ("d", "a")):
+                        v, k = mede(nav, pa if quem == "a" else pd, mapa, w, h, lento, 1)
+                        (la if quem == "a" else ld).extend(v)
+                        if quem == "a":
+                            ka = k
+                        else:
+                            kd = k
                 q = lambda v: sorted(v)[int(0.75 * (len(v) - 1))]
                 print(f"{rotulo:8} {'4x' if lento else '1x':6} {statistics.median(la):8.0f} / {q(la):6.0f} ms{'':8} {statistics.median(ld):8.0f} / {q(ld):6.0f} ms{'':8} {ka:7} KB   {kd:7} KB")
         for nome, porta in (("antes ", pa), ("depois", pd)):
