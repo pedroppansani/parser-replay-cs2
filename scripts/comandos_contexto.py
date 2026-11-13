@@ -91,6 +91,8 @@ TEXTOS = {
     "aviso_corte_granada": "O comando {n2} corta o caminho do comando {n1}. A {granada} das {h} foi mantida: confira se ainda faz sentido.",
     "chegada_piso": "chega não antes de {h} (estimado: linha reta; o caminho real costuma ser mais longo, e bem mais quando contorna paredes)",
     "ui_carregando_tempos": "Carregando os tempos reais de corrida…",
+    "ui_carregando_plano": "Carregando os comandos…",
+    "aviso_plano_falhou": "Não consegui carregar os comandos desta aba. Recarregue a página.",
     "aviso_tempos_falhou": "Os tempos reais não carregaram: os tempos abaixo são estimados em linha reta. Recarregue a página para tentar de novo.",
     "q_relogio": "aos {h}", "q_inicio": "aos {n} s do início", "q_depois": "depois", "q_junto": "ao mesmo tempo", "q_sem": "sem horário",
     "quem_vazio": "quem?", "onde_vazio": "onde?",
