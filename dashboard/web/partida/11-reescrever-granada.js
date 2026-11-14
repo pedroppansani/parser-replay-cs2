@@ -40,6 +40,8 @@
       for (var i = 0; i < LEVELS.length; i++) if (LEVELS[i].min <= z && z < LEVELS[i].max) return i;
       return padrao || 0;
     }
+    var nomeVisto = null, FORA_DO_LUGAR_U = 100;      // peça a mais que isto do lugar de saída na hora do arremesso: a frase avisa (a de ≤50 u joga de perto; 100 cobre o quadro de 0,25 s da chegada)
+    function lugarVisto(x, y, nivel) { return nomeVisto ? nomeVisto(x, y, nivel) : lugarDe(x, y, nivel); }
     function segundos(v) { return (Math.round(v * 10) / 10).toString().replace(".", ","); }
     function tipoDe(k) { return TX.granadas[k] || k; }
 
@@ -143,7 +145,7 @@
       // as granadas do `tipo` que `nick` jogou neste round, na ordem em que saíram: as de antes do instante também (já são parte do real)
       reais: function (nick, tipo) {
         return cur.nades.filter(function (n) { return n.by === nick && n.k === tipo; }).sort(function (a, b) { return a.f0 - b.f0; })
-          .map(function (n) { var fim = fimDe(n); return { n: n, f0: n.f0, fim: fim, lugar: lugarDe(fim[0], fim[1], nivelDe(n)) }; });
+          .map(function (n) { var fim = fimDe(n); return { n: n, f0: n.f0, fim: fim, lugar: lugarVisto(fim[0], fim[1], nivelDe(n)) }; });
       },
       biblioteca: function () { return { estado: bib.estado, dados: bib.dados }; },
       // pede a biblioteca (carrega uma vez) e chama `aoMudar` quando ela chega ou falha; `denovo`: tenta outra vez depois de um erro
@@ -153,6 +155,7 @@
         if (bib.estado === "nao") carrega();
       },
       lugarDe: lugarDe, nivelDoPonto: nivelDoPonto,
+      poeNomes: function (f) { nomeVisto = f; },      // o nome que se ESCREVE (regra da C3: o ponto do Pedro a até 150 u, senão o nome do jogo); sem ele vale o do mapa
       // a troca por comando: `n` (a granada real), `alt` (o arremesso da biblioteca), `f0` (o quadro em que sai da mão), `origem` (o lugar de saída) e o que a frase precisa
       poeTroca: function (n, alt, f0, origem, extra) {
         trocas = trocas.filter(function (t) { return t.n !== n; });
@@ -316,12 +319,15 @@
     /* ---------- "O que mudou" ---------- */
     // a troca por comando (CR3): "ropz troca a smoke das 1:12 em Top of Mid por smoke em Janelão às 1:05 (lugar de saída 1 de 38, FURIA × Vitality, round 10); ela cai às 1:09, 4,2 s depois de sair da mão."
     function fraseDoComando(t) {
-      var n = t.n, a = t.alt, nivel = nivelDe(n), o = fimDe(n), real = lugarDe(o[0], o[1], nivel), nova = t.onde || lugarDe(a.destino[0], a.destino[1], nivelDoPonto(a.destino[2], nivel)), cai = quedaDaTroca(t);
+      var n = t.n, a = t.alt, nivel = nivelDe(n), o = fimDe(n), real = lugarVisto(o[0], o[1], nivel), nova = t.onde || lugarVisto(a.destino[0], a.destino[1], nivelDoPonto(a.destino[2], nivel)), cai = quedaDaTroca(t);
       var times = bib.dados && bib.dados.partidas_times && bib.dados.partidas_times[a.partida];
       var base = { nome: n.by, tipo: tipoDe(n.k), relogio: N.relogioNo(n.f0), real: real ? " " + N.formata(TX.em_lugar, { lugar: real }) : "", nova: nova ? " " + N.formata(TX.em_lugar, { lugar: nova }) : "",
                    saida: N.relogioNo(f0De(t)), i: t.i, n: t.total, times: times || a.partida, round: a.round, chega: cai === null ? "" : N.relogioNo(cai), seg: cai === null ? "" : segundos(a.voo_s) };
       var texto = N.formata(TX.mudou_troca_cmd, base) + (cai === null ? TX.mudou_troca_cmd_sem_voo : N.formata(TX.mudou_troca_cmd_cai, base));
       if (n.k === "molotov" && !(a.efeito_s > 0)) texto += TX.mudou_sem_efeito;
+      // a peça foi arrastada depois do comando e na hora do arremesso não está no lugar de saída: a troca fica, a frase avisa
+      var og = origemDaTroca(t), pq = N.posicaoNoQuadro(n.by, f0De(t)), sai = lugarVisto(og[0], og[1], nivel);
+      if (Math.hypot(pq.x - og[0], pq.y - og[1]) > FORA_DO_LUGAR_U) texto += N.formata(sai ? TX.mudou_troca_cmd_fora : TX.mudou_troca_cmd_fora_sem_nome, { tipo: base.tipo, saida: base.saida, sai_de: sai || "", nome: n.by });
       return t.levar ? texto + " " + N.formata(TX.mudou_troca_cmd_levar, base) : texto;
     }
     function frases() {

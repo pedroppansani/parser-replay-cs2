@@ -141,7 +141,8 @@ def test_nenhuma_granada_e_criada_sem_uma_real_do_mesmo_tipo_e_do_mesmo_jogador(
         assert pg.is_disabled("#rw-cmd-aplicar")
         _forca_aplicar(pg)
         assert _foto(pg) == antes
-        pg.click("#rw-cmd-cartao [data-codigo='gr_antes'] button")               # [Corrigir] devolve o campo
+        assert pg.locator("#rw-cmd-cartao [data-codigo='gr_antes'] button").all_inner_texts() == ["Aplicar só a corrida", "Corrigir"]      # a corrida só vale se o Pedro pedir
+        pg.click("#rw-cmd-cartao [data-codigo='gr_antes'] button >> text=Corrigir")               # [Corrigir] devolve o campo
         assert pg.evaluate("document.activeElement.id") == "rw-cmd-texto"
         assert erros == []
     finally:
@@ -405,5 +406,79 @@ def test_o_mapa_nao_muda_e_o_cls_e_zero_ao_entender_perguntar_e_recusar_a_granad
                 _opcao(pg, acao)
             assert pg.evaluate(RECT) == mapa
         assert pg.evaluate("window.__cls_total") == 0
+    finally:
+        ctx.close()
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# CR3, ajustes do Pedro: o nome do lugar da granada real (regra da C3), o aviso da peça arrastada e [Aplicar só a corrida]
+# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+def _nomes_da_c3():
+    """Os nomes que a C3 escreve: o ponto do Pedro (a até 150 u) ou o nome legível do jogo ("Bombsite A"), nunca o texto desenhado no mapa ("BOMBSITE A")."""
+    from scripts.comandos_contexto import contexto
+    ctx = contexto(MAPA, so_conferidos=True)
+    return {a["texto"] for a in ctx["areas"] if a["texto"] != a["exibe"]}, {a["exibe"] for a in ctx["areas"]} | {p["nome"] for p in ctx["pontos"]}
+
+
+def test_o_lugar_da_granada_real_segue_a_regra_da_c3_na_pergunta_no_cartao_e_em_o_que_mudou(navegador, pagina_gr):
+    desenhados, legiveis = _nomes_da_c3()
+    ctx, pg, _ = _abre_no_instante(navegador, pagina_gr)
+    try:
+        _abre_secao(pg)
+        _escreve(pg, "mezii joga flash no meio aos 1:10")
+        botoes = pg.locator("#rw-cmd-cartao [data-codigo='gr_qual'] button").all_inner_texts()
+        lugares = [b.split(" em ", 1)[1] for b in botoes]
+        assert lugares and all(l in legiveis for l in lugares) and not any(l in desenhados for l in lugares), lugares      # "Bombsite A", não "BOMBSITE A"
+        _opcao(pg, "flash das 0:55")
+        _espera_biblioteca(pg)
+        _decide(pg)
+        _aplica(pg)
+        mudou = pg.inner_text("#rw-mudou")
+        assert f"mezii troca a flash das 0:55 em {lugares[0]} por flash em " in mudou, mudou
+        _escreve(pg, "FalleN joga smoke no janelão aos 0:57")
+        _espera_biblioteca(pg)
+        real = pg.evaluate("() => window.__reescrever().trocas.trocas.length")
+        _decide(pg)
+        _aplica(pg)
+        frase = [l for l in pg.inner_text("#rw-mudou").split("\n") if l.startswith("FalleN troca a smoke")][0]
+        lugar_real = frase.split("das 0:57 em ", 1)[1].split(" por smoke", 1)[0]
+        assert lugar_real in legiveis and lugar_real not in desenhados and real == 1, frase
+    finally:
+        ctx.close()
+
+
+def test_peca_arrastada_depois_da_troca_avisa_em_o_que_mudou_e_a_troca_fica(navegador, pagina_gr):
+    from tests.test_reescrever_r3 import _arrasta
+    ctx, pg, _ = _abre_no_instante(navegador, pagina_gr)
+    try:
+        _abre_secao(pg)
+        _escreve(pg, "FalleN joga smoke no janelão aos 0:57")
+        _espera_biblioteca(pg)
+        _decide(pg)
+        _aplica(pg)
+        assert "o FalleN não está mais lá" not in pg.inner_text("#rw-mudou")      # no lugar de saída: nada a avisar
+        _arrasta(pg, "FalleN", dx=160, dy=0)
+        mudou = pg.inner_text("#rw-mudou")
+        assert "Aviso: a smoke das 0:57 sai de " in mudou and ", mas o FalleN não está mais lá." in mudou, mudou
+        assert len(_estado(pg)["trocas"]["trocas"]) == 1      # a troca não é apagada
+    finally:
+        ctx.close()
+
+
+def test_frase_mista_sem_a_granada_real_oferece_aplicar_so_a_corrida(navegador, pagina_gr):
+    ctx, pg, _ = _abre_no_instante(navegador, pagina_gr)
+    try:
+        _abre_secao(pg)
+        _escreve(pg, "ropz joga flash no meio aos 1:10 e corre pro B")
+        assert "ropz não jogou flash neste round" in _cartao(pg) and pg.is_disabled("#rw-cmd-aplicar")
+        assert pg.locator("#rw-cmd-cartao button", has_text="Aplicar só a corrida").count() == 1
+        _opcao(pg, "Aplicar só a corrida")
+        assert "joga flash" not in _cartao(pg) and not pg.is_disabled("#rw-cmd-aplicar"), _cartao(pg)
+        _aplica(pg)
+        e = _estado(pg)
+        assert _pecas(pg)["ropz"]["editada"] and e["trocas"]["trocas"] == [] and e["comandos"]["desfazer"] == 1
+        _escreve(pg, "YEKINDAR joga smoke no janelão aos 1:10")                        # só granada, sem nada mais na frase: não há corrida para aplicar
+        assert pg.locator("#rw-cmd-cartao button", has_text="Aplicar só a corrida").count() == 0
     finally:
         ctx.close()

@@ -68,6 +68,7 @@
       aoAnotar: function (i, pid, t0, fim) { fins[i] = Math.max(fins[i] === undefined ? -Infinity : fins[i], fim); }
     };
     var seq = 0, plano = global.PlanoDeComandos.cria(mundo);
+    G.poeNomes(mundo.lugarExibido);      // "O que mudou" e os botões escrevem o lugar como a C3: o ponto do Pedro a até 150 u, senão o nome do jogo
 
     /* ---------- o cartão: o que o site entendeu, dito do jeito da prancheta, com o nick sempre ---------- */
     function quem(ac) {
@@ -212,11 +213,32 @@
       estado.leitura = null; estado.plano = null; estado.vereds = []; estado.grv = []; estado.grPend = null; estado.msg = null; estado.horario = null;
       desenha(); campo.focus({ preventScroll: true }); campo.select(); mostra();
     }
+    // Frase mista sem a granada real ("ropz joga flash ... e corre pro B", e ele não jogou flash): o resto da frase ainda vale. [Aplicar só a corrida] tira da frase os comandos de granada recusados por isso e refaz a conta.
+    var SEM_GRANADA_REAL = { gr_nao_jogou: 1, gr_antes: 1 };
+    function podeSoACorrida() {
+      var l = estado.leitura;
+      return !!l && estado.grv.length > 0 && estado.grv.every(function (v) { return SEM_GRANADA_REAL[v.codigo]; }) && l.acoes.some(function (ac) { return ac.tipo !== "lancar"; });
+    }
+    function soACorrida() {
+      var l = estado.leitura, fora = {}, nova = {};
+      estado.grv.forEach(function (v) { fora[v.acao] = true; });
+      Object.keys(l).forEach(function (k) { nova[k] = l[k]; });
+      // quem vinha "depois" (ou "junto") da granada tirada herda o horário dela ("joga flash aos 1:10 e corre pro B": a corrida parte aos 1:10)
+      nova.acoes = l.acoes.filter(function (ac) { return !fora[ac.indice]; }).map(function (ac, i) {
+        var c = {}, ant = l.acoes[ac.indice - 1], q = ac.quando;
+        Object.keys(ac).forEach(function (k) { c[k] = ac[k]; });
+        c.indice = i;
+        if (ant && fora[ant.indice] && q && (q.tipo === "depois" || q.tipo === "junto") && ant.quando) c.quando = ant.quando;
+        return c;
+      });
+      estado.leitura = nova;
+    }
     function botaoDoVeredito(v, b) {
       var bt = el("button", "rw-btn rw-cmd-opcao", b.rotulo, { type: "button", "data-botao": b.codigo });
       bt.addEventListener("click", function () {
         if (b.codigo === "corrigir") { corrige(); return; }
-        if (b.codigo === "outro_jogador") estado.leitura = RC.escolherOutro(estado.leitura, v.acao, { lado: v.lado, num: v.num }, ctx);
+        if (b.codigo === "so_corrida") soACorrida();
+        else if (b.codigo === "outro_jogador") estado.leitura = RC.escolherOutro(estado.leitura, v.acao, { lado: v.lado, num: v.num }, ctx);
         else if (b.codigo === "comecar_em") estado.leitura = RC.comecarNoInstante(estado.leitura, v.acao, ctx);
         estado.msg = null; recalcula(); desenha(); foca();
       });
@@ -264,7 +286,8 @@
         if (v.codigo === "termina_depois_da_morte" && ehLancar(v.acao)) return;      // a granada não esmaece: o veredito dela (gr_depois_da_morte) é o que vale
         var b = el("div", "rw-cmd-veredito " + (v.aplica ? "aviso" : "recusa"), null, { "data-codigo": v.codigo, role: "group" });
         b.appendChild(el("p", null, v.texto));
-        if (v.botoes.length) { var op = el("div", "rw-cmd-opcoes"); v.botoes.forEach(function (bt) { op.appendChild(botaoDoVeredito(v, bt)); }); b.appendChild(op); }
+        var bts = SEM_GRANADA_REAL[v.codigo] && podeSoACorrida() ? [{ codigo: "so_corrida", rotulo: TX.cmd_so_corrida }].concat(v.botoes) : v.botoes;
+        if (bts.length) { var op = el("div", "rw-cmd-opcoes"); bts.forEach(function (bt) { op.appendChild(botaoDoVeredito(v, bt)); }); b.appendChild(op); }
         cartao.appendChild(b);
       });
       var p = l.perguntas[0];
@@ -312,7 +335,7 @@
       } else if (estado.plano && estado.plano.falta) {
         var f = estado.plano.falta;
         cartao.appendChild(el("p", "rw-cmd-erro", fmt(TX.cmd_andar, { quem: f.quem, alvo: f.alvo }), { role: "alert" }));
-      } else if (estado.plano && estado.plano.problemas.length) {
+      } else if (estado.plano && estado.plano.problemas.length && !podeSoACorrida()) {      // (o problema de uma frase com a granada recusada some quando [Aplicar só a corrida] resolve)
         estado.plano.problemas.filter(function (m, i, v) { return v.indexOf(m) === i; }).forEach(function (m) { cartao.appendChild(el("p", "rw-cmd-erro", m, { role: "alert" })); });
       }
       if (temGranada() && pronta()) {      // os arremessos reais vêm de um arquivo à parte: dito dentro do cartão (que tem altura fixa)

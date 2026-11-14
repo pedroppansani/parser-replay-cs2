@@ -10,6 +10,7 @@ Os estados, todos com a seção Comandos ABERTA e a biblioteca de arremessos ao 
    5-saida-longe      "FalleN joga smoke no janelão aos 0:57": o lugar de saída é longe, com [Levar o FalleN até lá] e [Usar outro arremesso]
    6-chegada-tardia   "FalleN joga smoke no janelão aos 1:19" + [Levar]: ele só chega às 1:12, "Jogar às 1:12?"
    7-frase-mista      "apEX corre pro meio aos 1:10 e depois joga flash no meio" aplicada (a corrida e a troca; um item do Desfazer)
+   8-so-a-corrida    "ropz joga flash no meio aos 1:10 e corre pro B": o ropz não jogou flash; o cartão recusa a granada e oferece [Aplicar só a corrida]
 O tempo é o relógio simulado do Playwright (`page.clock`). Também mede, por tamanho, o retângulo do mapa em cada estado e o CLS.
 """
 from __future__ import annotations
@@ -116,6 +117,8 @@ def roda(saida: Path) -> None:
                 vai("apEX corre pro meio aos 1:10 e depois joga flash no meio", "Levar o", "Jogar às")
                 pg.click("#rw-cmd-aplicar"); pg.wait_for_timeout(200)
                 foto("7-frase-mista", "rw-mudou")
+                pg.click("#rw-desfazer"); pg.wait_for_timeout(200)
+                vai("ropz joga flash no meio aos 1:10 e corre pro B"); foto("8-so-a-corrida")
                 medidas[chave] = {"mapa": rects, "cls_ate_aplicar": pg.evaluate("window.__cls_total")}
                 assert erros == [], erros
                 ctx.close()
