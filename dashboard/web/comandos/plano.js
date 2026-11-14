@@ -33,7 +33,7 @@
   function cmdNivel(alvo) { return alvo.andar === "baixo" && ANDARES.length > 1 ? 1 : 0; }
 
   /** A velocidade da estimativa: quem corre usa o TETO do jogo (250 u/s, medido no corpus), o que faz da linha reta um piso; andando e agachado seguem a velocidade de cada jeito. */
-  function cmdVelocidadeDoPiso(pid, modo) { return modo === "correndo" ? cfg.comandos.velocidade_piso_correndo : velocidade(funcaoDe(pid), modo); }
+  function cmdVelocidadeDoPiso(pid, modo) { if (W.velocidadePiso) return W.velocidadePiso(pid, modo); return modo === "correndo" ? cfg.comandos.velocidade_piso_correndo : velocidade(funcaoDe(pid), modo); }
 
   function cmdChaveDoAlvo(alvo) {
     return alvo.tipo === "ponto" ? (alvo.ids || [alvo.id]).map(function (id) { return parseInt(String(id).split(":")[1], 10); }).sort(function (a, b) { return a - b; }).join("+") : null;
@@ -90,6 +90,7 @@
       var f = acaoFim[ac.indice] = acaoFim[ac.indice] || { pecas: {}, geral: null, inicio: null };
       f.pecas[pid] = fim; f.geral = fim; f.inicio = t0;
       livreEm[pid] = Math.max(livreEm[pid] || 0, fim); inicios[ac.indice] = t0;
+      if (W.aoAnotar) W.aoAnotar(ac.indice, pid, t0, fim);      // o Reescrever (CR2) confere o fim de cada comando contra a morte real
     }
     /** A peça anda de `ini` (em t0) até `destino`. Cada peça tem UM caminho no plano (um `cria_caminho`): um comando novo acrescenta o ponto dela (ela fica onde chegou até t0); um que
         começa no meio de uma corrida do plano CORTA o caminho ali (os pontos de depois saem, com os comandos a que eles pertenciam, que o cartão marca como cortados) e segue dali. */

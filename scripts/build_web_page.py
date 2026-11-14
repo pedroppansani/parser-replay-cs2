@@ -265,6 +265,12 @@ def biblioteca_do_mapa(mapa: str) -> str | None:
     return arquivo_da_biblioteca(mapa) if mapa and (LINEUPS_DIR / f"{mapa}.json").exists() else None
 
 
+def comandos_do_mapa(mapa: str) -> dict | None:
+    """Os arquivos dos comandos do Reescrever (CR2), relativos à página, carregados só quando a seção Comandos abre; None se o mapa não tem contexto de comandos."""
+    from scripts.build_reescrever_comandos import arquivos_do_mapa
+    return arquivos_do_mapa(mapa)
+
+
 def dados_da_pagina(match_id: str, base: Path | None = None, repo: str | None = None, preview: bool = False) -> dict:
     from leitura import marca_da_funcao, perfil_erros, peso_dos_rounds, round_swing_texto
     from leitura.reescrever import TEXTOS_DO_MODO
@@ -287,9 +293,11 @@ def dados_da_pagina(match_id: str, base: Path | None = None, repo: str | None = 
             # "Abrir round na prancheta" (fase 9): a tolerância medida do caminho
             "round_na_prancheta": {"tolerancia_u": TOLERANCIA_U},
             # o modo Reescrever (R2, decisão 57): os rótulos e a frase fixa de honestidade, prontos
-            "reescrever": {**TEXTOS_DO_MODO, "velocidade": {a: VELOCIDADE_U_S[(a, "correndo")] for a in ("AWP", "rifle")},
+            "reescrever": {**TEXTOS_DO_MODO, "velocidade": {**{a: VELOCIDADE_U_S[(a, "correndo")] for a in ("AWP", "rifle")},
+                                         "modos": {a: {m: VELOCIDADE_U_S[(a, m)] for m in ("correndo", "andando", "agachado")} for a in ("AWP", "rifle")}},   # `modos`: "anda" e "agacha" por comando (CR2)
                           "smoke_s": DURACAO_SMOKE_S,
-                          "biblioteca": biblioteca_do_mapa(_le_json(base / "match_meta.json").get("map_name") or "")},   # a mesma conta da prancheta (decisão 43); o arquivo das alternativas da troca de granada (R4)
+                          "biblioteca": biblioteca_do_mapa(_le_json(base / "match_meta.json").get("map_name") or ""),
+                          "comandos": comandos_do_mapa(_le_json(base / "match_meta.json").get("map_name") or "")},   # a mesma conta da prancheta (decisão 43); o arquivo das alternativas da troca de granada (R4)
             # "Quanto cada round pesou" (aba Placar): só texto, pronto; a barra o JS lê da curva do payload
             # o Round swing (RS2): a coluna da tabela de jogadores e a linha do Perfil, só texto pronto; só os jogadores desta partida
             "round_swing": round_swing_texto.bloco(payload),

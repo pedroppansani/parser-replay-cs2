@@ -42,6 +42,7 @@ Antes de mexer no `map_core.js`, no canvas, no Replay (`partida/`) ou na pranche
   começa depois da morte ou jogador já morto = recusado ([Escolher outro jogador], [Corrigir]); termina depois da morte = aplicado, a peça esmaece na hora da morte real;
   antes do instante = o real não muda; "bomba ou round?" só depois do plant. Sem nick no contexto (a prancheta) a leitura é a de sempre (64)
 - "Até" é o FIM do `segurar` (CR1d): "segura o meio até 0:45" = fica no meio desde agora (ou desde o fim do comando anterior) até 0:45; "aos 0:45" continua sendo o início. O leitor devolve `quando: {tipo: "agora"}` e `fim: {t_decorrido}`; o plano para a peça no destino até o fim (e o comando seguinte parte dele); `esperar` e `mover` não mudam. "Agora" = marcador do tempo na prancheta, instante no Reescrever (`real.js`: `fim_antes_do_instante`, `termina_depois_da_morte`).
+- Comandos no Reescrever, com tela (CR2): a casca da seção está em `partida/12-reescrever-comandos.js`; o leitor, o plano, `real.js`, a tela do cartão (`comandos/reescrever.js`) e o contexto do mapa (`comandos/real/<mapa>.js`, de `scripts/build_reescrever_comandos.py`) só carregam quando a seção abre ou o campo recebe o foco. O cartão tem altura FIXA e rola por dentro (CLS 0); o CSS da seção fica no `template.html`, não no `v2.css` (as pranchetas o carregam). Um comando aplicado = um item de `reescrever.comandos` (foto das trilhas de antes); granada por comando é a CR3.
 
 ## Calibração do Pedro (não resolva sozinho)
 
