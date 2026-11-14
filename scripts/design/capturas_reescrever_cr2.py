@@ -80,8 +80,9 @@ def roda(saida: Path) -> None:
 
                 def foto(passo: str, alvo: str = "rw-comandos") -> None:
                     pg.wait_for_timeout(250)
-                    pg.locator("#" + alvo).scroll_into_view_if_needed()
-                    if w >= 1024:      # no computador a coluna rola por dentro: o alvo no alto dela
+                    if w < 1024:
+                        pg.locator("#" + alvo).scroll_into_view_if_needed()
+                    elif alvo != "rw-comandos":      # só o "O que mudou" (estado 8) é levado à vista à mão; os estados do cartão aparecem como a pessoa os veria: a coluna rola sozinha
                         pg.evaluate("a => { const c = document.getElementById('squad-t'); const s = document.getElementById(a); c.scrollTop = s.offsetTop - c.offsetTop - 8; }", alvo)
                     pg.wait_for_timeout(100)
                     if w < 1024:      # no celular: da moldura do mapa (com o alternador) até o fim da seção, para ler

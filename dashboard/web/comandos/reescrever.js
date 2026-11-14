@@ -40,7 +40,7 @@
       peca: function (q) { var j = jogador(q.lado, q.num); return j ? j.nick : null; },
       nomeDoAlvo: function (a) { return a.tipo === "area" ? (a.exibe || a.texto || a.nome) : a.nome + (a.qualificacao ? " (" + a.qualificacao + ")" : ""); },
       ladoEscrito: function (l) { return l === "ct" ? "CT" : "TR"; },
-      velocidade: function () { return ctx.velocidade_piso_correndo; }, velocidadePiso: function (pid) { return N.velocidadeDe(pid); },
+      velocidade: function () { return ctx.velocidade_piso_correndo; }, velocidadePiso: function (pid, modo) { return N.velocidadeDe(pid, modo); },      // andando e agachado têm a velocidade própria (a da C3), igual à da trilha
       funcaoDe: function () { return null; }, lugarDe: function () { return null; }, lugarExibido: function () { return null; }, nivelDoZ: function () { return 0; },
       bibliotecaPronta: function () { return true; },
       quadroNoTempo: function (e3, tt) {      // onde cada peça está em `tt` na SUA versão (a trilha que já existe) ou, sem edição, no real
@@ -106,9 +106,21 @@
     }
 
     /* ---------- o desenho ---------- */
+    // O que acabou de aparecer (veredito, pergunta, cartão) tem de estar À VISTA sem ninguém rolar: o cartão rola até o bloco, e a coluna do painel (só ela, nunca a página) rola até o cartão.
+    function mostra() {
+      var bloco = cartao.querySelector(".rw-cmd-veredito.recusa") || cartao.querySelector(".rw-cmd-pergunta") || cartao.querySelector(".rw-cmd-veredito"), c = cartao.getBoundingClientRect();
+      cartao.scrollLeft = 0;
+      if (bloco) cartao.scrollTop = Math.max(0, cartao.scrollTop + bloco.getBoundingClientRect().top - c.top - 6);
+      var col = cartao.closest(".painel-rw");
+      if (col && col.scrollHeight > col.clientHeight + 1) {
+        var r = col.getBoundingClientRect(), k = cartao.getBoundingClientRect(), fim = P.aplicar.getBoundingClientRect().bottom;
+        if (k.top < r.top || fim > r.bottom) col.scrollTop += k.top - r.top - 6;      // o topo do cartão no alto da coluna (o cartão tem altura fixa: cabe)
+      }
+    }
     function foca() {
-      var a = cartao.querySelector(".rw-cmd-horario") || cartao.querySelector(".rw-cmd-opcao");
-      if (a) { a.focus(); cartao.scrollLeft = 0; }
+      var a = cartao.querySelector(".rw-cmd-horario") || cartao.querySelector(".rw-cmd-opcao:not(:disabled)");
+      if (a) a.focus({ preventScroll: true });
+      mostra();
     }
     function botoes() {
       P.aplicar.disabled = !pode();
@@ -121,7 +133,7 @@
     }
     function corrige() {
       estado.leitura = null; estado.plano = null; estado.vereds = []; estado.msg = null; estado.horario = null;
-      desenha(); campo.focus(); campo.select();
+      desenha(); campo.focus({ preventScroll: true }); campo.select(); mostra();
     }
     function botaoDoVeredito(v, b) {
       var bt = el("button", "rw-btn rw-cmd-opcao", b.rotulo, { type: "button", "data-botao": b.codigo });
@@ -188,7 +200,12 @@
         var bp = el("div", "rw-cmd-pergunta", null, { role: "group", "aria-label": p.texto });
         bp.appendChild(el("p", "rw-cmd-pergunta-texto", p.texto));
         var op2 = el("div", "rw-cmd-opcoes");
-        (p.opcoes || []).forEach(function (o) { var b = el("button", "rw-btn rw-cmd-opcao", o.rotulo, { type: "button" }); b.addEventListener("click", function () { responde(o.valor); }); op2.appendChild(b); });
+        (p.opcoes || []).forEach(function (o) {
+          var b = el("button", "rw-btn rw-cmd-opcao", o.rotulo, { type: "button" }), j = o.valor && o.valor.lado ? jogador(o.valor.lado, o.valor.num) : null;
+          if (j && !j.vivo) { b.disabled = true; b.setAttribute("data-morto", "1"); }      // quem já morreu não serve: o botão fica, desligado, e o rótulo diz o motivo
+          else b.addEventListener("click", function () { responde(o.valor); });
+          op2.appendChild(b);
+        });
         if (p.codigo === "quando" || p.codigo === "horario_invalido") { bp.appendChild(op2); bp.appendChild(perguntaDoHorario(p, responde)); }
         else if (p.opcoes && p.opcoes.length) bp.appendChild(op2);
         else bp.appendChild(el("p", "rw-cmd-aviso", TX.cmd_corrija));
@@ -215,14 +232,22 @@
     // o plano vira paradas da trilha: cada trecho do caminho parte do instante em que a peça estava no ponto anterior (a espera "fica até H" é só o intervalo entre duas paradas)
     function paradasDe(op) {
       var pts = op[1].pontos.slice().sort(function (a, b) { return a.t - b.t; }), out = [];
-      for (var k = 1; k < pts.length; k++) if (Math.hypot(pts[k].x - pts[k - 1].x, pts[k].y - pts[k - 1].y) > 0.5) out.push({ f: pts[k - 1].t * hz, x: pts[k].x, y: pts[k].y });
+      for (var k = 1; k < pts.length; k++) if (Math.hypot(pts[k].x - pts[k - 1].x, pts[k].y - pts[k - 1].y) > 0.5) { var pa = { f: pts[k - 1].t * hz, x: pts[k].x, y: pts[k].y }; if (pts[k].modo && pts[k].modo !== "correndo") pa.modo = pts[k].modo; out.push(pa); }
       return out;
+    }
+    // a causa certa de o Aplicar não valer: o round acabou antes da partida do comando, ou a peça já está lá (menos de 8 u); senão a mensagem geral
+    function porQueNao(nome, ps) {
+      var ultimo = P.round.frames - 1, j = ctx.jogadores.filter(function (x) { return x.nick === nome; })[0], rotulo = j ? fmt(TX.cmd_quem, { nick: j.nick, lado: j.lado.toUpperCase(), num: j.num }) : nome;
+      if (ps[0].f > ultimo) return fmt(TX.cmd_nao_aplicou_fim, { quem: rotulo, h_cmd: N.relogioNo(Math.round(ps[0].f)), h_fim: N.relogioNo(ultimo) });
+      var q = N.posicaoNoQuadro(nome, ps[0].f);
+      if (ps.every(function (pa) { return Math.hypot(pa.x - q.x, pa.y - q.y) < 8; })) return fmt(TX.cmd_nao_aplicou_parado, { quem: rotulo, u: 8 });
+      return fmt(TX.cmd_nao_aplicou, { quem: rotulo });
     }
     function aplica() {
       if (!pode()) return;
       var novas = {}, nomes = [];
       estado.plano.ops.forEach(function (op) { if (op[0] === "cria_caminho") { var ps = paradasDe(op); if (ps.length) { novas[op[1].peca] = ps; nomes.push(op[1].peca); } } });
-      if (!nomes.length) { estado.msg = TX.cmd_nao_aplicou.replace("{quem}", ""); desenha(); return; }
+      if (!nomes.length) { estado.msg = TX.cmd_nao_aplicou.replace("{quem}", ""); desenha(); mostra(); return; }
       var foto = C.foto(nomes), feitos = [], falhou = null;
       nomes.forEach(function (nome) {
         if (falhou) return;
@@ -231,14 +256,14 @@
       });
       if (falhou) {
         if (feitos.length) { var sub = {}; feitos.forEach(function (n) { sub[n] = foto[n]; }); C.empurra(sub, ""); C.desfaz(); }      // tudo ou nada: o que já tinha entrado volta
-        estado.msg = fmt(TX.cmd_nao_aplicou, { quem: falhou }); desenha(); return;
+        estado.msg = porQueNao(falhou, novas[falhou]); desenha(); mostra(); return;
       }
       var resumo = estado.leitura.acoes.map(linha).join("; ");
       C.empurra(foto, fmt(TX.cmd_mudou, { linha: resumo }));
       estado.prof = C.profundidade();
       estado.leitura = null; estado.plano = null; estado.vereds = []; estado.msg = TX.cmd_aplicado;
       campo.value = "";
-      desenha(); campo.focus();
+      desenha(); campo.focus({ preventScroll: true }); mostra();
     }
     P.aplicar.onclick = aplica;
     P.corrigir.onclick = corrige;

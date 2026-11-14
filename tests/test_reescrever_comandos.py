@@ -53,6 +53,11 @@ def _cartao(pg):
     return pg.inner_text("#rw-cmd-cartao")
 
 
+def _sem_tela(pecas):
+    """O estado das peças sem a posição na TELA (que muda se a página rola): o que importa é o dado."""
+    return [{k: v for k, v in p.items() if k != "tela"} for p in pecas]
+
+
 def _pecas(pg):
     return {p["nome"]: p for p in _estado(pg)["pecas"]}
 
@@ -179,11 +184,11 @@ def test_aplicar_e_desfazer_volta_exatamente_ao_estado_de_antes(navegador, pagin
     ctx, pg, _ = _abre_no_instante(navegador, pagina_cmd)
     try:
         _abre_secao(pg)
-        antes = _estado(pg)["pecas"], pg.inner_text("#rw-mudou")
+        antes = _sem_tela(_estado(pg)["pecas"]), pg.inner_text("#rw-mudou")
         assert pg.is_disabled("#rw-desfazer")
         _escreve(pg, "ropz e apEX correm pro meio aos 1:10")
         assert "ropz (TR 2)" in _cartao(pg) and "apEX (TR 3)" in _cartao(pg)
-        assert _estado(pg)["pecas"] == antes[0] and pg.inner_text("#rw-mudou") == antes[1]  # entender não muda nada
+        assert _sem_tela(_estado(pg)["pecas"]) == antes[0] and pg.inner_text("#rw-mudou") == antes[1]  # entender não muda nada
         _aplica(pg)
         est = _estado(pg)
         assert [p["nome"] for p in est["pecas"] if p["editada"]] == ["ropz", "apEX"] and est["comandos"]["desfazer"] == 1       # dois jogadores, UM desfazer
@@ -191,28 +196,49 @@ def test_aplicar_e_desfazer_volta_exatamente_ao_estado_de_antes(navegador, pagin
         assert [round(p["f"]) for p in _trilha(pg, "ropz")] == [180]                          # 1:10 = 45 s = o quadro 180
         assert "Comando:" in pg.inner_text("#rw-mudou")
         pg.click("#rw-desfazer")
-        assert _estado(pg)["pecas"] == antes[0] and pg.inner_text("#rw-mudou") == antes[1]
+        assert _sem_tela(_estado(pg)["pecas"]) == antes[0] and pg.inner_text("#rw-mudou") == antes[1]
         assert pg.is_disabled("#rw-desfazer") and "Desfeito" in _cartao(pg)
     finally:
         ctx.close()
 
 
-def test_desfazer_devolve_a_trilha_que_a_peca_tinha_antes_do_comando(navegador, pagina_cmd):
+def test_o_arrasto_e_um_item_proprio_do_desfazer_e_desfazer_sempre_desfaz_a_ultima_acao(navegador, pagina_cmd):
     ctx, pg, _ = _abre_no_instante(navegador, pagina_cmd)
     try:
         _abre_secao(pg)
         _arrasta(pg, "ropz")
         arrastada = _trilha(pg, "ropz")
+        assert _estado(pg)["comandos"]["desfazer"] == 1 and not pg.is_disabled("#rw-desfazer")      # o arrasto já é um item
         _escreve(pg, "ropz corre pro meio aos 1:10"); _aplica(pg)
         assert len(_trilha(pg, "ropz")) == 2 and _trilha(pg, "ropz")[0] == arrastada[0]       # a parada de arrastar fica; o comando vem depois dela
         _escreve(pg, "mezii corre pro meio aos 1:10"); _aplica(pg)
-        assert _estado(pg)["comandos"]["desfazer"] == 2
+        assert _estado(pg)["comandos"]["desfazer"] == 3
         pg.click("#rw-desfazer")                                                              # volta só o do mezii
         assert _pecas(pg)["mezii"]["editada"] is False and len(_trilha(pg, "ropz")) == 2
-        pg.click("#rw-desfazer")
-        assert _trilha(pg, "ropz") == arrastada and _estado(pg)["comandos"]["desfazer"] == 0
+        pg.click("#rw-desfazer")                                                              # volta o comando do ropz: sobra o arrasto
+        assert _trilha(pg, "ropz") == arrastada and _estado(pg)["comandos"]["desfazer"] == 1
+        pg.click("#rw-desfazer")                                                              # e por fim o arrasto
+        assert not _pecas(pg)["ropz"]["editada"] and _estado(pg)["comandos"]["desfazer"] == 0
+        _arrasta(pg, "mezii")
         pg.click("#rw-voltar")                                                                # "Voltar ao real" zera a pilha
         assert _estado(pg)["comandos"]["desfazer"] == 0 and not any(p["editada"] for p in _estado(pg)["pecas"])
+    finally:
+        ctx.close()
+
+
+def test_comando_depois_arrasto_depois_um_desfazer_sobra_o_comando_com_a_trilha_de_depois_dele(navegador, pagina_cmd):
+    ctx, pg, _ = _abre_no_instante(navegador, pagina_cmd)
+    try:
+        _abre_secao(pg)
+        _escreve(pg, "ropz corre pro meio aos 1:10"); _aplica(pg)
+        depois_do_comando = _trilha(pg, "ropz")
+        linhas = _estado(pg)["comandos"]["linhas"]
+        _arrasta(pg, "ropz")
+        assert _trilha(pg, "ropz") != depois_do_comando and _estado(pg)["comandos"]["desfazer"] == 2
+        pg.click("#rw-desfazer")                                                              # UM Desfazer: o arrasto, não o comando
+        assert _trilha(pg, "ropz") == depois_do_comando
+        est = _estado(pg)
+        assert est["comandos"]["desfazer"] == 1 and est["comandos"]["linhas"] == linhas and _pecas(pg)["ropz"]["editada"]
     finally:
         ctx.close()
 
@@ -418,12 +444,89 @@ def test_acessibilidade_o_cartao_e_anunciado_a_pergunta_recebe_o_foco_e_tudo_se_
         assert pg.evaluate("document.activeElement.classList.contains('rw-cmd-opcao')")       # o foco foi para a pergunta
         primeiro = pg.evaluate("document.activeElement.textContent")
         pg.keyboard.press("Tab")
-        assert pg.evaluate("document.activeElement.textContent") != primeiro and pg.evaluate("document.activeElement.classList.contains('rw-cmd-opcao')")     # as opções se alcançam por Tab
+        assert pg.evaluate("document.activeElement.textContent") != primeiro                  # o Tab anda (pula o jogador morto, que está desligado)
         pg.keyboard.press("Shift+Tab"); pg.keyboard.press("Enter")                             # e se escolhem pelo teclado
         pg.wait_for_timeout(150)
         assert "O que entendi" in _cartao(pg) and pg.locator("#rw-cmd-cartao .rw-cmd-opcao").count() == 0 or "granada" in _cartao(pg)
         assert pg.evaluate("getComputedStyle(document.querySelector('.rw-cmd-seta'), '::before').transitionDuration") == "0s"       # reduzir movimento continua valendo
         for sel in ("#rw-cmd-entender", "#rw-cmd-aplicar", "#rw-cmd-corrigir", "#rw-desfazer"):
             assert pg.locator(sel).evaluate("e => e.tagName") == "BUTTON"                       # tudo é botão de verdade: o teclado alcança
+    finally:
+        ctx.close()
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# ajustes do Pedro depois das capturas
+# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+def _entende_sem_rolar(pg, frase):
+    """Escreve e entende sem o Playwright rolar a página (o clique dele rolaria): a conta é do site."""
+    pg.evaluate("f => { const c = document.getElementById('rw-cmd-texto'); c.value = f; document.getElementById('rw-cmd-entender').click(); }", frase)
+    pg.wait_for_timeout(200)
+
+
+VISIVEL = """sel => { const col = document.getElementById('squad-t').getBoundingClientRect(), vp = innerHeight;
+    return [...document.querySelectorAll(sel)].map(b => { const r = b.getBoundingClientRect(); return r.top >= col.top - 1 && r.bottom <= col.bottom + 1 && r.top >= 0 && r.bottom <= vp; }); }"""
+
+
+def test_a_1366x657_o_veredito_e_a_pergunta_aparecem_a_vista_na_coluna_sem_rolar_a_pagina(navegador, pagina_cmd):
+    ctx, pg, _ = _abre_no_instante(navegador, pagina_cmd, 1366, 657)
+    try:
+        _abre_secao(pg)
+        y0 = pg.evaluate("scrollY")
+        _entende_sem_rolar(pg, "ZywOo roda pra B aos 0:50")                                   # o veredito: texto e botões
+        assert pg.evaluate(VISIVEL, '#rw-cmd-cartao [data-codigo="comeca_depois_da_morte"] button') == [True, True]
+        assert pg.evaluate(VISIVEL, '#rw-cmd-cartao [data-codigo="comeca_depois_da_morte"] p') == [True]
+        _entende_sem_rolar(pg, "o 4 joga smoke no janelão aos 1:05")                          # a pergunta
+        assert pg.evaluate(VISIVEL, "#rw-cmd-cartao .rw-cmd-pergunta .rw-cmd-opcao") == [True, True]
+        _entende_sem_rolar(pg, "ropz corre pro meio aos 1:10")                                # o cartão entendido
+        assert pg.evaluate(VISIVEL, "#rw-cmd-cartao .rw-cmd-entendi li") == [True]
+        assert pg.evaluate("scrollY") == y0                                                   # a página não rolou
+    finally:
+        ctx.close()
+
+
+def test_o_jogador_ja_morto_na_pergunta_fica_como_botao_desligado_com_o_motivo(navegador, pagina_cmd):
+    ctx, pg, _ = _abre_no_instante(navegador, pagina_cmd)
+    try:
+        _abre_secao(pg); _escreve(pg, "o 4 joga smoke no janelão aos 1:05")
+        morto = pg.locator("#rw-cmd-cartao .rw-cmd-opcao", has_text="flameZ")
+        assert morto.is_disabled() and "morto às 1:42, antes de 1:20" in morto.inner_text()
+        assert not pg.locator("#rw-cmd-cartao .rw-cmd-opcao", has_text="yuurih").is_disabled()
+        assert pg.evaluate("document.activeElement.textContent").startswith("yuurih")         # o foco vai para o primeiro que serve
+    finally:
+        ctx.close()
+
+
+def test_anda_e_agacha_usam_a_velocidade_propria_e_o_cartao_diz_o_jeito_certo(navegador, pagina_cmd):
+    ctx, pg, _ = _abre_no_instante(navegador, pagina_cmd)
+    try:
+        _abre_secao(pg)
+        durs = {}
+        for verbo, modo in (("corre", "correndo"), ("anda", "andando"), ("agacha", "agachado")):
+            _escreve(pg, f"ropz {verbo} pro meio aos 1:10")
+            assert modo in _cartao(pg), (verbo, _cartao(pg))                                  # o cartão diz o jeito que a peça faz
+            _aplica(pg)
+            t = _pecas(pg)["ropz"]["trechos"][0]
+            durs[modo] = (t["d"], t["dur"])
+            pg.click("#rw-desfazer")
+        v = {"correndo": 210.6, "andando": 111.8, "agachado": 90.4}                           # a velocidade medida do rifle (as constantes da C3)
+        for modo, (d, dur) in durs.items():
+            assert abs(dur - d / v[modo]) < 0.02, (modo, d, dur)
+    finally:
+        ctx.close()
+
+
+def test_horario_depois_do_fim_do_round_diz_a_causa_certa(navegador, pagina_cmd):
+    import re
+    ctx, pg, _ = _abre_no_instante(navegador, pagina_cmd)
+    try:
+        _abre_secao(pg); _escreve(pg, "FalleN corre pro meio aos 0:15")
+        _opcao(pg, "Relógio do round")                                                        # 0:15 do round = 100 s; o round gravado acaba antes
+        assert not pg.is_disabled("#rw-cmd-aplicar"), _cartao(pg)
+        pg.click("#rw-cmd-aplicar"); pg.wait_for_timeout(150)
+        m = re.search(r"o round acabou às (\d+:\d\d) e FalleN \(CT 2\) só parte às (\d+:\d\d)\. Nada mudou\.", _cartao(pg))
+        assert m, _cartao(pg)
+        assert not any(p["editada"] for p in _estado(pg)["pecas"]) and _estado(pg)["comandos"]["desfazer"] == 0
     finally:
         ctx.close()

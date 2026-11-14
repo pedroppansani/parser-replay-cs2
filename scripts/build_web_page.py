@@ -293,7 +293,8 @@ def dados_da_pagina(match_id: str, base: Path | None = None, repo: str | None = 
             # "Abrir round na prancheta" (fase 9): a tolerância medida do caminho
             "round_na_prancheta": {"tolerancia_u": TOLERANCIA_U},
             # o modo Reescrever (R2, decisão 57): os rótulos e a frase fixa de honestidade, prontos
-            "reescrever": {**TEXTOS_DO_MODO, "velocidade": {a: VELOCIDADE_U_S[(a, "correndo")] for a in ("AWP", "rifle")},
+            "reescrever": {**TEXTOS_DO_MODO, "velocidade": {**{a: VELOCIDADE_U_S[(a, "correndo")] for a in ("AWP", "rifle")},
+                                         "modos": {a: {m: VELOCIDADE_U_S[(a, m)] for m in ("correndo", "andando", "agachado")} for a in ("AWP", "rifle")}},   # `modos`: "anda" e "agacha" por comando (CR2)
                           "smoke_s": DURACAO_SMOKE_S,
                           "biblioteca": biblioteca_do_mapa(_le_json(base / "match_meta.json").get("map_name") or ""),
                           "comandos": comandos_do_mapa(_le_json(base / "match_meta.json").get("map_name") or "")},   # a mesma conta da prancheta (decisão 43); o arquivo das alternativas da troca de granada (R4)
