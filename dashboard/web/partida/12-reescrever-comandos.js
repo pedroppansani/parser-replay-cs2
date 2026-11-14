@@ -41,7 +41,7 @@
     function inicia() {
       if (ctl || !ui) return;
       ctl = window.ComandosNoReescrever.inicia({
-        campo: ui.campo, entender: ui.entender, aplicar: ui.aplicar, corrigir: ui.corrigir, cartao: ui.cartao, TX: TX, N: N, C: C, trilha: reescrever.trilha,
+        campo: ui.campo, entender: ui.entender, aplicar: ui.aplicar, corrigir: ui.corrigir, cartao: ui.cartao, TX: TX, N: N, C: C, G: reescrever.granada, trilha: reescrever.trilha,
         contexto: carga.contexto, round: cur, R: R, t0: N.t0(), andares: LEVELS.length, editando: function () { return !reescrever.sua; }
       });
       if (quer) { quer = false; ctl.entende(); }

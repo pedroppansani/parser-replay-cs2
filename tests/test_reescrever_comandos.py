@@ -1,5 +1,5 @@
 """Reescrever CR2: a seção "Comandos" do painel (o leitor com os nicks, as regras do round real, o plano e a trilha, do CR1a ao CR1d) em cima do round 23 da match_43
-com "Reescrever daqui" em 1:20 (frame 140). Nada muda antes do Aplicar; um comando aplicado é UM desfazer; o mapa não se mexe em estado nenhum; a granada fica para a CR3."""
+com "Reescrever daqui" em 1:20 (frame 140). Nada muda antes do Aplicar; um comando aplicado é UM desfazer; o mapa não se mexe em estado nenhum; a granada por comando é da CR3 (test_reescrever_granada_comando.py)."""
 from __future__ import annotations
 
 import pytest
@@ -289,17 +289,21 @@ def test_exemplo_2_o_4_sem_lado_pergunta_com_nick_e_vida(navegador, pagina_cmd):
         ctx.close()
 
 
-def test_exemplo_3_comando_de_granada_nao_aplica_nada_e_diz_que_e_a_cr3(navegador, pagina_cmd):
+def test_exemplo_3_comando_de_granada_sem_a_biblioteca_ou_sem_granada_real_nao_aplica_nada(navegador, pagina_cmd):
+    # CR3: esta página não tem o arquivo da biblioteca (arremessos/de_mirage.js): o comando de granada diz que os arremessos reais não carregaram e nada muda. O resto da granada por comando
+    # (a troca, a pergunta de qual granada, a saída longe, o Desfazer) está em test_reescrever_granada_comando.py.
     ctx, pg, _ = _abre_no_instante(navegador, pagina_cmd)
     try:
         _abre_secao(pg)
-        antes = _estado(pg)["pecas"], _estado(pg)["trocas"], pg.inner_text("#rw-mudou")
+        antes = _estado(pg)["pecas"], _estado(pg)["trocas"]["trocas"], pg.inner_text("#rw-mudou")      # (o estado da biblioteca muda: ela tenta carregar; as trocas e as peças não)
         _escreve(pg, "FalleN joga smoke no janelão aos 0:57")
-        assert "FalleN (CT 2)" in _cartao(pg) and "Trocar granada por comando ainda não está pronto" in _cartao(pg) and "Trocar a granada" in _cartao(pg)
+        pg.wait_for_selector("#rw-cmd-gr-erro")
+        assert "FalleN (CT 2)" in _cartao(pg) and "ainda não está pronto" not in _cartao(pg) and "os arremessos reais não carregaram" in _cartao(pg)
         assert pg.is_disabled("#rw-cmd-aplicar")
         pg.evaluate("() => document.getElementById('rw-cmd-aplicar').click()")                # nem à força
-        assert (_estado(pg)["pecas"], _estado(pg)["trocas"], pg.inner_text("#rw-mudou")) == antes and _estado(pg)["comandos"]["desfazer"] == 0
-        _escreve(pg, "ropz joga flash no meio aos 1:10 e corre pro B")                         # nem a parte que seria só de movimento
+        assert (_estado(pg)["pecas"], _estado(pg)["trocas"]["trocas"], pg.inner_text("#rw-mudou")) == antes and _estado(pg)["comandos"]["desfazer"] == 0
+        _escreve(pg, "ropz joga flash no meio aos 1:10 e corre pro B")                         # o ropz não jogou flash neste round: recusado, e nem a parte que seria só de movimento aplica
+        assert "No real, ropz não jogou flash neste round. O site não sabe se ele tinha uma." in _cartao(pg)
         assert pg.is_disabled("#rw-cmd-aplicar") and not any(p["editada"] for p in _estado(pg)["pecas"])
     finally:
         ctx.close()

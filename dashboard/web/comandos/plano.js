@@ -135,7 +135,7 @@
         var ox = g.r.origem[0], oy = g.r.origem[1], nivelO = nivelDoZ(g.r.origem[2]), perto = g.dist <= cmdGr().raio_saida, outroAndar = nivelO !== (ini.nivel || 0);
         var base = { acao: ac.indice, quem: nome, i: i + 1, n: busca.grupos.length, d: Math.round(g.dist), s: Math.max(1, Math.round(g.dist / cmdVelocidadeDoPiso(pid, "correndo"))), onde: lugarExibido(ox, oy, nivelO) || "", pode_levar: !outroAndar, ha_outro: i + 1 < busca.grupos.length };
         if (!perto && (ac.gr_decisao !== "levar" || outroAndar)) { pergunta = pergunta || Object.assign({ tipo: "longe" }, base); return; }
-        var vel = cmdVelocidadeDoPiso(pid, "correndo"), livre = livreEm[pid] || 0, tSai = t0, inicio = t0 - Math.hypot(ox - ini.x, oy - ini.y) / vel;
+        var vel = cmdVelocidadeDoPiso(pid, "correndo"), livre = Math.max(livreEm[pid] || 0, W.livreDesde ? W.livreDesde(pid) : 0), tSai = t0, inicio = t0 - Math.hypot(ox - ini.x, oy - ini.y) / vel;      // `livreDesde`: o Reescrever (CR3) não deixa a peça partir antes do instante
         var iniS = posicaoEm(pid, Math.max(inicio, 0)) || ini, dur = Math.hypot(ox - iniS.x, oy - iniS.y) / vel;
         inicio = tSai - dur;
         if (inicio < livre - EPS) {                       // não dá tempo de chegar ao ponto do arremesso até o horário pedido
@@ -149,6 +149,7 @@
         ops.push(["cria_granada", { granada: novoId(), arma: ac.granada, passo: passos[marcoQueContem(tSai)].passo, nivel: nivelO, origem: [ox, oy],
                                     destino: g.r.destino.slice(0, 2), arremesso: g.r, t: Math.round(tSai * 100) / 100, jogador: pid }]);
         granadas[ac.indice] = { r: g.r, i: i + 1, n: busca.grupos.length, lado: lado, onde: base.onde, tSai: tSai, tCai: g.voo ? tSai + g.r.voo_s : null, levar: dur > 0.3 ? { chega: tSai } : null, quem: nome };
+        if (W.aoLancar) W.aoLancar({ acao: ac.indice, pid: pid, arma: ac.granada, r: g.r, i: i + 1, n: busca.grupos.length, lado: lado, onde: base.onde, tSai: Math.round(tSai * 100) / 100, tCai: g.voo ? tSai + g.r.voo_s : null, levar: dur > 0.3, origem: [ox, oy] });      // o Reescrever (CR3) troca uma granada real por este arremesso
         anota(ac, pid, t0, tSai);
         return;
       }
@@ -156,6 +157,7 @@
       ops.push(["cria_granada", { granada: novoId(), arma: ac.granada, passo: passos[marcoQueContem(t0)].passo, nivel: ini.nivel || 0, origem: [ini.x, ini.y],
                                   destino: [ac.alvo.x, ac.alvo.y], arremesso: null, t: t0, jogador: pid }]);
       granadas[ac.indice] = { sem: true, lado: lado, motivo: busca.estado === "carregando" ? "carregando" : busca.estado === "sem" ? "sem_biblioteca" : g ? "escolha" : "nenhum" };
+      if (W.aoLancar) W.aoLancar({ acao: ac.indice, pid: pid, arma: ac.granada, sem: granadas[ac.indice].motivo, lado: lado });
       anota(ac, pid, t0, t0);
     }
     function executa(ac) {

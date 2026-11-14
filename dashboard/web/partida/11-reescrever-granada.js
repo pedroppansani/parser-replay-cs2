@@ -9,7 +9,8 @@
     if (!TX || !N) return;
     var RAIO_U = 150, MAX_GRUPOS = 6;
     var bib = { estado: "nao", dados: null };   // nao | carregando | pronta | erro | sem
-    var trocas = [];       // {n, alt}: n é a granada do real (objeto de cur.nades), alt a linha da biblioteca
+    var ouvintes = [];     // quem quer saber quando a biblioteca chega (os comandos, CR3)
+    var trocas = [];       // {n, alt}: n é a granada do real (objeto de cur.nades), alt a linha da biblioteca; por comando (CR3): {n, alt, cmd, f0, origem, ...}
     var sel = null, escolha = null, hover = null;
     var secao = null, ferr = {};
     var mapwrap = document.getElementById("mapwrap");
@@ -47,9 +48,14 @@
       return cur.nades.filter(function (n) { return n.f0 > N.t0() && n.k !== "decoy" && n.k !== undefined; }).sort(function (a, b) { return a.f0 - b.f0; });
     }
     function trocaDe(n) { return trocas.filter(function (t) { return t.n === n; })[0] || null; }
-    function efetivas() { return trocas.filter(function (t) { return !N.editada(t.n.by); }); }
+    // Uma troca feita por COMANDO (CR3) vale mesmo com a peça editada (o comando é que a moveu) e leva o seu horário (`f0`) e o seu lugar de saída (`origem`); a da ferramenta usa os da original.
+    function efetivas() { return trocas.filter(function (t) { return t.cmd || !N.editada(t.n.by); }); }
     function trocada(n) { return !!n && efetivas().some(function (t) { return t.n === n; }); }
-    function queda(n, alt) { return n.f0 + Math.max(1, Math.round(alt.voo_s * R.sample_hz)); }     // no desenho o voo anda em quadros inteiros (4 por segundo): a queda é no quadro em que a granada chega
+    function f0De(t) { return t.f0 !== undefined ? t.f0 : t.n.f0; }
+    function origemDaTroca(t) { return t.origem || origemDe(t.n); }
+    function sabeAQueda(a) { return a.voo_s > 0; }      // o voo desconhecido (`voo_s` nulo) nunca vira horário de queda
+    function queda(n, alt, f0) { return (f0 !== undefined ? f0 : n.f0) + Math.max(1, Math.round(alt.voo_s * R.sample_hz)); }     // no desenho o voo anda em quadros inteiros (4 por segundo): a queda é no quadro em que a granada chega
+    function quedaDaTroca(t) { return sabeAQueda(t.alt) ? queda(t.n, t.alt, f0De(t)) : null; }
 
     // as alternativas de uma granada: reais, do mesmo tipo e lado, perto de onde ele estava, agrupadas pelo lugar do destino
     function alternativas(n) {
@@ -71,15 +77,16 @@
     }
 
     /* ---------- a biblioteca: um <script> próprio (funciona também com a página aberta como arquivo), carregado só ao usar a ferramenta ---------- */
+    function avisaOuvintes() { ouvintes.slice().forEach(function (f) { f(); }); }
     function carrega() {
       if (bib.estado === "carregando" || bib.estado === "pronta") return;
-      if (!TX.biblioteca) { bib.estado = "sem"; render(); return; }
+      if (!TX.biblioteca) { bib.estado = "sem"; render(); avisaOuvintes(); return; }
       bib.estado = "carregando"; render();
       var antes = window.Prancheta, s = document.createElement("script");
       function restaura() { if (antes === undefined) delete window.Prancheta; else window.Prancheta = antes; if (s.parentNode) s.parentNode.removeChild(s); }
       window.Prancheta = { recebeBiblioteca: function (b) { if (b && Array.isArray(b.arremessos)) { bib.dados = b; bib.estado = "pronta"; } } };      // o arquivo chama Prancheta.recebeBiblioteca(...)
-      s.onload = function () { restaura(); if (bib.estado !== "pronta") bib.estado = "erro"; render(); };
-      s.onerror = function () { restaura(); bib.estado = "erro"; render(); };
+      s.onload = function () { restaura(); if (bib.estado !== "pronta") bib.estado = "erro"; render(); avisaOuvintes(); };
+      s.onerror = function () { restaura(); bib.estado = "erro"; render(); avisaOuvintes(); };
       s.src = TX.biblioteca;
       document.body.appendChild(s);
     }
@@ -113,8 +120,8 @@
         host.appendChild(secao);
         render();
       },
-      entra: function () { trocas = []; hover = null; sel = null; escolha = null; reescrever.ferramenta = "mover"; recalcula(); },
-      sai: function () { trocas = []; hover = null; sel = null; escolha = null; reescrever.ferramenta = "mover"; secao = null; recalcula(); },
+      entra: function () { trocas = []; ouvintes = []; hover = null; sel = null; escolha = null; reescrever.ferramenta = "mover"; recalcula(); },
+      sai: function () { trocas = []; ouvintes = []; hover = null; sel = null; escolha = null; reescrever.ferramenta = "mover"; secao = null; recalcula(); },
       limpa: function () { trocas = []; hover = null; sel = null; escolha = null; reescrever.ferramenta = "mover"; recalcula(); render(); },
       temTroca: function () { return efetivas().length > 0; },
       trocada: trocada,
@@ -125,13 +132,35 @@
       estado: function () {
         return { hover: hover ? { k: hover.k, by: hover.by, f0: hover.f0 } : null, ferramenta: reescrever.ferramenta, biblioteca: bib.estado, selecionada: sel ? { k: sel.k, by: sel.by, f0: sel.f0 } : null,
                  escolhida: escolha ? escolha.id : null,
-                 trocas: trocas.map(function (t) { return { k: t.n.k, by: t.n.by, f0: t.n.f0, alt: t.alt.id, voo_s: t.alt.voo_s, cai: queda(t.n, t.alt), valida: !N.editada(t.n.by) }; }),
+                 trocas: trocas.map(function (t) { var o = { k: t.n.k, by: t.n.by, f0: t.n.f0, alt: t.alt.id, voo_s: t.alt.voo_s, cai: quedaDaTroca(t), valida: !!t.cmd || !N.editada(t.n.by) }; if (t.cmd) { o.cmd = true; o.sai = f0De(t); o.origem = t.origem; o.destino = t.alt.destino.slice(0, 2); o.lado = t.alt.lado; } return o; }),
                  candidatas: candidatas().map(function (n) { return { k: n.k, by: n.by, f0: n.f0, lid: n.l ? n.l.id : null, fim: fimDe(n), origem: origemDe(n) }; }),
                  grupos: sel && bib.estado === "pronta" ? alternativas(sel).map(function (g) { return { lugar: g.lugar, n: g.n, id: g.melhor.id, d: g.d, mesmo: g.mesmo }; }) : [],
                  zonas: reescrever.virtuais.smokes.concat(reescrever.virtuais.fires).map(function (z) { return { x: z.x, y: z.y, f0: z.f0, f1: z.f1, k: reescrever.virtuais.smokes.indexOf(z) >= 0 ? "smoke" : "molotov" }; }),
                  virtuais: { nades: reescrever.virtuais.nades.length, smokes: reescrever.virtuais.smokes.length, fires: reescrever.virtuais.fires.length, pops: reescrever.virtuais.pops.length } };
       },
-      escolheNoMapa: function (k, by, f0) { var n = candidatas().filter(function (q) { return q.k === k && q.by === by && q.f0 === f0; })[0]; if (n) seleciona(n); }
+      escolheNoMapa: function (k, by, f0) { var n = candidatas().filter(function (q) { return q.k === k && q.by === by && q.f0 === f0; })[0]; if (n) seleciona(n); },
+      // ---- o que os comandos (CR3, `comandos/reescrever.js`) usam ----
+      // as granadas do `tipo` que `nick` jogou neste round, na ordem em que saíram: as de antes do instante também (já são parte do real)
+      reais: function (nick, tipo) {
+        return cur.nades.filter(function (n) { return n.by === nick && n.k === tipo; }).sort(function (a, b) { return a.f0 - b.f0; })
+          .map(function (n) { var fim = fimDe(n); return { n: n, f0: n.f0, fim: fim, lugar: lugarDe(fim[0], fim[1], nivelDe(n)) }; });
+      },
+      biblioteca: function () { return { estado: bib.estado, dados: bib.dados }; },
+      // pede a biblioteca (carrega uma vez) e chama `aoMudar` quando ela chega ou falha; `denovo`: tenta outra vez depois de um erro
+      pede: function (aoMudar, denovo) {
+        if (ouvintes.indexOf(aoMudar) < 0) ouvintes.push(aoMudar);
+        if (bib.estado === "erro" && denovo) bib.estado = "nao";
+        if (bib.estado === "nao") carrega();
+      },
+      lugarDe: lugarDe, nivelDoPonto: nivelDoPonto,
+      // a troca por comando: `n` (a granada real), `alt` (o arremesso da biblioteca), `f0` (o quadro em que sai da mão), `origem` (o lugar de saída) e o que a frase precisa
+      poeTroca: function (n, alt, f0, origem, extra) {
+        trocas = trocas.filter(function (t) { return t.n !== n; });
+        var t = { n: n, alt: alt, cmd: true, f0: f0, origem: origem }; Object.keys(extra || {}).forEach(function (k) { t[k] = extra[k]; });
+        trocas.push(t); sel = null; escolha = null;
+      },
+      foto: function () { return trocas.slice(); },      // as trocas de antes de um comando: o Desfazer as devolve
+      restaura: function (lista) { trocas = lista.slice(); sel = null; escolha = null; }
     };
 
     // Foco sem mexer na página: o painel rola por dentro (no computador), então o item é trazido para a vista DENTRO do painel antes de receber o foco.
@@ -202,7 +231,7 @@
       var base = { tipo: tipoDe(n.k), nome: nome1(n), relogio: N.relogioNo(n.f0), de: nomeDe, para: nomePara };
       var cx = el("div", "rw-gr-det");
       cx.appendChild(el("p", "rw-gr-real", N.formata(nomeDe && nomePara ? TX.granada_real_de_para : nomePara ? TX.granada_real_para : TX.granada_real, base)));
-      if (N.editada(n.by)) { cx.appendChild(el("p", null, N.formata(TX.granada_movida, base))); secao.appendChild(cx); return; }
+      if (N.editada(n.by) && !(trocaDe(n) && trocaDe(n).cmd)) { cx.appendChild(el("p", null, N.formata(TX.granada_movida, base))); secao.appendChild(cx); return; }
       var gs = alternativas(n);
       if (!gs.length) cx.appendChild(el("p", null, N.formata(TX.alt_nenhuma, { raio: RAIO_U })));
       else {
@@ -273,18 +302,31 @@
       v.nades = []; v.smokes = []; v.fires = []; v.pops = [];
       if (!reescrever.ativo || !reescrever.sua) return;
       efetivas().forEach(function (t) {
-        var n = t.n, a = t.alt, fl = Math.max(1, Math.round(a.voo_s * R.sample_hz)), o = origemDe(n), d = a.destino, L = Math.max(1, Math.ceil(fl)), xs = [], ys = [], cai = queda(n, a);
+        var n = t.n, a = t.alt;
+        if (!sabeAQueda(a)) return;      // sem o tempo de voo não há horário de queda a desenhar: a granada nova não se move nem faz efeito (a frase de "O que mudou" diz isso)
+        var fl = Math.max(1, Math.round(a.voo_s * R.sample_hz)), o = origemDaTroca(t), d = a.destino, L = Math.max(1, Math.ceil(fl)), xs = [], ys = [], cai = quedaDaTroca(t);
         for (var i = 0; i <= L; i++) { var f = Math.min(1, i / fl); xs.push(o[0] + (d[0] - o[0]) * f); ys.push(o[1] + (d[1] - o[1]) * f); }
-        v.nades.push({ k: n.k, by: n.by, f0: n.f0, x: xs, y: ys, _virtual: true });
+        v.nades.push({ k: n.k, by: n.by, f0: f0De(t), x: xs, y: ys, _virtual: true });
         if (n.k === "smoke") v.smokes.push({ f0: cai, f1: cai + TX.smoke_s * R.sample_hz, x: d[0], y: d[1], by: n.by, _virtual: true });
-        else if (n.k === "molotov") v.fires.push({ f0: cai, f1: cai + a.efeito_s * R.sample_hz, x: d[0], y: d[1], by: n.by, _virtual: true });
+        else if (n.k === "molotov") { if (a.efeito_s > 0) v.fires.push({ f0: cai, f1: cai + a.efeito_s * R.sample_hz, x: d[0], y: d[1], by: n.by, _virtual: true }); }
         else v.pops.push({ k: n.k, f: cai, x: d[0], y: d[1], by: n.by, hit: [], dmg: 0, _virtual: true });
       });
     }
 
     /* ---------- "O que mudou" ---------- */
+    // a troca por comando (CR3): "ropz troca a smoke das 1:12 em Top of Mid por smoke em Janelão às 1:05 (lugar de saída 1 de 38, FURIA × Vitality, round 10); ela cai às 1:09, 4,2 s depois de sair da mão."
+    function fraseDoComando(t) {
+      var n = t.n, a = t.alt, nivel = nivelDe(n), o = fimDe(n), real = lugarDe(o[0], o[1], nivel), nova = t.onde || lugarDe(a.destino[0], a.destino[1], nivelDoPonto(a.destino[2], nivel)), cai = quedaDaTroca(t);
+      var times = bib.dados && bib.dados.partidas_times && bib.dados.partidas_times[a.partida];
+      var base = { nome: n.by, tipo: tipoDe(n.k), relogio: N.relogioNo(n.f0), real: real ? " " + N.formata(TX.em_lugar, { lugar: real }) : "", nova: nova ? " " + N.formata(TX.em_lugar, { lugar: nova }) : "",
+                   saida: N.relogioNo(f0De(t)), i: t.i, n: t.total, times: times || a.partida, round: a.round, chega: cai === null ? "" : N.relogioNo(cai), seg: cai === null ? "" : segundos(a.voo_s) };
+      var texto = N.formata(TX.mudou_troca_cmd, base) + (cai === null ? TX.mudou_troca_cmd_sem_voo : N.formata(TX.mudou_troca_cmd_cai, base));
+      if (n.k === "molotov" && !(a.efeito_s > 0)) texto += TX.mudou_sem_efeito;
+      return t.levar ? texto + " " + N.formata(TX.mudou_troca_cmd_levar, base) : texto;
+    }
     function frases() {
       return trocas.map(function (t) {
+        if (t.cmd) return fraseDoComando(t);
         var n = t.n, a = t.alt, nivel = nivelDe(n), o = fimDe(n), real = lugarDe(o[0], o[1], nivel), nova = lugarDe(a.destino[0], a.destino[1], nivelDoPonto(a.destino[2], nivel));
         var base = { tipo: tipoDe(n.k), nome: n.by, relogio: N.relogioNo(n.f0), seg: segundos(a.voo_s), chega: N.relogioNo(queda(n, a)),
                      real: real ? N.formata(TX.em_lugar, { lugar: real }) : TX.no_ponto_real, nova: nova ? N.formata(TX.em_lugar, { lugar: nova }) : TX.no_ponto_escolhido };
@@ -315,19 +357,19 @@
       var mostrar = trocas.map(function (t) { return t.n; });
       if (sel && mostrar.indexOf(sel) < 0) mostrar.push(sel);
       mostrar.forEach(function (n) {
-        var u = n.x.length - 1, cor = NADE_COLOR[n.k] || CM.apagado, tr = trocaDe(n), a = N.editada(n.by) ? null : ((sel === n ? escolha : null) || (tr && tr.alt));
+        var u = n.x.length - 1, cor = NADE_COLOR[n.k] || CM.apagado, tr = trocaDe(n), a = tr && tr.cmd ? tr.alt : N.editada(n.by) ? null : ((sel === n ? escolha : null) || (tr && tr.alt));
         var r = n.k === "smoke" ? SMOKE_R : n.k === "molotov" ? FIRE_R : 9;
         N.tracejado(c, function () { trajeto(c, n); }, cor, 1.4);                                                   // a original, em fantasma
         N.tracejado(c, function () { c.arc(mx(n.x[u]), my(n.y[u]), r, 0, Math.PI * 2); }, cor, 2);
         if (a) {
-          var dx = mx(a.destino[0]), dy = my(a.destino[1]), o0 = origemDe(n);
+          var dx = mx(a.destino[0]), dy = my(a.destino[1]), o0 = tr && tr.cmd ? origemDaTroca(tr) : origemDe(n), cq = tr && tr.cmd ? quedaDaTroca(tr) : queda(n, a);
           c.save();
           c.setLineDash([2, 4]);
           [[C.contorno, 3.6], [cor, 1.6]].forEach(function (par) { c.strokeStyle = par[0]; c.lineWidth = par[1]; c.beginPath(); c.moveTo(mx(o0[0]), my(o0[1])); c.lineTo(dx, dy); c.stroke(); });
           c.restore();
           if (n.k === "smoke" || n.k === "molotov") MapCore.desenhaArea(c, n.k, dx, dy, r);
           else { c.beginPath(); c.arc(dx, dy, r, 0, Math.PI * 2); c.strokeStyle = C.contorno; c.lineWidth = 4.4; c.stroke(); c.strokeStyle = cor; c.lineWidth = 2.4; c.stroke(); }
-          MapCore.rotulo(N.formata(TX.cai, { relogio: N.relogioNo(queda(n, a)) }), dx, dy, { cor: CM.tinta, prioridade: 4, dy: 18 });
+          MapCore.rotulo(cq === null ? TX.cai_sem_voo : N.formata(TX.cai, { relogio: N.relogioNo(cq) }), dx, dy, { cor: CM.tinta, prioridade: 4, dy: 18 });
         }
         if (sel === n) {      // a origem ganha o anel tracejado branco
           var o = origemDe(n);
