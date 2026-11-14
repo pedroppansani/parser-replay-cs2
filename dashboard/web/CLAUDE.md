@@ -5,7 +5,7 @@ Complementa o `CLAUDE.md` da raiz e não o substitui. Uma regra por linha; (N) =
 valem lá também.
 
 Antes de mexer no `map_core.js`, no canvas, no Replay (`partida/`) ou na prancheta, leia
-`dashboard/web/prancheta/CLAUDE.md` (regras de cor, mapa, canvas e prancheta).
+`dashboard/web/prancheta/CLAUDE.md` (regras de cor, mapa, canvas e prancheta); dos comandos, a `dashboard/web/comandos/CLAUDE.md` (leitor e plano) e a `dashboard/web/partida/CLAUDE.md` (o Reescrever e os comandos nele).
 
 ## Página
 
@@ -28,22 +28,6 @@ Antes de mexer no `map_core.js`, no canvas, no Replay (`partida/`) ou na pranche
 - Aba Placar: "Quanto cada round pesou" tem o mesmo eixo X do gráfico de cima (viewBox de 900, pL 32,
   pR 12); a barra é depois menos antes da curva publicada, o decisivo é o do payload, e textos e rótulos
   vêm de `leitura/peso_dos_rounds.py` (19, 18)
-
-- Leitor de comandos (`comandos/leitor.js`): puro (sem DOM, rede nem armazenamento); a frase de cada pergunta sai do Python
-  (`scripts/comandos_contexto.py`); palavra desconhecida nunca vira alvo em silêncio; não calcula tempo de corrida (64)
-- Plano dos comandos (`comandos/plano.js`): puro; recebe o "mundo" (`PlanoDeComandos.cria(W)`: estado da tática, relógio, peças, textos, biblioteca e tempos) e devolve o plano,
-  o tempo real de corrida e a busca da granada real, o mesmo para a prancheta e (depois) o Reescrever. No site vem por arquivo, só quando a aba Comandos abre; a página gerada
-  sozinha o traz embutido. O texto das funções não muda sem a prova `scripts/design/prova_plano_dos_comandos.py` (64)
-- Reescrever (`partida/10-reescrever.js`): a peça editada tem uma TRILHA com horário (`[{f, x, y}]`, `f` = quadro de partida): segue o caminho real até partir, anda em linha
-  reta na velocidade medida até cada parada, e uma parada que parte no meio da anterior a corta; arrastar é UMA parada em t0. A morte do real depois da partida só existe no
-  real (D3). Quem edita sem arrastar usa `window.__reescrever.trilha.define`, que recusa peça morta, horário antes do instante e fora de ordem (58)
-- Comandos no Reescrever, sem tela (CR1c): o leitor entende nicks só quando o contexto os traz (sem diferenciar caixa e acento; parcial só com 4 letras ou mais, único e fora do
-  vocabulário do leitor e dos nomes de lugar; nick que também é lugar do mapa sempre pergunta); `comandos/real.js` monta o elenco do round e dá o veredito de cada comando:
-  começa depois da morte ou jogador já morto = recusado ([Escolher outro jogador], [Corrigir]); termina depois da morte = aplicado, a peça esmaece na hora da morte real;
-  antes do instante = o real não muda; "bomba ou round?" só depois do plant. Sem nick no contexto (a prancheta) a leitura é a de sempre (64)
-- "Até" é o FIM do `segurar` (CR1d): "segura o meio até 0:45" = fica no meio desde agora (ou desde o fim do comando anterior) até 0:45; "aos 0:45" continua sendo o início. O leitor devolve `quando: {tipo: "agora"}` e `fim: {t_decorrido}`; o plano para a peça no destino até o fim (e o comando seguinte parte dele); `esperar` e `mover` não mudam. "Agora" = marcador do tempo na prancheta, instante no Reescrever (`real.js`: `fim_antes_do_instante`, `termina_depois_da_morte`).
-- Comandos no Reescrever, com tela (CR2): a casca da seção está em `partida/12-reescrever-comandos.js`; o leitor, o plano, `real.js`, a tela do cartão (`comandos/reescrever.js`) e o contexto do mapa (`comandos/real/<mapa>.js`, de `scripts/build_reescrever_comandos.py`) só carregam quando a seção abre ou o campo recebe o foco. O cartão tem altura FIXA e rola por dentro (CLS 0); o CSS da seção fica no `template.html`, não no `v2.css` (as pranchetas o carregam). Um comando aplicado = um item de `reescrever.comandos` (foto das trilhas de antes); 
-- Granada por comando no Reescrever (CR3, decisão (a) da CR0): o comando só TROCA uma granada que o jogador jogou de verdade depois do instante (várias = o cartão pergunta qual; nenhuma = recusa; o site nunca cria granada) por um arremesso real da biblioteca (`11-reescrever-granada.js`, regras da C4; sem "pôr a granada sem arremesso real"). `poeTroca` vale com a peça editada e o Desfazer devolve trilhas E trocas. Nomes de lugar como na C3. Ganchos opcionais do `plano.js` (`livreDesde`, `aoLancar`): a prancheta não os define. Detalhes: `notas/investigacoes/2026-11-14-cr3-granada-por-comando.md`.
 
 ## Calibração do Pedro (não resolva sozinho)
 
