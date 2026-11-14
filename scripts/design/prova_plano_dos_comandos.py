@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import random
 import re
 import sys
@@ -160,6 +161,8 @@ def roda() -> dict:
     from scripts.build_tactics_page import build_html
     from scripts.comandos_contexto import contexto
     saida: dict = {"frases": {}, "buscas": {}, "tela": {}, "amostra": {}, "categorias": {}}
+    if os.environ.get("PROVA_COMPLETO"):      # guarda o resultado inteiro de cada frase (fora do hash geral): para dizer QUAIS frases mudaram e como, não só quantas
+        saida["completo"] = {}
 
     def conta(r: dict) -> None:
         """Quanto a bateria exercita de cada ramo do plano (se só houvesse frases que pulam, a prova não provaria nada)."""
@@ -205,6 +208,8 @@ def roda() -> dict:
                         conta(r)
                         chave = f"{mapa}|{arrumacao}|{i}|v{variante}|{frase}"
                         saida["frases"][chave] = _hash(r)
+                        if "completo" in saida:
+                            saida["completo"][chave] = r
                         if len(saida["amostra"]) < 12 and "plano" in r and r["plano"]["ops"]:
                             saida["amostra"][chave] = r
                 # a busca da granada real: 4 granadas x 2 lados x os alvos x 3 posições

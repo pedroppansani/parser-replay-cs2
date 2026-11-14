@@ -154,7 +154,8 @@
       nomes.forEach(function (n) { o[n] = { trilha: clonaTrilha(n), pc: porComando[n] ? Object.assign({}, porComando[n]) : null }; });
       return o;
     };
-    reescrever.comandos.empurra = function (foto, linha) { desfazer.push({ foto: foto, linha: linha }); atualizaBanco(); };
+    // `trocas` (CR3): as trocas de granada de ANTES do comando (`reescrever.granada.foto()`); o comando que troca uma granada devolve-as com as trilhas
+    reescrever.comandos.empurra = function (foto, linha, trocas) { desfazer.push({ foto: foto, linha: linha, trocas: trocas }); atualizaBanco(); draw(); };      // draw: um comando que só troca uma granada não mexe em trilha nenhuma, e o fantasma da troca tem de aparecer
     reescrever.comandos.desfaz = function () {
       var u = desfazer.length && !reescrever.sua ? desfazer.pop() : null;
       if (!u) return false;
@@ -162,6 +163,7 @@
         var f = u.foto[n];
         if (f.trilha) { trilhas[n] = f.trilha; edicoes[n] = { x: f.trilha[f.trilha.length - 1].x, y: f.trilha[f.trilha.length - 1].y }; porComando[n] = f.pc || {}; recalcula(n); } else apagaEdicao(n);
       });
+      if (u.trocas && reescrever.granada) reescrever.granada.restaura(u.trocas);
       atualizaBanco(); draw();
       return true;
     };
