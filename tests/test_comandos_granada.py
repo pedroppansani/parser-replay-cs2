@@ -320,3 +320,22 @@ def test_a_peca_fora_de_qualquer_area_comeca_perto_do_lugar_mais_perto(contexto,
     cands = [(math.hypot(q["x"] - 4000, q["y"] - 4000), q["nome"]) for q in cx["pontos"]] + [(math.hypot(q["x"] - 4000, q["y"] - 4000), q["exibe"]) for q in cx["areas"]]
     esperado = min(cands)[1]
     assert f"TR 2 começa perto de {esperado}" in roteiro, (roteiro, esperado)
+
+
+def test_corrida_seguida_de_granada_parte_de_onde_a_peca_termina_o_comando_anterior(contexto, tmp_path_factory):
+    # "corre pro meio ... e depois joga": a corrida até o lugar de saída parte do MEIO (o fim do comando anterior), e a granada só sai quando a peça chega (a 250 u/s)
+    pg = _pagina(contexto, tmp_path_factory)
+    base = _ponto("de_mirage", "Base TR")
+    _peca(pg, base["x"], base["y"])
+    _escreve(pg, "tr 2 corre pro meio aos 1:50 e depois joga smoke na Areia")
+    for escolha in ("levar", "tarde"):
+        if pg.locator("[data-escolha=%s]" % escolha).count():
+            pg.click("[data-escolha=%s]" % escolha)
+    assert pg.is_enabled("#pr-cmd-aplicar")
+    _aplica(pg)
+    ops = interno(pg, "S.doc.operacoes.filter(o => o.tipo === 'cria_granada' || o.tipo === 'cria_caminho').map(o => o.tipo === 'cria_granada' ? { g: true, t: o.t, origem: o.origem } : { pts: o.pontos.map(p => [p.t, p.x, p.y]) })")
+    g = next(o for o in ops if o.get("g"))
+    pts = next(o for o in ops if not o.get("g"))["pts"]
+    (t0, x0, y0), (t1, x1, y1) = pts[-2], pts[-1]
+    assert abs(t1 - g["t"]) < 0.02 and math.hypot(x1 - g["origem"][0], y1 - g["origem"][1]) < 1      # a corrida termina no lugar de saída, na hora em que a granada sai
+    assert math.hypot(x1 - x0, y1 - y0) / (t1 - t0) <= 250.5                                         # e o último trecho não passa da velocidade da corrida (antes saía de um ponto do meio da corrida anterior)

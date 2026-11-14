@@ -319,6 +319,8 @@ def test_a_frase_mista_aplica_as_duas_partes_e_um_desfazer_desfaz_as_duas(navega
         assert [(t["by"], t["k"]) for t in e["trocas"]["trocas"]] == [("apEX", "flash")]
         assert e["comandos"]["desfazer"] == 1                                     # um comando continua sendo UM item do Desfazer
         assert len(e["comandos"]["linhas"]) == 1 and "apEX troca a flash das " in pg.inner_text("#rw-mudou")      # a corrida tem a sua linha; a troca, a dela
+        assert abs(e["trocas"]["trocas"][0]["sai"] - ap["trechos"][-1]["f1"]) <= 1                  # a granada sai quando a peça CHEGA ao lugar de saída (a corrida parte do meio, o fim do comando anterior)
+        assert "não está lá nessa hora" not in pg.inner_text("#rw-mudou")                          # sem o aviso da peça fora do lugar de saída
         pg.click("#rw-desfazer")
         assert _foto(pg) == antes
     finally:
@@ -457,10 +459,10 @@ def test_peca_arrastada_depois_da_troca_avisa_em_o_que_mudou_e_a_troca_fica(nave
         _espera_biblioteca(pg)
         _decide(pg)
         _aplica(pg)
-        assert "o FalleN não está mais lá" not in pg.inner_text("#rw-mudou")      # no lugar de saída: nada a avisar
+        assert "não está lá nessa hora" not in pg.inner_text("#rw-mudou")      # no lugar de saída: nada a avisar
         _arrasta(pg, "FalleN", dx=160, dy=0)
         mudou = pg.inner_text("#rw-mudou")
-        assert "Aviso: a smoke das 0:57 sai de " in mudou and ", mas o FalleN não está mais lá." in mudou, mudou
+        assert "Aviso: a smoke das 0:57 sai de " in mudou and ", mas o FalleN não está lá nessa hora." in mudou, mudou
         assert len(_estado(pg)["trocas"]["trocas"]) == 1      # a troca não é apagada
     finally:
         ctx.close()

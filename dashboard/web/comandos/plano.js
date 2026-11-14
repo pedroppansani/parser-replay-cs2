@@ -139,6 +139,8 @@
         var iniS = posicaoEm(pid, Math.max(inicio, 0)) || ini, dur = Math.hypot(ox - iniS.x, oy - iniS.y) / vel;
         inicio = tSai - dur;
         if (inicio < livre - EPS) {                       // não dá tempo de chegar ao ponto do arremesso até o horário pedido
+          var iniL = trilha[pid] ? posicaoEm(pid, livre) : null;      // a corrida parte de onde a peça está ao ficar livre (o fim do comando anterior), não de onde estaria no `inicio` de antes
+          if (iniL) { iniS = iniL; dur = Math.hypot(ox - iniL.x, oy - iniL.y) / vel; }
           var chegaTarde = Math.round((livre + dur) * 100) / 100;
           if (chegaTarde - t0 > 0.3 && !ac.gr_tarde_ok) { pergunta = pergunta || Object.assign({ tipo: "tarde", chega: chegaTarde, h: cmdDoRelogio(chegaTarde) }, base); return; }
           tSai = chegaTarde; inicio = livre;
