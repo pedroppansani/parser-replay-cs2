@@ -171,7 +171,7 @@ def test_todo_rotulo_que_o_modo_usa_vem_do_python_e_existe():
     js = (Path(__file__).resolve().parent.parent / "dashboard" / "web" / "partida" / "10-reescrever.js").read_text(encoding="utf-8")
     usados = set(re.findall(r"\bTX\.([a-z_0-9]+)", js))
     assert usados, "o modo não lê nenhum rótulo?"
-    faltam = usados - set(TEXTOS_DO_MODO) - {"velocidade"}       # `velocidade` entra no build (a mesma tabela da prancheta, decisão 43)
+    faltam = usados - set(TEXTOS_DO_MODO) - {"velocidade", "lugares"}       # `velocidade` entra no build (a mesma tabela da prancheta, decisão 43); `lugares` também (os nomes do mapa para "O que mudou", P2c)
     assert not faltam, faltam
 
 
