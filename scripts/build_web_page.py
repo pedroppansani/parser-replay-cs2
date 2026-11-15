@@ -126,7 +126,9 @@ def cabecalho_html(match_id: str, base: Path, site: dict | None) -> dict[str, st
 
     def lado(k: str, cls: str) -> str:
         info, venceu = c["lados"][k], c["venceu"] == k
-        nome = f'<span class="nome" title="{_h.escape(info["nome"])}">{_h.escape(info["nome"])}</span>'
+        from metrics.times import PREFIXO_DO_TIME_FACEIT
+        cls_nome = "nome nick" if info["nome"].startswith(PREFIXO_DO_TIME_FACEIT) else "nome"      # "Time de t1ltedbot" mantém a grafia do nick (o CSS põe os outros nomes em maiúsculas)
+        nome = f'<span class="{cls_nome}" title="{_h.escape(info["nome"])}">{_h.escape(info["nome"])}</span>'
         pts = f'<span class="pts">{info["pontos"]}</span>'
         miolo = nome + pts if cls == "a" else pts + nome
         tag_venceu = '<span class="tag-venceu">venceu</span>' if venceu else ""

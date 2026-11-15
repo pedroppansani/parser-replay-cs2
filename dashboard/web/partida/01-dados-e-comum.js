@@ -61,7 +61,7 @@
     function ladoDoPlacar(k, cls) {
       var l = CAB.lados[k], venceu = CAB.venceu === k;
       var s = el("span", "lado " + cls + " " + (venceu ? "venceu" : "perdeu"));
-      var nome = el("span", "nome", l.nome);
+      var nome = el("span", l.nome.indexOf("Time de ") === 0 ? "nome nick" : "nome", l.nome);      // o time da FACEIT mantém a grafia do nick (P2c)
       nome.title = l.nome;
       var pts = el("span", "pts", String(k === "A" ? M.score_a : M.score_b));
       var tag = el("span", "tag comecou " + l.comecou, ROTULO.comecou[l.comecou] || "");

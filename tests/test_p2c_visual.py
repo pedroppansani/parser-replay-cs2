@@ -200,3 +200,26 @@ def test_ver_no_mapa_na_prancheta_leva_a_pagina_ao_mapa_poe_o_foco_nele_e_anunci
         assert pg.locator("#pr-cmd-ver-mapa").count() == 1 and not pg.is_visible("#pr-cmd-ver-mapa")
     finally:
         ctx.close()
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# o nome do time no cabeçalho da partida: "Time de <nick>" mantém a grafia do nick; os times profissionais continuam em maiúsculas
+# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+@pytest.mark.parametrize("partida,esperado,transforma", [("match_01", ["Time de t1ltedbot", "Time de HLEB"], "none"), ("match_43", ["FURIA", "Vitality"], "uppercase")])
+def test_o_nome_do_time_faceit_mantem_a_grafia_do_nick_e_o_profissional_segue_em_maiusculas(navegador, tmp_path_factory, partida, esperado, transforma):
+    from pathlib import Path
+    from scripts.build_web_page import build_html
+    if not (Path(__file__).resolve().parent.parent / "data" / "processed" / partida / "web_payload.json").exists():
+        pytest.skip("sem o processado")
+    arq = tmp_path_factory.mktemp("cab") / f"{partida}.html"
+    arq.write_text(build_html(partida), encoding="utf-8")
+    ctx = navegador.new_context(viewport={"width": 1440, "height": 900})
+    pg = ctx.new_page()
+    try:
+        pg.goto(arq.as_uri())
+        r = pg.eval_on_selector_all(".placar .nome", "ns => ns.map(n => [n.textContent, getComputedStyle(n).textTransform, n.innerText])")
+        assert sorted(t for t, _, _ in r) == sorted(esperado) and all(tt == transforma for _, tt, _ in r)
+        assert sorted(i for _, _, i in r) == sorted(esperado if transforma == "none" else [e.upper() for e in esperado])      # o que se VÊ: a grafia do nick, ou o nome em maiúsculas
+    finally:
+        ctx.close()
