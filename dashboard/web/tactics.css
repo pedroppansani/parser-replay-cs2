@@ -166,7 +166,7 @@ h3 { margin: 0 0 4px; font-size: 15px; }
 .pr-relogio-grande.bomba { color: var(--tr-texto); }
 /* P2c: com uma peça (ou o nome dela) por baixo, só o FUNDO do relógio fica translúcido (instantâneo, sem transição); os números seguem opacos, com contraste >= 3:1 contra o mapa
    (`tests/test_p2c_visual.py` mede nos mapas com radar). O relógio nunca recebe o ponteiro (pointer-events: none): a peça por baixo continua clicável. */
-.pr-relogio-grande.sob-peca { background: rgba(8, 10, 36, 0.5); }
+.pr-relogio-grande.sob-peca { background: var(--tl-fundo-sob); }
 .pr-relogio-grande[hidden], .pr-linha[hidden] { display: none; }
 .pr-linha { display: grid; grid-template-columns: minmax(0, 1fr) minmax(200px, 300px); gap: 10px;
             padding: 8px 10px 10px; background: var(--tl-fundo); color: var(--tinta); border-top: 1px solid var(--linha);
