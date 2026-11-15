@@ -87,7 +87,23 @@
       edicoes[nome] = { x: u.x, y: u.y };
       recalcula(nome);
     }
-    function poeParada(nome, g) { poeTrilha(nome, [{ f: t0, x: g.x, y: g.y }]); }      // o arrastar: uma parada, no instante
+    function poeParada(nome, g) { poeTrilha(nome, [{ f: t0, x: g.x, y: g.y }]); }      // o arrastar no instante: uma parada
+    // Arrastar de novo (P2c): com a sua versão PAUSADA num quadro depois do instante, o arrasto põe uma parada nova que parte DAQUELE quadro; as anteriores continuam. Arrastar num quadro
+    // anterior ao da última parada corta o que vinha depois (como os comandos); no instante (f = t0) o resultado é o de sempre, uma parada só.
+    function editavel() { return reescrever.ativo && (!reescrever.sua || (!playing && Math.floor(pos) >= t0 && Math.floor(pos) < cur.frames - 1)); }
+    function quadroDoArrasto() { return reescrever.sua ? Math.floor(pos) : t0; }
+    function poeParadaEm(nome, g, f) {
+      var antes = (trilhas[nome] || []).filter(function (pa) { return pa.f < f; });
+      poeTrilha(nome, antes.concat([{ f: f, x: g.x, y: g.y }]));
+    }
+    function vivaNoReal(it, f) { return !!(it && it.vivo && it.p.alive[Math.floor(f)]); }      // depois da morte real a peça só existe no real: não se arrasta
+    function ondeEsta(nome) {      // onde a peça está agora, na tela: a última parada antes de tocar; com a sua versão pausada, onde ela está no quadro
+      if (!reescrever.sua) return edicoes[nome] || origem[nome];
+      var e = reescrever.posicaoEditada(nome);
+      if (e) return { x: e[0], y: e[1] };
+      var r = realEm(nome, pos);
+      return { x: r[0], y: r[1] };
+    }
     function apagaEdicao(nome) { delete edicoes[nome]; delete trilhas[nome]; delete segs[nome]; delete porComando[nome]; }
     function limpaEdicoes() { edicoes = {}; trilhas = {}; segs = {}; porComando = {}; desfazer = []; }
     function partida(nome) { var sg = segs[nome]; return sg && sg.length ? sg[0].f0 : Infinity; }       // o quadro em que a peça deixa o real
@@ -157,7 +173,7 @@
     // `trocas` (CR3): as trocas de granada de ANTES do comando (`reescrever.granada.foto()`); o comando que troca uma granada devolve-as com as trilhas
     reescrever.comandos.empurra = function (foto, linha, trocas) { desfazer.push({ foto: foto, linha: linha, trocas: trocas }); atualizaBanco(); draw(); };      // draw: um comando que só troca uma granada não mexe em trilha nenhuma, e o fantasma da troca tem de aparecer
     reescrever.comandos.desfaz = function () {
-      var u = desfazer.length && !reescrever.sua ? desfazer.pop() : null;
+      var u = desfazer.length && editavel() ? desfazer.pop() : null;
       if (!u) return false;
       Object.keys(u.foto).forEach(function (n) {
         var f = u.foto[n];
@@ -333,8 +349,8 @@
     function acha(e) {
       var m = matrizDaVista(), q = doPonteiro(e), melhor = null, dist = ALVO;
       pecas.forEach(function (it) {
-        if (!it.vivo) return;
-        var pos2 = edicoes[it.p.name] || origem[it.p.name];
+        if (!vivaNoReal(it, quadroDoArrasto())) return;
+        var pos2 = ondeEsta(it.p.name);
         var pt = new DOMPoint(mx(pos2.x), my(pos2.y)).matrixTransform(m);
         var d = Math.hypot(pt.x - q.cx, pt.y - q.cy) / q.k;
         if (d <= dist) { dist = d; melhor = it.p.name; }
@@ -343,13 +359,13 @@
     }
 
     mapwrap.addEventListener("pointerdown", function (e) {
-      if (!reescrever.ativo || reescrever.sua || reescrever.ferramenta === "granada" || (e.button && e.button > 0)) return;
+      if (!editavel() || reescrever.ferramenta === "granada" || (e.button && e.button > 0)) return;
       var nome = acha(e);
       if (!nome) return;
       if (vendoReal()) defineVer("sua");               // tocar numa peça no celular volta à sua versão (é nela que se edita)
       e.preventDefault(); e.stopPropagation();       // a peça vem antes do desenho e do arrastar do mapa
       seleciona(nome);
-      arrasto = { nome: nome, id: e.pointerId, antes: fotoDe(nome) };
+      arrasto = { nome: nome, id: e.pointerId, antes: fotoDe(nome), f: quadroDoArrasto() };
       try { mapwrap.setPointerCapture(e.pointerId); } catch (x) { /* sem captura: o movimento segue pelo mapa */ }
     }, true);
     // Nuke: a peça fica dentro da área do andar DELA (o editor é 2D e não troca de andar); em mapa de um andar, dentro da imagem do radar
@@ -360,18 +376,19 @@
     }
     // O teclado (R6b): com uma peça da lista em foco, as setas a movem (Shift anda mais); sobe = norte. O texto de "O que mudou" só é refeito ao SOLTAR
     // a tecla (o leitor de tela anuncia uma vez, não a cada passo)
-    var PASSO = 20, PASSO_GRANDE = 100, SETAS = { ArrowUp: [0, 1], ArrowDown: [0, -1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }, moveuPorTeclado = false, tecladoAntes = null;
+    var PASSO = 20, PASSO_GRANDE = 100, SETAS = { ArrowUp: [0, 1], ArrowDown: [0, -1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }, moveuPorTeclado = false, tecladoAntes = null, tecladoQuadro = 0;
     hosts.ct.addEventListener("keydown", function (e) {
       var b = e.target.closest && e.target.closest(".peca-rw"), d = SETAS[e.key];
-      if (!b || !d || !reescrever.ativo || reescrever.sua || reescrever.ferramenta === "granada" || e.altKey || e.ctrlKey || e.metaKey) return;
+      if (!b || !d || !editavel() || reescrever.ferramenta === "granada" || e.altKey || e.ctrlKey || e.metaKey) return;
       var nome = b.dataset.nome, it = pecas.filter(function (q) { return q.p.name === nome; })[0];
-      if (!it || !it.vivo) return;
+      if (!vivaNoReal(it, quadroDoArrasto())) return;
       e.preventDefault();
       if (vendoReal()) defineVer("sua");
       if (reescrever.sel !== nome) { seleciona(nome, true); b.focus({ preventScroll: true }); }
       if (!moveuPorTeclado) tecladoAntes = { nome: nome, antes: fotoDe(nome) };      // a primeira seta de uma série: o que a peça era antes
-      var base = edicoes[nome] || origem[nome], passo = e.shiftKey ? PASSO_GRANDE : PASSO;
-      poeParada(nome, limitaNaArea(nome, { x: base.x + d[0] * passo, y: base.y + d[1] * passo }));
+      var base = ondeEsta(nome), passo = e.shiftKey ? PASSO_GRANDE : PASSO;
+      if (!moveuPorTeclado) tecladoQuadro = quadroDoArrasto();      // a série de setas inteira vale no quadro da primeira
+      poeParadaEm(nome, limitaNaArea(nome, { x: base.x + d[0] * passo, y: base.y + d[1] * passo }), tecladoQuadro);
       moveuPorTeclado = true;
       atualizaBanco(true); draw();
     });
@@ -385,12 +402,12 @@
       atualizaBanco(); draw();
     });
     mapwrap.addEventListener("pointermove", function (e) {
-      if (!arrasto || reescrever.sua || e.pointerId !== arrasto.id) return;
+      if (!arrasto || !editavel() || e.pointerId !== arrasto.id) return;
       e.preventDefault(); e.stopPropagation();
       var q = doPonteiro(e);
       var cx = Math.min(cv.width, Math.max(0, q.cx)), cy = Math.min(cv.height, Math.max(0, q.cy));   // a peça fica dentro do mapa
       var g = limitaNaArea(arrasto.nome, aGameUnits(cx, cy));
-      poeParada(arrasto.nome, g);
+      poeParadaEm(arrasto.nome, g, arrasto.f);
       atualizaBanco(true);     // durante o arrasto o texto de "O que mudou" não é refeito (leitor de tela)
       draw();
     }, true);
@@ -459,18 +476,29 @@
       var voltar = document.getElementById("rw-voltar");
       if (voltar) voltar.disabled = !algumaMudanca();
       var desf = document.getElementById("rw-desfazer");
-      if (desf) desf.disabled = !desfazer.length || reescrever.sua;
+      if (desf) desf.disabled = !desfazer.length || !editavel();
       if (reescrever.comandos.aoMudar) reescrever.comandos.aoMudar();
       var editar = document.getElementById("rw-editar");
       if (editar) editar.disabled = !reescrever.sua;
       var dica = document.getElementById("rw-dica");
-      if (dica) dica.textContent = reescrever.sua ? TX.vendo : TX.dica;
+      if (dica) dica.textContent = editavel() ? TX.dica : TX.vendo;
       playBtn.disabled = !algumaMudanca();
       playBtn.title = algumaMudanca() ? "" : TX.toca_desligado;
       if (reescrever.granada) reescrever.granada.atualiza();
       if (!semTexto) atualizaMudou();
       var a = document.activeElement;       // um botão que acabou de se desligar não pode prender o foco
       if (a && a.disabled) { var alvo = playBtn.disabled ? hosts.ct.querySelector(".peca-rw:not([aria-disabled])") : playBtn; if (alvo) alvo.focus({ preventScroll: true }); }
+    }
+    // O nome de um lugar nas linhas de "O que mudou" (regra de nomes da C3): o ponto do Pedro a até `raio` u, senão o nome legível do jogo da área ("Palace Alley", como no botão Lugares);
+    // "" quando a página não tem a tabela do mapa (a frase diz "o ponto marcado")
+    function nomeDoLugar(x, y, nivel) {
+      var L = TX.lugares;
+      if (!L || !reescrever.granada) return "";
+      var d0 = L.raio, ponto = null;
+      (L.pontos || []).forEach(function (p) { var d = Math.hypot(p.x - x, p.y - y); if (d <= d0) { d0 = d; ponto = p; } });
+      if (ponto) return ponto.nome;
+      var s = reescrever.granada.lugarDe(x, y, nivel);
+      return s ? (L.areas && L.areas[s]) || s : "";
     }
     /* "O que mudou": o texto da diferença (design §3 e D3), do dado e de nada mais */
     function atualizaMudou() {
@@ -483,8 +511,8 @@
         segs[nome].forEach(function (sg, k) {
           if (sg.d < MOVIDA) return;      // uma parada no mesmo lugar não é um movimento
           if (porComando[nome] && porComando[nome][sg.f0]) return;      // a que um comando pôs: a linha do comando já a diz
-          var lugar = k === 0 && it.p.p ? cur.places[it.p.p[Math.floor(sg.f0)]] : "", chega = sg.f1;
-          var base = { nome: nome, de: lugar, relogio: relogioNo(sg.f0), chega: relogioNo(chega), seg: (Math.round(sg.dur * 10) / 10).toString().replace(".", ",") };
+          var nivel = andarDaPeca(nome), lugar = nomeDoLugar(sg.ax, sg.ay, nivel), chega = sg.f1;
+          var base = { nome: nome, de: lugar, para: nomeDoLugar(sg.bx, sg.by, nivel) || TX.mudou_ponto_marcado, relogio: relogioNo(sg.f0), chega: relogioNo(chega), seg: (Math.round(sg.dur * 10) / 10).toString().replace(".", ",") };
           itens.push(formata(chega > cur.frames - 1 ? TX.mudou_nao_chega : (lugar ? TX.mudou_move : TX.mudou_move_sem_lugar), base));
         });
         var ini = partida(nome);      // até partir a peça é o real: o que aconteceu antes dela partir é igual nos dois
@@ -617,12 +645,14 @@
     atualizaAlt();
 
     // "Reescrever daqui · 0:55": só com o Replay parado e fora do modo; o espaço fica reservado (visibility), então nada se mexe
+    var ultimoEditavel = null;
     reescrever.aoQuadro = function () {
       var vivo = !reescrever.ativo && !playing;
       daqui.style.visibility = vivo ? "visible" : "hidden";
       daqui.disabled = !vivo;
       if (vivo) daqui.lastChild.textContent = " · " + relogioNo(Math.floor(pos));
       if (reescrever.ativo) playBtn.setAttribute("aria-label", playing ? TX.pausa : TX.toca);
+      if (reescrever.ativo && editavel() !== ultimoEditavel) { ultimoEditavel = editavel(); atualizaBanco(); }      // pausou (ou voltou a tocar) a sua versão: o Desfazer e a dica acompanham
       atualizaAlt();
     };
 
@@ -744,7 +774,7 @@
     });
 
     function telaDa(nome) {      // onde a peça está na TELA (px CSS, com o zoom e o pan da vista): o ponto em que o teste a pega
-      var q = edicoes[nome] || origem[nome];
+      var q = edicoes[nome] || origem[nome] ? ondeEsta(nome) : null;
       if (!q) return null;
       var pt = new DOMPoint(mx(q.x), my(q.y)).matrixTransform(matrizDaVista()), r = cv.getBoundingClientRect(), k = cv.width / r.width;
       return [r.left + pt.x / k, r.top + pt.y / k];

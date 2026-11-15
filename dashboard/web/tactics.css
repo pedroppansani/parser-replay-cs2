@@ -164,6 +164,9 @@ h3 { margin: 0 0 4px; font-size: 15px; }
                      font-family: var(--f-num); font-size: 34px; font-weight: 600; line-height: 1;
                      color: var(--tinta); background: var(--tl-fundo); padding: 6px 12px; border-radius: var(--r-md); }
 .pr-relogio-grande.bomba { color: var(--tr-texto); }
+/* P2c: com uma peça (ou o nome dela) por baixo, só o FUNDO do relógio fica translúcido (instantâneo, sem transição); os números seguem opacos, com contraste >= 3:1 contra o mapa
+   (`tests/test_p2c_visual.py` mede nos mapas com radar). O relógio nunca recebe o ponteiro (pointer-events: none): a peça por baixo continua clicável. */
+.pr-relogio-grande.sob-peca { background: rgba(8, 10, 36, 0.5); }
 .pr-relogio-grande[hidden], .pr-linha[hidden] { display: none; }
 .pr-linha { display: grid; grid-template-columns: minmax(0, 1fr) minmax(200px, 300px); gap: 10px;
             padding: 8px 10px 10px; background: var(--tl-fundo); color: var(--tinta); border-top: 1px solid var(--linha);
@@ -297,5 +300,7 @@ h3 { margin: 0 0 4px; font-size: 15px; }
 .pr-cmd-pergunta-texto { margin: 0; font-weight: 600; }
 .pr-cmd-opcoes { gap: 6px; }
 .pr-cmd-horario { max-width: 14em; }
+.pr-cmd-ver-mapa { margin-top: 10px; }
+@media (min-width: 901px) { .pr-cmd-ver-mapa { display: none; } }      /* só no celular, onde o mapa fica acima do painel (P2c) */
 .pr-cmd-acoes { margin-top: 10px; }
 .pr-cmd-acoes[hidden] { display: none; }

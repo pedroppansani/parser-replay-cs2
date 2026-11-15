@@ -82,10 +82,12 @@ def test_o_play_so_vale_com_peca_movida_e_a_peca_anda_na_velocidade_medida_ate_o
         andou = ((p["agora"][0] - p["x0"]) ** 2 + (p["agora"][1] - p["y0"]) ** 2) ** 0.5
         total = ((antes["x"] - antes["x0"]) ** 2 + (antes["y"] - antes["y0"]) ** 2) ** 0.5
         assert abs(andou - min(total, p["velocidade"] * decorrido)) < 1.5                  # velocidade medida (a da prancheta), em linha reta
-        # nada é editável enquanto a sua versão toca: arrastar não mexe na peça
+        # nada é editável enquanto a sua versão TOCA (pausada, desde a P2c, o arrasto põe uma parada nova): arrastar não mexe na peça
+        pg.click("#play")                                                                  # volta a tocar
         xy = pg.evaluate(XY, nome)
         pg.mouse.move(*xy); pg.mouse.down(); pg.mouse.move(xy[0] + 50, xy[1], steps=3); pg.mouse.up()
         assert next(q for q in _estado(pg)["pecas"] if q["nome"] == nome)["x"] == antes["x"]
+        pg.click("#play")                                                                  # pausa de novo
         pg.click("#rw-editar")                                                             # "Voltar a editar": de volta ao instante
         est = _estado(pg)
         assert not est["sua"] and est["quadro"] == est["instante"]
@@ -123,7 +125,8 @@ def test_o_que_mudou_conta_o_movimento_a_morte_do_real_e_avisa_do_duelo_sem_prom
         assert "Nada ainda" in pg.inner_text("#rw-mudou")
         _arrasta(pg, "molodoy")
         itens = pg.locator("#rw-mudou li").all_inner_texts()
-        assert itens[0].startswith("molodoy sai de CTSpawn às 1:21 e vai até o ponto marcado: chega às ")
+        m = re.match(r"molodoy sai de (.+) às 1:21 e vai até (.+): chega às ", itens[0])      # o lugar segue a regra de nomes da C3 (P2c): "CT Spawn", não o "CTSpawn" cru
+        assert m and "CTSpawn" not in itens[0] and m.group(1) != "o ponto marcado" and m.group(2) != "o ponto marcado"
         texto = " ".join(itens)
         assert "No real, molodoy matou ZywOo às 0:52. Na sua versão molodoy saiu do lugar, mas a morte acontece como no real" in texto   # D3 (a)
         assert "No real, molodoy morreu para apEX às 0:47. Na sua versão, o site não refaz esse duelo." in texto
@@ -168,7 +171,7 @@ def test_todo_rotulo_que_o_modo_usa_vem_do_python_e_existe():
     js = (Path(__file__).resolve().parent.parent / "dashboard" / "web" / "partida" / "10-reescrever.js").read_text(encoding="utf-8")
     usados = set(re.findall(r"\bTX\.([a-z_0-9]+)", js))
     assert usados, "o modo não lê nenhum rótulo?"
-    faltam = usados - set(TEXTOS_DO_MODO) - {"velocidade"}       # `velocidade` entra no build (a mesma tabela da prancheta, decisão 43)
+    faltam = usados - set(TEXTOS_DO_MODO) - {"velocidade", "lugares"}       # `velocidade` entra no build (a mesma tabela da prancheta, decisão 43); `lugares` também (os nomes do mapa para "O que mudou", P2c)
     assert not faltam, faltam
 
 

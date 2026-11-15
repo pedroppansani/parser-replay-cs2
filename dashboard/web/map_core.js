@@ -805,6 +805,17 @@ window.MapCore = (function () {
       canvas). `r` = {x, y, w, h} em px de tela relativos ao canto do canvas. Chamar depois de `rotulosInicia`. */
   function rotulosReserva(r) { if (ROT.ativo && r) ROT.reservas.push(r); }
 
+  /** P2c: alguma peça ou algum nome desenhado cruza uma área reservada (o relógio grande da prancheta)? Chamar depois de `rotulosDesenha`.
+      A prancheta deixa o relógio translúcido enquanto isto for verdade (a peça por baixo continua visível). */
+  function rotulosSobReserva() {
+    var caixas = [].concat(ROT.caixasDePeca || [], ROT.caixas || []), cv = ROT.canvas && ROT.canvas.getBoundingClientRect();
+    return (ROT.reservas || []).some(function (r0) {
+      // só vale a parte da reserva que está SOBRE o mapa (no computador o relógio fica na margem, fora do canvas: nada do que se desenha passa por baixo dele)
+      var x0 = Math.max(0, r0.x), y0 = Math.max(0, r0.y), x1 = Math.min(cv ? cv.width : Infinity, r0.x + r0.w), y1 = Math.min(cv ? cv.height : Infinity, r0.y + r0.h);
+      return x1 > x0 && y1 > y0 && caixas.some(function (c) { return c.x < x1 && c.x + c.w > x0 && c.y < y1 && c.y + c.h > y0; });
+    });
+  }
+
   /** Px do canvas por px de tela (CSS). */
   function pxPorPxDeTela() {
     var cv = ROT.canvas;
@@ -1785,6 +1796,7 @@ window.MapCore = (function () {
     radarSemBorda: radarSemBorda,
     rotulosInicia: rotulosInicia,
     rotulosReserva: rotulosReserva,
+    rotulosSobReserva: rotulosSobReserva,
     rotulo: rotulo,
     rotulosDesenha: rotulosDesenha,
     lugaresRegistra: lugaresRegistra,

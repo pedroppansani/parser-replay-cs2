@@ -261,6 +261,18 @@
       var d = el("div", "rw-cmd-linha-horario"); d.appendChild(cx); d.appendChild(ok);
       return d;
     }
+    // "Ver no mapa ↑": rola a PÁGINA (uma vez, sem animação) até o palco, põe o foco no mapa (sem rolar de novo: o `focusin` do v2.js não tem o que corrigir) e o cartão anuncia
+    function botaoVerMapa() {      // no celular o mapa fica acima do painel: o botão leva até ele (P2c)
+      var vm = el("button", "rw-btn rw-cmd-ver-mapa", TX.cmd_ver_mapa, { type: "button", id: "rw-cmd-ver-mapa" });
+      vm.addEventListener("click", verNoMapa);
+      return vm;
+    }
+    function verNoMapa() {
+      var palco = document.getElementById("palco"), mapa = document.getElementById("map");
+      if (palco) palco.scrollIntoView({ block: "start", behavior: "auto" });
+      if (mapa) { mapa.tabIndex = -1; mapa.focus({ preventScroll: true }); }
+      estado.msg = TX.cmd_ver_mapa_ok; desenha();
+    }
     function desenha() {
       cartao.textContent = ""; cartao.scrollTop = 0;
       var l = estado.leitura;
@@ -270,6 +282,7 @@
       }
       if (!l) {
         cartao.appendChild(el("p", estado.msg ? "rw-cmd-aviso" : "rw-cmd-vazio", estado.msg || TX.cmd_vazio, estado.msg ? { role: "status" } : {}));
+        if (estado.msg === TX.cmd_aplicado) cartao.appendChild(botaoVerMapa());
         botoes(); return;
       }
       cartao.appendChild(el("h5", "rw-cmd-sub", TX.cmd_entendi));
@@ -344,6 +357,7 @@
         else if (be === "carregando" || be === "nao") cartao.appendChild(el("p", "rw-cmd-aviso", t("ui_carregando_granadas"), { role: "status", id: "rw-cmd-gr-carregando" }));
       }
       if (estado.msg) cartao.appendChild(el("p", "rw-cmd-aviso", estado.msg, { role: "status" }));
+      if (estado.msg === TX.cmd_aplicado) cartao.appendChild(botaoVerMapa());
       botoes();
     }
 

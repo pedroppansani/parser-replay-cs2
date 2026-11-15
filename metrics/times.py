@@ -44,6 +44,9 @@ def chave_de_semelhanca(nome: str) -> str:
     return re.sub(r"[^a-z0-9]", "", n)
 
 
+PREFIXO_DO_TIME_FACEIT = "Time de "      # o nome de exibição do lado da FACEIT; o que vem depois é o NICK, com a grafia dele (a página não o põe em maiúsculas: P2c)
+
+
 def nome_do_lado_faceit(nicks: list[str]) -> str:
     """"Time de <nick>" para um lado da FACEIT, onde o "time" da demo é um nome gerado (`team_<nick>`).
 
@@ -54,7 +57,7 @@ def nome_do_lado_faceit(nicks: list[str]) -> str:
     """
     if not nicks:
         return ""
-    return "Time de " + min(nicks, key=lambda n: (n.casefold(), n))
+    return PREFIXO_DO_TIME_FACEIT + min(nicks, key=lambda n: (n.casefold(), n))
 
 
 # Nomes que a demo grava quando não há nome de verdade do time (decisão 65): vale a reserva da decisão 28.

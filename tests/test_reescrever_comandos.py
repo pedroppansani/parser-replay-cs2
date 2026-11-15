@@ -249,8 +249,10 @@ def test_a_sua_versao_tocando_desliga_o_desfazer_e_os_comandos(navegador, pagina
     try:
         _abre_secao(pg)
         _escreve(pg, "ropz corre pro meio aos 1:10"); _aplica(pg)
-        pg.click("#play"); pg.wait_for_timeout(200); pg.click("#play")                        # toca e pausa
+        pg.click("#play"); pg.wait_for_timeout(200)                                           # toca (pausada, desde a P2c, o Desfazer volta a valer para o arrasto)
         assert _estado(pg)["sua"] and pg.is_disabled("#rw-desfazer") and "Volte a editar" in _cartao(pg)
+        pg.click("#play")                                                                     # pausa: o Desfazer volta, os comandos continuam esperando o instante
+        assert not pg.is_disabled("#rw-desfazer") and "Volte a editar" in _cartao(pg)
         pg.click("#rw-editar")
         assert not pg.is_disabled("#rw-desfazer")
     finally:

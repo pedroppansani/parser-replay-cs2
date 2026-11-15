@@ -56,6 +56,8 @@
       ctx.stroke(); ctx.restore();
     }
     MapCore.rotulosDesenha();
+    var relogio = $("pr-relogio-grande");
+    if (relogio) relogio.classList.toggle("sob-peca", !relogio.hidden && MapCore.rotulosSobReserva());      // uma peça (ou o nome dela) por baixo do relógio: ele fica translúcido (P2c)
     resumeOMapa(cena);
     desenhaBalao();
   }

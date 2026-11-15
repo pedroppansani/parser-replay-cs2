@@ -29,3 +29,5 @@
   .painel-rw .rw-cmd-acoes { display: flex; gap: 6px; flex-wrap: wrap; }
   .painel-rw .rw-cmd-acoes .rw-btn { flex: 1 1 0; min-width: 0; }
   .painel-rw .rw-cmd-rot.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (min-width: 1024px) and (min-height: 600px) { .painel-rw .rw-cmd-ver-mapa { display: none; } }      /* só no celular (ou janela baixa): no computador o mapa já está ao lado (P2c) */
+.painel-rw .rw-cmd-ver-mapa { justify-self: start; min-height: var(--toque); }

@@ -25,7 +25,8 @@ TEXTOS_DO_MODO = {
     "titulo": "Reescrever este round",
     "comeca_em": "Sua versão começa em {relogio}",
     "dica": ("Arraste uma peça até onde ela iria; a lista à esquerda a seleciona. As peças mortas antes deste instante ficam onde "
-             "morreram. Depois de mover, toque o ▶ para ver a sua versão. Pelo teclado, com a peça em foco na lista, as setas a movem (Shift anda mais)."),
+             "morreram. Depois de mover, toque o ▶ para ver a sua versão. Pelo teclado, com a peça em foco na lista, as setas a movem (Shift anda mais). "
+             "Para mover de novo, avance o tempo e arraste outra vez."),
     "voltar": "Voltar ao real",
     "banco": "Peças",
     "editado": "editado",
@@ -51,8 +52,9 @@ TEXTOS_DO_MODO = {
     "breve_2": "Compartilhar por link",
     "breve_3": "Salvar no grupo",
     "mudou_nada": "Nada ainda: mova uma peça.",
-    "mudou_move": "{nome} sai de {de} às {relogio} e vai até o ponto marcado: chega às {chega}, {seg} s depois.",
-    "mudou_move_sem_lugar": "{nome} sai às {relogio} e vai até o ponto marcado: chega às {chega}, {seg} s depois.",
+    "mudou_move": "{nome} sai de {de} às {relogio} e vai até {para}: chega às {chega}, {seg} s depois.",      # {para}: o lugar (regra de nomes da C3) ou "o ponto marcado"
+    "mudou_move_sem_lugar": "{nome} sai às {relogio} e vai até {para}: chega às {chega}, {seg} s depois.",
+    "mudou_ponto_marcado": "o ponto marcado",
     "mudou_morreu": "No real, {nome} morreu para {matador} às {relogio}. Na sua versão, o site não refaz esse duelo.",
     "mudou_d3": "No real, {nome} matou {vitima} às {relogio}. Na sua versão {nome} saiu do lugar, mas a morte acontece como no real: o site não refaz o duelo.",
     "mudou_morreu_sem_matador": "No real, {nome} morreu às {relogio}. Na sua versão, o site não refaz essa morte.",
@@ -60,7 +62,7 @@ TEXTOS_DO_MODO = {
     "mudou_desarmou": "No real, {nome} desarmou a bomba às {relogio}. Na sua versão, o site mantém o que aconteceu no real.",
     "mudou_cegou": "No real, a flash de {nome} das {relogio} cegou {n}. Na sua versão, o site mantém o que aconteceu no real.",
     "cegos": {"um": "1 jogador", "varios": "{n} jogadores"},
-    "mudou_nao_chega": "{nome} sai às {relogio} e vai até o ponto marcado, mas não chega antes do fim do round.",
+    "mudou_nao_chega": "{nome} sai às {relogio} e vai até {para}, mas não chega antes do fim do round.",
     "mudou_granada": "A {tipo} de {nome} das {relogio} fica só no real.",
     "granadas": {"smoke": "smoke", "flash": "flash", "he": "granada HE", "molotov": "molotov", "decoy": "decoy"},
     # trocar a granada (R4, decisão 59)
@@ -150,6 +152,8 @@ TEXTOS_DO_MODO = {
     "cmd_nao_aplicou": "Não consegui aplicar: {quem} não pode seguir esse caminho agora. Nada mudou.",
     "cmd_nao_aplicou_fim": "Não consegui aplicar: o round acabou às {h_fim} e {quem} só parte às {h_cmd}. Nada mudou.",
     "cmd_nao_aplicou_parado": "Não consegui aplicar: {quem} já está nesse lugar (a menos de {u} unidades do ponto). Nada mudou.",
+    "cmd_ver_mapa": "Ver no mapa ↑",
+    "cmd_ver_mapa_ok": "O mapa está à vista.",
     "cmd_aplicado": "Aplicado. Desfazer volta só o que este comando mudou.",
     "cmd_desfeito": "Desfeito: a última ação voltou ao que era.",
     "cmd_mudou": "Comando: {linha}",

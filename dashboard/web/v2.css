@@ -31,7 +31,8 @@ html { scroll-padding-top: calc(var(--nav-h) + 16px); }   /* C2: âncora nunca e
   .site-topo::before { height: 8px; }
   .site-nav { order: 3; width: 100%; margin: 0; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
   .site-nav::-webkit-scrollbar { display: none; }
-  .site-nav a { padding: 0 12px; }
+  .site-nav { gap: 0; }
+  .site-nav a { padding: 0 6px; }      /* os 4 links (Partidas, Jogadores, Reescrever, Prancheta) cabem a 375 px sem rolagem lateral (P2c) */
 }
 
 /* ================= v2-4: página da partida (entrega-v2-goatdemo §5.3) ================= */

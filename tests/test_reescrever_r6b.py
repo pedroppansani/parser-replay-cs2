@@ -109,7 +109,7 @@ def test_as_setas_movem_a_peca_em_foco_e_o_leitor_de_tela_so_ouve_ao_soltar(nave
         assert abs(p["x"] - (x0 + 60)) < 0.01 and abs(p["y"] - y0) < 0.01                                     # 3 passos de 20 u para a direita
         assert pg.evaluate("window.__mut") == 0                                                              # nada anunciado enquanto a tecla está apertada
         pg.keyboard.up("ArrowRight")
-        assert pg.evaluate("window.__mut") > 0 and "vai até o ponto marcado" in pg.inner_text("#rw-mudou")    # ao soltar, uma vez
+        assert pg.evaluate("window.__mut") > 0 and " e vai até " in pg.inner_text("#rw-mudou")    # ao soltar, uma vez
         pg.keyboard.press("Shift+ArrowUp")                                                                    # Shift anda mais (norte = y maior)
         p = next(q for q in _estado(pg)["pecas"] if q["nome"] == nome)
         assert abs(p["y"] - (y0 + 100)) < 0.01 and _estado(pg)["selecionada"] == nome
