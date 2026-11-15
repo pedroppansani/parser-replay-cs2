@@ -82,10 +82,12 @@ def test_o_play_so_vale_com_peca_movida_e_a_peca_anda_na_velocidade_medida_ate_o
         andou = ((p["agora"][0] - p["x0"]) ** 2 + (p["agora"][1] - p["y0"]) ** 2) ** 0.5
         total = ((antes["x"] - antes["x0"]) ** 2 + (antes["y"] - antes["y0"]) ** 2) ** 0.5
         assert abs(andou - min(total, p["velocidade"] * decorrido)) < 1.5                  # velocidade medida (a da prancheta), em linha reta
-        # nada é editável enquanto a sua versão toca: arrastar não mexe na peça
+        # nada é editável enquanto a sua versão TOCA (pausada, desde a P2c, o arrasto põe uma parada nova): arrastar não mexe na peça
+        pg.click("#play")                                                                  # volta a tocar
         xy = pg.evaluate(XY, nome)
         pg.mouse.move(*xy); pg.mouse.down(); pg.mouse.move(xy[0] + 50, xy[1], steps=3); pg.mouse.up()
         assert next(q for q in _estado(pg)["pecas"] if q["nome"] == nome)["x"] == antes["x"]
+        pg.click("#play")                                                                  # pausa de novo
         pg.click("#rw-editar")                                                             # "Voltar a editar": de volta ao instante
         est = _estado(pg)
         assert not est["sua"] and est["quadro"] == est["instante"]

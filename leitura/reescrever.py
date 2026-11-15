@@ -25,7 +25,8 @@ TEXTOS_DO_MODO = {
     "titulo": "Reescrever este round",
     "comeca_em": "Sua versão começa em {relogio}",
     "dica": ("Arraste uma peça até onde ela iria; a lista à esquerda a seleciona. As peças mortas antes deste instante ficam onde "
-             "morreram. Depois de mover, toque o ▶ para ver a sua versão. Pelo teclado, com a peça em foco na lista, as setas a movem (Shift anda mais)."),
+             "morreram. Depois de mover, toque o ▶ para ver a sua versão. Pelo teclado, com a peça em foco na lista, as setas a movem (Shift anda mais). "
+             "Para mover de novo, avance o tempo e arraste outra vez."),
     "voltar": "Voltar ao real",
     "banco": "Peças",
     "editado": "editado",
