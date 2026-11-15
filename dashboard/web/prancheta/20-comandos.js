@@ -119,13 +119,19 @@
   }
   function cmdCarregaPlano() {
     if (PlanoArq.estado !== "inicial") return;
-    if (typeof PlanoDeComandos !== "undefined" || !cfg.comandos.plano_arquivo) { PlanoArq.estado = "pronta"; return; }
+    var fila = [];      // o leitor (P2b) e o plano vêm por arquivo no site; a página gerada sozinha os traz embutidos
+    if (typeof LeitorDeComandos === "undefined" && cfg.comandos.leitor_arquivo) fila.push(cfg.comandos.leitor_arquivo);
+    if (typeof PlanoDeComandos === "undefined" && cfg.comandos.plano_arquivo) fila.push(cfg.comandos.plano_arquivo);
+    if (!fila.length) { PlanoArq.estado = "pronta"; return; }
     PlanoArq.estado = "carregando";
-    var sc = document.createElement("script");
-    sc.src = cfg.comandos.plano_arquivo;
-    sc.onload = function () { PlanoArq.estado = "pronta"; if ($("pr-cmd-resultado")) cmdDesenha(); };
-    sc.onerror = function () { PlanoArq.estado = "erro"; if ($("pr-cmd-resultado")) cmdDesenha(); };
-    document.body.appendChild(sc);
+    var faltam = fila.length;
+    fila.forEach(function (arq) {
+      var sc = document.createElement("script");
+      sc.src = arq;
+      sc.onload = function () { if (--faltam > 0 || PlanoArq.estado === "erro") return; PlanoArq.estado = "pronta"; if (Cmd.entendePendente) { Cmd.entendePendente = false; cmdEntende(); } else if ($("pr-cmd-resultado")) cmdDesenha(); };
+      sc.onerror = function () { PlanoArq.estado = "erro"; if ($("pr-cmd-resultado")) cmdDesenha(); };
+      document.body.appendChild(sc);
+    });
   }
   var PLANO_SEM_MODULO = function () { return { ops: [], chegadas: {}, problemas: [], avisos: [], falta: null, granadas: {}, inicios: {}, cortados: {}, pergunta: null, espera: true }; };
   function cmdPlano(leitura) { var m = cmdModulo(); return m ? m.plano(leitura) : PLANO_SEM_MODULO(); }
@@ -162,6 +168,7 @@
 
   function cmdEntende() {
     var area = $("pr-cmd-texto"), texto = area.value.trim();
+    if (typeof LeitorDeComandos === "undefined") { Cmd.entendePendente = !!texto; cmdDesenha(); return; }      // o leitor ainda está chegando (P2b): o cartão diz "carregando" e entende quando ele chega
     Cmd.mensagem = ""; Cmd.falta = null; Cmd.textoVisto = texto;
     Cmd.leitura = texto ? LeitorDeComandos.le(texto, cmdContexto()) : null;
     cmdChave = S.doc ? S.doc.operacoes.length + ":" + Object.keys(S.estado.pecas).join() + ":" + cmdEstadoDaBiblioteca() : "";
@@ -216,6 +223,9 @@
     var l = Cmd.leitura, plano = null;
     if (!l) {
       raiz.appendChild(el("p", { class: "pr-dica", id: "pr-cmd-vazio", texto: Cmd.mensagem || cmdT("ui_vazio") }));
+      if (Cmd.entendePendente && PlanoArq.estado === "carregando") raiz.appendChild(el("p", { class: "pr-cmd-aviso", id: "pr-cmd-carregando-plano", role: "status", texto: cmdT("ui_carregando_plano") }));      // Entender antes de o leitor chegar (P2b)
+      if (Cmd.entendePendente && PlanoArq.estado === "erro") raiz.appendChild(el("p", { class: "pr-cmd-erro", id: "pr-cmd-sem-plano", role: "alert", texto: cmdT("aviso_plano_falhou") }));
+      if (Cmd.entendePendente) $("pr-cmd-aplicar").disabled = true;
       $("pr-cmd-acoes").hidden = true;
       return;
     }

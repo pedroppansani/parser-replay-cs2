@@ -103,6 +103,7 @@ def biblioteca_js(mapa: str, partidas: dict[str, str] | None = None) -> str | No
     return "Prancheta.recebeBiblioteca(" + _js(dados) + ");\n"
 
 
+ARQUIVO_DO_LEITOR = "comandos/leitor.js"   # o leitor dos comandos (P2b): no site, um arquivo carregado quando a aba Comandos abre (junto com o plano); na página gerada sozinha, embutido
 ARQUIVO_DO_PLANO = "comandos/plano.js"   # o plano dos comandos (CR1a): no site, um arquivo carregado quando a aba Comandos abre; na página gerada sozinha, embutido
 
 
@@ -138,12 +139,12 @@ def _comandos(mapa: str, tempos_externos: bool = False) -> dict:
 
 
 def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | None = None,
-               grupo: dict | None = None, biblioteca_externa: bool = False, plano_externo: bool = False) -> str:
+               grupo: dict | None = None, biblioteca_externa: bool = False, plano_externo: bool = False, leitor_externo: bool = False) -> str:
     """`grupo`: a configuração da aba Grupo (fase 13), ou None para a prancheta sem grupo. Os testes passam
     {"modo": "falsa", ...} (a SalaFalsa em memória). `biblioteca_externa`: a biblioteca de arremessos fica fora da
     página, em `arquivo_da_biblioteca(mapa)` (o build do site grava o arquivo com `biblioteca_js`); a página só leva o
     caminho e a carrega depois de montar a tela (cartão 20). `plano_externo` (CR1a): o plano dos comandos fica fora da página, em `ARQUIVO_DO_PLANO`,
-    carregado quando a aba Comandos abre (o build do site liga; a página gerada sozinha o traz embutido)."""
+    carregado quando a aba Comandos abre (o build do site liga; a página gerada sozinha o traz embutido). `leitor_externo` (P2b): o mesmo para o leitor dos comandos (`ARQUIVO_DO_LEITOR`)."""
     radar = json.loads((RADARS_DIR / f"{mapa}.json").read_text(encoding="utf-8"))
     from scripts.radar_ajuste import avisa
     avisa(mapa)   # mapa sem par em RADAR_AJUSTE (§4.1): a página usa o padrão, o build avisa
@@ -173,6 +174,8 @@ def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | Non
     from scripts.design_head import topo_do_site, v2_js
     from scripts.design_head import aplica  # tokens e fontes (decisão 44)
     comandos = _comandos(mapa, tempos_externos=biblioteca_externa)
+    if leitor_externo:
+        comandos["leitor_arquivo"] = ARQUIVO_DO_LEITOR   # o leitor vem por arquivo, junto com o plano, quando a aba abre (P2b; só o site liga, as páginas dos testes o trazem embutido)
     if plano_externo:
         comandos["plano_arquivo"] = ARQUIVO_DO_PLANO   # o plano vem por arquivo, quando a aba abre (CR1a)
     return aplica(
@@ -183,6 +186,7 @@ def build_html(mapa: str, rotulos: dict[str, str] | None = None, site: str | Non
         .replace("<!--__TOPO__-->", topo_do_site("prancheta", REPO))
         .replace("/*__V2_JS__*/", v2_js())   # antes do dado: o JS da v2 entra como texto, sem marcador sobrando
         .replace("/*__MAP_CORE__*/", (WEB / "map_core.js").read_text(encoding="utf-8"))
+        .replace("/*__LEITOR_DOS_COMANDOS__*/", "" if leitor_externo else (WEB / "comandos" / "leitor.js").read_text(encoding="utf-8"))   # no site vem por arquivo (P2b)
         .replace("/*__PLANO_DOS_COMANDOS__*/", "" if plano_externo else (WEB / "comandos" / "plano.js").read_text(encoding="utf-8"))   # no site vem por arquivo (CR1a)
         .replace("/*__TACTICS_JS__*/", le_fonte(WEB / "tactics.js"))   # com as partes incluídas (decisão 50)
         .replace("/*__MAPA__*/null", _js(mapa))

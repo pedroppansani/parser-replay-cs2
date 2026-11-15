@@ -29,6 +29,8 @@ Antes de mexer no `map_core.js`, no canvas, no Replay (`partida/`) ou na pranche
   pR 12); a barra é depois menos antes da curva publicada, o decisivo é o do payload, e textos e rótulos
   vêm de `leitura/peso_dos_rounds.py` (19, 18)
 
+- Regra de LCP (`scripts/design/mede_lcp_p2b.py`): antes e depois com 40 medidas por célula, alternadas; compara o P75, limite de 30 ms por célula, e não a mediana (o `font-display: fallback` põe o LCP em dois grupos, perto de 90 e de 130 ms, e a mediana pula de um para o outro)
+
 ## Calibração do Pedro (não resolva sozinho)
 
 - Paleta dos gráficos (10).

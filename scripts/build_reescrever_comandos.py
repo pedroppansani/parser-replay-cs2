@@ -12,8 +12,15 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parent.parent
 WEB = RAIZ / "dashboard" / "web" / "comandos"
 PASTA_DO_CONTEXTO = "comandos/real"
+ARQUIVO_DA_CASCA = "comandos/casca.js"      # P2b: a seção Comandos do painel (JS + CSS), pedida quando alguém entra no Reescrever
 ORDEM = ["comandos/leitor.js", "comandos/plano.js", "comandos/real.js", "comandos/reescrever.js"]
 ORIGENS = {"comandos/leitor.js": "leitor.js", "comandos/plano.js": "plano.js", "comandos/real.js": "real.js", "comandos/reescrever.js": "reescrever.js"}
+
+
+def casca_js() -> str:
+    """A seção Comandos (`comandos/casca.js`) com as regras dela (`comandos/casca.css`) dentro, como texto: o arquivo se estiliza sozinho ao chegar."""
+    css = (WEB / "casca.css").read_text(encoding="utf-8")
+    return (WEB / "casca.js").read_text(encoding="utf-8").replace('/*__CSS__*/""', json.dumps(css, ensure_ascii=False))
 
 
 def arquivo_do_contexto(mapa: str) -> str:
@@ -33,12 +40,15 @@ def arquivos_do_mapa(mapa: str) -> dict | None:
     """O que a página do mapa precisa saber: os caminhos (relativos à página) dos arquivos, na ordem de carregar, e o do contexto. None sem contexto."""
     if not mapa or contexto_js(mapa) is None:
         return None
-    return {"arquivos": list(ORDEM), "contexto": arquivo_do_contexto(mapa)}
+    return {"arquivos": list(ORDEM), "contexto": arquivo_do_contexto(mapa), "casca": ARQUIVO_DA_CASCA}
 
 
 def escreve(destino: Path, mapas: list[str]) -> list[str]:
     """Escreve os arquivos ao lado das páginas (a raiz do site, ou a pasta de um teste); devolve os caminhos escritos."""
     escritos = []
+    (destino / ARQUIVO_DA_CASCA).parent.mkdir(parents=True, exist_ok=True)
+    (destino / ARQUIVO_DA_CASCA).write_text(casca_js(), encoding="utf-8")
+    escritos.append(ARQUIVO_DA_CASCA)
     for rel, origem in ORIGENS.items():
         (destino / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(WEB / origem, destino / rel)
