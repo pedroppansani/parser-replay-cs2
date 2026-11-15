@@ -116,6 +116,7 @@ def test_o_campo_com_foco_tambem_carrega_e_o_erro_de_rede_e_dito_sem_travar_o_re
         pg.wait_for_timeout(500)
         pg.locator("#strip .rchip", has_text="23").first.click(); pg.wait_for_timeout(200)
         pg.click("#rw-entrar")
+        pg.wait_for_selector("#rw-cmd-corpo", state="attached")                               # a seção vem por arquivo ao entrar (P2b): espera ela montar
         pg.evaluate("document.getElementById('rw-cmd-corpo').hidden = false")                 # o corpo à vista: o foco no campo é o que dispara
         pg.focus("#rw-cmd-texto")
         pg.wait_for_selector("#rw-cmd-cartao .rw-cmd-erro")

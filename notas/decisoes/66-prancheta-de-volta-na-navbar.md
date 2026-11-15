@@ -11,7 +11,7 @@
 66. **Prancheta na navbar** (P2c; pedido do Pedro, que não conseguiu achá-la no site).
 
 - **Navbar** (`design_head.topo_do_site`): quatro links; na página da prancheta o link dela marca a página (`aria-current`). A 375 px os quatro cabem na
-  segunda linha da pílula sem rolagem lateral (`v2.css`: padding de 6 px por link até 640 px); `tests/test_p2c_visual.py` confere em 5 páginas, a 375 e
+  segunda linha da pílula sem rolagem lateral (`v2.css`: padding de 5 px por link até 640 px, com as fontes Geist carregadas); `tests/test_p2c_visual.py` confere em 5 páginas, a 375 e
   1440 px.
 - **Landing** (`build_site.build_index`): um chip-LINK por mapa (`<a class="chip" href="prancheta_de_<mapa>.html">`), sem o botão "Abrir a prancheta da X"
   nem o endereço, que só repetiam o chip (o antigo chip só escolhia o mapa do botão: parecia texto).
