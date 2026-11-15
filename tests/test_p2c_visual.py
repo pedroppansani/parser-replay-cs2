@@ -223,3 +223,123 @@ def test_o_nome_do_time_faceit_mantem_a_grafia_do_nick_e_o_profissional_segue_em
         assert sorted(i for _, _, i in r) == sorted(esperado if transforma == "none" else [e.upper() for e in esperado])      # o que se VÊ: a grafia do nick, ou o nome em maiúsculas
     finally:
         ctx.close()
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# a peça embaixo do relógio grande da prancheta: o fundo do relógio fica translúcido (instantâneo), os números seguem legíveis (>= 3:1 contra o mapa)
+# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+from tests.test_tactics_browser import abre, contexto, interno, pagina_do_mapa  # noqa: E402,F401
+
+ALFA_DO_FUNDO = "rgba(8, 10, 36, 0.5)"
+CENTRO_DO_RELOGIO = "() => { const r = document.getElementById('pr-relogio-grande').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }"
+
+
+def _prancheta(contexto, tmp_path_factory):
+    pg = abre(contexto, pagina_do_mapa(tmp_path_factory, "de_mirage"))
+    pg.set_viewport_size({"width": 1440, "height": 900})
+    return pg
+
+
+def _fundo(pg):
+    return pg.evaluate("() => { const r = document.getElementById('pr-relogio-grande'); const s = getComputedStyle(r); return { fundo: s.backgroundColor, sob: r.classList.contains('sob-peca'), ponteiro: s.pointerEvents, transicao: s.transitionDuration, oculto: r.hidden }; }")
+
+
+def _poe_a_peca_sob_o_relogio(pg):
+    """Muda a vista (zoom 1) para que a peça `demo-t2` fique no centro do relógio grande, sem mexer na tática."""
+    pg.evaluate("""() => { const I = Prancheta._interno, S = I.S, cv = document.getElementById('pr-mapa'), r = document.getElementById('pr-relogio-grande').getBoundingClientRect(), c = cv.getBoundingClientRect();
+      const p = S.ultimoDesenho.find(d => d.tipo === 'peca'), k = cv.width / c.width, a = cv.getContext('2d').getTransform().a / S.view.zoom;
+      S.view.zoom = 1; S.view.panX = ((r.left + r.width / 2 - c.left) * k) / a - p.x; S.view.panY = ((r.top + r.height / 2 - c.top) * k) / a - p.y; I.atualizaTudo(); }""")
+
+
+def test_a_peca_arrastada_para_baixo_do_relogio_deixa_so_o_fundo_translucido_e_volta_ao_sair(contexto, tmp_path_factory):
+    pg = _prancheta(contexto, tmp_path_factory)
+    try:
+        from tests.test_comandos_tempos import _peca, _ponto
+        base = _ponto("de_mirage", "Base TR")
+        _peca(pg, base["x"], base["y"])
+        pg.wait_for_timeout(100)
+        antes = _fundo(pg)
+        assert not antes["oculto"] and not antes["sob"] and antes["fundo"] != ALFA_DO_FUNDO and antes["ponteiro"] == "none"
+        cx, cy = pg.evaluate(CENTRO_DO_RELOGIO)
+        # a ficha está no mapa: pega-a e leva até o centro do relógio (o relógio não recebe o ponteiro: o soltar cai no mapa)
+        xy = pg.evaluate("""() => { const I = Prancheta._interno, S = I.S, cv = document.getElementById('pr-mapa'), c = cv.getBoundingClientRect(), p = S.ultimoDesenho.find(d => d.tipo === 'peca'),
+          k = cv.width / c.width, t = cv.getContext('2d').getTransform(); return [c.left + (t.a * p.x + t.e) / k, c.top + (t.d * p.y + t.f) / k]; }""")
+        pg.mouse.move(*xy); pg.mouse.down(); pg.mouse.move(cx, cy, steps=8); pg.mouse.up()
+        pg.wait_for_timeout(150)
+        dentro = _fundo(pg)
+        assert dentro["sob"] and dentro["fundo"] == ALFA_DO_FUNDO and dentro["transicao"] in ("0s", "") and dentro["ponteiro"] == "none"      # translúcido, sem transição, sem ponteiro
+        pg.evaluate("() => { const I = Prancheta._interno; I.S.view.panX += 600; I.atualizaTudo(); }")                        # a peça sai de baixo do relógio (a vista anda)
+        pg.wait_for_timeout(150)
+        fora = _fundo(pg)
+        assert not fora["sob"] and fora["fundo"] == antes["fundo"] and pg._erros == []
+    finally:
+        pg.close()
+
+
+def test_a_peca_posta_por_comando_fica_sob_o_relogio_e_na_reproducao_o_relogio_acompanha(contexto, tmp_path_factory):
+    from tests.test_comandos_tempos import _escreve, _peca, _ponto
+    from tests.test_comandos_aba import _aplica
+    pg = _prancheta(contexto, tmp_path_factory)
+    try:
+        base = _ponto("de_mirage", "Base TR")
+        _peca(pg, base["x"], base["y"])
+        _escreve(pg, "tr 2 corre pro meio aos 1:50")                                            # por comando: a peça anda até o meio
+        pg.wait_for_function("() => document.querySelectorAll('#pr-cmd-entendi li').length === 1")
+        _aplica(pg)
+        fim = interno(pg, "I.fimDaTatica(S.e3)")
+        pg.evaluate("t => Prancheta._interno.defineTempo(t)", fim)
+        pg.wait_for_timeout(150)
+        assert not _fundo(pg)["sob"]
+        _poe_a_peca_sob_o_relogio(pg)                                                           # a vista leva o meio (onde a peça chegou) até o relógio
+        assert _fundo(pg)["sob"] and _fundo(pg)["fundo"] == ALFA_DO_FUNDO
+        # na reprodução: a peça sai de onde estava, passa por baixo do relógio e segue; o fundo acompanha quadro a quadro
+        pg.evaluate("() => { const I = Prancheta._interno; I.comecaReproducao(); }")
+        quando = []
+        for f in (0.0, 0.5, 1.0):
+            pg.evaluate("t => Prancheta._interno.reproduzAte(t)", fim * f)
+            pg.wait_for_timeout(60)
+            quando.append(_fundo(pg)["sob"])
+        assert quando[-1] is True and quando[0] is False                                        # no fim ela está sob o relógio; no começo, não
+        assert pg._erros == []
+    finally:
+        pg.close()
+
+
+def test_com_o_fundo_translucido_os_numeros_do_relogio_tem_3_para_1_contra_o_mapa_nos_mapas_com_radar(contexto, tmp_path_factory):
+    """Pior caso por mapa: o pixel mais claro do radar desenhado (percentil 99,9) e as cores das peças (CT e TR), sob o fundo translúcido do relógio, contra a cor dos números."""
+    from scripts.build_tactics_page import arquivo_da_pagina, build_html, mapas_disponiveis
+    from tests.test_comandos_tempos import _peca
+    medidas = {}
+    for mapa in mapas_disponiveis():
+        arq = tmp_path_factory.mktemp("rel_" + mapa) / arquivo_da_pagina(mapa)
+        arq.write_text(build_html(mapa), encoding="utf-8")
+        pg = abre(contexto, arq)
+        try:
+            pg.set_viewport_size({"width": 1440, "height": 900})
+            _peca(pg, 0, 0)
+            pg.wait_for_timeout(300)
+            r = pg.evaluate("""() => {
+              const rel = document.getElementById('pr-relogio-grande'), cv = document.getElementById('pr-mapa'); rel.classList.add('sob-peca');
+              const num = s => (s.match(/[\d.]+/g) || []).map(Number), lin = c => { const v = c / 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+              const lum = (r, g, b) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+              const st = getComputedStyle(rel), texto = num(st.color), fundo = num(st.backgroundColor), a = fundo.length > 3 ? fundo[3] : 1;
+              const d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data, ls = [];
+              for (let i = 0; i < d.length; i += 4 * 7) if (d[i + 3] > 200) ls.push(lum(d[i], d[i + 1], d[i + 2]));
+              ls.sort((x, y) => x - y); const brilho = ls[Math.floor(0.999 * (ls.length - 1))];
+              const raiz = getComputedStyle(document.documentElement), cor = n => { const t = document.createElement('i'); t.style.color = raiz.getPropertyValue(n); document.body.appendChild(t); const v = num(getComputedStyle(t).color); t.remove(); return v; };
+              const amostras = { radar: null, ct: cor('--ct-mapa'), tr: cor('--tr-mapa') };
+              const mistura = (v) => v.slice(0, 3).map((c, i) => a * fundo[i] + (1 - a) * c);       // o navegador mistura em sRGB
+              const lt = lum(texto[0], texto[1], texto[2]), out = { alfa: a, lt: lt, brilho: brilho };
+              const lradar = brilho;      // a luminância do pixel mais claro já está em linear: mistura o fundo (em sRGB) com um cinza dessa luminância
+              const cinza = 255 * (lradar <= 0.0031308 ? lradar * 12.92 : 1.055 * Math.pow(lradar, 1 / 2.4) - 0.055);
+              const comp = { radar: mistura([cinza, cinza, cinza]), ct: mistura(amostras.ct), tr: mistura(amostras.tr) };
+              Object.keys(comp).forEach(k => { out[k] = (lt + 0.05) / (lum(comp[k][0], comp[k][1], comp[k][2]) + 0.05); });
+              return out; }""")
+            medidas[mapa] = r
+        finally:
+            pg.close()
+    print("\ncontraste dos números do relógio translúcido (>= 3:1):", {m: {k: round(v, 2) for k, v in r.items() if k in ("radar", "ct", "tr")} for m, r in medidas.items()})
+    assert len(medidas) >= 8
+    for mapa, r in medidas.items():
+        assert r["alfa"] == 0.5 and min(r["radar"], r["ct"], r["tr"]) >= 3.0, (mapa, r)

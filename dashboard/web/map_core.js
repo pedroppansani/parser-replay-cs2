@@ -805,6 +805,13 @@ window.MapCore = (function () {
       canvas). `r` = {x, y, w, h} em px de tela relativos ao canto do canvas. Chamar depois de `rotulosInicia`. */
   function rotulosReserva(r) { if (ROT.ativo && r) ROT.reservas.push(r); }
 
+  /** P2c: alguma peça ou algum nome desenhado cruza uma área reservada (o relógio grande da prancheta)? Chamar depois de `rotulosDesenha`.
+      A prancheta deixa o relógio translúcido enquanto isto for verdade (a peça por baixo continua visível). */
+  function rotulosSobReserva() {
+    var caixas = [].concat(ROT.caixasDePeca || [], ROT.caixas || []);
+    return (ROT.reservas || []).some(function (r) { return caixas.some(function (c) { return c.x < r.x + r.w && c.x + c.w > r.x && c.y < r.y + r.h && c.y + c.h > r.y; }); });
+  }
+
   /** Px do canvas por px de tela (CSS). */
   function pxPorPxDeTela() {
     var cv = ROT.canvas;
@@ -1785,6 +1792,7 @@ window.MapCore = (function () {
     radarSemBorda: radarSemBorda,
     rotulosInicia: rotulosInicia,
     rotulosReserva: rotulosReserva,
+    rotulosSobReserva: rotulosSobReserva,
     rotulo: rotulo,
     rotulosDesenha: rotulosDesenha,
     lugaresRegistra: lugaresRegistra,
