@@ -22,7 +22,6 @@
 var Prancheta = (function () {
   "use strict";
 
-//@inclui comandos/leitor.js
 //@inclui prancheta/01-constantes.js
 //@inclui prancheta/02-modelo.js
 //@inclui prancheta/03-reproducao-pura.js
