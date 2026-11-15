@@ -273,6 +273,21 @@ def comandos_do_mapa(mapa: str) -> dict | None:
     return arquivos_do_mapa(mapa)
 
 
+def _lugares_do_reescrever(base: Path, match_id: str) -> dict | None:
+    """Os nomes que "O que mudou" escreve para um ponto do mapa, pela regra da C3: o ponto do Pedro a até `raio` u, senão o nome legível do jogo da área (o mesmo do botão Lugares,
+    "Palace Alley"). A página traz só o que a regra usa: os pontos (x, y, nome) e, das áreas, o texto desenhado no mapa -> o nome legível. None sem contexto (o texto cai em "o ponto marcado")."""
+    from scripts.comandos_contexto import contexto_do_real
+    mapa = _le_json(base / "match_meta.json").get("map_name") or ""
+    try:
+        c = contexto_do_real(mapa)
+    except (OSError, KeyError, ValueError):
+        return None
+    if not c["pontos"] and not c["areas"]:
+        return None
+    return {"raio": c["raio_do_ponto_u"], "pontos": [{"x": round(p["x"], 1), "y": round(p["y"], 1), "nome": p["nome"]} for p in c["pontos"]],
+            "areas": {a["texto"]: a["exibe"] for a in c["areas"] if a.get("exibe") and a["exibe"] != a["texto"]}}
+
+
 def dados_da_pagina(match_id: str, base: Path | None = None, repo: str | None = None, preview: bool = False) -> dict:
     from leitura import marca_da_funcao, perfil_erros, peso_dos_rounds, round_swing_texto
     from leitura.reescrever import TEXTOS_DO_MODO
@@ -295,7 +310,7 @@ def dados_da_pagina(match_id: str, base: Path | None = None, repo: str | None = 
             # "Abrir round na prancheta" (fase 9): a tolerância medida do caminho
             "round_na_prancheta": {"tolerancia_u": TOLERANCIA_U},
             # o modo Reescrever (R2, decisão 57): os rótulos e a frase fixa de honestidade, prontos
-            "reescrever": {**TEXTOS_DO_MODO, "velocidade": {**{a: VELOCIDADE_U_S[(a, "correndo")] for a in ("AWP", "rifle")},
+            "reescrever": {**TEXTOS_DO_MODO, "lugares": _lugares_do_reescrever(base, match_id), "velocidade": {**{a: VELOCIDADE_U_S[(a, "correndo")] for a in ("AWP", "rifle")},
                                          "modos": {a: {m: VELOCIDADE_U_S[(a, m)] for m in ("correndo", "andando", "agachado")} for a in ("AWP", "rifle")}},   # `modos`: "anda" e "agacha" por comando (CR2)
                           "smoke_s": DURACAO_SMOKE_S,
                           "biblioteca": biblioteca_do_mapa(_le_json(base / "match_meta.json").get("map_name") or ""),

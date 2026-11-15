@@ -489,6 +489,17 @@
       var a = document.activeElement;       // um botão que acabou de se desligar não pode prender o foco
       if (a && a.disabled) { var alvo = playBtn.disabled ? hosts.ct.querySelector(".peca-rw:not([aria-disabled])") : playBtn; if (alvo) alvo.focus({ preventScroll: true }); }
     }
+    // O nome de um lugar nas linhas de "O que mudou" (regra de nomes da C3): o ponto do Pedro a até `raio` u, senão o nome legível do jogo da área ("Palace Alley", como no botão Lugares);
+    // "" quando a página não tem a tabela do mapa (a frase diz "o ponto marcado")
+    function nomeDoLugar(x, y, nivel) {
+      var L = TX.lugares;
+      if (!L || !reescrever.granada) return "";
+      var d0 = L.raio, ponto = null;
+      (L.pontos || []).forEach(function (p) { var d = Math.hypot(p.x - x, p.y - y); if (d <= d0) { d0 = d; ponto = p; } });
+      if (ponto) return ponto.nome;
+      var s = reescrever.granada.lugarDe(x, y, nivel);
+      return s ? (L.areas && L.areas[s]) || s : "";
+    }
     /* "O que mudou": o texto da diferença (design §3 e D3), do dado e de nada mais */
     function atualizaMudou() {
       var host = document.getElementById("rw-mudou");
@@ -500,8 +511,8 @@
         segs[nome].forEach(function (sg, k) {
           if (sg.d < MOVIDA) return;      // uma parada no mesmo lugar não é um movimento
           if (porComando[nome] && porComando[nome][sg.f0]) return;      // a que um comando pôs: a linha do comando já a diz
-          var lugar = k === 0 && it.p.p ? cur.places[it.p.p[Math.floor(sg.f0)]] : "", chega = sg.f1;
-          var base = { nome: nome, de: lugar, relogio: relogioNo(sg.f0), chega: relogioNo(chega), seg: (Math.round(sg.dur * 10) / 10).toString().replace(".", ",") };
+          var nivel = andarDaPeca(nome), lugar = nomeDoLugar(sg.ax, sg.ay, nivel), chega = sg.f1;
+          var base = { nome: nome, de: lugar, para: nomeDoLugar(sg.bx, sg.by, nivel) || TX.mudou_ponto_marcado, relogio: relogioNo(sg.f0), chega: relogioNo(chega), seg: (Math.round(sg.dur * 10) / 10).toString().replace(".", ",") };
           itens.push(formata(chega > cur.frames - 1 ? TX.mudou_nao_chega : (lugar ? TX.mudou_move : TX.mudou_move_sem_lugar), base));
         });
         var ini = partida(nome);      // até partir a peça é o real: o que aconteceu antes dela partir é igual nos dois

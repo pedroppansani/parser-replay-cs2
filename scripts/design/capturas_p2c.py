@@ -72,6 +72,27 @@ def foto(pg, saida, nome, rotulo, tema, w, alvo=None):
     pg.screenshot(path=str(saida / f"{nome}-{rotulo}-{tema}.png"))
 
 
+def so_a_captura_2(docs: Path, saida: Path) -> None:
+    """Refaz só a captura 2 (arrastar várias vezes), nos 3 tamanhos e nos 2 temas."""
+    saida.mkdir(parents=True, exist_ok=True)
+    with sync_playwright() as p:
+        nav = p.chromium.launch(channel="chrome")
+        for tema in ("escuro", "claro"):
+            for rotulo, w, h in TAMANHOS:
+                ctx, pg = abre(nav, w, h, tema)
+                partida(pg, docs, w)
+                pg.click("#rw-entrar")
+                arrasta(pg, "ropz", 60, -40)
+                avanca(pg, 12)
+                arrasta(pg, "ropz", -50, 60)
+                avanca(pg, 12)
+                arrasta(pg, "ropz", 40, 40)
+                foto(pg, saida, "2-arrastar-varias-vezes", rotulo, tema, w, "#rw-mudou")
+                ctx.close()
+        nav.close()
+    print(f"captura 2 refeita em {saida}")
+
+
 def roda(docs: Path, saida: Path) -> None:
     saida.mkdir(parents=True, exist_ok=True)
     with sync_playwright() as p:
@@ -152,6 +173,9 @@ def roda(docs: Path, saida: Path) -> None:
 
 
 if __name__ == "__main__":
+    if len(sys.argv) == 4 and sys.argv[3] == "2":
+        so_a_captura_2(Path(sys.argv[1]).resolve(), Path(sys.argv[2]))
+        sys.exit(0)
     if len(sys.argv) != 3:
         print(__doc__)
         sys.exit(2)

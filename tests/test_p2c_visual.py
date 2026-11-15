@@ -359,3 +359,55 @@ def test_no_computador_o_relogio_fica_na_margem_do_mapa_e_nunca_fica_translucido
         assert not _fundo(pg)["sob"] and _fundo(pg)["fundo"] != ALFA_DO_FUNDO
     finally:
         pg.close()
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# "O que mudou": o lugar de saída e o destino de cada arrasto seguem a regra de nomes da C3
+# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+CRUS = ("TRamp", "PalaceAlley", "CTSpawn", "TopofMid", "BombsiteA", "BombsiteB")      # o nome do jogo como a demo grava (sem espaço)
+
+
+def _nomes_da_c3_mirage():
+    """Os nomes que a regra da C3 escreve: o ponto do Pedro ou o nome legível da área (o do botão Lugares)."""
+    from scripts.comandos_contexto import contexto
+    c = contexto("de_mirage", so_conferidos=True)
+    return {p["nome"] for p in c["pontos"]} | {a.get("exibe") or a["texto"] for a in c["areas"]}
+
+
+def test_as_linhas_de_arrasto_de_o_que_mudou_dizem_de_onde_e_ate_onde_pelo_nome_da_c3(navegador, pagina_cmd):
+    import re
+    nomes = _nomes_da_c3_mirage()
+    ctx, pg, erros = _abre_no_instante(navegador, pagina_cmd)
+    try:
+        pg.click("#rw-entrar")
+        _arrasta(pg, "ropz", dx=60, dy=-40)
+        _avanca(pg, 12)
+        _arrasta(pg, "ropz", dx=-50, dy=60)
+        linhas = [l for l in pg.locator("#rw-mudou li").all_inner_texts() if l.startswith("ropz sai")]
+        assert len(linhas) == 2
+        for l in linhas:
+            m = re.match(r"ropz sai (?:de (.+) )?às \d:\d\d e vai até (.+): chega às ", l)
+            assert m, l
+            de, para = m.group(1), m.group(2)
+            assert (de is None or de in nomes) and para in nomes, (l, sorted(nomes)[:6])      # nomes legíveis, os mesmos do botão Lugares
+            assert not any(c in l for c in CRUS) and "o ponto marcado" not in l
+        assert linhas[0].startswith("ropz sai de ")                                          # a primeira parte de um lugar conhecido
+    finally:
+        ctx.close()
+
+
+def test_sem_a_tabela_de_lugares_a_linha_volta_a_dizer_o_ponto_marcado(navegador, tmp_path_factory, monkeypatch):
+    import scripts.build_web_page as bw
+    from tests.test_reescrever_modo import PARTIDA
+    monkeypatch.setattr(bw, "_lugares_do_reescrever", lambda base, match_id: None)
+    arq = tmp_path_factory.mktemp("sem_lugares") / f"{PARTIDA}.html"
+    arq.write_text(bw.build_html(PARTIDA), encoding="utf-8")
+    ctx, pg, erros = _abre_no_instante(navegador, arq)
+    try:
+        pg.click("#rw-entrar")
+        _arrasta(pg, "ropz", dx=60, dy=-40)
+        linha = next(l for l in pg.locator("#rw-mudou li").all_inner_texts() if l.startswith("ropz sai"))
+        assert " e vai até o ponto marcado: chega às " in linha and erros == []
+    finally:
+        ctx.close()

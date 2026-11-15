@@ -52,8 +52,9 @@ TEXTOS_DO_MODO = {
     "breve_2": "Compartilhar por link",
     "breve_3": "Salvar no grupo",
     "mudou_nada": "Nada ainda: mova uma peça.",
-    "mudou_move": "{nome} sai de {de} às {relogio} e vai até o ponto marcado: chega às {chega}, {seg} s depois.",
-    "mudou_move_sem_lugar": "{nome} sai às {relogio} e vai até o ponto marcado: chega às {chega}, {seg} s depois.",
+    "mudou_move": "{nome} sai de {de} às {relogio} e vai até {para}: chega às {chega}, {seg} s depois.",      # {para}: o lugar (regra de nomes da C3) ou "o ponto marcado"
+    "mudou_move_sem_lugar": "{nome} sai às {relogio} e vai até {para}: chega às {chega}, {seg} s depois.",
+    "mudou_ponto_marcado": "o ponto marcado",
     "mudou_morreu": "No real, {nome} morreu para {matador} às {relogio}. Na sua versão, o site não refaz esse duelo.",
     "mudou_d3": "No real, {nome} matou {vitima} às {relogio}. Na sua versão {nome} saiu do lugar, mas a morte acontece como no real: o site não refaz o duelo.",
     "mudou_morreu_sem_matador": "No real, {nome} morreu às {relogio}. Na sua versão, o site não refaz essa morte.",
@@ -61,7 +62,7 @@ TEXTOS_DO_MODO = {
     "mudou_desarmou": "No real, {nome} desarmou a bomba às {relogio}. Na sua versão, o site mantém o que aconteceu no real.",
     "mudou_cegou": "No real, a flash de {nome} das {relogio} cegou {n}. Na sua versão, o site mantém o que aconteceu no real.",
     "cegos": {"um": "1 jogador", "varios": "{n} jogadores"},
-    "mudou_nao_chega": "{nome} sai às {relogio} e vai até o ponto marcado, mas não chega antes do fim do round.",
+    "mudou_nao_chega": "{nome} sai às {relogio} e vai até {para}, mas não chega antes do fim do round.",
     "mudou_granada": "A {tipo} de {nome} das {relogio} fica só no real.",
     "granadas": {"smoke": "smoke", "flash": "flash", "he": "granada HE", "molotov": "molotov", "decoy": "decoy"},
     # trocar a granada (R4, decisão 59)

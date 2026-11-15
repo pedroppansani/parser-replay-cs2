@@ -125,7 +125,8 @@ def test_o_que_mudou_conta_o_movimento_a_morte_do_real_e_avisa_do_duelo_sem_prom
         assert "Nada ainda" in pg.inner_text("#rw-mudou")
         _arrasta(pg, "molodoy")
         itens = pg.locator("#rw-mudou li").all_inner_texts()
-        assert itens[0].startswith("molodoy sai de CTSpawn às 1:21 e vai até o ponto marcado: chega às ")
+        m = re.match(r"molodoy sai de (.+) às 1:21 e vai até (.+): chega às ", itens[0])      # o lugar segue a regra de nomes da C3 (P2c): "CT Spawn", não o "CTSpawn" cru
+        assert m and "CTSpawn" not in itens[0] and m.group(1) != "o ponto marcado" and m.group(2) != "o ponto marcado"
         texto = " ".join(itens)
         assert "No real, molodoy matou ZywOo às 0:52. Na sua versão molodoy saiu do lugar, mas a morte acontece como no real" in texto   # D3 (a)
         assert "No real, molodoy morreu para apEX às 0:47. Na sua versão, o site não refaz esse duelo." in texto
