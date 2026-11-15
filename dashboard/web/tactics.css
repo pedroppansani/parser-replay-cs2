@@ -297,5 +297,7 @@ h3 { margin: 0 0 4px; font-size: 15px; }
 .pr-cmd-pergunta-texto { margin: 0; font-weight: 600; }
 .pr-cmd-opcoes { gap: 6px; }
 .pr-cmd-horario { max-width: 14em; }
+.pr-cmd-ver-mapa { margin-top: 10px; }
+@media (min-width: 901px) { .pr-cmd-ver-mapa { display: none; } }      /* só no celular, onde o mapa fica acima do painel (P2c) */
 .pr-cmd-acoes { margin-top: 10px; }
 .pr-cmd-acoes[hidden] { display: none; }

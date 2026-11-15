@@ -125,3 +125,78 @@ def test_nao_arrasta_tocando_nem_antes_do_instante_nem_depois_da_morte_real(nave
         assert len(_trilha(pg, "ZywOo")) == 2 and erros == []
     finally:
         ctx.close()
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# "Ver no mapa ↑" no celular, depois do Aplicar (Reescrever e prancheta)
+# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+def _dentro_da_janela(pg, seletor):
+    return pg.evaluate("s => { const r = document.querySelector(s).getBoundingClientRect(); return r.top >= 0 && r.top < innerHeight && r.bottom > 0; }", seletor)
+
+
+def test_ver_no_mapa_no_reescrever_leva_a_pagina_ao_mapa_poe_o_foco_nele_e_anuncia(navegador, pagina_cmd):
+    from tests.test_reescrever_comandos import _abre_secao, _aplica, _escreve
+    ctx, pg, erros = _abre_no_instante(navegador, pagina_cmd, 375, 812)
+    try:
+        _abre_secao(pg)
+        assert pg.locator("#rw-cmd-ver-mapa").count() == 0                                      # antes do Aplicar não há botão
+        _escreve(pg, "ropz corre pro meio aos 1:10"); _aplica(pg)
+        assert pg.locator("#rw-cmd-ver-mapa").count() == 1 and pg.inner_text("#rw-cmd-ver-mapa") == "Ver no mapa ↑"
+        pg.locator("#rw-cmd-ver-mapa").scroll_into_view_if_needed()
+        assert not _dentro_da_janela(pg, "#palco")                                              # no celular o mapa ficou para cima
+        y = pg.evaluate("scrollY")
+        pg.click("#rw-cmd-ver-mapa")
+        assert pg.evaluate("scrollY") < y and _dentro_da_janela(pg, "#map")                      # a página subiu ao mapa, de uma vez
+        assert pg.evaluate("document.activeElement.id") == "map"                                 # o foco está no mapa (canvas com rótulo "Mapa do round")
+        assert "O mapa está à vista." in pg.inner_text("#rw-cmd-cartao") and pg.locator("#rw-cmd-ver-mapa").count() == 0
+        assert pg.get_attribute("#rw-cmd-cartao", "aria-live") == "polite" and erros == []       # o aviso vai pela região viva do cartão
+    finally:
+        ctx.close()
+
+
+def test_ver_no_mapa_so_aparece_no_celular_e_nunca_no_computador(navegador, pagina_cmd):
+    from tests.test_reescrever_comandos import _abre_secao, _aplica, _escreve
+    ctx, pg, _ = _abre_no_instante(navegador, pagina_cmd, 1440, 900)
+    try:
+        _abre_secao(pg); _escreve(pg, "ropz corre pro meio aos 1:10"); _aplica(pg)
+        assert pg.locator("#rw-cmd-ver-mapa").count() == 1 and not pg.is_visible("#rw-cmd-ver-mapa")      # existe, mas o CSS o esconde: o mapa já está ao lado
+    finally:
+        ctx.close()
+
+
+def test_ver_no_mapa_na_prancheta_leva_a_pagina_ao_mapa_poe_o_foco_nele_e_anuncia(navegador, tmp_path_factory):
+    from scripts.build_tactics_page import arquivo_da_pagina, build_html
+    from tests.test_comandos_tempos import _peca, _ponto
+    d = tmp_path_factory.mktemp("pr_vermapa")
+    arq = d / arquivo_da_pagina("de_mirage")
+    arq.write_text(build_html("de_mirage"), encoding="utf-8")
+    ctx = navegador.new_context(viewport={"width": 375, "height": 812})
+    pg = ctx.new_page(); erros = []
+    pg.on("pageerror", lambda e: erros.append(str(e)))
+    try:
+        pg.goto(arq.as_uri())
+        pg.wait_for_function("() => Prancheta._interno.S.estado !== null")
+        base = _ponto("de_mirage", "Base TR")
+        _peca(pg, base["x"], base["y"])
+        pg.evaluate("() => Prancheta._interno.abaDoPainel('comandos')")
+        pg.fill("#pr-cmd-texto", "tr 2 corre pro meio aos 1:30"); pg.click("#pr-cmd-entender")
+        pg.wait_for_function("() => document.querySelectorAll('#pr-cmd-entendi li').length === 1")
+        assert pg.locator("#pr-cmd-ver-mapa").count() == 0
+        pg.click("#pr-cmd-aplicar")
+        pg.wait_for_selector("#pr-cmd-ver-mapa")
+        assert pg.inner_text("#pr-cmd-ver-mapa") == "Ver no mapa ↑"
+        pg.locator("#pr-cmd-ver-mapa").scroll_into_view_if_needed()
+        assert not _dentro_da_janela(pg, "#pr-palco")
+        y = pg.evaluate("scrollY")
+        pg.click("#pr-cmd-ver-mapa")
+        assert pg.evaluate("scrollY") < y and _dentro_da_janela(pg, "#pr-mapa")
+        assert pg.evaluate("document.activeElement.id") == "pr-mapa"
+        assert "O mapa está à vista." in pg.inner_text("#pr-cmd-resultado") and pg.locator("#pr-cmd-ver-mapa").count() == 0 and erros == []
+        pg.set_viewport_size({"width": 1440, "height": 900})                                    # no computador o botão fica escondido
+        pg.fill("#pr-cmd-texto", "tr 2 corre pro meio aos 1:20"); pg.click("#pr-cmd-entender")
+        pg.wait_for_function("() => document.querySelectorAll('#pr-cmd-entendi li').length === 1")
+        pg.click("#pr-cmd-aplicar")
+        assert pg.locator("#pr-cmd-ver-mapa").count() == 1 and not pg.is_visible("#pr-cmd-ver-mapa")
+    finally:
+        ctx.close()

@@ -5,7 +5,7 @@
      Tempo de corrida: ESTIMADO (linha reta e a velocidade medida, a mesma conta do traçado), dito na tela; o do corpus entra na C3. Troca de andar não é
      estimada: pergunta a chegada, em vez de usar a linha reta (decisão 64).
      --------------------------------------------------------------------- */
-  var Cmd = { leitura: null, falta: null, mensagem: "", textoVisto: "" };
+  var Cmd = { leitura: null, falta: null, mensagem: "", textoVisto: "", verMapa: false };
   var LADO_DA_FRASE = { tr: "t", ct: "ct" };
 
   function cmdFmt(tpl, v) { return String(tpl || "").replace(/\{(\w+)\}/g, function (_, k) { return v && v[k] != null ? v[k] : ""; }); }
@@ -169,7 +169,7 @@
   function cmdEntende() {
     var area = $("pr-cmd-texto"), texto = area.value.trim();
     if (typeof LeitorDeComandos === "undefined") { Cmd.entendePendente = !!texto; cmdDesenha(); return; }      // o leitor ainda está chegando (P2b): o cartão diz "carregando" e entende quando ele chega
-    Cmd.mensagem = ""; Cmd.falta = null; Cmd.textoVisto = texto;
+    Cmd.mensagem = ""; Cmd.falta = null; Cmd.textoVisto = texto; Cmd.verMapa = false;
     Cmd.leitura = texto ? LeitorDeComandos.le(texto, cmdContexto()) : null;
     cmdChave = S.doc ? S.doc.operacoes.length + ":" + Object.keys(S.estado.pecas).join() + ":" + cmdEstadoDaBiblioteca() : "";
     cmdDesenha(); cmdFoco();
@@ -181,10 +181,21 @@
     if (plano.falta || plano.pergunta || plano.espera || plano.problemas.length || !plano.ops.length) { cmdDesenha(); return; }
     emiteLote(plano.ops);
     Cmd.aplicadoEm = S.doc.operacoes.length;
-    Cmd.mensagem = cmdT("ok_aplicado", { n: plano.ops.length }); Cmd.leitura = null; $("pr-cmd-texto").value = ""; Cmd.textoVisto = "";
+    Cmd.mensagem = cmdT("ok_aplicado", { n: plano.ops.length }); Cmd.leitura = null; $("pr-cmd-texto").value = ""; Cmd.textoVisto = ""; Cmd.verMapa = true;
     cmdDesenha();
   }
-  function cmdCorrige() { Cmd.leitura = null; Cmd.falta = null; Cmd.mensagem = ""; cmdDesenha(); var a = $("pr-cmd-texto"); a.focus(); a.select(); }
+  /** "Ver no mapa ↑" (P2c, celular): rola a PÁGINA (uma vez, sem animação) até o palco, põe o foco no mapa (sem rolar de novo) e o cartão anuncia. */
+  function cmdVerNoMapa() {
+    var palco = $("pr-palco"), mapa = $("pr-mapa");
+    if (palco) palco.scrollIntoView({ block: "start", behavior: "auto" });
+    if (mapa) { mapa.tabIndex = -1; mapa.focus({ preventScroll: true }); }
+    Cmd.mensagem = cmdT("ok_ver_mapa"); Cmd.verMapa = false;
+    cmdDesenha();
+  }
+  function cmdBotaoVerMapa() {
+    return el("button", { type: "button", class: "pr-cmd-ver-mapa", id: "pr-cmd-ver-mapa", texto: cmdT("ui_ver_mapa"), onclick: cmdVerNoMapa });
+  }
+  function cmdCorrige() { Cmd.leitura = null; Cmd.falta = null; Cmd.mensagem = ""; Cmd.verMapa = false; cmdDesenha(); var a = $("pr-cmd-texto"); a.focus(); a.select(); }
   function cmdResponde(indice, valor) {
     LeitorDeComandos.responde(Cmd.leitura, indice, valor, cmdContexto());
     cmdDesenha(); cmdFoco();
@@ -223,6 +234,7 @@
     var l = Cmd.leitura, plano = null;
     if (!l) {
       raiz.appendChild(el("p", { class: "pr-dica", id: "pr-cmd-vazio", texto: Cmd.mensagem || cmdT("ui_vazio") }));
+      if (Cmd.verMapa) raiz.appendChild(cmdBotaoVerMapa());
       if (Cmd.entendePendente && PlanoArq.estado === "carregando") raiz.appendChild(el("p", { class: "pr-cmd-aviso", id: "pr-cmd-carregando-plano", role: "status", texto: cmdT("ui_carregando_plano") }));      // Entender antes de o leitor chegar (P2b)
       if (Cmd.entendePendente && PlanoArq.estado === "erro") raiz.appendChild(el("p", { class: "pr-cmd-erro", id: "pr-cmd-sem-plano", role: "alert", texto: cmdT("aviso_plano_falhou") }));
       if (Cmd.entendePendente) $("pr-cmd-aplicar").disabled = true;
@@ -299,6 +311,7 @@
     if (Tempos.estado === "carregando") raiz.appendChild(el("p", { class: "pr-cmd-aviso", id: "pr-cmd-carregando", role: "status", texto: cmdT("ui_carregando_tempos") }));
     if (Tempos.estado === "erro") raiz.appendChild(el("p", { class: "pr-cmd-aviso", id: "pr-cmd-sem-tempos", texto: cmdT("aviso_tempos_falhou") }));
     if (Cmd.mensagem) raiz.appendChild(el("p", { class: "pr-cmd-aviso", role: "status", texto: Cmd.mensagem }));
+    if (Cmd.verMapa) raiz.appendChild(cmdBotaoVerMapa());
     var acoes = $("pr-cmd-acoes"); acoes.hidden = false;
     $("pr-cmd-aplicar").disabled = !(pronta && plano && !plano.falta && !plano.pergunta && !plano.espera && !plano.problemas.length && plano.ops.length) || Tempos.estado === "carregando";
   }

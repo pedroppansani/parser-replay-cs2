@@ -110,6 +110,8 @@ TEXTOS = {
     "aviso_horario_fixo_corta": "O comando {n} tem horário fixo ({h}): ele corta {os_comandos}, mesmo que o {quem} ainda não tenha chegado.",
     "aviso_palavra_sobrando": "Não entendi: {trechos}.",
     "pergunta_chegada": "{quem} muda de andar para ir a {alvo}. Não estimei o tempo por causa da troca de andar. Quando chega?",
+    "ui_ver_mapa": "Ver no mapa ↑",
+    "ok_ver_mapa": "O mapa está à vista.",
     "ok_aplicado": "Aplicado ({n} operações). Desfazer volta tudo de uma vez.",
     "erro_sem_peca": "{quem} ainda não está no mapa. Ponha a ficha no mapa e aplique de novo.",
     "erro_sem_horario": "{quem}: não sei de que horário esta ação parte. Corrija a frase.",

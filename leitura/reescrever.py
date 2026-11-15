@@ -151,6 +151,8 @@ TEXTOS_DO_MODO = {
     "cmd_nao_aplicou": "Não consegui aplicar: {quem} não pode seguir esse caminho agora. Nada mudou.",
     "cmd_nao_aplicou_fim": "Não consegui aplicar: o round acabou às {h_fim} e {quem} só parte às {h_cmd}. Nada mudou.",
     "cmd_nao_aplicou_parado": "Não consegui aplicar: {quem} já está nesse lugar (a menos de {u} unidades do ponto). Nada mudou.",
+    "cmd_ver_mapa": "Ver no mapa ↑",
+    "cmd_ver_mapa_ok": "O mapa está à vista.",
     "cmd_aplicado": "Aplicado. Desfazer volta só o que este comando mudou.",
     "cmd_desfeito": "Desfeito: a última ação voltou ao que era.",
     "cmd_mudou": "Comando: {linha}",
