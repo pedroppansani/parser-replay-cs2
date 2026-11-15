@@ -9,27 +9,57 @@ from tests.test_reescrever_r1 import paginas_html, partidas  # noqa: E402,F401  
 from tests.test_reescrever_modo import navegador  # noqa: E402,F401
 
 
-@pytest.mark.parametrize("largura", [375, 1440])
-@pytest.mark.parametrize("pagina", ["landing", "jogadores", "reescrever", "partida", "prancheta"])
-def test_os_quatro_links_da_navbar_cabem_sem_rolagem_lateral_e_em_uma_linha(navegador, paginas_html, pagina, largura):
-    pasta, _ = paginas_html
-    if not (pasta / "fontes").exists():      # as páginas do site levam as fontes Geist ao lado: sem elas a fonte de reserva do sistema (mais larga no Linux do CI) mudaria a medida
+FOLGA_DA_NAVBAR_PX = 8      # a navbar tem de sobrar pelo menos isto a 375 px, com qualquer fonte
+FONTE_LARGA = "* { font-family: Verdana, 'DejaVu Sans', sans-serif !important; }"      # a fonte de reserva do pior caso (a do Linux do CI é a DejaVu Sans, do tamanho da Verdana)
+
+
+def _com_as_fontes_do_site(pasta):
+    """As páginas do site levam as fontes Geist ao lado; a pasta do teste ganha uma cópia delas."""
+    if not (pasta / "fontes").exists():
         import shutil
         from pathlib import Path
         shutil.copytree(Path(__file__).resolve().parent.parent / "dashboard" / "web" / "fontes", pasta / "fontes")
+
+
+@pytest.mark.parametrize("largura", [375, 1440])
+@pytest.mark.parametrize("fonte", ["geist", "reserva_larga"])
+@pytest.mark.parametrize("pagina", ["landing", "jogadores", "reescrever", "partida", "prancheta"])
+def test_os_quatro_links_da_navbar_cabem_em_uma_linha_com_folga_com_as_fontes_do_site_e_com_a_de_reserva(navegador, paginas_html, pagina, fonte, largura):
+    pasta, _ = paginas_html
+    _com_as_fontes_do_site(pasta)
     ctx = navegador.new_context(viewport={"width": largura, "height": 812})
     pg = ctx.new_page()
     try:
         pg.goto((pasta / f"{pagina}.html").as_uri())
+        if fonte == "reserva_larga":
+            pg.add_style_tag(content=FONTE_LARGA)
         pg.evaluate("document.fonts.ready.then(() => true)")
         r = pg.evaluate("""() => { const n = document.querySelector('.site-nav'), as = [...n.querySelectorAll('a')], nb = n.getBoundingClientRect();
           return { textos: as.map(a => a.textContent), sobra: n.scrollWidth - n.clientWidth, topos: [...new Set(as.map(a => Math.round(a.getBoundingClientRect().top)))].length,
-                   dentro: as.every(a => { const b = a.getBoundingClientRect(); return b.left >= nb.left - 0.5 && b.right <= nb.right + 0.5; }),
-                   pagina: document.documentElement.scrollWidth - document.documentElement.clientWidth }; }""")
+                   folga: nb.right - as[as.length - 1].getBoundingClientRect().right,
+                   dentro: as.every(a => { const b = a.getBoundingClientRect(); return b.left >= nb.left - 0.5 && b.right <= nb.right + 0.5; }) }; }""")
         assert r["textos"] == ["Partidas", "Jogadores", "Reescrever", "Prancheta"]
         assert r["sobra"] <= 0 and r["dentro"] and r["topos"] == 1                              # nenhuma rolagem lateral da navbar e os 4 na mesma linha
-        if pagina != "partida":      # a rolagem da PÁGINA da partida depende do conteúdo dela (o placar com fonte de reserva), não da navbar
-            assert r["pagina"] <= 0
+        if largura == 375:
+            assert r["folga"] >= FOLGA_DA_NAVBAR_PX, r                                          # e sobram pelo menos 8 px, com qualquer fonte
+    finally:
+        ctx.close()
+
+
+@pytest.mark.parametrize("fonte", ["geist", "reserva_larga"])
+def test_a_pagina_da_partida_nao_rola_de_lado_a_375_px(navegador, paginas_html, fonte):
+    pasta, _ = paginas_html
+    _com_as_fontes_do_site(pasta)
+    ctx = navegador.new_context(viewport={"width": 375, "height": 812})
+    pg = ctx.new_page()
+    try:
+        pg.goto((pasta / "partida.html").as_uri())
+        if fonte == "reserva_larga":
+            pg.add_style_tag(content=FONTE_LARGA)
+        pg.evaluate("document.fonts.ready.then(() => true)")
+        pg.wait_for_timeout(300)
+        r = pg.evaluate("() => ({ sobra: document.documentElement.scrollWidth - document.documentElement.clientWidth, largos: [...document.querySelectorAll('body *')].filter(e => e.getBoundingClientRect().right > innerWidth + 0.5).slice(0, 5).map(e => e.tagName + '.' + e.className) })")
+        assert r["sobra"] <= 0, r                                                               # um defeito do placar (ou de outro bloco) não se relaxa no teste
     finally:
         ctx.close()
 
@@ -327,7 +357,7 @@ def test_com_o_fundo_translucido_os_numeros_do_relogio_tem_3_para_1_contra_o_map
             pg.set_viewport_size({"width": 1440, "height": 900})
             _peca(pg, 0, 0)
             pg.wait_for_timeout(300)
-            r = pg.evaluate("""() => {
+            r = pg.evaluate(r"""() => {
               const rel = document.getElementById('pr-relogio-grande'), cv = document.getElementById('pr-mapa'); rel.classList.add('sob-peca');
               const num = s => (s.match(/[\d.]+/g) || []).map(Number), lin = c => { const v = c / 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
               const lum = (r, g, b) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);

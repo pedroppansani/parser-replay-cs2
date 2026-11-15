@@ -34,6 +34,8 @@ html { scroll-padding-top: calc(var(--nav-h) + 16px); }   /* C2: âncora nunca e
   .site-nav { gap: 0; }
   .site-nav a { padding: 0 5px; }      /* os 4 links (Partidas, Jogadores, Reescrever, Prancheta) cabem a 375 px sem rolagem lateral (P2c) */
 }
+/* <= 380 px (celular estreito): fonte um pouco menor nos 4 links, para sobrar pelo menos 8 px com qualquer fonte (a de reserva é mais larga) (P2c) */
+@media (max-width: 380px) { .site-nav a { font-size: 12.5px; padding: 0 4px; } }
 
 /* ================= v2-4: página da partida (entrega-v2-goatdemo §5.3) ================= */
 /* A navbar ocupa o alto da tela: o cabeçalho, as abas e o topo do Replay ficam mais justos para o mapa INTEIRO e o
