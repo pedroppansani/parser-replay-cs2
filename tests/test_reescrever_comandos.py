@@ -92,11 +92,12 @@ def test_o_leitor_so_e_pedido_pela_rede_quando_a_secao_abre(navegador, pagina_cm
         pg.locator("#strip .rchip", has_text="23").first.click(); pg.wait_for_timeout(200)
         assert not [u for u in pedidos if "/comandos/" in u]                                  # a página da partida carrega sem nenhum arquivo dos comandos
         pg.click("#rw-entrar")
-        assert not [u for u in pedidos if "/comandos/" in u]                                  # entrar no Reescrever também não
+        pg.wait_for_selector("#rw-comandos")
+        assert sorted(u.rsplit("/comandos/", 1)[1] for u in pedidos if "/comandos/" in u) == ["casca.js"]      # entrar pede só a seção (P2b); o leitor, o plano, as regras do real e a tela do cartão esperam a seção abrir
         assert pg.evaluate("typeof LeitorDeComandos") == "undefined"
         pg.click("#rw-cmd-abre"); _pronta(pg)
         arquivos = sorted(u.rsplit("/comandos/", 1)[1] for u in pedidos if "/comandos/" in u)
-        assert arquivos == ["leitor.js", "plano.js", "real.js", "real/de_mirage.js", "reescrever.js"]
+        assert arquivos == ["casca.js", "leitor.js", "plano.js", "real.js", "real/de_mirage.js", "reescrever.js"]
         n = len(pedidos)
         pg.click("#rw-cmd-abre"); pg.click("#rw-cmd-abre")                                    # fechar e abrir de novo: nada novo
         assert len(pedidos) == n
