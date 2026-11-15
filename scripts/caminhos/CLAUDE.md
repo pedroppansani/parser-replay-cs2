@@ -1,0 +1,9 @@
+# scripts/caminhos/: o grafo de caminhos das peças
+
+Complementa o `CLAUDE.md` da raiz e o de `scripts/`, e não os substitui. Uma regra por linha; (N) = nota em `notas/decisoes/`. Vale para `scripts/caminhos/`, `scripts/build_caminhos.py` e `scripts/gera_malha.py`.
+
+- A malha do jogo (`.nav`, Valve) NUNCA entra no repositório: só o dado derivado, `data/caminhos/malha/<mapa>.json`, com a versão, o sha256 do `.nav`, a data e o crédito ("derivado dos arquivos de navegação do CS2, da Valve; uso não comercial; nenhuma marca da Valve"); `tests/test_caminhos.py` falha se houver um `*.nav` (69)
+- O build e o CI só leem o arquivo derivado; `scripts/gera_malha.py` roda no PC onde o jogo está instalado, com o awpy 3.3.0 num venv à parte (o awpy do projeto, 2.0.2, não muda); `--confere` mostra o que mudou depois de uma atualização do jogo, e o arquivo novo entra num commit à parte (`notas/caminhos-como-recriar-a-malha.md`) (69)
+- O grafo (`data/caminhos/<mapa>.json`, de `scripts/build_caminhos.py`) une as trajetórias do corpus (células de 64 u) e a malha: o corpus primeiro, a malha onde o corpus não passou, e ENTRE ANDARES a malha primeiro (o dado não traz as ligações do corpus que cruzam o andar); uma queda só existe no sentido em que existe, e nenhum trecho passa fora das células e áreas que existem (70)
+- A busca tem uma referência em Python (`busca.py`) e a do navegador (`dashboard/web/comandos/caminho.js`): fazem o mesmo (a prova compara a rota e o comprimento); mudar uma muda a outra, e a consulta com a CPU 4x mais lenta fica abaixo de 50 ms (70)
+- O tempo pelo caminho é comprimento / 250 u/s, o mesmo cálculo da C3; o tempo real da C3 segue sendo a primeira fonte, e sem caminho volta a reta ("estimado: linha reta"); o erro mediano contra o tempo real é o da nota 70, e o teste falha se piorar (70)

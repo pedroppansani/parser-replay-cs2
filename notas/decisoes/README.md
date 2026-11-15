@@ -110,3 +110,5 @@ Uma nota por decisão. O `CLAUDE.md` traz a lista curta das que estão em vigor.
 | [66](66-prancheta-de-volta-na-navbar.md) | vigente | A navbar ganha a Prancheta (a da Mirage) e os 10 mapas da landing viram links; complementa a 56. |
 | [67](67-arrastar-de-novo-no-reescrever.md) | vigente | Com a sua versão pausada, arrastar põe uma parada nova do quadro atual; antes da última, corta; desfazer tira uma por vez. |
 | [68](68-visual-p2c-relogio-ver-no-mapa-nome-do-time.md) | vigente | Relógio translúcido com peça por baixo (>= 3:1), "Ver no mapa ↑" no celular e "Time de <nick>" com a grafia do nick. |
+| [69](69-malha-do-cs2-derivada-para-o-caminho.md) | vigente | A malha de navegação do CS2, só o dado derivado (nunca o `.nav`), entra no repositório com crédito à Valve e uso não comercial, como os radares. |
+| [70](70-caminho-das-pecas-pelo-mapa.md) | vigente | A peça segue o caminho de gente: corpus primeiro, malha onde o corpus não passou, malha primeiro entre andares; o tempo real da C3 segue primeiro; sem caminho, a reta. |

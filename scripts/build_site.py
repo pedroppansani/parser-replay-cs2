@@ -701,6 +701,9 @@ def build(repo_url: str, preview: bool = False) -> Path:
         shutil.copyfile(PROJECT_ROOT / "dashboard" / "web" / "comandos" / "leitor.js", saida / ARQUIVO_DO_LEITOR)      # o leitor (P2b), do mesmo jeito
         print(f"  {arquivo_da_pagina(mapa)}  ({len(html) / 1024:.0f} KB)  prancheta")
 
+    from scripts.build_caminhos import escreve as escreve_caminhos      # o grafo de caminhos de cada mapa (PC1): o dado e a busca, que nenhuma página pede ainda (PC2)
+    escreve_caminhos(saida)
+
     if com_grupo:
         (saida / "vendor").mkdir(exist_ok=True)
         shutil.copyfile(biblioteca, saida / "vendor" / ARQUIVO_SUPABASE_JS)

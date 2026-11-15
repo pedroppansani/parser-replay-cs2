@@ -150,6 +150,7 @@ Uma regra por linha; o número entre parênteses é a nota em `notas/decisoes/`.
 - `dashboard/web/CLAUDE.md`: template, páginas, fontes e v2.
 - `dashboard/web/prancheta/CLAUDE.md`: mapa, cores, canvas, replay, anotação, prancheta e grupos (leia antes de mexer no `map_core.js`).
 - `dashboard/web/comandos/CLAUDE.md`: leitor e plano dos comandos. `dashboard/web/partida/CLAUDE.md`: o Reescrever (trilha, comandos, granada por comando).
+- `scripts/caminhos/CLAUDE.md`: o grafo de caminhos das peças e a malha derivada do CS2 (crédito, nunca o `.nav`).
 - `tests/CLAUDE.md`: invariantes, controles e testes que pulam sem dado ou navegador.
 - `notas/decisoes/README.md`: índice das decisões. `notas/glossario.md`: termos.
   `notas/design/entrega-sala-de-demo.md`: design (§12 é regra dura); v2: `notas/design/entrega-v2-goatdemo.md`.
