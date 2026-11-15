@@ -4,7 +4,8 @@
 
 Cada pasta é um site gerado (`docs/`), servido por HTTP local. Cada medida usa um contexto novo (sem cache), alternando antes e depois; células: as duas páginas (a prancheta da Mirage e a
 partida match_43) nos 3 tamanhos (375x812, 1366x657, 1440x900) com a CPU normal e, a 375, também com a CPU 4 vezes mais lenta. Sai a mediana e o p75 de cada lado, a diferença das medianas e o
-tamanho do HTML; uma célula que piora mais de 30 ms na mediana é marcada."""
+tamanho do HTML. A regra compara o P75 (não a mediana): o `font-display: fallback` põe o LCP em dois grupos, perto de 90 e de 130 ms, e a mediana pula de um para o outro entre
+rodadas; uma célula cujo p75 piora mais de 30 ms é marcada."""
 from __future__ import annotations
 
 import statistics
@@ -42,7 +43,7 @@ def main() -> int:
     with sync_playwright() as p:
         nav = p.chromium.launch(channel="chrome")
         print(f"{n} medidas por célula, contexto novo, sem cache, alternando antes e depois")
-        print(f"{'página':10} {'janela':7} {'CPU':4} {'antes (mediana / p75)':24} {'depois (mediana / p75)':24} {'diferença':10} {'HTML antes':11} {'HTML depois':11}")
+        print(f"{'página':10} {'janela':7} {'CPU':4} {'antes (mediana / p75)':24} {'depois (mediana / p75)':24} {'dif. p75':10} {'HTML antes':11} {'HTML depois':11}")
         for nome, arquivo in [x for x in PAGINAS if so in (None, x[0])]:
             for rotulo, w, h, lento in CELULAS:
                 la, ld, ka, kd = [], [], 0, 0
@@ -54,7 +55,7 @@ def main() -> int:
                         else:
                             ld.append(v); kd = k
                 q = lambda v: sorted(v)[int(0.75 * (len(v) - 1))]
-                dif = statistics.median(ld) - statistics.median(la)
+                dif = q(ld) - q(la)      # o p75 (ver o topo do arquivo)
                 marca = "  <-- PIOR" if dif > LIMITE_MS else ""
                 ruim += dif > LIMITE_MS
                 print(f"{nome:10} {rotulo:7} {'4x' if lento else '1x':4} {statistics.median(la):7.0f} / {q(la):6.0f} ms   {statistics.median(ld):7.0f} / {q(ld):6.0f} ms   {dif:+7.0f} ms  {ka:7} KB   {kd:7} KB{marca}", flush=True)
