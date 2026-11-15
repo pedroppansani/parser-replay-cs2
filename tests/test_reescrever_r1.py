@@ -14,7 +14,7 @@ from tests.test_csp import MAPA, _paginas  # noqa: E402
 from tests.test_tactics_browser import navegador  # noqa: E402,F401  (fixture)
 
 RAIZ = Path(__file__).resolve().parent.parent
-LINKS = ["Partidas", "Jogadores", "Reescrever"]
+LINKS = ["Partidas", "Jogadores", "Reescrever", "Prancheta"]
 
 
 @pytest.fixture(scope="module")
@@ -47,35 +47,30 @@ def _nav(html):
     return re.findall(r'<a href="([^"]+)"( aria-current="page")?>([^<]+)</a>', nav)
 
 
-def test_a_navbar_de_toda_pagina_tem_partidas_jogadores_e_reescrever_sem_prancheta(paginas_html):
+def test_a_navbar_de_toda_pagina_tem_partidas_jogadores_reescrever_e_prancheta(paginas_html):
     _, paginas = paginas_html
-    esperado_atual = {"landing": "Partidas", "jogadores": "Jogadores", "reescrever": "Reescrever", "partida": None, "prancheta": None}
+    esperado_atual = {"landing": "Partidas", "jogadores": "Jogadores", "reescrever": "Reescrever", "partida": None, "prancheta": "Prancheta"}
     for nome, atual in esperado_atual.items():
         links = _nav(paginas[nome])
         assert [t for _, _, t in links] == LINKS, nome
         assert [t for _, c, t in links if c] == ([atual] if atual else []), nome
         assert dict((t, h) for h, _, t in links)["Reescrever"] == "reescrever.html", nome
+        assert dict((t, h) for h, _, t in links)["Prancheta"] == "prancheta_de_mirage.html", nome      # "Prancheta" abre a da Mirage (P2c)
 
 
-def test_o_bloco_da_prancheta_livre_na_landing_troca_o_mapa_do_botao_e_o_endereco_continua(navegador, paginas_html):
+def test_o_bloco_da_prancheta_livre_na_landing_tem_um_link_por_mapa(navegador, paginas_html):
     pasta, _ = paginas_html
     ctx = navegador.new_context(viewport={"width": 1440, "height": 900})
     pg = ctx.new_page()
     try:
         pg.goto((pasta / "landing.html").as_uri())
         assert pg.inner_text("#h-tatica") == "Monte uma tática do zero"
-        assert pg.inner_text("#tatica-abrir") == "Abrir a prancheta da Mirage"                   # começa na Mirage
-        assert pg.get_attribute("#tatica-abrir", "href") == "prancheta_de_mirage.html"
-        assert pg.locator("#tatica-mapas .chip").count() == 3
-        pg.locator("#tatica-mapas .chip", has_text="Nuke").click()
-        assert pg.inner_text("#tatica-abrir") == "Abrir a prancheta da Nuke"
-        assert pg.get_attribute("#tatica-abrir", "href") == "prancheta_de_nuke.html"
-        assert "prancheta_de_nuke.html" in pg.inner_text(".tatica-endereco")                    # o endereço de sempre continua valendo
-        assert pg.get_attribute('#tatica-mapas .chip:has-text("Nuke")', "aria-pressed") == "true"
-        assert pg.get_attribute('#tatica-mapas .chip:has-text("Mirage")', "aria-pressed") == "false"
-        from scripts.build_site import TEXTOS_DA_LANDING
-        assert pg.inner_text("#tatica-abrir") == TEXTOS_DA_LANDING["tatica_abrir"].format(mapa="Nuke")   # a frase vem do Python
+        links = pg.eval_on_selector_all("#tatica-mapas a.chip", "as => as.map(a => [a.textContent, a.getAttribute('href')])")
+        assert dict(links)["Mirage"] == "prancheta_de_mirage.html" and dict(links)["Nuke"] == "prancheta_de_nuke.html"      # cada mapa é um link (P2c), não um texto que escolhe
+        assert pg.locator("#tatica-mapas button").count() == 0 and pg.locator("#tatica-abrir").count() == 0
         assert pg.get_attribute(".tatica-mini", "data-tema") == "violeta"                       # a miniatura no violeta da prancheta
+        with pg.expect_request(lambda r: r.is_navigation_request() and r.url.endswith("prancheta_de_nuke.html")):      # a pasta do teste não tem as pranchetas: confere-se para ONDE o clique leva
+            pg.locator("#tatica-mapas a.chip", has_text="Nuke").click()
     finally:
         ctx.close()
 

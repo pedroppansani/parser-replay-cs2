@@ -181,9 +181,7 @@ TEXTOS_DA_LANDING = {
     "tatica_titulo": "Monte uma tática do zero",
     "tatica_frase": ("A prancheta é o mapa livre: posicione os jogadores, lance granadas reais da biblioteca e toque a tática "
                      "passo a passo, sem precisar de uma partida."),
-    "tatica_mapas": "Escolher o mapa da prancheta",
-    "tatica_abrir": "Abrir a prancheta da {mapa}",
-    "tatica_endereco": "O endereço de sempre continua valendo:",
+    "tatica_mapas": "Abrir a prancheta de um mapa",
 }
 TITULO_DO_TOPO = TEXTOS_DA_LANDING["titulo"]
 FRASE_DO_TOPO = TEXTOS_DA_LANDING["subtitulo"]
@@ -302,17 +300,13 @@ def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | Non
     # o bloco da prancheta livre (Reescrever): começa na Mirage, se ela tem prancheta, ou na primeira
     pranchetas = list(pranchetas or [])
     inicial = next((p for p in pranchetas if p["mapa"] == "de_mirage"), pranchetas[0] if pranchetas else None)
-    chips_prancheta = "".join(
-        f'<button type="button" class="chip" data-arquivo="{e(p["file"])}" data-rotulo="{e(p["label"])}" data-abrir="{e(T["tatica_abrir"].format(mapa=p["label"]))}" '
-        f'aria-pressed="{str(p is inicial).lower()}">{e(p["label"])}</button>' for p in pranchetas)
+    chips_prancheta = "".join(f'<a class="chip" href="{e(p["file"])}">{e(p["label"])}</a>' for p in pranchetas)      # um link por mapa (P2c): clicar abre a prancheta daquele mapa
     bloco_tatica = "" if not inicial else f"""
   <section class="tatica" aria-labelledby="h-tatica">
     <div class="tatica-texto">
       <h2 id="h-tatica">{e(T["tatica_titulo"])}</h2>
       <p>{e(T["tatica_frase"])}</p>
       <div class="chips" id="tatica-mapas" role="group" aria-label="{e(T["tatica_mapas"])}">{chips_prancheta}</div>
-      <div class="acoes"><a class="btn prim" id="tatica-abrir" href="{e(inicial["file"])}">{e(T["tatica_abrir"].format(mapa=inicial["label"]))}</a></div>
-      <p class="tatica-endereco">{e(T["tatica_endereco"])} <code id="tatica-endereco">{e(inicial["file"])}</code></p>
     </div>
     <div class="tatica-mini" data-tema="violeta" aria-hidden="true"><b id="tatica-mini-mapa">{e(inicial["label"])}</b><i class="p ct"></i><i class="p tr"></i><i class="p ct"></i><i class="rastro"></i></div>
   </section>
@@ -417,6 +411,7 @@ def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | Non
   .chip {{ display: inline-flex; align-items: center; gap: 8px; flex: none; min-height: var(--toque); padding: 0 16px;
     border-radius: var(--r-ctl); border: 1px solid var(--borda); background: var(--superficie); color: var(--tinta);
     font: inherit; font-size: var(--t-sm); font-weight: 500; cursor: pointer; white-space: nowrap; }}
+  a.chip {{ text-decoration: none; }}
   .chip .num {{ color: var(--apagado); }}
   .chip[aria-pressed="true"] {{ background: var(--acao); color: var(--acao-ink); border-color: var(--acao); }}
   .chip[aria-pressed="true"] .num {{ color: inherit; }}
@@ -563,21 +558,6 @@ def build_index(matches: list[dict], repo_url: str, pranchetas: list[dict] | Non
     </div>
   </div>
 </dialog>
-<script>
-  // o bloco da prancheta livre: o chip troca o mapa do botão, do endereço e da miniatura
-  (function () {{
-    var chips = document.querySelectorAll("#tatica-mapas .chip"), abrir = document.getElementById("tatica-abrir");
-    Array.prototype.forEach.call(chips, function (c) {{
-      c.addEventListener("click", function () {{
-        Array.prototype.forEach.call(chips, function (o) {{ o.setAttribute("aria-pressed", String(o === c)); }});
-        abrir.href = c.dataset.arquivo;
-        abrir.textContent = c.dataset.abrir;
-        document.getElementById("tatica-endereco").textContent = c.dataset.arquivo;
-        document.getElementById("tatica-mini-mapa").textContent = c.dataset.rotulo;
-      }});
-    }});
-  }})();
-</script>
 <script>
   // filtros da grade: origem e mapa; vazio mostra o aviso e o botão que limpa o mapa
   (function () {{

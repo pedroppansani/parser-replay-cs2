@@ -24,7 +24,7 @@ Antes de mexer no `map_core.js`, no canvas, no Replay (`partida/`) ou na pranche
   baixado, sha256 no `agentes.manifesto.json`, `converte_agente` fora do build e dos testes (48)
 - Escolhas da nota 44 ("Como ficou na implementação") são deliberadas (coluna Mira com o texto do
   Python, mínimos de `jogadores.html`): não "corrija" de volta (44, 48)
-- Navbar: Partidas, Jogadores, Reescrever; a prancheta livre é bloco da landing (56)
+- Navbar: Partidas, Jogadores, Reescrever, Prancheta (a da Mirage); os 10 mapas também são links no bloco "Monte uma tática do zero" da landing; os 4 links cabem a 375 px sem rolagem lateral (56, 66)
 - Aba Placar: "Quanto cada round pesou" tem o mesmo eixo X do gráfico de cima (viewBox de 900, pL 32,
   pR 12); a barra é depois menos antes da curva publicada, o decisivo é o do payload, e textos e rótulos
   vêm de `leitura/peso_dos_rounds.py` (19, 18)

@@ -3,7 +3,7 @@
 - **ID:** 56
 - **Status:** vigente
 - **Data:** 2026-11-05
-- **Resumo:** A navbar passa a ser Partidas, Jogadores e Reescrever; a prancheta livre sai dela e vira o bloco "Monte uma tática do zero"
+- **Resumo:** (a navbar voltou a ter a Prancheta na P2c: decisão 66) A navbar passa a ser Partidas, Jogadores e Reescrever; a prancheta livre sai dela e vira o bloco "Monte uma tática do zero"
   da landing (o endereço `prancheta_de_<mapa>.html` não muda); a página `reescrever.html` mostra os rounds sugeridos (R0) e a busca.
 
 ## Texto
