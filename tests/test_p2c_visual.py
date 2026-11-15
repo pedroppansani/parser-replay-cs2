@@ -235,9 +235,10 @@ ALFA_DO_FUNDO = "rgba(8, 10, 36, 0.5)"
 CENTRO_DO_RELOGIO = "() => { const r = document.getElementById('pr-relogio-grande').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }"
 
 
-def _prancheta(contexto, tmp_path_factory):
+def _prancheta(contexto, tmp_path_factory, largura=375):
     pg = abre(contexto, pagina_do_mapa(tmp_path_factory, "de_mirage"))
-    pg.set_viewport_size({"width": 1440, "height": 900})
+    pg.set_viewport_size({"width": largura, "height": 812})      # o relógio só passa por cima do mapa onde o mapa o alcança: no celular (no computador ele fica na margem)
+    pg.locator("#pr-mapa").scroll_into_view_if_needed()
     return pg
 
 
@@ -343,3 +344,18 @@ def test_com_o_fundo_translucido_os_numeros_do_relogio_tem_3_para_1_contra_o_map
     assert len(medidas) >= 8
     for mapa, r in medidas.items():
         assert r["alfa"] == 0.5 and min(r["radar"], r["ct"], r["tr"]) >= 3.0, (mapa, r)
+
+
+def test_no_computador_o_relogio_fica_na_margem_do_mapa_e_nunca_fica_translucido(contexto, tmp_path_factory):
+    from tests.test_comandos_tempos import _peca, _ponto
+    pg = _prancheta(contexto, tmp_path_factory, largura=1440)
+    try:
+        base = _ponto("de_mirage", "Base TR")
+        _peca(pg, base["x"], base["y"])
+        pg.wait_for_timeout(100)
+        cv, rel = pg.evaluate("() => [document.getElementById('pr-mapa').getBoundingClientRect().toJSON(), document.getElementById('pr-relogio-grande').getBoundingClientRect().toJSON()]")
+        assert rel["right"] < cv["left"]                                                         # a 1440 o relógio está na margem, fora do canvas
+        pg.evaluate("() => { const S = Prancheta._interno.S; S.view.panX += 300; Prancheta._interno.atualizaTudo(); }")      # mexe a vista: nada passa por baixo dele
+        assert not _fundo(pg)["sob"] and _fundo(pg)["fundo"] != ALFA_DO_FUNDO
+    finally:
+        pg.close()
