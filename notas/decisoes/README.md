@@ -109,3 +109,4 @@ Uma nota por decisão. O `CLAUDE.md` traz a lista curta das que estão em vigor.
 | [65](65-time-da-faceit-nome-da-demo.md) | vigente | O time da FACEIT usa o nome que a demo grava (`team_t1ltedbot` -> "Time de t1ltedbot"); sem nome, vazio ou genérico, vale a reserva da decisão 28 (primeiro nick em ordem alfabética). Só texto. |
 | [66](66-prancheta-de-volta-na-navbar.md) | vigente | A navbar ganha a Prancheta (a da Mirage) e os 10 mapas da landing viram links; complementa a 56. |
 | [67](67-arrastar-de-novo-no-reescrever.md) | vigente | Com a sua versão pausada, arrastar põe uma parada nova do quadro atual; antes da última, corta; desfazer tira uma por vez. |
+| [68](68-visual-p2c-relogio-ver-no-mapa-nome-do-time.md) | vigente | Relógio translúcido com peça por baixo (>= 3:1), "Ver no mapa ↑" no celular e "Time de <nick>" com a grafia do nick. |

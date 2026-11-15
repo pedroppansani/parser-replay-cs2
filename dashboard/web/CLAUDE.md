@@ -29,6 +29,10 @@ Antes de mexer no `map_core.js`, no canvas, no Replay (`partida/`) ou na pranche
   pR 12); a barra é depois menos antes da curva publicada, o decisivo é o do payload, e textos e rótulos
   vêm de `leitura/peso_dos_rounds.py` (19, 18)
 
+- Relógio grande da prancheta (P2c): com uma peça (ou o nome dela) por baixo, DENTRO do mapa (no celular; no computador ele fica na margem), só o fundo fica translúcido (50%, sem transição, `pointer-events: none`); os números seguem opacos com contraste >= 3:1 contra o mapa, medido nos 10 mapas com radar (68)
+- "Ver no mapa ↑" (celular, depois do Aplicar, Reescrever e prancheta): rola a PÁGINA uma vez, sem animação, até o mapa, põe o foco nele sem rolar de novo e o cartão anuncia (região viva); no computador fica escondido (68)
+- "Time de <nick>" (FACEIT) mantém a grafia do nick no cabeçalho da partida (`.placar .nome.nick`); os times profissionais seguem em maiúsculas (68)
+
 - Regra de LCP (`scripts/design/mede_lcp_p2b.py`): antes e depois com 40 medidas por célula, alternadas; compara o P75, limite de 30 ms por célula, e não a mediana (o `font-display: fallback` põe o LCP em dois grupos, perto de 90 e de 130 ms, e a mediana pula de um para o outro)
 
 ## Calibração do Pedro (não resolva sozinho)
