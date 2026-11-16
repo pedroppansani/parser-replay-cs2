@@ -9,6 +9,9 @@ from pathlib import Path
 import numpy as np
 
 
+GRADE_U = 128      # a quadrícula do índice espacial (u)
+
+
 class Grafo:
     def __init__(self, caminho: Path):
         d = json.loads(caminho.read_text(encoding="utf-8"))
@@ -37,8 +40,8 @@ class Grafo:
         for i, p in self.poly.items():
             x0, y0 = p[:, 0].min(), p[:, 1].min()
             x1, y1 = p[:, 0].max(), p[:, 1].max()
-            for gx in range(int(x0 // 128), int(x1 // 128) + 1):
-                for gy in range(int(y0 // 128), int(y1 // 128) + 1):
+            for gx in range(int(x0 // GRADE_U), int(x1 // GRADE_U) + 1):
+                for gy in range(int(y0 // GRADE_U), int(y1 // GRADE_U) + 1):
                     self._g.setdefault((gx, gy), []).append(i)
 
     def contem(self, i: int, x: float, y: float) -> bool:
@@ -53,14 +56,14 @@ class Grafo:
 
     def area_do_ponto(self, x: float, y: float, z: float | None, tol_xy: float = 200.0) -> int | None:
         """A área que contém (x, y) e está mais perto de `z` (andares sobrepostos); sem nenhuma, a de centro mais perto num raio de `tol_xy` u."""
-        cand = [i for i in self._g.get((int(x // 128), int(y // 128)), []) if self.contem(i, x, y)]
+        cand = [i for i in self._g.get((int(x // GRADE_U), int(y // GRADE_U)), []) if self.contem(i, x, y)]
         if cand:
             if z is None:
                 return cand[0]
             return min(cand, key=lambda i: abs(self.cent[i][2] - z))
         melhor, dm = None, tol_xy
-        for gx in range(int(x // 128) - 2, int(x // 128) + 3):
-            for gy in range(int(y // 128) - 2, int(y // 128) + 3):
+        for gx in range(int(x // GRADE_U) - 2, int(x // GRADE_U) + 3):
+            for gy in range(int(y // GRADE_U) - 2, int(y // GRADE_U) + 3):
                 for i in self._g.get((gx, gy), []):
                     c = self.cent[i]
                     d = math.hypot(c[0] - x, c[1] - y) + (0 if z is None else abs(c[2] - z) * 0.5)

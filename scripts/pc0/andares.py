@@ -14,6 +14,9 @@ from scripts.pc0.grafo_corpus import GrafoCorpus
 from scripts.pc0.grafo_nav import Grafo
 
 
+CELULA_PC0_U = 64.0      # a célula da PC0 (a decisão do Pedro)
+
+
 def main(pasta: Path, mapas: list[str]) -> None:
     for m in mapas:
         g = Grafo(pasta / f"{m}.json")
@@ -30,7 +33,7 @@ def main(pasta: Path, mapas: list[str]) -> None:
         if not rs:
             print("   corpus: nenhuma partida deste mapa")
             continue
-        gc = GrafoCorpus(rs, s=64, zs=48, min_visitas=3, min_ligacoes=2)
+        gc = GrafoCorpus(rs, s=CELULA_PC0_U, zs=48, min_visitas=3, min_ligacoes=2)
         cz = np.array([gc.centro[c][2] for c in gc.celulas])
         vc = [(a, b) for a, bs in gc.adj.items() for b in bs if abs(gc.centro[b][2] - gc.centro[a][2]) >= 100]
         qc = [(a, b) for a, b in vc if gc.centro[b][2] - gc.centro[a][2] <= -100 and a not in gc.adj.get(b, [])]

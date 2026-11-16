@@ -1,6 +1,6 @@
 # PC0: a peça seguir um caminho de verdade, não a reta (investigação, 2026-11-15)
 
-Só investigação: nenhuma mudança no site. Scripts em `scripts/pc0/` (leitura; rodam com `py -3.12 -m scripts.pc0.<nome>`), logs em `notas/logs/pc0-*.log`, desenhos em `C:\Users\User\Desktop\Claude outputs\pc0-caminhos\`.
+Só investigação: nenhuma mudança no site. Scripts em `scripts/pc0/` (leitura; rodam com por exemplo `py -3.12 -m scripts.pc0.exemplos`), logs em `notas/logs/pc0-*.log`, desenhos em `C:\Users\User\Desktop\Claude outputs\pc0-caminhos\`.
 Os dados do jogo (`.nav`, extraídos do `.vpk` de cada mapa da CS2 instalada) ficaram FORA do repositório (`%TEMP%\pc0`).
 
 ## 1. As fontes de caminho

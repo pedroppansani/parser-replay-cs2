@@ -17,6 +17,7 @@ PENALIDADE_DA_MALHA = 1.25
 RAIO_DA_CELULA_U = 120.0
 RAIO_DA_AREA_U = 200.0
 PESO_DO_Z = 0.7
+GRADE_U = 128      # a quadrícula do índice espacial (u)
 PASSO_DO_FIO_U = 16.0
 JANELA_DO_FIO = 16      # quantos pontos adiante o fio olha de cada vez (a conta do fio cresce com o quadrado do trecho; 16 mantém o erro e a consulta abaixo de 50 ms com a CPU 4x mais lenta)
 QUEDA_U = 40.0
@@ -42,12 +43,12 @@ class Caminhos:
         self._grade_c: dict = {}
         self._grade_a: dict = {}
         for i in range(self.nc):
-            self._grade_c.setdefault((int(self.px[i] // 128), int(self.py[i] // 128)), []).append(i)
+            self._grade_c.setdefault((int(self.px[i] // GRADE_U), int(self.py[i] // GRADE_U)), []).append(i)
         for a in range(self.na):
             xs = [c[0] for c in self.poli[a]]
             ys = [c[1] for c in self.poli[a]]
-            for gx in range(int(min(xs) // 128), int(max(xs) // 128) + 1):
-                for gy in range(int(min(ys) // 128), int(max(ys) // 128) + 1):
+            for gx in range(int(min(xs) // GRADE_U), int(max(xs) // GRADE_U) + 1):
+                for gy in range(int(min(ys) // GRADE_U), int(max(ys) // GRADE_U) + 1):
                     self._grade_a.setdefault((gx, gy), []).append(a)
 
     def _cruza(self, u: int, v: int) -> bool:
@@ -76,7 +77,7 @@ class Caminhos:
     def no_do_ponto(self, x: float, y: float, z: float | None) -> int | None:
         """A célula do corpus mais perto (até `RAIO_DA_CELULA_U`); sem ela, a área da malha que contém o ponto (a de altura mais perto); sem ela, a área de centro mais perto (até `RAIO_DA_AREA_U`)."""
         melhor, dm = None, RAIO_DA_CELULA_U
-        gx, gy = int(x // 128), int(y // 128)
+        gx, gy = int(x // GRADE_U), int(y // GRADE_U)
         for ax in range(gx - 1, gx + 2):
             for ay in range(gy - 1, gy + 2):
                 for i in self._grade_c.get((ax, ay), []):
@@ -126,7 +127,7 @@ class Caminhos:
         for k in range(n + 1):
             x = p[0] + (q[0] - p[0]) * k / n
             y = p[1] + (q[1] - p[1]) * k / n
-            if not any(a in areas and self._contem(a, x, y) for a in self._grade_a.get((int(x // 128), int(y // 128)), [])):      # só as áreas do trecho que passam por esta quadrícula
+            if not any(a in areas and self._contem(a, x, y) for a in self._grade_a.get((int(x // GRADE_U), int(y // GRADE_U)), [])):      # só as áreas do trecho que passam por esta quadrícula
                 return False
         return True
 

@@ -23,6 +23,7 @@ from scripts.caminhos.corpus import CELULA_U, FAIXA_Z_U, MIN_LIGACOES, MIN_VISIT
 RAIZ = Path(__file__).resolve().parent.parent
 PASTA = RAIZ / "data" / "caminhos"
 VERSAO = 1
+GRADE_U = 128      # a quadrícula do índice espacial (u)
 PONTE_DZ_U = 110.0      # a célula só liga à área se estiver a menos disso dela, em altura
 
 
@@ -73,12 +74,12 @@ def monta(mapa: str, malha: dict | None, rastros: list[dict] | None, z_pontos: d
         grade: dict[tuple[int, int], list[int]] = {}
         cantos = [[(q[3 * k], q[3 * k + 1]) for k in range(len(q) // 3)] for q in poli]
         for a, c in enumerate(cantos):
-            for gx in range(int(min(v[0] for v in c) // 128), int(max(v[0] for v in c) // 128) + 1):
-                for gy in range(int(min(v[1] for v in c) // 128), int(max(v[1] for v in c) // 128) + 1):
+            for gx in range(int(min(v[0] for v in c) // GRADE_U), int(max(v[0] for v in c) // GRADE_U) + 1):
+                for gy in range(int(min(v[1] for v in c) // GRADE_U), int(max(v[1] for v in c) // GRADE_U) + 1):
                     grade.setdefault((gx, gy), []).append(a)
         for ci, cel in enumerate(celulas):
             x, y, z = centro[cel]
-            for a in grade.get((int(x // 128), int(y // 128)), []):
+            for a in grade.get((int(x // GRADE_U), int(y // GRADE_U)), []):
                 if abs(zs[a] - z) < PONTE_DZ_U and _contem(cantos[a], x, y):
                     arestas.add((ci, nc + a))
                     arestas.add((nc + a, ci))
